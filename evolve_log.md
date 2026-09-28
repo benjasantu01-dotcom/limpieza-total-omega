@@ -1235,3 +1235,10 @@ FAILED evolve/tests/test_modules.py::test_partial_hash_only_reads_the_beginning 
 - `2026-09-28T09:03:21` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
 - `2026-09-28T09:03:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T09:03:21` Corrida terminada. Total usado hoy: 212.
+- `2026-09-28T09:08:58` Arrancando corrida. Quedan hoy ~88 peticiones objetivo.
+- `2026-09-28T09:09:43` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `organizer.py` añadiendo chequeos de integridad en las operaciones con rutas (validación de `is_absolute` y existencia de padres) y mejorando el manejo de errores en `_get_win_attributes` para prevenir bloqueos por atributos inesperados.
+- `2026-09-28T09:10:25` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha introducido un chequeo de existencia previa del archivo en `_atomic_isolate_file` para evitar race conditions y comportamientos indefinidos ante archivos que cambian de estado durante la ejecución, reforzando la robustez ante concurrencia.
+- `2026-09-28T09:10:45` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-28T09:11:14` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido `_is_sparse_file` mediante la constante `FILE_ATTRIBUTE_SPARSE_FILE` (0x200) para reforzar la detección de archivos dispersos que podrían ocultar datos o causar errores de escritura, integrando esta comprobación robusta en la validación de integridad (`_VALIDATORS`) y en los diagnósticos.
+- `2026-09-28T09:11:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T09:11:14` Corrida terminada. Total usado hoy: 216.

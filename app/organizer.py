@@ -76,7 +76,8 @@ class JunkFile:
 
     def __post_init__(self) -> None:
         try:
-            self.path = self.path.resolve()
+            if self.path.is_absolute():
+                self.path = self.path.resolve()
         except (OSError, RuntimeError):
             pass
 
@@ -101,8 +102,10 @@ def _get_win_attributes(entry: os.DirEntry) -> int:
     Devuelve 0 si la llamada falla, evitando interrupciones en el flujo del escáner.
     """
     try:
-        return entry.stat(follow_symlinks=False).st_file_attributes
-    except (OSError, AttributeError):
+        if hasattr(os, 'stat_result') and hasattr(os.stat_result, 'st_file_attributes'):
+            return entry.stat(follow_symlinks=False).st_file_attributes
+        return 0
+    except (OSError, AttributeError, ValueError):
         return 0
 
 def _is_junction(entry: os.DirEntry) -> bool:
@@ -189,12 +192,14 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if not src.exists() or not src.is_file() or src.is_symlink(): return False
         if not is_safe_to_modify(src): return False
         if not _validate_path_security(src, dest): return False
+        
         target_dir = dest.parent if dest.exists() else dest
         if not target_dir.is_dir() or not os.access(target_dir, os.W_OK): return False
         if is_protected_path(target_dir) or _is_unc_path(target_dir): return False
         if src.drive != target_dir.drive: return False
         if _is_recursive_violation(src, dest): return False
         if not os.access(src, os.R_OK): return False
+        
         stats = src.stat()
         if not (0 <= stats.st_size < 100_000_000_000): return False
         return not _is_file_locked(src)
@@ -289,6 +294,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     genera una ruta única para la operación de movimiento.
     """
     try:
+        if not dest_base.exists(): return None
         usage = shutil.disk_usage(dest_base.anchor)
         # Margen de seguridad de 50MB
         if usage.free < (junk_file.size_bytes + 52428800): return None

@@ -262,10 +262,15 @@ def _is_reparse_point(path_str: str) -> bool:
     if os.name != 'nt': return os.path.islink(path_str)
     return bool(_get_file_attrs(path_str) & Win32Attr.REPARSE_POINT)
 
-def _is_encrypted_or_compressed_or_sparse(path_str: str) -> bool:
-    """Detecta flags de cifrado, compresión o archivos dispersos (sparse)."""
+def _is_sparse_file(path_str: str) -> bool:
+    """Verifica si un archivo está marcado como disperso (Sparse)."""
     if os.name != 'nt' or not os.path.exists(path_str): return False
-    return bool(_get_file_attrs(path_str) & (Win32Attr.COMPRESSED | Win32Attr.ENCRYPTED | Win32Attr.SPARSE_FILE))
+    return bool(_get_file_attrs(path_str) & Win32Attr.SPARSE_FILE)
+
+def _is_encrypted_or_compressed(path_str: str) -> bool:
+    """Detecta flags de cifrado o compresión."""
+    if os.name != 'nt' or not os.path.exists(path_str): return False
+    return bool(_get_file_attrs(path_str) & (Win32Attr.COMPRESSED | Win32Attr.ENCRYPTED))
 
 def _is_offline(path_str: str) -> bool:
     """Detecta si un archivo es un marcador de posición de nube (offline)."""
@@ -329,8 +334,8 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _rule(ProtectionReason.IN_USE, lambda p, _: _is_file_locked_by_other_process(str(p))),
     _rule(ProtectionReason.SYSTEM_HIDDEN, lambda p, _: _is_system_or_hidden(str(p))),
     _rule(ProtectionReason.OFFLINE, lambda p, _: _is_offline(str(p))),
-    _rule(ProtectionReason.ENCRYPTED_OR_COMPRESSED, lambda p, _: _is_encrypted_or_compressed_or_sparse(str(p))),
-    _rule(ProtectionReason.SPARSE_FILE, lambda p, _: _is_encrypted_or_compressed_or_sparse(str(p))),
+    _rule(ProtectionReason.ENCRYPTED_OR_COMPRESSED, lambda p, _: _is_encrypted_or_compressed(str(p))),
+    _rule(ProtectionReason.SPARSE_FILE, lambda p, _: _is_sparse_file(str(p))),
     _rule(ProtectionReason.HARD_LINK, lambda p, st: p.is_file() and st.st_nlink > 1),
     _rule(ProtectionReason.ADS, lambda p, _: _has_alternate_data_stream(p.name)),
     _rule(ProtectionReason.EMPTY_FILE, lambda p, st: p.is_file() and st.st_size == 0),
@@ -682,7 +687,8 @@ def describe_protection(path: PathLike) -> str:
             if _is_readonly(str(p)): return f"'{p}' es solo lectura."
             if _is_volume_readonly(str(p)): return f"'{p}' pertenece a un volumen de solo lectura."
             if _is_file_locked_by_other_process(str(p)): return f"'{p}' en uso."
-            if _is_encrypted_or_compressed_or_sparse(str(p)): return f"'{p}' archivo cifrado, comprimido o disperso."
+            if _is_encrypted_or_compressed(str(p)): return f"'{p}' archivo cifrado o comprimido."
+            if _is_sparse_file(str(p)): return f"'{p}' archivo disperso (sparse)."
             if _is_offline(str(p)): return f"'{p}' archivo offline/nube."
             if _is_system_or_hidden(str(p)): return f"'{p}' atributo oculto/sistema/temporal."
             if _has_alternate_data_stream(p.name): return f"'{p}' contiene ADS."

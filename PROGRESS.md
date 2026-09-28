@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Mejoras aceptadas: **184** (36.5% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 236
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-27 | 97 | 21 | 23 | 12 | 139 |
-| 2026-09-28 | 84 | 6 | 19 | 6 | 97 |
+| 2026-09-27 | 97 | 21 | 23 | 12 | 135 |
+| 2026-09-28 | 87 | 6 | 20 | 6 | 97 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **36**
+- robustez ante casos límite: **32**
 - rendimiento: **31**
 - seguridad defensiva: **31**
-- robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
+- `safety.py`: **17**
 - `browser.py`: **17**
 - `duplicates.py`: **17**
+- `quarantine.py`: **17**
 - `diskreport.py`: **16**
-- `safety.py`: **16**
 - `healthscore.py`: **16**
-- `quarantine.py`: **16**
 - `scanner.py`: **14**
 - `memory.py`: **13**
 - `assistant.py`: **12**
 - `settings.py`: **11**
 - `main.py`: **10**
+- `organizer.py`: **8**
 - `startup.py`: **8**
 - `branding.py`: **8**
-- `organizer.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-28T09:11:14` **safety.py** (robustez ante casos límite): Se ha añadido `_is_sparse_file` mediante la constante `FILE_ATTRIBUTE_SPARSE_FILE` (0x200) para reforzar la detección de archivos dispersos que podrían ocultar datos o causar errores de escritura, integrando esta comprobación robusta en la validación de integridad (`_VALIDATORS`) y en los diagnósticos.
+- `2026-09-28T09:10:25` **quarantine.py** (robustez ante casos límite): Se ha introducido un chequeo de existencia previa del archivo en `_atomic_isolate_file` para evitar race conditions y comportamientos indefinidos ante archivos que cambian de estado durante la ejecución, reforzando la robustez ante concurrencia.
+- `2026-09-28T09:09:43` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `organizer.py` añadiendo chequeos de integridad en las operaciones con rutas (validación de `is_absolute` y existencia de padres) y mejorando el manejo de errores en `_get_win_attributes` para prevenir bloqueos por atributos inesperados.
 - `2026-09-28T09:03:08` **main.py** (robustez ante casos límite): Mejoré la robustez de la aplicación ante estados de red inciertos y errores de hilo principal añadiendo una validación de salud de los widgets antes de cualquier operación de UI en los callbacks asíncronos (`_safe_run_ui_callback` y `_flush_logs`), y asegurando que las llamadas de persistencia de configuración manejen correctamente widgets que podrían haber sido destruidos.
 - `2026-09-28T08:59:42` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` y `compute_score` ante valores inesperados (como `None` o estados de error parciales) asegurando que el motor de puntuación siempre devuelva un resultado válido y coherente, incluso si los datos de entrada provienen de sensores fallidos.
 - `2026-09-28T08:50:20` **browser.py** (robustez ante casos límite): Se añadió una validación de existencia (`p.exists()`) en `_resolve_browser_path` antes de intentar resolver rutas, evitando que el módulo falle silenciosamente al procesar rutas relativas que no existen en el sistema (un caso límite común en perfiles de usuario incompletos).
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-28T08:19:14` **healthscore.py** (rendimiento): Optimicé el cálculo del score evitando la creación innecesaria de objetos `NamedTuple` y funciones `lambda` en tiempo de ejecución, además de reemplazar la re-instanciación del diccionario de desglose por una pre-asignación eficiente.
 - `2026-09-28T08:18:50` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente al consolidar los filtros de seguridad y atributos antes de realizar llamadas costosas al sistema de archivos (`stat`), reduciendo drásticamente la latencia en directorios con gran cantidad de archivos.
 - `2026-09-28T08:09:51` **browser.py** (rendimiento): Optimicé el rendimiento de `directory_size` y `detect_profiles` evitando cálculos redundantes mediante la consolidación del `memo` (para detectar archivos ya contados) y utilizando una única instancia de `kernel32` compartida entre los procesos recursivos, reduciendo la sobrecarga de llamadas a la API de Windows.
-- `2026-09-28T08:09:38` **branding.py** (rendimiento): Optimicé el cálculo de gradientes y la gestión de colores mediante la pre-compilación de los parámetros de franjas y la consolidación de `_get_grouped_segments` para reducir la presión sobre la CPU al renderizar elementos gráficos recurrentes.
-- `2026-09-28T07:59:19` **scanner.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el método `Scanner.process_entry` y la función `scan_directory` para clarificar la lógica de control de flujo y asegurar la integridad de tipos, mejorando la mantenibilidad del motor de escaneo.
-- `2026-09-28T07:58:42` **safety.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en retornos de funciones, la corrección de inconsistencias en docstrings, y la centralización de la lógica de evaluación de seguridad para evitar redundancias en el flujo de `ensure_safe_to_modify`.

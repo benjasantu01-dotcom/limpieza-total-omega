@@ -507,6 +507,8 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     """Ejecuta el aislamiento atómico de un archivo."""
     if not source.is_file():
         raise FileNotFoundError("Archivo origen inexistente o inválido.")
+    if not source.exists():
+        raise FileNotFoundError("El archivo origen ha desaparecido antes de comenzar el aislamiento.")
     if source.resolve() == destination.resolve():
         raise UnsafePathError("El origen ya reside en el directorio destino.")
     _validate_quarantine_path(destination, destination.parent)
