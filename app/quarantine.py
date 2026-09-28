@@ -553,10 +553,17 @@ def _register_quarantine_item(
 
 def _validate_source_for_quarantine(source: Path) -> Path:
     """Valida que el archivo sea apto para entrar en cuarentena."""
+    # Check de seguridad reforzado: impedir symlinks y reparse points antes de cualquier operación
+    if source.is_symlink():
+        raise UnsafePathError("Aislamiento de enlaces simbólicos no permitido.")
+    try:
+        resolved = source.resolve(strict=True)
+        if hasattr(resolved, 'is_junction') and resolved.is_junction():
+            raise UnsafePathError("Aislamiento de puntos de reparse (Junctions) no permitido.")
+    except (OSError, RuntimeError):
+        pass
     if source.is_dir():
         raise UnsafePathError("Aislamiento de directorios no permitido.")
-    if source.is_symlink():
-        raise UnsafePathError("No se permite aislar enlaces simbólicos.")
     if not source.is_file():
         raise FileNotFoundError("Archivo origen inexistente.")
     if _is_file_locked(source):

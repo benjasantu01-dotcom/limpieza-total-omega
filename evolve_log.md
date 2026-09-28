@@ -790,3 +790,13 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - V
 - `2026-09-28T05:05:39` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
 - `2026-09-28T05:05:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T05:05:39` Corrida terminada. Total usado hoy: 120.
+- `2026-09-28T05:14:16` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-09-28T05:15:18` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-28T05:16:21` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-28T05:17:27` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-28T05:18:53` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._ensure_path_writable_and_clean, LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run, LimpiezaTotalOmegaApp._is_safe_disk_operation, LimpiezaTotalOmegaApp._is_safe_file_access, LimpiezaTotalOmegaApp._is_safe_path, LimpiezaTotalOmegaApp._is_safe_target_dir, LimpiezaTotalOmegaApp._is_valid_dir, LimpiezaTotalOmegaApp._update_cards, LimpiezaTotalOmegaApp._verify_disk_path
+- `2026-09-28T05:19:26` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al validar que los PIDs no solo sean números, sino que correspondan a procesos activos antes de intentar abrirlos, y se aseguró la integridad del manejo de descriptores mediante una estructura `with` implícita vía cierre garantizado en `try...finally` para prevenir fugas de handles en condiciones de error.
+- `2026-09-28T05:19:51` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-09-28T05:20:15` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad del proceso de aislamiento mediante la validación estricta de que la ruta de origen no contenga puntos de reparse (reparse points) ni enlaces simbólicos, bloqueando cualquier intento de manipulación fuera del sistema de archivos esperado mediante un chequeo en `_validate_source_for_quarantine`.
+- `2026-09-28T05:20:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T05:20:15` Corrida terminada. Total usado hoy: 124.

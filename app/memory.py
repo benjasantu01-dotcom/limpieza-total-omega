@@ -230,7 +230,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     now = time.time()
     if (now - _proc_cache_time) > 60:
         try:
-            # Optimizacion: Filtro agresivo en PS para reducir transmision y procesamiento
             cmd = ['powershell', '-NoProfile', '-NonInteractive', '-Command', 
                    'Get-Process | Where-Object { $_.Id -notin 0,4 } | Sort-Object WorkingSet -Descending | Select-Object -First 30 | ForEach-Object { "$($_.Name),$($_.Id),$($_.WorkingSet)" }']
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3, check=False)
@@ -274,6 +273,10 @@ def _get_process_path(pid: int) -> Optional[Path]:
     handle = kernel32.OpenProcess(SAFE_VALIDATION_MASK, False, pid)
     if not handle: return None
     try:
+        # Verificar si el proceso sigue vivo antes de intentar consultar la ruta
+        exit_code = ctypes.c_ulong()
+        if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
+            return None
         psapi = ctypes.windll.psapi
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
