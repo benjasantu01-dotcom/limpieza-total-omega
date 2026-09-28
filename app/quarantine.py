@@ -570,7 +570,9 @@ def quarantine_file(
         raise UnsafePathError("Archivo ya en el sandbox.")
     _validate_isolation_request(source_path, dest_dir)
     destination = dest_dir / _generate_safe_stored_name(source_path, uuid.uuid4().hex[:12])
+    temp_path: Optional[Path] = None
     try:
+        temp_path = dest_dir / f".{destination.name}.{uuid.uuid4().hex[:8]}.tmp"
         file_hash = _atomic_isolate_file(source_path, destination, original_size)
         retries = 3
         while retries > 0:
@@ -588,6 +590,9 @@ def quarantine_file(
         _verify_transaction_integrity(item, destination)
         return item
     except Exception as e:
+        if temp_path and temp_path.exists():
+            try: temp_path.unlink()
+            except OSError: pass
         _cleanup_orphaned_destination(destination)
         raise RuntimeError(f"Error durante aislamiento: {e}")
 

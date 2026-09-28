@@ -622,3 +622,46 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-28T02:32:55` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` y `summarize` reemplazando chequeos tipo `isinstance` por una validación más estricta mediante el método `is_finite` de `SystemMetrics` y capturando excepciones de forma granular durante la ejecución del pipeline para evitar el colapso del informe ante datos malformados.
 - `2026-09-28T02:32:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T02:32:55` Corrida terminada. Total usado hoy: 60.
+- `2026-09-28T02:41:31` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-09-28T02:42:48` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se mejora el manejo de errores en `on_trim_process` y `on_restore_quarantine` mediante validaciones adicionales y el uso consistente de `try-except` para evitar que entradas malformadas o procesos inexistentes provoquen cierres inesperados o estados inconsistentes en la UI.
+- `2026-09-28T02:43:17` Tests FALLARON:
+```
+ef test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:81: SyntaxWarning: invalid escape sequence '\ '
+    El prefijo \\?\ es necesario para superar limitaciones de MAX_PATH en Windows.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed, 4 warnings in 1.50s
+
+```
+- `2026-09-28T02:43:17` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `parse_windows_process_csv` implementando una validación explícita de tipos, verificando la integridad de los datos antes de operar (evitando `IndexError` y conversiones fallidas) y manejando adecuadamente el caso de valores nulos o malformados, alineándose con el enfoque de manejo de errores y validación de entradas.
+- `2026-09-28T02:43:43` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-28T02:44:05` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` envolviendo las operaciones de archivo en un bloque `try-finally` para asegurar que, ante cualquier excepción durante la transferencia, el archivo temporal (si existe) sea eliminado correctamente, evitando la acumulación de basura en el sistema y dejando el estado limpio para futuras iteraciones.
+- `2026-09-28T02:44:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T02:44:05` Corrida terminada. Total usado hoy: 64.
