@@ -153,6 +153,7 @@ class FileEntry:
 
     @property
     def size_mb(self) -> float:
+        """Devuelve el tamaño del archivo convertido a megabytes."""
         return _bytes_to_mb(self.size_bytes)
 
 
@@ -164,6 +165,7 @@ class ExtensionUsage:
 
     @property
     def size_mb(self) -> float:
+        """Devuelve el tamaño total de la extensión en megabytes."""
         return _bytes_to_mb(self.size_bytes)
 
 
@@ -175,6 +177,7 @@ class FolderUsage:
 
     @property
     def size_mb(self) -> float:
+        """Devuelve el tamaño total de la carpeta en megabytes."""
         return _bytes_to_mb(self.size_bytes)
 
 
@@ -317,7 +320,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     for path, size_bytes in walk_files(directory, skip_protected):
         total_bytes += size_bytes
         total_files += 1
-        ext = getattr(path, "suffix", "").lower() or "(sin extensión)"
+        ext = path.suffix.lower() or "(sin extensión)"
         stats = ext_stats[ext]
         stats.total_bytes += size_bytes
         stats.count += 1

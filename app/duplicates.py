@@ -175,8 +175,11 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
     """
     Calcula un hash SHA256 rápido usando solo el inicio del archivo.
     
-    Útil para descartar candidatos de forma eficiente antes de realizar 
-    lecturas completas de archivos pesados.
+    Args:
+        path: Ruta al archivo.
+        read_bytes: Cantidad de bytes a leer del inicio.
+    Returns:
+        Hash hexadecimal o None en caso de error.
     """
     if read_bytes <= 0:
         return None

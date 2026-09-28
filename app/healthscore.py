@@ -152,19 +152,27 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
     """Calcula la salud de arranque penalizando la cantidad de procesos que inician con el sistema."""
     return _clamp(1.0 - (float(startup_count) * _INV_STARTUP))
 
+# Factory de mensajes para el pipeline
+def _msg_sec(m: SystemMetrics) -> str: return f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad."
+def _msg_disk(m: SystemMetrics) -> str: return f"Queda {m.disk_free_percent:.1f}% de disco libre."
+def _msg_mem(m: SystemMetrics) -> str: return "Memoria disponible baja: cerrá procesos innecesarios."
+def _msg_junk(m: SystemMetrics) -> str: return f"Hay {m.junk_mb:.0f} MB de archivos temporales."
+def _msg_dup(m: SystemMetrics) -> str: return f"Podrías recuperar {m.duplicate_mb:.0f} MB eliminando duplicados."
+def _msg_start(m: SystemMetrics) -> str: return f"{m.startup_count} programas arrancan con Windows."
+
 _PIPELINE: Final[Tuple[PipelineEntry, ...]] = (
     PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), 
-                  (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, lambda m: f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad.", lambda m, r: r < WARN_THRESHOLD_HIGH),)),
+                  (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _msg_sec, lambda m, r: r < WARN_THRESHOLD_HIGH),)),
     PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), 
-                  (RecommendationRule("disco", WARN_THRESHOLD_LOW, lambda m: f"Queda {m.disk_free_percent:.1f}% de disco libre.", lambda m, r: r < WARN_THRESHOLD_LOW),)),
+                  (RecommendationRule("disco", WARN_THRESHOLD_LOW, _msg_disk, lambda m, r: r < WARN_THRESHOLD_LOW),)),
     PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), 
-                  (RecommendationRule("memoria", WARN_THRESHOLD_LOW, lambda m: "Memoria disponible baja: cerrá procesos innecesarios.", lambda m, r: r < WARN_THRESHOLD_LOW),)),
+                  (RecommendationRule("memoria", WARN_THRESHOLD_LOW, _msg_mem, lambda m, r: r < WARN_THRESHOLD_LOW),)),
     PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), 
-                  (RecommendationRule("basura", WARN_THRESHOLD_MED, lambda m: f"Hay {m.junk_mb:.0f} MB de archivos temporales.", lambda m, r: r < WARN_THRESHOLD_MED),)),
+                  (RecommendationRule("basura", WARN_THRESHOLD_MED, _msg_junk, lambda m, r: r < WARN_THRESHOLD_MED),)),
     PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), 
-                  (RecommendationRule("duplicados", WARN_THRESHOLD_MED, lambda m: f"Podrías recuperar {m.duplicate_mb:.0f} MB eliminando duplicados.", lambda m, r: r < WARN_THRESHOLD_MED),)),
+                  (RecommendationRule("duplicados", WARN_THRESHOLD_MED, _msg_dup, lambda m, r: r < WARN_THRESHOLD_MED),)),
     PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), 
-                  (RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),)),
+                  (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _msg_start, lambda m, r: r < WARN_THRESHOLD_LOW),)),
 )
 
 if len(_PIPELINE) != len(WEIGHTS) or any(e.area not in WEIGHTS for e in _PIPELINE):

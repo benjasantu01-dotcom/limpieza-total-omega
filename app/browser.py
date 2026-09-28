@@ -108,7 +108,7 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
     Inicializa la interfaz a la API de Windows mediante ctypes.
     
     Returns:
-        La DLL kernel32 cargada o None si el SO no es Windows.
+        La DLL kernel32 cargada o None si el SO no es Windows o falla la carga.
     """
     if os.name != 'nt':
         return None
@@ -129,7 +129,7 @@ def base_directories() -> List[Path]:
     Identifica la raíz LOCALAPPDATA del sistema actual.
     
     Returns:
-        Lista conteniendo el path de LOCALAPPDATA si es seguro, vacío si no.
+        Lista conteniendo el path de LOCALAPPDATA si es seguro y existe, vacío si no.
     """
     local_env = os.environ.get("LOCALAPPDATA")
     if not isinstance(local_env, str) or not local_env or _is_unc_path(local_env):
@@ -194,7 +194,14 @@ def _should_skip_entry(
     kernel32: Optional[ctypes.WinDLL], 
     is_junction_fn: JunctionChecker
 ) -> bool:
-    """Aplica políticas de filtrado antes de procesar una entrada de sistema de archivos."""
+    """
+    Aplica políticas de filtrado antes de procesar una entrada de sistema de archivos.
+    
+    Args:
+        entry: La entrada del directorio actual detectada por os.scandir.
+        kernel32: Instancia opcional de WinDLL para chequeos de atributos.
+        is_junction_fn: Función para verificar si la ruta es una unión de directorio.
+    """
     if entry.name is None or _is_excluded_file(entry.name):
         return True
     
@@ -216,7 +223,13 @@ def _process_file_entry(
     root_dev: int,
     depth: int
 ) -> int:
-    """Procesa una entrada de directorio: recurre si es carpeta o suma bytes si es archivo."""
+    """
+    Procesa una entrada de directorio: recurre si es carpeta o suma bytes si es archivo.
+    
+    Args:
+        memo: Diccionario para evitar el procesamiento redundante (inodes).
+        root_dev: Identificador del dispositivo raíz para prevenir saltos a otros volúmenes.
+    """
     try:
         st = entry.stat(follow_symlinks=False)
         if st.st_ino in memo:
@@ -242,7 +255,13 @@ def _sum_directory_recursive(
     root_dev: int,
     depth: int = 0
 ) -> int:
-    """Recorre el árbol de directorios para sumar el tamaño de archivos."""
+    """
+    Recorre el árbol de directorios para sumar el tamaño de archivos.
+    
+    Args:
+        root_path: Path de la carpeta a escanear.
+        depth: Profundidad actual para evitar recursión infinita.
+    """
     if depth > MAX_SCAN_DEPTH or root_path is None:
         return 0
     
@@ -270,7 +289,10 @@ def _sum_directory_recursive(
 
 
 def directory_size(path: Optional[OSPath]) -> int:
-    """Punto de entrada público para calcular el tamaño de una ruta."""
+    """
+    Punto de entrada público para calcular el tamaño total de una ruta en bytes.
+    Retorna 0 si la ruta es inaccesible o está protegida.
+    """
     if not path: return 0
     try:
         p = Path(path).resolve(strict=True)
@@ -311,7 +333,12 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
 
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
-    """Escaneo principal: detecta, valida y calcula el tamaño de los directorios de caché."""
+    """
+    Escaneo principal: detecta, valida y calcula el tamaño de los directorios de caché.
+    
+    Returns:
+        Lista de objetos BrowserCache ordenados de mayor a menor tamaño detectado.
+    """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     k32 = _get_kernel32()
