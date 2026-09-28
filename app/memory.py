@@ -283,10 +283,10 @@ def _get_process_path(pid: int) -> Optional[Path]:
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
             if buf.value:
+                # Usamos Path sin resolver enlaces simbólicos complejos de forma insegura
                 p = Path(buf.value)
-                resolved_p = p.resolve(strict=False)
-                if resolved_p.is_file() and resolved_p.is_absolute() and not is_protected_path(str(resolved_p)):
-                    return resolved_p
+                if p.is_file() and not is_protected_path(str(p)):
+                    return p
     except (ctypes.ArgumentError, OSError, ValueError, TypeError):
         pass
     finally:

@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 28
 - Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-27 | 97 | 21 | 23 | 12 | 127 |
-| 2026-09-28 | 93 | 7 | 20 | 7 | 97 |
+| 2026-09-27 | 97 | 21 | 23 | 12 | 123 |
+| 2026-09-28 | 95 | 7 | 20 | 7 | 99 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
+- seguridad defensiva: **38**
 - manejo de errores y validación de entradas: **36**
-- seguridad defensiva: **36**
 - robustez ante casos límite: **33**
 - rendimiento: **31**
 
@@ -33,11 +33,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **18**
 - `diskreport.py`: **17**
 - `safety.py`: **17**
+- `healthscore.py`: **17**
 - `quarantine.py`: **17**
-- `healthscore.py`: **16**
 - `scanner.py`: **15**
+- `memory.py`: **14**
 - `assistant.py`: **13**
-- `memory.py`: **13**
 - `settings.py`: **11**
 - `main.py`: **10**
 - `branding.py`: **9**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-28T09:44:21` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `memory.py` al restringir `_get_process_path` para que no utilice `Path.resolve()` directamente sobre entradas externas, evitando la resolución de symlinks o junctions maliciosos que podrían escapar a carpetas protegidas antes de la validación.
+- `2026-09-28T09:40:15` **healthscore.py** (seguridad defensiva): Se ha robustecido la validación de las métricas en `compute_score` asegurando que las reglas de recomendación no procesen datos potencialmente maliciosos o inyectados, añadiendo un saneamiento de caracteres no imprimibles y truncamiento estricto a los mensajes generados dinámicamente.
 - `2026-09-28T09:31:21` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` implementando un chequeo de integridad basado en `is_safe_to_modify` para cada entrada recolectada, previniendo que rutas potencialmente inseguras sean procesadas durante la iteración recursiva.
 - `2026-09-28T09:31:05` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_excluded_path` añadiendo una comprobación explícita para evitar el seguimiento de puntos de reparse (reparse points) mediante la comprobación del atributo `FILE_ATTRIBUTE_REPARSE_POINT` (0x400) en Windows, garantizando que el escáner no entre en recursión infinita o áreas fuera del alcance previsto a través de junctions o montajes automáticos del SO.
 - `2026-09-28T09:30:36` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la verificación estricta de que cada archivo o subdirectorio escaneado permanezca dentro de la ruta raíz validada, previniendo posibles escapes mediante enlaces simbólicos o manipulaciones de ruta durante el recorrido profundo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-28T08:59:42` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` y `compute_score` ante valores inesperados (como `None` o estados de error parciales) asegurando que el motor de puntuación siempre devuelva un resultado válido y coherente, incluso si los datos de entrada provienen de sensores fallidos.
 - `2026-09-28T08:50:20` **browser.py** (robustez ante casos límite): Se añadió una validación de existencia (`p.exists()`) en `_resolve_browser_path` antes de intentar resolver rutas, evitando que el módulo falle silenciosamente al procesar rutas relativas que no existen en el sistema (un caso límite común en perfiles de usuario incompletos).
 - `2026-09-28T08:40:23` **startup.py** (rendimiento): Se optimizó `entries_from_folders` eliminando el uso innecesario de `is_safe_to_modify` dentro del bucle principal, ya que `is_protected_path` junto con la lógica de `os.scandir` es suficiente y más performante para el filtrado inicial, evitando llamadas redundantes a `Path` y chequeos de seguridad extra en archivos que ya se sabe que son seguros.
-- `2026-09-28T08:40:07` **settings.py** (rendimiento): Optimizé la gestión de memoria y el rendimiento de acceso a `settings.py` implementando un `lru_cache` específico en `load` para evitar lecturas de disco innecesarias durante llamadas repetidas dentro de la misma iteración, minimizando también las llamadas a `stat()` al verificar el `mtime` del archivo una sola vez por acceso.
-- `2026-09-28T08:39:34` **scanner.py** (rendimiento): Se implementó un filtrado preventivo en el bucle principal de `scan_directory` utilizando `is_protected_path` sobre la ruta del directorio antes de realizar el `scandir`, evitando así exploraciones redundantes y el costo de instanciar `os.DirEntry` en carpetas que ya sabemos que son protegidas por definición, optimizando el rendimiento de I/O.

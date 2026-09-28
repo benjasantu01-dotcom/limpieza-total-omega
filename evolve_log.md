@@ -1287,3 +1287,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-28T09:31:21` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` implementando un chequeo de integridad basado en `is_safe_to_modify` para cada entrada recolectada, previniendo que rutas potencialmente inseguras sean procesadas durante la iteración recursiva.
 - `2026-09-28T09:31:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T09:31:21` Corrida terminada. Total usado hoy: 224.
+- `2026-09-28T09:39:45` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-09-28T09:40:15` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se ha robustecido la validación de las métricas en `compute_score` asegurando que las reglas de recomendación no procesen datos potencialmente maliciosos o inyectados, añadiendo un saneamiento de caracteres no imprimibles y truncamiento estricto a los mensajes generados dinámicamente.
+- `2026-09-28T09:41:15` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-28T09:42:18` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-28T09:42:27` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-28T09:43:26` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-28T09:43:42` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-28T09:44:21` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad del módulo `memory.py` al restringir `_get_process_path` para que no utilice `Path.resolve()` directamente sobre entradas externas, evitando la resolución de symlinks o junctions maliciosos que podrían escapar a carpetas protegidas antes de la validación.
+- `2026-09-28T09:44:51` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-09-28T09:44:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T09:44:51` Corrida terminada. Total usado hoy: 228.
