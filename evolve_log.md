@@ -748,3 +748,10 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - V
 - `2026-09-28T04:04:46` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
 - `2026-09-28T04:04:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T04:04:46` Corrida terminada. Total usado hoy: 96.
+- `2026-09-28T04:13:08` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-09-28T04:13:37` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-09-28T04:14:06` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-09-28T04:14:33` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-28T04:15:02` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext.ingest` y `ProblemCriterion.format_if_triggered` para manejar de forma segura entradas malformadas, listas vacías o valores numéricos inesperados, evitando excepciones durante la consolidación de métricas.
+- `2026-09-28T04:15:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T04:15:02` Corrida terminada. Total usado hoy: 100.

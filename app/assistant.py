@@ -164,6 +164,7 @@ class ProblemCriterion(NamedTuple):
             return None
             
         try:
+            # Aseguramos que val sea compatible con el formato
             msg: str = self.message_format.format(val)[:_MAX_MSG_CHUNK]
             return msg if _ensure_safe_text(msg) else None
         except (ValueError, TypeError, KeyError):
@@ -336,7 +337,12 @@ class SystemContext:
     def active_problems(self) -> tuple[str, ...]:
         """Retorna tuple de problemas detectados tras evaluar los criterios de salud."""
         if not self.analyzed: return ()
-        return tuple(m for c in _CRITERIOS_SALUD if (m := c.format_if_triggered(self)) is not None)
+        results = []
+        for c in _CRITERIOS_SALUD:
+            msg = c.format_if_triggered(self)
+            if msg:
+                results.append(msg)
+        return tuple(results)
 
     @property
     def is_empty(self) -> bool:
@@ -388,14 +394,13 @@ class SystemContext:
             updates['grade'] = grade_val
         
         if updates:
-            # Aplicar cambios solo si la validación completa fue exitosa
             try:
                 for k, v in updates.items():
                     object.__setattr__(self, k, v)
                 object.__setattr__(self, 'analyzed', True)
-                # Invalidar cache si existe el método de caché (aunque usamos cached_property)
-                if hasattr(self, 'active_problems'):
-                    self.__dict__.pop('active_problems', None)
+                # Invalidar caché de propiedades de datos
+                if 'active_problems' in self.__dict__:
+                    del self.__dict__['active_problems']
                 return True
             except Exception:
                 return False
@@ -428,13 +433,10 @@ def _is_safe_text_structure(text: str) -> bool:
     Bloquea explícitamente caracteres de control, rutas UNC y comandos peligrosos.
     """
     if not text: return True
-    # Normalización: asegurar que no haya caracteres de escape o bidireccionales
     sanitized = text.encode("utf-8", "ignore").decode("utf-8")
     
-    # Prohibir caracteres de control (excepto básicos de texto)
     if any(ord(c) < 32 and c not in '\n\r\t' for c in sanitized): return False
     
-    # Bloqueo de estructuras de sistema e inyecciones
     if is_protected_path(sanitized): return False
     if sanitized.startswith(("\\\\", "//", "UNC")): return False
     if any(c in sanitized for c in "<>|&^"): return False
@@ -464,10 +466,8 @@ def _get_source_value(source: Any, key: str) -> Any:
         if isinstance(source, dict):
             val = source.get(key)
         else:
-            # Protegemos contra acceso a métodos o atributos privados del objeto source
             val = getattr(source, key, None)
         
-        # Evitar retornar objetos complejos o funciones que puedan ser ejecutadas
         if callable(val) or isinstance(val, (Path, type)):
             return None
         return val

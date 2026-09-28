@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **176** (34.9% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 233
+- Sin respuesta de la IA (error o límite): 234
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-26 | 16 | 1 | 2 | 1 | 38 |
+| 2026-09-26 | 13 | 1 | 2 | 1 | 37 |
 | 2026-09-27 | 122 | 24 | 34 | 17 | 153 |
-| 2026-09-28 | 40 | 2 | 8 | 4 | 42 |
+| 2026-09-28 | 41 | 2 | 9 | 4 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
-- seguridad defensiva: **42**
+- seguridad defensiva: **39**
 - manejo de errores y validación de entradas: **36**
 - rendimiento: **25**
-- robustez ante casos límite: **22**
+- robustez ante casos límite: **23**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **19**
-- `diskreport.py`: **17**
+- `duplicates.py`: **18**
 - `quarantine.py`: **17**
 - `safety.py`: **17**
+- `diskreport.py`: **16**
 - `browser.py`: **15**
-- `healthscore.py`: **14**
 - `scanner.py`: **14**
 - `memory.py`: **13**
 - `settings.py`: **13**
-- `assistant.py`: **11**
+- `healthscore.py`: **13**
+- `assistant.py`: **12**
 - `main.py`: **8**
 - `organizer.py`: **7**
 - `branding.py`: **7**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-28T04:15:02` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `ProblemCriterion.format_if_triggered` para manejar de forma segura entradas malformadas, listas vacías o valores numéricos inesperados, evitando excepciones durante la consolidación de métricas.
 - `2026-09-28T03:58:41` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lógica de filtrado inicial más estricta en el lado de PowerShell, reduciendo drásticamente la carga de datos procesados por Python y evitando el análisis de procesos innecesarios en cada llamada.
 - `2026-09-28T03:58:23` **main.py** (rendimiento): Se implementó un mecanismo de **invalidación selectiva y granular** en el caché de la aplicación: en lugar de limpiar todo el caché al realizar un análisis, ahora se invalidan únicamente las claves relevantes para la tarea específica, evitando recálculos innecesarios de otros módulos y mejorando la consistencia de los datos presentados.
 - `2026-09-28T03:53:48` **healthscore.py** (rendimiento): Se pre-calculan las sumatorias de puntos en el `Pipeline` para eliminar llamadas innecesarias a `int(round())` y `_clamp` dentro del bucle de evaluación, mejorando la eficiencia del cálculo del puntaje global.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-28T03:22:45` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de Type Hints explícitos para las estructuras de datos y se ha optimizado la legibilidad de la lógica de parsing de archivos, extrayendo el bloque de extracción de PID y Working Set a una función interna dedicada para mejorar la mantenibilidad y el testeo unitario.
 - `2026-09-28T03:13:33` **healthscore.py** (legibilidad y documentación): Documenté el propósito de los métodos de normalización y las reglas del pipeline mediante docstrings detallados, mejorando la mantenibilidad del motor analítico sin alterar su funcionalidad.
 - `2026-09-28T03:13:06` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de los nombres en el motor de escaneo y hashing para facilitar el mantenimiento y la auditoría técnica, asegurando que los roles de cada función sean explícitos sin alterar la lógica de ejecución.
-- `2026-09-28T03:12:38` **diskreport.py** (legibilidad y documentación): Mejora la mantenibilidad y legibilidad mediante la adición de Type Hints detallados, documentación explícita de las excepciones esperadas en funciones críticas y la clarificación de la intención de los algoritmos mediante docstrings mejorados.
