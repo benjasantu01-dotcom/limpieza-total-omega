@@ -776,3 +776,10 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - V
 - `2026-09-28T04:45:37` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-09-28T04:45:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T04:45:37` Corrida terminada. Total usado hoy: 112.
+- `2026-09-28T04:53:54` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-09-28T04:54:28` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-09-28T04:54:53` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-28T04:55:45` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al inyectar un paso de validación en `_build_payload` que garantiza que el `SYSTEM_PROMPT` no contenga caracteres de control o patrones prohibidos antes de ser enviado a la red, evitando posibles inyecciones de prompts maliciosos en la cadena de comunicación.
+- `2026-09-28T04:56:06` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-09-28T04:56:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T04:56:06` Corrida terminada. Total usado hoy: 116.

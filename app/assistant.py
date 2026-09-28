@@ -666,6 +666,9 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     q = _sanitize_query(question)
     if not q or not _ensure_safe_text(q): return None
     
+    # Validar el prompt base antes de construir el payload para evitar inyección
+    if not _ensure_safe_text(SYSTEM_PROMPT): return None
+    
     full_prompt = f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"
     if len(full_prompt) > _MAX_PROMPT_LIMIT or not _ensure_safe_text(full_prompt): 
         return None
