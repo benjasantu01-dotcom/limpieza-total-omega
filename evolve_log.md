@@ -474,3 +474,13 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-09-28T13:07:29` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _SettingsManager.clear
 - `2026-09-28T13:07:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T13:07:29` Corrida terminada. Total usado hoy: 308.
+- `2026-09-28T13:14:41` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-28T13:14:43` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-28T13:15:13` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-28T13:15:55` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Se introdujo una validación defensiva en `_safe_handler_wrapper` para interceptar posibles errores en los `handlers` que no solo devuelvan `Answer` (como retornos `None` inesperados o tipos erróneos), asegurando que el asistente siempre devuelva una estructura `Answer` válida y no interrumpa el hilo de la UI.
+- `2026-09-28T13:15:59` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-28T13:16:55` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez en `draw_ring` ante posibles desbordamientos matemáticos o valores `nan`/`inf` en el cálculo de los arcos, garantizando que una entrada inesperada no interrumpa el renderizado de la UI.
+- `2026-09-28T13:16:56` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-28T13:17:13` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-09-28T13:17:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T13:17:13` Corrida terminada. Total usado hoy: 312.

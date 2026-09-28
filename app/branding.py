@@ -490,4 +490,4 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         if val > 0: 
             fill_color = fill or score_color(val)
             canvas.create_arc(*caja, start=90, extent=-(val / 100 * 359.9), style="arc", outline=fill_color, width=thick)
-    except (ValueError, TypeError, AttributeError): return
+    except (ValueError, TypeError, AttributeError, OverflowError): return
