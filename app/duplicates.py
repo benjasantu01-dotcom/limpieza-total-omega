@@ -346,8 +346,10 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     """
     Calcula el 'score' de una ruta para la heurística de preservación:
-    (mtime, longitud_de_la_ruta). Se prefiere el archivo más antiguo.
+    (mtime, longitud_de_la_ruta). Retorna None si el archivo ya no existe.
     """
+    if not _safe_path_check(path):
+        return None
     try:
         stat = path.stat()
         return float(stat.st_mtime), len(str(path))
@@ -365,9 +367,8 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     
     candidates: List[Tuple[Tuple[float, int], Path]] = []
     for p in group.paths:
-        if isinstance(p, Path) and p.exists():
-            if score := _calculate_keeper_heuristic(p):
-                candidates.append((score, p))
+        if score := _calculate_keeper_heuristic(p):
+            candidates.append((score, p))
             
     return min(candidates, key=lambda x: x[0])[1] if candidates else None
 

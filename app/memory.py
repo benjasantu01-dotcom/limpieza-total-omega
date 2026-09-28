@@ -147,14 +147,15 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
 def _safe_int_conversion(value: Optional[str], multiplier: int = 1) -> BytesValue:
     if not value: return BytesValue(0)
     clean_val = "".join(c for c in value if c.isdigit())
-    return BytesValue(int(clean_val) * multiplier) if clean_val else BytesValue(0)
+    # Asegurar que el resultado sea siempre no negativo
+    return BytesValue(max(0, int(clean_val)) * multiplier) if clean_val else BytesValue(0)
 
 def _extract_process_data(pid_raw: str, ws_raw: str) -> Optional[Tuple[int, int]]:
     """Extrae valores numéricos limpios de los campos CSV de PowerShell."""
     try:
         pid = int(''.join(filter(str.isdigit, pid_raw)))
         ws = int(''.join(filter(str.isdigit, ws_raw)))
-        return (pid, ws)
+        return (pid, max(0, ws))
     except (ValueError, TypeError):
         return None
 
@@ -176,8 +177,12 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
             
     total: BytesValue = metrics.get("MemTotal", BytesValue(0))
     if total <= 0: return _EMPTY_SNAPSHOT
-    available = metrics.get("MemAvailable", metrics.get("MemFree", BytesValue(0)))
-    return MemorySnapshot(total=total, available=BytesValue(min(available, total)), cached=metrics.get("Cached", BytesValue(0)))
+    
+    # Validar que MemAvailable no sea mayor que MemTotal
+    avail_raw = metrics.get("MemAvailable", metrics.get("MemFree", BytesValue(0)))
+    available = BytesValue(min(total, avail_raw))
+    
+    return MemorySnapshot(total=total, available=available, cached=metrics.get("Cached", BytesValue(0)))
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     if not raw_csv_text: return []
@@ -230,7 +235,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     now = time.time()
     if (now - _proc_cache_time) > 60:
         try:
-            # Optimizacion: Evitar sort/select en PowerShell; recolectar bruto y filtrar/ordenar en Python es mas eficiente.
             cmd = ['powershell', '-NoProfile', '-NonInteractive', '-Command', 
                    'Get-Process | Where-Object { $_.Id -notin 0,4 } | ForEach-Object { "$($_.Name),$($_.Id),$($_.WorkingSet)" }']
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3, check=False)
@@ -275,7 +279,6 @@ def _get_process_path(pid: int) -> Optional[Path]:
     handle = kernel32.OpenProcess(SAFE_VALIDATION_MASK, False, pid)
     if not handle: return None
     try:
-        # Verificar si el proceso sigue activo antes de intentar consultar la ruta
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return None
@@ -283,7 +286,6 @@ def _get_process_path(pid: int) -> Optional[Path]:
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
             if buf.value:
-                # Usamos Path sin resolver enlaces simbólicos complejos de forma insegura
                 p = Path(buf.value)
                 if p.is_file() and not is_protected_path(str(p)):
                     return p

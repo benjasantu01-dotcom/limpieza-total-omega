@@ -1523,3 +1523,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-28T11:24:47` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_collect_summary_data` y `largest_folders` añadiendo chequeos de integridad contra valores `None` o `0` que podrían desbordar los procesamientos de métricas, además de asegurar que las rutas procesadas en el reporte siempre sean válidas antes de ser utilizadas.
 - `2026-09-28T11:24:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T11:24:47` Corrida terminada. Total usado hoy: 268.
+- `2026-09-28T11:32:37` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-09-28T11:33:06` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación robusta y defensiva en `_calculate_keeper_heuristic` y `suggest_keeper` para prevenir excepciones ante archivos eliminados mientras se procesa el grupo, sustituyendo el acceso directo a `path.stat()` por un manejo de errores más específico y consistente con el enfoque del proyecto.
+- `2026-09-28T11:33:31` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-28T11:33:48` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 1): unexpected indent
+- `2026-09-28T11:34:02` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `parse_windows_process_csv` y `parse_linux_meminfo` mediante la validación estricta de entradas, asegurando que los valores de memoria resultantes nunca sean negativos o inválidos debido a datos de entrada mal formados.
+- `2026-09-28T11:34:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T11:34:02` Corrida terminada. Total usado hoy: 272.

@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 26
 - Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 233
+- Sin respuesta de la IA (error o límite): 234
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-27 | 83 | 19 | 22 | 9 | 103 |
-| 2026-09-28 | 103 | 7 | 21 | 7 | 130 |
+| 2026-09-27 | 80 | 19 | 21 | 9 | 103 |
+| 2026-09-28 | 105 | 7 | 22 | 7 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **46**
+- legibilidad y documentación: **43**
 - seguridad defensiva: **43**
+- manejo de errores y validación de entradas: **35**
 - robustez ante casos límite: **33**
-- manejo de errores y validación de entradas: **33**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **18**
-- `safety.py`: **17**
+- `duplicates.py`: **18**
 - `quarantine.py`: **17**
-- `duplicates.py`: **17**
-- `scanner.py`: **16**
 - `diskreport.py`: **16**
 - `healthscore.py`: **16**
+- `safety.py`: **16**
+- `scanner.py`: **15**
+- `memory.py`: **14**
 - `assistant.py`: **13**
-- `memory.py`: **13**
-- `settings.py`: **11**
+- `settings.py`: **10**
 - `main.py`: **10**
 - `startup.py`: **8**
 - `branding.py`: **8**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-28T11:34:02` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_windows_process_csv` y `parse_linux_meminfo` mediante la validación estricta de entradas, asegurando que los valores de memoria resultantes nunca sean negativos o inválidos debido a datos de entrada mal formados.
+- `2026-09-28T11:33:06` **duplicates.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta y defensiva en `_calculate_keeper_heuristic` y `suggest_keeper` para prevenir excepciones ante archivos eliminados mientras se procesa el grupo, sustituyendo el acceso directo a `path.stat()` por un manejo de errores más específico y consistente con el enfoque del proyecto.
 - `2026-09-28T11:24:47` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_summary_data` y `largest_folders` añadiendo chequeos de integridad contra valores `None` o `0` que podrían desbordar los procesamientos de métricas, además de asegurar que las rutas procesadas en el reporte siempre sean válidas antes de ser utilizadas.
 - `2026-09-28T11:24:26` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `directory_size` y `_resolve_browser_path` añadiendo validaciones explícitas contra rutas vacías o inválidas mediante un chequeo de `Path.parts`, evitando que el uso de `joinpath` con rutas mal formadas (que podrían resultar de entornos mal configurados) genere excepciones o rutas fuera de alcance antes de procesarlas.
 - `2026-09-28T11:23:07` **assistant.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `ingest` para evitar actualizaciones parciales inconsistentes ante datos malformados y añade validación en el acceso a `SystemContext` para asegurar que las métricas solo se procesen si son coherentes, protegiendo al motor de inferencia de estados inválidos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-28T09:31:21` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` implementando un chequeo de integridad basado en `is_safe_to_modify` para cada entrada recolectada, previniendo que rutas potencialmente inseguras sean procesadas durante la iteración recursiva.
 - `2026-09-28T09:31:05` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_excluded_path` añadiendo una comprobación explícita para evitar el seguimiento de puntos de reparse (reparse points) mediante la comprobación del atributo `FILE_ATTRIBUTE_REPARSE_POINT` (0x400) en Windows, garantizando que el escáner no entre en recursión infinita o áreas fuera del alcance previsto a través de junctions o montajes automáticos del SO.
 - `2026-09-28T09:30:36` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la verificación estricta de que cada archivo o subdirectorio escaneado permanezca dentro de la ruta raíz validada, previniendo posibles escapes mediante enlaces simbólicos o manipulaciones de ruta durante el recorrido profundo.
-- `2026-09-28T09:30:10` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `branding.py` mediante la validación estricta de las dimensiones de entrada en los métodos de renderizado y la propagación de excepciones para evitar el procesamiento de datos inválidos en el `Canvas`.
-- `2026-09-28T09:21:09` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación explícita de tipos antes de cada acceso a la estructura JSON, evitando así posibles fallos por tipos inesperados en la respuesta, y forcé un límite estricto de caracteres mediante `_validate_response_length` al retornar el texto extraído.
