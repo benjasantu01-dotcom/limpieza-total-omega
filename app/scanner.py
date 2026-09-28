@@ -74,6 +74,9 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     if entry is None:
         return None
     try:
+        # Validar existencia física del objeto antes de llamar a stat
+        if not entry.exists():
+            return None
         if entry.is_symlink():
             return None
         # Acceso directo para evitar reparse points identificados por atributos
@@ -236,12 +239,11 @@ class Scanner:
                 if self._is_safe_entry(entry, is_dir=True):
                     self._handle_directory(entry, directory_stack)
             
-            # Caso: Archivo. Filtra por relevancia antes de aplicar escaneo heurístico.
+            # Caso: Archivo. Valida existencia física y relevancia antes de procesar.
             elif entry.is_file(follow_symlinks=False):
-                if self._is_relevant_extension(entry.name) and self._is_safe_entry(entry):
+                if entry.exists() and self._is_relevant_extension(entry.name) and self._is_safe_entry(entry):
                     self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError, FileNotFoundError):
-            # Fallo esperado en sistemas de archivos restringidos o protegidos.
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:

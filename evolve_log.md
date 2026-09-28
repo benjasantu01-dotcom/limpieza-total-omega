@@ -1242,3 +1242,41 @@ FAILED evolve/tests/test_modules.py::test_partial_hash_only_reads_the_beginning 
 - `2026-09-28T09:11:14` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido `_is_sparse_file` mediante la constante `FILE_ATTRIBUTE_SPARSE_FILE` (0x200) para reforzar la detección de archivos dispersos que podrían ocultar datos o causar errores de escritura, integrando esta comprobación robusta en la validación de integridad (`_VALIDATORS`) y en los diagnósticos.
 - `2026-09-28T09:11:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T09:11:14` Corrida terminada. Total usado hoy: 216.
+- `2026-09-28T09:19:14` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-09-28T09:19:44` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Mejoré la robustez de `scanner.py` ante errores de lectura de metadatos de archivos (como archivos bloqueados por el sistema o en uso) añadiendo un bloque `try-except` específico dentro de `_safe_stat` y validando la existencia de la ruta antes de procesarla en `process_entry`, evitando que el escáner se interrumpa ante excepciones de sistema.
+- `2026-09-28T09:20:14` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez ante errores de E/S en `save()` y `_load_impl()` al añadir un chequeo explícito de la integridad de la carpeta base, evitando que fallos por permisos denegados o rutas bloqueadas propaguen excepciones inesperadas.
+- `2026-09-28T09:20:43` Tests FALLARON:
+```
+es.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:81: SyntaxWarning: invalid escape sequence '\ '
+    El prefijo \\?\ es necesario para superar limitaciones de MAX_PATH en Windows.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed, 4 warnings in 1.48s
+
+```
+- `2026-09-28T09:20:43` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez ante rutas inválidas o inaccesibles dentro de `StartupEntry` añadiendo una validación explícita para el caso de rutas relativas o mal formadas que no pueden ser resueltas, evitando que el sistema propague valores erróneos o colapse al intentar acceder a propiedades de `Path` inexistentes.
+- `2026-09-28T09:21:09` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación explícita de tipos antes de cada acceso a la estructura JSON, evitando así posibles fallos por tipos inesperados en la respuesta, y forcé un límite estricto de caracteres mediante `_validate_response_length` al retornar el texto extraído.
+- `2026-09-28T09:21:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T09:21:09` Corrida terminada. Total usado hoy: 220.

@@ -697,7 +697,9 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
         part = parts[0]
         if not isinstance(part, dict): return None
         text_val = part.get("text")
-        return str(text_val) if isinstance(text_val, str) else None
+        if isinstance(text_val, str):
+            return _validate_response_length(text_val)
+        return None
     except (AttributeError, TypeError, IndexError, KeyError): 
         return None
 
@@ -723,7 +725,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             raw_text = _extract_text_from_gemini_json(data)
             
             if isinstance(raw_text, str) and _ensure_safe_text(raw_text):
-                return _validate_response_length(raw_text.strip())
+                return raw_text.strip()
             return None
     except (urllib.error.HTTPError, urllib.error.URLError, OSError, ValueError, KeyError, json.JSONDecodeError):
         return None

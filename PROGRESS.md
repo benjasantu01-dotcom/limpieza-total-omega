@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
-- Rechazadas por tests: 27
+- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Rechazadas por tests: 28
 - Rechazadas por guardia de seguridad: 43
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 232
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 228
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-27 | 97 | 21 | 23 | 12 | 135 |
-| 2026-09-28 | 87 | 6 | 20 | 6 | 97 |
+| 2026-09-27 | 97 | 21 | 23 | 12 | 131 |
+| 2026-09-28 | 89 | 7 | 20 | 7 | 97 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **36**
-- robustez ante casos límite: **32**
+- robustez ante casos límite: **33**
+- seguridad defensiva: **32**
 - rendimiento: **31**
-- seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,9 +35,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **17**
 - `diskreport.py`: **16**
 - `healthscore.py`: **16**
-- `scanner.py`: **14**
+- `scanner.py`: **15**
+- `assistant.py`: **13**
 - `memory.py`: **13**
-- `assistant.py`: **12**
 - `settings.py`: **11**
 - `main.py`: **10**
 - `organizer.py`: **8**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-28T09:21:09` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación explícita de tipos antes de cada acceso a la estructura JSON, evitando así posibles fallos por tipos inesperados en la respuesta, y forcé un límite estricto de caracteres mediante `_validate_response_length` al retornar el texto extraído.
+- `2026-09-28T09:19:44` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `scanner.py` ante errores de lectura de metadatos de archivos (como archivos bloqueados por el sistema o en uso) añadiendo un bloque `try-except` específico dentro de `_safe_stat` y validando la existencia de la ruta antes de procesarla en `process_entry`, evitando que el escáner se interrumpa ante excepciones de sistema.
 - `2026-09-28T09:11:14` **safety.py** (robustez ante casos límite): Se ha añadido `_is_sparse_file` mediante la constante `FILE_ATTRIBUTE_SPARSE_FILE` (0x200) para reforzar la detección de archivos dispersos que podrían ocultar datos o causar errores de escritura, integrando esta comprobación robusta en la validación de integridad (`_VALIDATORS`) y en los diagnósticos.
 - `2026-09-28T09:10:25` **quarantine.py** (robustez ante casos límite): Se ha introducido un chequeo de existencia previa del archivo en `_atomic_isolate_file` para evitar race conditions y comportamientos indefinidos ante archivos que cambian de estado durante la ejecución, reforzando la robustez ante concurrencia.
 - `2026-09-28T09:09:43` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `organizer.py` añadiendo chequeos de integridad en las operaciones con rutas (validación de `is_absolute` y existencia de padres) y mejorando el manejo de errores en `_get_win_attributes` para prevenir bloqueos por atributos inesperados.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-28T08:29:46` **quarantine.py** (rendimiento): Optimizé `load_manifest` reemplazando la validación física de archivos (que requiere I/O lento) por un procesamiento en memoria utilizando un diccionario, evitando llamadas repetidas a `exists()` y `stat()` sobre el disco, delegando la integridad física a los métodos que realmente requieren acceder al archivo (como `restore` o `purge`).
 - `2026-09-28T08:28:44` **memory.py** (rendimiento): Se optimizó el rendimiento de `top_memory_processes` eliminando el uso de `Sort-Object` y `Select-Object` dentro de la llamada a PowerShell, moviendo el filtrado y ordenamiento al lado de Python, lo cual reduce drásticamente el tiempo de ejecución del comando y el uso de memoria en la sub-shell.
 - `2026-09-28T08:19:14` **healthscore.py** (rendimiento): Optimicé el cálculo del score evitando la creación innecesaria de objetos `NamedTuple` y funciones `lambda` en tiempo de ejecución, además de reemplazar la re-instanciación del diccionario de desglose por una pre-asignación eficiente.
-- `2026-09-28T08:18:50` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente al consolidar los filtros de seguridad y atributos antes de realizar llamadas costosas al sistema de archivos (`stat`), reduciendo drásticamente la latencia en directorios con gran cantidad de archivos.
-- `2026-09-28T08:09:51` **browser.py** (rendimiento): Optimicé el rendimiento de `directory_size` y `detect_profiles` evitando cálculos redundantes mediante la consolidación del `memo` (para detectar archivos ya contados) y utilizando una única instancia de `kernel32` compartida entre los procesos recursivos, reduciendo la sobrecarga de llamadas a la API de Windows.
