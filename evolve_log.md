@@ -432,3 +432,45 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-28T12:58:21` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Optimicé el acceso al manifiesto en `purge_all` y `restore_item` usando un diccionario (`dict`) en lugar de listas para búsquedas, evitando iteraciones redundantes y mejorando el rendimiento en escenarios con múltiples archivos en cuarentena.
 - `2026-09-28T12:58:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T12:58:21` Corrida terminada. Total usado hoy: 304.
+- `2026-09-28T13:04:32` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-28T13:04:35` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-28T13:05:02` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-09-28T13:05:03` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-28T13:05:06` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-28T13:05:12` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-28T13:06:11` Tests FALLARON:
+```
+aths - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_sensitive_extension_when_explicitly_requested - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - AssertionError: assert {'app.tmp', '...', 'otro.log'} == {'ok.tmp', 'otro.log'}
+  
+  Extra items in the left set:
+  'malo.tmp'
+  'app.tmp'
+  
+  Full diff:
+    {
+  +     'app.tmp',
+  +     'malo.tmp',
+        'ok.tmp',
+        'otro.log',
+    }
+FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason - assert 'protegida' in "'/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0/Windows/x.txt' es candidata a modificación."
+ +  where "'/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0/Windows/x.txt' es candidata a modificación." = <function describe_protection at 0x7fb8febdb740>(((PosixPath('/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0') / 'Windows') / 'x.txt'))
+ +    where <function describe_protection at 0x7fb8febdb740> = safety.describe_protection
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error crítico en restauración: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-1/test_restore_into_a_system_pat0/Windows/System32'
+14 failed, 285 passed in 1.64s
+
+```
+- `2026-09-28T13:06:11` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha optimizado la validación de rutas del sistema reemplazando la comparación mediante `any()` (O(n)) en cada llamada por una búsqueda O(1) usando el set precalculado `_SYSTEM_ROOT_PATHS_TUPLE` y la propiedad `os.path.commonpath` para verificar contención de forma eficiente y robusta frente a casos de prefijos parciales.
+- `2026-09-28T13:06:12` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-28T13:06:15` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-28T13:06:22` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-28T13:06:34` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-28T13:06:50` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-28T13:06:54` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-28T13:07:01` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-28T13:07:29` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _SettingsManager.clear
+- `2026-09-28T13:07:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T13:07:29` Corrida terminada. Total usado hoy: 308.
