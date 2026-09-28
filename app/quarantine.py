@@ -596,7 +596,6 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     try:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
-        # El filtrado ya se hace en load_manifest, devolvemos ordenado por fecha
         return sorted(items, key=lambda x: x.quarantined_at, reverse=True)
     except (OSError, UnsafePathError, PermissionError):
         return []
@@ -667,8 +666,9 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
     if not file_path.exists() or not file_path.is_file() or file_path.is_symlink():
         return False
+    if not _is_within_quarantine_sandbox(file_path.resolve(), base_path.resolve()):
+        return False
     return (
-        is_within_directory(file_path, base_path) and
         item.verify_integrity(file_path) and
         _safe_unlink(file_path, expected_hash=item.sha256)
     )
@@ -698,7 +698,6 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
 
 
 def total_quarantined_bytes(base: PathLike = DEFAULT_QUARANTINE_DIR, items: Optional[List[QuarantineItem]] = None) -> int:
-    # Si ya pasamos los ítems, sumar directamente evita volver a leer el manifiesto
     if items is None:
         items = load_manifest(base)
     return sum(item.size_bytes for item in items)

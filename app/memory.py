@@ -308,10 +308,11 @@ def _get_process_path(pid: int) -> Optional[Path]:
         psapi = ctypes.windll.psapi
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
-            p = Path(buf.value)
-            resolved_p = p.resolve(strict=False)
-            if resolved_p.is_file() and resolved_p.is_absolute() and not is_protected_path(str(resolved_p)):
-                return resolved_p
+            if buf.value:
+                p = Path(buf.value)
+                resolved_p = p.resolve(strict=False)
+                if resolved_p.is_file() and resolved_p.is_absolute() and not is_protected_path(str(resolved_p)):
+                    return resolved_p
     except (ctypes.ArgumentError, OSError, ValueError, TypeError):
         pass
     finally:

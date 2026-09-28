@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **177** (35.1% de aceptación)
+- Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 28
-- Rechazadas por guardia de seguridad: 45
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 229
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-26 | 46 | 4 | 9 | 7 | 72 |
+| 2026-09-26 | 46 | 4 | 9 | 7 | 68 |
 | 2026-09-27 | 122 | 24 | 34 | 17 | 153 |
-| 2026-09-28 | 9 | 0 | 2 | 1 | 4 |
+| 2026-09-28 | 11 | 0 | 3 | 1 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
-- seguridad defensiva: **38**
+- seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **35**
 - robustez ante casos límite: **29**
 - rendimiento: **26**
@@ -33,12 +33,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **20**
 - `diskreport.py`: **18**
 - `duplicates.py`: **17**
+- `quarantine.py`: **17**
 - `browser.py`: **16**
-- `quarantine.py`: **16**
 - `healthscore.py`: **15**
 - `settings.py`: **14**
 - `scanner.py`: **14**
-- `memory.py`: **12**
+- `memory.py`: **13**
 - `assistant.py`: **11**
 - `organizer.py`: **8**
 - `main.py`: **6**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-28T00:50:23` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `purge_all` implementando una validación estricta de la ruta del archivo (`is_within_quarantine_sandbox`) y validación de hash antes de cualquier operación de borrado, asegurando que solo se eliminen los archivos que coinciden exactamente con el manifiesto dentro del sandbox definido.
+- `2026-09-28T00:49:18` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva al invocar `OpenProcess` introduciendo una lógica de manejo de errores más específica tras la llamada a `GetModuleFileNameExW`, garantizando que se cierren correctamente los handles de procesos en todos los casos de falla y validando la integridad del buffer de retorno antes de procesarlo.
 - `2026-09-28T00:40:04` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del motor `healthscore.py` ante datos de entrada maliciosos o corruptos, aplicando una validación más estricta en `SystemMetrics` y sanitizando las recomendaciones para prevenir inyecciones de texto que pudieran corromper la interfaz.
 - `2026-09-28T00:39:36` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` para asegurar que el escaneo no siga enlaces simbólicos, previniendo así posibles escapes de la carpeta raíz analizada (traversal) y recursiones infinitas, alineándose estrictamente con la política de seguridad requerida.
 - `2026-09-28T00:39:09` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` asegurando que el chequeo de rutas se realice de manera más robusta frente a errores de resolución de nombres y verificando explícitamente que los archivos no sean puntos de reparse (reparse points) además de enlaces simbólicos, evitando así recursiones infinitas o acceso a volúmenes montados fuera del alcance esperado.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-27T14:46:57` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación robusta mediante `try-except` en `_is_file_locked` y `_validate_and_resolve_path` para manejar situaciones donde el acceso a archivos falla debido a condiciones de carrera (archivos que desaparecen durante el escaneo), evitando que el bucle de procesamiento se detenga inesperadamente.
 - `2026-09-27T14:38:14` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en `walk_files` y `_collect_summary_data` manejando explícitamente archivos bloqueados o inaccesibles que lanzan `OSError` durante la lectura de metadatos, evitando que una excepción puntual interrumpa el escaneo completo de un directorio.
 - `2026-09-27T14:37:00` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` ante datos de entrada malformados (como tipos inesperados o estructuras profundamente anidadas) agregando validaciones preventivas adicionales y asegurando que las actualizaciones de atributos no dejen al objeto en un estado parcial o inconsistente en caso de error.
-- `2026-09-27T14:26:50` **safety.py** (rendimiento): Se introdujo una cache de resultados en `_is_protected_path_raw` (previamente `_is_system_path_raw`) mediante `lru_cache` y se optimizó `_is_system_path_raw` reemplazando la iteración secuencial con una comparación más eficiente de prefijos de cadena tras la normalización, reduciendo la carga de CPU durante escaneos masivos de disco.
-- `2026-09-27T14:17:28` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño total y el listado de archivos en cuarentena reemplazando la lectura repetitiva del manifiesto y el uso de `.iterdir()` con una lógica de caché de objetos y conjuntos (sets) que evita iteraciones redundantes y llamadas innecesarias al sistema de archivos.
