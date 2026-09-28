@@ -261,10 +261,12 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str, is_junction_fn: Jun
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Une la base con el path relativo y verifica integridad."""
     try:
-        target = real_base.joinpath(*rel_str.split("\\")).resolve(strict=True)
-        if _is_path_inside_base(str(target), str(real_base)) and \
-           is_safe_to_modify(target) and not is_protected_path(target):
-            return target
+        target = real_base.joinpath(*rel_str.split("\\"))
+        if target.exists():
+            target = target.resolve(strict=True)
+            if _is_path_inside_base(str(target), str(real_base)) and \
+               is_safe_to_modify(target) and not is_protected_path(target):
+                return target
     except (OSError, RuntimeError):
         pass
     return Path()
