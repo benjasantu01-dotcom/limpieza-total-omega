@@ -74,9 +74,11 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     Returns:
         os.stat_result si el archivo es local y accesible, None si es reparse point o inaccesible.
     """
-    if entry is None or (entry.is_symlink() or _get_file_attributes(entry) & LIMITS.reparse_point_attr_mask):
+    if entry is None:
         return None
     try:
+        if not entry.exists() or entry.is_symlink() or _get_file_attributes(entry) & LIMITS.reparse_point_attr_mask:
+            return None
         return entry.stat(follow_symlinks=False)
     except (OSError, PermissionError, AttributeError):
         return None

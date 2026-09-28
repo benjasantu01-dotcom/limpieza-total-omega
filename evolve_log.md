@@ -1817,3 +1817,12 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-28T00:14:01` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Se ha añadido un chequeo de integridad en `restore_item` para verificar que el espacio libre sea suficiente antes de realizar la operación de restauración, previniendo errores de sistema de archivos (como discos llenos a mitad de proceso) mediante `_ensure_disk_space`.
 - `2026-09-28T00:14:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T00:14:01` Corrida terminada. Total usado hoy: 4.
+- `2026-09-28T00:18:17` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-09-28T00:19:19` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-28T00:20:13` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-28T00:21:13` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-28T00:21:59` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante rutas inexistentes o mal formadas en `_is_system_or_hidden` y `_is_volume_readonly` añadiendo validaciones de existencia física y manejo de excepciones, evitando errores inesperados en el bucle de escaneo.
+- `2026-09-28T00:22:29` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante archivos inexistentes o eliminados durante el recorrido (race conditions comunes en escaneos de disco) mediante el uso de bloques `try-except` granulares en `_safe_stat` y la adición de una validación de existencia explícita antes de invocar `entry.stat()` en `_safe_stat`, evitando así excepciones no controladas cuando un archivo desaparece justo después de ser listado por `os.scandir`.
+- `2026-09-28T00:22:54` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante escenarios de corrupción o archivos inaccesibles, asegurando que `_load_impl` verifique explícitamente el tamaño del archivo y el estado de los permisos antes de intentar cualquier operación de lectura, y centralizando la lógica de recuperación ante errores de disco.
+- `2026-09-28T00:22:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T00:22:54` Corrida terminada. Total usado hoy: 8.

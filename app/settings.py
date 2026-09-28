@@ -313,16 +313,16 @@ def _is_file_secure_to_read(ruta: Path) -> bool:
 
 def _load_impl(ruta: Path) -> AppSettings:
     """Lógica interna de carga: lee el archivo JSON y lo normaliza aplicando los defaults si hay error."""
+    if not _is_file_secure_to_read(ruta):
+        return DEFAULTS.copy()
     try:
-        if _is_file_secure_to_read(ruta):
-            with open(ruta, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            if _is_dict(data):
-                validated_data = validate(data)
-                return _coerce_and_verify(validated_data)
-        return DEFAULTS.copy()
+        with open(ruta, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        if _is_dict(data):
+            return _coerce_and_verify(validate(data))
     except (OSError, PermissionError, IOError, json.JSONDecodeError, UnicodeDecodeError):
-        return DEFAULTS.copy()
+        pass
+    return DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga los ajustes desde el disco, utilizando caché de tiempo de modificación (mtime)."""

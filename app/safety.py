@@ -253,7 +253,7 @@ def _has_alternate_data_stream(path_name: str) -> bool:
 
 def _is_system_or_hidden(path_str: str) -> bool:
     """Determina si un archivo tiene atributos de sistema, oculto u offline."""
-    if not os.path.isabs(path_str): return False
+    if not os.path.exists(path_str): return False
     attrs = _get_file_attrs(path_str)
     return bool(attrs & (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | Win32Attr.TEMPORARY))
 
@@ -264,12 +264,12 @@ def _is_reparse_point(path_str: str) -> bool:
 
 def _is_encrypted_or_compressed_or_sparse(path_str: str) -> bool:
     """Detecta flags de cifrado, compresión o archivos dispersos (sparse)."""
-    if os.name != 'nt': return False
+    if os.name != 'nt' or not os.path.exists(path_str): return False
     return bool(_get_file_attrs(path_str) & (Win32Attr.COMPRESSED | Win32Attr.ENCRYPTED | Win32Attr.SPARSE_FILE))
 
 def _is_offline(path_str: str) -> bool:
     """Detecta si un archivo es un marcador de posición de nube (offline)."""
-    if os.name != 'nt': return False
+    if os.name != 'nt' or not os.path.exists(path_str): return False
     return bool(_get_file_attrs(path_str) & Win32Attr.OFFLINE)
 
 @lru_cache(maxsize=1024)
@@ -293,6 +293,7 @@ def _is_volume_readonly(path_str: Optional[str]) -> bool:
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str or _is_path_too_long(path_str): return False
     try:
         root = os.path.splitdrive(path_str)[0] + "\\"
+        if not os.path.exists(root): return False
         flags = ctypes.c_ulong()
         if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0):
             return bool(flags.value & 0x80000)
