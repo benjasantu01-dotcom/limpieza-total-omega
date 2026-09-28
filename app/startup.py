@@ -326,8 +326,9 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             if val_name is None or val_cmd is None:
                 continue
             
-            name: str = "".join(c for c in str(val_name) if ord(c) >= 32).strip()
-            cmd: str = "".join(c for c in str(val_cmd) if ord(c) >= 32).strip()
+            raw_n, raw_c = str(val_name), str(val_cmd)
+            name: str = "".join(c for c in raw_n if ord(c) >= 32).strip()
+            cmd: str = "".join(c for c in raw_c if ord(c) >= 32).strip()
             
             if _is_valid_registry_entry(name, cmd, seen_commands):
                 seen_commands.add(cmd)

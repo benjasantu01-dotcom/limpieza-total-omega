@@ -383,7 +383,7 @@ class SystemContext:
         if not (isinstance(source, dict) or hasattr(source, "__dict__")) or _is_input_too_deep_or_complex(source):
             return False
         
-        updates = {}
+        updates: dict[str, Any] = {}
         for key, spec in _VALIDATORS.items():
             val = self._apply_field(source, key, spec)
             if val is not None:
@@ -519,7 +519,7 @@ def explain_area(area: Any) -> str:
     return _validate_response_length(_EXPLANATION_MAP.get(area.strip().lower(), "No tengo una explicación para esa área."))
 
 @lru_cache(maxsize=32)
-def _format_problem_message(problems: tuple[str, ...], score: Union[int, str]) -> str:
+def _format_problem_message(problems: tuple[str, ...], score: int | str) -> str:
     """Crea una oración descriptiva basada en los problemas activos."""
     clean_score = str(score)
     if not problems:
@@ -631,7 +631,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     cuerpo = _format_problem_message(context.active_problems, context.score or "N/A")
     return Answer(_validate_response_length(cuerpo), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
 
-def available(base: Union[str, Path, None] = None) -> bool:
+def available(base: str | Path | None = None) -> bool:
     """Determina si la consulta remota a IA está habilitada en la configuración."""
     try:
         return settings.assistant_enabled(base)
@@ -728,8 +728,8 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     except (urllib.error.HTTPError, urllib.error.URLError, OSError, ValueError, KeyError, json.JSONDecodeError):
         return None
 
-def ask(question: str, context: Optional[SystemContext] = None,
-        base: Union[str, Path, None] = None) -> Answer:
+def ask(question: str, context: SystemContext | None = None,
+        base: str | Path | None = None) -> Answer:
     """Punto de acceso unificado para el usuario: orquesta motores locales y remotos."""
     if not _ensure_safe_text(question):
         return Answer("Entrada no válida.")
