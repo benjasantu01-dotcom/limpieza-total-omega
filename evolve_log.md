@@ -708,3 +708,4 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-09-28T16:29:08` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-28T16:39:26` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-28T16:49:38` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-09-28T16:59:49` Presupuesto diario agotado (350 usados). Corte hasta mañana.
