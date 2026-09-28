@@ -356,7 +356,8 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineIte
     try:
         base_dir = quarantine_dir(base)
         m_path = _manifest_path(base_dir)
-        if not m_path.exists() or m_path.stat().st_size == 0:
+        # Verificamos si existe el archivo y si tiene contenido antes de intentar abrirlo
+        if not m_path.exists() or not m_path.is_file() or m_path.stat().st_size == 0:
             return []
         with open(m_path, "r", encoding="utf-8") as f:
             data = json.load(f)

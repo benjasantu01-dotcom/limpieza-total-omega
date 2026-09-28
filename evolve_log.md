@@ -496,3 +496,12 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-09-28T13:28:06` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-09-28T13:28:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T13:28:06` Corrida terminada. Total usado hoy: 316.
+- `2026-09-28T13:35:06` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-28T13:35:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-28T13:35:41` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_get_process_path` ante procesos que finalizan durante la consulta y añadí validación estricta para evitar intentos de `OpenProcess` con handles nulos, previniendo errores de estado inconsistente al manipular memoria.
+- `2026-09-28T13:36:15` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de las operaciones de disco en `organizer.py` mediante la implementación de una verificación de integridad ante archivos truncados o con metadatos inconsistentes (ej. tamaño negativo o fechas futuras), evitando fallos en tiempo de ejecución durante el escaneo y procesamiento.
+- `2026-09-28T13:36:16` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-28T13:37:00` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `quarantine.py` ante fallos de I/O al verificar la existencia y el estado de los archivos de manifiesto durante la carga inicial, previniendo errores de `OSError` o `PermissionError` que podrían dejar al sistema en un estado inconsistente al intentar iterar sobre rutas inexistentes o inaccesibles.
+- `2026-09-28T13:37:19` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-28T13:37:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T13:37:19` Corrida terminada. Total usado hoy: 320.

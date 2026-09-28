@@ -285,6 +285,7 @@ def _get_process_path(pid: int) -> Optional[Path]:
     if not handle: return None
     try:
         exit_code = ctypes.c_ulong()
+        # Verificamos si el proceso sigue vivo antes de intentar consultar el módulo
         if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return None
         psapi = ctypes.windll.psapi

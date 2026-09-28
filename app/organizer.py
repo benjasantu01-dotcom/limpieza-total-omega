@@ -177,7 +177,9 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if not os.access(src, os.R_OK): return False
         
         stats = src.stat()
+        # Validación de integridad de metadatos: tamaño no negativo y fecha no futura
         if not (0 <= stats.st_size < MAX_FILE_SIZE_BYTES): return False
+        if stats.st_mtime > datetime.now().timestamp() + 3600: return False
         return not _is_file_locked(src)
     except (OSError, RuntimeError, AttributeError):
         return False
@@ -192,8 +194,9 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> boo
     return True
 
 def _is_valid_junk_entry(entry: os.DirEntry, stats: os.stat_result) -> bool:
-    """Verifica si una entrada de directorio califica como basura."""
+    """Verifica si una entrada de directorio califica como basura, validando integridad."""
     return (0 <= stats.st_size < MAX_FILE_SIZE_BYTES and 
+            stats.st_mtime <= datetime.now().timestamp() + 3600 and
             not (_get_win_attributes(entry) & WIN_ATTR_MASK) and
             is_valid_junk_extension(entry.name))
 
