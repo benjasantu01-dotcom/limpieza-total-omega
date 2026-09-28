@@ -1899,7 +1899,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Valida que una configuración sea un número entero positivo."""
         try:
             if value is None: return default
-            # `_safe_get_entry_value` ya devuelve int o default
             val = int(value)
             return val if val >= 0 else default
         except (ValueError, TypeError):

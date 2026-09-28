@@ -1083,3 +1083,10 @@ FAILED evolve/tests/test_assistant.py::test_ram_question_debunks_the_ram_cleaner
 - `2026-09-28T06:58:03` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-28T06:58:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T06:58:03` Corrida terminada. Total usado hoy: 164.
+- `2026-09-28T07:06:33` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-09-28T07:07:03` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_evaluate_rules` mediante la validación proactiva de sus entradas y agregué una guarda explícita para evitar errores de ejecución en la creación de mensajes de recomendación, asegurando que el pipeline no falle ante datos inesperados.
+- `2026-09-28T07:08:17` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las validaciones de entrada en los campos de texto (`on_trim_process`, `on_restore_quarantine` y `on_save_settings`) centralizando la sanitización de caracteres y asegurando que los valores numéricos y alfanuméricos sean validados antes de procesar cualquier lógica que dependa de ellos, evitando inyecciones o errores de tipo inesperados.
+- `2026-09-28T07:08:43` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-28T07:08:53` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-28T07:08:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T07:08:53` Corrida terminada. Total usado hoy: 168.

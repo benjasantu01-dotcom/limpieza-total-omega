@@ -235,18 +235,22 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     """
     Ejecuta reglas de recomendación para un área, aplicando filtros de seguridad al mensaje generado.
     """
+    if not isinstance(metrics, SystemMetrics) or not isinstance(rules, tuple):
+        return
+
     for rule in rules:
         try:
+            if not callable(rule.check) or not callable(rule.message_factory):
+                continue
             if rule.check(metrics, ratio):
-                try:
-                    raw_msg: str = str(rule.message_factory(metrics))
-                except Exception:
+                raw_msg = rule.message_factory(metrics)
+                if not isinstance(raw_msg, str):
                     continue
                 # Sanitización: mantener solo caracteres imprimibles y limitar longitud
                 clean_msg: str = "".join(c for c in raw_msg if c.isprintable()).strip()
                 if clean_msg:
                     findings.append(clean_msg[:200])
-        except (AttributeError, TypeError, ValueError, ZeroDivisionError, ArithmeticError):
+        except Exception:
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
