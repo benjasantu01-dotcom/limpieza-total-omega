@@ -8,36 +8,36 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **171** (33.9% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 41
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 243
+- Sin respuesta de la IA (error o límite): 242
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-26 | 30 | 2 | 4 | 3 | 51 |
+| 2026-09-26 | 27 | 2 | 4 | 3 | 50 |
 | 2026-09-27 | 122 | 24 | 34 | 17 | 153 |
-| 2026-09-28 | 19 | 1 | 3 | 2 | 39 |
+| 2026-09-28 | 22 | 1 | 4 | 2 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **42**
 - legibilidad y documentación: **42**
-- manejo de errores y validación de entradas: **33**
+- manejo de errores y validación de entradas: **36**
 - robustez ante casos límite: **29**
-- rendimiento: **25**
+- rendimiento: **22**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **18**
+- `safety.py`: **19**
 - `quarantine.py`: **18**
-- `safety.py`: **18**
-- `diskreport.py`: **17**
-- `browser.py`: **15**
+- `duplicates.py`: **17**
+- `diskreport.py`: **16**
+- `scanner.py`: **15**
 - `healthscore.py`: **14**
-- `scanner.py`: **14**
-- `settings.py`: **13**
+- `browser.py`: **14**
+- `settings.py`: **14**
 - `memory.py`: **11**
 - `assistant.py`: **9**
 - `main.py`: **7**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-28T02:53:29` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_load_impl` y `save` eliminando el riesgo de silenciamiento accidental de excepciones críticas de sistema mediante un manejo de errores más específico y consistente con la regla de no ignorar fallos de I/O en operaciones críticas.
+- `2026-09-28T02:53:12` **scanner.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `_safe_stat` y `_get_file_attributes` para prevenir bloqueos silenciosos mediante excepciones más específicas y validación previa de tipos, asegurando que el escáner no aborte ante archivos inaccesibles o bloqueados por el sistema operativo.
+- `2026-09-28T02:52:43` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `_get_path_stat_robust` para manejar de forma más precisa el caso donde `os.stat` falla debido a permisos, permitiendo que las herramientas de diagnóstico reporten el error específico en lugar de un genérico `IO_ERROR`.
 - `2026-09-28T02:44:05` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` envolviendo las operaciones de archivo en un bloque `try-finally` para asegurar que, ante cualquier excepción durante la transferencia, el archivo temporal (si existe) sea eliminado correctamente, evitando la acumulación de basura en el sistema y dejando el estado limpio para futuras iteraciones.
 - `2026-09-28T02:42:48` **main.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `on_trim_process` y `on_restore_quarantine` mediante validaciones adicionales y el uso consistente de `try-except` para evitar que entradas malformadas o procesos inexistentes provoquen cierres inesperados o estados inconsistentes en la UI.
 - `2026-09-28T02:32:55` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `summarize` reemplazando chequeos tipo `isinstance` por una validación más estricta mediante el método `is_finite` de `SystemMetrics` y capturando excepciones de forma granular durante la ejecución del pipeline para evitar el colapso del informe ante datos malformados.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-28T00:49:18` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva al invocar `OpenProcess` introduciendo una lógica de manejo de errores más específica tras la llamada a `GetModuleFileNameExW`, garantizando que se cierren correctamente los handles de procesos en todos los casos de falla y validando la integridad del buffer de retorno antes de procesarlo.
 - `2026-09-28T00:40:04` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del motor `healthscore.py` ante datos de entrada maliciosos o corruptos, aplicando una validación más estricta en `SystemMetrics` y sanitizando las recomendaciones para prevenir inyecciones de texto que pudieran corromper la interfaz.
 - `2026-09-28T00:39:36` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` para asegurar que el escaneo no siga enlaces simbólicos, previniendo así posibles escapes de la carpeta raíz analizada (traversal) y recursiones infinitas, alineándose estrictamente con la política de seguridad requerida.
-- `2026-09-28T00:39:09` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` asegurando que el chequeo de rutas se realice de manera más robusta frente a errores de resolución de nombres y verificando explícitamente que los archivos no sean puntos de reparse (reparse points) además de enlaces simbólicos, evitando así recursiones infinitas o acceso a volúmenes montados fuera del alcance esperado.
-- `2026-09-28T00:30:42` **browser.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_process_file_entry` añadiendo una comprobación explícita mediante `is_safe_to_modify` para los archivos individuales, no solo para los directorios, asegurando que cada nodo recorrido cumpla con las políticas de seguridad antes de realizar cualquier operación de acceso o cálculo.
-- `2026-09-28T00:29:47` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de la ingesta de datos en `SystemContext` aplicando `is_protected_path` sobre el contenido de `grade`, evitando que una inyección en los ajustes del usuario pueda ser interpretada como una ruta de sistema si la lógica de la UI intenta procesarla posteriormente.

@@ -302,13 +302,9 @@ def _is_file_secure_to_read(ruta: Path) -> bool:
     try:
         if not ruta.is_absolute(): return False
         st = ruta.lstat()
-        # Verificar que sea archivo regular y no un enlace/punto de reparse
         if not stat.S_ISREG(st.st_mode) or _Validators._is_reparse_point(ruta): return False
-        # Verificar permisos (prohibir ejecución, asegurar lectura/escritura)
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH): return False
-        # Chequeo lógico contra safety
         if not is_safe_to_modify(str(ruta)): return False
-        # Validar dueño si el SO lo soporta
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
         return True
@@ -343,24 +339,23 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     
     for r in [ruta, ruta.with_suffix(".bak")]:
         try:
-            settings = _load_impl(r)
-            current_mtime = r.stat().st_mtime if r.exists() else 0.0
-            _MANAGER.cache[cache_key] = (current_mtime, settings)
-            return settings.copy()
+            if r.exists():
+                settings = _load_impl(r)
+                _MANAGER.cache[cache_key] = (r.stat().st_mtime, settings)
+                return settings.copy()
         except (OSError, PermissionError):
             continue
     return DEFAULTS.copy()
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """Asegura consistencia de tipos y reglas de negocio, revirtiendo a defaults ante inconsistencias."""
+    final: AppSettings = DEFAULTS.copy()
     try:
-        final: AppSettings = DEFAULTS.copy()
         for key, expected_type in DEFAULTS.items():
             val = settings.get(key)
             if val is not None and isinstance(val, type(expected_type)):
-                final[key] = val # type: ignore
+                final[key] = val
         
-        # Validaciones de consistencia cruzada
         if final["asistente_activado"] and not (final["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
             final["asistente_activado"] = False
         return final
@@ -372,6 +367,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
     parent = ruta.parent
+    
     try:
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         if not os.access(parent, os.W_OK) or _Validators._is_reparse_point(parent): return None
@@ -397,13 +393,11 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             os.replace(ruta, bak_path)
         
         os.replace(temp_path, ruta)
-        
-        if not _is_file_secure_to_read(ruta):
-            raise PermissionError("Error de integridad final.")
+        if not _is_file_secure_to_read(ruta): raise PermissionError("Integrity check failed")
             
         _MANAGER.clear()
         return ruta
-    except (OSError, IOError, PermissionError, AttributeError): 
+    except (OSError, IOError, PermissionError): 
         return None
     finally:
         if temp_path.exists() and is_safe_to_modify(str(temp_path)):

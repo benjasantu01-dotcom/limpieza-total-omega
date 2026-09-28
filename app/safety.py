@@ -191,7 +191,7 @@ SENSITIVE_EXTENSIONS: Final[frozenset[str]] = frozenset({
 })
 
 _SYSTEM_ROOT_PATHS: Final[tuple[str, ...]] = tuple(
-    os.path.normcase(os.environ[v]) for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
+    os.normcase(os.environ[v]) for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
     if os.environ.get(v)
 )
 
@@ -377,10 +377,9 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
     if not path.exists():
         raise UnsafePathError(f"Ruta inexistente: {path.name}", SafetyValidationErrorCode.IO_ERROR)
     try:
-        st = path.stat()
-        return st
+        return path.stat()
     except PermissionError:
-        raise UnsafePathError(f"Acceso denegado a metadatos: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+        raise UnsafePathError(f"Permisos insuficientes para acceder a metadatos: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     except OSError as e:
         raise UnsafePathError(f"Error de sistema al leer {path.name}: {e.strerror}", SafetyValidationErrorCode.IO_ERROR)
 

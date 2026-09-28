@@ -68,19 +68,17 @@ SYSTEM32_LOWER: Final[str] = "system32"
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """
     Obtiene metadatos del archivo sin seguir enlaces simbólicos (evita escapes del sandbox).
-    
-    Args:
-        entry: Entrada del sistema de archivos a evaluar.
-    Returns:
-        os.stat_result si el archivo es local y accesible, None si es reparse point o inaccesible.
     """
     if entry is None:
         return None
     try:
-        if not entry.exists() or entry.is_symlink() or _get_file_attributes(entry) & LIMITS.reparse_point_attr_mask:
+        if entry.is_symlink():
+            return None
+        # Acceso directo para evitar reparse points identificados por atributos
+        if _get_file_attributes(entry) & LIMITS.reparse_point_attr_mask:
             return None
         return entry.stat(follow_symlinks=False)
-    except (OSError, PermissionError, AttributeError):
+    except (OSError, PermissionError):
         return None
 
 def _get_file_attributes(entry: os.DirEntry) -> int:
@@ -88,7 +86,9 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
     Extrae la máscara de bits de atributos (Windows File Attributes) del archivo.
     """
     try:
-        return entry.stat(follow_symlinks=False).st_file_attributes # type: ignore
+        # st_file_attributes es específico de Windows y puede no estar presente en toda entrada
+        stat_res = entry.stat(follow_symlinks=False)
+        return getattr(stat_res, "st_file_attributes", 0)
     except (AttributeError, OSError):
         return 0
 
@@ -154,7 +154,6 @@ ALL_CHECKS: Final[List[SuspicionCheck]] = [
 class Scanner:
     """
     Coordinador de escaneo recursivo basado en pila para recorrer el sistema de archivos.
-    Mantiene el estado de rutas visitadas y resultados encontrados durante el ciclo.
     """
     def __init__(self, base_root: Path) -> None:
         self.results: List[Suspicion] = []
@@ -183,7 +182,6 @@ class Scanner:
     def _is_safe_entry(self, entry: os.DirEntry, is_dir: bool = False) -> bool:
         """
         Realiza una validación de seguridad de la entrada con caché de directorios protegidos.
-        Retorna True si la entrada puede ser analizada o descendida.
         """
         if not entry or not entry.path or not entry.name:
             return False
@@ -193,10 +191,9 @@ class Scanner:
             return False
         if self._is_reparse_point(entry) or entry.is_symlink():
             return False
-        if not is_dir and not entry.is_file():
-            return False
         
         try:
+            # os.access no sigue symlinks y es seguro
             if not os.access(entry.path, os.R_OK):
                 return False
             
@@ -223,12 +220,9 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """
-        Procesa una entrada detectada durante el escaneo: si es carpeta, la apila;
-        si es archivo relevante, aplica heurísticas.
+        Procesa una entrada detectada durante el escaneo.
         """
         try:
-            if not entry.exists():
-                return
             if entry.is_dir(follow_symlinks=False):
                 if self._is_safe_entry(entry, is_dir=True):
                     self._handle_directory(entry, directory_stack)
@@ -240,8 +234,6 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta toda la suite de heurísticas sobre el archivo especificado."""
-        if not path.exists():
-            return
         for check_fn in ALL_CHECKS:
             try:
                 finding = check_fn(path, entry, self.now_ts)
@@ -254,9 +246,8 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     """Escaneo puntual de un archivo individual contra todas las reglas heurísticas."""
     if not isinstance(path, Path): return []
     try:
-        if not path.exists() or not os.access(path, os.R_OK): return []
+        if not path.is_file() or not os.access(path, os.R_OK): return []
         if is_protected_path(path.resolve()): return []
-        if not path.is_file(): return []
     except (OSError, PermissionError): return []
     
     findings: List[Suspicion] = []
@@ -277,9 +268,8 @@ def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
     
     try:
         base_path = Path(path_str).resolve()
-        if not base_path.exists() or not base_path.is_dir() or base_path.is_symlink():
+        if not base_path.is_dir() or base_path.is_symlink() or not os.access(base_path, os.R_OK):
             return []
-        if not os.access(base_path, os.R_OK): return []
         if is_protected_path(base_path): return []
     except (OSError, RuntimeError): 
         return []
@@ -293,7 +283,7 @@ def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     scanner.process_entry(entry, directory_stack)
-        except (PermissionError, OSError, FileNotFoundError):
+        except (PermissionError, OSError):
             continue
     return scanner.results
 
