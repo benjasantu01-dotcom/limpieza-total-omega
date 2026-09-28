@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 46
-- Sin cambios (nada sustancial que mejorar): 18
+- Rechazadas por guardia de seguridad: 45
+- Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-27 | 64 | 13 | 19 | 8 | 88 |
-| 2026-09-28 | 127 | 11 | 27 | 10 | 137 |
+| 2026-09-27 | 63 | 13 | 18 | 7 | 87 |
+| 2026-09-28 | 130 | 11 | 27 | 10 | 138 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - manejo de errores y validación de entradas: **39**
-- seguridad defensiva: **36**
+- seguridad defensiva: **35**
+- robustez ante casos límite: **34**
 - rendimiento: **32**
-- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **18**
+- `duplicates.py`: **19**
 - `safety.py`: **18**
 - `browser.py`: **18**
-- `quarantine.py`: **17**
-- `healthscore.py`: **17**
-- `diskreport.py`: **16**
+- `healthscore.py`: **18**
+- `diskreport.py`: **17**
+- `quarantine.py`: **16**
 - `scanner.py`: **16**
 - `memory.py`: **15**
 - `assistant.py`: **12**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-28T13:26:40` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` ante valores extremos o métricas no inicializadas, asegurando que `_PIPELINE_MAP` acceda de forma segura y que la suma de pesos se mantenga consistente incluso si fallara la validación previa del diccionario.
+- `2026-09-28T13:26:09` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez del módulo `duplicates.py` ante fallos de I/O y accesos denegados incorporando manejo de excepciones específico en las operaciones de lectura dentro de `hash_file` y `partial_hash`, evitando que una caída en la lectura de un bloque interrumpa el proceso de comparación.
+- `2026-09-28T13:25:31` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo chequeos de errores ante archivos bloqueados o inaccesibles durante el escaneo recursivo, evitando que excepciones de E/S interrumpan el reporte.
 - `2026-09-28T13:16:55` **branding.py** (robustez ante casos límite): Se reforzó la robustez en `draw_ring` ante posibles desbordamientos matemáticos o valores `nan`/`inf` en el cálculo de los arcos, garantizando que una entrada inesperada no interrumpa el renderizado de la UI.
 - `2026-09-28T12:57:31` **memory.py** (rendimiento): Se optimizó el proceso de recolección de memoria de los procesos (top_memory_processes) reemplazando la lógica de parseo basada en iteración de strings por una pre-compilación de la lógica de extracción y evitando el cálculo redundante de `sorted()` mediante una estructura de datos más eficiente (un `heapq` para mantener solo el top N en lugar de ordenar toda la lista).
 - `2026-09-28T12:46:10` **healthscore.py** (rendimiento): Optimicé el cálculo del score evitando la creación innecesaria de objetos `SystemMetrics` mediante la validación in-situ y reemplacé la iteración sobre `_PIPELINE` por una búsqueda directa mediante un diccionario, reduciendo la complejidad de búsqueda de O(N) a O(1) durante el procesamiento.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-28T12:25:38` **safety.py** (legibilidad y documentación): Se han mejorado los docstrings de las funciones de validación para especificar explícitamente el PORQUÉ de cada comprobación, aclarando la intención de seguridad detrás de los filtros de bajo nivel y facilitando el mantenimiento.
 - `2026-09-28T12:24:26` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `quarantine.py` mediante la normalización de docstrings, la conversión de chequeos implícitos en métodos de ayuda auto-explicativos y la clarificación de las responsabilidades en las transacciones de archivos, facilitando el mantenimiento a futuro sin alterar la lógica de seguridad.
 - `2026-09-28T12:15:24` **organizer.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints más precisos, documentación clara con formato Google Docstring y la consolidación de las constantes de validación de archivos para evitar números mágicos, facilitando el mantenimiento futuro y la auditoría de seguridad.
-- `2026-09-28T12:15:13` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings descriptivos en las funciones de diagnóstico y conversión de tipos, especificando las unidades de medida y las condiciones de error, para facilitar el mantenimiento y la comprensión de las métricas de memoria.
-- `2026-09-28T12:13:55` **healthscore.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando formalmente `SystemMetrics` y `PipelineEntry` mediante docstrings detallados, eliminando ambigüedades en la estructura de datos que sostiene la lógica de negocio.
-- `2026-09-28T12:05:11` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en funciones críticas y la clarificación de tipos, asegurando que las responsabilidades de cada paso en el pipeline de hashing sean evidentes para futuros colaboradores, manteniendo la integridad del código.

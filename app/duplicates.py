@@ -144,12 +144,6 @@ def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo leyendo por bloques.
-    
-    Args:
-        path: Ruta al archivo a procesar.
-        chunk_size: Tamaño de lectura por iteración para control de memoria.
-    Returns:
-        String hexadecimal del hash o None si la lectura es insegura o falla.
     """
     if chunk_size <= 0:
         return None
@@ -174,12 +168,6 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Calcula un hash SHA256 rápido usando solo el inicio del archivo.
-    
-    Args:
-        path: Ruta al archivo.
-        read_bytes: Cantidad de bytes a leer del inicio.
-    Returns:
-        Hash hexadecimal o None en caso de error.
     """
     if read_bytes <= 0:
         return None
@@ -246,7 +234,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     Escaneo recursivo profundo usando os.scandir y evitando resoluciones innecesarias.
     """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
-    visited_paths: set[str] = set()
     stack: List[str] = [str(r) for d in directories if (r := _resolve_and_verify_root(d))]
 
     while stack:
@@ -290,11 +277,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
-    Pipeline de hashing jerárquico para optimizar el rendimiento:
-    
-    1. Si size <= PARTIAL_READ_BYTES: Usa hash completo directo.
-    2. Si size > PARTIAL_READ_BYTES: Usa hash parcial y luego hash completo
-       solo en las colisiones detectadas (reduciendo drásticamente el I/O).
+    Pipeline de hashing jerárquico para optimizar el rendimiento.
     """
     if not paths or size <= 0:
         return []
@@ -302,7 +285,6 @@ def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[Dupl
     if size <= PARTIAL_READ_BYTES:
         final_groups = _group_paths_by_hash(paths, hash_file)
     else:
-        # Optimización: filtrar mediante hash de cabecera antes del hash pesado
         partial_groups = _group_paths_by_hash(paths, partial_hash)
         final_groups = {}
         for candidate_subset in partial_groups.values():
@@ -329,8 +311,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     """
-    Calcula el 'score' de una ruta para la heurística de preservación:
-    (mtime, longitud_de_la_ruta). Retorna None si el archivo ya no existe.
+    Calcula el 'score' de una ruta para la heurística de preservación.
     """
     if not _safe_path_check(path):
         return None
