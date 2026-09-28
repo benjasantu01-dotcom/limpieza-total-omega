@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **176** (34.9% de aceptación)
+- Mejoras aceptadas: **177** (35.1% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 235
+- Sin respuesta de la IA (error o límite): 233
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-26 | 8 | 1 | 1 | 1 | 35 |
+| 2026-09-26 | 8 | 1 | 1 | 1 | 31 |
 | 2026-09-27 | 122 | 24 | 34 | 17 | 153 |
-| 2026-09-28 | 46 | 2 | 9 | 4 | 47 |
+| 2026-09-28 | 47 | 2 | 10 | 4 | 49 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - manejo de errores y validación de entradas: **36**
 - seguridad defensiva: **34**
-- robustez ante casos límite: **28**
+- robustez ante casos límite: **29**
 - rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **18**
 - `diskreport.py`: **17**
+- `quarantine.py`: **17**
 - `browser.py`: **16**
 - `safety.py`: **16**
-- `quarantine.py`: **16**
 - `healthscore.py`: **14**
 - `scanner.py`: **13**
 - `assistant.py`: **12**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-28T04:44:26` **quarantine.py** (robustez ante casos límite): Se ha mejorado `quarantine_dir` para prevenir condiciones de carrera y manejo de rutas mediante la verificación de existencia y permisos de forma atómica, añadiendo un `try-except` más robusto durante la creación del directorio.
 - `2026-09-28T04:35:19` **main.py** (robustez ante casos límite): Se introdujo una comprobación robusta en `_validate_environment` para detectar si la aplicación se ejecuta desde una ruta de red (UNC) o una unidad no mapeada localmente, mitigando riesgos de acceso a recursos de red lentos o inseguros durante el análisis.
 - `2026-09-28T04:34:03` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `compute_score` mediante la adición de una comprobación de integridad en tiempo de ejecución para detectar cambios inesperados en los pesos o claves de `_PIPELINE` vs `WEIGHTS` que podrían causar errores silenciosos o inconsistencias en los reportes, asegurando que el motor falle de forma predecible ante configuraciones inválidas.
 - `2026-09-28T04:24:55` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_excluded_path` añadiendo una comprobación explícita para rutas que contienen caracteres nulos o inválidos para el sistema de archivos, y se ha fortalecido el manejo de errores en `walk_files` para capturar `OSError` de forma más granular al acceder a atributos de archivos (como `st_size`) en entornos con concurrencia o archivos bloqueados.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-28T03:44:22` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo implementando una cache de `stat` a nivel de `directory_size` y `detect_profiles` para evitar el acceso repetitivo a disco mediante la reutilización de resultados basados en inodos (ino), reduciendo la latencia en directorios con miles de archivos pequeños.
 - `2026-09-28T03:43:22` **assistant.py** (rendimiento): Se optimizó el motor local reemplazando el bucle `for` de búsqueda de tokens por un acceso directo de tiempo constante O(1) mediante `dict.get()` sobre los tokens de la consulta, eliminando iteraciones innecesarias sobre el diccionario de mapeo.
 - `2026-09-28T03:34:20` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `startup.py` añadiendo type hints faltantes, normalizando los docstrings siguiendo convenciones de estilo profesional, y extrayendo una lógica de filtrado compleja en `entries_from_folders` a una variable booleana descriptiva, clarificando la intención sin modificar la funcionalidad.
-- `2026-09-28T03:33:37` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se enriqueció la documentación (docstrings) para aclarar la responsabilidad de los métodos, facilitando la comprensión del flujo de datos en el recorrido recursivo y las heurísticas sin alterar la lógica funcional.

@@ -246,7 +246,7 @@ def _ensure_path_ownership(path: Path) -> None:
             raise UnsafePathError("Propiedad de directorio no coincide con usuario.")
 
 def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Prepara y valida el directorio base de cuarentena."""
+    """Prepara y valida el directorio base de cuarentena de forma robusta."""
     if not base:
         raise ValueError("El directorio base no puede estar vacío.")
     try:
@@ -256,13 +256,13 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         if is_protected_path(path):
             raise UnsafePathError("Directorio de cuarentena reside en ruta protegida.")
         ensure_safe_to_modify(path)
-        try:
+        if not path.exists():
             path.mkdir(parents=True, exist_ok=True)
-        except OSError as e:
-            raise OSError(f"No se pudo crear el directorio de cuarentena: {e}")
+        if not os.access(path, os.W_OK | os.R_OK):
+            raise PermissionError("Permisos insuficientes en directorio.")
         _ensure_path_ownership(path)
         return path
-    except (OSError, RuntimeError, UnsafePathError) as e:
+    except (OSError, RuntimeError, UnsafePathError, PermissionError) as e:
         raise OSError(f"Error al preparar directorio de cuarentena: {e}")
 
 
@@ -464,7 +464,7 @@ def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> 
                 with os.fdopen(dst_fd, "wb") as f_dst:
                     shutil.copyfileobj(f_src, f_dst)
                     f_dst.flush()
-                    os.fsync(f_dst.fileno())
+                    os.fsync(dst_fd)
             except Exception:
                 os.close(dst_fd)
                 raise

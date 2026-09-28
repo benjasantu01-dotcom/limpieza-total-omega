@@ -769,3 +769,10 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - V
 - `2026-09-28T04:35:56` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-09-28T04:35:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T04:35:56` Corrida terminada. Total usado hoy: 108.
+- `2026-09-28T04:43:45` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-09-28T04:44:26` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado `quarantine_dir` para prevenir condiciones de carrera y manejo de rutas mediante la verificación de existencia y permisos de forma atómica, añadiendo un `try-except` más robusto durante la creación del directorio.
+- `2026-09-28T04:44:45` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-09-28T04:45:26` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-09-28T04:45:37` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-28T04:45:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T04:45:37` Corrida terminada. Total usado hoy: 112.
