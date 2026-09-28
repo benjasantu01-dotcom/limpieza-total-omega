@@ -227,16 +227,21 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """
-        Clasifica una entrada detectada y la deriva a procesamiento de directorio o de archivos.
+        Clasifica una entrada detectada: si es directorio, lo encola para inspección profunda;
+        si es archivo, verifica su extensión y aplica las heurísticas de seguridad.
         """
         try:
+            # Caso: Directorio. Valida recursividad y permisos antes de continuar.
             if entry.is_dir(follow_symlinks=False):
                 if self._is_safe_entry(entry, is_dir=True):
                     self._handle_directory(entry, directory_stack)
+            
+            # Caso: Archivo. Filtra por relevancia antes de aplicar escaneo heurístico.
             elif entry.is_file(follow_symlinks=False):
                 if self._is_relevant_extension(entry.name) and self._is_safe_entry(entry):
                     self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError, FileNotFoundError):
+            # Fallo esperado en sistemas de archivos restringidos o protegidos.
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
@@ -268,7 +273,10 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
-    """Coordina el recorrido recursivo (basado en pila) del árbol de directorios para escaneo."""
+    """
+    Inicia el escaneo recursivo desde un directorio raíz dado, utilizando una pila
+    (stack) para manejar la profundidad del árbol de archivos de manera eficiente y segura.
+    """
     if directory is None: return []
     path_str = str(directory).strip()
     if not path_str or not _is_valid_path_structure(path_str): return []
@@ -284,8 +292,10 @@ def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
     scanner = Scanner(base_root=base_path)
     directory_stack: List[str] = [str(base_path)]
     scanner.seen.add(str(base_path).lower())
+    
+    # Bucle principal de recorrido iterativo
     while directory_stack:
-        current_dir = directory_stack.pop()
+        current_dir: str = directory_stack.pop()
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:

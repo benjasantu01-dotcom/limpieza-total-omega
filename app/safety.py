@@ -436,7 +436,6 @@ def normalize(path: PathLike) -> Path:
          raise UnsafePathError("Ruta contiene secuencias Unicode sospechosas.", SafetyValidationErrorCode.SUSPICIOUS_ENCODING)
     try:
         p = Path(path_str)
-        # Optimizacion: validacion de reparse point solo en componentes padres existentes
         for part in p.parts:
             if part and os.path.exists(str(p.parent / part)) and _is_reparse_point(str(p.parent / part)):
                 raise UnsafePathError("Segmento de ruta contiene punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
@@ -473,7 +472,7 @@ def _is_system_path_raw(path_str: str) -> bool:
     return not PROTECTED_DIR_NAMES.isdisjoint(path_lower.split(os.sep))
 
 @lru_cache(maxsize=4096)
-def is_protected_path(path: PathLike) -> TypeGuard[str]:
+def is_protected_path(path: PathLike) -> bool:
     """Valida si una ruta está marcada como protegida contra modificaciones."""
     if not isinstance(path, (str, Path)) or not path: return True
     try:
@@ -611,8 +610,7 @@ def _validate_ntfs_reparse_redirection(path: Path) -> None:
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
     Valida si es seguro modificar un archivo o directorio.
-    Realiza una secuencia estricta de validaciones: estructural, límites de sandbox,
-    permisos y finalmente integridad (anti-TOCTOU).
+    Lanza UnsafePathError si la ruta es insegura o restringida.
     """
     if path is None:
         raise UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC)
@@ -627,10 +625,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         initial_stat = _get_path_stat_robust(p)
         if not bool(initial_stat.st_mode & stat.S_IWRITE):
             raise UnsafePathError(f"Acceso de escritura denegado: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
-        if initial_stat.st_nlink > 1:
-            # Validación adicional: impedir modificaciones si el archivo es un hard link vinculado a rutas protegidas
-            if is_protected_path(str(p.resolve())):
-                raise UnsafePathError("Modificación denegada: hard link hacia sistema.", SafetyValidationErrorCode.HARD_LINK_DETECTED)
+        if initial_stat.st_nlink > 1 and is_protected_path(str(p.resolve())):
+            raise UnsafePathError("Modificación denegada: hard link hacia sistema.", SafetyValidationErrorCode.HARD_LINK_DETECTED)
         if os.name == 'nt': 
             _validate_ntfs_reparse_redirection(p)
             if not os.access(p.parent, os.W_OK):
