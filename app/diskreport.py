@@ -110,7 +110,10 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
             return True
         
         # Verificar enlaces simbólicos y puntos de reparse (reparse points)
-        if entry.is_symlink() or (os.name == 'nt' and entry.is_dir() and (entry.stat().st_file_attributes & 0x400)):
+        try:
+            if entry.is_symlink() or (os.name == 'nt' and entry.is_dir() and (entry.stat().st_file_attributes & 0x400)):
+                return True
+        except (OSError, PermissionError):
             return True
         
         entry_path = Path(entry.path).resolve()
@@ -118,12 +121,12 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         try:
             if not entry_path.is_relative_to(root_path):
                 return True
-        except ValueError:
+        except (ValueError, AttributeError):
             return True
             
         if is_protected_path(entry_path):
             return True
-    except (OSError, PermissionError, AttributeError, RuntimeError, ValueError, TypeError):
+    except (OSError, PermissionError, AttributeError, RuntimeError, TypeError):
         return True
     return False
 

@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **170** (33.7% de aceptación)
+- Mejoras aceptadas: **169** (33.5% de aceptación)
 - Rechazadas por tests: 28
-- Rechazadas por guardia de seguridad: 46
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 239
+- Sin respuesta de la IA (error o límite): 241
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-27 | 118 | 24 | 33 | 17 | 152 |
-| 2026-09-28 | 52 | 4 | 13 | 4 | 87 |
+| 2026-09-27 | 115 | 24 | 32 | 17 | 152 |
+| 2026-09-28 | 54 | 4 | 13 | 4 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **49**
+- legibilidad y documentación: **46**
 - seguridad defensiva: **39**
+- manejo de errores y validación de entradas: **30**
 - robustez ante casos límite: **29**
-- manejo de errores y validación de entradas: **28**
 - rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **18**
+- `quarantine.py`: **17**
 - `safety.py`: **16**
 - `duplicates.py`: **16**
-- `browser.py`: **15**
-- `diskreport.py`: **15**
+- `browser.py`: **16**
+- `diskreport.py`: **16**
 - `scanner.py`: **13**
 - `healthscore.py`: **13**
-- `memory.py`: **12**
 - `assistant.py`: **12**
 - `settings.py`: **11**
+- `memory.py`: **11**
 - `branding.py`: **8**
 - `main.py`: **8**
-- `organizer.py`: **7**
+- `organizer.py`: **6**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-28T06:57:53` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `_is_excluded_path` añadiendo un manejo de excepciones más granular para capturar `OSError` al acceder a atributos de archivo, evitando fallos silenciosos y garantizando que el escaneo sea resiliente ante archivos bloqueados por el sistema.
+- `2026-09-28T06:57:27` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `_sum_directory_recursive` mediante la implementación de una validación explícita de `root_path` y el uso de un manejo de excepciones más granular para evitar interrupciones durante el escaneo de directorios con permisos restringidos.
 - `2026-09-28T05:25:35` **safety.py** (seguridad defensiva): Se ha añadido una verificación de "archivo en uso" (mediante `_is_file_locked_by_other_process`) específicamente para el directorio contenedor antes de proceder con una creación de archivo, cerrando una ventana de riesgo donde el sistema podría denegar acceso a carpetas bloqueadas por el kernel o procesos exclusivos.
 - `2026-09-28T05:20:15` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad del proceso de aislamiento mediante la validación estricta de que la ruta de origen no contenga puntos de reparse (reparse points) ni enlaces simbólicos, bloqueando cualquier intento de manipulación fuera del sistema de archivos esperado mediante un chequeo en `_validate_source_for_quarantine`.
 - `2026-09-28T05:19:26` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva al validar que los PIDs no solo sean números, sino que correspondan a procesos activos antes de intentar abrirlos, y se aseguró la integridad del manejo de descriptores mediante una estructura `with` implícita vía cierre garantizado en `try...finally` para prevenir fugas de handles en condiciones de error.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-28T04:24:02` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `_validate_destination` ante rutas de sistema o condiciones de error en el sistema de archivos, asegurando que `ensure_safe_to_modify` no reciba valores potencialmente nulos y manejando casos donde `parent.mkdir` podría fallar por permisos denegados.
 - `2026-09-28T04:15:02` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `ProblemCriterion.format_if_triggered` para manejar de forma segura entradas malformadas, listas vacías o valores numéricos inesperados, evitando excepciones durante la consolidación de métricas.
 - `2026-09-28T03:58:41` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lógica de filtrado inicial más estricta en el lado de PowerShell, reduciendo drásticamente la carga de datos procesados por Python y evitando el análisis de procesos innecesarios en cada llamada.
-- `2026-09-28T03:58:23` **main.py** (rendimiento): Se implementó un mecanismo de **invalidación selectiva y granular** en el caché de la aplicación: en lugar de limpiar todo el caché al realizar un análisis, ahora se invalidan únicamente las claves relevantes para la tarea específica, evitando recálculos innecesarios de otros módulos y mejorando la consistencia de los datos presentados.
-- `2026-09-28T03:53:48` **healthscore.py** (rendimiento): Se pre-calculan las sumatorias de puntos en el `Pipeline` para eliminar llamadas innecesarias a `int(round())` y `_clamp` dentro del bucle de evaluación, mejorando la eficiencia del cálculo del puntaje global.

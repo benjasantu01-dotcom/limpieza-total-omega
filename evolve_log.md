@@ -1076,3 +1076,10 @@ FAILED evolve/tests/test_assistant.py::test_ram_question_debunks_the_ram_cleaner
 - `2026-09-28T06:49:58` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `SystemContext.ingest` y el manejo de tipos en `SystemContext` para asegurar que el sistema no falle ante entradas malformadas o inesperadas que podrían comprometer la integridad de las métricas durante la ingesta.
 - `2026-09-28T06:49:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T06:49:58` Corrida terminada. Total usado hoy: 160.
+- `2026-09-28T06:56:23` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-09-28T06:57:00` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-28T06:57:27` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez del manejo de errores en `_sum_directory_recursive` mediante la implementación de una validación explícita de `root_path` y el uso de un manejo de excepciones más granular para evitar interrupciones durante el escaneo de directorios con permisos restringidos.
+- `2026-09-28T06:57:53` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `_is_excluded_path` añadiendo un manejo de excepciones más granular para capturar `OSError` al acceder a atributos de archivo, evitando fallos silenciosos y garantizando que el escaneo sea resiliente ante archivos bloqueados por el sistema.
+- `2026-09-28T06:58:03` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-28T06:58:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T06:58:03` Corrida terminada. Total usado hoy: 164.

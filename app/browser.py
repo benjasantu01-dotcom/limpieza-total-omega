@@ -243,15 +243,17 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """Recorre el árbol de directorios para sumar el tamaño de archivos."""
-    if depth > MAX_SCAN_DEPTH:
+    if depth > MAX_SCAN_DEPTH or root_path is None:
         return 0
     
     try:
+        if not root_path.exists():
+            return 0
         root_stat = root_path.stat()
         if root_stat.st_ino in memo:
             return 0
         memo[root_stat.st_ino] = root_stat.st_size
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, ValueError):
         return 0
 
     total_bytes: int = 0
