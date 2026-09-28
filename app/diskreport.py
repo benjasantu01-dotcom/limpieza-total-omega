@@ -106,7 +106,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     enlaces simbólicos, fuera del árbol raíz o carpetas protegidas).
     """
     try:
-        if any(c in entry.name for c in SUSPICIOUS_CHARS):
+        if any(c in entry.name for c in SUSPICIOUS_CHARS) or '\0' in entry.name:
             return True
         
         # Verificar enlaces simbólicos y puntos de reparse (reparse points)

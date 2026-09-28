@@ -181,9 +181,12 @@ def _is_system_hidden(entry_path: Optional[str], kernel32: Optional[ctypes.WinDL
     """
     if kernel32 is None or not entry_path: return False
     try:
+        # Se asegura de capturar cualquier error de acceso denegado en la llamada a Win32
         attrs = kernel32.GetFileAttributesW(entry_path)
-        return False if attrs == 0xFFFFFFFF else bool(attrs & SYSTEM_HIDDEN_FLAGS)
-    except Exception:
+        if attrs == 0xFFFFFFFF:
+            return False
+        return bool(attrs & SYSTEM_HIDDEN_FLAGS)
+    except (ctypes.ArgumentError, OSError, Exception):
         return False
 
 
