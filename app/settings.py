@@ -282,28 +282,26 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
-    """Valida y limpia una estructura de datos externa contra el esquema oficial."""
-    if not _is_dict(raw_values): return DEFAULTS.copy()
+    """Valida y limpia una estructura de datos externa contra el esquema oficial, retornando un nuevo dict."""
+    if not _is_dict(raw_values): 
+        return dict(DEFAULTS)
     
-    config = DEFAULTS.copy()
+    config = dict(DEFAULTS)
     validators = _build_validator_map()
-    try:
-        for key_str, raw_val in raw_values.items():
-            if (key_enum := _KEY_TO_ENUM.get(key_str)):
-                validated_val = validators[key_enum].func(key_enum, raw_val)
-                if validated_val is not None:
-                    config[key_enum.value] = validated_val
-    except (TypeError, ValueError, AttributeError):
-        return DEFAULTS.copy()
-    return config
+    
+    for key_str, raw_val in raw_values.items():
+        if (key_enum := _KEY_TO_ENUM.get(key_str)):
+            validated_val = validators[key_enum].func(key_enum, raw_val)
+            if validated_val is not None:
+                config[key_enum.value] = validated_val
+    return config # type: ignore
 
 def _is_file_secure_to_read(ruta: Path) -> bool:
     """Garantiza que el archivo sea un archivo regular, sin ser enlace y sin permisos de ejecución (seguridad defensiva)."""
     try:
         if not ruta.is_absolute(): return False
-        st = ruta.stat() # Usamos stat() para resolver, asumiendo validaciones previas de ruta
+        st = ruta.stat()
         if not stat.S_ISREG(st.st_mode) or _Validators._is_reparse_point(ruta): return False
-        # Un archivo de settings nunca debería tener bits de ejecución
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH): return False
         if not is_safe_to_modify(str(ruta)): return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
@@ -315,7 +313,7 @@ def _is_file_secure_to_read(ruta: Path) -> bool:
 def _load_impl(ruta: Path) -> AppSettings:
     """Lógica interna de carga: lee el archivo JSON y lo normaliza aplicando los defaults si hay error."""
     if not _is_file_secure_to_read(ruta):
-        return DEFAULTS.copy()
+        return dict(DEFAULTS)
     try:
         with open(ruta, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -323,7 +321,7 @@ def _load_impl(ruta: Path) -> AppSettings:
             return _coerce_and_verify(validate(data))
     except (OSError, PermissionError, IOError, json.JSONDecodeError, UnicodeDecodeError):
         pass
-    return DEFAULTS.copy()
+    return dict(DEFAULTS)
 
 @lru_cache(maxsize=4)
 def _load_with_cache(ruta_str: str, mtime: float) -> AppSettings:
@@ -338,19 +336,18 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     except OSError:
         mtime = 0.0
     
-    # Intentar cargar desde el archivo principal o el backup
     for r in [ruta, ruta.with_suffix(".bak")]:
         try:
             if r.exists():
-                settings = _load_with_cache(str(r), r.stat().st_mtime)
+                settings = _load_with_cache(str(r), mtime)
                 return settings.copy()
         except (OSError, PermissionError):
             continue
-    return DEFAULTS.copy()
+    return dict(DEFAULTS)
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """Asegura consistencia de tipos y reglas de negocio, revirtiendo a defaults ante inconsistencias."""
-    final: AppSettings = DEFAULTS.copy()
+    final = dict(DEFAULTS)
     try:
         for key, expected_type in DEFAULTS.items():
             val = settings.get(key)
@@ -359,9 +356,9 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
         
         if final["asistente_activado"] and not (final["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
             final["asistente_activado"] = False
-        return final
+        return final # type: ignore
     except (ValueError, TypeError, AttributeError):
-        return DEFAULTS.copy()
+        return dict(DEFAULTS)
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     """Persistencia atómica: guarda el archivo usando un ciclo temp -> backup -> reemplazar."""
@@ -424,7 +421,7 @@ def reset(custom_base: PathLike | None = None) -> AppSettings:
     """Restaura los valores predeterminados y limpia la caché."""
     save(DEFAULTS, custom_base)
     _load_with_cache.cache_clear()
-    return DEFAULTS.copy()
+    return dict(DEFAULTS)
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
     """Acceso rápido a una configuración individual."""

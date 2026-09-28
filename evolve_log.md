@@ -1567,3 +1567,59 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-09-28T11:45:04` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_locked_by_other_process` y `_is_volume_readonly` añadiendo validaciones de tipo explícitas y manejo de errores para evitar que `ctypes` o `pathlib` causen excepciones inesperadas durante la inspección de archivos.
 - `2026-09-28T11:45:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T11:45:04` Corrida terminada. Total usado hoy: 276.
+- `2026-09-28T11:53:04` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-09-28T11:53:37` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las heurísticas agregando validaciones de tipo y existencia para evitar excepciones silenciosas (`TypeError`/`AttributeError`) al procesar entradas de directorio potencialmente volátiles, asegurando que `_safe_stat` retorne siempre un estado consistente.
+- `2026-09-28T11:54:10` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la función `validate` centralizando la normalización, evitando el uso de `.copy()` sobre el diccionario `DEFAULTS` global (para prevenir mutaciones accidentales) y asegurando que las claves no encontradas conserven siempre los valores de fábrica.
+- `2026-09-28T11:54:42` Tests FALLARON:
+```
+es.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:81: SyntaxWarning: invalid escape sequence '\ '
+    El prefijo \\?\ es necesario para superar limitaciones de MAX_PATH en Windows.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed, 4 warnings in 1.59s
+
+```
+- `2026-09-28T11:54:42` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry.executable` reemplazando el uso de `str.split()` por un parser de argumentos más cuidadoso que maneja correctamente rutas con espacios, evitando además errores de `IndexError` si la cadena está vacía o mal formada.
+- `2026-09-28T11:55:19` Tests FALLARON:
+```
+nce '\ '
+    El prefijo \\?\ es necesario para superar limitaciones de MAX_PATH en Windows.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_answers_are_never_empty - TypeError: sequence item 1: expected str instance, NoneType found
+FAILED evolve/tests/test_assistant.py::test_garbage_questions_still_get_an_answer - TypeError: sequence item 1: expected str instance, NoneType found
+FAILED evolve/tests/test_assistant.py::test_low_disk_is_reported_as_the_top_priority - TypeError: sequence item 1: expected str instance, NoneType found
+FAILED evolve/tests/test_assistant.py::test_local_answer_always_says_it_did_not_send_anything - TypeError: sequence item 1: expected str instance, NoneType found
+FAILED evolve/tests/test_assistant.py::test_ask_stays_local_when_the_assistant_is_off - TypeError: sequence item 1: expected str instance, NoneType found
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - TypeError: sequence item 1: expected str instance, NoneType found
+FAILED evolve/tests/test_assistant.py::test_online_failure_falls_back_to_local - TypeError: sequence item 1: expected str instance, NoneType found
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - TypeError: sequence item 1: expected str instance, NoneType found
+8 failed, 291 passed, 4 warnings in 1.91s
+
+```
+- `2026-09-28T11:55:19` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `assistant.py` documentando los `ProblemCriterion` con docstrings claros sobre sus efectos y extrayendo la lógica de comparación de métricas del bucle `active_problems` a una propiedad más descriptiva en `SystemContext`, facilitando la auditoría de reglas de salud.
+- `2026-09-28T11:55:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T11:55:19` Corrida terminada. Total usado hoy: 280.

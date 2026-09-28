@@ -71,10 +71,9 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     Obtiene metadatos del archivo sin seguir enlaces simbólicos (evita escapes del sandbox).
     Retorna None si la entrada es un enlace simbólico o un punto de reanálisis.
     """
-    if entry is None:
+    if not isinstance(entry, os.DirEntry):
         return None
     try:
-        # Validar existencia física del objeto antes de llamar a stat
         if not entry.exists():
             return None
         if entry.is_symlink():
@@ -111,7 +110,9 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Heurística: Detecta cuando un ejecutable intenta ocultarse tras una extensión benigna."""
-    if path.name and DOUBLE_EXTENSION_RE.search(path.name):
+    if not isinstance(path, Path) or not path.name:
+        return None
+    if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
@@ -122,7 +123,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     stats = _safe_stat(entry) if entry else None
     if stats:
         try:
-            mtime = stats.st_mtime
+            mtime = getattr(stats, "st_mtime", 0.0)
             if 0 < mtime <= now_ts and (now_ts - mtime) < (LIMITS.recent_hours * 3600):
                 return Suspicion(path, f"Ejecutable reciente detectado (<{LIMITS.recent_hours}h)", "info")
         except (AttributeError, TypeError):
@@ -145,7 +146,7 @@ def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: fl
     stats = _safe_stat(entry) if entry else None
     if stats is not None:
         try:
-            if stats.st_size == 0:
+            if getattr(stats, "st_size", -1) == 0:
                 return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
         except (AttributeError, TypeError):
             return None
