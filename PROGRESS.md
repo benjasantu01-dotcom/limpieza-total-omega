@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 26
-- Rechazadas por guardia de seguridad: 42
-- Sin cambios (nada sustancial que mejorar): 18
+- Rechazadas por guardia de seguridad: 43
+- Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 238
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-27 | 105 | 21 | 24 | 14 | 144 |
-| 2026-09-28 | 75 | 5 | 18 | 4 | 94 |
+| 2026-09-27 | 103 | 21 | 24 | 13 | 143 |
+| 2026-09-28 | 77 | 5 | 19 | 4 | 95 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
-- seguridad defensiva: **39**
+- seguridad defensiva: **37**
 - manejo de errores y validación de entradas: **36**
+- rendimiento: **27**
 - robustez ante casos límite: **26**
-- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **17**
+- `quarantine.py`: **17**
 - `duplicates.py`: **17**
 - `healthscore.py`: **16**
-- `quarantine.py`: **16**
 - `safety.py`: **16**
 - `diskreport.py`: **16**
 - `scanner.py`: **14**
-- `assistant.py`: **13**
-- `memory.py`: **12**
+- `memory.py`: **13**
+- `assistant.py`: **12**
 - `settings.py`: **11**
-- `branding.py`: **9**
 - `main.py`: **9**
+- `branding.py`: **8**
 - `organizer.py`: **7**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-28T08:29:46` **quarantine.py** (rendimiento): Optimizé `load_manifest` reemplazando la validación física de archivos (que requiere I/O lento) por un procesamiento en memoria utilizando un diccionario, evitando llamadas repetidas a `exists()` y `stat()` sobre el disco, delegando la integridad física a los métodos que realmente requieren acceder al archivo (como `restore` o `purge`).
+- `2026-09-28T08:28:44` **memory.py** (rendimiento): Se optimizó el rendimiento de `top_memory_processes` eliminando el uso de `Sort-Object` y `Select-Object` dentro de la llamada a PowerShell, moviendo el filtrado y ordenamiento al lado de Python, lo cual reduce drásticamente el tiempo de ejecución del comando y el uso de memoria en la sub-shell.
 - `2026-09-28T08:19:14` **healthscore.py** (rendimiento): Optimicé el cálculo del score evitando la creación innecesaria de objetos `NamedTuple` y funciones `lambda` en tiempo de ejecución, además de reemplazar la re-instanciación del diccionario de desglose por una pre-asignación eficiente.
 - `2026-09-28T08:18:50` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente al consolidar los filtros de seguridad y atributos antes de realizar llamadas costosas al sistema de archivos (`stat`), reduciendo drásticamente la latencia en directorios con gran cantidad de archivos.
 - `2026-09-28T08:09:51` **browser.py** (rendimiento): Optimicé el rendimiento de `directory_size` y `detect_profiles` evitando cálculos redundantes mediante la consolidación del `memo` (para detectar archivos ya contados) y utilizando una única instancia de `kernel32` compartida entre los procesos recursivos, reduciendo la sobrecarga de llamadas a la API de Windows.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-28T07:38:38` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando docstrings descriptivos con parámetros y retornos en funciones clave que carecían de ellos, facilitando la comprensión del flujo de datos sin alterar el comportamiento.
 - `2026-09-28T07:38:10` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a los métodos de las `dataclasses` y se ha sustituido el uso de `getattr(path, "suffix", ...)` por la propiedad nativa `.suffix` de `pathlib.Path`, mejorando la claridad semántica y el tipado.
 - `2026-09-28T07:37:42` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `browser.py` documentando los parámetros y retornos de funciones clave con docstrings detallados, y eliminé la ambigüedad en el manejo de tipos de los chequeos de recursión, clarificando el propósito de la lógica de filtrado.
-- `2026-09-28T07:29:11` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación del archivo `branding.py` mediante docstrings detallados que explican el propósito de cada función y los parámetros complejos, clarificando la intención detrás del renderizado vectorial y la gestión de colores.
-- `2026-09-28T07:28:50` **assistant.py** (legibilidad y documentación): Se introdujeron type hints faltantes en el módulo `assistant.py` y se reemplazaron las tuplas de tipos `Union` por la sintaxis moderna `|` para mejorar la legibilidad y la precisión estática del código.

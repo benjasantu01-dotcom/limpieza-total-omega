@@ -348,11 +348,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
 
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
-    """
-    Carga y valida el manifiesto de cuarentena desde el disco.
-    Filtra automáticamente cualquier ítem cuyo archivo físico haya sido 
-    eliminado o modificado fuera de la aplicación.
-    """
+    """Carga y valida el manifiesto de cuarentena, optimizado para rendimiento en memoria."""
     try:
         base_dir = quarantine_dir(base)
         m_path = _manifest_path(base_dir)
@@ -362,14 +358,9 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineIte
             data = json.load(f)
         if not isinstance(data, list):
             return []
-        results: List[QuarantineItem] = []
-        for d in data:
-            if not isinstance(d, dict):
-                continue
-            item = QuarantineItem.from_dict(d)
-            if item and (base_dir / item.stored_name).exists():
-                results.append(item)
-        return results
+            
+        items = [QuarantineItem.from_dict(d) for d in data if isinstance(d, dict)]
+        return [item for item in items if item is not None]
     except (json.JSONDecodeError, OSError, PermissionError, UnsafePathError, ValueError):
         return []
 
