@@ -1530,3 +1530,40 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-28T11:34:02` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `parse_windows_process_csv` y `parse_linux_meminfo` mediante la validación estricta de entradas, asegurando que los valores de memoria resultantes nunca sean negativos o inválidos debido a datos de entrada mal formados.
 - `2026-09-28T11:34:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T11:34:02` Corrida terminada. Total usado hoy: 272.
+- `2026-09-28T11:42:49` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-09-28T11:42:52` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-28T11:42:56` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-28T11:43:33` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` al validar explícitamente el origen antes de realizar operaciones de E/S, evitando que excepciones silenciadas por condiciones de carrera (ej. el archivo desaparece entre el chequeo y el movimiento) causen comportamientos inesperados, y asegurando que las rutas de destino siempre estén resueltas correctamente.
+- `2026-09-28T11:43:35` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-28T11:44:16` Tests FALLARON:
+```
+            _verify_transaction_integrity(item, destination)
+            return item
+        except Exception as e:
+            if temp_path and temp_path.exists():
+                try: temp_path.unlink()
+                except OSError: pass
+            _cleanup_orphaned_destination(destination)
+>           raise RuntimeError(f"Error durante aislamiento: {e}")
+E           RuntimeError: Error durante aislamiento: [GENERIC] El origen no cumple las condiciones de seguridad para ser borrado.
+
+app/quarantine.py:647: RuntimeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:81: SyntaxWarning: invalid escape sequence '\ '
+    El prefijo \\?\ es necesario para superar limitaciones de MAX_PATH en Windows.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - RuntimeError: Error durante aislamiento: [GENERIC] El origen no cumple las condiciones de seguridad para ser borrado.
+1 failed, 298 passed, 4 warnings in 1.47s
+
+```
+- `2026-09-28T11:44:16` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `quarantine_file` envolviendo la eliminación del archivo original en una verificación de seguridad explícita, evitando que errores de desincronización (race conditions) o fallas al cerrar descriptores de archivo provoquen un estado de "archivo original perdido pero no registrado".
+- `2026-09-28T11:44:36` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 112): unterminated string literal (detected at line 112)
+- `2026-09-28T11:45:04` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_locked_by_other_process` y `_is_volume_readonly` añadiendo validaciones de tipo explícitas y manejo de errores para evitar que `ctypes` o `pathlib` causen excepciones inesperadas durante la inspección de archivos.
+- `2026-09-28T11:45:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T11:45:04` Corrida terminada. Total usado hoy: 276.

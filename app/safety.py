@@ -297,8 +297,9 @@ def _is_volume_readonly(path_str: Optional[str]) -> bool:
     """Consulta la información del volumen para verificar si es de solo lectura."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str or _is_path_too_long(path_str): return False
     try:
-        root = os.path.splitdrive(path_str)[0] + "\\"
-        if not os.path.exists(root): return False
+        drive_path = os.path.splitdrive(path_str)[0]
+        if not drive_path: return False
+        root = drive_path + "\\"
         flags = ctypes.c_ulong()
         if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0):
             return bool(flags.value & 0x80000)

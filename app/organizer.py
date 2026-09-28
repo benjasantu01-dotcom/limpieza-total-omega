@@ -278,6 +278,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     except (OSError, RuntimeError, PermissionError): return None
     
     for junk_file in files:
+        if not junk_file.path.exists(): continue
         if not is_safe_to_modify(junk_file.path): continue
         if not _is_safe_for_disk_op(junk_file.path, dest_res): continue
         target_path = _can_move_file(junk_file, dest_res)
@@ -314,6 +315,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         for item in dest.iterdir():
             if item.is_file():
                 try:
+                    if not item.exists(): continue
                     ensure_safe_to_modify(item)
                     item.unlink()
                     count += 1
