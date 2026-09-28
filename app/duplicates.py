@@ -132,7 +132,7 @@ def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
     if not path:
         return None
     try:
-        p: Path = Path(path).resolve(strict=True)
+        p: Path = Path(path).absolute()
         if _safe_path_check(p) and p.is_file() and not _is_file_locked(p):
             if p.stat().st_size > 0:
                 return p
@@ -220,7 +220,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
         if not p:
             continue
         try:
-            path_obj = Path(p).resolve(strict=True)
+            path_obj = Path(p).absolute()
             if _safe_path_check(path_obj):
                 st_size = path_obj.stat().st_size
                 if _is_valid_candidate(path_obj, st_size):
@@ -234,7 +234,7 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
     """Valida que una ruta base sea un directorio navegable y seguro."""
     try:
         if not item: return None
-        root = Path(item).resolve(strict=True)
+        root = Path(item).absolute()
         if root.is_dir() and _safe_path_check(root):
             return root
     except (OSError, ValueError, RuntimeError, TypeError):
@@ -243,53 +243,38 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
-    Escaneo recursivo profundo usando os.scandir para listar archivos candidatos.
+    Escaneo recursivo profundo usando os.scandir y evitando resoluciones innecesarias.
     """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     visited_paths: set[str] = set()
+    stack: List[str] = [str(r) for d in directories if (r := _resolve_and_verify_root(d))]
 
-    def _scan_dir(current_dir: str) -> None:
+    while stack:
+        current_dir = stack.pop()
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    path_str = entry.path
-                    if path_str in visited_paths:
-                        continue
-                    
                     try:
-                        p_entry = Path(path_str)
-                        if not is_safe_to_modify(p_entry):
-                            continue
-                            
-                        if skip_protected and is_protected_path(p_entry):
-                            continue
-                            
                         if entry.is_dir(follow_symlinks=False):
-                            if not entry.is_symlink() and not is_junction(p_entry):
-                                visited_paths.add(path_str)
-                                _scan_dir(path_str)
+                            if not entry.is_symlink() and not is_junction(Path(entry.path)):
+                                stack.append(entry.path)
                             continue
                         
                         stat_info = entry.stat(follow_symlinks=False)
                         if stat_info.st_size < min_size:
                             continue
-                            
-                        if is_system_or_hidden(p_entry) or _is_file_locked(p_entry):
-                            continue
                         
+                        p_entry = Path(entry.path)
+                        if skip_protected and is_protected_path(p_entry):
+                            continue
+                        if not is_safe_to_modify(p_entry) or is_system_or_hidden(p_entry) or _is_file_locked(p_entry):
+                            continue
+                            
                         size_to_paths_map[stat_info.st_size].append(p_entry)
-                        visited_paths.add(path_str)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
-            pass
-
-    for item in directories:
-        if (root := _resolve_and_verify_root(item)):
-            root_str = str(root)
-            if root_str not in visited_paths:
-                visited_paths.add(root_str)
-                _scan_dir(root_str)
+            continue
             
     return {sz: files for sz, files in size_to_paths_map.items() if len(files) > 1}
 

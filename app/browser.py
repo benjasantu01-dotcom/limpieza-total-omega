@@ -299,6 +299,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     k32 = _get_kernel32()
     found: List[BrowserCache] = []
+    # Memoización global para evitar procesar archivos idénticos (ino) varias veces en un escaneo
     global_memo: Dict[int, int] = {}
     
     for base in raw_bases:

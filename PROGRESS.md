@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 45
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 226
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-27 | 72 | 13 | 20 | 9 | 94 |
-| 2026-09-28 | 121 | 10 | 25 | 8 | 132 |
+| 2026-09-27 | 72 | 13 | 19 | 9 | 91 |
+| 2026-09-28 | 125 | 10 | 25 | 8 | 132 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,16 +25,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **39**
 - robustez ante casos límite: **31**
-- rendimiento: **27**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **18**
-- `duplicates.py`: **18**
+- `browser.py`: **19**
+- `duplicates.py`: **19**
 - `safety.py`: **18**
+- `diskreport.py`: **17**
 - `quarantine.py`: **17**
-- `diskreport.py`: **16**
-- `healthscore.py`: **16**
+- `healthscore.py`: **17**
 - `scanner.py`: **16**
 - `memory.py`: **15**
 - `assistant.py`: **13**
@@ -46,6 +46,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-28T12:46:10` **healthscore.py** (rendimiento): Optimicé el cálculo del score evitando la creación innecesaria de objetos `SystemMetrics` mediante la validación in-situ y reemplacé la iteración sobre `_PIPELINE` por una búsqueda directa mediante un diccionario, reduciendo la complejidad de búsqueda de O(N) a O(1) durante el procesamiento.
+- `2026-09-28T12:45:45` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de archivos en `_collect_candidates` reemplazando la recursión manual y el uso extensivo de `Path.resolve(strict=True)` (que es costoso por el acceso a disco implícito) por un manejo más eficiente basado en `os.scandir` y la comparación directa de rutas normalizadas, reduciendo el overhead de I/O en árboles de directorios grandes.
+- `2026-09-28T12:45:12` **diskreport.py** (rendimiento): Optimicé el método `largest_folders` sustituyendo el uso de `walk_files` (que re-procesa todo el árbol y realiza cálculos redundantes) por un acceso directo a `os.scandir` en el nivel superior, evitando iteraciones innecesarias y reduciendo drásticamente el uso de memoria al no regenerar toda la estructura de archivos solo para sumar carpetas de primer nivel.
+- `2026-09-28T12:44:42` **browser.py** (rendimiento): Se optimizó el escaneo de cachés mediante la implementación de un mecanismo de memoización global de estados de archivo (`ino`) para evitar el recálculo redundante de tamaños en directorios compartidos y reducir drásticamente las llamadas a `os.scandir` y `stat`.
 - `2026-09-28T12:36:14` **assistant.py** (rendimiento): Optimicé el método `SystemContext.ingest` para evitar el re-procesamiento de datos innecesarios y reducir el impacto de las validaciones, utilizando una estructura más eficiente al iterar sobre los validadores existentes.
 - `2026-09-28T12:35:00` **settings.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del namespace `_Validators` extrayendo la lógica de validación de rutas en un método privado `_check_path_safety` para clarificar el flujo de control y reduciendo el anidamiento excesivo en `_is_safe_path`.
 - `2026-09-28T12:25:52` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a los parámetros de las funciones y clarificando las responsabilidades de las constantes, facilitando la comprensión del flujo de datos en el análisis heurístico sin alterar la lógica.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-28T12:05:11` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings detallados en funciones críticas y la clarificación de tipos, asegurando que las responsabilidades de cada paso en el pipeline de hashing sean evidentes para futuros colaboradores, manteniendo la integridad del código.
 - `2026-09-28T12:04:57` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (especificando tipos y comportamiento ante excepciones) y la clarificación de las responsabilidades de `_collect_summary_data`, además de asegurar la integridad del tipo `SizeReport` para evitar ambigüedades en su consumo.
 - `2026-09-28T12:04:29` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de recursión y filtrado mediante la adición de docstrings técnicos detallados y la simplificación de parámetros en funciones críticas, aclarando las responsabilidades de los chequeos de seguridad.
-- `2026-09-28T12:04:01` **branding.py** (legibilidad y documentación): Documenté con docstrings claros las constantes de la paleta y tipos personalizados para facilitar el mantenimiento y la comprensión de la jerarquía visual, cumpliendo con el enfoque de legibilidad.
-- `2026-09-28T11:54:10` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `validate` centralizando la normalización, evitando el uso de `.copy()` sobre el diccionario `DEFAULTS` global (para prevenir mutaciones accidentales) y asegurando que las claves no encontradas conserven siempre los valores de fábrica.
-- `2026-09-28T11:53:37` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas agregando validaciones de tipo y existencia para evitar excepciones silenciosas (`TypeError`/`AttributeError`) al procesar entradas de directorio potencialmente volátiles, asegurando que `_safe_stat` retorne siempre un estado consistente.
-- `2026-09-28T11:45:04` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_locked_by_other_process` y `_is_volume_readonly` añadiendo validaciones de tipo explícitas y manejo de errores para evitar que `ctypes` o `pathlib` causen excepciones inesperadas durante la inspección de archivos.
