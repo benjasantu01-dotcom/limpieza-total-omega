@@ -384,14 +384,14 @@ class SystemContext:
         if not (isinstance(source, dict) or hasattr(source, "__dict__")) or _is_input_too_deep_or_complex(source):
             return False
         
-        updates: dict[str, Any] = {}
+        updates = {}
         for key, spec in _VALIDATORS.items():
             val = self._apply_field(source, key, spec)
-            if val is not None:
+            if val is not None and val != getattr(self, key, None):
                 updates[key] = val
         
         grade_val = self._clean_grade(_get_source_value(source, "grade"))
-        if grade_val:
+        if grade_val and grade_val != self.grade:
             updates['grade'] = grade_val
         
         if updates:

@@ -185,13 +185,17 @@ class _Validators:
             return False
 
     @staticmethod
+    def _check_path_safety(p: Path) -> bool:
+        """Helper interno para validar propiedades básicas de seguridad de una ruta."""
+        return p.is_absolute() and _Validators._run_safety_checks(str(p))
+
+    @staticmethod
     def _is_safe_path(path_str: str) -> bool:
         """Verifica que el string de la ruta sea seguro para ser persistido."""
         if not path_str or len(path_str) > 2048 or any(c in path_str for c in ("\0", "^", "\033")): return False
         if path_str.startswith(("\\\\", "//")): return False
         try:
-            p = Path(path_str).expanduser()
-            return p.is_absolute() and _Validators._run_safety_checks(str(p))
+            return _Validators._check_path_safety(Path(path_str).expanduser())
         except (OSError, RuntimeError, PermissionError, AttributeError, ValueError):
             return False
 
