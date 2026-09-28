@@ -108,8 +108,7 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
     Inicializa la interfaz a la API de Windows mediante ctypes.
     
     Returns:
-        La DLL kernel32 cargada o None si el SO no es Windows, 
-        o si no es posible acceder a GetFileAttributesW.
+        La DLL kernel32 cargada o None si el SO no es Windows.
     """
     if os.name != 'nt':
         return None
@@ -128,9 +127,6 @@ def _is_unc_path(path_str: Optional[str]) -> bool:
 def base_directories() -> List[Path]:
     """
     Identifica la raíz LOCALAPPDATA del sistema actual.
-    
-    Verifica que la variable de entorno sea válida, no sea una ruta UNC 
-    y que la carpeta sea accesible y no esté en la lista negra protegida.
     
     Returns:
         Lista conteniendo el path de LOCALAPPDATA si es seguro, vacío si no.
@@ -154,17 +150,19 @@ def _is_path_inside_base(target_abs: str, base_abs: str) -> bool:
     """
     Verifica que target_abs esté contenido jerárquicamente dentro de base_abs.
     
-    Normaliza ambas rutas para prevenir ataques de path traversal o escapes
-    a través de referencias relativas.
+    Args:
+        target_abs: Ruta absoluta candidata.
+        base_abs: Ruta absoluta base de confianza.
+        
+    Returns:
+        True si la ruta está contenida en la base, False en caso contrario.
     """
     if not isinstance(target_abs, str) or not isinstance(base_abs, str):
-        return False
-    if not target_abs or not base_abs:
         return False
     try:
         target_norm = os.path.normcase(os.path.normpath(target_abs))
         base_norm = os.path.normcase(os.path.normpath(base_abs))
-        if len(target_norm) >= MAX_PATH_LEN or len(base_norm) >= MAX_PATH_LEN or '\0' in target_norm:
+        if len(target_norm) >= MAX_PATH_LEN or '\0' in target_norm:
             return False
         return target_norm.startswith(base_norm)
     except (OSError, ValueError):
@@ -194,9 +192,7 @@ def _should_skip_entry(
     kernel32: Optional[ctypes.WinDLL], 
     is_junction_fn: JunctionChecker
 ) -> bool:
-    """
-    Aplica políticas de filtrado antes de procesar una entrada de sistema de archivos.
-    """
+    """Aplica políticas de filtrado antes de procesar una entrada de sistema de archivos."""
     if entry.name is None or _is_excluded_file(entry.name):
         return True
     
@@ -204,7 +200,6 @@ def _should_skip_entry(
         path = entry.path
         if not path or len(path) >= MAX_PATH_LEN or _is_unc_path(path):
             return True
-        # Usamos los métodos de DirEntry que no requieren llamadas adicionales a stat()
         if entry.is_symlink() or is_junction_fn(path) or _is_system_hidden(path, kernel32):
             return True
     except (OSError, AttributeError):
@@ -238,10 +233,7 @@ def _sum_directory_recursive(
     memo: Dict[int, int],
     depth: int = 0
 ) -> int:
-    """
-    Recorre el árbol de directorios para sumar el tamaño de archivos.
-    Optimizado: evita llamadas redundantes a resolve y stat usando DirEntry.
-    """
+    """Recorre el árbol de directorios para sumar el tamaño de archivos."""
     if depth > MAX_SCAN_DEPTH:
         return 0
     
@@ -267,9 +259,7 @@ def _sum_directory_recursive(
 
 
 def directory_size(path: Optional[OSPath]) -> int:
-    """
-    Punto de entrada público para calcular el tamaño de una ruta.
-    """
+    """Punto de entrada público para calcular el tamaño de una ruta."""
     if not path: return 0
     try:
         p = Path(path).resolve(strict=True)
@@ -295,10 +285,11 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str, is_junction_fn: Jun
 
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Une la base con el path relativo y verifica su integridad estructural."""
-    if not isinstance(real_base, Path) or not isinstance(rel_str, str) or not rel_str:
+    if not isinstance(real_base, Path) or not rel_str:
         return Path()
     try:
-        target = (real_base.joinpath(*rel_str.split("\\"))).resolve(strict=True)
+        # Uso de Path.joinpath para unir componentes de ruta de manera segura
+        target = real_base.joinpath(*rel_str.split("\\")).resolve(strict=True)
         if not _is_path_inside_base(str(target), str(real_base)):
             return Path()
         if not is_safe_to_modify(target) or is_protected_path(target):
@@ -309,10 +300,7 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
 
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
-    """
-    Escaneo principal: detecta, valida y calcula el tamaño de los directorios 
-    de caché definidos.
-    """
+    """Escaneo principal: detecta, valida y calcula el tamaño de los directorios de caché."""
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     k32 = _get_kernel32()
@@ -324,16 +312,13 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         try:
             real_base = base.resolve(strict=True)
             for browser_name, rel_str in browser_map.items():
-                try:
-                    candidate = _resolve_browser_path(real_base, rel_str)
-                    if not candidate or not _is_valid_cache_path(candidate, str(real_base), _IS_JUNCTION_FN):
-                        continue
-                    
-                    size = _sum_directory_recursive(candidate, _IS_JUNCTION_FN, k32, global_memo)
-                    if size > 0:
-                        found.append(BrowserCache(str(browser_name), candidate, size))
-                except (OSError, RuntimeError, PermissionError):
+                candidate = _resolve_browser_path(real_base, rel_str)
+                if not candidate or not _is_valid_cache_path(candidate, str(real_base), _IS_JUNCTION_FN):
                     continue
+                
+                size = _sum_directory_recursive(candidate, _IS_JUNCTION_FN, k32, global_memo)
+                if size > 0:
+                    found.append(BrowserCache(str(browser_name), candidate, size))
         except (OSError, RuntimeError):
             continue
                 

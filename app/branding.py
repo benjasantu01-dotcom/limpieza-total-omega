@@ -108,28 +108,29 @@ UI_FONT_BOLD: Final[str] = "bold"
 UI_FONT_HEADER_SIZE: Final[int] = 23
 UI_FONT_BODY_SIZE: Final[int] = 12
 
-# Mapeo maestro de colores
+# Paleta Maestra: Colores definidos en HEX.
+# El esquema utiliza tonos fríos (Azul/Slate) para fondos y neones para acentos.
 C_BACKGROUND: Final[ColorHex] = "#0a0e17"
 C_SURFACE: Final[ColorHex] = "#141b2d"
 C_SURFACE_ALT: Final[ColorHex] = "#1e2740"
 C_SURFACE_HOVER: Final[ColorHex] = "#28324f"
 C_CARD: Final[ColorHex] = "#182135"
-C_ACCENT: Final[ColorHex] = "#00f0c0"
+C_ACCENT: Final[ColorHex] = "#00f0c0"       # Color primario de marca (Turquesa neón)
 C_ACCENT_HOVER: Final[ColorHex] = "#00d0a4"
 C_ACCENT_DIM: Final[ColorHex] = "#0a6b58"
-C_ACCENT2: Final[ColorHex] = "#7c5cff"
+C_ACCENT2: Final[ColorHex] = "#7c5cff"      # Color secundario (Violeta eléctrico)
 C_ACCENT2_HOVER: Final[ColorHex] = "#6a48f0"
-C_ACCENT3: Final[ColorHex] = "#ff2d78"
-C_SUCCESS: Final[ColorHex] = "#22e39a"
-C_INFO: Final[ColorHex] = "#38bdf8"
-C_WARNING: Final[ColorHex] = "#ffb020"
-C_DANGER: Final[ColorHex] = "#ff4757"
+C_ACCENT3: Final[ColorHex] = "#ff2d78"      # Color de alerta alta (Rosa/Fucsia)
+C_SUCCESS: Final[ColorHex] = "#22e39a"      # Verde indicativo de estado saludable
+C_INFO: Final[ColorHex] = "#38bdf8"         # Azul indicativo de estado informativo
+C_WARNING: Final[ColorHex] = "#ffb020"      # Ámbar indicativo de precaución
+C_DANGER: Final[ColorHex] = "#ff4757"       # Rojo indicativo de peligro crítico
 C_DANGER_HOVER: Final[ColorHex] = "#e02e3d"
-C_TEXT: Final[ColorHex] = "#f0f6fc"
-C_TEXT_MUTED: Final[ColorHex] = "#94a3b8"
-C_TEXT_DIM: Final[ColorHex] = "#5c6b85"
-C_BORDER: Final[ColorHex] = "#2a3654"
-C_GLOW: Final[ColorHex] = "#00f0c0"
+C_TEXT: Final[ColorHex] = "#f0f6fc"         # Texto principal (blanco azulado)
+C_TEXT_MUTED: Final[ColorHex] = "#94a3b8"   # Texto secundario/desactivado
+C_TEXT_DIM: Final[ColorHex] = "#5c6b85"     # Texto de bajo contraste (placeholder)
+C_BORDER: Final[ColorHex] = "#2a3654"       # Líneas divisorias y bordes de contenedores
+C_GLOW: Final[ColorHex] = "#00f0c0"         # Efecto de iluminación para elementos activos
 
 PALETTE: Final[Mapping[str, ColorHex]] = MappingProxyType({
     "background": C_BACKGROUND, "surface": C_SURFACE, "surface_alt": C_SURFACE_ALT,
@@ -354,7 +355,8 @@ def _get_scaled_poly(scale: float, canvas_x: float, canvas_y: float) -> Tuple[fl
 def logo_svg(size: int = 128) -> str:
     """Genera el código fuente XML de un archivo SVG del logo principal para exportación."""
     s = max(1, min(4096, int(size)))
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
+    
+    svg_structure = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
   <defs>
     <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">{_SVG_GRADIENT_STOPS}    </linearGradient>
     <radialGradient id="omegaGlow" cx="0.5" cy="0.4" r="0.6">
@@ -369,6 +371,7 @@ def logo_svg(size: int = 128) -> str:
   <path d="M75 41 L89 38 L92 52 Z" fill="{C_BACKGROUND}"/>
   <text x="64" y="98" font-family="{UI_FONT_FAMILY}" font-size="26" font-weight="{UI_FONT_BOLD}" fill="{C_BACKGROUND}" text-anchor="middle">&#937;</text>
 </svg>"""
+    return svg_structure
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optional[Path]:
     """Guarda el logo SVG en disco tras validar la seguridad de la ruta destino."""

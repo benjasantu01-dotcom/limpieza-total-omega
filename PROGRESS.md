@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **171** (33.9% de aceptación)
+- Mejoras aceptadas: **173** (34.3% de aceptación)
 - Rechazadas por tests: 27
 - Rechazadas por guardia de seguridad: 42
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 242
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 241
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-26 | 27 | 2 | 4 | 3 | 50 |
+| 2026-09-26 | 26 | 2 | 4 | 2 | 48 |
 | 2026-09-27 | 122 | 24 | 34 | 17 | 153 |
-| 2026-09-28 | 22 | 1 | 4 | 2 | 39 |
+| 2026-09-28 | 25 | 1 | 4 | 2 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **45**
 - seguridad defensiva: **42**
-- legibilidad y documentación: **42**
 - manejo de errores y validación de entradas: **36**
 - robustez ante casos límite: **29**
-- rendimiento: **22**
+- rendimiento: **21**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,18 +35,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **17**
 - `diskreport.py`: **16**
 - `scanner.py`: **15**
-- `healthscore.py`: **14**
-- `browser.py`: **14**
+- `browser.py`: **15**
 - `settings.py`: **14**
+- `healthscore.py`: **13**
 - `memory.py`: **11**
-- `assistant.py`: **9**
+- `assistant.py`: **10**
 - `main.py`: **7**
+- `branding.py`: **7**
 - `organizer.py`: **6**
-- `branding.py`: **6**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-28T03:03:56` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del módulo agregando type hints explícitos, estandarizando los docstrings siguiendo el formato Google e introduciendo `Path.joinpath` de forma más clara para evitar la concatenación manual de rutas, facilitando así el mantenimiento preventivo ante errores de path traversal.
+- `2026-09-28T03:03:39` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo descripciones detalladas a las constantes de la paleta y funciones críticas, además de refactorizar el `logo_svg` para separar la estructura XML del renderizado, mejorando la legibilidad del código base.
+- `2026-09-28T03:03:02` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_call_gemini`, extrayendo la lógica de validación de URL y encabezados a constantes y simplificando el flujo de ejecución para clarificar las responsabilidades de cada paso de seguridad.
 - `2026-09-28T02:53:29` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_load_impl` y `save` eliminando el riesgo de silenciamiento accidental de excepciones críticas de sistema mediante un manejo de errores más específico y consistente con la regla de no ignorar fallos de I/O en operaciones críticas.
 - `2026-09-28T02:53:12` **scanner.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `_safe_stat` y `_get_file_attributes` para prevenir bloqueos silenciosos mediante excepciones más específicas y validación previa de tipos, asegurando que el escáner no aborte ante archivos inaccesibles o bloqueados por el sistema operativo.
 - `2026-09-28T02:52:43` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `_get_path_stat_robust` para manejar de forma más precisa el caso donde `os.stat` falla debido a permisos, permitiendo que las herramientas de diagnóstico reporten el error específico en lugar de un genérico `IO_ERROR`.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-28T01:00:55` **startup.py** (seguridad defensiva): Mejoré la seguridad defensiva al integrar `is_safe_to_modify` en `entries_from_folders` para filtrar archivos antes de procesarlos, asegurando que se cumpla el principio de no interactuar con rutas protegidas durante el escaneo de directorios.
 - `2026-09-28T01:00:41` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de "Time-of-check to time-of-use" (TOCTOU) y asegurar que el archivo de configuración sea estrictamente un archivo plano sin permisos de ejecución, evitando vectores de inyección de código mediante archivos de configuración maliciosos.
 - `2026-09-28T00:50:23` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `purge_all` implementando una validación estricta de la ruta del archivo (`is_within_quarantine_sandbox`) y validación de hash antes de cualquier operación de borrado, asegurando que solo se eliminen los archivos que coinciden exactamente con el manifiesto dentro del sandbox definido.
-- `2026-09-28T00:49:18` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva al invocar `OpenProcess` introduciendo una lógica de manejo de errores más específica tras la llamada a `GetModuleFileNameExW`, garantizando que se cierren correctamente los handles de procesos en todos los casos de falla y validando la integridad del buffer de retorno antes de procesarlo.
-- `2026-09-28T00:40:04` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del motor `healthscore.py` ante datos de entrada maliciosos o corruptos, aplicando una validación más estricta en `SystemMetrics` y sanitizando las recomendaciones para prevenir inyecciones de texto que pudieran corromper la interfaz.
-- `2026-09-28T00:39:36` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` para asegurar que el escaneo no siga enlaces simbólicos, previniendo así posibles escapes de la carpeta raíz analizada (traversal) y recursiones infinitas, alineándose estrictamente con la política de seguridad requerida.

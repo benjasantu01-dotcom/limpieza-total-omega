@@ -223,6 +223,7 @@ SYSTEM_PROMPT: Final[str] = (
 # Regex de validación
 _ENDPOINT_BASE: Final[str] = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 _TIMEOUT_SECONDS: Final[int] = 30
+_API_HOST_ROOT: Final[str] = "https://generativelanguage.googleapis.com/"
 
 _REGEX_INYECCION: Final[re.Pattern] = re.compile(r"([a-zA-Z]:[\\/]|/|\\|\.\.|\0|[\u202e\u202d\u200e\u200f])")
 _REGEX_CONTROL: Final[re.Pattern] = re.compile(r"[\x00-\x1f\x7f\u0080-\u009f\u202b-\u202f\u200b-\u200d\uFEFF]")
@@ -698,33 +699,29 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
     """Realiza una petición POST segura a la API de Google."""
-    if not isinstance(api_key, str) or not _API_KEY_REGEX.match(api_key): return None
-    if not isinstance(model, str) or not _MODEL_NAME_REGEX.match(model): return None
-    if not context_text: return None
+    if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model) or not context_text:
+        return None
     
     payload = _build_payload(question, context_text)
     if not payload: return None
     
+    url = _ENDPOINT_BASE.format(model=model) + f"?key={api_key}"
+    if not url.startswith(_API_HOST_ROOT): return None
+    
     try:
-        url = _ENDPOINT_BASE.format(model=model) + f"?key={api_key}"
-        if not url.startswith("https://generativelanguage.googleapis.com/"): return None
-        
         req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"}, method="POST")
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: return None
             raw_res = res.read(_MAX_RESPONSE_BYTES + 1)
             if not isinstance(raw_res, bytes) or len(raw_res) > _MAX_RESPONSE_BYTES: return None
             
-            try:
-                data = json.loads(raw_res.decode("utf-8"))
-            except (json.JSONDecodeError, UnicodeDecodeError):
-                return None
-                
+            data = json.loads(raw_res.decode("utf-8"))
             raw_text = _extract_text_from_gemini_json(data)
+            
             if isinstance(raw_text, str) and _ensure_safe_text(raw_text):
                 return _validate_response_length(raw_text.strip())
             return None
-    except (urllib.error.HTTPError, urllib.error.URLError, OSError, ValueError, KeyError):
+    except (urllib.error.HTTPError, urllib.error.URLError, OSError, ValueError, KeyError, json.JSONDecodeError):
         return None
 
 def ask(question: str, context: Optional[SystemContext] = None,
