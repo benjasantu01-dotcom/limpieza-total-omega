@@ -289,7 +289,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @safe_ui_operation
     def _safe_run_ui_callback(self, callback: AsyncCallback) -> None:
         """Ejecuta una función en el hilo principal de manera segura."""
-        self.after_idle(callback)
+        if self.winfo_exists():
+            self.after_idle(callback)
 
     def _validate_environment(self) -> None:
         """
@@ -1958,10 +1959,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 try:
                     self.settings = settings_mod.update(propuestos)
                     ruta = settings_mod.settings_path()
-                    self.log_lines(
+                    self._safe_run_ui_callback(lambda: self.log_lines(
                         [f"Ajustes guardados en: {ruta}", ""] + settings_mod.describe(),
                         "Ajustes",
-                    )
+                    ))
                     self.set_status("Ajustes guardados.")
                 except Exception as e:
                     self.log(f"Error al escribir ajustes: {e}", "Ajustes")
@@ -1975,7 +1976,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_show_settings(self) -> None:
         """Muestra los ajustes cargados actualmente."""
         def task() -> None:
-            self.log_lines(settings_mod.describe(), "Ajustes")
+            self._safe_run_ui_callback(lambda: self.log_lines(settings_mod.describe(), "Ajustes"))
 
         self.run_async(task)
 
@@ -1991,26 +1992,21 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def task() -> None:
             self.settings = settings_mod.reset()
+            # Actualización de vars de UI de forma segura
             for clave, variable in self.setting_vars.items():
-                try:
-                    if clave in settings_mod.DEFAULTS:
+                if clave in settings_mod.DEFAULTS:
+                    try:
                         variable.set(settings_mod.DEFAULTS[clave])
-                except (tk.TclError, RuntimeError, Exception):
-                    continue
+                    except (tk.TclError, RuntimeError, Exception):
+                        continue
             
-            try:
-                if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists():
-                    self.min_dup_entry.delete(0, "end")
-                    self.min_dup_entry.insert(0, str(settings_mod.DEFAULTS.get("duplicados_tamano_minimo_kb", 64)))
-                
-                if hasattr(self, 'top_files_entry') and self.top_files_entry.winfo_exists():
-                    self.top_files_entry.delete(0, "end")
-                    self.top_files_entry.insert(0, str(settings_mod.DEFAULTS.get("top_archivos", 15)))
-            except (tk.TclError, RuntimeError, Exception):
-                pass
-
-            self.log_lines(["Ajustes restaurados a los valores de fábrica.", ""]
-                           + settings_mod.describe(), "Ajustes")
+            self._safe_run_ui_callback(lambda: (
+                self.min_dup_entry.delete(0, "end") if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists() else None,
+                self.min_dup_entry.insert(0, str(settings_mod.DEFAULTS.get("duplicados_tamano_minimo_kb", 64))) if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists() else None,
+                self.top_files_entry.delete(0, "end") if hasattr(self, 'top_files_entry') and self.top_files_entry.winfo_exists() else None,
+                self.top_files_entry.insert(0, str(settings_mod.DEFAULTS.get("top_archivos", 15))) if hasattr(self, 'top_files_entry') and self.top_files_entry.winfo_exists() else None,
+                self.log_lines(["Ajustes restaurados a los valores de fábrica.", ""] + settings_mod.describe(), "Ajustes")
+            ))
 
         self.run_async(task)
 

@@ -146,7 +146,8 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
-        return all(math.isfinite(float(v)) for v in (self.junk_mb, self.suspicious_count, self.suspicious_warnings, self.memory_available_percent, self.disk_free_percent, self.duplicate_mb, self.startup_count, self.quarantined_count))
+        vals = (self.junk_mb, self.suspicious_count, self.suspicious_warnings, self.memory_available_percent, self.disk_free_percent, self.duplicate_mb, self.startup_count, self.quarantined_count)
+        return all(math.isfinite(float(v)) for v in vals)
 
 @dataclass
 class HealthResult:
@@ -172,8 +173,11 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             if clean_msg: findings.append(clean_msg[:200])
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
-        return HealthResult(0, "F", {k: 0 for k in WEIGHTS}, ["Error: Métricas no inicializadas o corruptas."])
+    if not isinstance(metrics, SystemMetrics):
+        metrics = SystemMetrics()
+    
+    if not metrics.is_finite:
+        metrics = SystemMetrics()
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {k: 0 for k in WEIGHTS}

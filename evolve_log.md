@@ -1195,3 +1195,43 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-28T08:50:30` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo una captura de `OSError` específica durante la llamada a `os.scandir` y `entry.stat()`, asegurando que el bucle de recolección no se interrumpa ante errores de E/S inesperados (como archivos bloqueados por el sistema o dispositivos extraíbles desconectados súbitamente).
 - `2026-09-28T08:50:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T08:50:30` Corrida terminada. Total usado hoy: 208.
+- `2026-09-28T08:58:47` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-09-28T08:59:17` Tests FALLARON:
+```
+e/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:81: SyntaxWarning: invalid escape sequence '\ '
+    El prefijo \\?\ es necesario para superar limitaciones de MAX_PATH en Windows.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_identical_files - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size - assert [] == [1, 2]
+  
+  Right contains 2 more items, first extra item: 1
+  
+  Full diff:
+  + []
+  - [
+  -     1,
+  -     2,
+  - ]
+FAILED evolve/tests/test_modules.py::test_partial_hash_only_reads_the_beginning - AssertionError: assert None != None
+ +  where None = <function hash_file at 0x7f75065c1f80>(PosixPath('/tmp/pytest-of-runner/pytest-1/test_partial_hash_only_reads_t0/a'))
+ +    where <function hash_file at 0x7f75065c1f80> = duplicates.hash_file
+ +  and   None = <function hash_file at 0x7f75065c1f80>(PosixPath('/tmp/pytest-of-runner/pytest-1/test_partial_hash_only_reads_t0/b'))
+ +    where <function hash_file at 0x7f75065c1f80> = duplicates.hash_file
+4 failed, 295 passed, 4 warnings in 1.49s
+
+```
+- `2026-09-28T08:59:17` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `_is_file_locked` para manejar archivos bloqueados de forma más agresiva en Windows mediante el uso de `ctypes` y `INVALID_HANDLE_VALUE`, evitando excepciones silenciosas o errores de acceso que podrían interrumpir el análisis durante el recorrido de disco.
+- `2026-09-28T08:59:42` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemMetrics` y `compute_score` ante valores inesperados (como `None` o estados de error parciales) asegurando que el motor de puntuación siempre devuelva un resultado válido y coherente, incluso si los datos de entrada provienen de sensores fallidos.
+- `2026-09-28T09:00:42` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-28T09:01:45` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-28T09:03:08` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de la aplicación ante estados de red inciertos y errores de hilo principal añadiendo una validación de salud de los widgets antes de cualquier operación de UI en los callbacks asíncronos (`_safe_run_ui_callback` y `_flush_logs`), y asegurando que las llamadas de persistencia de configuración manejen correctamente widgets que podrían haber sido destruidos.
+- `2026-09-28T09:03:21` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-28T09:03:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T09:03:21` Corrida terminada. Total usado hoy: 212.
