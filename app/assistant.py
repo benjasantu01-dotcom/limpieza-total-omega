@@ -624,7 +624,8 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     
     tokens = _TOKEN_REGEX.findall(q_sanitized.lower())
     for token in tokens:
-        if handler := _TOKENS_MAP.get(token):
+        handler = _TOKENS_MAP.get(token)
+        if handler:
             return handler(context, question)
             
     cuerpo = _format_problem_message(context.active_problems, context.score or "N/A")

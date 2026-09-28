@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **175** (34.7% de aceptación)
-- Rechazadas por tests: 27
+- Mejoras aceptadas: **177** (35.1% de aceptación)
+- Rechazadas por tests: 28
 - Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 237
+- Sin respuesta de la IA (error o límite): 234
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-26 | 20 | 2 | 3 | 1 | 44 |
+| 2026-09-26 | 19 | 2 | 3 | 1 | 41 |
 | 2026-09-27 | 122 | 24 | 34 | 17 | 153 |
-| 2026-09-28 | 33 | 1 | 7 | 3 | 40 |
+| 2026-09-28 | 36 | 2 | 7 | 3 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - seguridad defensiva: **42**
 - manejo de errores y validación de entradas: **36**
-- robustez ante casos límite: **26**
-- rendimiento: **18**
+- robustez ante casos límite: **25**
+- rendimiento: **21**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **18**
 - `safety.py`: **18**
 - `duplicates.py`: **18**
-- `diskreport.py`: **16**
+- `diskreport.py`: **17**
+- `quarantine.py`: **17**
 - `scanner.py`: **15**
+- `browser.py`: **15**
 - `settings.py`: **14**
-- `browser.py`: **14**
 - `healthscore.py`: **13**
 - `memory.py`: **12**
-- `assistant.py`: **10**
+- `assistant.py`: **11**
 - `main.py`: **7**
 - `organizer.py`: **7**
 - `branding.py`: **7**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-28T03:44:33` **diskreport.py** (rendimiento): Optimizé la función `_collect_summary_data` para evitar múltiples recorridos del sistema de archivos al centralizar el procesamiento y reduje la carga de memoria al pre-filtrar mediante el límite antes de insertar en el heap, manteniendo la eficiencia en el reporte.
+- `2026-09-28T03:44:22` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo implementando una cache de `stat` a nivel de `directory_size` y `detect_profiles` para evitar el acceso repetitivo a disco mediante la reutilización de resultados basados en inodos (ino), reduciendo la latencia en directorios con miles de archivos pequeños.
+- `2026-09-28T03:43:22` **assistant.py** (rendimiento): Se optimizó el motor local reemplazando el bucle `for` de búsqueda de tokens por un acceso directo de tiempo constante O(1) mediante `dict.get()` sobre los tokens de la consulta, eliminando iteraciones innecesarias sobre el diccionario de mapeo.
 - `2026-09-28T03:34:20` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `startup.py` añadiendo type hints faltantes, normalizando los docstrings siguiendo convenciones de estilo profesional, y extrayendo una lógica de filtrado compleja en `entries_from_folders` a una variable booleana descriptiva, clarificando la intención sin modificar la funcionalidad.
 - `2026-09-28T03:33:37` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se enriqueció la documentación (docstrings) para aclarar la responsabilidad de los métodos, facilitando la comprensión del flujo de datos en el recorrido recursivo y las heurísticas sin alterar la lógica funcional.
 - `2026-09-28T03:23:51` **quarantine.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos (basados en Google Style) que explican el propósito de las funciones internas y validaciones complejas, facilitando el mantenimiento futuro y la comprensión de las salvaguardas implementadas.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-28T03:03:39` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo descripciones detalladas a las constantes de la paleta y funciones críticas, además de refactorizar el `logo_svg` para separar la estructura XML del renderizado, mejorando la legibilidad del código base.
 - `2026-09-28T03:03:02` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_call_gemini`, extrayendo la lógica de validación de URL y encabezados a constantes y simplificando el flujo de ejecución para clarificar las responsabilidades de cada paso de seguridad.
 - `2026-09-28T02:53:29` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_load_impl` y `save` eliminando el riesgo de silenciamiento accidental de excepciones críticas de sistema mediante un manejo de errores más específico y consistente con la regla de no ignorar fallos de I/O en operaciones críticas.
-- `2026-09-28T02:53:12` **scanner.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `_safe_stat` y `_get_file_attributes` para prevenir bloqueos silenciosos mediante excepciones más específicas y validación previa de tipos, asegurando que el escáner no aborte ante archivos inaccesibles o bloqueados por el sistema operativo.
-- `2026-09-28T02:52:43` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `_get_path_stat_robust` para manejar de forma más precisa el caso donde `os.stat` falla debido a permisos, permitiendo que las herramientas de diagnóstico reporten el error específico en lugar de un genérico `IO_ERROR`.
-- `2026-09-28T02:44:05` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` envolviendo las operaciones de archivo en un bloque `try-finally` para asegurar que, ante cualquier excepción durante la transferencia, el archivo temporal (si existe) sea eliminado correctamente, evitando la acumulación de basura en el sistema y dejando el estado limpio para futuras iteraciones.

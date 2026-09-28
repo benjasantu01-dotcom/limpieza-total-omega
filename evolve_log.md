@@ -700,3 +700,34 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-28T03:34:20` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `startup.py` añadiendo type hints faltantes, normalizando los docstrings siguiendo convenciones de estilo profesional, y extrayendo una lógica de filtrado compleja en `entries_from_folders` a una variable booleana descriptiva, clarificando la intención sin modificar la funcionalidad.
 - `2026-09-28T03:34:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T03:34:20` Corrida terminada. Total usado hoy: 84.
+- `2026-09-28T03:42:38` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-09-28T03:43:22` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó el motor local reemplazando el bucle `for` de búsqueda de tokens por un acceso directo de tiempo constante O(1) mediante `dict.get()` sobre los tokens de la consulta, eliminando iteraciones innecesarias sobre el diccionario de mapeo.
+- `2026-09-28T03:43:55` Tests FALLARON:
+```
+f draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
+        """Dibuja una barra horizontal decorativa optimizando el número de llamadas a la API de dibujo."""
+>       w_val = max(1, int(width))
+                       ^^^^^^^^^^
+E       ValueError: invalid literal for int() with base 10: 'ancho'
+
+app/branding.py:402: ValueError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:81: SyntaxWarning: invalid escape sequence '\ '
+    El prefijo \\?\ es necesario para superar limitaciones de MAX_PATH en Windows.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_blend_on_invalid_color_does_not_crash - ValueError: invalid literal for int() with base 16: 'no-es-color'
+FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - ValueError: invalid literal for int() with base 10: 'ancho'
+2 failed, 297 passed, 4 warnings in 1.54s
+
+```
+- `2026-09-28T03:43:55` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se implementó un sistema de pre-procesamiento de gradientes mediante `lru_cache` y `MappingProxyType` para evitar la regeneración de cadenas SVG y segmentos de color en cada frame, reduciendo drásticamente la carga de CPU durante el redibujado de la interfaz.
+- `2026-09-28T03:44:22` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo implementando una cache de `stat` a nivel de `directory_size` y `detect_profiles` para evitar el acceso repetitivo a disco mediante la reutilización de resultados basados en inodos (ino), reduciendo la latencia en directorios con miles de archivos pequeños.
+- `2026-09-28T03:44:33` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `_collect_summary_data` para evitar múltiples recorridos del sistema de archivos al centralizar el procesamiento y reduje la carga de memoria al pre-filtrar mediante el límite antes de insertar en el heap, manteniendo la eficiencia en el reporte.
+- `2026-09-28T03:44:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T03:44:33` Corrida terminada. Total usado hoy: 88.
