@@ -1090,3 +1090,39 @@ FAILED evolve/tests/test_assistant.py::test_ram_question_debunks_the_ram_cleaner
 - `2026-09-28T07:08:53` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-28T07:08:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T07:08:53` Corrida terminada. Total usado hoy: 168.
+- `2026-09-28T07:16:48` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-09-28T07:17:30` Tests FALLARON:
+```
+tena)
+    
+        # Manifiesto manipulado para apuntar afuera de la cuarentena.
+        items = quarantine.load_manifest(cuarentena)
+        items[0].stored_name = "../no-tocar.txt"
+        quarantine.save_manifest(items, cuarentena)
+    
+>       with pytest.raises(safety.UnsafePathError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE UnsafePathError
+
+evolve/tests/test_safety.py:255: Failed
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:81: SyntaxWarning: invalid escape sequence '\ '
+    El prefijo \\?\ es necesario para superar limitaciones de MAX_PATH en Windows.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error crítico en restauración: [GENERIC] Restauración denegada: destino protegido.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+2 failed, 297 passed, 4 warnings in 1.22s
+
+```
+- `2026-09-28T07:17:30` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se reforzó la validación de los parámetros de entrada y el manejo de excepciones en `restore_item` y `purge_item` para asegurar que las operaciones sobre rutas y el manifiesto sean atómicas, previniendo errores de estado inconsistente ante entradas inválidas.
+- `2026-09-28T07:17:49` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-09-28T07:18:30` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_get_path_stat_robust` y `_check_file_integrity` mediante la captura explícita de `FileNotFoundError` y validaciones adicionales de tipo antes de invocar operaciones de sistema, evitando que excepciones inesperadas rompan el flujo de la aplicación.
+- `2026-09-28T07:18:43` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_safe_entry` y `process_entry` mediante la captura explícita de `FileNotFoundError` en las operaciones de `os.DirEntry`, evitando que el escáner se interrumpa ante cambios volátiles en el sistema de archivos durante la iteración.
+- `2026-09-28T07:18:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T07:18:43` Corrida terminada. Total usado hoy: 172.

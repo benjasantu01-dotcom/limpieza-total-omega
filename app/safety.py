@@ -372,12 +372,14 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
     Obtiene metadatos del archivo usando `stat()`. 
     Verifica previamente que la ruta no sea un archivo de dispositivo especial.
     """
+    if not isinstance(path, Path):
+        raise UnsafePathError("Tipo de objeto de ruta inválido", SafetyValidationErrorCode.GENERIC)
     if _is_device_file(path):
         raise UnsafePathError(f"Acceso a dispositivo bloqueado: {path.name}", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
-    if not path.exists():
-        raise UnsafePathError(f"Ruta inexistente: {path.name}", SafetyValidationErrorCode.IO_ERROR)
     try:
         return path.stat()
+    except FileNotFoundError:
+        raise UnsafePathError(f"Ruta inexistente: {path.name}", SafetyValidationErrorCode.IO_ERROR)
     except PermissionError:
         raise UnsafePathError(f"Permisos insuficientes para acceder a metadatos: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     except OSError as e:

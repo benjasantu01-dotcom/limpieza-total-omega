@@ -80,7 +80,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         if _get_file_attributes(entry) & LIMITS.reparse_point_attr_mask:
             return None
         return entry.stat(follow_symlinks=False)
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, FileNotFoundError):
         return None
 
 def _get_file_attributes(entry: os.DirEntry) -> int:
@@ -92,7 +92,7 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
         # st_file_attributes es específico de Windows y puede no estar presente en toda entrada
         stat_res = entry.stat(follow_symlinks=False)
         return getattr(stat_res, "st_file_attributes", 0)
-    except (AttributeError, OSError):
+    except (AttributeError, OSError, FileNotFoundError):
         return 0
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
@@ -195,10 +195,11 @@ class Scanner:
             return False
         if not self._is_inside_base_root(entry.path):
             return False
-        if self._is_reparse_point(entry) or entry.is_symlink():
-            return False
         
         try:
+            if self._is_reparse_point(entry) or entry.is_symlink():
+                return False
+            
             # os.access no sigue symlinks y es seguro
             if not os.access(entry.path, os.R_OK):
                 return False
@@ -208,7 +209,7 @@ class Scanner:
                 if is_protected_path(Path(parent_dir)):
                     return False
                 self.protected_cache.add(parent_dir)
-        except (OSError, RuntimeError):
+        except (OSError, RuntimeError, FileNotFoundError):
             return False
             
         return True
@@ -235,7 +236,7 @@ class Scanner:
             elif entry.is_file(follow_symlinks=False):
                 if self._is_relevant_extension(entry.name) and self._is_safe_entry(entry):
                     self._run_file_heuristics(Path(entry.path), entry)
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, FileNotFoundError):
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:

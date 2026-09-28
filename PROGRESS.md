@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **168** (33.3% de aceptación)
+- Mejoras aceptadas: **169** (33.5% de aceptación)
 - Rechazadas por tests: 28
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 243
 
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-27 | 112 | 24 | 31 | 17 | 152 |
-| 2026-09-28 | 56 | 4 | 13 | 4 | 91 |
+| 2026-09-27 | 111 | 23 | 29 | 17 | 152 |
+| 2026-09-28 | 58 | 5 | 14 | 4 | 91 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **43**
 - seguridad defensiva: **39**
-- manejo de errores y validación de entradas: **32**
+- manejo de errores y validación de entradas: **34**
 - robustez ante casos límite: **29**
-- rendimiento: **25**
+- rendimiento: **24**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **17**
 - `duplicates.py`: **16**
+- `safety.py`: **16**
 - `browser.py`: **16**
 - `diskreport.py`: **16**
-- `safety.py`: **15**
 - `healthscore.py`: **14**
+- `scanner.py`: **13**
 - `assistant.py`: **12**
-- `scanner.py`: **12**
 - `memory.py`: **11**
 - `settings.py`: **10**
 - `main.py`: **9**
-- `branding.py`: **8**
+- `branding.py`: **7**
 - `organizer.py`: **6**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-28T07:18:43` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_safe_entry` y `process_entry` mediante la captura explícita de `FileNotFoundError` en las operaciones de `os.DirEntry`, evitando que el escáner se interrumpa ante cambios volátiles en el sistema de archivos durante la iteración.
+- `2026-09-28T07:18:30` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_path_stat_robust` y `_check_file_integrity` mediante la captura explícita de `FileNotFoundError` y validaciones adicionales de tipo antes de invocar operaciones de sistema, evitando que excepciones inesperadas rompan el flujo de la aplicación.
 - `2026-09-28T07:08:17` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de las validaciones de entrada en los campos de texto (`on_trim_process`, `on_restore_quarantine` y `on_save_settings`) centralizando la sanitización de caracteres y asegurando que los valores numéricos y alfanuméricos sean validados antes de procesar cualquier lógica que dependa de ellos, evitando inyecciones o errores de tipo inesperados.
 - `2026-09-28T07:07:03` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_evaluate_rules` mediante la validación proactiva de sus entradas y agregué una guarda explícita para evitar errores de ejecución en la creación de mensajes de recomendación, asegurando que el pipeline no falle ante datos inesperados.
 - `2026-09-28T06:57:53` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `_is_excluded_path` añadiendo un manejo de excepciones más granular para capturar `OSError` al acceder a atributos de archivo, evitando fallos silenciosos y garantizando que el escaneo sea resiliente ante archivos bloqueados por el sistema.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-28T04:35:19` **main.py** (robustez ante casos límite): Se introdujo una comprobación robusta en `_validate_environment` para detectar si la aplicación se ejecuta desde una ruta de red (UNC) o una unidad no mapeada localmente, mitigando riesgos de acceso a recursos de red lentos o inseguros durante el análisis.
 - `2026-09-28T04:34:03` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `compute_score` mediante la adición de una comprobación de integridad en tiempo de ejecución para detectar cambios inesperados en los pesos o claves de `_PIPELINE` vs `WEIGHTS` que podrían causar errores silenciosos o inconsistencias en los reportes, asegurando que el motor falle de forma predecible ante configuraciones inválidas.
 - `2026-09-28T04:24:55` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_excluded_path` añadiendo una comprobación explícita para rutas que contienen caracteres nulos o inválidos para el sistema de archivos, y se ha fortalecido el manejo de errores en `walk_files` para capturar `OSError` de forma más granular al acceder a atributos de archivos (como `st_size`) en entornos con concurrencia o archivos bloqueados.
-- `2026-09-28T04:24:28` **browser.py** (robustez ante casos límite): Mejoré la robustez ante permisos denegados al acceder a atributos de archivos mediante `GetFileAttributesW` en el escaneo de directorios, asegurando que las excepciones locales no interrumpan el flujo de trabajo ni propaguen errores inesperados.
-- `2026-09-28T04:24:02` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `_validate_destination` ante rutas de sistema o condiciones de error en el sistema de archivos, asegurando que `ensure_safe_to_modify` no reciba valores potencialmente nulos y manejando casos donde `parent.mkdir` podría fallar por permisos denegados.
