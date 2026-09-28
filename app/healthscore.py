@@ -128,28 +128,28 @@ if sum(WEIGHTS.values()) != 100:
     raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula la salud relativa a la basura: decremento lineal ante mayor volumen."""
+    """Calcula la salud de archivos temporales mediante decaimiento lineal respecto al límite."""
     return _clamp(1.0 - (float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula salud de seguridad: penaliza hallazgos y advertencias con pesos ponderados."""
+    """Calcula la salud de seguridad penalizando cada hallazgo detectado y advertencia activa."""
     penalization = (float(suspicious_count) * 0.05) + (float(warnings) * 0.25)
     return _clamp(1.0 - _clamp(penalization, 0.0, 1.0))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Calcula salud de memoria: normaliza el porcentaje de RAM disponible frente a umbral."""
+    """Calcula la salud de memoria convirtiendo el porcentaje libre a un ratio [0.0, 1.0]."""
     return _clamp(float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Calcula salud de disco: normaliza el espacio libre disponible frente a umbral."""
+    """Calcula la salud de disco convirtiendo el espacio libre disponible a un ratio [0.0, 1.0]."""
     return _clamp(float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula salud de duplicados: decremento lineal según volumen de redundancia."""
+    """Calcula la salud respecto a archivos duplicados mediante decaimiento lineal."""
     return _clamp(1.0 - (float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio:
-    """Calcula salud de arranque: decremento lineal según cantidad de apps iniciadas."""
+    """Calcula la salud de arranque penalizando la cantidad de procesos que inician con el sistema."""
     return _clamp(1.0 - (float(startup_count) * _INV_STARTUP))
 
 _PIPELINE: Final[Tuple[PipelineEntry, ...]] = (
@@ -172,9 +172,7 @@ if len(_PIPELINE) != len(WEIGHTS):
 
 @dataclass
 class SystemMetrics:
-    """
-    Contenedor de datos crudos (inputs) para el motor de salud.
-    """
+    """Contenedor de datos crudos (inputs) para el motor de salud."""
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -235,7 +233,7 @@ def grade_for_score(score: float | int) -> str:
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], ratio: NormalizedRatio, findings: List[str]) -> None:
     """
-    Ejecuta reglas de recomendación para un área, sanitizando los mensajes resultantes.
+    Ejecuta reglas de recomendación para un área, aplicando filtros de seguridad al mensaje generado.
     """
     for rule in rules:
         try:

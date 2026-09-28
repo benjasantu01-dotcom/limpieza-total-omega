@@ -247,10 +247,8 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
     def _scan_dir(current_dir: str) -> None:
         try:
-            # Usar scandir para mayor control de seguridad
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    # Validar si es enlace simbólico o unión para evitar escapes
                     if entry.is_symlink() or (entry.is_dir() and is_junction(Path(entry.path))):
                         continue
                         
@@ -316,6 +314,7 @@ def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[Dupl
     if size <= PARTIAL_READ_BYTES:
         final_groups = _group_paths_by_hash(paths, hash_file)
     else:
+        # Optimización: filtrar mediante hash de cabecera antes del hash pesado
         partial_groups = _group_paths_by_hash(paths, partial_hash)
         final_groups = {}
         for candidate_subset in partial_groups.values():
