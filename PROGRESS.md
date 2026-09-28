@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **195** (38.7% de aceptación)
 - Rechazadas por tests: 28
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-27 | 97 | 21 | 23 | 12 | 123 |
-| 2026-09-28 | 95 | 7 | 20 | 7 | 99 |
+| 2026-09-27 | 97 | 21 | 23 | 12 | 119 |
+| 2026-09-28 | 98 | 7 | 21 | 7 | 99 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
-- seguridad defensiva: **38**
+- seguridad defensiva: **41**
 - manejo de errores y validación de entradas: **36**
 - robustez ante casos límite: **33**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
+- `safety.py`: **18**
 - `browser.py`: **18**
 - `duplicates.py`: **18**
+- `quarantine.py`: **18**
 - `diskreport.py`: **17**
-- `safety.py`: **17**
 - `healthscore.py`: **17**
-- `quarantine.py`: **17**
-- `scanner.py`: **15**
+- `scanner.py`: **16**
 - `memory.py`: **14**
 - `assistant.py`: **13**
 - `settings.py`: **11**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-28T09:51:53` **scanner.py** (seguridad defensiva): Se ha implementado una validación de seguridad preventiva en `process_entry` mediante la función `is_protected_path`, asegurando que ninguna entrada procesada, archivo o directorio, viole las políticas de seguridad antes de ser analizada o encolada.
+- `2026-09-28T09:51:39` **safety.py** (seguridad defensiva): Se ha añadido una validación preventiva contra puntos de reparse (Junctions/Symlinks) en el proceso de normalización de `path.parts`, asegurando que ninguna parte de la cadena sea un enlace antes de realizar la resolución completa, reforzando la defensa contra escapes de sandbox.
+- `2026-09-28T09:50:36` **quarantine.py** (seguridad defensiva): Se ha implementado un endurecimiento en `quarantine_dir` mediante la validación explícita de puntos de reparse/junctions y la verificación de que el directorio de cuarentena no sea una unidad raíz, evitando así configuraciones inseguras que podrían comprometer la integridad del sistema.
 - `2026-09-28T09:44:21` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `memory.py` al restringir `_get_process_path` para que no utilice `Path.resolve()` directamente sobre entradas externas, evitando la resolución de symlinks o junctions maliciosos que podrían escapar a carpetas protegidas antes de la validación.
 - `2026-09-28T09:40:15` **healthscore.py** (seguridad defensiva): Se ha robustecido la validación de las métricas en `compute_score` asegurando que las reglas de recomendación no procesen datos potencialmente maliciosos o inyectados, añadiendo un saneamiento de caracteres no imprimibles y truncamiento estricto a los mensajes generados dinámicamente.
 - `2026-09-28T09:31:21` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` implementando un chequeo de integridad basado en `is_safe_to_modify` para cada entrada recolectada, previniendo que rutas potencialmente inseguras sean procesadas durante la iteración recursiva.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-28T09:10:25` **quarantine.py** (robustez ante casos límite): Se ha introducido un chequeo de existencia previa del archivo en `_atomic_isolate_file` para evitar race conditions y comportamientos indefinidos ante archivos que cambian de estado durante la ejecución, reforzando la robustez ante concurrencia.
 - `2026-09-28T09:09:43` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `organizer.py` añadiendo chequeos de integridad en las operaciones con rutas (validación de `is_absolute` y existencia de padres) y mejorando el manejo de errores en `_get_win_attributes` para prevenir bloqueos por atributos inesperados.
 - `2026-09-28T09:03:08` **main.py** (robustez ante casos límite): Mejoré la robustez de la aplicación ante estados de red inciertos y errores de hilo principal añadiendo una validación de salud de los widgets antes de cualquier operación de UI en los callbacks asíncronos (`_safe_run_ui_callback` y `_flush_logs`), y asegurando que las llamadas de persistencia de configuración manejen correctamente widgets que podrían haber sido destruidos.
-- `2026-09-28T08:59:42` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` y `compute_score` ante valores inesperados (como `None` o estados de error parciales) asegurando que el motor de puntuación siempre devuelva un resultado válido y coherente, incluso si los datos de entrada provienen de sensores fallidos.
-- `2026-09-28T08:50:20` **browser.py** (robustez ante casos límite): Se añadió una validación de existencia (`p.exists()`) en `_resolve_browser_path` antes de intentar resolver rutas, evitando que el módulo falle silenciosamente al procesar rutas relativas que no existen en el sistema (un caso límite común en perfiles de usuario incompletos).
-- `2026-09-28T08:40:23` **startup.py** (rendimiento): Se optimizó `entries_from_folders` eliminando el uso innecesario de `is_safe_to_modify` dentro del bucle principal, ya que `is_protected_path` junto con la lógica de `os.scandir` es suficiente y más performante para el filtrado inicial, evitando llamadas redundantes a `Path` y chequeos de seguridad extra en archivos que ya se sabe que son seguros.

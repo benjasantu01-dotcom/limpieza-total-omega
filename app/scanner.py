@@ -207,6 +207,10 @@ class Scanner:
             if not os.access(entry.path, os.R_OK):
                 return False
             
+            # Validación adicional: no procesar rutas marcadas como protegidas
+            if is_protected_path(Path(entry.path)):
+                return False
+
             parent_dir = os.path.dirname(entry.path)
             if parent_dir not in self.protected_cache:
                 if is_protected_path(Path(parent_dir)):
@@ -234,14 +238,17 @@ class Scanner:
         si es archivo, verifica su extensión y aplica las heurísticas de seguridad.
         """
         try:
+            # Validar integridad antes de cualquier operación
+            if not self._is_safe_entry(entry):
+                return
+
             # Caso: Directorio. Valida recursividad y permisos antes de continuar.
             if entry.is_dir(follow_symlinks=False):
-                if self._is_safe_entry(entry, is_dir=True):
-                    self._handle_directory(entry, directory_stack)
+                self._handle_directory(entry, directory_stack)
             
             # Caso: Archivo. Valida existencia física y relevancia antes de procesar.
             elif entry.is_file(follow_symlinks=False):
-                if entry.exists() and self._is_relevant_extension(entry.name) and self._is_safe_entry(entry):
+                if entry.exists() and self._is_relevant_extension(entry.name):
                     self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError, FileNotFoundError):
             pass
@@ -301,9 +308,6 @@ def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    # Optimización: Filtrar carpetas protegidas antes de procesar la entrada
-                    if entry.is_dir(follow_symlinks=False) and is_protected_path(Path(entry.path)):
-                        continue
                     scanner.process_entry(entry, directory_stack)
         except (PermissionError, OSError):
             continue

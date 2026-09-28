@@ -1298,3 +1298,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-28T09:44:51` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-09-28T09:44:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T09:44:51` Corrida terminada. Total usado hoy: 228.
+- `2026-09-28T09:49:53` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-09-28T09:50:36` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha implementado un endurecimiento en `quarantine_dir` mediante la validación explícita de puntos de reparse/junctions y la verificación de que el directorio de cuarentena no sea una unidad raíz, evitando así configuraciones inseguras que podrían comprometer la integridad del sistema.
+- `2026-09-28T09:50:56` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-28T09:51:39` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación preventiva contra puntos de reparse (Junctions/Symlinks) en el proceso de normalización de `path.parts`, asegurando que ninguna parte de la cadena sea un enlace antes de realizar la resolución completa, reforzando la defensa contra escapes de sandbox.
+- `2026-09-28T09:51:53` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha implementado una validación de seguridad preventiva en `process_entry` mediante la función `is_protected_path`, asegurando que ninguna entrada procesada, archivo o directorio, viole las políticas de seguridad antes de ser analizada o encolada.
+- `2026-09-28T09:51:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T09:51:53` Corrida terminada. Total usado hoy: 232.

@@ -441,8 +441,12 @@ def normalize(path: PathLike) -> Path:
          raise UnsafePathError("Ruta contiene secuencias Unicode sospechosas.", SafetyValidationErrorCode.SUSPICIOUS_ENCODING)
     try:
         p = Path(path_str)
+        # Pre-validación de partes antes de resolver
+        current_subpath = Path(p.anchor)
         for part in p.parts:
-            if part and os.path.exists(str(p.parent / part)) and _is_reparse_point(str(p.parent / part)):
+            if part in (os.sep, os.altsep): continue
+            current_subpath = current_subpath / part
+            if os.path.exists(str(current_subpath)) and _is_reparse_point(str(current_subpath)):
                 raise UnsafePathError("Segmento de ruta contiene punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         
         if _is_device_file(p): raise UnsafePathError("Acceso a dispositivo bloqueado.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
