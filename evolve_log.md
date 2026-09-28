@@ -731,3 +731,13 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - V
 - `2026-09-28T03:44:33` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `_collect_summary_data` para evitar múltiples recorridos del sistema de archivos al centralizar el procesamiento y reduje la carga de memoria al pre-filtrar mediante el límite antes de insertar en el heap, manteniendo la eficiencia en el reporte.
 - `2026-09-28T03:44:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T03:44:33` Corrida terminada. Total usado hoy: 88.
+- `2026-09-28T03:52:51` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-09-28T03:53:20` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `_collect_candidates` para evitar llamadas redundantes a `stat()` y múltiples resoluciones de rutas (`Path(path_str)`) dentro del bucle, consolidando la información de entrada en una única pasada para reducir drásticamente la latencia de I/O.
+- `2026-09-28T03:53:48` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se pre-calculan las sumatorias de puntos en el `Pipeline` para eliminar llamadas innecesarias a `int(round())` y `_clamp` dentro del bucle de evaluación, mejorando la eficiencia del cálculo del puntaje global.
+- `2026-09-28T03:54:48` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-28T03:55:51` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-28T03:56:57` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-28T03:58:23` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un mecanismo de **invalidación selectiva y granular** en el caché de la aplicación: en lugar de limpiar todo el caché al realizar un análisis, ahora se invalidan únicamente las claves relevantes para la tarea específica, evitando recálculos innecesarios de otros módulos y mejorando la consistencia de los datos presentados.
+- `2026-09-28T03:58:41` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lógica de filtrado inicial más estricta en el lado de PowerShell, reduciendo drásticamente la carga de datos procesados por Python y evitando el análisis de procesos innecesarios en cada llamada.
+- `2026-09-28T03:58:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T03:58:41` Corrida terminada. Total usado hoy: 92.

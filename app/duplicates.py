@@ -249,23 +249,24 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    if entry.is_symlink() or (entry.is_dir() and is_junction(Path(entry.path))):
-                        continue
-                        
                     path_str = entry.path
                     if path_str in visited_paths:
                         continue
-                        
+                    
                     try:
-                        if entry.is_dir():
+                        # Identificar tipo de entrada
+                        if entry.is_dir(follow_symlinks=False):
+                            if entry.is_symlink() or is_junction(Path(path_str)):
+                                continue
                             p_entry = Path(path_str)
                             if _safe_path_check(p_entry) and not (skip_protected and is_protected_path(p_entry)):
                                 visited_paths.add(path_str)
                                 _scan_dir(path_str)
                             continue
                         
-                        st = entry.stat(follow_symlinks=False)
-                        if st.st_size < min_size:
+                        # Es archivo
+                        stat_info = entry.stat(follow_symlinks=False)
+                        if stat_info.st_size < min_size:
                             continue
                             
                         p_entry = Path(path_str)
@@ -274,7 +275,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                         if is_system_or_hidden(p_entry) or _is_file_locked(p_entry):
                             continue
                         
-                        size_to_paths_map[st.st_size].append(p_entry)
+                        size_to_paths_map[stat_info.st_size].append(p_entry)
                         visited_paths.add(path_str)
                     except (OSError, PermissionError):
                         continue

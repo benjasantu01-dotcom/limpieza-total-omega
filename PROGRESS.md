@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **177** (35.1% de aceptación)
+- Mejoras aceptadas: **178** (35.3% de aceptación)
 - Rechazadas por tests: 28
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 234
 
@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-26 | 19 | 2 | 3 | 1 | 41 |
+| 2026-09-26 | 16 | 2 | 2 | 1 | 41 |
 | 2026-09-27 | 122 | 24 | 34 | 17 | 153 |
-| 2026-09-28 | 36 | 2 | 7 | 3 | 40 |
+| 2026-09-28 | 40 | 2 | 7 | 3 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - seguridad defensiva: **42**
 - manejo de errores y validación de entradas: **36**
-- robustez ante casos límite: **25**
-- rendimiento: **21**
+- rendimiento: **25**
+- robustez ante casos límite: **22**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **18**
-- `duplicates.py`: **18**
+- `duplicates.py`: **19**
 - `diskreport.py`: **17**
 - `quarantine.py`: **17**
-- `scanner.py`: **15**
+- `safety.py`: **17**
 - `browser.py`: **15**
-- `settings.py`: **14**
-- `healthscore.py`: **13**
-- `memory.py`: **12**
+- `healthscore.py`: **14**
+- `scanner.py`: **14**
+- `memory.py`: **13**
+- `settings.py`: **13**
 - `assistant.py`: **11**
-- `main.py`: **7**
+- `main.py`: **8**
 - `organizer.py`: **7**
 - `branding.py`: **7**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-28T03:58:41` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lógica de filtrado inicial más estricta en el lado de PowerShell, reduciendo drásticamente la carga de datos procesados por Python y evitando el análisis de procesos innecesarios en cada llamada.
+- `2026-09-28T03:58:23` **main.py** (rendimiento): Se implementó un mecanismo de **invalidación selectiva y granular** en el caché de la aplicación: en lugar de limpiar todo el caché al realizar un análisis, ahora se invalidan únicamente las claves relevantes para la tarea específica, evitando recálculos innecesarios de otros módulos y mejorando la consistencia de los datos presentados.
+- `2026-09-28T03:53:48` **healthscore.py** (rendimiento): Se pre-calculan las sumatorias de puntos en el `Pipeline` para eliminar llamadas innecesarias a `int(round())` y `_clamp` dentro del bucle de evaluación, mejorando la eficiencia del cálculo del puntaje global.
+- `2026-09-28T03:53:20` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para evitar llamadas redundantes a `stat()` y múltiples resoluciones de rutas (`Path(path_str)`) dentro del bucle, consolidando la información de entrada en una única pasada para reducir drásticamente la latencia de I/O.
 - `2026-09-28T03:44:33` **diskreport.py** (rendimiento): Optimizé la función `_collect_summary_data` para evitar múltiples recorridos del sistema de archivos al centralizar el procesamiento y reduje la carga de memoria al pre-filtrar mediante el límite antes de insertar en el heap, manteniendo la eficiencia en el reporte.
 - `2026-09-28T03:44:22` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo implementando una cache de `stat` a nivel de `directory_size` y `detect_profiles` para evitar el acceso repetitivo a disco mediante la reutilización de resultados basados en inodos (ino), reduciendo la latencia en directorios con miles de archivos pequeños.
 - `2026-09-28T03:43:22` **assistant.py** (rendimiento): Se optimizó el motor local reemplazando el bucle `for` de búsqueda de tokens por un acceso directo de tiempo constante O(1) mediante `dict.get()` sobre los tokens de la consulta, eliminando iteraciones innecesarias sobre el diccionario de mapeo.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-28T03:13:33` **healthscore.py** (legibilidad y documentación): Documenté el propósito de los métodos de normalización y las reglas del pipeline mediante docstrings detallados, mejorando la mantenibilidad del motor analítico sin alterar su funcionalidad.
 - `2026-09-28T03:13:06` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de los nombres en el motor de escaneo y hashing para facilitar el mantenimiento y la auditoría técnica, asegurando que los roles de cada función sean explícitos sin alterar la lógica de ejecución.
 - `2026-09-28T03:12:38` **diskreport.py** (legibilidad y documentación): Mejora la mantenibilidad y legibilidad mediante la adición de Type Hints detallados, documentación explícita de las excepciones esperadas en funciones críticas y la clarificación de la intención de los algoritmos mediante docstrings mejorados.
-- `2026-09-28T03:03:56` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del módulo agregando type hints explícitos, estandarizando los docstrings siguiendo el formato Google e introduciendo `Path.joinpath` de forma más clara para evitar la concatenación manual de rutas, facilitando así el mantenimiento preventivo ante errores de path traversal.
-- `2026-09-28T03:03:39` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo descripciones detalladas a las constantes de la paleta y funciones críticas, además de refactorizar el `logo_svg` para separar la estructura XML del renderizado, mejorando la legibilidad del código base.
-- `2026-09-28T03:03:02` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_call_gemini`, extrayendo la lógica de validación de URL y encabezados a constantes y simplificando el flujo de ejecución para clarificar las responsabilidades de cada paso de seguridad.
-- `2026-09-28T02:53:29` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_load_impl` y `save` eliminando el riesgo de silenciamiento accidental de excepciones críticas de sistema mediante un manejo de errores más específico y consistente con la regla de no ignorar fallos de I/O en operaciones críticas.

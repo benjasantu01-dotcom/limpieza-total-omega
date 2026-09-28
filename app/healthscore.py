@@ -258,11 +258,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {k: 0 for k in WEIGHTS}
-    accumulated_score: float = 0.0
+    accumulated_score: int = 0
     
     for entry in _PIPELINE:
         try:
-            area_ratio: NormalizedRatio = _clamp(entry.scorer(metrics))
+            area_ratio: NormalizedRatio = entry.scorer(metrics)
             if entry.rules:
                 _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             
@@ -275,7 +275,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena.")
     
-    final_score: int = int(_clamp(accumulated_score, 0.0, 100.0))
+    final_score: int = max(0, min(accumulated_score, 100))
     return HealthResult(
         score=final_score, 
         grade=grade_for_score(final_score), 

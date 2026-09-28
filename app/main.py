@@ -1217,8 +1217,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.clear("Salud")
             self.log("Analizando... esto no modifica nada.", "Salud")
 
-            # Actualizamos métricas y generamos contexto para el asistente
+            # Invalida solo métricas volátiles para forzar actualización
             self._invalidate_cache("ram_snapshot")
+            
             metrics, snapshot, _ = self._compile_metrics()
             score_result = healthscore.compute_score(metrics)
 

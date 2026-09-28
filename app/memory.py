@@ -230,8 +230,9 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     now = time.time()
     if (now - _proc_cache_time) > 60:
         try:
+            # Optimizacion: Filtro agresivo en PS para reducir transmision y procesamiento
             cmd = ['powershell', '-NoProfile', '-NonInteractive', '-Command', 
-                   'Get-Process | Where-Object { $_.Id -notin 0,4 } | Select-Object -First 50 | ForEach-Object { "$($_.Name),$($_.Id),$($_.WorkingSet)" }']
+                   'Get-Process | Where-Object { $_.Id -notin 0,4 } | Sort-Object WorkingSet -Descending | Select-Object -First 30 | ForEach-Object { "$($_.Name),$($_.Id),$($_.WorkingSet)" }']
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3, check=False)
             if proc.returncode == 0 and proc.stdout:
                 _proc_cache_data = parse_windows_process_csv(proc.stdout, limit=limit)
