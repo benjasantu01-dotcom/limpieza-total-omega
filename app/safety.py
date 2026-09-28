@@ -636,11 +636,13 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         _check_file_integrity(p, initial_stat)
     else:
         parent = p.parent
-        if parent.exists() and not os.access(parent, os.W_OK):
+        if parent.exists():
+            if not os.access(parent, os.W_OK):
                  raise UnsafePathError("Directorio contenedor no tiene permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
-        if parent.exists() and is_protected_path(str(parent)):
-            raise UnsafePathError("Creación en directorio restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
-        if parent.exists() and os.name == 'nt':
+            if is_protected_path(str(parent)):
+                raise UnsafePathError("Creación en directorio restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
+            if os.name == 'nt' and _is_file_locked_by_other_process(str(parent)):
+                raise UnsafePathError("Directorio contenedor bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE)
             for p_seg in parent.parents:
                 if _is_reparse_point(str(p_seg)):
                     raise UnsafePathError("Ruta base contiene punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)

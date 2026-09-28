@@ -800,3 +800,49 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - V
 - `2026-09-28T05:20:15` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad del proceso de aislamiento mediante la validación estricta de que la ruta de origen no contenga puntos de reparse (reparse points) ni enlaces simbólicos, bloqueando cualquier intento de manipulación fuera del sistema de archivos esperado mediante un chequeo en `_validate_source_for_quarantine`.
 - `2026-09-28T05:20:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T05:20:15` Corrida terminada. Total usado hoy: 124.
+- `2026-09-28T05:24:27` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-09-28T05:24:50` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-28T05:25:35` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una verificación de "archivo en uso" (mediante `_is_file_locked_by_other_process`) específicamente para el directorio contenedor antes de proceder con una creación de archivo, cerrando una ventana de riesgo donde el sistema podría denegar acceso a carpetas bloqueadas por el kernel o procesos exclusivos.
+- `2026-09-28T05:26:02` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-09-28T05:26:24` Tests FALLARON:
+```
+not in 'Puntaje de ...io: 19 items'
+E         
+E         '2400' is contained here:
+E           Puntaje de salud: 61 nota C
+E           Basura: 2400 MB
+E         ?         ++++
+E           Sospechosos: 3
+E           RAM disponible: 11%
+E           Disco libre: 6%
+E           Duplicados: 900 MB
+E           Inicio: 19 items
+
+evolve/tests/test_assistant.py:418: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:81: SyntaxWarning: invalid escape sequence '\ '
+    El prefijo \\?\ es necesario para superar limitaciones de MAX_PATH en Windows.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+  
+  '2400' is contained here:
+    Puntaje de salud: 61 nota C
+    Basura: 2400 MB
+  ?         ++++
+    Sospechosos: 3
+    RAM disponible: 11%
+    Disco libre: 6%
+    Duplicados: 900 MB
+    Inicio: 19 items
+1 failed, 298 passed, 4 warnings in 1.24s
+
+```
+- `2026-09-28T05:26:24` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se endureció la seguridad defensiva al reemplazar `os.replace` por una lógica de sobrescritura segura basada en `os.replace` pero precedida de una verificación de estado del archivo destino y sus permisos, evitando condiciones de carrera o escrituras no autorizadas sobre enlaces simbólicos que pudieran haber sido creados tras la validación inicial.
+- `2026-09-28T05:26:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T05:26:24` Corrida terminada. Total usado hoy: 128.
