@@ -299,6 +299,9 @@ def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
+                    # Optimización: Filtrar carpetas protegidas antes de procesar la entrada
+                    if entry.is_dir(follow_symlinks=False) and is_protected_path(Path(entry.path)):
+                        continue
                     scanner.process_entry(entry, directory_stack)
         except (PermissionError, OSError):
             continue

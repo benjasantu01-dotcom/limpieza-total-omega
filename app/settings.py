@@ -324,24 +324,24 @@ def _load_impl(ruta: Path) -> AppSettings:
         pass
     return DEFAULTS.copy()
 
+@lru_cache(maxsize=4)
+def _load_with_cache(ruta_str: str, mtime: float) -> AppSettings:
+    """Carga interna cacheada para evitar E/S redundante."""
+    return _load_impl(Path(ruta_str))
+
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga los ajustes desde el disco, utilizando caché de tiempo de modificación (mtime)."""
     ruta = settings_path(custom_base)
-    cache_key = str(ruta)
-    
     try:
         mtime = ruta.stat().st_mtime if ruta.exists() else 0.0
-        if cache_key in _MANAGER.cache:
-            cached_mtime, cached_val = _MANAGER.cache[cache_key]
-            if cached_mtime == mtime: return cached_val.copy()
     except OSError:
         mtime = 0.0
     
+    # Intentar cargar desde el archivo principal o el backup
     for r in [ruta, ruta.with_suffix(".bak")]:
         try:
             if r.exists():
-                settings = _load_impl(r)
-                _MANAGER.cache[cache_key] = (r.stat().st_mtime, settings)
+                settings = _load_with_cache(str(r), r.stat().st_mtime)
                 return settings.copy()
         except (OSError, PermissionError):
             continue
@@ -396,7 +396,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         os.replace(temp_path, ruta)
         if not _is_file_secure_to_read(ruta): raise PermissionError("Integrity check failed")
             
-        _MANAGER.clear()
+        _load_with_cache.cache_clear()
         return ruta
     except (OSError, IOError, PermissionError): 
         return None
@@ -422,7 +422,7 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
 def reset(custom_base: PathLike | None = None) -> AppSettings:
     """Restaura los valores predeterminados y limpia la caché."""
     save(DEFAULTS, custom_base)
-    _MANAGER.clear()
+    _load_with_cache.cache_clear()
     return DEFAULTS.copy()
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:

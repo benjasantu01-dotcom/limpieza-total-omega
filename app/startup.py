@@ -251,28 +251,22 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
     scan_folders = folders if folders is not None else startup_folders()
     
     for folder in scan_folders:
-        if is_protected_path(folder) or not is_safe_to_modify(folder):
+        if is_protected_path(folder):
             continue
         try:
             with os.scandir(folder) as it:
                 for entry in it:
                     if entry.is_file(follow_symlinks=False):
                         _, ext = os.path.splitext(entry.name)
-                        p = Path(entry.path)
-                        
-                        is_valid_file = (
-                            ext.lower() in EXECUTABLE_EXTS and 
-                            not is_protected_path(p) and 
-                            is_safe_to_modify(p)
-                        )
-                        
-                        if is_valid_file:
-                            name = "".join(c for c in os.path.splitext(entry.name)[0] if ord(c) >= 32)
-                            found_entries.append(StartupEntry(
-                                name=name,
-                                command=entry.path,
-                                source="carpeta"
-                            ))
+                        if ext.lower() in EXECUTABLE_EXTS:
+                            p = Path(entry.path)
+                            if not is_protected_path(p):
+                                name = "".join(c for c in os.path.splitext(entry.name)[0] if ord(c) >= 32)
+                                found_entries.append(StartupEntry(
+                                    name=name,
+                                    command=entry.path,
+                                    source="carpeta"
+                                ))
         except (OSError, PermissionError):
             continue
     return found_entries

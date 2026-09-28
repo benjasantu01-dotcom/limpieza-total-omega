@@ -191,7 +191,7 @@ SENSITIVE_EXTENSIONS: Final[frozenset[str]] = frozenset({
 })
 
 _SYSTEM_ROOT_PATHS: Final[tuple[str, ...]] = tuple(
-    os.normcase(os.environ[v]) for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
+    os.path.normcase(os.environ[v]) for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
     if os.environ.get(v)
 )
 
@@ -466,6 +466,7 @@ def is_drive_root(path: PathLike) -> bool:
 @lru_cache(maxsize=4096)
 def _is_system_path_raw(path_str: str) -> bool:
     """Comprueba si la ruta reside en directorios de sistema conocidos."""
+    # Uso de startswith con la tupla pre-calculada es O(N) respecto al número de raíces del sistema
     path_lower = path_str.lower()
     if any(path_lower.startswith(root) for root in _SYSTEM_ROOT_PATHS_TUPLE):
         return True
