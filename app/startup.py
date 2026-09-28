@@ -292,7 +292,10 @@ def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
         clean_path = cmd.strip('"')
         if not clean_path:
             return False
-        p_candidate = Path(clean_path).expanduser()
+        # Validación defensiva ante caracteres que impiden la instanciación de un Path
+        if any(c in clean_path for c in SUSPICIOUS_CHARS):
+            return False
+        p_candidate = Path(clean_path)
         # Validación de seguridad defensiva: no procesar rutas fuera del ámbito permitido
         if is_protected_path(p_candidate) or ".." in str(p_candidate):
             return False

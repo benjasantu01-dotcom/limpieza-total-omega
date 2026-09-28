@@ -220,15 +220,16 @@ def _process_file_entry(
 ) -> int:
     """Procesa una entrada de directorio: recurre si es carpeta o suma bytes si es archivo."""
     try:
+        child_path = Path(entry.path)
+        if not is_safe_to_modify(child_path) or is_protected_path(child_path):
+            return 0
+            
         if entry.is_dir(follow_symlinks=False):
-            child_path = Path(entry.path)
-            if is_safe_to_modify(child_path) and not is_protected_path(child_path):
-                return _sum_directory_recursive(child_path, is_junction_fn, kernel32, memo, depth + 1)
+            return _sum_directory_recursive(child_path, is_junction_fn, kernel32, memo, depth + 1)
         else:
             return entry.stat(follow_symlinks=False).st_size
     except (OSError, PermissionError):
         return 0
-    return 0
 
 def _sum_directory_recursive(
     root_path: Path, 

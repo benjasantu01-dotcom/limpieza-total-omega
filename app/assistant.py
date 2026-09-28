@@ -367,7 +367,7 @@ class SystemContext:
         """Limpia el string de calificación eliminando caracteres de control."""
         if not isinstance(val, str): return ""
         clean = _REGEX_CONTROL.sub(" ", val)[:10].strip()
-        return clean if _ensure_safe_text(clean) else ""
+        return clean if _ensure_safe_text(clean) and not is_protected_path(clean) else ""
 
     def ingest(self, source: Any) -> bool:
         """
@@ -384,7 +384,6 @@ class SystemContext:
         
         grade_val = self._clean_grade(_get_source_value(source, "grade"))
         if grade_val:
-            if is_protected_path(grade_val): return False
             updates['grade'] = grade_val
         
         if updates:
