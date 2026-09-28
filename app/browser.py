@@ -244,7 +244,7 @@ def directory_size(path: Optional[OSPath]) -> int:
     if not path: return 0
     try:
         p = Path(path).resolve(strict=True)
-        if not p.is_dir() or not is_safe_to_modify(p) or is_protected_path(p):
+        if not p.is_dir() or not p.parts or not is_safe_to_modify(p) or is_protected_path(p):
             return 0
         return _sum_directory_recursive(p, str(p), _IS_JUNCTION_FN, _get_kernel32(), {}, p.stat().st_dev, 0)
     except (OSError, RuntimeError, PermissionError):
@@ -267,7 +267,10 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str, is_junction_fn: Jun
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Une la base con el path relativo y verifica integridad."""
     try:
-        target = real_base.joinpath(*rel_str.split("\\"))
+        parts = rel_str.split("\\")
+        if not parts:
+            return Path()
+        target = real_base.joinpath(*parts)
         if target.exists():
             target = target.resolve(strict=True)
             if _is_path_inside_base(str(target), str(real_base)) and \

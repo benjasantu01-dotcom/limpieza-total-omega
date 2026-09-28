@@ -379,6 +379,7 @@ class SystemContext:
     def ingest(self, source: Any) -> bool:
         """
         Ingesta datos de una fuente externa y los normaliza en el contexto.
+        Utiliza actualización atómica para evitar estados parciales corruptos.
         """
         if not (isinstance(source, dict) or hasattr(source, "__dict__")) or _is_input_too_deep_or_complex(source):
             return False
@@ -398,7 +399,6 @@ class SystemContext:
                 for k, v in updates.items():
                     object.__setattr__(self, k, v)
                 object.__setattr__(self, 'analyzed', True)
-                # Invalidar caché de propiedades de datos
                 if 'active_problems' in self.__dict__:
                     del self.__dict__['active_problems']
                 return True

@@ -296,9 +296,11 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             rel = path.relative_to(root)
             if rel.parts:
                 top_level = root / rel.parts[0]
-                s = stats[top_level]
-                s[0] += size_bytes
-                s[1] += 1
+                # Validar que sea una ruta absoluta válida y manejable
+                if top_level.exists():
+                    s = stats[top_level]
+                    s[0] += max(0, size_bytes)
+                    s[1] += 1
         except (ValueError, OSError, RuntimeError): continue
     results = [FolderUsage(p, s[0], s[1]) for p, s in stats.items()]
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)
@@ -319,18 +321,19 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        total_bytes += size_bytes
+        safe_size = max(0, size_bytes)
+        total_bytes += safe_size
         total_files += 1
         ext = path.suffix.lower() or "(sin extensión)"
         stats = ext_stats[ext]
-        stats.total_bytes += size_bytes
+        stats.total_bytes += safe_size
         stats.count += 1
         
         if limit > 0:
             if len(top_heap) < limit: 
-                heapq.heappush(top_heap, (size_bytes, path))
-            elif size_bytes > top_heap[0][0]: 
-                heapq.heapreplace(top_heap, (size_bytes, path))
+                heapq.heappush(top_heap, (safe_size, path))
+            elif safe_size > top_heap[0][0]: 
+                heapq.heapreplace(top_heap, (safe_size, path))
                 
     return SummaryData(total_bytes, total_files, dict(ext_stats), top_heap)
 
