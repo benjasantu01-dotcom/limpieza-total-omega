@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **173** (34.3% de aceptación)
+- Mejoras aceptadas: **176** (34.9% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 41
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 241
+- Rechazadas por guardia de seguridad: 42
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 238
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-26 | 23 | 2 | 3 | 2 | 48 |
+| 2026-09-26 | 23 | 2 | 3 | 1 | 45 |
 | 2026-09-27 | 122 | 24 | 34 | 17 | 153 |
-| 2026-09-28 | 28 | 1 | 4 | 3 | 40 |
+| 2026-09-28 | 31 | 1 | 5 | 3 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **48**
+- legibilidad y documentación: **51**
 - seguridad defensiva: **42**
 - manejo de errores y validación de entradas: **36**
 - robustez ante casos límite: **29**
@@ -30,23 +30,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **18**
 - `safety.py`: **18**
 - `duplicates.py`: **18**
 - `diskreport.py`: **17**
-- `quarantine.py`: **17**
 - `browser.py`: **15**
 - `healthscore.py`: **14**
 - `scanner.py`: **14**
 - `settings.py`: **14**
-- `memory.py`: **11**
+- `memory.py`: **12**
 - `assistant.py`: **10**
 - `main.py`: **7**
+- `organizer.py`: **7**
 - `branding.py`: **7**
-- `organizer.py`: **6**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-28T03:23:51` **quarantine.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos (basados en Google Style) que explican el propósito de las funciones internas y validaciones complejas, facilitando el mantenimiento futuro y la comprensión de las salvaguardas implementadas.
+- `2026-09-28T03:23:13` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de `organizer.py` mediante la adición de docstrings detallados en las funciones de validación y utilidades de bajo nivel, aclarando los propósitos de seguridad y los casos de borde que cada una maneja para reducir la ambigüedad en el mantenimiento del código.
+- `2026-09-28T03:22:45` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de Type Hints explícitos para las estructuras de datos y se ha optimizado la legibilidad de la lógica de parsing de archivos, extrayendo el bloque de extracción de PID y Working Set a una función interna dedicada para mejorar la mantenibilidad y el testeo unitario.
 - `2026-09-28T03:13:33` **healthscore.py** (legibilidad y documentación): Documenté el propósito de los métodos de normalización y las reglas del pipeline mediante docstrings detallados, mejorando la mantenibilidad del motor analítico sin alterar su funcionalidad.
 - `2026-09-28T03:13:06` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de los nombres en el motor de escaneo y hashing para facilitar el mantenimiento y la auditoría técnica, asegurando que los roles de cada función sean explícitos sin alterar la lógica de ejecución.
 - `2026-09-28T03:12:38` **diskreport.py** (legibilidad y documentación): Mejora la mantenibilidad y legibilidad mediante la adición de Type Hints detallados, documentación explícita de las excepciones esperadas en funciones críticas y la clarificación de la intención de los algoritmos mediante docstrings mejorados.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-28T02:44:05` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` envolviendo las operaciones de archivo en un bloque `try-finally` para asegurar que, ante cualquier excepción durante la transferencia, el archivo temporal (si existe) sea eliminado correctamente, evitando la acumulación de basura en el sistema y dejando el estado limpio para futuras iteraciones.
 - `2026-09-28T02:42:48` **main.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `on_trim_process` y `on_restore_quarantine` mediante validaciones adicionales y el uso consistente de `try-except` para evitar que entradas malformadas o procesos inexistentes provoquen cierres inesperados o estados inconsistentes en la UI.
 - `2026-09-28T02:32:55` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `summarize` reemplazando chequeos tipo `isinstance` por una validación más estricta mediante el método `is_finite` de `SystemMetrics` y capturando excepciones de forma granular durante la ejecución del pipeline para evitar el colapso del informe ante datos malformados.
-- `2026-09-28T02:32:40` **duplicates.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores al reemplazar comparaciones de rutas implícitas y propensas a `OSError` en `format_group` por comparaciones directas de objetos `Path` normalizados, y asegura que la función `_is_file_locked` capture `ValueError` (posible al cerrar descriptores inválidos), evitando que excepciones inesperadas detengan el escaneo.
-- `2026-09-28T02:32:13` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_summary_data` y `walk_files` capturando posibles fallos de `os.stat` y `suffix` al procesar archivos cuyo nombre o metadatos causan errores de sistema, evitando que una iteración abortada corrompa la recolección de estadísticas o la recursión.
-- `2026-09-28T02:24:20` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_validate_destination` capturando explícitamente excepciones de `Path.resolve()` y `is_protected_path` para garantizar que la función sea totalmente resiliente ante entradas malformadas o rutas que causen errores de sistema.
