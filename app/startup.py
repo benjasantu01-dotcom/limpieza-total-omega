@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import (
     Iterable, Optional, Iterator, List, Tuple, Dict, Sequence, Set, Union
 )
-from safety import is_protected_path
+from safety import is_protected_path, is_safe_to_modify
 
 __all__ = [
     "StartupEntry",
@@ -262,14 +262,15 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
     scan_folders = folders if folders is not None else startup_folders()
     
     for folder in scan_folders:
-        if is_protected_path(folder):
+        if is_protected_path(folder) or not is_safe_to_modify(folder):
             continue
         try:
             with os.scandir(folder) as it:
                 for entry in it:
                     if entry.is_file(follow_symlinks=False):
                         _, ext = os.path.splitext(entry.name)
-                        if ext.lower() in EXECUTABLE_EXTS and not is_protected_path(Path(entry.path)):
+                        p = Path(entry.path)
+                        if ext.lower() in EXECUTABLE_EXTS and not is_protected_path(p) and is_safe_to_modify(p):
                             name = "".join(c for c in os.path.splitext(entry.name)[0] if ord(c) >= 32)
                             found_entries.append(StartupEntry(
                                 name=name,

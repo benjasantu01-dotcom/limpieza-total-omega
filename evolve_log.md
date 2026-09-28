@@ -402,3 +402,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-28T00:50:26` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-28T00:50:27` Rotación — log: 1447 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T00:50:27` Corrida terminada. Total usado hoy: 20.
+- `2026-09-28T00:58:57` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-09-28T00:59:41` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-09-28T01:00:09` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-09-28T01:00:41` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de "Time-of-check to time-of-use" (TOCTOU) y asegurar que el archivo de configuración sea estrictamente un archivo plano sin permisos de ejecución, evitando vectores de inyección de código mediante archivos de configuración maliciosos.
+- `2026-09-28T01:00:55` ✅ Mejora aceptada en startup.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva al integrar `is_safe_to_modify` en `entries_from_folders` para filtrar archivos antes de procesarlos, asegurando que se cumpla el principio de no interactuar con rutas protegidas durante el escaneo de directorios.
+- `2026-09-28T01:00:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T01:00:55` Corrida terminada. Total usado hoy: 24.

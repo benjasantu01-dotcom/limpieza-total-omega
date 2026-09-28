@@ -301,10 +301,14 @@ def _is_file_secure_to_read(ruta: Path) -> bool:
     """Garantiza que el archivo sea un archivo regular, sin ser enlace, y propiedad del usuario."""
     try:
         if not ruta.is_absolute(): return False
-        if not ruta.exists() and not ruta.is_symlink(): return False
         st = ruta.lstat()
+        # Verificar que sea archivo regular y no un enlace/punto de reparse
         if not stat.S_ISREG(st.st_mode) or _Validators._is_reparse_point(ruta): return False
+        # Verificar permisos (prohibir ejecución, asegurar lectura/escritura)
+        if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH): return False
+        # Chequeo lógico contra safety
         if not is_safe_to_modify(str(ruta)): return False
+        # Validar dueño si el SO lo soporta
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
         return True
