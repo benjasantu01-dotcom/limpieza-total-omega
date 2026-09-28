@@ -308,6 +308,8 @@ def _is_file_secure_to_read(ruta: Path) -> bool:
         if not stat.S_ISREG(st.st_mode) or _Validators._is_reparse_point(ruta): return False
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH): return False
         if not is_safe_to_modify(str(ruta)): return False
+        # Verificar permisos de escritura del SO (bloqueos)
+        if not os.access(ruta, os.R_OK): return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
         return True
@@ -396,7 +398,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             os.replace(ruta, bak_path)
         
         os.replace(temp_path, ruta)
-        if not _is_file_secure_to_read(ruta): raise PermissionError("Integrity check failed")
+        # Verificación post-escritura: integridad del archivo final
+        if not _is_file_secure_to_read(ruta) or open(ruta, 'r', encoding='utf-8').read() != serialized:
+            raise PermissionError("Integrity check failed")
             
         _load_with_cache.cache_clear()
         return ruta

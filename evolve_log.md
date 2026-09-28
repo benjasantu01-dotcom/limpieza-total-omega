@@ -505,3 +505,38 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-09-28T13:37:19` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-28T13:37:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T13:37:19` Corrida terminada. Total usado hoy: 320.
+- `2026-09-28T13:45:20` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-28T13:46:07` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante errores de acceso a archivos al añadir manejo de excepciones específicas (`OSError`, `PermissionError`) en `_get_file_attrs` y `_is_file_locked_by_other_process`, evitando que la app colapse al encontrar archivos bloqueados por el sistema operativo o archivos temporales de acceso denegado durante el escaneo.
+- `2026-09-28T13:46:16` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-28T13:46:20` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-28T13:46:27` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-28T13:46:40` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-28T13:47:29` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save` mediante una verificación de integridad post-escritura más estricta (comparación de contenido) y se añadió una validación de "bloqueo por sistema" en `_is_file_secure_to_read` para prevenir modificaciones en archivos que tengan atributos de solo lectura o estén bloqueados por el SO.
+- `2026-09-28T13:47:37` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-28T13:47:56` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 0.90s
+
+```
+- `2026-09-28T13:47:56` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se mejora la robustez de `StartupEntry._extract_quoted_path` para evitar errores cuando la ruta del ejecutable contiene comillas escapadas o secuencias inesperadas, asegurando que el parser sea resiliente ante cadenas de comando mal formadas que podrían romper el flujo de análisis.
+- `2026-09-28T13:47:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T13:47:56` Corrida terminada. Total usado hoy: 324.

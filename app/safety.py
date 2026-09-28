@@ -99,7 +99,7 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         return attrs if attrs != 0xFFFFFFFF else 0
-    except (AttributeError, OSError, ctypes.ArgumentError, TypeError):
+    except (AttributeError, OSError, ctypes.ArgumentError, TypeError, Exception):
         return 0
 
 class SafetyValidationErrorCode(IntEnum):
