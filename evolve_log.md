@@ -1157,3 +1157,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-28T07:59:34` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
 - `2026-09-28T07:59:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T07:59:34` Corrida terminada. Total usado hoy: 188.
+- `2026-09-28T08:07:47` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-09-28T08:08:21` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_path_suspicious, StartupEntry._is_reserved_device_name
+- `2026-09-28T08:09:02` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Answer.is_online, AreaExplanation, SystemContext.__hash__, SystemContext._apply_field, SystemContext._clean_grade
+- `2026-09-28T08:09:38` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo de gradientes y la gestión de colores mediante la pre-compilación de los parámetros de franjas y la consolidación de `_get_grouped_segments` para reducir la presión sobre la CPU al renderizar elementos gráficos recurrentes.
+- `2026-09-28T08:09:51` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `directory_size` y `detect_profiles` evitando cálculos redundantes mediante la consolidación del `memo` (para detectar archivos ya contados) y utilizando una única instancia de `kernel32` compartida entre los procesos recursivos, reduciendo la sobrecarga de llamadas a la API de Windows.
+- `2026-09-28T08:09:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T08:09:51` Corrida terminada. Total usado hoy: 192.

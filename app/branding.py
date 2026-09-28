@@ -40,9 +40,6 @@ class SeverityType(Enum):
     WARNING = "warning"
     DANGER = "danger"
 
-# Caché local para evitar recálculo de gradientes en cada frame.
-_GRADIENT_CACHE: dict[Tuple[int, Tuple[ColorHex, ...]], Tuple[ColorHex, ...]] = {}
-
 # Pre-generación de fragmento SVG estático para mejorar performance
 _SVG_GRADIENT_STOPS: Final[str] = "\n".join([f'      <stop offset="{o}" stop-color="{c}"/>' 
                        for o, c in zip(["0%", "55%", "100%"], ["#00f0c0", "#7c5cff", "#ff2d78"])])
@@ -331,7 +328,7 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
         res[i] = _rgb_to_hex(_interpolate_rgb(rgb_stops[idx], rgb_stops[idx + 1], pos - idx))
     return tuple(res) # type: ignore
 
-@lru_cache(maxsize=64)
+@lru_cache(maxsize=128)
 def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, ...]:
     """Optimiza el dibujo agrupando píxeles consecutivos que comparten color."""
     if not colors: return ()
