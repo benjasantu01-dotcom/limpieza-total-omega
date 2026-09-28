@@ -167,7 +167,7 @@ _PIPELINE: Final[Tuple[PipelineEntry, ...]] = (
                   (RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),)),
 )
 
-if len(_PIPELINE) != len(WEIGHTS):
+if len(_PIPELINE) != len(WEIGHTS) or any(e.area not in WEIGHTS for e in _PIPELINE):
     raise RuntimeError("Desalineación crítica entre el Pipeline de evaluación y los pesos definidos.")
 
 @dataclass

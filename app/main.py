@@ -300,6 +300,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         cwd = Path.cwd().resolve()
         home = Path.home()
         
+        # Detección de ruta UNC o unidades de red inestables
+        if str(cwd).startswith(r"\\"):
+            raise RuntimeError("La aplicación no puede ejecutarse desde una ruta de red (UNC).")
+
         # Validación estricta de rutas de sistema y estados de acceso
         validations = [
             (app_root.exists(), "Directorio de aplicación inexistente."),

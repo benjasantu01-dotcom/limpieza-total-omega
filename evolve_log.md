@@ -762,3 +762,10 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - V
 - `2026-09-28T04:25:06` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-09-28T04:25:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T04:25:06` Corrida terminada. Total usado hoy: 104.
+- `2026-09-28T04:33:32` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-09-28T04:34:03` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `compute_score` mediante la adición de una comprobación de integridad en tiempo de ejecución para detectar cambios inesperados en los pesos o claves de `_PIPELINE` vs `WEIGHTS` que podrían causar errores silenciosos o inconsistencias en los reportes, asegurando que el motor falle de forma predecible ante configuraciones inválidas.
+- `2026-09-28T04:35:19` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se introdujo una comprobación robusta en `_validate_environment` para detectar si la aplicación se ejecuta desde una ruta de red (UNC) o una unidad no mapeada localmente, mitigando riesgos de acceso a recursos de red lentos o inseguros durante el análisis.
+- `2026-09-28T04:35:45` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-28T04:35:56` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-28T04:35:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T04:35:56` Corrida terminada. Total usado hoy: 108.
