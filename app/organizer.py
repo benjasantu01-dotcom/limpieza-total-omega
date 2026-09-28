@@ -126,9 +126,8 @@ def _is_unc_path(path: Path) -> bool:
 
 def _generate_unique_target(target: Path) -> Path:
     """
-    Gestiona colisiones de nombres de archivos en el directorio destino.
-    Si el destino existe, intenta sufijar con un contador hasta 999 para garantizar
-    que cada archivo de revisión sea único y preservable.
+    Gestiona colisiones de nombres de archivos en el directorio destino mediante
+    la adición incremental de sufijos numéricos (1-999) para evitar sobrescrituras.
     """
     base_target = target
     counter = 1
@@ -143,8 +142,8 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si un archivo está bloqueado por otro proceso intentando abrirlo en modo lectura.
-    Retorna True si el archivo está siendo usado exclusivamente por otra aplicación.
+    Verifica la accesibilidad del archivo intentando abrirlo en modo lectura binaria.
+    Un error de permiso o acceso implica un bloqueo por otro proceso.
     """
     if not path.is_file():
         return True
@@ -156,9 +155,8 @@ def _is_file_locked(path: Path) -> bool:
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """
-    Comprueba si el destino está contenido dentro del origen para evitar
-    operaciones que causarían una recursión infinita o el movimiento de un
-    archivo a su propia subcarpeta.
+    Verifica que la ruta de destino no sea un subdirectorio del origen para 
+    evitar el movimiento de archivos hacia sí mismos o ciclos infinitos.
     """
     try:
         s, d = str(src.resolve()), str(dest.resolve())
@@ -173,8 +171,8 @@ def _has_forbidden_chars(path: Path) -> bool:
 
 def _validate_path_security(src: Path, dest: Path) -> bool:
     """
-    Validación estática de seguridad. Comprueba longitudes de ruta (MAX_PATH),
-    caracteres ilegales y la protección definida en el módulo safety.
+    Valida la integridad de las rutas involucradas: check de caracteres, 
+    longitud máxima permitida (MAX_PATH) y protección de sistema (safety.py).
     """
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     if len(str(src)) > 260 or len(str(dest)) > 260: return False
@@ -182,9 +180,9 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
-    Validación completa para operaciones de movimiento. Garantiza que el archivo
-    exista, no esté bloqueado, sea seguro según `safety.py` y el destino sea
-    una carpeta válida y accesible en la misma unidad.
+    Realiza una validación exhaustiva de pre-condiciones para mover archivos:
+    verifica existencia, permisos de escritura, concurrencia (bloqueos), 
+    y consistencia del sistema de archivos según `safety.py`.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     try:
@@ -220,8 +218,8 @@ def _is_valid_junk_entry(entry: os.DirEntry, stats: os.stat_result) -> bool:
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
     """
-    Recorre directorios de forma recursiva hasta una profundidad de 50 niveles.
-    Utiliza un conjunto `visited` para evitar ciclos en sistemas de archivos complejos.
+    Recorre directorios de forma recursiva (máx 50 niveles).
+    Utiliza `visited` como conjunto de control para prevenir ciclos de archivos.
     """
     if depth > 50 or not current_dir.exists(): return
     try:
@@ -286,16 +284,23 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     return dest_res
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
-    """Valida la disponibilidad de espacio en disco en la unidad de destino antes de una operación de movimiento."""
+    """
+    Valida la disponibilidad de espacio en disco en la unidad de destino y 
+    genera una ruta única para la operación de movimiento.
+    """
     try:
         usage = shutil.disk_usage(dest_base.anchor)
+        # Margen de seguridad de 50MB
         if usage.free < (junk_file.size_bytes + 52428800): return None
     except (OSError, FileNotFoundError, AttributeError): return None
     safe_name = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
     return _generate_unique_target(dest_base / safe_name)
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Ejecuta la eliminación permanente de archivos confirmados tras la revisión del usuario."""
+    """
+    Ejecuta la eliminación permanente de archivos confirmados tras la revisión.
+    Aplica `ensure_safe_to_modify` para garantizar que la operación respeta las políticas de seguridad.
+    """
     try:
         dest = Path(review_dir).expanduser().resolve()
         if not dest.is_dir(): return 0

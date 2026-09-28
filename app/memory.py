@@ -269,11 +269,12 @@ def _is_system_process(pid: int) -> bool:
     return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
 
 def _get_process_path(pid: int) -> Optional[Path]:
+    """Obtiene y valida la ruta absoluta del ejecutable de un PID mediante la API Win32."""
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.OpenProcess(SAFE_VALIDATION_MASK, False, pid)
     if not handle: return None
     try:
-        # Verificar si el proceso sigue vivo antes de intentar consultar la ruta
+        # Verificar si el proceso sigue activo antes de intentar consultar la ruta
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return None
@@ -298,6 +299,7 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
+    """Intenta reducir el working set de un proceso específico si es seguro."""
     if not _is_windows: return False, "Solo soportado en Windows."
     try: 
         target_pid = int(pid)

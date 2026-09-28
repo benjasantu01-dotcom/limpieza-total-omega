@@ -348,7 +348,11 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
 
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
-    """Carga y valida el manifiesto de cuarentena, filtrando ítems inexistentes."""
+    """
+    Carga y valida el manifiesto de cuarentena desde el disco.
+    Filtra automáticamente cualquier ítem cuyo archivo físico haya sido 
+    eliminado o modificado fuera de la aplicación.
+    """
     try:
         base_dir = quarantine_dir(base)
         m_path = _manifest_path(base_dir)
@@ -371,7 +375,10 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineIte
 
 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Persiste el manifiesto usando un archivo temporal y fsync para garantizar atomicidad."""
+    """
+    Persiste el manifiesto al disco mediante una operación atómica.
+    Escribe el JSON a un archivo temporal y lo mueve para prevenir corrupción.
+    """
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista.")
     if not all(isinstance(i, QuarantineItem) for i in items):
@@ -587,7 +594,11 @@ def quarantine_file(
 ) -> QuarantineItem:
     """
     Aísla un archivo sospechoso en el directorio de cuarentena.
-    El proceso es atómico y verifica la integridad del archivo antes y después de moverlo.
+    El proceso:
+      1. Valida el origen contra políticas de seguridad.
+      2. Copia verificada mediante hash SHA-256 al sandbox.
+      3. Borra el original solo tras confirmar la integridad del copiado.
+      4. Actualiza el manifiesto persistente.
     """
     if source is None:
         raise ValueError("Ruta de origen nula o vacía.")
@@ -645,7 +656,13 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
 
 
 def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Restauración segura de un ítem a su ubicación original validando permisos."""
+    """
+    Restaura un ítem desde la cuarentena a su ubicación original.
+    Valida: 
+      1. Integridad del archivo almacenado (hash/tamaño).
+      2. Permisos del directorio de destino original.
+      3. Ausencia de colisiones (el archivo original no debe existir).
+    """
     if not isinstance(item_id, str) or not item_id.strip():
         raise ValueError("ID de ítem inválido.")
     try:
@@ -687,7 +704,7 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
 
 
 def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
-    """Elimina permanentemente un ítem de la cuarentena."""
+    """Elimina permanentemente un ítem específico de la cuarentena."""
     if not isinstance(item_id, str) or not item_id.strip():
         return False
     base_path = quarantine_dir(base)
@@ -721,7 +738,7 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) ->
 
 
 def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
-    """Vacía el directorio de cuarentena borrando únicamente los archivos validados."""
+    """Vacía el directorio de cuarentena borrando únicamente los archivos validados contra el manifiesto."""
     try:
         quarantine_root = quarantine_dir(base)
     except (OSError, RuntimeError, UnsafePathError):
