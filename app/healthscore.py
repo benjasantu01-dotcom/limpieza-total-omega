@@ -139,7 +139,10 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
-        def _v(v: Any) -> float: return float(v) if isinstance(v, (int, float)) and math.isfinite(v) else 0.0
+        def _v(v: Any) -> float:
+            val = float(v) if isinstance(v, (int, float)) else 0.0
+            return val if math.isfinite(val) else 0.0
+        
         self.junk_mb = max(0.0, _v(self.junk_mb))
         self.duplicate_mb = max(0.0, _v(self.duplicate_mb))
         self.suspicious_count = int(max(0, int(_v(self.suspicious_count))))
