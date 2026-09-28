@@ -43,12 +43,14 @@ class Grade(Enum):
         return cls.F.value
 
 class RecommendationRule(NamedTuple):
+    """Regla lógica que determina si una métrica requiere una acción correctiva."""
     area: MetricKey
     threshold: float
     message_factory: Callable[[SystemMetrics], str]
     check: Callable[[SystemMetrics, NormalizedRatio], bool]
 
 class PipelineEntry(NamedTuple):
+    """Define una etapa en el proceso de evaluación de salud."""
     area: MetricKey
     weight: int
     scorer: Scorer
@@ -121,6 +123,7 @@ if len(_PIPELINE) != len(WEIGHTS) or any(e.area not in WEIGHTS for e in _PIPELIN
 
 @dataclass
 class SystemMetrics:
+    """Contenedor de datos crudos del sistema para el cálculo del score."""
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0

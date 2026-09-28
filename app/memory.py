@@ -133,6 +133,7 @@ class ProcessMemory:
         return MegabytesValue(round(self.working_set / BYTES_IN_MB, 1))
 
 def format_bytes(num: Optional[int | float]) -> str:
+    """Convierte un valor numérico de bytes a una cadena legible humanamente usando prefijos binarios."""
     if not isinstance(num, (int, float)) or num <= 0:
         return "0 B"
     idx: int = min(int(math.log(num, 1024)), len(BYTE_UNITS) - 1)
@@ -145,13 +146,13 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
     return mem_status
 
 def _safe_int_conversion(value: Optional[str], multiplier: int = 1) -> BytesValue:
+    """Extrae números de una cadena, los multiplica por el factor dado y asegura un valor positivo."""
     if not value: return BytesValue(0)
     clean_val = "".join(c for c in value if c.isdigit())
-    # Asegurar que el resultado sea siempre no negativo
     return BytesValue(max(0, int(clean_val)) * multiplier) if clean_val else BytesValue(0)
 
 def _extract_process_data(pid_raw: str, ws_raw: str) -> Optional[Tuple[int, int]]:
-    """Extrae valores numéricos limpios de los campos CSV de PowerShell."""
+    """Valida y extrae el PID y el WorkingSet del output crudo de PowerShell."""
     try:
         pid = int(''.join(filter(str.isdigit, pid_raw)))
         ws = int(''.join(filter(str.isdigit, ws_raw)))
@@ -168,6 +169,7 @@ _proc_cache_data: List[ProcessMemory] = []
 
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
+    """Parsea el contenido de /proc/meminfo para obtener un snapshot de memoria en sistemas Linux."""
     if not meminfo_text: return _EMPTY_SNAPSHOT
     metrics: Dict[str, BytesValue] = {}
     for line in meminfo_text.splitlines():
@@ -178,13 +180,13 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     total: BytesValue = metrics.get("MemTotal", BytesValue(0))
     if total <= 0: return _EMPTY_SNAPSHOT
     
-    # Validar que MemAvailable no sea mayor que MemTotal
     avail_raw = metrics.get("MemAvailable", metrics.get("MemFree", BytesValue(0)))
     available = BytesValue(min(total, avail_raw))
     
     return MemorySnapshot(total=total, available=available, cached=metrics.get("Cached", BytesValue(0)))
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
+    """Procesa el output CSV de PowerShell de procesos Windows y retorna los top consumidores."""
     if not raw_csv_text: return []
     
     results: List[ProcessMemory] = []
@@ -227,9 +229,11 @@ def _get_cached_snapshot(timestamp_bucket: int) -> MemorySnapshot:
     return _EMPTY_SNAPSHOT
 
 def read_snapshot() -> MemorySnapshot:
+    """Obtiene un snapshot global de memoria, utilizando caché de tiempo para evitar E/S excesiva."""
     return _get_cached_snapshot(int(time.time() / 5))
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
+    """Retorna los procesos que más memoria RAM consumen actualmente en Windows."""
     global _proc_cache_time, _proc_cache_data
     if not _is_windows: return []
     now = time.time()
@@ -246,6 +250,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 
 @lru_cache(maxsize=8)
 def pressure_level(snapshot: MemorySnapshot) -> str:
+    """Clasifica el estado actual de la memoria en niveles de urgencia (ok, info, warning, danger)."""
     if snapshot.total <= 0: return "info"
     avail = snapshot.available_percent
     if avail >= 35: return "ok"
@@ -253,6 +258,7 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
     return "warning" if avail >= 10 else "danger"
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
+    """Genera un reporte textual descriptivo sobre el estado de la memoria y sus principales consumidores."""
     if snapshot.total <= 0: return ["No se pudo leer el estado de la memoria."]
     diagnostics = {
         "ok": "Estado: holgado. La memoria ocupada por caché mejora la velocidad.",
