@@ -181,7 +181,6 @@ def _is_system_hidden(entry_path: Optional[str], kernel32: Optional[ctypes.WinDL
     """
     if kernel32 is None or not entry_path: return False
     try:
-        # Se asegura de capturar cualquier error de acceso denegado en la llamada a Win32
         attrs = kernel32.GetFileAttributesW(entry_path)
         if attrs == 0xFFFFFFFF:
             return False
@@ -214,17 +213,21 @@ def _process_file_entry(
     is_junction_fn: JunctionChecker,
     kernel32: Optional[ctypes.WinDLL],
     memo: Dict[int, int],
+    root_dev: int,
     depth: int
 ) -> int:
     """Procesa una entrada de directorio: recurre si es carpeta o suma bytes si es archivo."""
     try:
-        # Cache de estado para evitar llamadas redundantes a disco
         st = entry.stat(follow_symlinks=False)
         if st.st_ino in memo:
             return 0
         
+        # Seguridad: evitar cruzar límites de dispositivos (ej. no saltar a red/USB)
+        if st.st_dev != root_dev:
+            return 0
+        
         if entry.is_dir(follow_symlinks=False):
-            return _sum_directory_recursive(Path(entry.path), is_junction_fn, kernel32, memo, depth + 1)
+            return _sum_directory_recursive(Path(entry.path), is_junction_fn, kernel32, memo, root_dev, depth + 1)
         
         memo[st.st_ino] = st.st_size
         return st.st_size
@@ -236,6 +239,7 @@ def _sum_directory_recursive(
     is_junction_fn: JunctionChecker, 
     kernel32: Optional[ctypes.WinDLL],
     memo: Dict[int, int],
+    root_dev: int,
     depth: int = 0
 ) -> int:
     """Recorre el árbol de directorios para sumar el tamaño de archivos."""
@@ -256,7 +260,7 @@ def _sum_directory_recursive(
             for entry in it:
                 if _should_skip_entry(entry, kernel32, is_junction_fn):
                     continue
-                total_bytes += _process_file_entry(entry, is_junction_fn, kernel32, memo, depth)
+                total_bytes += _process_file_entry(entry, is_junction_fn, kernel32, memo, root_dev, depth)
     except (OSError, PermissionError):
         pass
         
@@ -270,7 +274,8 @@ def directory_size(path: Optional[OSPath]) -> int:
         p = Path(path).resolve(strict=True)
         if not p.is_dir() or not is_safe_to_modify(p) or is_protected_path(p):
             return 0
-        return _sum_directory_recursive(p, _IS_JUNCTION_FN, _get_kernel32(), {})
+        root_dev = p.stat().st_dev
+        return _sum_directory_recursive(p, _IS_JUNCTION_FN, _get_kernel32(), {}, root_dev, 0)
     except (OSError, RuntimeError, PermissionError):
         return 0
 
@@ -293,7 +298,6 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     if not isinstance(real_base, Path) or not rel_str:
         return Path()
     try:
-        # Uso de Path.joinpath para unir componentes de ruta de manera segura
         target = real_base.joinpath(*rel_str.split("\\")).resolve(strict=True)
         if not _is_path_inside_base(str(target), str(real_base)):
             return Path()
@@ -316,12 +320,13 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     for base in raw_bases:
         try:
             real_base = base.resolve(strict=True)
+            root_dev = real_base.stat().st_dev
             for browser_name, rel_str in browser_map.items():
                 candidate = _resolve_browser_path(real_base, rel_str)
                 if not candidate or not _is_valid_cache_path(candidate, str(real_base), _IS_JUNCTION_FN):
                     continue
                 
-                size = _sum_directory_recursive(candidate, _IS_JUNCTION_FN, k32, global_memo)
+                size = _sum_directory_recursive(candidate, _IS_JUNCTION_FN, k32, global_memo, root_dev)
                 if size > 0:
                     found.append(BrowserCache(str(browser_name), candidate, size))
         except (OSError, RuntimeError):
