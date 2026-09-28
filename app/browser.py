@@ -212,7 +212,11 @@ def _process_file_entry(
             return 0
         
         if entry.is_dir(follow_symlinks=False):
-            return _sum_directory_recursive(Path(entry.path), root_abs_path, kernel32, memo, root_dev, depth + 1)
+            # Seguridad: validamos que la subcarpeta sea segura antes de entrar
+            path_obj = Path(entry.path)
+            if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
+                return 0
+            return _sum_directory_recursive(path_obj, root_abs_path, kernel32, memo, root_dev, depth + 1)
         
         memo[st.st_ino] = st.st_size
         return st.st_size

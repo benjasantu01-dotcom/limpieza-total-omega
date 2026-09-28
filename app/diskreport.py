@@ -92,6 +92,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         raw_path = Path(directory).resolve()
+        # Prevenir rutas UNC inválidas o inexistentes
         if not raw_path.exists() or not raw_path.is_dir():
             return None
         if is_protected_path(raw_path) or not os.access(raw_path, os.R_OK):
@@ -105,6 +106,11 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     """Determina si una entrada debe omitirse según heurísticas de seguridad y protección."""
     try:
         if any(c in entry.name for c in SUSPICIOUS_CHARS) or '\0' in entry.name:
+            return True
+        
+        # Validar si es una ruta UNC o punto de reparse
+        path_str = entry.path
+        if path_str.startswith(r'\\'):
             return True
         
         try:

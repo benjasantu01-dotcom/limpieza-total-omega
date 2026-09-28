@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 25
 - Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-27 | 63 | 13 | 18 | 6 | 80 |
-| 2026-09-28 | 135 | 12 | 28 | 10 | 139 |
+| 2026-09-27 | 63 | 13 | 18 | 6 | 76 |
+| 2026-09-28 | 138 | 12 | 28 | 10 | 140 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - manejo de errores y validación de entradas: **39**
 - robustez ante casos límite: **39**
-- seguridad defensiva: **35**
+- seguridad defensiva: **38**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **19**
 - `safety.py`: **19**
-- `browser.py`: **18**
+- `browser.py`: **19**
+- `diskreport.py`: **18**
 - `healthscore.py`: **18**
-- `diskreport.py`: **17**
 - `quarantine.py`: **17**
 - `memory.py`: **16**
 - `scanner.py`: **16**
-- `assistant.py`: **12**
+- `assistant.py`: **13**
 - `settings.py`: **12**
 - `branding.py`: **10**
 - `main.py`: **9**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-28T13:58:07` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_excluded_path` añadiendo una validación explícita para rutas UNC (nombres de servidor/recurso) y bloqueando el acceso a archivos en uso que levantan `PermissionError` durante el análisis, reforzando la seguridad defensiva contra posibles errores de sistema al intentar acceder a rutas críticas o bloqueadas.
+- `2026-09-28T13:57:54` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_process_file_entry` añadiendo una validación explícita mediante `is_safe_to_modify` antes de procesar cada subdirectorio, asegurando que cualquier recursión mantenga el cumplimiento de las políticas de acceso incluso si la estructura de carpetas cambió dinámicamente durante el escaneo.
+- `2026-09-28T13:56:18` **assistant.py** (seguridad defensiva): Reforcé la integridad del asistente implementando una verificación de "prohibición de respuesta vacía" y saneamiento explícito en la salida de `local_answer` para garantizar que, incluso ante un fallo lógico en el motor, el asistente siempre retorne una respuesta segura y no nula que no rompa la UI.
 - `2026-09-28T13:47:29` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `save` mediante una verificación de integridad post-escritura más estricta (comparación de contenido) y se añadió una validación de "bloqueo por sistema" en `_is_file_secure_to_read` para prevenir modificaciones en archivos que tengan atributos de solo lectura o estén bloqueados por el SO.
 - `2026-09-28T13:46:07` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a archivos al añadir manejo de excepciones específicas (`OSError`, `PermissionError`) en `_get_file_attrs` y `_is_file_locked_by_other_process`, evitando que la app colapse al encontrar archivos bloqueados por el sistema operativo o archivos temporales de acceso denegado durante el escaneo.
 - `2026-09-28T13:37:00` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine.py` ante fallos de I/O al verificar la existencia y el estado de los archivos de manifiesto durante la carga inicial, previniendo errores de `OSError` o `PermissionError` que podrían dejar al sistema en un estado inconsistente al intentar iterar sobre rutas inexistentes o inaccesibles.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-28T12:57:31` **memory.py** (rendimiento): Se optimizó el proceso de recolección de memoria de los procesos (top_memory_processes) reemplazando la lógica de parseo basada en iteración de strings por una pre-compilación de la lógica de extracción y evitando el cálculo redundante de `sorted()` mediante una estructura de datos más eficiente (un `heapq` para mantener solo el top N en lugar de ordenar toda la lista).
 - `2026-09-28T12:46:10` **healthscore.py** (rendimiento): Optimicé el cálculo del score evitando la creación innecesaria de objetos `SystemMetrics` mediante la validación in-situ y reemplacé la iteración sobre `_PIPELINE` por una búsqueda directa mediante un diccionario, reduciendo la complejidad de búsqueda de O(N) a O(1) durante el procesamiento.
 - `2026-09-28T12:45:45` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de archivos en `_collect_candidates` reemplazando la recursión manual y el uso extensivo de `Path.resolve(strict=True)` (que es costoso por el acceso a disco implícito) por un manejo más eficiente basado en `os.scandir` y la comparación directa de rutas normalizadas, reduciendo el overhead de I/O en árboles de directorios grandes.
-- `2026-09-28T12:45:12` **diskreport.py** (rendimiento): Optimicé el método `largest_folders` sustituyendo el uso de `walk_files` (que re-procesa todo el árbol y realiza cálculos redundantes) por un acceso directo a `os.scandir` en el nivel superior, evitando iteraciones innecesarias y reduciendo drásticamente el uso de memoria al no regenerar toda la estructura de archivos solo para sumar carpetas de primer nivel.
-- `2026-09-28T12:44:42` **browser.py** (rendimiento): Se optimizó el escaneo de cachés mediante la implementación de un mecanismo de memoización global de estados de archivo (`ino`) para evitar el recálculo redundante de tamaños en directorios compartidos y reducir drásticamente las llamadas a `os.scandir` y `stat`.
-- `2026-09-28T12:36:14` **assistant.py** (rendimiento): Optimicé el método `SystemContext.ingest` para evitar el re-procesamiento de datos innecesarios y reducir el impacto de las validaciones, utilizando una estructura más eficiente al iterar sobre los validadores existentes.

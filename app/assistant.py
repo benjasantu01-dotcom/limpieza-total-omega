@@ -92,9 +92,9 @@ def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Calla
             return Answer("Primero analizá el sistema.")
         try:
             result = func(ctx, q)
-            if isinstance(result, Answer):
+            if isinstance(result, Answer) and result.text:
                 return result
-            logging.error(f"Handler {func.__name__} devolvió un tipo no compatible: {type(result)}")
+            logging.error(f"Handler {func.__name__} devolvió respuesta vacía o inválida")
         except Exception as e:
             logging.error(f"Falla inesperada en {func.__name__}: {str(e)[:50]}")
         return Answer("Error al procesar la respuesta.")
@@ -629,7 +629,8 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             return handler(context, question)
             
     cuerpo = _format_problem_message(context.active_problems, context.score or "N/A")
-    return Answer(_validate_response_length(cuerpo), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
+    ans = Answer(_validate_response_length(cuerpo), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
+    return ans if ans.text else Answer("No pude procesar tu consulta correctamente.")
 
 def available(base: str | Path | None = None) -> bool:
     """Determina si la consulta remota a IA está habilitada en la configuración."""

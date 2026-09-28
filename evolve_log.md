@@ -540,3 +540,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-28T13:47:56` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se mejora la robustez de `StartupEntry._extract_quoted_path` para evitar errores cuando la ruta del ejecutable contiene comillas escapadas o secuencias inesperadas, asegurando que el parser sea resiliente ante cadenas de comando mal formadas que podrían romper el flujo de análisis.
 - `2026-09-28T13:47:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T13:47:56` Corrida terminada. Total usado hoy: 324.
+- `2026-09-28T13:55:29` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-28T13:56:18` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la integridad del asistente implementando una verificación de "prohibición de respuesta vacía" y saneamiento explícito en la salida de `local_answer` para garantizar que, incluso ante un fallo lógico en el motor, el asistente siempre retorne una respuesta segura y no nula que no rompa la UI.
+- `2026-09-28T13:56:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-28T13:56:23` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-28T13:56:30` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-28T13:56:42` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-28T13:57:54` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_process_file_entry` añadiendo una validación explícita mediante `is_safe_to_modify` antes de procesar cada subdirectorio, asegurando que cualquier recursión mantenga el cumplimiento de las políticas de acceso incluso si la estructura de carpetas cambió dinámicamente durante el escaneo.
+- `2026-09-28T13:58:07` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_excluded_path` añadiendo una validación explícita para rutas UNC (nombres de servidor/recurso) y bloqueando el acceso a archivos en uso que levantan `PermissionError` durante el análisis, reforzando la seguridad defensiva contra posibles errores de sistema al intentar acceder a rutas críticas o bloqueadas.
+- `2026-09-28T13:58:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T13:58:07` Corrida terminada. Total usado hoy: 328.
