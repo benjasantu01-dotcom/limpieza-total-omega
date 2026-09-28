@@ -1030,3 +1030,49 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-28T06:40:09` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-28T06:40:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T06:40:09` Corrida terminada. Total usado hoy: 156.
+- `2026-09-28T06:46:11` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-09-28T06:46:13` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-28T06:46:13` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-28T06:46:33` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-28T06:46:33` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-28T06:47:04` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-28T06:47:04` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-28T06:47:19` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-28T06:47:19` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-28T06:47:39` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-28T06:47:39` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-28T06:48:09` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-28T06:48:09` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-28T06:48:24` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-28T06:48:24` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-28T06:48:45` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-28T06:48:45` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-28T06:49:15` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-28T06:49:15` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-28T06:49:58` Tests FALLARON:
+```
+lenta la ram?", _contexto_lleno())
+        texto = respuesta.text.lower()
+>       assert "liberador de ram" in texto or "más lenta" in texto
+E       AssertionError: assert ('liberador de ram' in 'error al procesar la respuesta.' or 'más lenta' in 'error al procesar la respuesta.')
+
+evolve/tests/test_assistant.py:309: AssertionError
+------------------------------ Captured log call -------------------------------
+ERROR    root:assistant.py:99 Falla inesperada en handle_ram: name '_validate_length' is not defined
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:81: SyntaxWarning: invalid escape sequence '\ '
+    El prefijo \\?\ es necesario para superar limitaciones de MAX_PATH en Windows.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_ram_question_debunks_the_ram_cleaner_myth - AssertionError: assert ('liberador de ram' in 'error al procesar la respuesta.' or 'más lenta' in 'error al procesar la respuesta.')
+1 failed, 298 passed, 4 warnings in 1.45s
+
+```
+- `2026-09-28T06:49:58` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `SystemContext.ingest` y el manejo de tipos en `SystemContext` para asegurar que el sistema no falle ante entradas malformadas o inesperadas que podrían comprometer la integridad de las métricas durante la ingesta.
+- `2026-09-28T06:49:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T06:49:58` Corrida terminada. Total usado hoy: 160.
