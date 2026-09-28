@@ -257,8 +257,11 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                         continue
                     
                     try:
-                        # 1. Chequeo de seguridad preventivo
                         p_entry = Path(path_str)
+                        # Chequeo de seguridad defensivo en cada nodo
+                        if not is_safe_to_modify(p_entry):
+                            continue
+                            
                         if skip_protected and is_protected_path(p_entry):
                             continue
                             
@@ -268,7 +271,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                                 _scan_dir(path_str)
                             continue
                         
-                        # 2. Filtrado rápido antes del acceso total
                         stat_info = entry.stat(follow_symlinks=False)
                         if stat_info.st_size < min_size:
                             continue

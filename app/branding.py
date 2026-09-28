@@ -463,8 +463,8 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
     """Dibuja una barra horizontal optimizada mediante segmentos de color."""
     try:
-        w_val = max(1, int(width))
-        h_val = max(1, int(height))
+        w_val = max(1, min(4096, int(width)))
+        h_val = max(1, min(1024, int(height)))
         colors = gradient_colors(w_val, stops)
         for segment in _get_grouped_segments(colors):
             canvas.create_line(canvas_x + segment.start_index, canvas_y, 
@@ -481,7 +481,7 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         val = float(percent)
         if not math.isfinite(val): val = 0.0
         val = max(0.0, min(100.0, val))
-        diam = max(20, int(size))
+        diam = max(20, min(2048, int(size)))
         thick = max(2, min(int(thickness), (diam // 2) - 1))
         borde: float = float(thick) / 2.0
         caja = (canvas_x + borde, canvas_y + borde, canvas_x + diam - borde, canvas_y + diam - borde)

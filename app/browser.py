@@ -186,14 +186,19 @@ def _should_skip_entry(
 
 def _process_file_entry(
     entry: os.DirEntry,
+    root_abs_path: str,
     is_junction_fn: JunctionChecker,
     kernel32: Optional[ctypes.WinDLL],
     memo: Dict[int, int],
     root_dev: int,
     depth: int
 ) -> int:
-    """Procesa una entrada de directorio: recurre o suma bytes."""
+    """Procesa una entrada de directorio: recurre o suma bytes validando alcance."""
     try:
+        # Verificación crítica de seguridad: no seguir rutas fuera del root asignado
+        if not _is_path_inside_base(entry.path, root_abs_path):
+            return 0
+            
         st = entry.stat(follow_symlinks=False)
         if st.st_ino in memo:
             return 0
@@ -201,7 +206,7 @@ def _process_file_entry(
             return 0
         
         if entry.is_dir(follow_symlinks=False):
-            return _sum_directory_recursive(Path(entry.path), is_junction_fn, kernel32, memo, root_dev, depth + 1)
+            return _sum_directory_recursive(Path(entry.path), root_abs_path, is_junction_fn, kernel32, memo, root_dev, depth + 1)
         
         memo[st.st_ino] = st.st_size
         return st.st_size
@@ -210,6 +215,7 @@ def _process_file_entry(
 
 def _sum_directory_recursive(
     root_path: Path, 
+    root_abs_path: str,
     is_junction_fn: JunctionChecker, 
     kernel32: Optional[ctypes.WinDLL],
     memo: Dict[int, int],
@@ -226,7 +232,7 @@ def _sum_directory_recursive(
             for entry in it:
                 if _should_skip_entry(entry, kernel32, is_junction_fn):
                     continue
-                total_bytes += _process_file_entry(entry, is_junction_fn, kernel32, memo, root_dev, depth)
+                total_bytes += _process_file_entry(entry, root_abs_path, is_junction_fn, kernel32, memo, root_dev, depth)
     except (OSError, PermissionError):
         pass
         
@@ -240,7 +246,7 @@ def directory_size(path: Optional[OSPath]) -> int:
         p = Path(path).resolve(strict=True)
         if not p.is_dir() or not is_safe_to_modify(p) or is_protected_path(p):
             return 0
-        return _sum_directory_recursive(p, _IS_JUNCTION_FN, _get_kernel32(), {}, p.stat().st_dev, 0)
+        return _sum_directory_recursive(p, str(p), _IS_JUNCTION_FN, _get_kernel32(), {}, p.stat().st_dev, 0)
     except (OSError, RuntimeError, PermissionError):
         return 0
 
@@ -283,11 +289,12 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     for base in raw_bases:
         try:
             real_base = base.resolve(strict=True)
+            real_base_str = str(real_base)
             root_dev = real_base.stat().st_dev
             for browser_name, rel_str in browser_map.items():
                 candidate = _resolve_browser_path(real_base, rel_str)
-                if candidate and _is_valid_cache_path(candidate, str(real_base), _IS_JUNCTION_FN):
-                    size = _sum_directory_recursive(candidate, _IS_JUNCTION_FN, k32, global_memo, root_dev)
+                if candidate and _is_valid_cache_path(candidate, real_base_str, _IS_JUNCTION_FN):
+                    size = _sum_directory_recursive(candidate, str(candidate), _IS_JUNCTION_FN, k32, global_memo, root_dev)
                     if size > 0:
                         found.append(BrowserCache(str(browser_name), candidate, size))
         except (OSError, RuntimeError):

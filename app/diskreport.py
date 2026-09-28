@@ -111,6 +111,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         
         # Verificar enlaces simbólicos y puntos de reparse (reparse points)
         try:
+            # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT (Junctions, Mount Points, etc.)
             if entry.is_symlink() or (os.name == 'nt' and entry.is_dir() and (entry.stat().st_file_attributes & 0x400)):
                 return True
         except (OSError, PermissionError):

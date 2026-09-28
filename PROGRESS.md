@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Mejoras aceptadas: **190** (37.7% de aceptación)
 - Rechazadas por tests: 28
 - Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 228
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-27 | 97 | 21 | 23 | 12 | 131 |
-| 2026-09-28 | 89 | 7 | 20 | 7 | 97 |
+| 2026-09-27 | 97 | 21 | 23 | 12 | 127 |
+| 2026-09-28 | 93 | 7 | 20 | 7 | 97 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **36**
+- seguridad defensiva: **36**
 - robustez ante casos límite: **33**
-- seguridad defensiva: **32**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
+- `browser.py`: **18**
+- `duplicates.py`: **18**
+- `diskreport.py`: **17**
 - `safety.py`: **17**
-- `browser.py`: **17**
-- `duplicates.py`: **17**
 - `quarantine.py`: **17**
-- `diskreport.py`: **16**
 - `healthscore.py`: **16**
 - `scanner.py`: **15**
 - `assistant.py`: **13**
 - `memory.py`: **13**
 - `settings.py`: **11**
 - `main.py`: **10**
+- `branding.py`: **9**
 - `organizer.py`: **8**
 - `startup.py`: **8**
-- `branding.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-28T09:31:21` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` implementando un chequeo de integridad basado en `is_safe_to_modify` para cada entrada recolectada, previniendo que rutas potencialmente inseguras sean procesadas durante la iteración recursiva.
+- `2026-09-28T09:31:05` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_excluded_path` añadiendo una comprobación explícita para evitar el seguimiento de puntos de reparse (reparse points) mediante la comprobación del atributo `FILE_ATTRIBUTE_REPARSE_POINT` (0x400) en Windows, garantizando que el escáner no entre en recursión infinita o áreas fuera del alcance previsto a través de junctions o montajes automáticos del SO.
+- `2026-09-28T09:30:36` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la verificación estricta de que cada archivo o subdirectorio escaneado permanezca dentro de la ruta raíz validada, previniendo posibles escapes mediante enlaces simbólicos o manipulaciones de ruta durante el recorrido profundo.
+- `2026-09-28T09:30:10` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `branding.py` mediante la validación estricta de las dimensiones de entrada en los métodos de renderizado y la propagación de excepciones para evitar el procesamiento de datos inválidos en el `Canvas`.
 - `2026-09-28T09:21:09` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación explícita de tipos antes de cada acceso a la estructura JSON, evitando así posibles fallos por tipos inesperados en la respuesta, y forcé un límite estricto de caracteres mediante `_validate_response_length` al retornar el texto extraído.
 - `2026-09-28T09:19:44` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `scanner.py` ante errores de lectura de metadatos de archivos (como archivos bloqueados por el sistema o en uso) añadiendo un bloque `try-except` específico dentro de `_safe_stat` y validando la existencia de la ruta antes de procesarla en `process_entry`, evitando que el escáner se interrumpa ante excepciones de sistema.
 - `2026-09-28T09:11:14` **safety.py** (robustez ante casos límite): Se ha añadido `_is_sparse_file` mediante la constante `FILE_ATTRIBUTE_SPARSE_FILE` (0x200) para reforzar la detección de archivos dispersos que podrían ocultar datos o causar errores de escritura, integrando esta comprobación robusta en la validación de integridad (`_VALIDATORS`) y en los diagnósticos.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-28T08:40:23` **startup.py** (rendimiento): Se optimizó `entries_from_folders` eliminando el uso innecesario de `is_safe_to_modify` dentro del bucle principal, ya que `is_protected_path` junto con la lógica de `os.scandir` es suficiente y más performante para el filtrado inicial, evitando llamadas redundantes a `Path` y chequeos de seguridad extra en archivos que ya se sabe que son seguros.
 - `2026-09-28T08:40:07` **settings.py** (rendimiento): Optimizé la gestión de memoria y el rendimiento de acceso a `settings.py` implementando un `lru_cache` específico en `load` para evitar lecturas de disco innecesarias durante llamadas repetidas dentro de la misma iteración, minimizando también las llamadas a `stat()` al verificar el `mtime` del archivo una sola vez por acceso.
 - `2026-09-28T08:39:34` **scanner.py** (rendimiento): Se implementó un filtrado preventivo en el bucle principal de `scan_directory` utilizando `is_protected_path` sobre la ruta del directorio antes de realizar el `scandir`, evitando así exploraciones redundantes y el costo de instanciar `os.DirEntry` en carpetas que ya sabemos que son protegidas por definición, optimizando el rendimiento de I/O.
-- `2026-09-28T08:39:06` **safety.py** (rendimiento): Se ha optimizado la validación de rutas de sistema utilizando una búsqueda de prefijos constante y pre-calculada (`_SYSTEM_ROOT_PATHS_TUPLE`) en lugar de iteraciones y normalizaciones repetidas, mejorando el rendimiento en operaciones de escaneo masivo de disco.
-- `2026-09-28T08:29:46` **quarantine.py** (rendimiento): Optimizé `load_manifest` reemplazando la validación física de archivos (que requiere I/O lento) por un procesamiento en memoria utilizando un diccionario, evitando llamadas repetidas a `exists()` y `stat()` sobre el disco, delegando la integridad física a los métodos que realmente requieren acceder al archivo (como `restore` o `purge`).
-- `2026-09-28T08:28:44` **memory.py** (rendimiento): Se optimizó el rendimiento de `top_memory_processes` eliminando el uso de `Sort-Object` y `Select-Object` dentro de la llamada a PowerShell, moviendo el filtrado y ordenamiento al lado de Python, lo cual reduce drásticamente el tiempo de ejecución del comando y el uso de memoria en la sub-shell.
-- `2026-09-28T08:19:14` **healthscore.py** (rendimiento): Optimicé el cálculo del score evitando la creación innecesaria de objetos `NamedTuple` y funciones `lambda` en tiempo de ejecución, además de reemplazar la re-instanciación del diccionario de desglose por una pre-asignación eficiente.
