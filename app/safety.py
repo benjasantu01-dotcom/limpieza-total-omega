@@ -393,8 +393,15 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
 def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     """
     Previene ataques Time-of-Check to Time-of-Use (TOCTOU).
-    Verifica que el archivo no haya sido reemplazado entre la inspección y la acción.
+    Verifica que el archivo no haya sido reemplazado y pertenezca a un volumen local permitido.
     """
+    if os.name == 'nt':
+        root = path.anchor
+        if root:
+            drive_type = ctypes.windll.kernel32.GetDriveTypeW(root)
+            if drive_type not in (DRIVE_FIXED, DRIVE_RAMDISK):
+                raise UnsafePathError(f"Volumen no compatible/remoto: {root}", SafetyValidationErrorCode.IO_ERROR)
+
     if not os.access(path, os.R_OK):
         raise UnsafePathError(f"Acceso de lectura denegado a {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     

@@ -563,3 +563,49 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-28T14:07:52` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
 - `2026-09-28T14:07:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-28T14:07:52` Corrida terminada. Total usado hoy: 332.
+- `2026-09-28T14:15:53` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-28T14:15:58` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-28T14:16:03` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-28T14:16:09` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-28T14:16:30` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-28T14:16:53` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-28T14:17:39` Tests FALLARON:
+```
+tests/test_safety.py:293: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+source = PosixPath('/tmp/pytest-of-runner/pytest-1/test_quarantine_missing_file_r0/no-existe.txt')
+reason = 'Marcado como sospechoso'
+base = PosixPath('/tmp/pytest-of-runner/pytest-1/test_quarantine_missing_file_r0/_Cuarentena')
+
+    def quarantine_file(
+        source: PathLike,
+        reason: str = "Marcado como sospechoso",
+        base: PathLike = DEFAULT_QUARANTINE_DIR,
+    ) -> QuarantineItem:
+        """Aísla un archivo sospechoso en cuarentena, realizando copias y limpieza verificada."""
+        if source is None:
+            raise ValueError("Ruta de origen nula o vacía.")
+        p_source = Path(source)
+        if not p_source.is_absolute():
+            try:
+                p_source = p_source.resolve(strict=True)
+            except (OSError, RuntimeError) as e:
+                raise UnsafePathError(f"Ruta origen no válida: {e}")
+    
+        if not _is_file_safe_to_move(p_source):
+>           raise OSError("Archivo origen no cumple requisitos de integridad para ser movido.")
+E           OSError: Archivo origen no cumple requisitos de integridad para ser movido.
+
+app/quarantine.py:604: OSError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly - OSError: Archivo origen no cumple requisitos de integridad para ser movido.
+1 failed, 298 passed in 1.07s
+
+```
+- `2026-09-28T14:17:39` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se ha añadido `_is_file_safe_to_move` para unificar la validación lógica antes de cualquier operación física en `quarantine_file`, reforzando la seguridad defensiva mediante una verificación centralizada de permisos y estado del archivo origen, evitando así operaciones parciales en estados inconsistentes.
+- `2026-09-28T14:18:01` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-28T14:18:01` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-28T14:18:35` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se añadió la verificación de que el sistema de archivos sea local y compatible (evitando unidades de red o volúmenes no soportados) en el chequeo de integridad (`_check_file_integrity`) para reforzar la seguridad defensiva, asegurando que solo se operen archivos en volúmenes validados.
+- `2026-09-28T14:18:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-28T14:18:35` Corrida terminada. Total usado hoy: 336.

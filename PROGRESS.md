@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **202** (40.1% de aceptación)
-- Rechazadas por tests: 25
-- Rechazadas por guardia de seguridad: 46
+- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Rechazadas por tests: 26
+- Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-27 | 63 | 13 | 18 | 6 | 72 |
-| 2026-09-28 | 139 | 12 | 28 | 10 | 143 |
+| 2026-09-27 | 63 | 13 | 18 | 6 | 68 |
+| 2026-09-28 | 140 | 13 | 29 | 10 | 144 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
+- seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **39**
 - robustez ante casos límite: **39**
-- seguridad defensiva: **39**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
+- `safety.py`: **20**
 - `duplicates.py`: **19**
-- `safety.py`: **19**
 - `browser.py`: **19**
 - `healthscore.py`: **19**
 - `diskreport.py`: **18**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-28T14:18:35` **safety.py** (seguridad defensiva): Se añadió la verificación de que el sistema de archivos sea local y compatible (evitando unidades de red o volúmenes no soportados) en el chequeo de integridad (`_check_file_integrity`) para reforzar la seguridad defensiva, asegurando que solo se operen archivos en volúmenes validados.
 - `2026-09-28T14:06:52` **healthscore.py** (seguridad defensiva): Se reforzó la integridad de los datos de entrada en `SystemMetrics` mediante la implementación de una validación más estricta (`is_finite` y sanitización), garantizando que las métricas recibidas de componentes externos no inyecten valores corruptos o infinitos que puedan alterar el cálculo del puntaje.
 - `2026-09-28T13:58:07` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_excluded_path` añadiendo una validación explícita para rutas UNC (nombres de servidor/recurso) y bloqueando el acceso a archivos en uso que levantan `PermissionError` durante el análisis, reforzando la seguridad defensiva contra posibles errores de sistema al intentar acceder a rutas críticas o bloqueadas.
 - `2026-09-28T13:57:54` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_process_file_entry` añadiendo una validación explícita mediante `is_safe_to_modify` antes de procesar cada subdirectorio, asegurando que cualquier recursión mantenga el cumplimiento de las políticas de acceso incluso si la estructura de carpetas cambió dinámicamente durante el escaneo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-28T13:25:31` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo chequeos de errores ante archivos bloqueados o inaccesibles durante el escaneo recursivo, evitando que excepciones de E/S interrumpan el reporte.
 - `2026-09-28T13:16:55` **branding.py** (robustez ante casos límite): Se reforzó la robustez en `draw_ring` ante posibles desbordamientos matemáticos o valores `nan`/`inf` en el cálculo de los arcos, garantizando que una entrada inesperada no interrumpa el renderizado de la UI.
 - `2026-09-28T12:57:31` **memory.py** (rendimiento): Se optimizó el proceso de recolección de memoria de los procesos (top_memory_processes) reemplazando la lógica de parseo basada en iteración de strings por una pre-compilación de la lógica de extracción y evitando el cálculo redundante de `sorted()` mediante una estructura de datos más eficiente (un `heapq` para mantener solo el top N en lugar de ordenar toda la lista).
-- `2026-09-28T12:46:10` **healthscore.py** (rendimiento): Optimicé el cálculo del score evitando la creación innecesaria de objetos `SystemMetrics` mediante la validación in-situ y reemplacé la iteración sobre `_PIPELINE` por una búsqueda directa mediante un diccionario, reduciendo la complejidad de búsqueda de O(N) a O(1) durante el procesamiento.
