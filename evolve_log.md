@@ -1624,3 +1624,44 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-09-29T08:10:35` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la validación de los procesos candidatos para `trim_working_set` añadiendo una comprobación explícita mediante `is_protected_path` antes de intentar cualquier interacción, garantizando que procesos del sistema operativo (que no siempre fallan al abrir `Handle` pero cuya modificación es peligrosa) se bloqueen preventivamente.
 - `2026-09-29T08:10:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T08:10:35` Corrida terminada. Total usado hoy: 192.
+- `2026-09-29T08:17:45` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-09-29T08:18:15` Tests FALLARON:
+```
+                                     [100%]
+=================================== FAILURES ===================================
+___________ test_stage_for_review_moves_files_without_deleting_them ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_stage_for_review_moves_fi0')
+
+    def test_stage_for_review_moves_files_without_deleting_them(tmp_path):
+        origen = tmp_path / "origen"
+        origen.mkdir()
+        archivo = origen / "mover.tmp"
+        archivo.write_text("contenido")
+        revision = tmp_path / "revision"
+    
+        found = organizer.scan_for_junk([str(origen)])
+        dest = organizer.stage_for_review(found, review_dir=str(revision))
+    
+>       assert not archivo.exists(), "el archivo debe salir de su lugar original"
+E       AssertionError: el archivo debe salir de su lugar original
+E       assert not True
+E        +  where True = exists()
+E        +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-1/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+
+evolve/tests/test_basic.py:144: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_deleting_them - AssertionError: el archivo debe salir de su lugar original
+assert not True
+ +  where True = exists()
+ +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-1/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+1 failed, 298 passed in 1.49s
+
+```
+- `2026-09-29T08:18:15` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` y `stage_for_review` para prevenir el cruce inadvertido de unidades de disco mediante el uso de `path.parts` y se añadió una verificación estricta de que el origen y destino no compartan el mismo `Path` absoluto tras resolución, evitando bucles lógicos o daños por sobreescritura accidental.
+- `2026-09-29T08:18:55` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha implementado `_is_file_in_use_by_system` en `quarantine.py` para detectar preventivamente el uso de archivos (especialmente en Windows) mediante `msvcrt.locking` y `ctypes` (GetFileAttributesW), mejorando la seguridad defensiva al evitar operaciones sobre archivos bloqueados o en uso crítico sin recurrir a dependencias externas.
+- `2026-09-29T08:19:16` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-29T08:19:24` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T08:19:56` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se introdujo la verificación `_is_file_in_use_by_system` en `ensure_safe_to_modify` utilizando `GetModuleFileName` para detectar si el ejecutable o librería pertenece al proceso actual o al sistema, previniendo modificaciones destructivas sobre archivos críticos en ejecución que las comprobaciones de lock por `CreateFileW` podrían omitir.
+- `2026-09-29T08:19:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T08:19:56` Corrida terminada. Total usado hoy: 196.

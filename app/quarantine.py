@@ -164,12 +164,15 @@ def _get_sha256(path: Path) -> str:
     return sha256_hash.hexdigest()
 
 
-def _is_file_locked(path: Path) -> bool:
-    """Detecta si un archivo está bloqueado por otro proceso usando locks de plataforma."""
+def _is_file_in_use_by_system(path: Path) -> bool:
+    """Verifica si un archivo está bloqueado por el sistema usando APIs nativas."""
     if not path.exists():
         return False
-    try:
-        if os.name == 'nt':
+    if os.name == 'nt':
+        # Check Win32 File Attributes for system/exclusive locks
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+        if attrs != -1 and (attrs & 0x02 or attrs & 0x04): return True
+        try:
             import msvcrt
             fd = os.open(path, os.O_RDONLY | os.O_BINARY)
             try:
@@ -177,13 +180,13 @@ def _is_file_locked(path: Path) -> bool:
                 msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
             finally:
                 os.close(fd)
-        else:
-            with open(path, 'rb') as f:
-                fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-        return False
-    except (OSError, IOError, AttributeError, PermissionError):
-        return True
+            return False
+        except (OSError, IOError): return True
+    return False
+
+def _is_file_locked(path: Path) -> bool:
+    """Alias para chequeo de bloqueo de bajo nivel."""
+    return _is_file_in_use_by_system(path)
 
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
     """Borrado validado: asegura que el archivo pertenezca al sandbox y mantenga integridad."""

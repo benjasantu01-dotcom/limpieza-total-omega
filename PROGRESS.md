@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
-- Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 39
+- Mejoras aceptadas: **209** (41.5% de aceptación)
+- Rechazadas por tests: 21
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-28 | 127 | 13 | 26 | 9 | 137 |
-| 2026-09-29 | 80 | 7 | 13 | 15 | 77 |
+| 2026-09-28 | 127 | 13 | 26 | 9 | 133 |
+| 2026-09-29 | 82 | 8 | 14 | 15 | 77 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,20 +25,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **43**
 - rendimiento: **38**
 - robustez ante casos límite: **37**
-- seguridad defensiva: **35**
+- seguridad defensiva: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **22**
 - `browser.py`: **19**
 - `diskreport.py`: **18**
+- `quarantine.py`: **17**
 - `scanner.py`: **17**
 - `memory.py`: **17**
 - `duplicates.py`: **16**
-- `quarantine.py`: **16**
 - `assistant.py`: **16**
+- `safety.py`: **15**
 - `branding.py`: **14**
-- `safety.py`: **14**
 - `settings.py`: **13**
 - `organizer.py`: **11**
 - `main.py`: **8**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-29T08:19:56` **safety.py** (seguridad defensiva): Se introdujo la verificación `_is_file_in_use_by_system` en `ensure_safe_to_modify` utilizando `GetModuleFileName` para detectar si el ejecutable o librería pertenece al proceso actual o al sistema, previniendo modificaciones destructivas sobre archivos críticos en ejecución que las comprobaciones de lock por `CreateFileW` podrían omitir.
+- `2026-09-29T08:18:55` **quarantine.py** (seguridad defensiva): Se ha implementado `_is_file_in_use_by_system` en `quarantine.py` para detectar preventivamente el uso de archivos (especialmente en Windows) mediante `msvcrt.locking` y `ctypes` (GetFileAttributesW), mejorando la seguridad defensiva al evitar operaciones sobre archivos bloqueados o en uso crítico sin recurrir a dependencias externas.
 - `2026-09-29T08:10:35` **memory.py** (seguridad defensiva): Se ha mejorado la validación de los procesos candidatos para `trim_working_set` añadiendo una comprobación explícita mediante `is_protected_path` antes de intentar cualquier interacción, garantizando que procesos del sistema operativo (que no siempre fallan al abrir `Handle` pero cuya modificación es peligrosa) se bloqueen preventivamente.
 - `2026-09-29T08:08:30` **healthscore.py** (seguridad defensiva): Se ha robustecido el motor de evaluación añadiendo un chequeo de tipos estricto y sanitización de mensajes en el pipeline de reglas para evitar la inyección de errores o datos no imprimibles al reporte, protegiendo la integridad de la salida final ante métricas inesperadas.
 - `2026-09-29T07:59:26` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_excluded_path` añadiendo una validación explícita para evitar el seguimiento de enlaces simbólicos fuera del directorio raíz, asegurando que no se pueda escapar del ámbito de escaneo mediante "traversal" a pesar de seguir los inodos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-29T07:08:16` **settings.py** (rendimiento): Se optimizó `settings_path` para evitar la resolución redundante de rutas en cada llamada, introduciendo una caché de primer nivel y pre-validación de existencia para reducir llamadas al sistema de archivos.
 - `2026-09-29T07:07:57` **scanner.py** (rendimiento): Optimicé el método `_is_safe_entry` reemplazando llamadas redundantes a `is_protected_path` por un acceso eficiente al caché y evitando la resolución innecesaria de rutas mediante `path.resolve()` repetitivos, reduciendo drásticamente la carga de I/O durante el recorrido.
 - `2026-09-29T07:01:10` **quarantine.py** (rendimiento): Optimizé la búsqueda de ítems en `purge_all` y `restore_item` transformando la lista de ítems en un diccionario (hash map) al inicio, lo que reduce la complejidad de tiempo de búsqueda de O(n) a O(1) por cada iteración.
-- `2026-09-29T06:47:38` **healthscore.py** (rendimiento): Se optimizó el proceso de cómputo del `score` reemplazando la iteración sobre una lista de objetos en cada llamada por el uso de `WEIGHTS` y el acceso directo al mapa del pipeline, eliminando redundancias y mejorando la eficiencia de búsqueda.
-- `2026-09-29T06:36:51` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `StartupEntry` y sus métodos internos utilizando docstrings más precisos y descriptivos para esclarecer el propósito de cada validación de seguridad, facilitando así el mantenimiento futuro y la auditoría del código.

@@ -285,6 +285,15 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
         return True
     return False
 
+def _is_file_in_use_by_system(path_str: str) -> bool:
+    """Verifica si el archivo está siendo referenciado por módulos cargados del sistema."""
+    if os.name != 'nt': return False
+    try:
+        # Detecta si el archivo es parte de un proceso crítico o DLL de sistema cargada
+        h_module = ctypes.windll.kernel32.GetModuleHandleW(path_str)
+        return h_module != 0
+    except Exception: return False
+
 @lru_cache(maxsize=128)
 def _is_volume_readonly(path_str: Optional[str]) -> bool:
     """Consulta los atributos del volumen para verificar si el archivo reside en un medio de solo lectura."""
@@ -641,6 +650,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     
     if p.exists():
         _validate_access_permissions(p)
+        if _is_file_in_use_by_system(str(p)):
+             raise UnsafePathError(f"Archivo en uso por el sistema: {p.name}", SafetyValidationErrorCode.FILE_IN_USE)
         initial_stat = _get_path_stat_robust(p)
         if not bool(initial_stat.st_mode & stat.S_IWRITE):
             raise UnsafePathError(f"Acceso de escritura denegado: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
