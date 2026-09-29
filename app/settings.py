@@ -312,7 +312,8 @@ def _is_file_secure_to_read(ruta: Path, st_info: os.stat_result | None = None) -
         if not is_safe_to_modify(str(ruta)): return False
         if not os.access(ruta, os.R_OK): return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-        if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
+        # Un archivo JSON de configuración legítimo no puede ser vacío.
+        if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
         return True
     except (OSError, PermissionError):
         return False

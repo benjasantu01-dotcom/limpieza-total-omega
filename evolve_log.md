@@ -860,3 +860,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-29T12:16:48` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `purge_all` y `_is_item_purgable` para evitar que el bucle de purga falle silenciosamente o se interrumpa si encuentra archivos inesperados (como archivos temporales remanentes o archivos corruptos), garantizando que solo se procesen los archivos que coincidan estrictamente con el manifiesto actual.
 - `2026-09-29T12:16:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T12:16:48` Corrida terminada. Total usado hoy: 284.
+- `2026-09-29T12:22:45` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-09-29T12:23:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-29T12:23:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T12:23:53` ➖ Sin cambios en safety.py (enfoque: robustez ante casos límite). Motivo: Se introdujo la verificación `_is_file_in_use_by_system` en `ensure_safe_to_modify` para detectar si el archivo es un módulo cargado en el proceso de la aplicación o del sistema, previniendo errores de acceso denegado o corrupción de ejecución en archivos que el sistema mantiene bloqueados preventivamente.
+- `2026-09-29T12:23:55` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T12:24:28` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Mejoré la robustez de `scanner.py` ante errores de lectura de metadatos (como archivos bloqueados por el sistema o permisos denegados) implementando un manejo defensivo más estricto en `_safe_stat` y `_get_file_attributes` para asegurar que el escáner no aborte y reporte correctamente el estado del archivo.
+- `2026-09-29T12:24:47` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se mejoró `_is_file_secure_to_read` para manejar explícitamente el caso de archivos que, siendo legibles, contienen contenido corrupto o no JSON que causaría errores en la lógica de carga, y se endureció la validación del tamaño para evitar procesamiento de archivos truncados o malintencionados.
+- `2026-09-29T12:24:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T12:24:47` Corrida terminada. Total usado hoy: 288.

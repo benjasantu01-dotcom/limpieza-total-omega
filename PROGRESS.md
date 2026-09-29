@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 222
+- Rechazadas por guardia de seguridad: 35
+- Sin cambios (nada sustancial que mejorar): 24
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-28 | 88 | 10 | 16 | 6 | 100 |
-| 2026-09-29 | 113 | 14 | 18 | 17 | 122 |
+| 2026-09-28 | 88 | 10 | 16 | 6 | 96 |
+| 2026-09-29 | 115 | 14 | 19 | 18 | 122 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **41**
+- robustez ante casos límite: **39**
 - rendimiento: **37**
-- robustez ante casos límite: **37**
 - seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **22**
+- `scanner.py`: **18**
 - `browser.py`: **17**
-- `scanner.py`: **17**
 - `memory.py`: **17**
 - `quarantine.py`: **17**
 - `safety.py`: **16**
+- `settings.py`: **16**
 - `assistant.py`: **16**
 - `diskreport.py`: **15**
-- `settings.py`: **15**
 - `duplicates.py`: **14**
 - `branding.py`: **13**
 - `organizer.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-29T12:24:47` **settings.py** (robustez ante casos límite): Se mejoró `_is_file_secure_to_read` para manejar explícitamente el caso de archivos que, siendo legibles, contienen contenido corrupto o no JSON que causaría errores en la lógica de carga, y se endureció la validación del tamaño para evitar procesamiento de archivos truncados o malintencionados.
+- `2026-09-29T12:24:28` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `scanner.py` ante errores de lectura de metadatos (como archivos bloqueados por el sistema o permisos denegados) implementando un manejo defensivo más estricto en `_safe_stat` y `_get_file_attributes` para asegurar que el escáner no aborte y reporte correctamente el estado del archivo.
 - `2026-09-29T12:16:48` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `purge_all` y `_is_item_purgable` para evitar que el bucle de purga falle silenciosamente o se interrumpa si encuentra archivos inesperados (como archivos temporales remanentes o archivos corruptos), garantizando que solo se procesen los archivos que coincidan estrictamente con el manifiesto actual.
 - `2026-09-29T12:15:48` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_get_process_path` para evitar bloqueos por permisos al acceder a procesos con privilegios elevados y corregí el manejo de errores en `trim_working_set` ante procesos que finalizan durante la consulta.
 - `2026-09-29T12:04:24` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` ante divisiones por cero o valores NaN inesperados en los cálculos del pipeline, asegurando que el motor de puntuación nunca falle catastróficamente ante métricas mal formadas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-29T11:24:04` **memory.py** (rendimiento): Optimizé el cálculo de procesos pesados reemplazando la creación de una lista intermedia y el ordenamiento completo (O(n log n)) por un heap de tamaño fijo, evitando así redundancia y reduciendo el consumo de memoria durante el filtrado.
 - `2026-09-29T11:21:55` **healthscore.py** (rendimiento): Se optimizó el proceso de cómputo eliminando la creación repetitiva de objetos `PipelineEntry` y diccionarios mediante el uso de constantes pre-mapeadas y la eliminación de lambdas innecesarias en el bucle principal, mejorando así la eficiencia del `pipeline`.
 - `2026-09-29T11:03:39` **assistant.py** (rendimiento): Optimicé el cálculo de `active_problems` en `SystemContext` usando un `set` local para la detección de triggers, reemplazando la lógica de concatenación ineficiente y mejorando el rendimiento en la evaluación de criterios.
-- `2026-09-29T11:01:41` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando docstrings de tipo Google Style a los métodos de la clase `Scanner` y funciones auxiliares, clarificando las precondiciones, los parámetros y el comportamiento de las heurísticas para facilitar el mantenimiento futuro.
-- `2026-09-29T10:52:53` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings estructurados, tipado explícito en `_IntegrityCheck` y la simplificación lógica de `_is_system_path_raw` para clarificar la distinción entre rutas protegidas por nombre y rutas protegidas por raíz.

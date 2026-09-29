@@ -74,28 +74,30 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         entry: Objeto os.DirEntry a consultar.
         
     Returns:
-        os.stat_result si es un archivo estándar, None si es enlace simbólico o error.
+        os.stat_result si es un archivo estándar accesible, None en caso de error o enlace.
     """
     if not isinstance(entry, os.DirEntry):
         return None
     try:
+        # Verificar atributos primero para evitar acceso denegado en archivos del sistema
         if not entry.is_symlink() and not (_get_file_attributes(entry) & LIMITS.reparse_point_attr_mask):
             return entry.stat(follow_symlinks=False)
         return None
-    except (OSError, PermissionError, FileNotFoundError):
+    except (OSError, PermissionError):
         return None
 
 def _get_file_attributes(entry: os.DirEntry) -> int:
     """
-    Extrae la máscara de bits de atributos (Windows File Attributes).
+    Extrae la máscara de bits de atributos de Windows.
     
     Returns:
-        Entero representando la máscara de bits del archivo, o 0 en caso de fallo.
+        Máscara de bits o 0 si el acceso a metadatos está bloqueado.
     """
     try:
+        # Usamos stat directamente sobre la entrada, que no debería disparar excepciones de IO pesadas
         stat_res = entry.stat(follow_symlinks=False)
         return int(getattr(stat_res, "st_file_attributes", 0))
-    except (AttributeError, OSError, FileNotFoundError):
+    except (AttributeError, OSError):
         return 0
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
@@ -106,7 +108,7 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
         path_str: Cadena de ruta a validar.
         
     Returns:
-        bool: True si la ruta no excede MAX_PATH, no es UNC y no contiene caracteres RTL.
+        bool: True si la ruta es válida y segura.
     """
     if not path_str or len(path_str) > LIMITS.max_path:
         return False
@@ -210,6 +212,7 @@ class Scanner:
         try:
             if self._is_reparse_point(entry) or entry.is_symlink():
                 return False
+            # Verificamos legibilidad sin interrumpir el flujo si hay un error transitorio
             if not os.access(entry.path, os.R_OK):
                 return False
             
@@ -245,7 +248,7 @@ class Scanner:
             elif entry.is_file(follow_symlinks=False):
                 if self._is_relevant_extension(entry.name):
                     self._run_file_heuristics(Path(entry.path), entry)
-        except (OSError, PermissionError, FileNotFoundError):
+        except (OSError, PermissionError):
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
