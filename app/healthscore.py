@@ -197,8 +197,11 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
+    # Validación defensiva de entrada: solo procesar métricas finitas y validadas
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         metrics = SystemMetrics()
+    else:
+        metrics.validate()
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -212,6 +215,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             metric_breakdown[entry.area] = max(0, min(points, entry.weight))
             accumulated_score += metric_breakdown[entry.area]
         except (ValueError, TypeError, ZeroDivisionError, Exception):
+            # En caso de error en una etapa, el área aporta 0 puntos y se saltea
             continue
             
     if metrics.quarantined_count > 0:

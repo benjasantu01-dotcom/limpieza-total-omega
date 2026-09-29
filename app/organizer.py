@@ -214,7 +214,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
     if depth > 50 or not current_dir.exists(): return
     try:
         resolved_dir = current_dir.resolve()
-        if resolved_dir in visited: return
+        if resolved_dir in visited or not is_safe_to_modify(resolved_dir): return
         visited.add(resolved_dir)
         
         with os.scandir(current_dir) as iterator:
@@ -225,7 +225,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                             _process_directory(Path(item.path), found, depth + 1, protected_cache, visited)
                     elif item.is_file(follow_symlinks=False):
                         stats = item.stat(follow_symlinks=False)
-                        if _is_valid_junk_entry(item, stats):
+                        if _is_valid_junk_entry(item, stats) and is_safe_to_modify(Path(item.path)):
                             found.append(JunkFile(Path(item.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
                 except (OSError, PermissionError): continue
     except (OSError, PermissionError, RuntimeError): pass
@@ -239,7 +239,7 @@ def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[Ju
     for d in scan_list:
         try:
             p = Path(d).expanduser()
-            if p.exists() and p.is_dir() and not _is_unc_path(p):
+            if p.exists() and p.is_dir() and not _is_unc_path(p) and is_safe_to_modify(p):
                 _process_directory(p, found, 0, protected_cache, visited)
         except (OSError, RuntimeError): continue
     return found

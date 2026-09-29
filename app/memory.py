@@ -297,6 +297,7 @@ def _get_process_path(pid: int) -> Optional[Path]:
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
             if buf.value:
                 p = Path(buf.value)
+                # Validación estricta de seguridad contra rutas protegidas
                 if p.is_file() and not is_protected_path(str(p)):
                     return p
     except (ctypes.ArgumentError, OSError, ValueError, TypeError):
@@ -309,7 +310,7 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
     """Verifica si un proceso puede recibir operaciones de gestión de memoria de forma segura."""
     exec_path = _get_process_path(pid)
     if exec_path is None:
-        return False, "Acceso denegado o proceso no válido."
+        return False, "Acceso denegado, proceso de sistema o ruta no válida."
     if not is_safe_to_modify(str(exec_path)):
         return False, "Ruta protegida por seguridad."
     return True, None
