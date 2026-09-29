@@ -149,7 +149,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
         return None
         
     p = _validate_and_resolve_path(path)
-    if not p:
+    if p is None:
         return None
             
     try:
@@ -173,7 +173,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
         return None
 
     p = _validate_and_resolve_path(path)
-    if not p:
+    if p is None:
         return None
 
     try:

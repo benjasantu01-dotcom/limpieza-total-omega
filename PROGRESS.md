@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 43
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 228
+- Rechazadas por guardia de seguridad: 42
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 229
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-27 | 53 | 11 | 14 | 5 | 51 |
+| 2026-09-27 | 50 | 11 | 13 | 5 | 51 |
 | 2026-09-28 | 140 | 13 | 29 | 10 | 158 |
-| 2026-09-29 | 0 | 0 | 0 | 1 | 19 |
+| 2026-09-29 | 2 | 0 | 0 | 2 | 20 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **47**
+- legibilidad y documentación: **44**
 - seguridad defensiva: **40**
 - robustez ante casos límite: **39**
-- manejo de errores y validación de entradas: **35**
+- manejo de errores y validación de entradas: **37**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **19**
-- `browser.py`: **18**
+- `browser.py`: **19**
 - `healthscore.py`: **18**
-- `quarantine.py`: **17**
+- `duplicates.py`: **18**
 - `diskreport.py`: **17**
-- `duplicates.py`: **17**
 - `scanner.py`: **16**
-- `memory.py`: **15**
+- `quarantine.py`: **16**
+- `memory.py`: **14**
 - `settings.py`: **12**
 - `assistant.py`: **12**
 - `branding.py`: **9**
-- `organizer.py`: **8**
 - `main.py`: **8**
+- `organizer.py`: **7**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-29T01:01:09` **duplicates.py** (manejo de errores y validación de entradas): Reforcé la robustez de `hash_file` y `partial_hash` añadiendo validaciones explícitas de entrada, manejo de posibles errores en la lectura de archivos (como bloqueos durante la iteración) y asegurando que las funciones devuelvan siempre resultados consistentes incluso ante fallos transitorios en el sistema de archivos.
+- `2026-09-29T01:00:27` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez del módulo agregando validaciones de tipo y de estado en las funciones críticas de resolución de rutas, evitando posibles fallos ante entradas `None` o rutas malformadas que podrían disparar excepciones innecesarias.
 - `2026-09-28T14:18:35` **safety.py** (seguridad defensiva): Se añadió la verificación de que el sistema de archivos sea local y compatible (evitando unidades de red o volúmenes no soportados) en el chequeo de integridad (`_check_file_integrity`) para reforzar la seguridad defensiva, asegurando que solo se operen archivos en volúmenes validados.
 - `2026-09-28T14:06:52` **healthscore.py** (seguridad defensiva): Se reforzó la integridad de los datos de entrada en `SystemMetrics` mediante la implementación de una validación más estricta (`is_finite` y sanitización), garantizando que las métricas recibidas de componentes externos no inyecten valores corruptos o infinitos que puedan alterar el cálculo del puntaje.
 - `2026-09-28T13:58:07` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_excluded_path` añadiendo una validación explícita para rutas UNC (nombres de servidor/recurso) y bloqueando el acceso a archivos en uso que levantan `PermissionError` durante el análisis, reforzando la seguridad defensiva contra posibles errores de sistema al intentar acceder a rutas críticas o bloqueadas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-28T13:26:40` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` ante valores extremos o métricas no inicializadas, asegurando que `_PIPELINE_MAP` acceda de forma segura y que la suma de pesos se mantenga consistente incluso si fallara la validación previa del diccionario.
 - `2026-09-28T13:26:09` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez del módulo `duplicates.py` ante fallos de I/O y accesos denegados incorporando manejo de excepciones específico en las operaciones de lectura dentro de `hash_file` y `partial_hash`, evitando que una caída en la lectura de un bloque interrumpa el proceso de comparación.
 - `2026-09-28T13:25:31` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo chequeos de errores ante archivos bloqueados o inaccesibles durante el escaneo recursivo, evitando que excepciones de E/S interrumpan el reporte.
-- `2026-09-28T13:16:55` **branding.py** (robustez ante casos límite): Se reforzó la robustez en `draw_ring` ante posibles desbordamientos matemáticos o valores `nan`/`inf` en el cálculo de los arcos, garantizando que una entrada inesperada no interrumpa el renderizado de la UI.
-- `2026-09-28T12:57:31` **memory.py** (rendimiento): Se optimizó el proceso de recolección de memoria de los procesos (top_memory_processes) reemplazando la lógica de parseo basada en iteración de strings por una pre-compilación de la lógica de extracción y evitando el cálculo redundante de `sorted()` mediante una estructura de datos más eficiente (un `heapq` para mantener solo el top N en lugar de ordenar toda la lista).

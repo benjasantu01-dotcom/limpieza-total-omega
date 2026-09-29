@@ -235,7 +235,7 @@ def _sum_directory_recursive(
     Recorre jerárquicamente un directorio. 
     Usa un límite de profundidad para evitar recursión infinita en estructuras cíclicas.
     """
-    if depth > MAX_SCAN_DEPTH:
+    if depth > MAX_SCAN_DEPTH or not isinstance(root_path, Path):
         return 0
     
     total_bytes: int = 0
@@ -268,13 +268,14 @@ def directory_size(path: Optional[OSPath]) -> int:
 
 def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
     """Valida si un path candidato es un directorio de caché legítimo y seguro para el escáner."""
+    if not isinstance(candidate, Path) or not candidate.exists():
+        return False
     try:
         real = candidate.resolve(strict=True)
         if not real.is_dir() or not _is_path_inside_base(str(real), base_abs_str):
             return False
         if not is_safe_to_modify(real) or is_protected_path(real):
             return False
-        # Excluir symlinks o junctions que puedan apuntar fuera de perfiles
         return not (real.is_symlink() or _IS_JUNCTION_FN(str(real)) or _is_excluded_file(real.name))
     except (OSError, RuntimeError):
         return False
@@ -282,10 +283,10 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
 
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Une la base con el path relativo del navegador y verifica integridad de la ruta."""
+    if not isinstance(rel_str, str) or not rel_str:
+        return Path()
     try:
         parts = rel_str.split("\\")
-        if not parts:
-            return Path()
         target = real_base.joinpath(*parts)
         if target.exists():
             target = target.resolve(strict=True)
@@ -303,10 +304,10 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     k32 = _get_kernel32()
     found: List[BrowserCache] = []
-    # Memoización global para evitar procesar archivos idénticos (ino) varias veces en un escaneo
     global_memo: Dict[int, int] = {}
     
     for base in raw_bases:
+        if not isinstance(base, Path): continue
         try:
             real_base = base.resolve(strict=True)
             real_base_str = str(real_base)
