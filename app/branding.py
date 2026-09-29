@@ -394,7 +394,6 @@ def _validate_destination(dest: Any) -> Optional[Path]:
         return None
     try:
         path = Path(dest).resolve()
-        # Verificamos si es seguro listar/acceder y si la carpeta no está protegida
         if is_protected_path(path) or not is_safe_to_modify(path):
             return None
         return path
@@ -455,17 +454,18 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     """
     try:
         s = float(size)
+        cx, cy = float(canvas_x), float(canvas_y)
         if not math.isfinite(s) or s <= 0: return
         scale = max(0.1, min(10.0, s / 128.0))
         
         canvas.create_oval(
-            canvas_x + (64 * scale) - 75 * scale, canvas_y + (58 * scale) - 75 * scale, 
-            canvas_x + (64 * scale) + 75 * scale, canvas_y + (58 * scale) + 75 * scale, 
+            cx + (64 * scale) - 75 * scale, cy + (58 * scale) - 75 * scale, 
+            cx + (64 * scale) + 75 * scale, cy + (58 * scale) + 75 * scale, 
             fill=blend(C_SURFACE, C_GLOW, 0.15), outline=""
         )
-        canvas.create_polygon(*_get_scaled_poly(scale, canvas_x, canvas_y), fill=GRADIENT_STOPS[1], outline="")
-        _draw_shield_stripes(canvas, canvas_x, canvas_y, scale)
-        _draw_shield_icon_decorations(canvas, canvas_x, canvas_y, scale)
+        canvas.create_polygon(*_get_scaled_poly(scale, cx, cy), fill=GRADIENT_STOPS[1], outline="")
+        _draw_shield_stripes(canvas, cx, cy, scale)
+        _draw_shield_icon_decorations(canvas, cx, cy, scale)
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
@@ -473,10 +473,11 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     try:
         w_val = max(1, min(4096, int(width)))
         h_val = max(1, min(1024, int(height)))
+        cx, cy = float(canvas_x), float(canvas_y)
         colors = gradient_colors(w_val, stops)
         for segment in _get_grouped_segments(colors):
-            canvas.create_line(canvas_x + segment.start_index, canvas_y, 
-                               canvas_x + segment.end_index, canvas_y, 
+            canvas.create_line(cx + segment.start_index, cy, 
+                               cx + segment.end_index, cy, 
                                fill=segment.hex_color, width=h_val)
     except (TypeError, ValueError, AttributeError): pass
 
@@ -490,12 +491,13 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
     if percent is None or not isinstance(percent, (int, float)): return
     try:
         val = float(percent)
+        cx, cy = float(canvas_x), float(canvas_y)
         if not math.isfinite(val): val = 0.0
         val = max(0.0, min(100.0, val))
         diam = max(20, min(2048, int(size)))
         thick = max(2, min(int(thickness), (diam // 2) - 1))
         borde: float = float(thick) / 2.0
-        caja = (canvas_x + borde, canvas_y + borde, canvas_x + diam - borde, canvas_y + diam - borde)
+        caja = (cx + borde, cy + borde, cx + diam - borde, cy + diam - borde)
         
         canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=thick)
         if val > 0: 

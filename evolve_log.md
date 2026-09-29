@@ -1387,3 +1387,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-09-29T05:18:13` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-29T05:18:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T05:18:13` Corrida terminada. Total usado hoy: 124.
+- `2026-09-29T05:24:15` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-09-29T05:25:05` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T05:25:50` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del motor de ingesta de datos y el acceso a métricas en `SystemContext`, añadiendo validaciones específicas para detectar valores `None` o estados inconsistentes de forma temprana, evitando propagación de errores en cálculos posteriores.
+- `2026-09-29T05:25:50` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T05:26:29` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de las funciones de entrada en `branding.py` mediante la implementación de validaciones explícitas de tipo y rango para los argumentos de renderizado (`canvas_x`, `canvas_y`, `size`, `thickness`), asegurando que cualquier valor inesperado (como `None` o tipos incompatibles) no resulte en excepciones que detengan el hilo principal de la UI.
+- `2026-09-29T05:27:24` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez en `_get_kernel32` y `_should_skip_entry` al capturar errores de tipo (`TypeError`) cuando las entradas del sistema de archivos tienen atributos inesperados o valores `None`, evitando que el escáner se interrumpa ante condiciones de carrera en el sistema operativo.
+- `2026-09-29T05:27:42` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-29T05:27:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T05:27:42` Corrida terminada. Total usado hoy: 128.

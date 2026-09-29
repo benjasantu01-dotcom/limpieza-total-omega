@@ -329,7 +329,7 @@ class SystemContext:
     def get_metric(self, key: str, default: float) -> float:
         """Recupera el valor de una métrica, aplicando validación de finitud."""
         val = getattr(self, key, None)
-        if not isinstance(val, (int, float)) or not math.isfinite(val):
+        if val is None or not isinstance(val, (int, float)) or not math.isfinite(val):
             return default
         return float(val)
 

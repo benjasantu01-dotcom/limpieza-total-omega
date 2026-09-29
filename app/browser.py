@@ -110,7 +110,7 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
     try:
         dll = ctypes.WinDLL('kernel32.dll', use_last_error=True)
         return dll if hasattr(dll, 'GetFileAttributesW') else None
-    except Exception:
+    except (OSError, AttributeError, TypeError):
         return None
 
 def _is_unc_path(path_str: Optional[str]) -> bool:
@@ -165,7 +165,7 @@ def _is_system_hidden(entry_path: Optional[str], kernel32: Optional[ctypes.WinDL
     try:
         attrs = kernel32.GetFileAttributesW(entry_path)
         return bool(attrs != 0xFFFFFFFF and (attrs & SYSTEM_HIDDEN_FLAGS))
-    except (ctypes.ArgumentError, OSError, Exception):
+    except (ctypes.ArgumentError, OSError, TypeError, Exception):
         return False
 
 
@@ -187,7 +187,7 @@ def _should_skip_entry(
         path = entry.path
         if not path or len(path) >= MAX_PATH_LEN or _is_unc_path(path):
             return True
-    except (OSError, AttributeError):
+    except (OSError, AttributeError, TypeError):
         return True
     return False
 
@@ -219,7 +219,7 @@ def _process_file_entry(
             return _sum_directory_recursive(path_obj, root_abs_path, kernel32, visited_inodes, depth + 1)
         
         return st.st_size
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, TypeError):
         return 0
 
 def _sum_directory_recursive(
