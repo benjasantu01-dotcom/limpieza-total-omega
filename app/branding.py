@@ -243,7 +243,15 @@ def grade_color(grade: Optional[str]) -> ColorHex:
 
 @lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> ColorHex:
-    """Determina el color según el puntaje (0-100) y los umbrales configurados."""
+    """
+    Determina el color según el puntaje (0-100) y los umbrales configurados.
+    
+    Args:
+        score: Puntaje numérico a evaluar (0-100).
+        
+    Returns:
+        Hexadecimal de color correspondiente al rango del puntaje.
+    """
     if score is None: 
         return C_TEXT_MUTED
     try:
@@ -259,7 +267,13 @@ def score_color(score: Union[float, int, None]) -> ColorHex:
 @lru_cache(maxsize=64)
 def bar(percent: Union[float, int, None], width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
-    """Genera una barra de progreso visual (formato texto para consola)."""
+    """
+    Genera una barra de progreso visual (formato texto para consola).
+    
+    Args:
+        percent: Valor porcentual (0-100).
+        width: Número total de caracteres de la barra.
+    """
     try:
         valor = float(percent) if percent is not None else 0.0
         if not math.isfinite(valor): valor = 0.0
@@ -288,7 +302,14 @@ def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
 
 @lru_cache(maxsize=128)
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
-    """Realiza interpolación lineal entre dos colores."""
+    """
+    Realiza interpolación lineal entre dos colores.
+    
+    Args:
+        start: Color de origen.
+        end: Color de destino.
+        ratio: Factor de mezcla entre 0.0 y 1.0.
+    """
     try:
         r1, g1, b1 = _hex_to_rgb(start)
         r2, g2, b2 = _hex_to_rgb(end)
@@ -452,9 +473,12 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """
     Renderiza el logo corporativo sobre un lienzo canvas provisto.
-    :param size: Diámetro total del logo (escala base 128 units).
-    :param canvas_x: Coordenada X de origen superior-izquierda.
-    :param canvas_y: Coordenada Y de origen superior-izquierda.
+    
+    Args:
+        canvas: Objeto canvas (Protocol) para renderizar.
+        size: Diámetro total del logo (escala base 128 units).
+        canvas_x: Coordenada X de origen superior-izquierda.
+        canvas_y: Coordenada Y de origen superior-izquierda.
     """
     try:
         s = float(size)
@@ -473,7 +497,17 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una barra horizontal de ancho dado utilizando interpolación de colores segmentada."""
+    """
+    Dibuja una barra horizontal de ancho dado utilizando interpolación de colores segmentada.
+    
+    Args:
+        canvas: Objeto canvas (Protocol) para renderizar.
+        width: Ancho total de la barra en píxeles.
+        height: Grosor de la línea.
+        canvas_x: Origen horizontal.
+        canvas_y: Origen vertical.
+        stops: Colores para el gradiente.
+    """
     try:
         w_val = max(1, min(4096, int(width)))
         h_val = max(1, min(1024, int(height)))
@@ -490,11 +524,13 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
               track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
     """
     Renderiza un gráfico circular indicativo de salud (0-100%).
-    :param percent: Valor numérico 0-100 para el arco de progreso.
-    :param size: Diámetro total del anillo en píxeles.
-    :param thickness: Grosor del trazado del anillo.
-    :param track: Color opcional para el anillo de fondo.
-    :param fill: Color opcional para el arco de progreso activo.
+    
+    Args:
+        percent: Valor numérico 0-100 para el arco de progreso.
+        size: Diámetro total del anillo en píxeles.
+        thickness: Grosor del trazado del anillo.
+        track: Color opcional para el anillo de fondo.
+        fill: Color opcional para el arco de progreso activo.
     """
     if percent is None or not isinstance(percent, (int, float)): return
     try:

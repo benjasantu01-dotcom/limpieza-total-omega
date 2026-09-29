@@ -643,7 +643,10 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
         return default
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
-    """Serializa la pregunta y contexto en el formato JSON esperado por Gemini."""
+    """
+    Serializa la pregunta y el contexto en el formato JSON esperado por Gemini.
+    Realiza saneamiento estricto sobre el prompt completo antes de la serialización.
+    """
     if not context_text or not _ensure_safe_text(context_text): return None
     q = _sanitize_query(question)
     if not q or not _ensure_safe_text(q): return None
@@ -681,7 +684,10 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     return None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
-    """Realiza una petición POST segura a la API de Google."""
+    """
+    Realiza una petición POST cifrada a la API de Google con los datos saneados.
+    Verifica que tanto la estructura de la URL como la longitud del payload cumplan con las restricciones.
+    """
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model) or not context_text:
         return None
     
