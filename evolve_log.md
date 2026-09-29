@@ -1011,3 +1011,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-29T02:43:16` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
 - `2026-09-29T02:43:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T02:43:16` Corrida terminada. Total usado hoy: 64.
+- `2026-09-29T02:51:27` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-09-29T02:52:10` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_get_source_value` al añadir una verificación explícita de `__dict__` y `__slots__` para evitar el acceso a atributos internos (`__`) de forma más rigurosa, y aseguré que `_clean_grade` maneje correctamente las entradas nulas o inesperadas, evitando fallas silenciosas durante la ingesta.
+- `2026-09-29T02:52:45` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-29T02:53:11` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_path_inside_base` y `_is_valid_cache_path` añadiendo un manejo de excepciones más estricto contra rutas malformadas (ej. con caracteres nulos o excesivamente largas que Windows rechaza) y reforzando la validación de `path_obj` antes de realizar llamadas al sistema de archivos, evitando así errores de desbordamiento o acceso prohibido en rutas atípicas.
+- `2026-09-29T02:53:24` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `largest_folders` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular en `os.stat` y `os.scandir` para evitar que una denegación de acceso local interrumpa la totalidad del escaneo, asegurando que el reporte final sea lo más completo posible incluso en entornos con permisos restringidos.
+- `2026-09-29T02:53:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T02:53:24` Corrida terminada. Total usado hoy: 68.

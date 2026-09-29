@@ -144,10 +144,11 @@ def _is_path_inside_base(target_abs: str, base_abs: str) -> bool:
     if not isinstance(target_abs, str) or not isinstance(base_abs, str):
         return False
     try:
+        # Validación extra contra nulidad y longitud excesiva
+        if '\0' in target_abs or len(target_abs) >= MAX_PATH_LEN:
+            return False
         target_norm = os.path.normcase(os.path.normpath(target_abs))
         base_norm = os.path.normcase(os.path.normpath(base_abs))
-        if len(target_norm) >= MAX_PATH_LEN or '\0' in target_norm:
-            return False
         return target_norm.startswith(base_norm)
     except (OSError, ValueError):
         return False
@@ -206,14 +207,13 @@ def _process_file_entry(
             return 0
             
         st = entry.stat(follow_symlinks=False)
-        # Prevenir conteos duplicados por hardlinks usando el ID del nodo (inode)
         if st.st_ino in visited_inodes:
             return 0
         visited_inodes.add(st.st_ino)
         
         if entry.is_dir(follow_symlinks=False):
-            # Seguridad: validamos que la subcarpeta sea segura antes de entrar
             path_obj = Path(entry.path)
+            # Validación robusta antes de entrar a recursión
             if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                 return 0
             return _sum_directory_recursive(path_obj, root_abs_path, kernel32, visited_inodes, depth + 1)
@@ -255,7 +255,7 @@ def directory_size(path: Optional[OSPath]) -> int:
     if not path: return 0
     try:
         p = Path(path).resolve(strict=True)
-        if not p.is_dir() or not p.parts or not is_safe_to_modify(p) or is_protected_path(p):
+        if not p.is_dir() or not is_safe_to_modify(p) or is_protected_path(p):
             return 0
         return _sum_directory_recursive(p, str(p), _get_kernel32(), set(), 0)
     except (OSError, RuntimeError, PermissionError):
@@ -264,15 +264,18 @@ def directory_size(path: Optional[OSPath]) -> int:
 
 def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
     """Valida si un path candidato es un directorio de caché legítimo y seguro."""
-    if not isinstance(candidate, Path) or not candidate.exists():
+    if not isinstance(candidate, Path):
         return False
     try:
+        if not candidate.exists():
+            return False
         real = candidate.resolve(strict=True)
-        if not real.is_dir() or not _is_path_inside_base(str(real), base_abs_str):
+        real_str = str(real)
+        if not real.is_dir() or not _is_path_inside_base(real_str, base_abs_str):
             return False
         if not is_safe_to_modify(real) or is_protected_path(real):
             return False
-        return not (real.is_symlink() or _IS_JUNCTION_FN(str(real)) or _is_excluded_file(real.name))
+        return not (real.is_symlink() or _IS_JUNCTION_FN(real_str) or _is_excluded_file(real.name))
     except (OSError, RuntimeError):
         return False
 
@@ -282,8 +285,7 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     if not isinstance(rel_str, str) or not rel_str:
         return Path()
     try:
-        parts = rel_str.split("\\")
-        target = real_base.joinpath(*parts)
+        target = real_base.joinpath(*rel_str.split("\\"))
         if target.exists():
             target = target.resolve(strict=True)
             if _is_path_inside_base(str(target), str(real_base)) and \

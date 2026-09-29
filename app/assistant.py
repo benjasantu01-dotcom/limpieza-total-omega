@@ -381,7 +381,7 @@ class SystemContext:
         Ingesta datos de una fuente externa y los normaliza en el contexto.
         Utiliza actualización atómica para evitar estados parciales corruptos.
         """
-        if not (isinstance(source, dict) or hasattr(source, "__dict__")) or _is_input_too_deep_or_complex(source):
+        if not (isinstance(source, (dict, SystemContext)) or hasattr(source, "__dict__")) or _is_input_too_deep_or_complex(source):
             return False
         
         updates = {}
@@ -444,17 +444,18 @@ def _ensure_safe_text(text: Any) -> bool:
     return not any(pattern.search(sanitized) for pattern in SECURITY_PATTERNS)
 
 def _get_source_value(source: Any, key: str) -> Any:
-    """Acceso controlado a atributos para evitar la ejecución de métodos o acceso privado."""
+    """Acceso controlado a atributos evitando acceso a miembros internos y recursión."""
     if not _is_safe_key(key): return None
     try:
         if isinstance(source, dict):
             val = source.get(key)
         else:
+            # Evitamos acceder a atributos que parezcan privados o dinámicos de Python
+            if key.startswith("__") or hasattr(type(source), key) and callable(getattr(source, key)):
+                return None
             val = getattr(source, key, None)
         
-        if callable(val) or isinstance(val, (Path, type)):
-            return None
-        return val
+        return None if isinstance(val, (type, type(None))) else val
     except Exception:
         return None
 

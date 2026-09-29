@@ -228,7 +228,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """Generador recursivo de archivos omitiendo ciclos y rutas protegidas."""
+    """Generador recursivo de archivos omitiendo ciclos y rutas protegidas con manejo de errores local."""
     root_path = _validate_root(directory)
     if root_path is None: return
     root_path_str = str(root_path)
@@ -243,14 +243,18 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if skip_protected and _is_excluded_path(entry, root_path_str):
                             continue
                         if entry.is_dir(follow_symlinks=False):
-                            st = entry.stat(follow_symlinks=False)
-                            inode = (st.st_dev, st.st_ino)
-                            if inode not in visited_inodes:
-                                visited_inodes.add(inode)
-                                stack.append(entry.path)
+                            try:
+                                st = entry.stat(follow_symlinks=False)
+                                inode = (st.st_dev, st.st_ino)
+                                if inode not in visited_inodes:
+                                    visited_inodes.add(inode)
+                                    stack.append(entry.path)
+                            except OSError: continue
                         elif entry.is_file(follow_symlinks=False):
-                            st = entry.stat(follow_symlinks=False)
-                            if st.st_size >= 0: yield Path(entry.path), st.st_size
+                            try:
+                                st = entry.stat(follow_symlinks=False)
+                                if st.st_size >= 0: yield Path(entry.path), st.st_size
+                            except OSError: continue
                     except (OSError, PermissionError): continue
         except (PermissionError, OSError): continue
 
@@ -282,11 +286,9 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             for entry in it:
                 if entry.is_dir() and not (skip_protected and is_protected_path(Path(entry.path))):
                     path = Path(entry.path)
-                    try:
-                        for _, f_size in walk_files(path, skip_protected):
-                            stats[path][0] += f_size
-                            stats[path][1] += 1
-                    except (OSError, PermissionError): continue
+                    for f_path, f_size in walk_files(path, skip_protected):
+                        stats[path][0] += f_size
+                        stats[path][1] += 1
     except (OSError, PermissionError): pass
     results = [FolderUsage(p, s[0], s[1]) for p, s in stats.items()]
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)
