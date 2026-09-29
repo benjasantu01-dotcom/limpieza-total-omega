@@ -241,18 +241,14 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if skip_protected and _is_excluded_path(entry, root_path_str):
                             continue
                         if entry.is_dir(follow_symlinks=False):
-                            try:
-                                st = entry.stat(follow_symlinks=False)
-                                inode = (st.st_dev, st.st_ino)
-                                if inode not in visited_inodes:
-                                    visited_inodes.add(inode)
-                                    stack.append(entry.path)
-                            except (OSError, PermissionError): continue
+                            st = entry.stat(follow_symlinks=False)
+                            inode = (st.st_dev, st.st_ino)
+                            if inode not in visited_inodes:
+                                visited_inodes.add(inode)
+                                stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            try:
-                                st = entry.stat(follow_symlinks=False)
-                                if st.st_size >= 0: yield Path(entry.path), st.st_size
-                            except (OSError, PermissionError): continue
+                            st = entry.stat(follow_symlinks=False)
+                            if st.st_size >= 0: yield Path(entry.path), st.st_size
                     except (OSError, PermissionError): continue
         except (PermissionError, OSError): continue
 
@@ -282,17 +278,13 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     try:
         with os.scandir(root) as it:
             for entry in it:
-                try:
-                    if entry.is_dir(follow_symlinks=False):
-                        path = Path(entry.path)
-                        # Validar permisos de lectura antes de profundizar
-                        if skip_protected and (is_protected_path(path) or not os.access(path, os.R_OK)):
-                            continue
-                        for f_path, f_size in walk_files(path, skip_protected):
-                            stats[path][0] += f_size
-                            stats[path][1] += 1
-                except (OSError, PermissionError):
-                    continue
+                if entry.is_dir(follow_symlinks=False):
+                    path = Path(entry.path)
+                    if skip_protected and (is_protected_path(path) or not os.access(path, os.R_OK)):
+                        continue
+                    for f_path, f_size in walk_files(path, skip_protected):
+                        stats[path][0] += f_size
+                        stats[path][1] += 1
     except (OSError, PermissionError): pass
     results = [FolderUsage(p, s[0], s[1]) for p, s in stats.items()]
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)
@@ -313,7 +305,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        # Doble chequeo defensivo: el archivo debe ser legible para reportar su tamaño
         if not os.access(path, os.R_OK):
             continue
         total_bytes += size_bytes
@@ -323,7 +314,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         stats.total_bytes += size_bytes
         stats.count += 1
         
-        # Mantener top N archivos más pesados en memoria eficientemente
         if limit > 0:
             if len(top_heap) < limit: 
                 heapq.heappush(top_heap, (size_bytes, path))

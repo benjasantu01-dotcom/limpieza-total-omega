@@ -216,7 +216,7 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> ScanResult:
     """Calcula el tamaño total de un árbol de archivos de forma recursiva."""
-    if depth > MAX_SCAN_DEPTH or not isinstance(root_path, Path):
+    if not isinstance(root_path, Path) or depth > MAX_SCAN_DEPTH:
         return ScanResult(0, False)
     
     total_bytes: int = 0
@@ -237,12 +237,14 @@ def _sum_directory_recursive(
 
 def directory_size(path: Optional[OSPath]) -> int:
     """Calcula el tamaño total en bytes de un directorio dado."""
-    if not path: return 0
+    if path is None: return 0
     try:
-        p = Path(path).resolve(strict=True)
-        if not p.is_dir() or not is_safe_to_modify(p) or is_protected_path(p):
+        path_obj = Path(path)
+        if not path_obj.exists(): return 0
+        resolved_p = path_obj.resolve(strict=True)
+        if not resolved_p.is_dir() or not is_safe_to_modify(resolved_p) or is_protected_path(resolved_p):
             return 0
-        return _sum_directory_recursive(p, str(p), _get_kernel32(), set(), 0).bytes_found
+        return _sum_directory_recursive(resolved_p, str(resolved_p), _get_kernel32(), set(), 0).bytes_found
     except (OSError, RuntimeError, PermissionError):
         return 0
 
