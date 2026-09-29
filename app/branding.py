@@ -411,6 +411,11 @@ def _get_stripe_params(scale: float, franjas_count: int) -> Tuple[Tuple[float, f
                   i * (92.0 * scale / franjas_count),
                   (i + 1) * (92.0 * scale / franjas_count)) for i in range(franjas_count))
 
+@lru_cache(maxsize=128)
+def _get_cached_stripe_data(scale: float, franjas_count: int) -> Tuple[Tuple[Tuple[float, float, float], ...], Tuple[ColorHex, ...]]:
+    """Cachea parámetros y colores de las franjas para evitar re-cálculos en animaciones."""
+    return _get_stripe_params(scale, franjas_count), gradient_colors(franjas_count)
+
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     """Renderiza las franjas con gradiente en el interior del escudo escalado."""
     try:
@@ -418,8 +423,7 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
         franjas_count = max(6, int(28 * scale))
         base_y = canvas_y + 18 * scale
         center_x = canvas_x + 64 * scale
-        params = _get_stripe_params(scale, franjas_count)
-        colors = gradient_colors(franjas_count)
+        params, colors = _get_cached_stripe_data(scale, franjas_count)
         
         for i, hex_color in enumerate(colors):
             w, y_start, y_end = params[i]

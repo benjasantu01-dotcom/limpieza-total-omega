@@ -982,3 +982,11 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-29T02:02:45` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
 - `2026-09-29T02:02:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T02:02:45` Corrida terminada. Total usado hoy: 48.
+- `2026-09-29T02:10:42` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-09-29T02:10:44` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T02:11:22` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints consistentes en los métodos de `StartupEntry` para clarificar la lógica de resolución de rutas y validación de seguridad, facilitando el mantenimiento a largo plazo.
+- `2026-09-29T02:12:07` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` reemplazando la búsqueda lineal de tokens mediante `tokens_map` (que implicaba iterar la consulta completa y realizar múltiples búsquedas en diccionario) por un filtrado eficiente mediante conjuntos (`set`) para detectar el primer tema relevante de forma inmediata.
+- `2026-09-29T02:12:44` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se introdujo una cache de nivel superior en `_draw_shield_stripes` mediante `lru_cache` para los resultados calculados, evitando el re-cálculo de parámetros geométricos y la generación de colores en cada iteración de repintado del logo, mejorando significativamente el rendimiento en frames de animación.
+- `2026-09-29T02:13:01` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el cálculo del tamaño de directorios sustituyendo la lista `memo` por un `set` de IDs de inodos (`visited_inodes`), reduciendo drásticamente el consumo de memoria al solo necesitar verificar existencia en lugar de almacenar pares (ino: size), y eliminé la consulta de `st.st_dev` innecesaria dentro de la recursión profunda al validarla solo al inicio.
+- `2026-09-29T02:13:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T02:13:01` Corrida terminada. Total usado hoy: 52.

@@ -21,7 +21,7 @@ import os
 import ctypes
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Sequence, Dict, List, Optional, Callable, Union, TypeAlias, NamedTuple
+from typing import Iterable, Sequence, Dict, List, Optional, Callable, Union, TypeAlias, NamedTuple, Set
 
 from safety import is_protected_path, is_safe_to_modify
 
@@ -194,13 +194,12 @@ def _process_file_entry(
     entry: os.DirEntry,
     root_abs_path: str,
     kernel32: Optional[ctypes.WinDLL],
-    memo: Dict[int, int],
-    root_dev: int,
+    visited_inodes: Set[int],
     depth: int
 ) -> int:
     """
-    Procesa un nodo de archivo: realiza chequeos de identidad (ino) y 
-    restricciones de volumen antes de contabilizar bytes.
+    Procesa un nodo de archivo: realiza chequeos de identidad (ino) 
+    y recursión segura.
     """
     try:
         if not _is_path_inside_base(entry.path, root_abs_path):
@@ -208,17 +207,17 @@ def _process_file_entry(
             
         st = entry.stat(follow_symlinks=False)
         # Prevenir conteos duplicados por hardlinks usando el ID del nodo (inode)
-        if st.st_ino in memo or st.st_dev != root_dev:
+        if st.st_ino in visited_inodes:
             return 0
+        visited_inodes.add(st.st_ino)
         
         if entry.is_dir(follow_symlinks=False):
             # Seguridad: validamos que la subcarpeta sea segura antes de entrar
             path_obj = Path(entry.path)
             if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
                 return 0
-            return _sum_directory_recursive(path_obj, root_abs_path, kernel32, memo, root_dev, depth + 1)
+            return _sum_directory_recursive(path_obj, root_abs_path, kernel32, visited_inodes, depth + 1)
         
-        memo[st.st_ino] = st.st_size
         return st.st_size
     except (OSError, PermissionError):
         return 0
@@ -227,13 +226,11 @@ def _sum_directory_recursive(
     root_path: Path, 
     root_abs_path: str,
     kernel32: Optional[ctypes.WinDLL],
-    memo: Dict[int, int],
-    root_dev: int,
+    visited_inodes: Set[int],
     depth: int = 0
 ) -> int:
     """
-    Recorre jerárquicamente un directorio. 
-    Usa un límite de profundidad para evitar recursión infinita en estructuras cíclicas.
+    Recorre jerárquicamente un directorio usando set para tracking de inodos.
     """
     if depth > MAX_SCAN_DEPTH or not isinstance(root_path, Path):
         return 0
@@ -244,7 +241,7 @@ def _sum_directory_recursive(
             for entry in it:
                 if _should_skip_entry(entry, kernel32, _IS_JUNCTION_FN):
                     continue
-                total_bytes += _process_file_entry(entry, root_abs_path, kernel32, memo, root_dev, depth)
+                total_bytes += _process_file_entry(entry, root_abs_path, kernel32, visited_inodes, depth)
     except (OSError, PermissionError):
         pass
         
@@ -254,20 +251,19 @@ def _sum_directory_recursive(
 def directory_size(path: Optional[OSPath]) -> int:
     """
     Punto de entrada público para cálculo de tamaño. 
-    Valida la existencia de la ruta y permisos de acceso antes de iniciar la recursión.
     """
     if not path: return 0
     try:
         p = Path(path).resolve(strict=True)
         if not p.is_dir() or not p.parts or not is_safe_to_modify(p) or is_protected_path(p):
             return 0
-        return _sum_directory_recursive(p, str(p), _get_kernel32(), {}, p.stat().st_dev, 0)
+        return _sum_directory_recursive(p, str(p), _get_kernel32(), set(), 0)
     except (OSError, RuntimeError, PermissionError):
         return 0
 
 
 def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
-    """Valida si un path candidato es un directorio de caché legítimo y seguro para el escáner."""
+    """Valida si un path candidato es un directorio de caché legítimo y seguro."""
     if not isinstance(candidate, Path) or not candidate.exists():
         return False
     try:
@@ -299,23 +295,22 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
 
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
-    """Escaneo principal: detecta perfiles, valida seguridad y calcula el peso de los cachés."""
+    """Escaneo principal: detecta perfiles y calcula el peso de los cachés."""
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     k32 = _get_kernel32()
     found: List[BrowserCache] = []
-    global_memo: Dict[int, int] = {}
+    global_visited_inodes: Set[int] = set()
     
     for base in raw_bases:
         if not isinstance(base, Path): continue
         try:
             real_base = base.resolve(strict=True)
             real_base_str = str(real_base)
-            root_dev = real_base.stat().st_dev
             for browser_name, rel_str in browser_map.items():
                 candidate = _resolve_browser_path(real_base, rel_str)
                 if candidate and _is_valid_cache_path(candidate, real_base_str):
-                    size = _sum_directory_recursive(candidate, str(candidate), k32, global_memo, root_dev)
+                    size = _sum_directory_recursive(candidate, str(candidate), k32, global_visited_inodes)
                     if size > 0:
                         found.append(BrowserCache(str(browser_name), candidate, size))
         except (OSError, RuntimeError):

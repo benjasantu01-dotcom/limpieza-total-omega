@@ -87,7 +87,10 @@ class StartupEntry:
 
     @property
     def is_valid(self) -> bool:
-        """Determina si la estructura del comando es segura, descartando rutas con caracteres maliciosos o alias de dispositivos."""
+        """
+        Valida que el comando no contenga caracteres de control maliciosos ni
+        haga referencia a alias de dispositivos legados del sistema.
+        """
         if not self.command or self._is_path_suspicious(self.command):
             return False
         if self._is_reserved_device_name(self.command):
@@ -95,7 +98,7 @@ class StartupEntry:
         return True
 
     def _is_reserved_device_name(self, path_str: str) -> bool:
-        """Verifica si la cadena intenta acceder a alias de dispositivos legados (ej. NUL, CON)."""
+        """Verifica si la ruta apunta a un dispositivo especial (ej. NUL, CON) que bloquea el sistema."""
         try:
             if "\0" in path_str:
                 return True
@@ -104,24 +107,27 @@ class StartupEntry:
             return True
 
     def _is_path_suspicious(self, path_string: str) -> bool:
-        """Verifica la presencia de caracteres no permitidos en Windows o rutas de red peligrosas."""
+        """Determina si una cadena contiene caracteres prohibidos o rutas UNC potencialmente peligrosas."""
         return any(c in path_string for c in SUSPICIOUS_CHARS) or path_string.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Valida que el archivo posea una extensión ejecutable permitida y no sea symlink."""
+        """Valida que la extensión sea ejecutable y no sea un enlace simbólico que lleve a ubicaciones inesperadas."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_command: str) -> str:
-        """Limpia la cadena de comando eliminando caracteres de control no imprimibles."""
+        """Elimina caracteres de control y espacios en blanco fuera de rango imprimible."""
         if not isinstance(raw_command, str):
             return ""
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
-        """Extrae y valida la ruta de un ejecutable encapsulado entre comillas."""
+        """
+        Intenta extraer la ruta absoluta de un ejecutable envuelto en comillas,
+        asegurando que sea una ruta de sistema válida y no protegida.
+        """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
         
@@ -146,7 +152,10 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """Verifica que el archivo exista, sea ejecutable regular y no esté protegido."""
+        """
+        Realiza una verificación final de seguridad sobre un archivo existente:
+        valida existencia, tipo de archivo y protección mediante `safety.py`.
+        """
         try:
             if not p.exists():
                 return False
@@ -157,7 +166,10 @@ class StartupEntry:
             return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
-        """Resuelve una ruta a su forma absoluta y verifica accesibilidad, usando caché."""
+        """
+        Normaliza una ruta, la resuelve al sistema de archivos real y cachea el resultado
+        para minimizar llamadas al disco durante el escaneo.
+        """
         if not isinstance(path_string, str) or not self.is_valid:
             return ""
         
@@ -191,7 +203,7 @@ class StartupEntry:
             return ""
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Analiza la línea de comando para aislar la ruta del ejecutable principal."""
+        """Analiza la línea de comando (con argumentos) para aislar la ruta del ejecutable."""
         if not command_line or not isinstance(command_line, str):
             return ""
         
@@ -214,7 +226,10 @@ class StartupEntry:
         
     @property
     def executable(self) -> str:
-        """Retorna la ruta absoluta del ejecutable tras procesar y validar."""
+        """
+        Retorna la ruta absoluta verificada del ejecutable.
+        Esta propiedad dispara la resolución de ruta solo si no ha sido validada previamente.
+        """
         if self._checked_exists:
             return self._exec_cache or ""
             

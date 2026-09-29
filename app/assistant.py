@@ -600,11 +600,10 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     if not q_sanitized:
         return Answer("Entrada no válida.")
     
-    tokens = _TOKEN_REGEX.findall(q_sanitized.lower())
-    for token in tokens:
-        handler = _TOKENS_MAP.get(token)
-        if handler:
-            return handler(context, question)
+    tokens = set(_TOKEN_REGEX.findall(q_sanitized.lower()))
+    handler = next((_TOKENS_MAP[t] for t in tokens if t in _TOKENS_MAP), None)
+    if handler:
+        return handler(context, question)
             
     cuerpo = _format_problem_message(context.active_problems, context.score or "N/A")
     ans = Answer(_validate_response_length(cuerpo), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
