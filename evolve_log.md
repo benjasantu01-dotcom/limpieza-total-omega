@@ -849,3 +849,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-29T12:04:24` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `compute_score` ante divisiones por cero o valores NaN inesperados en los cálculos del pipeline, asegurando que el motor de puntuación nunca falle catastróficamente ante métricas mal formadas.
 - `2026-09-29T12:04:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T12:04:24` Corrida terminada. Total usado hoy: 280.
+- `2026-09-29T12:12:34` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-09-29T12:13:36` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-29T12:13:40` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-29T12:13:51` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-29T12:15:03` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-29T12:15:48` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_get_process_path` para evitar bloqueos por permisos al acceder a procesos con privilegios elevados y corregí el manejo de errores en `trim_working_set` ante procesos que finalizan durante la consulta.
+- `2026-09-29T12:15:50` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T12:16:20` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-29T12:16:48` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `purge_all` y `_is_item_purgable` para evitar que el bucle de purga falle silenciosamente o se interrumpa si encuentra archivos inesperados (como archivos temporales remanentes o archivos corruptos), garantizando que solo se procesen los archivos que coincidan estrictamente con el manifiesto actual.
+- `2026-09-29T12:16:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T12:16:48` Corrida terminada. Total usado hoy: 284.

@@ -743,10 +743,12 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 
 def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
     """Verifica si un ítem cumple con las condiciones necesarias para ser borrado."""
+    # Verificación estricta: debe ser el archivo esperado según el hash y dentro del sandbox
     if not file_path.exists() or not file_path.is_file() or file_path.is_symlink():
         return False
     if not _is_within_quarantine_sandbox(file_path.resolve(), base_path.resolve()):
         return False
+    # Verificamos que el archivo en disco corresponda al manifiesto
     return (
         item.verify_integrity(file_path) and
         _safe_unlink(file_path, expected_hash=item.sha256)
@@ -754,7 +756,7 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) ->
 
 
 def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
-    """Vacía toda la cuarentena purgando únicamente archivos validados."""
+    """Vacía toda la cuarentena purgando únicamente archivos validados según el manifiesto."""
     try:
         quarantine_root = quarantine_dir(base)
     except (OSError, RuntimeError, UnsafePathError):
@@ -764,10 +766,13 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     purged_ids: Set[str] = set()
     try:
         for f in quarantine_root.iterdir():
+            # Solo procesar archivos presentes en el manifiesto
             if f.name == MANIFEST_NAME or not f.is_file():
                 continue
-            if (item := item_map.get(f.name)) and _is_item_purgable(f, item, quarantine_root):
+            item = item_map.get(f.name)
+            if item and _is_item_purgable(f, item, quarantine_root):
                 purged_ids.add(item.item_id)
+        
         if purged_ids:
             save_manifest([i for i in items if i.item_id not in purged_ids], base)
     except (OSError, PermissionError):

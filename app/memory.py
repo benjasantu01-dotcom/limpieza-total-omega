@@ -51,7 +51,7 @@ BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 # Límite heurístico para filtrar valores erróneos de lectura de procesos (128GB).
 MAX_VALID_PROCESS_MEM: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
-# Máscaras de acceso Win32 (Permisos requeridos para consultar o modificar procesos):
+# Máscaras de acceso Win32 (Permisos requeridos para consultar o modificar procesos).
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x100
 PROCESS_QUERY_INFORMATION: Final[int] = 0x0400
@@ -293,11 +293,13 @@ def _get_process_path(pid: int) -> Optional[Path]:
     handle = kernel32.OpenProcess(SAFE_VALIDATION_MASK, False, pid)
     if not handle: return None
     try:
+        # Validar si el proceso aún existe antes de consultar
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return None
         psapi = ctypes.windll.psapi
         buf = ctypes.create_unicode_buffer(1024)
+        # Algunos procesos pueden denegar GetModuleFileNameExW; ignoramos si falla
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
             if buf.value:
                 p = Path(buf.value)
@@ -315,6 +317,7 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
     """Verifica si un proceso es candidato seguro para la reducción de working set."""
     exec_path = _get_process_path(pid)
     if exec_path is None:
+        # Consideramos inaccesible como "no seguro para modificar"
         return False, "Proceso protegido o inaccesible."
     if not is_safe_to_modify(str(exec_path)):
         return False, "Ruta no permitida para operaciones de modificación."
@@ -343,7 +346,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if not proc_handle: 
         if kernel32.GetLastError() == ERROR_ACCESS_DENIED:
             return False, "Acceso denegado: se requieren privilegios de administrador."
-        return False, "No se pudo obtener acceso al proceso."
+        return False, "El proceso terminó o no pudo ser accedido."
     
     try:
         if psapi.EmptyWorkingSet(proc_handle) == 0:
