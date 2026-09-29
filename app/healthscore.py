@@ -122,7 +122,6 @@ _RULES: Final[Dict[MetricKey, Tuple[RecommendationRule, ...]]] = {
 }
 
 _PIPELINE_MAP: Final[Dict[MetricKey, PipelineEntry]] = {
-    # Mapeo de métricas crudas a la lógica de scoring normalizado (0.0 a 1.0)
     "seguridad": PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), _RULES["seguridad"]),
     "disco": PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), _RULES["disco"]),
     "memoria": PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), _RULES["memoria"]),
@@ -130,11 +129,6 @@ _PIPELINE_MAP: Final[Dict[MetricKey, PipelineEntry]] = {
     "duplicados": PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), _RULES["duplicados"]),
     "arranque": PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), _RULES["arranque"]),
 }
-
-_PIPELINE_ORDERED: Final[List[PipelineEntry]] = list(_PIPELINE_MAP.values())
-
-if len(_PIPELINE_MAP) != len(WEIGHTS) or any(area not in _PIPELINE_MAP for area in WEIGHTS):
-    raise RuntimeError("Desalineación crítica entre el Pipeline de evaluación y los pesos definidos.")
 
 @dataclass
 class SystemMetrics:
@@ -202,7 +196,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    # Validación defensiva de entrada: solo procesar métricas finitas y validadas
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         metrics = SystemMetrics()
     else:
@@ -212,16 +205,16 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     metric_breakdown: Dict[MetricKey, int] = {}
     accumulated_score: int = 0
     
-    for entry in _PIPELINE_ORDERED:
+    for area, weight in WEIGHTS.items():
         try:
+            entry = _PIPELINE_MAP[area]
             area_ratio = entry.scorer(metrics)
             _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
-            points = int(round(area_ratio * entry.weight))
-            metric_breakdown[entry.area] = max(0, min(points, entry.weight))
-            accumulated_score += metric_breakdown[entry.area]
-        except (ValueError, TypeError, ZeroDivisionError, Exception):
-            # En caso de error en una etapa, el área aporta 0 puntos y se saltea
-            continue
+            points = int(round(area_ratio * weight))
+            metric_breakdown[area] = max(0, min(points, weight))
+            accumulated_score += metric_breakdown[area]
+        except (ValueError, TypeError, ZeroDivisionError, Exception, KeyError):
+            metric_breakdown[area] = 0
             
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena.")

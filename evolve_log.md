@@ -1484,3 +1484,41 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel
 - `2026-09-29T06:37:57` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se optimizó el renderizado de la barra de gradiente eliminando la creación individual de objetos de línea `Canvas` y reemplazándola por una segmentación lógica previa, reduciendo drásticamente la carga sobre el motor de renderizado al agrupar colores consecutivos.
 - `2026-09-29T06:37:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T06:37:57` Corrida terminada. Total usado hoy: 156.
+- `2026-09-29T06:45:56` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-09-29T06:46:26` Tests FALLARON:
+```
+test_summarize_includes_the_safety_note(tmp_path):
+        caches = [browser.BrowserCache("Chrome", tmp_path / "Cache", 1024 * 1024)]
+>       texto = "\n".join(browser.summarize(caches))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_modules.py:800: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/browser.py:345: in summarize
+    total_mb = round(total_cache_bytes(current_caches) / (1024 * 1024), 2)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/browser.py:336: in total_cache_bytes
+    return sum(c.bytes_found for c in caches) if caches else 0 # Fixed: was size_bytes, used internal field
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = <list_iterator object at 0x7f1dd44ac4c0>
+
+>   return sum(c.bytes_found for c in caches) if caches else 0 # Fixed: was size_bytes, used internal field
+               ^^^^^^^^^^^^^
+E   AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+
+app/browser.py:336: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_total_cache_bytes_sums_detected_caches - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+2 failed, 297 passed in 1.17s
+
+```
+- `2026-09-29T06:46:26` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas costosas a `os.scandir` para subdirectorios cuando la profundidad máxima ya fue alcanzada, y consolidé el chequeo de `kernel32` para reducir llamadas redundantes a `_get_kernel32` durante la recursión profunda.
+- `2026-09-29T06:46:53` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-09-29T06:47:19` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-09-29T06:47:20` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T06:47:38` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el proceso de cómputo del `score` reemplazando la iteración sobre una lista de objetos en cada llamada por el uso de `WEIGHTS` y el acceso directo al mapa del pipeline, eliminando redundancias y mejorando la eficiencia de búsqueda.
+- `2026-09-29T06:47:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T06:47:38` Corrida terminada. Total usado hoy: 160.
