@@ -1412,3 +1412,14 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-09-29T05:46:41` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-29T05:46:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T05:46:41` Corrida terminada. Total usado hoy: 136.
+- `2026-09-29T05:54:51` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-09-29T05:54:54` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T05:55:25` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las heurísticas agregando validaciones de entrada (`path`, `entry`, `stats`) para prevenir errores de tipo o acceso (`NoneType`, `AttributeError`) y encapsulé la lógica en bloques `try-except` más granulares, siguiendo el enfoque de manejo de errores defensivo sin modificar la funcionalidad.
+- `2026-09-29T05:55:57` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` capturando explícitamente excepciones de `os.replace` y mejorando la verificación de integridad, evitando dejar el sistema en un estado inconsistente ante fallos de I/O de bajo nivel.
+- `2026-09-29T05:55:58` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T05:56:02` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-29T05:56:35` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-29T05:56:35` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T05:57:06` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de la lógica de negocio del asistente mediante la introducción de docstrings precisos, la simplificación del flujo de control en `_extract_text_from_gemini_json` y la clarificación de tipos en las validaciones de seguridad.
+- `2026-09-29T05:57:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T05:57:06` Corrida terminada. Total usado hoy: 140.

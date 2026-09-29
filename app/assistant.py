@@ -665,25 +665,20 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
         return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
-    """Travesía segura por la jerarquía de respuesta JSON de Google."""
-    if not isinstance(data, dict): return None
+    """Extrae el contenido de texto del JSON de respuesta de la API de Google."""
+    if not isinstance(data, dict):
+        return None
+        
     try:
-        candidates = data.get("candidates")
-        if not isinstance(candidates, list) or not candidates: return None
-        candidate = candidates[0]
-        if not isinstance(candidate, dict): return None
-        content = candidate.get("content")
-        if not isinstance(content, dict): return None
-        parts = content.get("parts")
-        if not isinstance(parts, list) or not parts: return None
-        part = parts[0]
-        if not isinstance(part, dict): return None
-        text_val = part.get("text")
+        # Navegación profunda segura por la estructura de candidatos de la API
+        parts = data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])
+        text_val = parts[0].get("text")
+        
         if isinstance(text_val, str):
             return _validate_response_length(text_val)
-        return None
     except (AttributeError, TypeError, IndexError, KeyError): 
-        return None
+        pass
+    return None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
     """Realiza una petición POST segura a la API de Google."""

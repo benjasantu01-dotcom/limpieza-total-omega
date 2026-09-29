@@ -401,7 +401,12 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             if bak_path.exists(): ensure_safe_to_modify(bak_path)
             os.replace(ruta, bak_path)
         
-        os.replace(temp_path, ruta)
+        try:
+            os.replace(temp_path, ruta)
+        except OSError:
+            # Reintentar limpieza de bak si falló la operación atómica final
+            if bak_path.exists(): os.replace(bak_path, ruta)
+            raise
         
         if not _is_file_secure_to_read(ruta):
             raise PermissionError("Integrity check failed")

@@ -74,14 +74,9 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     if not isinstance(entry, os.DirEntry):
         return None
     try:
-        if not entry.exists():
-            return None
-        if entry.is_symlink():
-            return None
-        # Acceso directo para evitar reparse points identificados por atributos
-        if _get_file_attributes(entry) & LIMITS.reparse_point_attr_mask:
-            return None
-        return entry.stat(follow_symlinks=False)
+        if not entry.is_symlink() and not (_get_file_attributes(entry) & LIMITS.reparse_point_attr_mask):
+            return entry.stat(follow_symlinks=False)
+        return None
     except (OSError, PermissionError, FileNotFoundError):
         return None
 
@@ -93,7 +88,7 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
     try:
         # st_file_attributes es específico de Windows y puede no estar presente en toda entrada
         stat_res = entry.stat(follow_symlinks=False)
-        return getattr(stat_res, "st_file_attributes", 0)
+        return int(getattr(stat_res, "st_file_attributes", 0))
     except (AttributeError, OSError, FileNotFoundError):
         return 0
 
@@ -113,7 +108,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
     Heurística de nombre: Detecta archivos con extensiones dobles (ej: foto.jpg.exe).
     Indica una técnica común de ingeniería social para ocultar ejecutables.
     """
-    if not isinstance(path, Path) or not path.name:
+    if path is None or path.name is None:
         return None
     if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -124,15 +119,15 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     Heurística temporal: Identifica archivos ejecutables creados recientemente en carpetas 
     de alto riesgo (Downloads/Temp). Prioriza monitorear actividad de usuario reciente.
     """
-    if not path or not path.parent or path.parent.name.lower() not in WATCHED_FOLDERS:
+    if path is None or path.parent is None or path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
     stats = _safe_stat(entry) if entry else None
     if stats:
         try:
-            mtime = getattr(stats, "st_mtime", 0.0)
+            mtime = float(getattr(stats, "st_mtime", 0.0))
             if 0 < mtime <= now_ts and (now_ts - mtime) < (LIMITS.recent_hours * 3600):
                 return Suspicion(path, f"Ejecutable reciente detectado (<{LIMITS.recent_hours}h)", "info")
-        except (AttributeError, TypeError):
+        except (AttributeError, TypeError, ValueError):
             return None
     return None
 
@@ -141,7 +136,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     Heurística de ubicación: Comprueba si procesos críticos del sistema (ej: svchost.exe)
     residen fuera del directorio System32, lo cual es un indicador claro de compromiso.
     """
-    if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
+    if path is not None and path.name is not None and path.name.lower() in SYSTEM_LOOKALIKES:
         try:
             path_str = str(path).lower()
             if SYSTEM32_LOWER not in path_str:
@@ -158,9 +153,9 @@ def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: fl
     stats = _safe_stat(entry) if entry else None
     if stats is not None:
         try:
-            if getattr(stats, "st_size", -1) == 0:
+            if int(getattr(stats, "st_size", -1)) == 0:
                 return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
-        except (AttributeError, TypeError):
+        except (AttributeError, TypeError, ValueError):
             return None
     return None
 
@@ -187,7 +182,6 @@ class Scanner:
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica que la entrada pertenezca al árbol de directorios raíz definido."""
         try:
-            # Resolved avoids directory traversal attacks (e.g., ../../windows)
             abs_path = Path(entry_path).resolve()
             return str(abs_path).lower().startswith(self.base_root_str)
         except (OSError, RuntimeError):
@@ -216,21 +210,17 @@ class Scanner:
         try:
             if self._is_reparse_point(entry) or entry.is_symlink():
                 return False
-            
             if not os.access(entry.path, os.R_OK):
                 return False
-            
             parent_dir = os.path.dirname(entry.path)
             if parent_dir not in self.protected_cache:
                 if is_protected_path(Path(parent_dir)):
                     return False
                 self.protected_cache.add(parent_dir)
-            
             if is_protected_path(Path(entry.path)):
                 return False
         except (OSError, RuntimeError, FileNotFoundError):
             return False
-            
         return True
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
@@ -252,12 +242,8 @@ class Scanner:
         try:
             if not self._is_safe_entry(entry):
                 return
-
-            # Caso: Directorio.
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, directory_stack)
-            
-            # Caso: Archivo.
             elif entry.is_file(follow_symlinks=False):
                 if self._is_relevant_extension(entry.name):
                     self._run_file_heuristics(Path(entry.path), entry)
