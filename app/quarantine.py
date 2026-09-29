@@ -735,6 +735,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     except (OSError, RuntimeError, UnsafePathError):
         return 0
     items = load_manifest(base)
+    # Optimización: Mapear por nombre de archivo para acceso O(1) en el loop
     item_map = {i.stored_name: i for i in items}
     purged_ids: Set[str] = set()
     try:
