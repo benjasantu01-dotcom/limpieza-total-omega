@@ -212,7 +212,16 @@ def _is_valid_junk_entry(entry: os.DirEntry, stats: os.stat_result) -> bool:
             is_valid_junk_extension(entry.name))
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
-    """Recorrido recursivo del sistema de archivos limitado a 50 niveles de profundidad."""
+    """
+    Recorrido recursivo del sistema de archivos limitado a 50 niveles.
+    
+    Args:
+        current_dir: Directorio base del escaneo actual.
+        found: Lista acumulativa de JunkFiles encontrados.
+        depth: Profundidad actual de recursión.
+        protected_cache: Conjunto de rutas protegidas ya validadas.
+        visited: Conjunto de rutas ya escaneadas para evitar ciclos.
+    """
     if depth > 50 or not current_dir.exists(): return
     try:
         resolved_dir = current_dir.resolve()
@@ -233,7 +242,10 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
     except (OSError, PermissionError, RuntimeError, ValueError): pass
 
 def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[JunkFile]:
-    """Inicia la detección de archivos basura en los directorios de escaneo configurados."""
+    """
+    Inicia la detección de archivos basura en los directorios configurados.
+    Retorna una lista plana de JunkFiles identificados.
+    """
     found: List[JunkFile] = []
     protected_cache: set[str] = set()
     visited: set[Path] = set()

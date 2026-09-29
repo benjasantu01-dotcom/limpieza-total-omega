@@ -483,11 +483,14 @@ def is_drive_root(path: PathLike) -> bool:
 
 @lru_cache(maxsize=4096)
 def _is_system_path_raw(path_str: str) -> bool:
-    """Comprueba si una ruta pertenece a directorios críticos del sistema usando comparaciones normalizadas."""
+    """Comprueba si una ruta pertenece a directorios críticos del sistema."""
     path_lower = path_str.lower()
+    # Verifica si la ruta es subdirectorio de una ruta de sistema global
     if any(path_lower.startswith(root) for root in _SYSTEM_ROOT_PATHS_TUPLE):
         return True
-    return not PROTECTED_DIR_NAMES.isdisjoint(path_lower.split(os.sep))
+    # Verifica si algún segmento del path coincide con los nombres protegidos
+    parts = path_lower.split(os.sep)
+    return not PROTECTED_DIR_NAMES.isdisjoint(parts)
 
 @lru_cache(maxsize=4096)
 def is_protected_path(path: PathLike) -> bool:
