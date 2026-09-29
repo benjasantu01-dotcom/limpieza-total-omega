@@ -93,7 +93,6 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         raw_path = Path(directory).resolve()
-        # Prevenir rutas UNC inválidas o inexistentes
         if not raw_path.exists() or not raw_path.is_dir():
             return None
         if is_protected_path(raw_path) or not os.access(raw_path, os.R_OK):
@@ -103,41 +102,28 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
 
 
-def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
+def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
     """
     Determina si una entrada de directorio debe ser omitida del análisis.
-    
-    Args:
-        entry: Objeto DirEntry de os.scandir.
-        root_path: Path raíz original para verificar límites.
-        
-    Returns:
-        True si la ruta es insegura, externa a la raíz o protegida.
     """
     try:
         if any(c in entry.name for c in SUSPICIOUS_CHARS) or '\0' in entry.name:
             return True
         
-        # Bloquear rutas UNC preventivamente
         path_str = entry.path
         if path_str.startswith(r'\\'):
             return True
         
         try:
-            # 0x400 (FILE_ATTRIBUTE_REPARSE_POINT) detecta Junctions/Mount Points
             if entry.is_symlink() or (os.name == 'nt' and entry.is_dir() and (entry.stat().st_file_attributes & 0x400)):
                 return True
         except (OSError, PermissionError):
             return True
         
-        entry_path = Path(entry.path).resolve()
-        try:
-            if not entry_path.is_relative_to(root_path):
-                return True
-        except (ValueError, AttributeError):
+        if not path_str.startswith(root_path_str):
             return True
             
-        return is_protected_path(entry_path)
+        return is_protected_path(Path(path_str))
     except (OSError, PermissionError, AttributeError, RuntimeError, TypeError):
         return True
 
@@ -242,38 +228,30 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """
-    Generador recursivo de archivos omitiendo ciclos y rutas protegidas.
-    
-    Yields:
-        Tupla (Path, size_bytes).
-    """
+    """Generador recursivo de archivos omitiendo ciclos y rutas protegidas."""
     root_path = _validate_root(directory)
     if root_path is None: return
+    root_path_str = str(root_path)
     visited_inodes: set[Inode] = set()
-    stack: List[str] = [str(root_path)]
+    stack: List[str] = [root_path_str]
     while stack:
         current_dir = stack.pop()
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if skip_protected and _is_excluded_path(entry, root_path):
+                        if skip_protected and _is_excluded_path(entry, root_path_str):
                             continue
                         if entry.is_dir(follow_symlinks=False):
-                            try:
-                                st = entry.stat(follow_symlinks=False)
-                                inode = (st.st_dev, st.st_ino)
-                                if inode not in visited_inodes:
-                                    visited_inodes.add(inode)
-                                    stack.append(entry.path)
-                            except (OSError, PermissionError): continue
+                            st = entry.stat(follow_symlinks=False)
+                            inode = (st.st_dev, st.st_ino)
+                            if inode not in visited_inodes:
+                                visited_inodes.add(inode)
+                                stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            try:
-                                st = entry.stat(follow_symlinks=False)
-                                if st.st_size >= 0: yield Path(entry.path), st.st_size
-                            except (OSError, PermissionError): continue
-                    except (PermissionError, OSError): continue
+                            st = entry.stat(follow_symlinks=False)
+                            if st.st_size >= 0: yield Path(entry.path), st.st_size
+                    except (OSError, PermissionError): continue
         except (PermissionError, OSError): continue
 
 
@@ -305,7 +283,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
                 if entry.is_dir() and not (skip_protected and is_protected_path(Path(entry.path))):
                     path = Path(entry.path)
                     try:
-                        for f_path, f_size in walk_files(path, skip_protected):
+                        for _, f_size in walk_files(path, skip_protected):
                             stats[path][0] += f_size
                             stats[path][1] += 1
                     except (OSError, PermissionError): continue
@@ -323,35 +301,24 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """
-    Realiza un escaneo profundo consolidando métricas y archivos pesados (vía heap).
-    
-    Args:
-        directory: Raíz a escanear.
-        skip_protected: Filtrar rutas seguras.
-        limit: Tamaño del heap para archivos más grandes (0 para no recolectar).
-        
-    Returns:
-        SummaryData con métricas agregadas.
-    """
+    """Realiza un escaneo profundo consolidando métricas y archivos pesados (vía heap)."""
     total_bytes, total_files = 0, 0
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        safe_size = max(0, size_bytes)
-        total_bytes += safe_size
+        total_bytes += size_bytes
         total_files += 1
         ext = path.suffix.lower() or "(sin extensión)"
         stats = ext_stats[ext]
-        stats.total_bytes += safe_size
+        stats.total_bytes += size_bytes
         stats.count += 1
         
         if limit > 0:
             if len(top_heap) < limit: 
-                heapq.heappush(top_heap, (safe_size, path))
-            elif safe_size > top_heap[0][0]: 
-                heapq.heapreplace(top_heap, (safe_size, path))
+                heapq.heappush(top_heap, (size_bytes, path))
+            elif size_bytes > top_heap[0][0]: 
+                heapq.heapreplace(top_heap, (size_bytes, path))
                 
     return SummaryData(total_bytes, total_files, dict(ext_stats), top_heap)
 

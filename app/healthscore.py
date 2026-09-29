@@ -130,6 +130,9 @@ _PIPELINE_MAP: Final[Dict[MetricKey, PipelineEntry]] = {
     "arranque": PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), _RULES["arranque"]),
 }
 
+# Lista pre-calculada para evitar búsquedas en diccionario dentro del bucle de compute_score
+_PIPELINE_ORDERED: Final[List[PipelineEntry]] = list(_PIPELINE_MAP.values())
+
 if len(_PIPELINE_MAP) != len(WEIGHTS) or any(area not in _PIPELINE_MAP for area in WEIGHTS):
     raise RuntimeError("Desalineación crítica entre el Pipeline de evaluación y los pesos definidos.")
 
@@ -199,15 +202,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     metric_breakdown: Dict[MetricKey, int] = {}
     accumulated_score: int = 0
     
-    for area, weight in WEIGHTS.items():
-        entry = _PIPELINE_MAP.get(area)
-        if entry is None:
-            continue
+    for entry in _PIPELINE_ORDERED:
         try:
             area_ratio = entry.scorer(metrics)
             _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
-            points = int(round(area_ratio * weight))
-            metric_breakdown[area] = points
+            points = int(round(area_ratio * entry.weight))
+            metric_breakdown[entry.area] = points
             accumulated_score += points
         except (ValueError, TypeError, ZeroDivisionError):
             continue

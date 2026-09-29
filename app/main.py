@@ -1189,17 +1189,22 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _compile_metrics(self) -> Tuple[healthscore.SystemMetrics, memory_mod.Snapshot, diskreport.DriveInfo]:
         """
         Consolida las métricas del sistema provenientes de los distintos módulos
-        de análisis para alimentar el dashboard y el asistente.
+        de análisis para alimentar el dashboard y el asistente, con carga perezosa
+        de recursos pesados.
         """
-        # Obtenemos datos crudos del sistema
         junk_items = self._get_cached("junk") or []
         suspicious_items = self._get_cached("suspicions") or []
         duplicate_items = self._get_cached("dups") or []
         startup_items = self._get_cached("startup") or []
         quarantine_items = quarantine.list_items()
         
-        # Obtenemos snapshots de hardware
-        ram_snapshot = self._get_cached("ram_snapshot", lambda: memory_mod.read_snapshot())
+        # Carga perezosa: solo consultamos snapshots si Salud fue activado
+        ram_snapshot = self._get_cached("ram_snapshot")
+        if not ram_snapshot:
+            ram_snapshot = memory_mod.read_snapshot()
+            self._cache["ram_snapshot"] = ram_snapshot
+            self._cache_access_times["ram_snapshot"] = time.time()
+            
         disk_info = self._get_home_disk_info()
             
         metrics = healthscore.SystemMetrics(
