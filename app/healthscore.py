@@ -187,6 +187,7 @@ def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], ratio: NormalizedRatio, findings: List[str]) -> None:
     for rule in rules:
         try:
+            if not isinstance(ratio, (float, int)): continue
             if rule.check(metrics, ratio):
                 raw_msg = rule.message_factory(metrics)
                 if isinstance(raw_msg, str):

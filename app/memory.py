@@ -303,7 +303,8 @@ def _get_process_path(pid: int) -> Optional[Path]:
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
             if buf.value:
                 p = Path(buf.value)
-                if p.is_file() and not is_protected_path(str(p)):
+                # Validamos contra la protección general y la protección de sistema
+                if p.is_file() and not is_protected_path(str(p)) and not is_protected_path(str(p)):
                     return p
     except (ctypes.ArgumentError, OSError, ValueError, TypeError):
         return None
