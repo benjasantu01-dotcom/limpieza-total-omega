@@ -1540,3 +1540,12 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-09-29T07:08:16` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó `settings_path` para evitar la resolución redundante de rutas en cada llamada, introduciendo una caché de primer nivel y pre-validación de existencia para reducir llamadas al sistema de archivos.
 - `2026-09-29T07:08:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T07:08:16` Corrida terminada. Total usado hoy: 168.
+- `2026-09-29T07:16:35` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-09-29T07:16:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T07:16:41` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-29T07:17:24` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-29T07:18:07` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejora la robustez del motor de ingesta de datos del `SystemContext` ante valores inesperados, tipos de datos incompatibles o métricas fuera de rango mediante el uso de `getattr(..., default)` y validaciones más estrictas en `ingest()`, evitando que un dato malformado corrompa el estado del sistema.
+- `2026-09-29T07:18:44` ➖ Sin cambios en branding.py (enfoque: robustez ante casos límite). Motivo: Se introdujo una validación robusta contra valores `None` o mal formados en `severity_label` y `severity_color` mediante la centralización de la lógica de sanitización, previniendo errores de ejecución ante entradas inesperadas desde la capa de datos.
+- `2026-09-29T07:18:58` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Mejoré la robustez ante rutas inexistentes o inaccesibles en `_sum_directory_recursive` mediante el uso de `os.scandir` dentro de un bloque `try-except` más granular, previniendo que una sola carpeta con permisos restringidos (muy común en cachés de navegador) aborte prematuramente el escaneo completo de otros perfiles.
+- `2026-09-29T07:18:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T07:18:58` Corrida terminada. Total usado hoy: 172.

@@ -8,35 +8,35 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **202** (40.1% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 40
-- Sin cambios (nada sustancial que mejorar): 17
+- Rechazadas por guardia de seguridad: 39
+- Sin cambios (nada sustancial que mejorar): 18
 - Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-28 | 132 | 13 | 28 | 9 | 154 |
-| 2026-09-29 | 70 | 6 | 12 | 8 | 72 |
+| 2026-09-28 | 130 | 13 | 27 | 9 | 153 |
+| 2026-09-29 | 72 | 6 | 12 | 9 | 73 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **43**
 - rendimiento: **38**
-- seguridad defensiva: **36**
-- robustez ante casos límite: **31**
+- seguridad defensiva: **34**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **22**
-- `browser.py`: **18**
+- `healthscore.py`: **21**
+- `browser.py`: **19**
 - `quarantine.py`: **17**
 - `diskreport.py`: **17**
 - `scanner.py`: **17**
-- `memory.py`: **16**
 - `duplicates.py`: **16**
-- `assistant.py`: **15**
+- `assistant.py`: **16**
+- `memory.py`: **15**
 - `settings.py`: **14**
 - `branding.py`: **13**
 - `safety.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-29T07:18:58` **browser.py** (robustez ante casos límite): Mejoré la robustez ante rutas inexistentes o inaccesibles en `_sum_directory_recursive` mediante el uso de `os.scandir` dentro de un bloque `try-except` más granular, previniendo que una sola carpeta con permisos restringidos (muy común en cachés de navegador) aborte prematuramente el escaneo completo de otros perfiles.
+- `2026-09-29T07:18:07` **assistant.py** (robustez ante casos límite): Mejora la robustez del motor de ingesta de datos del `SystemContext` ante valores inesperados, tipos de datos incompatibles o métricas fuera de rango mediante el uso de `getattr(..., default)` y validaciones más estrictas en `ingest()`, evitando que un dato malformado corrompa el estado del sistema.
 - `2026-09-29T07:08:16` **settings.py** (rendimiento): Se optimizó `settings_path` para evitar la resolución redundante de rutas en cada llamada, introduciendo una caché de primer nivel y pre-validación de existencia para reducir llamadas al sistema de archivos.
 - `2026-09-29T07:07:57` **scanner.py** (rendimiento): Optimicé el método `_is_safe_entry` reemplazando llamadas redundantes a `is_protected_path` por un acceso eficiente al caché y evitando la resolución innecesaria de rutas mediante `path.resolve()` repetitivos, reduciendo drásticamente la carga de I/O durante el recorrido.
 - `2026-09-29T07:01:10` **quarantine.py** (rendimiento): Optimizé la búsqueda de ítems en `purge_all` y `restore_item` transformando la lista de ítems en un diccionario (hash map) al inicio, lo que reduce la complejidad de tiempo de búsqueda de O(n) a O(1) por cada iteración.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-29T06:07:28` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `duplicates.py` mediante docstrings precisos y descriptivos que aclaran la intención de las funciones auxiliares internas, facilitando el mantenimiento y la comprensión de las heurísticas aplicadas.
 - `2026-09-29T06:07:13` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos, docstrings más detallados para funciones críticas y la estandarización de la terminología en los comentarios, facilitando el mantenimiento futuro y la claridad del código.
 - `2026-09-29T06:06:43` **browser.py** (legibilidad y documentación): Se introdujo un `NamedTuple` llamado `ScanResult` para reemplazar el retorno implícito de `int` en funciones de recursión de disco, mejorando la legibilidad del flujo de datos y documentando explícitamente que los resultados pueden ser parciales por restricciones de acceso.
-- `2026-09-29T06:06:12` **branding.py** (legibilidad y documentación): Documenté con docstrings detallados los parámetros complejos en las funciones `draw_ring` y `draw_logo`, y añadí una breve sección de "Configuración y estados" en `branding.py` para clarificar la lógica de segmentación del gradiente, mejorando la legibilidad del mantenimiento a futuro.
-- `2026-09-29T05:57:06` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de negocio del asistente mediante la introducción de docstrings precisos, la simplificación del flujo de control en `_extract_text_from_gemini_json` y la clarificación de tipos en las validaciones de seguridad.

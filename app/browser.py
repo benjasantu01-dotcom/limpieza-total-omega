@@ -249,6 +249,7 @@ def _sum_directory_recursive(
                 result = _process_file_entry(entry, root_abs_path, kernel32, visited_inodes, depth)
                 total_bytes += result.bytes_found
     except (OSError, PermissionError):
+        # Fallo silencioso en carpeta específica, se continúa con el resto del escaneo
         return ScanResult(total_bytes, False)
         
     return ScanResult(total_bytes, True)
