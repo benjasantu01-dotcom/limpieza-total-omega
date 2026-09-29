@@ -1025,3 +1025,37 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-29T03:03:59` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante errores de permisos en la obtención de la ruta del ejecutable y se añadió un manejo estricto de los valores de memoria leídos mediante `_safe_int_conversion` para evitar comportamientos inesperados ante datos de proceso corruptos o malformados.
 - `2026-09-29T03:03:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T03:03:59` Corrida terminada. Total usado hoy: 72.
+- `2026-09-29T03:11:45` Arrancando corrida. Quedan hoy ~228 peticiones objetivo.
+- `2026-09-29T03:12:11` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-29T03:12:52` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` ante situaciones de concurrencia y fallos parciales, reemplazando la eliminación insegura del origen (`source_path.unlink()`) por una operación que verifica explícitamente que el archivo de destino en el sandbox sea idéntico al original mediante `verify_integrity` antes de permitir la remoción, protegiendo así al usuario frente a errores de I/O o cambios de estado durante el proceso.
+- `2026-09-29T03:13:13` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-29T03:13:41` Tests FALLARON:
+```
+e/tests/test_safety.py::test_ensure_safe_blocks_system_paths - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_sensitive_extension_when_explicitly_requested - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - AssertionError: assert {'app.tmp', '...', 'otro.log'} == {'ok.tmp', 'otro.log'}
+  
+  Extra items in the left set:
+  'malo.tmp'
+  'app.tmp'
+  
+  Full diff:
+    {
+  +     'app.tmp',
+  +     'malo.tmp',
+        'ok.tmp',
+        'otro.log',
+    }
+FAILED evolve/tests/test_safety.py::test_is_within_directory_rejects_traversal_escape - AssertionError: assert not True
+ +  where True = <functools._lru_cache_wrapper object at 0x7fd193fdca90>(PosixPath('/tmp/pytest-of-runner/pytest-2/test_is_within_directory_rejec0/permitida/../afuera.txt'), PosixPath('/tmp/pytest-of-runner/pytest-2/test_is_within_directory_rejec0/permitida'))
+ +    where <functools._lru_cache_wrapper object at 0x7fd193fdca90> = safety.is_within_directory
+FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason - assert 'raíz' in "'/' protegida por sistema."
+ +  where "'/' protegida por sistema." = <function describe_protection at 0x7fd193fd2b60>('/')
+ +    where <function describe_protection at 0x7fd193fd2b60> = safety.describe_protection
+ +    and   '/' = PosixPath('/tmp/pytest-of-runner/pytest-2/test_describe_protection_expla0').anchor
+7 failed, 292 passed in 1.07s
+
+```
+- `2026-09-29T03:13:41` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera (TOCTOU) y errores de acceso mediante la implementación de `os.fsync` para verificar la estabilidad de los manejadores de archivos y la adición de una validación explícita para evitar que `Path.resolve()` sea engañado por enlaces simbólicos en rutas recién creadas o manipuladas.
+- `2026-09-29T03:13:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T03:13:41` Corrida terminada. Total usado hoy: 76.

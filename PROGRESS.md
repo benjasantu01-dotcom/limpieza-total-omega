@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
-- Rechazadas por tests: 19
+- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-27 | 25 | 5 | 8 | 4 | 40 |
+| 2026-09-27 | 25 | 5 | 7 | 4 | 37 |
 | 2026-09-28 | 140 | 13 | 29 | 10 | 158 |
-| 2026-09-29 | 34 | 1 | 5 | 6 | 26 |
+| 2026-09-29 | 35 | 2 | 6 | 6 | 27 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **43**
 - rendimiento: **37**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **37**
 - seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
@@ -34,7 +34,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **19**
 - `diskreport.py`: **18**
 - `duplicates.py`: **18**
-- `quarantine.py`: **17**
+- `quarantine.py`: **18**
 - `safety.py`: **16**
 - `memory.py`: **15**
 - `scanner.py`: **15**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-29T03:12:52` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante situaciones de concurrencia y fallos parciales, reemplazando la eliminación insegura del origen (`source_path.unlink()`) por una operación que verifica explícitamente que el archivo de destino en el sandbox sea idéntico al original mediante `verify_integrity` antes de permitir la remoción, protegiendo así al usuario frente a errores de I/O o cambios de estado durante el proceso.
 - `2026-09-29T03:03:59` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de permisos en la obtención de la ruta del ejecutable y se añadió un manejo estricto de los valores de memoria leídos mediante `_safe_int_conversion` para evitar comportamientos inesperados ante datos de proceso corruptos o malformados.
 - `2026-09-29T03:02:30` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de puntajes añadiendo un manejo de excepciones local en el pipeline y validaciones adicionales en el renderizado de barras para prevenir desbordamientos o índices fuera de rango ante datos atípicos.
 - `2026-09-29T02:53:24` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular en `os.stat` y `os.scandir` para evitar que una denegación de acceso local interrumpa la totalidad del escaneo, asegurando que el reporte final sea lo más completo posible incluso en entornos con permisos restringidos.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-29T02:21:46` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando un conjunto (`set`) para registrar las rutas ya visitadas durante la recursión, evitando la redundancia y el procesamiento innecesario en estructuras de directorios con enlaces complejos o jerarquías profundas, además de reducir las llamadas redundantes a `is_safe_to_modify` dentro del loop.
 - `2026-09-29T02:21:20` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_collect_summary_data` eliminando el uso innecesario de `Path.resolve()` y `Path.is_relative_to()` dentro del bucle crítico, reemplazándolos por comparaciones de strings de ruta mucho más rápidas y evitando llamadas recurrentes a `stat()` en archivos ya procesados.
 - `2026-09-29T02:13:01` **browser.py** (rendimiento): Optimicé el cálculo del tamaño de directorios sustituyendo la lista `memo` por un `set` de IDs de inodos (`visited_inodes`), reduciendo drásticamente el consumo de memoria al solo necesitar verificar existencia en lugar de almacenar pares (ino: size), y eliminé la consulta de `st.st_dev` innecesaria dentro de la recursión profunda al validarla solo al inicio.
-- `2026-09-29T02:12:44` **branding.py** (rendimiento): Se introdujo una cache de nivel superior en `_draw_shield_stripes` mediante `lru_cache` para los resultados calculados, evitando el re-cálculo de parámetros geométricos y la generación de colores en cada iteración de repintado del logo, mejorando significativamente el rendimiento en frames de animación.
