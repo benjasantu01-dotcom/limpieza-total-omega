@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 24
 - Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-28 | 88 | 10 | 16 | 6 | 84 |
-| 2026-09-29 | 123 | 14 | 20 | 18 | 125 |
+| 2026-09-28 | 88 | 10 | 16 | 6 | 80 |
+| 2026-09-29 | 125 | 14 | 20 | 18 | 127 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
-- seguridad defensiva: **42**
+- seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **39**
 - rendimiento: **37**
@@ -34,10 +34,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **18**
 - `memory.py`: **18**
 - `quarantine.py`: **18**
+- `safety.py`: **17**
+- `settings.py`: **17**
 - `assistant.py`: **17**
 - `diskreport.py`: **16**
-- `safety.py`: **16**
-- `settings.py`: **16**
 - `branding.py`: **14**
 - `duplicates.py`: **14**
 - `organizer.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-29T13:05:52` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_load_impl` y `save` sustituyendo el uso de `json.load` y `open` directos por una validación estricta de permisos y metadatos antes de la lectura, evitando posibles condiciones de carrera o manipulación de archivos mediante el chequeo `os.fstat` para verificar que el descriptor del archivo abierto no haya sido reemplazado tras la apertura inicial.
+- `2026-09-29T13:04:36` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `_get_security_descriptor` y `_is_file_locked_by_other_process` añadiendo manejo de errores más específico para evitar cierres inesperados de la app ante archivos bloqueados por el kernel o con descriptores de seguridad inaccesibles.
 - `2026-09-29T12:55:08` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` mediante la implementación de una validación de coherencia en el flujo de movimiento, asegurando que `os.rename` (en `restore_item`) se realice solo después de verificar explícitamente que la ruta destino no fue alterada ni interceptada desde el chequeo inicial, y encapsulando el movimiento en un bloque que garantiza la integridad del manifiesto.
 - `2026-09-29T12:53:55` **memory.py** (seguridad defensiva): Se ha mejorado la robustez de `_get_process_path` integrando explícitamente `is_protected_path` sobre la ruta resuelta antes de permitir cualquier retorno, asegurando que no se expongan metadatos de rutas críticas del sistema incluso si la API de Windows devuelve información parcial.
 - `2026-09-29T12:45:36` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` encapsulando la validación de rutas dentro de `run_async` mediante una pre-validación explícita, evitando que tareas de fondo (que pueden ejecutarse en hilos desvinculados) operen sobre rutas que fueron alteradas o no autorizadas tras el inicio del hilo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-29T12:16:48` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `purge_all` y `_is_item_purgable` para evitar que el bucle de purga falle silenciosamente o se interrumpa si encuentra archivos inesperados (como archivos temporales remanentes o archivos corruptos), garantizando que solo se procesen los archivos que coincidan estrictamente con el manifiesto actual.
 - `2026-09-29T12:15:48` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_get_process_path` para evitar bloqueos por permisos al acceder a procesos con privilegios elevados y corregí el manejo de errores en `trim_working_set` ante procesos que finalizan durante la consulta.
 - `2026-09-29T12:04:24` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` ante divisiones por cero o valores NaN inesperados en los cálculos del pipeline, asegurando que el motor de puntuación nunca falle catastróficamente ante métricas mal formadas.
-- `2026-09-29T12:03:40` **diskreport.py** (robustez ante casos límite): Se mejora la robustez de `walk_files` y `largest_folders` ante accesos denegados y condiciones de carrera (cuando un archivo desaparece entre el `scandir` y el `stat`) mediante bloques `try-except` granulares, evitando que el escaneo completo se detenga por una excepción transitoria.
-- `2026-09-29T12:03:06` **browser.py** (robustez ante casos límite): He mejorado la robustez ante errores de acceso a disco en `_sum_directory_recursive` y `_process_file_entry` añadiendo validaciones explícitas de atributos de sistema y manejo de excepciones de E/S más granular, evitando que una entrada individual bloquee el escaneo total.

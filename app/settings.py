@@ -312,19 +312,19 @@ def _is_file_secure_to_read(ruta: Path, st_info: os.stat_result | None = None) -
         if not is_safe_to_modify(str(ruta)): return False
         if not os.access(ruta, os.R_OK): return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-        # Un archivo JSON de configuración legítimo no puede ser vacío.
         if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
         return True
     except (OSError, PermissionError):
         return False
 
 def _load_impl(ruta: Path) -> AppSettings:
-    """Lógica interna de carga: lee el archivo JSON y lo normaliza aplicando los defaults si hay error."""
+    """Lógica interna de carga: lectura atómica y validación de integridad post-apertura."""
     if not ruta.exists(): return dict(DEFAULTS)
     try:
-        st = ruta.stat()
-        if not _is_file_secure_to_read(ruta, st): return dict(DEFAULTS)
         with open(ruta, "r", encoding="utf-8") as f:
+            fd = f.fileno()
+            st = os.fstat(fd)
+            if not _is_file_secure_to_read(ruta, st): return dict(DEFAULTS)
             data = json.load(f)
         if _is_dict(data):
             return _coerce_and_verify(validate(data))

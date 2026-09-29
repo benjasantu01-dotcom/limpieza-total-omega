@@ -264,10 +264,16 @@ def _has_alternate_data_stream(path_name: str) -> bool:
 def _get_security_descriptor(path: Path) -> SecurityDescriptor:
     """Construye un descriptor de seguridad para evaluar el archivo."""
     attrs = _get_file_attrs(str(path))
+    # Intentar detectar bloqueo; si falla el acceso, asumir precaución (en uso)
+    in_use = False
+    try:
+        in_use = _is_file_locked_by_other_process(str(path))
+    except Exception:
+        in_use = True
     return SecurityDescriptor(
         attrs=attrs,
         is_protected_system=bool(attrs & (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | Win32Attr.TEMPORARY)),
-        is_in_use=_is_file_locked_by_other_process(str(path))
+        is_in_use=in_use
     )
 
 @lru_cache(maxsize=1024)
@@ -276,14 +282,15 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
     if not isinstance(path_str, str) or os.name != 'nt' or _is_path_too_long(path_str): return False
     kernel32 = ctypes.windll.kernel32
     try:
+        # Abre el archivo en modo compartido solo para lectura de metadatos (0 access)
         handle = kernel32.CreateFileW(
             _to_long_path(path_str), 0, 0x00000003, None, 3, 0x00000080, None
         )
         if handle == -1: return True
         kernel32.CloseHandle(handle)
-    except (OSError, ctypes.ArgumentError):
+        return False
+    except (OSError, ctypes.ArgumentError, Exception):
         return True
-    return False
 
 def _is_file_in_use_by_system(path_str: str) -> bool:
     """Verifica si el archivo está siendo referenciado por módulos cargados del sistema."""
