@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **210** (41.7% de aceptación)
+- Mejoras aceptadas: **211** (41.9% de aceptación)
 - Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-27 | 25 | 5 | 7 | 4 | 21 |
+| 2026-09-27 | 25 | 5 | 7 | 4 | 17 |
 | 2026-09-28 | 140 | 13 | 29 | 10 | 158 |
-| 2026-09-29 | 45 | 4 | 7 | 6 | 30 |
+| 2026-09-29 | 46 | 4 | 7 | 6 | 33 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **43**
+- seguridad defensiva: **40**
 - robustez ante casos límite: **39**
-- seguridad defensiva: **39**
 - rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
@@ -39,7 +39,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **16**
 - `safety.py`: **16**
 - `assistant.py`: **15**
-- `settings.py`: **13**
+- `settings.py`: **14**
 - `branding.py`: **11**
 - `organizer.py`: **10**
 - `main.py`: **8**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-29T04:03:16` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de TOCTOU (Time-of-Check to Time-of-Use) y asegurar la integridad de la configuración mediante la validación explícita de que el archivo no haya sido modificado por otro proceso entre la apertura y la lectura, utilizando la propiedad `st_ino` (inode/index) del archivo.
 - `2026-09-29T03:54:30` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `scanner.py` al reemplazar la resolución implícita de rutas (`path.resolve()`) por una comparación normalizada (`Path.resolve()` contra el `base_root` resuelto) dentro de `Scanner._is_inside_base_root`, evitando que rutas maliciosas (ej. mediante `..` o alias) escapen del escaneo restringido.
 - `2026-09-29T03:47:38` **organizer.py** (seguridad defensiva): Se reforzó la seguridad de `_process_directory` implementando una validación de `is_safe_to_modify` antes de añadir archivos a la lista de escaneo, asegurando que ningún archivo sospechoso o fuera del alcance permitido pase a la etapa de procesamiento, mitigando riesgos de acceso indebido.
 - `2026-09-29T03:47:22` **memory.py** (seguridad defensiva): Se ha robustecido el proceso de validación de rutas en `_get_process_path` integrando explícitamente `is_protected_path` antes de retornar cualquier ruta, asegurando que no se expongan ni se operen procesos ubicados en directorios del sistema incluso si la API Win32 logra resolver el nombre del archivo.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-29T03:03:59` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de permisos en la obtención de la ruta del ejecutable y se añadió un manejo estricto de los valores de memoria leídos mediante `_safe_int_conversion` para evitar comportamientos inesperados ante datos de proceso corruptos o malformados.
 - `2026-09-29T03:02:30` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de puntajes añadiendo un manejo de excepciones local en el pipeline y validaciones adicionales en el renderizado de barras para prevenir desbordamientos o índices fuera de rango ante datos atípicos.
 - `2026-09-29T02:53:24` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular en `os.stat` y `os.scandir` para evitar que una denegación de acceso local interrumpa la totalidad del escaneo, asegurando que el reporte final sea lo más completo posible incluso en entornos con permisos restringidos.
-- `2026-09-29T02:53:11` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_is_path_inside_base` y `_is_valid_cache_path` añadiendo un manejo de excepciones más estricto contra rutas malformadas (ej. con caracteres nulos o excesivamente largas que Windows rechaza) y reforzando la validación de `path_obj` antes de realizar llamadas al sistema de archivos, evitando así errores de desbordamiento o acceso prohibido en rutas atípicas.

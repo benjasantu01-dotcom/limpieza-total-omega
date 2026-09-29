@@ -300,15 +300,15 @@ def validate(raw_values: Any) -> AppSettings:
                 config[key_enum.value] = validated_val
     return config # type: ignore
 
-def _is_file_secure_to_read(ruta: Path) -> bool:
-    """Garantiza que el archivo sea un archivo regular, sin ser enlace y sin permisos de ejecución (seguridad defensiva)."""
+def _is_file_secure_to_read(ruta: Path, expected_ino: int | None = None) -> bool:
+    """Garantiza que el archivo sea un archivo regular, sin enlaces y sin permisos peligrosos."""
     try:
         if not ruta.is_absolute(): return False
         st = ruta.stat()
         if not stat.S_ISREG(st.st_mode) or _Validators._is_reparse_point(ruta): return False
+        if expected_ino is not None and st.st_ino != expected_ino: return False
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH): return False
         if not is_safe_to_modify(str(ruta)): return False
-        # Verificar permisos de escritura del SO (bloqueos)
         if not os.access(ruta, os.R_OK): return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
@@ -318,9 +318,10 @@ def _is_file_secure_to_read(ruta: Path) -> bool:
 
 def _load_impl(ruta: Path) -> AppSettings:
     """Lógica interna de carga: lee el archivo JSON y lo normaliza aplicando los defaults si hay error."""
-    if not _is_file_secure_to_read(ruta):
-        return dict(DEFAULTS)
+    if not ruta.exists(): return dict(DEFAULTS)
     try:
+        st = ruta.stat()
+        if not _is_file_secure_to_read(ruta, st.st_ino): return dict(DEFAULTS)
         with open(ruta, "r", encoding="utf-8") as f:
             data = json.load(f)
         if _is_dict(data):
@@ -374,7 +375,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     
     try:
         cleaned_settings = _coerce_and_verify(validate(values))
-        # Optimización: evitar escritura si los valores no cambiaron
         if ruta.exists() and load(custom_base) == cleaned_settings:
             return ruta
         
@@ -394,7 +394,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             f.flush()
             os.fsync(f.fileno())
         
-        # Verificación crítica: el archivo temp debe ser válido antes de rotar
         if not _is_file_secure_to_read(temp_path): raise PermissionError("Temp file invalid")
         
         if ruta.exists():
@@ -404,7 +403,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         
         os.replace(temp_path, ruta)
         
-        # Verificación post-escritura: integridad del archivo final
         if not _is_file_secure_to_read(ruta):
             raise PermissionError("Integrity check failed")
             

@@ -1181,3 +1181,20 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-09-29T03:54:30` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `scanner.py` al reemplazar la resolución implícita de rutas (`path.resolve()`) por una comparación normalizada (`Path.resolve()` contra el `base_root` resuelto) dentro de `Scanner._is_inside_base_root`, evitando que rutas maliciosas (ej. mediante `..` o alias) escapen del escaneo restringido.
 - `2026-09-29T03:54:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T03:54:30` Corrida terminada. Total usado hoy: 92.
+- `2026-09-29T04:02:42` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-09-29T04:03:16` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de TOCTOU (Time-of-Check to Time-of-Use) y asegurar la integridad de la configuración mediante la validación explícita de que el archivo no haya sido modificado por otro proceso entre la apertura y la lectura, utilizando la propiedad `st_ino` (inode/index) del archivo.
+- `2026-09-29T04:03:42` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-09-29T04:03:42` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-29T04:03:42` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-29T04:04:02` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-29T04:04:02` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-29T04:04:32` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-29T04:04:32` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-29T04:04:48` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-29T04:04:48` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-29T04:05:08` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-29T04:05:08` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-29T04:05:38` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-29T04:05:38` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-29T04:05:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T04:05:38` Corrida terminada. Total usado hoy: 96.
