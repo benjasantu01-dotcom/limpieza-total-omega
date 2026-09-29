@@ -885,3 +885,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-29T12:45:36` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `main.py` encapsulando la validación de rutas dentro de `run_async` mediante una pre-validación explícita, evitando que tareas de fondo (que pueden ejecutarse en hilos desvinculados) operen sobre rutas que fueron alteradas o no autorizadas tras el inicio del hilo.
 - `2026-09-29T12:45:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T12:45:36` Corrida terminada. Total usado hoy: 296.
+- `2026-09-29T12:53:24` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-09-29T12:53:55` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_get_process_path` integrando explícitamente `is_protected_path` sobre la ruta resuelta antes de permitir cualquier retorno, asegurando que no se expongan metadatos de rutas críticas del sistema incluso si la API de Windows devuelve información parcial.
+- `2026-09-29T12:54:22` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-09-29T12:54:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T12:55:08` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad del módulo `quarantine.py` mediante la implementación de una validación de coherencia en el flujo de movimiento, asegurando que `os.rename` (en `restore_item`) se realice solo después de verificar explícitamente que la ruta destino no fue alterada ni interceptada desde el chequeo inicial, y encapsulando el movimiento en un bloque que garantiza la integridad del manifiesto.
+- `2026-09-29T12:55:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T12:55:20` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-29T12:55:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T12:55:20` Corrida terminada. Total usado hoy: 300.

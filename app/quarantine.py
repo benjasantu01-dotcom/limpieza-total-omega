@@ -688,30 +688,40 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         quarantine_item = items_map.get(item_id)
         if quarantine_item is None:
             raise KeyError(f"Ítem no encontrado: {item_id}")
+        
         stored_file = _validate_quarantine_path(base_path / quarantine_item.stored_name, base_path)
         if not stored_file.exists() or not stored_file.is_file():
             save_manifest([i for i in items if i.item_id != item_id], base)
             raise RuntimeError("Archivo en cuarentena inexistente.")
         if not quarantine_item.verify_integrity(stored_file):
             raise RuntimeError("Integridad comprometida.")
+        
         destination = Path(quarantine_item.original_path).resolve()
         _check_path_syntax_integrity(destination)
         if is_protected_path(destination):
             raise UnsafePathError("Restauración denegada: destino protegido.")
         if destination.exists():
             raise FileExistsError("El destino ya existe.")
+        
         _check_device_consistency(stored_file, destination.parent.resolve())
         parent = destination.parent
         if not is_safe_to_modify(parent):
             raise UnsafePathError("Directorio padre no seguro.")
         _ensure_disk_space(parent, quarantine_item.size_bytes)
+        
         if not parent.exists():
             try:
                 parent.mkdir(parents=True, exist_ok=True)
             except OSError as e:
                 raise RuntimeError(f"Falla al crear destino: {e}")
+        
         if not is_safe_to_modify(destination):
             raise UnsafePathError("Destino no seguro.")
+        
+        # Verificación de pre-movimiento para asegurar consistencia
+        if not stored_file.exists() or not quarantine_item.verify_integrity(stored_file):
+            raise RuntimeError("Falla de integridad post-validación.")
+            
         os.replace(str(stored_file), str(destination))
         save_manifest([i for i in items if i.item_id != item_id], base)
         return destination

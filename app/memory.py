@@ -293,20 +293,18 @@ def _get_process_path(pid: int) -> Optional[Path]:
     handle = kernel32.OpenProcess(SAFE_VALIDATION_MASK, False, pid)
     if not handle: return None
     try:
-        # Validar si el proceso aún existe antes de consultar
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return None
         psapi = ctypes.windll.psapi
         buf = ctypes.create_unicode_buffer(1024)
-        # Algunos procesos pueden denegar GetModuleFileNameExW; ignoramos si falla
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
             if buf.value:
                 p = Path(buf.value)
-                if p.is_file():
-                    path_str = str(p)
-                    if not is_protected_path(path_str):
-                        return p
+                path_str = str(p)
+                # Validar seguridad antes de exponer la ruta
+                if not is_protected_path(path_str):
+                    return p
     except (ctypes.ArgumentError, OSError, ValueError, TypeError):
         return None
     finally:
@@ -317,7 +315,6 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
     """Verifica si un proceso es candidato seguro para la reducción de working set."""
     exec_path = _get_process_path(pid)
     if exec_path is None:
-        # Consideramos inaccesible como "no seguro para modificar"
         return False, "Proceso protegido o inaccesible."
     if not is_safe_to_modify(str(exec_path)):
         return False, "Ruta no permitida para operaciones de modificación."
