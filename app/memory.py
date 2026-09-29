@@ -195,10 +195,10 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         if len(parts) != 3: continue
         try:
             pid = int(''.join(filter(str.isdigit, parts[1])))
-            ws = int(''.join(filter(str.isdigit, parts[2])))
-            if pid > 0 and pid not in seen_pids and ws < MAX_VALID_PROCESS_MEM:
+            ws = _safe_int_conversion(parts[2])
+            if pid > 0 and pid not in seen_pids and 0 < ws < MAX_VALID_PROCESS_MEM:
                 seen_pids.add(pid)
-                proc = ProcessMemory(parts[0].strip("'\" "), pid, BytesValue(ws))
+                proc = ProcessMemory(parts[0].strip("'\" "), pid, ws)
                 if len(top_heap) < limit:
                     heapq.heappush(top_heap, proc)
                 elif proc.working_set > top_heap[0].working_set:
@@ -300,7 +300,7 @@ def _get_process_path(pid: int) -> Optional[Path]:
                 if p.is_file() and not is_protected_path(str(p)):
                     return p
     except (ctypes.ArgumentError, OSError, ValueError, TypeError):
-        pass
+        return None
     finally:
         kernel32.CloseHandle(handle)
     return None
@@ -308,8 +308,10 @@ def _get_process_path(pid: int) -> Optional[Path]:
 def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
     """Verifica si un proceso puede recibir operaciones de gestión de memoria de forma segura."""
     exec_path = _get_process_path(pid)
-    if not exec_path or not is_safe_to_modify(str(exec_path)):
-        return False, "Acceso no autorizado o ruta protegida."
+    if exec_path is None:
+        return False, "Acceso denegado o proceso no válido."
+    if not is_safe_to_modify(str(exec_path)):
+        return False, "Ruta protegida por seguridad."
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:

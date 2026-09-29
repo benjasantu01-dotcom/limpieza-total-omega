@@ -130,7 +130,6 @@ _PIPELINE_MAP: Final[Dict[MetricKey, PipelineEntry]] = {
     "arranque": PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), _RULES["arranque"]),
 }
 
-# Lista pre-calculada para evitar búsquedas en diccionario dentro del bucle de compute_score
 _PIPELINE_ORDERED: Final[List[PipelineEntry]] = list(_PIPELINE_MAP.values())
 
 if len(_PIPELINE_MAP) != len(WEIGHTS) or any(area not in _PIPELINE_MAP for area in WEIGHTS):
@@ -189,10 +188,13 @@ def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], ratio: NormalizedRatio, findings: List[str]) -> None:
     for rule in rules:
-        if rule.check(metrics, ratio):
-            raw_msg = rule.message_factory(metrics)
-            clean_msg = "".join(c for c in raw_msg if c.isprintable()).strip()
-            if clean_msg: findings.append(clean_msg[:200])
+        try:
+            if rule.check(metrics, ratio):
+                raw_msg = rule.message_factory(metrics)
+                clean_msg = "".join(c for c in raw_msg if c.isprintable()).strip()
+                if clean_msg: findings.append(clean_msg[:200])
+        except Exception:
+            continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
@@ -207,9 +209,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             area_ratio = entry.scorer(metrics)
             _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             points = int(round(area_ratio * entry.weight))
-            metric_breakdown[entry.area] = points
-            accumulated_score += points
-        except (ValueError, TypeError, ZeroDivisionError):
+            metric_breakdown[entry.area] = max(0, min(points, entry.weight))
+            accumulated_score += metric_breakdown[entry.area]
+        except (ValueError, TypeError, ZeroDivisionError, Exception):
             continue
             
     if metrics.quarantined_count > 0:
@@ -219,8 +221,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."])
 
 def _render_bar(points: int, max_val: int) -> str:
-    p = max(0, min(points, max(1, max_val)))
-    return ('#' * p) + ('.' * (max(1, max_val) - p))
+    limit = max(1, max_val)
+    p = max(0, min(points, limit))
+    return ('#' * p) + ('.' * (limit - p))
 
 def summarize(result: HealthResult | None) -> List[str]:
     if not isinstance(result, HealthResult): return ["Error: Informe de salud no disponible."]
