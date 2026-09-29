@@ -1451,3 +1451,36 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-09-29T06:27:39` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se mejora la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos explícitos a la clase `Scanner` y sus métodos principales, clarificando el flujo de datos del escáner y la función del stack de procesamiento.
 - `2026-09-29T06:27:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T06:27:39` Corrida terminada. Total usado hoy: 152.
+- `2026-09-29T06:35:46` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-09-29T06:35:48` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T06:36:21` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult, _ValidatorEntry, _Validators._check_path_safety, _Validators._validate_enum_str
+- `2026-09-29T06:36:51` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `StartupEntry` y sus métodos internos utilizando docstrings más precisos y descriptivos para esclarecer el propósito de cada validación de seguridad, facilitando así el mantenimiento futuro y la auditoría del código.
+- `2026-09-29T06:37:31` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: rendimiento).
+- `2026-09-29T06:37:32` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T06:37:57` Tests FALLARON:
+```
+0%]
+=================================== FAILURES ===================================
+_________________ test_gradient_bar_paints_one_line_per_pixel __________________
+
+    def test_gradient_bar_paints_one_line_per_pixel():
+        canvas = _CanvasFalso()
+        branding.draw_gradient_bar(canvas, width=60)
+>       assert canvas.llamadas.count("line") == 60
+E       AssertionError: assert 0 == 60
+E        +  where 0 = <built-in method count of list object at 0x7f7f926df940>('line')
+E        +    where <built-in method count of list object at 0x7f7f926df940> = ['rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...].count
+E        +      where ['rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...] = <test_modules._CanvasFalso object at 0x7f7f926b8620>.llamadas
+
+evolve/tests/test_modules.py:226: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel - AssertionError: assert 0 == 60
+ +  where 0 = <built-in method count of list object at 0x7f7f926df940>('line')
+ +    where <built-in method count of list object at 0x7f7f926df940> = ['rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...].count
+ +      where ['rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...] = <test_modules._CanvasFalso object at 0x7f7f926b8620>.llamadas
+1 failed, 298 passed in 1.45s
+
+```
+- `2026-09-29T06:37:57` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se optimizó el renderizado de la barra de gradiente eliminando la creación individual de objetos de línea `Canvas` y reemplazándola por una segmentación lógica previa, reduciendo drásticamente la carga sobre el motor de renderizado al agrupar colores consecutivos.
+- `2026-09-29T06:37:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T06:37:57` Corrida terminada. Total usado hoy: 156.
