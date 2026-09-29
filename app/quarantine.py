@@ -365,7 +365,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineIte
     try:
         base_dir = quarantine_dir(base)
         m_path = _manifest_path(base_dir)
-        if not m_path.exists() or not m_path.is_file() or m_path.stat().st_size == 0:
+        if not m_path.exists() or m_path.stat().st_size == 0:
             return []
         with open(m_path, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -383,13 +383,16 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         raise ValueError("El manifiesto debe ser una lista.")
     if not all(isinstance(i, QuarantineItem) for i in items):
         raise TypeError("Ítems no compatibles.")
+    
     base_path = quarantine_dir(base)
     target_path = _manifest_path(base_path)
+    
     try:
         serializable_items = [item.to_dict() for item in items]
         encoded_content = json.dumps(serializable_items, indent=2, ensure_ascii=False).encode('utf-8')
     except (TypeError, ValueError) as e:
         raise RuntimeError(f"Error serializando manifiesto: {e}")
+    
     temp_path: Optional[Path] = None
     try:
         with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as tf:
@@ -397,13 +400,14 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
             tf.write(encoded_content)
             tf.flush()
             os.fsync(tf.fileno())
+        
         if temp_path and temp_path.exists() and temp_path.stat().st_size == len(encoded_content):
             os.replace(temp_path, target_path)
             try:
-                dir_fd = os.open(str(base_path), os.O_RDONLY)
-                os.fsync(dir_fd)
-                os.close(dir_fd)
-            except OSError: pass
+                with open(base_path, "rb") as d:
+                    os.fsync(d.fileno())
+            except (OSError, AttributeError):
+                pass
         else:
             raise OSError("Integridad del archivo temporal fallida.")
         return target_path

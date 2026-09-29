@@ -7,24 +7,24 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **200** (39.7% de aceptación)
-- Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 40
+- Rechazadas por tests: 20
+- Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 225
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-27 | 8 | 5 | 3 | 1 | 5 |
+| 2026-09-27 | 7 | 3 | 3 | 1 | 4 |
 | 2026-09-28 | 140 | 13 | 29 | 10 | 158 |
-| 2026-09-29 | 52 | 4 | 8 | 6 | 62 |
+| 2026-09-29 | 53 | 4 | 9 | 6 | 64 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **44**
+- legibilidad y documentación: **43**
+- manejo de errores y validación de entradas: **41**
 - seguridad defensiva: **40**
-- manejo de errores y validación de entradas: **40**
 - robustez ante casos límite: **39**
 - rendimiento: **37**
 
@@ -34,7 +34,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **18**
 - `diskreport.py`: **18**
 - `browser.py`: **18**
-- `quarantine.py`: **16**
+- `quarantine.py`: **17**
 - `assistant.py`: **16**
 - `scanner.py`: **15**
 - `memory.py`: **15**
@@ -42,11 +42,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **13**
 - `branding.py`: **12**
 - `organizer.py`: **9**
-- `startup.py`: **8**
+- `startup.py`: **7**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-29T05:45:54` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` y `load_manifest` añadiendo validaciones preventivas de tipos y estados, asegurando que un manifiesto parcialmente escrito o corrompido no degrade el estado del sistema ni provoque excepciones no controladas durante la serialización o lectura.
 - `2026-09-29T05:35:57` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` añadiendo una validación explícita para evitar errores de tipo si el CSV contiene líneas mal formadas o valores no numéricos inesperados, asegurando que el parser sea resiliente ante datos crudos inconsistentes.
 - `2026-09-29T05:35:24` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_evaluate_rules` mediante la captura explícita de excepciones al invocar `message_factory` y `check`, asegurando que un fallo en una regla individual no impida la evaluación del resto del sistema.
 - `2026-09-29T05:34:57` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `hash_file` y `partial_hash` validando la existencia de la ruta y el estado de bloqueo antes de intentar abrir el archivo, evitando excepciones innecesarias durante el procesamiento de I/O.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-29T03:34:18` **duplicates.py** (seguridad defensiva): Se ha refactorizado `_collect_candidates` para unificar y endurecer la validación de seguridad mediante `_safe_path_check` antes de realizar operaciones de disco (`stat`), evitando así la exposición a errores de acceso en rutas bloqueadas o protegidas y asegurando consistencia con el contrato de seguridad exigido.
 - `2026-09-29T03:34:03` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `largest_folders` para evitar que el proceso se cuelgue o intente acceder a rutas inválidas/inconsistentes al validar cada entrada con `is_protected_path` y `os.access` antes de iniciar la recursión, alineándolo con el patrón de seguridad del resto del módulo.
 - `2026-09-29T03:32:44` **branding.py** (seguridad defensiva): Se ha mejorado la robustez de `save_logo_svg` y `_validate_destination` al consolidar las comprobaciones de seguridad mediante `ensure_safe_to_modify` antes de cualquier operación de escritura, asegurando que cualquier error de validación sea capturado explícitamente sin permitir la creación de archivos en rutas bloqueadas.
-- `2026-09-29T03:23:54` **assistant.py** (seguridad defensiva): Se endureció la validación de `_ensure_safe_text` agregando una comprobación de "caracteres prohibidos" (`<>|&^`) que podría utilizarse para inyección de comandos en shells de Windows, y se añadió una verificación explícita de `pathlib.Path` para asegurar que ninguna respuesta o consulta pueda ser interpretada como una ruta absoluta o relativa, protegiendo al sistema de posibles manipulaciones de entrada.

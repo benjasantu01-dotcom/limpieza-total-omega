@@ -1403,3 +1403,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-09-29T05:35:57` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_windows_process_csv` añadiendo una validación explícita para evitar errores de tipo si el CSV contiene líneas mal formadas o valores no numéricos inesperados, asegurando que el parser sea resiliente ante datos crudos inconsistentes.
 - `2026-09-29T05:35:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T05:35:57` Corrida terminada. Total usado hoy: 132.
+- `2026-09-29T05:44:39` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-09-29T05:44:42` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T05:45:11` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-29T05:45:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T05:45:54` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_manifest` y `load_manifest` añadiendo validaciones preventivas de tipos y estados, asegurando que un manifiesto parcialmente escrito o corrompido no degrade el estado del sistema ni provoque excepciones no controladas durante la serialización o lectura.
+- `2026-09-29T05:46:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-09-29T05:46:41` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-29T05:46:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T05:46:41` Corrida terminada. Total usado hoy: 136.
