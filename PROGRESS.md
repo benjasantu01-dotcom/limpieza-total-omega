@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 37
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 229
 
@@ -16,12 +16,12 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-28 | 100 | 11 | 22 | 6 | 117 |
-| 2026-09-29 | 94 | 11 | 15 | 16 | 112 |
+| 2026-09-28 | 100 | 11 | 20 | 6 | 115 |
+| 2026-09-29 | 96 | 11 | 15 | 16 | 114 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **46**
+- legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **41**
 - seguridad defensiva: **39**
 - robustez ante casos límite: **37**
@@ -29,7 +29,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **20**
+- `healthscore.py`: **21**
 - `browser.py`: **18**
 - `assistant.py`: **16**
 - `quarantine.py`: **16**
@@ -38,14 +38,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **15**
 - `safety.py`: **15**
 - `settings.py`: **14**
+- `duplicates.py`: **14**
 - `branding.py`: **13**
-- `duplicates.py`: **13**
 - `organizer.py`: **11**
 - `main.py`: **6**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-29T10:41:36` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de `score` y clarifiqué la lógica del `PipelineEntry` mediante un docstring específico, facilitando la comprensión del flujo de datos sin alterar el comportamiento.
+- `2026-09-29T10:41:09` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de hashing y el refinamiento de los docstrings, clarificando explícitamente el contrato de seguridad y los tipos de retorno para evitar ambigüedades.
 - `2026-09-29T10:32:32` **browser.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con las convenciones de Google, se reemplazaron los `tuple` por `NamedTuple` explícitos y se añadieron type hints más precisos (como `Sequence` y `Iterable`) para mejorar la mantenibilidad y la claridad del contrato de funciones.
 - `2026-09-29T10:32:04` **branding.py** (legibilidad y documentación): Mejoré la documentación de los métodos de renderizado y utilidades matemáticas mediante la adición de docstrings estructurados (usando formato Google style para mayor claridad) y clarifiqué las intenciones de los parámetros en los métodos de `branding.py`.
 - `2026-09-29T10:31:26` **assistant.py** (legibilidad y documentación): He mejorado la documentación de los tipos en `assistant.py` añadiendo *type hints* explícitos y comentarios aclaratorios en funciones críticas (`_call_gemini`, `_build_payload`, `ingest`), asegurando que la intención del código sea clara para otros colaboradores y facilitando la mantenibilidad futura sin alterar el comportamiento.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-29T08:29:15` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_load_impl` y `save` eliminando el uso de `json.load(f)` y `json.dumps` sobre buffers sin control estricto de tamaño, añadiendo una validación de integridad previa a la deserialización que asegura que el archivo no haya sido modificado maliciosamente durante la lectura (prevención de Time-of-Check Time-of-Use).
 - `2026-09-29T08:28:37` **scanner.py** (seguridad defensiva): Mejoré la seguridad del método `_is_safe_entry` en `Scanner` asegurando que la validación de rutas `is_protected_path` se realice sobre la ruta resuelta (`resolve()`) para evitar ataques de desbordamiento de directorio mediante el uso de ".." o enlaces relativos que eludirían la verificación de seguridad.
 - `2026-09-29T08:19:56` **safety.py** (seguridad defensiva): Se introdujo la verificación `_is_file_in_use_by_system` en `ensure_safe_to_modify` utilizando `GetModuleFileName` para detectar si el ejecutable o librería pertenece al proceso actual o al sistema, previniendo modificaciones destructivas sobre archivos críticos en ejecución que las comprobaciones de lock por `CreateFileW` podrían omitir.
-- `2026-09-29T08:18:55` **quarantine.py** (seguridad defensiva): Se ha implementado `_is_file_in_use_by_system` en `quarantine.py` para detectar preventivamente el uso de archivos (especialmente en Windows) mediante `msvcrt.locking` y `ctypes` (GetFileAttributesW), mejorando la seguridad defensiva al evitar operaciones sobre archivos bloqueados o en uso crítico sin recurrir a dependencias externas.
-- `2026-09-29T08:10:35` **memory.py** (seguridad defensiva): Se ha mejorado la validación de los procesos candidatos para `trim_working_set` añadiendo una comprobación explícita mediante `is_protected_path` antes de intentar cualquier interacción, garantizando que procesos del sistema operativo (que no siempre fallan al abrir `Handle` pero cuya modificación es peligrosa) se bloqueen preventivamente.

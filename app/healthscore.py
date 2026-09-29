@@ -50,7 +50,7 @@ class RecommendationRule(NamedTuple):
     check: Callable[[SystemMetrics, NormalizedRatio], bool]
 
 class PipelineEntry(NamedTuple):
-    """Define una etapa en el proceso de evaluación de salud."""
+    """Define la configuración de una etapa: peso asignado, la función de cálculo y sus reglas de alerta."""
     area: MetricKey
     weight: int
     scorer: Scorer
