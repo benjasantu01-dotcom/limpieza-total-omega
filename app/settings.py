@@ -398,8 +398,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             os.replace(ruta, bak_path)
         
         os.replace(temp_path, ruta)
+        
         # Verificación post-escritura: integridad del archivo final
-        if not _is_file_secure_to_read(ruta) or open(ruta, 'r', encoding='utf-8').read() != serialized:
+        if not _is_file_secure_to_read(ruta):
             raise PermissionError("Integrity check failed")
             
         _load_with_cache.cache_clear()

@@ -418,25 +418,17 @@ class Answer:
     def is_online(self) -> bool:
         return self.source == "gemini"
 
-def _validate_context_integrity(ctx: SystemContext) -> bool:
-    """Verifica límites físicos de las métricas para evitar datos corruptos."""
-    return (
-        math.isfinite(ctx.junk_mb) and ctx.junk_mb >= 0 and
-        math.isfinite(ctx.duplicate_mb) and ctx.duplicate_mb >= 0 and
-        0 <= ctx.get_metric("disk_free_percent", 0.0) <= 100 and
-        0 <= ctx.get_metric("memory_available_percent", 0.0) <= 100
-    )
-
-def _is_safe_text_structure(text: str) -> bool:
+def _ensure_safe_text(text: Any) -> bool:
     """
-    Realiza saneamiento profundo contra inyecciones y patrones de ruta.
-    Bloquea explícitamente caracteres de control, rutas UNC y comandos peligrosos.
+    Valida que un objeto sea un string seguro, no vacío y bajo el límite de caracteres.
+    Realiza saneamiento profundo contra inyecciones, rutas UNC y caracteres de control.
     """
-    if not text: return True
+    if not isinstance(text, str) or not text or len(text) > _MAX_TEXT_LENGTH:
+        return False
+    if _REGEX_CONTROL.search(text):
+        return False
+        
     sanitized = text.encode("utf-8", "ignore").decode("utf-8")
-    
-    if any(ord(c) < 32 and c not in '\n\r\t' for c in sanitized): return False
-    
     if is_protected_path(sanitized): return False
     if sanitized.startswith(("\\\\", "//", "UNC")): return False
     if any(c in sanitized for c in "<>|&^"): return False
@@ -450,14 +442,6 @@ def _is_safe_text_structure(text: str) -> bool:
         pass
     
     return not any(pattern.search(sanitized) for pattern in SECURITY_PATTERNS)
-
-def _ensure_safe_text(text: Any) -> bool:
-    """Valida que un objeto sea un string seguro, no vacío y bajo el límite de caracteres."""
-    if not isinstance(text, str) or not text or len(text) > _MAX_TEXT_LENGTH:
-        return False
-    if _REGEX_CONTROL.search(text):
-        return False
-    return _is_safe_text_structure(text)
 
 def _get_source_value(source: Any, key: str) -> Any:
     """Acceso controlado a atributos para evitar la ejecución de métodos o acceso privado."""
@@ -481,12 +465,6 @@ def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> Syst
         if s is not None:
             ctx.ingest(s)
     return ctx
-
-def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
-    """Formatea métricas eliminando caracteres prohibidos para visualización en UI."""
-    if not isinstance(val, (int, float, str)): return "N/A"
-    raw = _fmt_metric(val, unit, decimal)
-    return _REGEX_INYECCION.sub(" ", _REGEX_CONTROL.sub(" ", raw))[:32]
 
 @lru_cache(maxsize=16)
 def _generate_context_cached(ctx: SystemContext) -> str:
