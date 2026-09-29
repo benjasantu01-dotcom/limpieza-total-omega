@@ -1138,6 +1138,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if self._closing or self._executor is None or not self.winfo_exists(): return
             
             # Validación de seguridad defensiva antes de delegar al pool
+            # Se re-valida inmediatamente para evitar condiciones de carrera en el estado del disco
             if target and not self._is_safe_disk_operation(target):
                 self.log("Acción denegada: la ruta destino no es segura.", self._current_tab())
                 return

@@ -878,3 +878,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-29T12:35:23` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_process_file_entry` añadiendo una comprobación explícita mediante `is_safe_to_modify` para los archivos individuales, previniendo así cualquier acceso no autorizado a archivos sensibles que pudieran existir dentro de un directorio legítimo.
 - `2026-09-29T12:35:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T12:35:23` Corrida terminada. Total usado hoy: 292.
+- `2026-09-29T12:43:11` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-09-29T12:43:39` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_summary_data` y `walk_files` para evitar la lectura de archivos bloqueados por el sistema operativo mediante el uso de `os.access(..., os.R_OK)`, evitando excepciones silenciosas innecesarias y mejorando la robustez frente a archivos en uso exclusivo.
+- `2026-09-29T12:44:07` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-09-29T12:44:35` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se ha robustecido el motor de normalización de métricas (`_clamp` y `validate`) para evitar propagación de errores de punto flotante o valores fuera de rango que podrían derivar en inestabilidad en el cálculo del puntaje final.
+- `2026-09-29T12:45:36` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `main.py` encapsulando la validación de rutas dentro de `run_async` mediante una pre-validación explícita, evitando que tareas de fondo (que pueden ejecutarse en hilos desvinculados) operen sobre rutas que fueron alteradas o no autorizadas tras el inicio del hilo.
+- `2026-09-29T12:45:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T12:45:36` Corrida terminada. Total usado hoy: 296.

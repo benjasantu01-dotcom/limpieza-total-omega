@@ -285,6 +285,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
                 try:
                     if entry.is_dir(follow_symlinks=False):
                         path = Path(entry.path)
+                        # Validar permisos de lectura antes de profundizar
                         if skip_protected and (is_protected_path(path) or not os.access(path, os.R_OK)):
                             continue
                         for f_path, f_size in walk_files(path, skip_protected):
@@ -312,6 +313,9 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
+        # Doble chequeo defensivo: el archivo debe ser legible para reportar su tamaño
+        if not os.access(path, os.R_OK):
+            continue
         total_bytes += size_bytes
         total_files += 1
         ext = path.suffix.lower() or "(sin extensión)"
