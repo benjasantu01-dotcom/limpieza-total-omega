@@ -200,7 +200,7 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
-        Valida que la entrada sea segura para el escaneo.
+        Valida que la entrada sea segura para el escaneo mediante resolución completa de rutas.
         """
         if not entry or not entry.path or not entry.name:
             return False
@@ -215,13 +215,14 @@ class Scanner:
             if not os.access(entry.path, os.R_OK):
                 return False
             
-            parent_dir = os.path.dirname(entry.path)
+            resolved_path = Path(entry.path).resolve()
+            parent_dir = str(resolved_path.parent)
             if parent_dir not in self.protected_cache:
-                if is_protected_path(Path(parent_dir)):
+                if is_protected_path(resolved_path.parent):
                     return False
                 self.protected_cache.add(parent_dir)
             
-            return not is_protected_path(Path(entry.path))
+            return not is_protected_path(resolved_path)
         except (OSError, RuntimeError, FileNotFoundError):
             return False
 
@@ -266,8 +267,9 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     """Escaneo puntual de un archivo individual contra todas las reglas heurísticas."""
     if not isinstance(path, Path): return []
     try:
-        if not path.is_file() or not os.access(path, os.R_OK): return []
-        if is_protected_path(path.resolve()): return []
+        resolved = path.resolve()
+        if not resolved.is_file() or not os.access(resolved, os.R_OK): return []
+        if is_protected_path(resolved): return []
     except (OSError, PermissionError): return []
     
     findings: List[Suspicion] = []

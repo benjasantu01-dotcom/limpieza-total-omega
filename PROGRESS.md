@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **209** (41.5% de aceptación)
-- Rechazadas por tests: 21
+- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-28 | 127 | 13 | 26 | 9 | 133 |
-| 2026-09-29 | 82 | 8 | 14 | 15 | 77 |
+| 2026-09-28 | 127 | 13 | 26 | 9 | 129 |
+| 2026-09-29 | 84 | 9 | 14 | 15 | 78 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **43**
+- seguridad defensiva: **39**
 - rendimiento: **38**
 - robustez ante casos límite: **37**
-- seguridad defensiva: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **22**
 - `browser.py`: **19**
 - `diskreport.py`: **18**
+- `scanner.py`: **18**
 - `quarantine.py`: **17**
-- `scanner.py`: **17**
 - `memory.py`: **17**
 - `duplicates.py`: **16**
 - `assistant.py`: **16**
 - `safety.py`: **15**
 - `branding.py`: **14**
-- `settings.py`: **13**
+- `settings.py`: **14**
 - `organizer.py`: **11**
 - `main.py`: **8**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-29T08:29:15` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_load_impl` y `save` eliminando el uso de `json.load(f)` y `json.dumps` sobre buffers sin control estricto de tamaño, añadiendo una validación de integridad previa a la deserialización que asegura que el archivo no haya sido modificado maliciosamente durante la lectura (prevención de Time-of-Check Time-of-Use).
+- `2026-09-29T08:28:37` **scanner.py** (seguridad defensiva): Mejoré la seguridad del método `_is_safe_entry` en `Scanner` asegurando que la validación de rutas `is_protected_path` se realice sobre la ruta resuelta (`resolve()`) para evitar ataques de desbordamiento de directorio mediante el uso de ".." o enlaces relativos que eludirían la verificación de seguridad.
 - `2026-09-29T08:19:56` **safety.py** (seguridad defensiva): Se introdujo la verificación `_is_file_in_use_by_system` en `ensure_safe_to_modify` utilizando `GetModuleFileName` para detectar si el ejecutable o librería pertenece al proceso actual o al sistema, previniendo modificaciones destructivas sobre archivos críticos en ejecución que las comprobaciones de lock por `CreateFileW` podrían omitir.
 - `2026-09-29T08:18:55` **quarantine.py** (seguridad defensiva): Se ha implementado `_is_file_in_use_by_system` en `quarantine.py` para detectar preventivamente el uso de archivos (especialmente en Windows) mediante `msvcrt.locking` y `ctypes` (GetFileAttributesW), mejorando la seguridad defensiva al evitar operaciones sobre archivos bloqueados o en uso crítico sin recurrir a dependencias externas.
 - `2026-09-29T08:10:35` **memory.py** (seguridad defensiva): Se ha mejorado la validación de los procesos candidatos para `trim_working_set` añadiendo una comprobación explícita mediante `is_protected_path` antes de intentar cualquier interacción, garantizando que procesos del sistema operativo (que no siempre fallan al abrir `Handle` pero cuya modificación es peligrosa) se bloqueen preventivamente.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-29T07:18:58` **browser.py** (robustez ante casos límite): Mejoré la robustez ante rutas inexistentes o inaccesibles en `_sum_directory_recursive` mediante el uso de `os.scandir` dentro de un bloque `try-except` más granular, previniendo que una sola carpeta con permisos restringidos (muy común en cachés de navegador) aborte prematuramente el escaneo completo de otros perfiles.
 - `2026-09-29T07:18:07` **assistant.py** (robustez ante casos límite): Mejora la robustez del motor de ingesta de datos del `SystemContext` ante valores inesperados, tipos de datos incompatibles o métricas fuera de rango mediante el uso de `getattr(..., default)` y validaciones más estrictas en `ingest()`, evitando que un dato malformado corrompa el estado del sistema.
 - `2026-09-29T07:08:16` **settings.py** (rendimiento): Se optimizó `settings_path` para evitar la resolución redundante de rutas en cada llamada, introduciendo una caché de primer nivel y pre-validación de existencia para reducir llamadas al sistema de archivos.
-- `2026-09-29T07:07:57` **scanner.py** (rendimiento): Optimicé el método `_is_safe_entry` reemplazando llamadas redundantes a `is_protected_path` por un acceso eficiente al caché y evitando la resolución innecesaria de rutas mediante `path.resolve()` repetitivos, reduciendo drásticamente la carga de I/O durante el recorrido.
-- `2026-09-29T07:01:10` **quarantine.py** (rendimiento): Optimizé la búsqueda de ítems en `purge_all` y `restore_item` transformando la lista de ítems en un diccionario (hash map) al inicio, lo que reduce la complejidad de tiempo de búsqueda de O(n) a O(1) por cada iteración.

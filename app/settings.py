@@ -326,6 +326,9 @@ def _load_impl(ruta: Path) -> AppSettings:
         if not _is_file_secure_to_read(ruta, st.st_ino): return dict(DEFAULTS)
         with open(ruta, "r", encoding="utf-8") as f:
             data = json.load(f)
+        # Verificación final de integridad tras lectura
+        if ruta.stat().st_ino != st.st_ino or ruta.stat().st_size > MAX_SETTINGS_SIZE:
+             return dict(DEFAULTS)
         if _is_dict(data):
             return _coerce_and_verify(validate(data))
     except (OSError, PermissionError, IOError, json.JSONDecodeError, UnicodeDecodeError):
@@ -377,15 +380,15 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     
     try:
         cleaned_settings = _coerce_and_verify(validate(values))
+        serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
+        if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
+        
         if ruta.exists() and load(custom_base) == cleaned_settings:
             return ruta
         
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         if not os.access(parent, os.W_OK) or _Validators._is_reparse_point(parent): return None
         if not _Validators._is_safe_path(str(parent)): return None
-        
-        serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
-        if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
     except (TypeError, ValueError, OSError, PermissionError): return None
     
     temp_path = ruta.with_suffix(".tmp")
@@ -406,7 +409,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         try:
             os.replace(temp_path, ruta)
         except OSError:
-            # Reintentar limpieza de bak si falló la operación atómica final
             if bak_path.exists(): os.replace(bak_path, ruta)
             raise
         
