@@ -214,7 +214,7 @@ _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
 class _IntegrityCheck(NamedTuple):
     """Regla de seguridad que vincula un motivo de protección a un predicado evaluable."""
     reason: ProtectionReason
-    predicate: ViolationPredicate
+    predicate: Callable[[Path, os.stat_result, SecurityDescriptor], bool]
 
 class _CheckResult(NamedTuple):
     """Resultado del chequeo de integridad."""
@@ -289,7 +289,6 @@ def _is_file_in_use_by_system(path_str: str) -> bool:
     """Verifica si el archivo está siendo referenciado por módulos cargados del sistema."""
     if os.name != 'nt': return False
     try:
-        # Detecta si el archivo es parte de un proceso crítico o DLL de sistema cargada
         h_module = ctypes.windll.kernel32.GetModuleHandleW(path_str)
         return h_module != 0
     except (OSError, ctypes.ArgumentError): return False
@@ -323,28 +322,28 @@ def _is_sensitive_extension(ext: str) -> bool:
     """Valida si la extensión está en la lista de archivos cuya modificación implica riesgo crítico."""
     return ext.lower() in SENSITIVE_EXTENSIONS
 
-def _rule(reason: ProtectionReason, predicate: ViolationPredicate) -> _IntegrityCheck:
+def _rule(reason: ProtectionReason, predicate: Callable[[Path, os.stat_result, SecurityDescriptor], bool]) -> _IntegrityCheck:
     """Helper de fábrica para definir una nueva regla de integridad."""
     return _IntegrityCheck(reason, predicate)
 
 # Lista de validadores de integridad aplicada secuencialmente
 _VALIDATORS: Final[list[_IntegrityCheck]] = [
-    _rule(ProtectionReason.SYMLINK, lambda p, _: p.is_symlink()),
-    _rule(ProtectionReason.REPARSE_POINT, lambda p, _: _is_directory_junction(str(p))),
-    _rule(ProtectionReason.KERNEL_LOCKED, lambda p, _: _is_kernel_managed(p)),
-    _rule(ProtectionReason.READ_ONLY, lambda _, st: not bool(st.st_mode & stat.S_IWRITE)),
-    _rule(ProtectionReason.VOLUME_READ_ONLY, lambda p, _: _is_volume_readonly(str(p))),
-    _rule(ProtectionReason.IN_USE, lambda p, _: _is_file_locked_by_other_process(str(p))),
-    _rule(ProtectionReason.SYSTEM_HIDDEN, lambda p, _: _get_security_descriptor(p).is_protected_system),
-    _rule(ProtectionReason.OFFLINE, lambda p, _: _get_security_descriptor(p).has_flag(Win32Attr.OFFLINE)),
-    _rule(ProtectionReason.ENCRYPTED_OR_COMPRESSED, lambda p, _: bool(_get_security_descriptor(p).attrs & (Win32Attr.COMPRESSED | Win32Attr.ENCRYPTED))),
-    _rule(ProtectionReason.SPARSE_FILE, lambda p, _: _get_security_descriptor(p).has_flag(Win32Attr.SPARSE_FILE)),
-    _rule(ProtectionReason.HARD_LINK, lambda p, st: p.is_file() and st.st_nlink > 1),
-    _rule(ProtectionReason.ADS, lambda p, _: _has_alternate_data_stream(p.name)),
-    _rule(ProtectionReason.EMPTY_FILE, lambda p, st: p.is_file() and st.st_size == 0),
-    _rule(ProtectionReason.EXCESSIVE_SIZE, lambda p, st: p.is_file() and st.st_size > MAX_FILE_SIZE),
-    _rule(ProtectionReason.MOUNT_POINT, lambda p, _: os.path.ismount(p)),
-    _rule(ProtectionReason.INVALID_TYPE, lambda _, st: not (stat.S_ISREG(st.st_mode) or stat.S_ISDIR(st.st_mode))),
+    _rule(ProtectionReason.SYMLINK, lambda p, _, __: p.is_symlink()),
+    _rule(ProtectionReason.REPARSE_POINT, lambda p, _, __: _is_directory_junction(str(p))),
+    _rule(ProtectionReason.KERNEL_LOCKED, lambda p, _, __: _is_kernel_managed(p)),
+    _rule(ProtectionReason.READ_ONLY, lambda _, st, __: not bool(st.st_mode & stat.S_IWRITE)),
+    _rule(ProtectionReason.VOLUME_READ_ONLY, lambda p, _, __: _is_volume_readonly(str(p))),
+    _rule(ProtectionReason.IN_USE, lambda _, __, sd: sd.is_in_use),
+    _rule(ProtectionReason.SYSTEM_HIDDEN, lambda _, __, sd: sd.is_protected_system),
+    _rule(ProtectionReason.OFFLINE, lambda _, __, sd: sd.has_flag(Win32Attr.OFFLINE)),
+    _rule(ProtectionReason.ENCRYPTED_OR_COMPRESSED, lambda _, __, sd: bool(sd.attrs & (Win32Attr.COMPRESSED | Win32Attr.ENCRYPTED))),
+    _rule(ProtectionReason.SPARSE_FILE, lambda _, __, sd: sd.has_flag(Win32Attr.SPARSE_FILE)),
+    _rule(ProtectionReason.HARD_LINK, lambda p, st, __: p.is_file() and st.st_nlink > 1),
+    _rule(ProtectionReason.ADS, lambda p, _, __: _has_alternate_data_stream(p.name)),
+    _rule(ProtectionReason.EMPTY_FILE, lambda p, st, __: p.is_file() and st.st_size == 0),
+    _rule(ProtectionReason.EXCESSIVE_SIZE, lambda p, st, __: p.is_file() and st.st_size > MAX_FILE_SIZE),
+    _rule(ProtectionReason.MOUNT_POINT, lambda p, _, __: os.path.ismount(p)),
+    _rule(ProtectionReason.INVALID_TYPE, lambda _, st, __: not (stat.S_ISREG(st.st_mode) or stat.S_ISDIR(st.st_mode))),
 ]
 
 _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
@@ -370,8 +369,9 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
     Ejecuta el conjunto de reglas de integridad sobre un archivo dado.
     Si cualquier regla falla, se aborta la operación con una excepción.
     """
+    sd = _get_security_descriptor(path)
     for rule in _VALIDATORS:
-        if rule.predicate(path, current_stat):
+        if rule.predicate(path, current_stat, sd):
             code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
             raise UnsafePathError(f"Integridad comprometida: {rule.reason.value}", code)
 

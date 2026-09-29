@@ -8,34 +8,34 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 227
+- Rechazadas por guardia de seguridad: 36
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-28 | 93 | 11 | 18 | 6 | 108 |
-| 2026-09-29 | 103 | 13 | 17 | 16 | 119 |
+| 2026-09-28 | 91 | 11 | 18 | 6 | 106 |
+| 2026-09-29 | 105 | 13 | 18 | 17 | 119 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **41**
-- seguridad defensiva: **39**
-- rendimiento: **34**
+- seguridad defensiva: **37**
+- rendimiento: **36**
 - robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **21**
-- `browser.py`: **17**
 - `memory.py`: **17**
+- `quarantine.py`: **17**
+- `safety.py`: **17**
 - `scanner.py`: **17**
-- `assistant.py`: **16**
-- `quarantine.py`: **16**
-- `safety.py`: **16**
+- `browser.py`: **16**
+- `assistant.py`: **15**
 - `diskreport.py`: **14**
 - `settings.py`: **14**
 - `duplicates.py`: **14**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-29T11:34:16` **safety.py** (rendimiento): Optimicé el uso de `lru_cache` y reemplacé llamadas repetitivas a funciones de sistema en `_evaluate_security_rules` introduciendo `_get_security_descriptor` una sola vez por validación, reduciendo drásticamente las syscalls innecesarias en cada ciclo de iteración.
+- `2026-09-29T11:32:26` **quarantine.py** (rendimiento): Se optimizó `load_manifest` y `purge_all` para evitar la creación innecesaria de múltiples listas y diccionarios intermedios, utilizando generadores y filtrado eficiente para mejorar el rendimiento en lecturas de manifiesto y limpiezas masivas.
 - `2026-09-29T11:24:04` **memory.py** (rendimiento): Optimizé el cálculo de procesos pesados reemplazando la creación de una lista intermedia y el ordenamiento completo (O(n log n)) por un heap de tamaño fijo, evitando así redundancia y reduciendo el consumo de memoria durante el filtrado.
 - `2026-09-29T11:21:55` **healthscore.py** (rendimiento): Se optimizó el proceso de cómputo eliminando la creación repetitiva de objetos `PipelineEntry` y diccionarios mediante el uso de constantes pre-mapeadas y la eliminación de lambdas innecesarias en el bucle principal, mejorando así la eficiencia del `pipeline`.
 - `2026-09-29T11:03:39` **assistant.py** (rendimiento): Optimicé el cálculo de `active_problems` en `SystemContext` usando un `set` local para la detección de triggers, reemplazando la lógica de concatenación ineficiente y mejorando el rendimiento en la evaluación de criterios.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-29T10:32:04` **branding.py** (legibilidad y documentación): Mejoré la documentación de los métodos de renderizado y utilidades matemáticas mediante la adición de docstrings estructurados (usando formato Google style para mayor claridad) y clarifiqué las intenciones de los parámetros en los métodos de `branding.py`.
 - `2026-09-29T10:31:26` **assistant.py** (legibilidad y documentación): He mejorado la documentación de los tipos en `assistant.py` añadiendo *type hints* explícitos y comentarios aclaratorios en funciones críticas (`_call_gemini`, `_build_payload`, `ingest`), asegurando que la intención del código sea clara para otros colaboradores y facilitando la mantenibilidad futura sin alterar el comportamiento.
 - `2026-09-29T10:22:42` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la validación al añadir una verificación explícita de `is_safe_to_modify` en `save()` antes de intentar escribir en el sistema, asegurando que la ruta destino no esté protegida antes de iniciar el proceso de reemplazo atómico, reduciendo el riesgo de intentos fallidos por permisos o restricciones de seguridad.
-- `2026-09-29T10:21:26` **safety.py** (manejo de errores y validación de entradas): Se introdujo una captura más granular de excepciones en `_get_path_stat_robust` y en la lógica de resolución de `ensure_safe_to_modify` para evitar el uso de excepciones genéricas, mejorando la robustez ante errores de I/O inesperados durante la validación.
-- `2026-09-29T10:12:09` **quarantine.py** (manejo de errores y validación de entradas): Mejora la robustez de `quarantine.py` mediante la implementación de validación estricta de estados (`None`, tipos de datos y consistencia de manifiesto) en los métodos de carga y persistencia, previniendo fallos en tiempo de ejecución por archivos de configuración corruptos o entradas de diccionario mal formadas.

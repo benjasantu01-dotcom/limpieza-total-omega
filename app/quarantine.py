@@ -384,12 +384,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
 
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
-    """
-    Carga el manifiesto de cuarentena desde el disco.
-    
-    Returns:
-        Lista de objetos QuarantineItem válidos.
-    """
+    """Carga el manifiesto de cuarentena, filtrando ítems inválidos de forma eficiente."""
     try:
         base_dir = quarantine_dir(base)
         m_path = _manifest_path(base_dir)
@@ -399,8 +394,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineIte
             data = json.load(f)
         if not isinstance(data, list):
             return []
-        items = [QuarantineItem.from_dict(d) for d in data]
-        return [item for item in items if item is not None]
+        return [item for d in data if (item := QuarantineItem.from_dict(d)) is not None]
     except (json.JSONDecodeError, OSError, PermissionError, UnsafePathError, ValueError):
         return []
 
@@ -772,12 +766,10 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         for f in quarantine_root.iterdir():
             if f.name == MANIFEST_NAME or not f.is_file():
                 continue
-            item = item_map.get(f.name)
-            if item and _is_item_purgable(f, item, quarantine_root):
+            if (item := item_map.get(f.name)) and _is_item_purgable(f, item, quarantine_root):
                 purged_ids.add(item.item_id)
         if purged_ids:
-            remaining_items = [i for i in items if i.item_id not in purged_ids]
-            save_manifest(remaining_items, base)
+            save_manifest([i for i in items if i.item_id not in purged_ids], base)
     except (OSError, PermissionError):
         pass
     return len(purged_ids)
