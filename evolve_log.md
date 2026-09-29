@@ -840,3 +840,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-29T11:56:04` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha robustecido el manejo de estados en `branding.py` ante entradas inválidas o inesperadas (NaN, valores fuera de rango, tipos incorrectos) en las funciones de renderizado y cálculo, asegurando que cualquier fallo en la UI no escale ni comprometa la integridad de la ejecución.
 - `2026-09-29T11:56:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T11:56:04` Corrida terminada. Total usado hoy: 276.
+- `2026-09-29T12:02:31` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-09-29T12:03:06` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). He mejorado la robustez ante errores de acceso a disco en `_sum_directory_recursive` y `_process_file_entry` añadiendo validaciones explícitas de atributos de sistema y manejo de excepciones de E/S más granular, evitando que una entrada individual bloquee el escaneo total.
+- `2026-09-29T12:03:09` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T12:03:40` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se mejora la robustez de `walk_files` y `largest_folders` ante accesos denegados y condiciones de carrera (cuando un archivo desaparece entre el `scandir` y el `stat`) mediante bloques `try-except` granulares, evitando que el escaneo completo se detenga por una excepción transitoria.
+- `2026-09-29T12:03:41` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T12:04:11` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-09-29T12:04:24` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `compute_score` ante divisiones por cero o valores NaN inesperados en los cálculos del pipeline, asegurando que el motor de puntuación nunca falle catastróficamente ante métricas mal formadas.
+- `2026-09-29T12:04:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T12:04:24` Corrida terminada. Total usado hoy: 280.

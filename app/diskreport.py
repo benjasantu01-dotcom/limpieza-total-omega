@@ -247,12 +247,12 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
                                     stack.append(entry.path)
-                            except OSError: continue
+                            except (OSError, PermissionError): continue
                         elif entry.is_file(follow_symlinks=False):
                             try:
                                 st = entry.stat(follow_symlinks=False)
                                 if st.st_size >= 0: yield Path(entry.path), st.st_size
-                            except OSError: continue
+                            except (OSError, PermissionError): continue
                     except (OSError, PermissionError): continue
         except (PermissionError, OSError): continue
 
@@ -282,13 +282,16 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     try:
         with os.scandir(root) as it:
             for entry in it:
-                if entry.is_dir():
-                    path = Path(entry.path)
-                    if skip_protected and (is_protected_path(path) or not os.access(path, os.R_OK)):
-                        continue
-                    for f_path, f_size in walk_files(path, skip_protected):
-                        stats[path][0] += f_size
-                        stats[path][1] += 1
+                try:
+                    if entry.is_dir(follow_symlinks=False):
+                        path = Path(entry.path)
+                        if skip_protected and (is_protected_path(path) or not os.access(path, os.R_OK)):
+                            continue
+                        for f_path, f_size in walk_files(path, skip_protected):
+                            stats[path][0] += f_size
+                            stats[path][1] += 1
+                except (OSError, PermissionError):
+                    continue
     except (OSError, PermissionError): pass
     results = [FolderUsage(p, s[0], s[1]) for p, s in stats.items()]
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)

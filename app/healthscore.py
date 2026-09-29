@@ -199,6 +199,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         try:
             entry = _PIPELINE_MAP[area]
             area_ratio = entry.scorer(metrics)
+            if not math.isfinite(area_ratio):
+                area_ratio = 0.0
             _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             points = int(round(area_ratio * entry.weight))
             metric_breakdown[area] = max(0, min(points, entry.weight))

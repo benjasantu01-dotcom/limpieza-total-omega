@@ -223,10 +223,13 @@ def _sum_directory_recursive(
     try:
         with os.scandir(root_path) as it:
             for entry in it:
-                if _should_skip_entry(entry, kernel32, _IS_JUNCTION_FN):
+                try:
+                    if _should_skip_entry(entry, kernel32, _IS_JUNCTION_FN):
+                        continue
+                    result = _process_file_entry(entry, root_abs_path, kernel32, visited_inodes, depth)
+                    total_bytes += result.bytes_found
+                except (OSError, PermissionError):
                     continue
-                result = _process_file_entry(entry, root_abs_path, kernel32, visited_inodes, depth)
-                total_bytes += result.bytes_found
     except (OSError, PermissionError):
         return ScanResult(total_bytes, False)
         
