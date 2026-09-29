@@ -1121,3 +1121,13 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-09-29T03:23:54` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la validación de `_ensure_safe_text` agregando una comprobación de "caracteres prohibidos" (`<>|&^`) que podría utilizarse para inyección de comandos en shells de Windows, y se añadió una verificación explícita de `pathlib.Path` para asegurar que ninguna respuesta o consulta pueda ser interpretada como una ruta absoluta o relativa, protegiendo al sistema de posibles manipulaciones de entrada.
 - `2026-09-29T03:23:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T03:23:54` Corrida terminada. Total usado hoy: 80.
+- `2026-09-29T03:32:05` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-09-29T03:32:44` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `save_logo_svg` y `_validate_destination` al consolidar las comprobaciones de seguridad mediante `ensure_safe_to_modify` antes de cualquier operación de escritura, asegurando que cualquier error de validación sea capturado explícitamente sin permitir la creación de archivos en rutas bloqueadas.
+- `2026-09-29T03:33:10` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-09-29T03:33:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T03:33:15` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-29T03:33:23` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-29T03:34:03` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `largest_folders` para evitar que el proceso se cuelgue o intente acceder a rutas inválidas/inconsistentes al validar cada entrada con `is_protected_path` y `os.access` antes de iniciar la recursión, alineándolo con el patrón de seguridad del resto del módulo.
+- `2026-09-29T03:34:18` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha refactorizado `_collect_candidates` para unificar y endurecer la validación de seguridad mediante `_safe_path_check` antes de realizar operaciones de disco (`stat`), evitando así la exposición a errores de acceso en rutas bloqueadas o protegidas y asegurando consistencia con el contrato de seguridad exigido.
+- `2026-09-29T03:34:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T03:34:18` Corrida terminada. Total usado hoy: 84.

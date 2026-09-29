@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Mejoras aceptadas: **206** (40.9% de aceptación)
 - Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-27 | 25 | 5 | 7 | 4 | 33 |
+| 2026-09-27 | 25 | 5 | 7 | 4 | 29 |
 | 2026-09-28 | 140 | 13 | 29 | 10 | 158 |
-| 2026-09-29 | 38 | 3 | 6 | 6 | 27 |
+| 2026-09-29 | 41 | 3 | 6 | 6 | 28 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,27 +26,30 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **39**
 - rendimiento: **37**
-- seguridad defensiva: **32**
+- seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **20**
 - `browser.py`: **19**
-- `diskreport.py`: **18**
-- `duplicates.py`: **18**
+- `diskreport.py`: **19**
+- `duplicates.py`: **19**
 - `quarantine.py`: **18**
 - `safety.py`: **16**
 - `scanner.py`: **16**
 - `memory.py`: **15**
 - `assistant.py`: **15**
 - `settings.py`: **13**
-- `branding.py`: **10**
+- `branding.py`: **11**
 - `organizer.py`: **9**
 - `main.py`: **8**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-29T03:34:18` **duplicates.py** (seguridad defensiva): Se ha refactorizado `_collect_candidates` para unificar y endurecer la validación de seguridad mediante `_safe_path_check` antes de realizar operaciones de disco (`stat`), evitando así la exposición a errores de acceso en rutas bloqueadas o protegidas y asegurando consistencia con el contrato de seguridad exigido.
+- `2026-09-29T03:34:03` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `largest_folders` para evitar que el proceso se cuelgue o intente acceder a rutas inválidas/inconsistentes al validar cada entrada con `is_protected_path` y `os.access` antes de iniciar la recursión, alineándolo con el patrón de seguridad del resto del módulo.
+- `2026-09-29T03:32:44` **branding.py** (seguridad defensiva): Se ha mejorado la robustez de `save_logo_svg` y `_validate_destination` al consolidar las comprobaciones de seguridad mediante `ensure_safe_to_modify` antes de cualquier operación de escritura, asegurando que cualquier error de validación sea capturado explícitamente sin permitir la creación de archivos en rutas bloqueadas.
 - `2026-09-29T03:23:54` **assistant.py** (seguridad defensiva): Se endureció la validación de `_ensure_safe_text` agregando una comprobación de "caracteres prohibidos" (`<>|&^`) que podría utilizarse para inyección de comandos en shells de Windows, y se añadió una verificación explícita de `pathlib.Path` para asegurar que ninguna respuesta o consulta pueda ser interpretada como una ruta absoluta o relativa, protegiendo al sistema de posibles manipulaciones de entrada.
 - `2026-09-29T03:22:59` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante fallos de E/S durante la persistencia al añadir una validación de escritura atómica más estricta que asegura que el archivo resultante sea legible antes de reemplazar el archivo original, evitando posibles estados corruptos por interrupciones parciales del sistema de archivos.
 - `2026-09-29T03:22:27` **scanner.py** (robustez ante casos límite): Se mejora la robustez de `_is_safe_entry` y `process_entry` ante condiciones de carrera y sistemas de archivos volátiles, asegurando que si un archivo desaparece entre la detección inicial y el acceso (un `FileNotFoundError` común en escaneos de disco), el bucle simplemente lo salte en lugar de propagar una excepción.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-29T02:43:03` **settings.py** (rendimiento): Optimizé la persistencia de la configuración implementando una verificación temprana de cambios (`current != new_settings`) antes de iniciar el ciclo completo de serialización y E/S en disco, evitando escrituras redundantes cuando no hay cambios efectivos.
 - `2026-09-29T02:42:32` **scanner.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo sustituyendo la verificación repetitiva `is_protected_path(Path(parent_dir))` por una comprobación booleana simplificada sobre el caché interno, evitando llamadas costosas a funciones externas dentro del bucle principal.
 - `2026-09-29T02:32:35` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` mediante el uso de un diccionario (hash map) para la resolución de ítems, reduciendo la complejidad de O(N^2) a O(N) al realizar búsquedas por ID en operaciones recurrentes como `restore_item` y `purge_item`.
-- `2026-09-29T02:31:56` **organizer.py** (rendimiento): Se ha optimizado `_process_directory` reemplazando la verificación repetida de `is_protected_path` por una búsqueda en el conjunto `protected_cache`, reduciendo drásticamente las llamadas a funciones costosas del sistema de archivos durante el escaneo recursivo.
-- `2026-09-29T02:23:07` **main.py** (rendimiento): Se implementó un sistema de "lazy-init" para los componentes pesados del dashboard de salud dentro de `_compile_metrics`, evitando el cálculo innecesario de métricas de disco y RAM si la pestaña de Salud no ha sido visitada o si los datos ya están en caché válida, reduciendo el consumo de CPU y latencia al iniciar la app.
-- `2026-09-29T02:22:12` **healthscore.py** (rendimiento): Optimicé el bucle de `compute_score` eliminando búsquedas innecesarias en diccionarios y llamadas repetitivas a `_PIPELINE_MAP` mediante el uso directo de los valores pre-calculados, mejorando la eficiencia en el procesamiento de métricas.

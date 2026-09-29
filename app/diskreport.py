@@ -284,8 +284,10 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     try:
         with os.scandir(root) as it:
             for entry in it:
-                if entry.is_dir() and not (skip_protected and is_protected_path(Path(entry.path))):
+                if entry.is_dir():
                     path = Path(entry.path)
+                    if skip_protected and (is_protected_path(path) or not os.access(path, os.R_OK)):
+                        continue
                     for f_path, f_size in walk_files(path, skip_protected):
                         stats[path][0] += f_size
                         stats[path][1] += 1

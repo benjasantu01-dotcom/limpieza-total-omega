@@ -381,6 +381,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         dest_dir = path.parent
         if not dest_dir.exists():
             dest_dir.mkdir(parents=True, exist_ok=True)
+        ensure_safe_to_modify(path)
         safe_size = max(16, min(1024, int(size)))
         path.write_text(logo_svg(safe_size), encoding="utf-8")
         return path if path.is_file() else None
@@ -393,9 +394,9 @@ def _validate_destination(dest: Any) -> Optional[Path]:
         return None
     try:
         path = Path(dest).resolve()
+        # Verificamos si es seguro listar/acceder y si la carpeta no está protegida
         if is_protected_path(path) or not is_safe_to_modify(path):
             return None
-        ensure_safe_to_modify(path)
         return path
     except (OSError, RuntimeError, TypeError, ValueError):
         return None
