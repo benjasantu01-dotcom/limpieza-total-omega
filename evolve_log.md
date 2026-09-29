@@ -702,3 +702,74 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-09-29T11:03:39` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el cálculo de `active_problems` en `SystemContext` usando un `set` local para la detección de triggers, reemplazando la lógica de concatenación ineficiente y mejorando el rendimiento en la evaluación de criterios.
 - `2026-09-29T11:03:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T11:03:39` Corrida terminada. Total usado hoy: 260.
+- `2026-09-29T11:11:16` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-09-29T11:11:58` Tests FALLARON:
+```
+........................................................................ [ 24%]
+..............................................F......................... [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+__________________ test_gradient_starts_and_ends_on_its_stops __________________
+
+    def test_gradient_starts_and_ends_on_its_stops():
+        colores = branding.gradient_colors(50)
+        assert colores[0].lower() == branding.GRADIENT_STOPS[0].lower()
+>       assert colores[-1].lower() == branding.GRADIENT_STOPS[-1].lower()
+E       AssertionError: assert '#fe2d78' == '#ff2d78'
+E         
+E         - #ff2d78
+E         ?   ^
+E         + #fe2d78
+E         ?   ^
+
+evolve/tests/test_modules.py:215: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_starts_and_ends_on_its_stops - AssertionError: assert '#fe2d78' == '#ff2d78'
+  
+  - #ff2d78
+  ?   ^
+  + #fe2d78
+  ?   ^
+1 failed, 298 passed in 1.46s
+
+```
+- `2026-09-29T11:11:58` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se optimizó el cálculo de colores del gradiente en `gradient_colors` eliminando la creación innecesaria de listas y re-iteraciones, permitiendo una generación más eficiente mediante una comprensión de generador y un cálculo directo de índices.
+- `2026-09-29T11:12:28` Tests FALLARON:
+```
+th = PosixPath('/tmp/pytest-of-runner/pytest-2/test_summarize_includes_the_sa0')
+
+    def test_summarize_includes_the_safety_note(tmp_path):
+        caches = [browser.BrowserCache("Chrome", tmp_path / "Cache", 1024 * 1024)]
+>       texto = "\n".join(browser.summarize(caches))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_modules.py:800: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/browser.py:303: in summarize
+    total_mb = round(total_cache_bytes(current_caches) / (1024 * 1024), 2)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/browser.py:295: in total_cache_bytes
+    return sum(c.bytes_found for c in caches) if caches else 0
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = <list_iterator object at 0x7fee9049d4b0>
+
+>   return sum(c.bytes_found for c in caches) if caches else 0
+               ^^^^^^^^^^^^^
+E   AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+
+app/browser.py:295: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_total_cache_bytes_sums_detected_caches - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+2 failed, 297 passed in 1.51s
+
+```
+- `2026-09-29T11:12:28` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento del escaneo recursivo mediante el reemplazo de `Path.resolve()` en el bucle principal por `os.path.normpath` y una lógica de validación de rutas más eficiente, evitando el alto costo de E/S que implica el llamado al sistema `GetFinalPathNameByHandle` que `resolve(strict=True)` realiza internamente.
+- `2026-09-29T11:12:55` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-09-29T11:13:06` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-09-29T11:13:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T11:13:06` Corrida terminada. Total usado hoy: 264.
