@@ -48,6 +48,7 @@ MegabytesValue = NewType("MegabytesValue", float)
 # Constantes de conversión y límites de seguridad:
 BYTES_IN_MB: Final[int] = 1024 * 1024
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
+# Límite heurístico para filtrar valores erróneos de lectura de procesos (128GB).
 MAX_VALID_PROCESS_MEM: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
 # Máscaras de acceso Win32 (Permisos requeridos para consultar o modificar procesos):
@@ -145,12 +146,13 @@ def format_bytes(num: Optional[int | float]) -> str:
     return f"{val:.{0 if idx == 0 else 1}f} {BYTE_UNITS[idx]}"
 
 def _create_mem_status_ex() -> MEMORYSTATUSEX:
+    """Inicializa la estructura MEMORYSTATUSEX con el tamaño requerido por la API Win32."""
     mem_status = MEMORYSTATUSEX()
     mem_status.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return mem_status
 
 def _safe_int_conversion(value: Optional[str], multiplier: int = 1) -> BytesValue:
-    """Extrae números de una cadena, los multiplica por el factor dado y asegura un valor positivo."""
+    """Extrae dígitos de una cadena, los multiplica por el factor dado y asegura un valor positivo."""
     if not value: return BytesValue(0)
     clean_val = "".join(c for c in value if c.isdigit())
     return BytesValue(max(0, int(clean_val)) * multiplier) if clean_val else BytesValue(0)
@@ -181,7 +183,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     return MemorySnapshot(total=total, available=available, cached=metrics.get("Cached", BytesValue(0)))
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
-    """Procesa el output CSV de PowerShell de procesos Windows y retorna los top consumidores."""
+    """Procesa el output CSV de PowerShell de procesos Windows y retorna los top consumidores usando un heap."""
     if not raw_csv_text: return []
     top_heap: List[ProcessMemory] = []
     seen_pids: Set[int] = set()
@@ -206,6 +208,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     return sorted(top_heap, key=lambda p: p.working_set, reverse=True)
 
 def _read_windows_snapshot() -> MemorySnapshot:
+    """Consulta la API GlobalMemoryStatusEx de Windows para obtener estadísticas globales."""
     kernel32 = ctypes.windll.kernel32
     if not hasattr(kernel32, "GlobalMemoryStatusEx"): return _EMPTY_SNAPSHOT
     mem_status = _create_mem_status_ex()
@@ -218,6 +221,7 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
 @lru_cache(maxsize=1)
 def _get_cached_snapshot(timestamp_bucket: int) -> MemorySnapshot:
+    """Retorna un snapshot desde caché, reduciendo la frecuencia de E/S de bajo nivel."""
     if _is_windows: return _read_windows_snapshot()
     global _linux_available
     if _linux_available:
@@ -232,7 +236,7 @@ def read_snapshot() -> MemorySnapshot:
     return _get_cached_snapshot(int(time.time() / 5))
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Retorna los procesos que más memoria RAM consumen actualmente en Windows."""
+    """Retorna los procesos que más memoria RAM consumen, actualizando la lista cada 60s."""
     global _proc_cache_time, _proc_cache_data
     if not _is_windows: return []
     now = time.time()
@@ -276,6 +280,7 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def _is_system_process(pid: int) -> bool:
+    """Determina si el PID pertenece a procesos críticos del sistema o al proceso actual."""
     return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
 
 def _get_process_path(pid: int) -> Optional[Path]:
@@ -285,7 +290,6 @@ def _get_process_path(pid: int) -> Optional[Path]:
     if not handle: return None
     try:
         exit_code = ctypes.c_ulong()
-        # Verificamos si el proceso sigue vivo antes de intentar consultar el módulo
         if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return None
         psapi = ctypes.windll.psapi
@@ -302,6 +306,7 @@ def _get_process_path(pid: int) -> Optional[Path]:
     return None
 
 def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
+    """Verifica si un proceso puede recibir operaciones de gestión de memoria de forma segura."""
     exec_path = _get_process_path(pid)
     if not exec_path or not is_safe_to_modify(str(exec_path)):
         return False, "Acceso no autorizado o ruta protegida."

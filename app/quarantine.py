@@ -302,6 +302,22 @@ def _check_device_consistency(source: Path, target_dir: Path) -> None:
     if source.stat().st_dev != target_dir.stat().st_dev:
         raise UnsafePathError("Operación entre distintos volúmenes no permitida.")
 
+def _validate_isolation_constraints(source_path: Path, dest_dir: Path) -> None:
+    """Valida las restricciones de seguridad relativas entre origen y destino."""
+    resolved_source = source_path.resolve(strict=True)
+    resolved_dest_dir = dest_dir.resolve()
+    
+    if is_protected_path(resolved_source):
+        raise UnsafePathError("Ruta origen protegida.")
+    if is_protected_path(resolved_dest_dir) or is_protected_path(resolved_dest_dir.parent):
+        raise UnsafePathError("Destino en ruta protegida.")
+    if _is_within_quarantine_sandbox(resolved_source, resolved_dest_dir):
+        raise UnsafePathError("Archivo ya se encuentra en sandbox.")
+    if is_within_directory(resolved_dest_dir, resolved_source):
+        raise UnsafePathError("Operación recursiva prohibida: destino dentro de origen.")
+    if resolved_source.parent == resolved_dest_dir:
+        raise UnsafePathError("Operación circular detectada.")
+
 def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
     """Validaciones de seguridad previas al movimiento de un archivo a cuarentena."""
     resolved_source = source_path.resolve(strict=True)
@@ -314,22 +330,15 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
         raise UnsafePathError("Archivos vacíos prohibidos.")
     if not os.access(dest_dir, os.W_OK):
         raise PermissionError("Directorio de cuarentena sin permisos de escritura.")
+    
     try:
         _check_device_consistency(resolved_source, resolved_dest_dir)
         if os.path.samefile(resolved_source, resolved_dest_dir):
             raise UnsafePathError("Operación circular detectada.")
     except OSError:
         pass
-    if is_within_directory(resolved_dest_dir, resolved_source):
-        raise UnsafePathError("Operación recursiva prohibida: destino dentro de origen.")
-    if resolved_source.parent == resolved_dest_dir:
-        raise UnsafePathError("Operación circular detectada.")
-    if is_protected_path(resolved_source):
-        raise UnsafePathError("Ruta origen protegida.")
-    if is_protected_path(resolved_dest_dir) or is_protected_path(resolved_dest_dir.parent):
-        raise UnsafePathError("Destino en ruta protegida.")
-    if _is_within_quarantine_sandbox(resolved_source, resolved_dest_dir):
-        raise UnsafePathError("Archivo ya se encuentra en sandbox.")
+        
+    _validate_isolation_constraints(resolved_source, resolved_dest_dir)
     ensure_safe_to_modify(resolved_source, allow_sensitive=True)
     if _is_file_locked(resolved_source):
         raise IOError("Archivo en uso.")

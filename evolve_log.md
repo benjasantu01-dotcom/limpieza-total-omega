@@ -963,3 +963,14 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-29T01:42:05` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejoré la legibilidad del módulo documentando los propósitos de las constantes críticas, añadiendo type hints faltantes en funciones internas y refactorizando la estructura de datos `_PIPELINE_MAP` para separar la definición de las reglas de su instanciación, facilitando su lectura y mantenimiento.
 - `2026-09-29T01:42:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T01:42:05` Corrida terminada. Total usado hoy: 40.
+- `2026-09-29T01:50:17` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-09-29T01:50:25` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T01:51:28` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-29T01:52:34` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-29T01:53:15` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): el archivo se encogió al 14% del original (posible pérdida de código)
+- `2026-09-29T01:53:16` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T01:53:55` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejoré la documentación interna incluyendo docstrings detallados en las funciones de bajo nivel y refiné los tipos y nombres de las constantes para alinear la arquitectura con las guías de legibilidad del proyecto.
+- `2026-09-29T01:54:27` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante docstrings detallados en funciones críticas y se ha refactorizado `_is_safe_for_disk_op` para separar la validación de seguridad de la lógica de negocio, facilitando la comprensión y el mantenimiento.
+- `2026-09-29T01:54:57` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de la lógica de aislamiento al extraer la validación de condiciones de seguridad a una nueva función `_validate_isolation_constraints`, reduciendo la complejidad ciclomática de `_check_isolation_safety` y facilitando su auditoría.
+- `2026-09-29T01:54:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T01:54:57` Corrida terminada. Total usado hoy: 44.

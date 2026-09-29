@@ -133,7 +133,10 @@ def _is_allowed_directory(name: str) -> bool:
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _is_file_locked(path: Path) -> bool:
-    """Intenta abrir el archivo para determinar si está bloqueado por otro proceso."""
+    """
+    Intenta abrir el archivo en modo binario lectura para verificar si está 
+    bloqueado por otro proceso del sistema.
+    """
     if not path.is_file():
         return True
     try:
@@ -156,30 +159,35 @@ def _has_forbidden_chars(path: Path) -> bool:
     return any(c in path_str for c in ["<", ">", "|", "\0"])
 
 def _validate_path_security(src: Path, dest: Path) -> bool:
-    """Valida integridad de rutas, longitud, caracteres y protección sistémica."""
+    """Realiza chequeos de seguridad estáticos sobre las rutas (UNC, caracteres, protección)."""
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     if len(str(src)) > MAX_PATH_LENGTH or len(str(dest)) > MAX_PATH_LENGTH: return False
     return not (is_protected_path(src) or is_protected_path(dest))
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
-    """Validación exhaustiva de pre-condiciones para realizar operaciones de I/O."""
+    """
+    Valida si una operación de movimiento es segura. 
+    Verifica seguridad de rutas, permisos de acceso, estado del archivo y
+    consistencia de metadatos (evitando archivos futuros o tamaños inválidos).
+    """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     try:
         if not src.exists() or not src.is_file() or src.is_symlink(): return False
-        if not is_safe_to_modify(src): return False
-        if not _validate_path_security(src, dest): return False
+        if not is_safe_to_modify(src) or not _validate_path_security(src, dest): return False
         
         target_dir = dest.parent if dest.exists() else dest
         if not target_dir.is_dir() or not os.access(target_dir, os.W_OK): return False
+        
+        # Validaciones de entorno de destino
         if is_protected_path(target_dir) or _is_unc_path(target_dir): return False
         if src.drive != target_dir.drive: return False
-        if _is_recursive_violation(src, dest): return False
-        if not os.access(src, os.R_OK): return False
+        if _is_recursive_violation(src, dest) or not os.access(src, os.R_OK): return False
         
+        # Validaciones de integridad de metadatos del archivo
         stats = src.stat()
-        # Validación de integridad de metadatos: tamaño no negativo y fecha no futura
         if not (0 <= stats.st_size < MAX_FILE_SIZE_BYTES): return False
         if stats.st_mtime > datetime.now().timestamp() + 3600: return False
+        
         return not _is_file_locked(src)
     except (OSError, RuntimeError, AttributeError):
         return False
