@@ -694,3 +694,11 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-09-29T10:52:53` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings estructurados, tipado explícito en `_IntegrityCheck` y la simplificación lógica de `_is_system_path_raw` para clarificar la distinción entre rutas protegidas por nombre y rutas protegidas por raíz.
 - `2026-09-29T10:52:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T10:52:53` Corrida terminada. Total usado hoy: 256.
+- `2026-09-29T11:01:07` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-09-29T11:01:10` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T11:01:41` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica agregando docstrings de tipo Google Style a los métodos de la clase `Scanner` y funciones auxiliares, clarificando las precondiciones, los parámetros y el comportamiento de las heurísticas para facilitar el mantenimiento futuro.
+- `2026-09-29T11:02:13` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-09-29T11:02:41` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: legibilidad y documentación).
+- `2026-09-29T11:03:39` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el cálculo de `active_problems` en `SystemContext` usando un `set` local para la detección de triggers, reemplazando la lógica de concatenación ineficiente y mejorando el rendimiento en la evaluación de criterios.
+- `2026-09-29T11:03:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T11:03:39` Corrida terminada. Total usado hoy: 260.
