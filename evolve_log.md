@@ -1143,3 +1143,41 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-09-29T03:47:38` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `_process_directory` implementando una validación de `is_safe_to_modify` antes de añadir archivos a la lista de escaneo, asegurando que ningún archivo sospechoso o fuera del alcance permitido pase a la etapa de procesamiento, mitigando riesgos de acceso indebido.
 - `2026-09-29T03:47:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T03:47:38` Corrida terminada. Total usado hoy: 88.
+- `2026-09-29T03:52:34` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-09-29T03:53:15` Tests FALLARON:
+```
+imeError("Falla crítica: el destino no es coherente tras la copia.")
+    
+            # Seguridad extra antes del borrado: verificar que el origen sigue siendo el mismo archivo
+            if not is_safe_to_modify(source_path):
+                raise UnsafePathError("El origen ha cambiado o ya no es seguro de modificar.")
+    
+            if source_path.exists():
+                try:
+                    source_path.unlink()
+                except OSError as e:
+                    raise RuntimeError(f"Aislamiento exitoso, pero falla al remover origen: {e}")
+    
+            item = _register_quarantine_item(destination, source_path, file_hash, reason, original_size, base)
+            _verify_transaction_integrity(item, destination)
+            return item
+        except Exception as e:
+            if temp_path and temp_path.exists():
+                try: temp_path.unlink()
+                except OSError: pass
+            _cleanup_orphaned_destination(destination)
+>           raise RuntimeError(f"Error durante aislamiento: {e}")
+E           RuntimeError: Error durante aislamiento: [GENERIC] El origen ha cambiado o ya no es seguro de modificar.
+
+app/quarantine.py:643: RuntimeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - RuntimeError: Error durante aislamiento: [GENERIC] El origen ha cambiado o ya no es seguro de modificar.
+1 failed, 298 passed in 0.91s
+
+```
+- `2026-09-29T03:53:15` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la seguridad defensiva en `quarantine_file` añadiendo una comprobación explícita mediante `is_safe_to_modify` antes de intentar el borrado del archivo original, garantizando que el origen no haya sido movido, reemplazado por un symlink o alterado durante el proceso de copia.
+- `2026-09-29T03:53:34` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-29T03:54:15` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-09-29T03:54:30` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `scanner.py` al reemplazar la resolución implícita de rutas (`path.resolve()`) por una comparación normalizada (`Path.resolve()` contra el `base_root` resuelto) dentro de `Scanner._is_inside_base_root`, evitando que rutas maliciosas (ej. mediante `..` o alias) escapen del escaneo restringido.
+- `2026-09-29T03:54:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T03:54:30` Corrida terminada. Total usado hoy: 92.

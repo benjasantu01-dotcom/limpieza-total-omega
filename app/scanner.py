@@ -187,9 +187,10 @@ class Scanner:
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica que la entrada pertenezca al árbol de directorios raíz definido."""
         try:
+            # Resolved avoids directory traversal attacks (e.g., ../../windows)
             abs_path = Path(entry_path).resolve()
             return str(abs_path).lower().startswith(self.base_root_str)
-        except OSError:
+        except (OSError, RuntimeError):
             return False
 
     def _has_invalid_name(self, name: str) -> bool:
@@ -213,11 +214,9 @@ class Scanner:
             return False
         
         try:
-            # os.DirEntry.is_symlink() y los chequeos de atributos son menos costosos que os.access
             if self._is_reparse_point(entry) or entry.is_symlink():
                 return False
             
-            # Verificación de permisos básica
             if not os.access(entry.path, os.R_OK):
                 return False
             
@@ -263,7 +262,6 @@ class Scanner:
                 if self._is_relevant_extension(entry.name):
                     self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError, FileNotFoundError):
-            # El archivo pudo haber sido borrado o movido durante el escaneo
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
