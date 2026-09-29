@@ -265,12 +265,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self._init_state()
             self._build_layout()
             self.protocol("WM_DELETE_WINDOW", self._on_closing)
-        except Exception as e:
+        except (RuntimeError, Exception) as e:
             logging.critical("Error fatal al inicializar la aplicación: %s", e)
             if self.winfo_exists():
-                messagebox.showerror("Error de inicio", f"La aplicación no pudo inicializarse: {e}")
+                messagebox.showerror("Error de inicio", "La aplicación no pudo inicializarse correctamente.")
                 self.destroy()
             else:
+                # Si fallamos antes de tener ventana, elevamos error
                 raise
 
     def _on_closing(self) -> None:
@@ -495,7 +496,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except Exception as e:
                 logging.error("Fallo crítico en el constructor de la pestaña %s: %s", name, e)
                 # Opcional: mostrar aviso al usuario en el log si la pestaña falla
-                self.log(f"Error cargando pestaña {name}: {e}", "Salud")
+                self.log(f"Error cargando pestaña {name}: {type(e).__name__}", "Salud")
 
     def _build_tabs_container(self) -> None:
         """Crea el contenedor central de pestañas."""

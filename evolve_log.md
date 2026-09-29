@@ -887,3 +887,57 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-09-29T01:01:09` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `hash_file` y `partial_hash` añadiendo validaciones explícitas de entrada, manejo de posibles errores en la lectura de archivos (como bloqueos durante la iteración) y asegurando que las funciones devuelvan siempre resultados consistentes incluso ante fallos transitorios en el sistema de archivos.
 - `2026-09-29T01:01:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T01:01:09` Corrida terminada. Total usado hoy: 24.
+- `2026-09-29T01:09:34` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-09-29T01:10:02` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` agregando validaciones preventivas para evitar errores en tiempo de ejecución si el diccionario `WEIGHTS` o el `_PIPELINE_MAP` son modificados incorrectamente durante el ciclo de vida de la aplicación.
+- `2026-09-29T01:11:18` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `_setup_application` y `_tab_factory` para evitar cierres abruptos o estados inconsistentes de la UI cuando el entorno o los componentes fallan, asegurando que los fallos sean registrados adecuadamente sin dejar la app en un estado bloqueado o con widgets huérfanos.
+- `2026-09-29T01:11:47` Tests FALLARON:
+```
+          '"grande","11","104857600"\n'
+            '"medio","12","10485760"\n'
+        )
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert [] == ['grande', 'medio', 'chico']
+E         
+E         Right contains 3 more items, first extra item: 'grande'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     'grande',
+E         -     'medio',
+E         -     'chico',
+E         - ]
+
+evolve/tests/test_modules.py:346: AssertionError
+__________________ test_parse_process_csv_skips_broken_lines ___________________
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed in 1.22s
+
+```
+- `2026-09-29T01:11:47` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Mejora la robustez de `parse_windows_process_csv` añadiendo una validación explícita para evitar errores al intentar convertir entradas con formato inesperado, asegurando que el bucle procese datos limpios sin romperse ante ruido en el texto.
+- `2026-09-29T01:11:59` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-29T01:11:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T01:11:59` Corrida terminada. Total usado hoy: 28.

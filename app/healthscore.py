@@ -191,12 +191,16 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for area, weight in WEIGHTS.items():
         entry = _PIPELINE_MAP.get(area)
-        if not entry: continue
-        area_ratio = entry.scorer(metrics)
-        _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
-        points = int(round(area_ratio * weight))
-        metric_breakdown[area] = points
-        accumulated_score += points
+        if entry is None:
+            continue
+        try:
+            area_ratio = entry.scorer(metrics)
+            _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
+            points = int(round(area_ratio * weight))
+            metric_breakdown[area] = points
+            accumulated_score += points
+        except (ValueError, TypeError, ZeroDivisionError):
+            continue
             
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena.")

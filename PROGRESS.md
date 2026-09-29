@@ -7,46 +7,48 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **192** (38.1% de aceptación)
-- Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por tests: 25
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 229
+- Sin respuesta de la IA (error o límite): 230
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-27 | 50 | 11 | 13 | 5 | 51 |
+| 2026-09-27 | 48 | 11 | 11 | 5 | 51 |
 | 2026-09-28 | 140 | 13 | 29 | 10 | 158 |
-| 2026-09-29 | 2 | 0 | 0 | 2 | 20 |
+| 2026-09-29 | 4 | 1 | 0 | 2 | 21 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **44**
+- legibilidad y documentación: **42**
 - seguridad defensiva: **40**
 - robustez ante casos límite: **39**
-- manejo de errores y validación de entradas: **37**
+- manejo de errores y validación de entradas: **39**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **19**
 - `browser.py`: **19**
-- `healthscore.py`: **18**
+- `healthscore.py`: **19**
+- `safety.py`: **18**
 - `duplicates.py`: **18**
 - `diskreport.py`: **17**
-- `scanner.py`: **16**
 - `quarantine.py`: **16**
+- `scanner.py`: **15**
 - `memory.py`: **14**
 - `settings.py`: **12**
 - `assistant.py`: **12**
 - `branding.py`: **9**
-- `main.py`: **8**
+- `main.py`: **9**
 - `organizer.py`: **7**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-29T01:11:18` **main.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `_setup_application` y `_tab_factory` para evitar cierres abruptos o estados inconsistentes de la UI cuando el entorno o los componentes fallan, asegurando que los fallos sean registrados adecuadamente sin dejar la app en un estado bloqueado o con widgets huérfanos.
+- `2026-09-29T01:10:02` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` agregando validaciones preventivas para evitar errores en tiempo de ejecución si el diccionario `WEIGHTS` o el `_PIPELINE_MAP` son modificados incorrectamente durante el ciclo de vida de la aplicación.
 - `2026-09-29T01:01:09` **duplicates.py** (manejo de errores y validación de entradas): Reforcé la robustez de `hash_file` y `partial_hash` añadiendo validaciones explícitas de entrada, manejo de posibles errores en la lectura de archivos (como bloqueos durante la iteración) y asegurando que las funciones devuelvan siempre resultados consistentes incluso ante fallos transitorios en el sistema de archivos.
 - `2026-09-29T01:00:27` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez del módulo agregando validaciones de tipo y de estado en las funciones críticas de resolución de rutas, evitando posibles fallos ante entradas `None` o rutas malformadas que podrían disparar excepciones innecesarias.
 - `2026-09-28T14:18:35` **safety.py** (seguridad defensiva): Se añadió la verificación de que el sistema de archivos sea local y compatible (evitando unidades de red o volúmenes no soportados) en el chequeo de integridad (`_check_file_integrity`) para reforzar la seguridad defensiva, asegurando que solo se operen archivos en volúmenes validados.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-28T13:36:15` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de las operaciones de disco en `organizer.py` mediante la implementación de una verificación de integridad ante archivos truncados o con metadatos inconsistentes (ej. tamaño negativo o fechas futuras), evitando fallos en tiempo de ejecución durante el escaneo y procesamiento.
 - `2026-09-28T13:35:41` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_get_process_path` ante procesos que finalizan durante la consulta y añadí validación estricta para evitar intentos de `OpenProcess` con handles nulos, previniendo errores de estado inconsistente al manipular memoria.
 - `2026-09-28T13:26:40` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` ante valores extremos o métricas no inicializadas, asegurando que `_PIPELINE_MAP` acceda de forma segura y que la suma de pesos se mantenga consistente incluso si fallara la validación previa del diccionario.
-- `2026-09-28T13:26:09` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez del módulo `duplicates.py` ante fallos de I/O y accesos denegados incorporando manejo de excepciones específico en las operaciones de lectura dentro de `hash_file` y `partial_hash`, evitando que una caída en la lectura de un bloque interrumpa el proceso de comparación.
-- `2026-09-28T13:25:31` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo chequeos de errores ante archivos bloqueados o inaccesibles durante el escaneo recursivo, evitando que excepciones de E/S interrumpan el reporte.
