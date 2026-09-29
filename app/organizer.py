@@ -227,7 +227,8 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                             _process_directory(Path(item.path), found, depth + 1, protected_cache, visited)
                     elif item.is_file(follow_symlinks=False):
                         stats = item.stat(follow_symlinks=False)
-                        if _is_valid_junk_entry(item, stats) and is_safe_to_modify(Path(item.path)):
+                        # Verificación proactiva de acceso antes de procesar para evitar excepciones de lectura bloqueada
+                        if _is_valid_junk_entry(item, stats) and is_safe_to_modify(Path(item.path)) and os.access(item.path, os.R_OK):
                             found.append(JunkFile(Path(item.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
                 except (OSError, PermissionError): continue
     except (OSError, PermissionError, RuntimeError): pass
@@ -241,7 +242,8 @@ def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[Ju
     for d in scan_list:
         try:
             p = Path(d).expanduser()
-            if p.exists() and p.is_dir() and not _is_unc_path(p) and is_safe_to_modify(p):
+            # Validación de existencia y permisos mínimos de lectura antes de recurrir
+            if p.exists() and p.is_dir() and not _is_unc_path(p) and is_safe_to_modify(p) and os.access(p, os.R_OK):
                 _process_directory(p, found, 0, protected_cache, visited)
         except (OSError, RuntimeError): continue
     return found

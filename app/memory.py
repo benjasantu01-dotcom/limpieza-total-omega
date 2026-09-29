@@ -194,9 +194,8 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         parts = line.split(",", 2)
         if len(parts) != 3: continue
         try:
-            pid_str = ''.join(filter(str.isdigit, parts[1]))
-            if not pid_str: continue
-            pid = int(pid_str)
+            pid_part = parts[1].strip("'\" ")
+            pid = int(''.join(filter(str.isdigit, pid_part)))
             ws = _safe_int_conversion(parts[2])
             if pid > 0 and pid not in seen_pids and 0 < ws < MAX_VALID_PROCESS_MEM:
                 seen_pids.add(pid)
@@ -205,7 +204,8 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
                     heapq.heappush(top_heap, proc)
                 elif proc.working_set > top_heap[0].working_set:
                     heapq.heapreplace(top_heap, proc)
-        except (ValueError, TypeError): continue
+        except (ValueError, TypeError, AttributeError):
+            continue
             
     return sorted(top_heap, key=lambda p: p.working_set, reverse=True)
 

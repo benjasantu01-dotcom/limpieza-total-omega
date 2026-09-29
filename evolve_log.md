@@ -1556,3 +1556,11 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-09-29T07:29:11` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de `on_target_choice_changed` añadiendo una validación explícita mediante `safety.is_safe_to_modify` antes de aceptar cualquier ruta seleccionada por el usuario, evitando que rutas inválidas o peligrosas entren en el estado de la aplicación.
 - `2026-09-29T07:29:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T07:29:11` Corrida terminada. Total usado hoy: 176.
+- `2026-09-29T07:37:01` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-09-29T07:37:33` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejora la robustez de `parse_windows_process_csv` añadiendo manejo explícito de excepciones y validación de tipos ante posibles valores de retorno inesperados de PowerShell, evitando que el módulo falle silenciosamente o con errores de tipo durante la iteración.
+- `2026-09-29T07:38:00` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se introdujo una comprobación crítica en `_process_directory` y `scan_for_junk` para detectar archivos con atributos de lectura exclusiva o bloqueados por el sistema operativo antes de intentar procesarlos, reduciendo la exposición a `PermissionError` y mejorando la robustez frente a directorios de sistema mal configurados.
+- `2026-09-29T07:38:38` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente errores de acceso en entornos con alta concurrencia o bloqueos de solo lectura, asegurando que el estado del archivo se verifique de forma atómica y silenciosa antes de cualquier operación destructiva.
+- `2026-09-29T07:38:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T07:38:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-09-29T07:38:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T07:38:48` Corrida terminada. Total usado hoy: 180.
