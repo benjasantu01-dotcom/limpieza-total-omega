@@ -109,7 +109,10 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     return True
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Heurística: Detecta cuando un ejecutable intenta ocultarse tras una extensión benigna."""
+    """
+    Heurística de nombre: Detecta archivos con extensiones dobles (ej: foto.jpg.exe).
+    Indica una técnica común de ingeniería social para ocultar ejecutables.
+    """
     if not isinstance(path, Path) or not path.name:
         return None
     if DOUBLE_EXTENSION_RE.search(path.name):
@@ -117,7 +120,10 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Heurística: Alerta sobre ejecutables descargados recientemente en directorios de riesgo."""
+    """
+    Heurística temporal: Identifica archivos ejecutables creados recientemente en carpetas 
+    de alto riesgo (Downloads/Temp). Prioriza monitorear actividad de usuario reciente.
+    """
     if not path or not path.parent or path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
     stats = _safe_stat(entry) if entry else None
@@ -131,7 +137,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Heurística: Detecta procesos comunes del sistema ejecutándose fuera de System32."""
+    """
+    Heurística de ubicación: Comprueba si procesos críticos del sistema (ej: svchost.exe)
+    residen fuera del directorio System32, lo cual es un indicador claro de compromiso.
+    """
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         try:
             path_str = str(path).lower()
@@ -142,7 +151,10 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Heurística: Identifica archivos ejecutables con tamaño 0 (posibles flags o placeholders)."""
+    """
+    Heurística de metadatos: Detecta ejecutables de 0 bytes. A menudo usados como 
+    señuelos o flags por malware para eludir chequeos de tamaño simple.
+    """
     stats = _safe_stat(entry) if entry else None
     if stats is not None:
         try:
