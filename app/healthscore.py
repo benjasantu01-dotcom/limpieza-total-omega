@@ -191,9 +191,10 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
         try:
             if rule.check(metrics, ratio):
                 raw_msg = rule.message_factory(metrics)
-                clean_msg = "".join(c for c in raw_msg if c.isprintable()).strip()
-                if clean_msg: findings.append(clean_msg[:200])
-        except Exception:
+                if isinstance(raw_msg, str):
+                    clean_msg = "".join(c for c in raw_msg if c.isprintable()).strip()
+                    if clean_msg: findings.append(clean_msg[:200])
+        except (ValueError, TypeError, AttributeError, ZeroDivisionError):
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:

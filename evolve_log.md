@@ -1396,3 +1396,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-09-29T05:27:42` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-29T05:27:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T05:27:42` Corrida terminada. Total usado hoy: 128.
+- `2026-09-29T05:34:29` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-09-29T05:34:57` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó el manejo de errores en `hash_file` y `partial_hash` validando la existencia de la ruta y el estado de bloqueo antes de intentar abrir el archivo, evitando excepciones innecesarias durante el procesamiento de I/O.
+- `2026-09-29T05:35:24` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_evaluate_rules` mediante la captura explícita de excepciones al invocar `message_factory` y `check`, asegurando que un fallo en una regla individual no impida la evaluación del resto del sistema.
+- `2026-09-29T05:35:43` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 1): unexpected indent
+- `2026-09-29T05:35:57` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_windows_process_csv` añadiendo una validación explícita para evitar errores de tipo si el CSV contiene líneas mal formadas o valores no numéricos inesperados, asegurando que el parser sea resiliente ante datos crudos inconsistentes.
+- `2026-09-29T05:35:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T05:35:57` Corrida terminada. Total usado hoy: 132.

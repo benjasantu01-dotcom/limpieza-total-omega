@@ -194,7 +194,9 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         parts = line.split(",", 2)
         if len(parts) != 3: continue
         try:
-            pid = int(''.join(filter(str.isdigit, parts[1])))
+            pid_str = ''.join(filter(str.isdigit, parts[1]))
+            if not pid_str: continue
+            pid = int(pid_str)
             ws = _safe_int_conversion(parts[2])
             if pid > 0 and pid not in seen_pids and 0 < ws < MAX_VALID_PROCESS_MEM:
                 seen_pids.add(pid)
