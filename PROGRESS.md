@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
-- Rechazadas por tests: 21
+- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-28 | 113 | 12 | 25 | 8 | 118 |
-| 2026-09-29 | 84 | 9 | 14 | 15 | 106 |
+| 2026-09-28 | 110 | 12 | 25 | 7 | 118 |
+| 2026-09-29 | 85 | 10 | 14 | 16 | 107 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **49**
+- legibilidad y documentación: **46**
 - seguridad defensiva: **39**
 - rendimiento: **38**
 - robustez ante casos límite: **37**
-- manejo de errores y validación de entradas: **34**
+- manejo de errores y validación de entradas: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **21**
+- `healthscore.py`: **20**
 - `browser.py`: **18**
-- `memory.py`: **17**
 - `scanner.py`: **17**
 - `quarantine.py`: **16**
+- `assistant.py`: **16**
 - `diskreport.py`: **16**
-- `assistant.py`: **15**
+- `memory.py`: **16**
 - `duplicates.py`: **14**
 - `safety.py`: **14**
 - `settings.py`: **13**
 - `branding.py`: **12**
-- `organizer.py`: **11**
+- `organizer.py`: **10**
 - `main.py`: **7**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-29T09:51:31` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemContext.ingest` y `ProblemCriterion.format_if_triggered` aplicando validaciones de tipo más estrictas y manejo defensivo de errores, asegurando que datos malformados o tipos inesperados no comprometan la integridad del contexto ni la estabilidad de la UI.
 - `2026-09-29T08:29:15` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_load_impl` y `save` eliminando el uso de `json.load(f)` y `json.dumps` sobre buffers sin control estricto de tamaño, añadiendo una validación de integridad previa a la deserialización que asegura que el archivo no haya sido modificado maliciosamente durante la lectura (prevención de Time-of-Check Time-of-Use).
 - `2026-09-29T08:28:37` **scanner.py** (seguridad defensiva): Mejoré la seguridad del método `_is_safe_entry` en `Scanner` asegurando que la validación de rutas `is_protected_path` se realice sobre la ruta resuelta (`resolve()`) para evitar ataques de desbordamiento de directorio mediante el uso de ".." o enlaces relativos que eludirían la verificación de seguridad.
 - `2026-09-29T08:19:56` **safety.py** (seguridad defensiva): Se introdujo la verificación `_is_file_in_use_by_system` en `ensure_safe_to_modify` utilizando `GetModuleFileName` para detectar si el ejecutable o librería pertenece al proceso actual o al sistema, previniendo modificaciones destructivas sobre archivos críticos en ejecución que las comprobaciones de lock por `CreateFileW` podrían omitir.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-29T07:29:11` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_target_choice_changed` añadiendo una validación explícita mediante `safety.is_safe_to_modify` antes de aceptar cualquier ruta seleccionada por el usuario, evitando que rutas inválidas o peligrosas entren en el estado de la aplicación.
 - `2026-09-29T07:18:58` **browser.py** (robustez ante casos límite): Mejoré la robustez ante rutas inexistentes o inaccesibles en `_sum_directory_recursive` mediante el uso de `os.scandir` dentro de un bloque `try-except` más granular, previniendo que una sola carpeta con permisos restringidos (muy común en cachés de navegador) aborte prematuramente el escaneo completo de otros perfiles.
 - `2026-09-29T07:18:07` **assistant.py** (robustez ante casos límite): Mejora la robustez del motor de ingesta de datos del `SystemContext` ante valores inesperados, tipos de datos incompatibles o métricas fuera de rango mediante el uso de `getattr(..., default)` y validaciones más estrictas en `ingest()`, evitando que un dato malformado corrompa el estado del sistema.
-- `2026-09-29T07:08:16` **settings.py** (rendimiento): Se optimizó `settings_path` para evitar la resolución redundante de rutas en cada llamada, introduciendo una caché de primer nivel y pre-validación de existencia para reducir llamadas al sistema de archivos.

@@ -164,7 +164,7 @@ class ProblemCriterion(NamedTuple):
             return None
             
         try:
-            # Aseguramos que val sea compatible con el formato
+            # Aseguramos que val sea compatible con el formato, capturando errores de tipo
             msg: str = self.message_format.format(val)[:_MAX_MSG_CHUNK]
             return msg if _ensure_safe_text(msg) else None
         except (ValueError, TypeError, KeyError):
