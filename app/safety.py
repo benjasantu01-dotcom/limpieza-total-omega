@@ -628,7 +628,12 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     """
     if path is None:
         raise UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC)
+    
+    # Pre-validación rápida de volumen
     p = normalize(path)
+    if os.name == 'nt' and _is_volume_readonly(str(p)):
+        raise UnsafePathError(f"Volumen de solo lectura: {p.anchor}", SafetyValidationErrorCode.VOLUME_READ_ONLY)
+
     if not allow_sensitive and is_sensitive_file(p):
         raise UnsafePathError(f"Extensión bloqueada '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION)
     _validate_structural_safety(p, str(p))

@@ -1564,3 +1564,12 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-09-29T07:38:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
 - `2026-09-29T07:38:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T07:38:48` Corrida terminada. Total usado hoy: 180.
+- `2026-09-29T07:47:10` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-09-29T07:47:12` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T07:47:16` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-29T07:48:07` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una validación temprana en `ensure_safe_to_modify` para detectar si el sistema de archivos actual es de solo lectura a nivel de volumen (ej. medios ópticos o protegidos por hardware), evitando fallos de I/O en etapas posteriores del proceso de verificación.
+- `2026-09-29T07:48:34` ➖ Sin cambios en scanner.py (enfoque: robustez ante casos límite). Motivo: Se introdujo una validación robusta contra errores de E/S (`OSError`, `PermissionError`) en la lectura de atributos de archivo y en el recorrido, asegurando que el bucle de escaneo no se interrumpa ante archivos bloqueados por el sistema o condiciones de carrera.
+- `2026-09-29T07:49:05` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `settings.py` ante escenarios de corrupción o archivos vacíos agregando una validación de `JSONDecodeError` y `UnicodeDecodeError` explícita en `_load_impl`, garantizando que cualquier fallo en la lectura retorne los valores de fábrica de forma segura.
+- `2026-09-29T07:49:21` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-29T07:49:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T07:49:21` Corrida terminada. Total usado hoy: 184.

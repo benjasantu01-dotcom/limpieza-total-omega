@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **202** (40.1% de aceptación)
+- Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 39
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 223
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-28 | 127 | 13 | 26 | 9 | 149 |
-| 2026-09-29 | 75 | 6 | 13 | 12 | 74 |
+| 2026-09-28 | 127 | 13 | 26 | 9 | 145 |
+| 2026-09-29 | 76 | 6 | 13 | 14 | 75 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **43**
 - rendimiento: **38**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **37**
 - seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
@@ -37,8 +37,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **16**
 - `assistant.py`: **16**
 - `memory.py`: **16**
+- `safety.py`: **14**
 - `branding.py`: **13**
-- `safety.py`: **13**
 - `settings.py`: **13**
 - `organizer.py`: **11**
 - `main.py`: **8**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-29T07:48:07` **safety.py** (robustez ante casos límite): Se ha añadido una validación temprana en `ensure_safe_to_modify` para detectar si el sistema de archivos actual es de solo lectura a nivel de volumen (ej. medios ópticos o protegidos por hardware), evitando fallos de I/O en etapas posteriores del proceso de verificación.
 - `2026-09-29T07:38:00` **organizer.py** (robustez ante casos límite): Se introdujo una comprobación crítica en `_process_directory` y `scan_for_junk` para detectar archivos con atributos de lectura exclusiva o bloqueados por el sistema operativo antes de intentar procesarlos, reduciendo la exposición a `PermissionError` y mejorando la robustez frente a directorios de sistema mal configurados.
 - `2026-09-29T07:37:33` **memory.py** (robustez ante casos límite): Mejora la robustez de `parse_windows_process_csv` añadiendo manejo explícito de excepciones y validación de tipos ante posibles valores de retorno inesperados de PowerShell, evitando que el módulo falle silenciosamente o con errores de tipo durante la iteración.
 - `2026-09-29T07:29:11` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_target_choice_changed` añadiendo una validación explícita mediante `safety.is_safe_to_modify` antes de aceptar cualquier ruta seleccionada por el usuario, evitando que rutas inválidas o peligrosas entren en el estado de la aplicación.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-29T06:27:24` **safety.py** (legibilidad y documentación): Se introdujo una estructura de datos `SecurityDescriptor` para encapsular la lógica de validación de estado y se reemplazaron las comparaciones de atributos crudos en `_evaluate_security_rules` por métodos legibles y autodocumentados, reduciendo la complejidad cognitiva al delegar la interpretación de flags de bajo nivel a funciones con nombre claro.
 - `2026-09-29T06:17:13` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings técnicos detallados en funciones clave y se ha optimizado la claridad del código mediante la tipificación y el renombrado de variables internas para mejorar la mantenibilidad del módulo.
 - `2026-09-29T06:17:01` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo añadiendo docstrings técnicos detallados a funciones críticas (específicamente `_get_process_path`, `_is_safe_to_trim` y `trim_working_set`) y clarificando mediante comentarios el flujo de las constantes de seguridad `TRIM_ACCESS_MASK`, asegurando que el propósito de cada operación de bajo nivel sea evidente para futuros colaboradores.
-- `2026-09-29T06:15:49` **healthscore.py** (legibilidad y documentación): Documenté con type hints más precisos y docstrings explicativos los cálculos y validaciones en `SystemMetrics` y `_PIPELINE_MAP` para clarificar la lógica de transformación de datos.
