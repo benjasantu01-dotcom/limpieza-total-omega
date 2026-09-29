@@ -71,7 +71,6 @@ __all__ = [
     "summarize",
 ]
 
-# Límites superiores para normalización: valores por encima de estos disparan la degradación
 _LIMIT_JUNK_MB: Final[float] = 5000.0
 _LIMIT_DUPLICATE_MB: Final[float] = 2000.0
 _LIMIT_STARTUP_COUNT: Final[int] = 20
@@ -81,7 +80,6 @@ _LIMIT_DISK_PERCENT: Final[float] = 25.0
 def _safe_inv(val: float, fallback: float = 1.0) -> float:
     return 1.0 / val if (math.isfinite(val) and val != 0) else fallback
 
-# Factores de inversión pre-calculados para normalización lineal rápida
 _INV_JUNK: Final[float] = _safe_inv(_LIMIT_JUNK_MB)
 _INV_DUP: Final[float] = _safe_inv(_LIMIT_DUPLICATE_MB)
 _INV_STARTUP: Final[float] = _safe_inv(float(_LIMIT_STARTUP_COUNT))
@@ -111,7 +109,6 @@ def score_disk(free_percent: float | int) -> NormalizedRatio: return _clamp(floa
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: return _clamp(1.0 - (float(duplicate_mb) * _INV_DUP))
 def score_startup(startup_count: int | float) -> NormalizedRatio: return _clamp(1.0 - (float(startup_count) * _INV_STARTUP))
 
-# Definición de reglas por área para desacoplar lógica de la ejecución
 _RULES: Final[Dict[MetricKey, Tuple[RecommendationRule, ...]]] = {
     "seguridad": (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, lambda m: f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad.", lambda m, r: r < WARN_THRESHOLD_HIGH),),
     "disco": (RecommendationRule("disco", WARN_THRESHOLD_LOW, lambda m: f"Queda {m.disk_free_percent:.1f}% de disco libre.", lambda m, r: r < WARN_THRESHOLD_LOW),),
@@ -132,7 +129,6 @@ _PIPELINE_MAP: Final[Dict[MetricKey, PipelineEntry]] = {
 
 @dataclass
 class SystemMetrics:
-    """Contenedor de datos crudos del sistema para el cálculo del score."""
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -146,7 +142,6 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
-        """Asegura que los valores sean finitos, positivos y estén dentro de rangos lógicos."""
         def _v(v: Any) -> float:
             val = float(v) if isinstance(v, (int, float)) else 0.0
             return val if math.isfinite(val) else 0.0
@@ -162,7 +157,6 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
-        """Verifica que todos los campos numéricos sean números finitos válidos."""
         vals = (self.junk_mb, self.suspicious_count, self.suspicious_warnings, self.memory_available_percent, self.disk_free_percent, self.duplicate_mb, self.startup_count, self.quarantined_count)
         return all(math.isfinite(float(v)) for v in vals)
 
@@ -177,7 +171,6 @@ class HealthResult:
     def is_healthy(self) -> bool: return 80 <= self.score <= 100
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
-    """Recorta un valor numérico entre min_val y max_val."""
     val = float(value)
     if not math.isfinite(val) or math.isnan(val): return min_val
     return max(min_val, min(val, max_val))
@@ -188,10 +181,8 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
-                raw_msg = rule.message_factory(metrics)
-                if isinstance(raw_msg, str):
-                    clean_msg = "".join(c for c in raw_msg if c.isprintable()).strip()
-                    if clean_msg: findings.append(clean_msg[:200])
+                clean_msg = "".join(c for c in rule.message_factory(metrics) if c.isprintable()).strip()
+                if clean_msg: findings.append(clean_msg[:200])
         except Exception:
             continue
 
@@ -204,13 +195,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     metric_breakdown: Dict[MetricKey, int] = {}
     accumulated_score: int = 0
     
-    for area, weight in WEIGHTS.items():
+    for area in WEIGHTS:
         try:
             entry = _PIPELINE_MAP[area]
             area_ratio = entry.scorer(metrics)
             _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
-            points = int(round(area_ratio * weight))
-            metric_breakdown[area] = max(0, min(points, weight))
+            points = int(round(area_ratio * entry.weight))
+            metric_breakdown[area] = max(0, min(points, entry.weight))
             accumulated_score += metric_breakdown[area]
         except Exception:
             metric_breakdown[area] = 0
