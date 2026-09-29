@@ -25,6 +25,16 @@ class SafetyAction(Enum):
     READ = auto()      # Listado, escaneo, análisis
     MODIFY = auto()    # Mover, renombrar, borrar, editar
 
+class SecurityDescriptor(NamedTuple):
+    """Encapsula el estado del archivo para facilitar decisiones de seguridad."""
+    attrs: int
+    is_protected_system: bool
+    is_in_use: bool
+    
+    def has_flag(self, flag: Win32Attr) -> bool:
+        """Verifica si un atributo específico está presente en el descriptor."""
+        return bool(self.attrs & flag)
+
 class FileMetadata(TypedDict):
     """Representación de los atributos de archivo necesarios para evaluaciones de seguridad."""
     is_reparse: bool
@@ -251,31 +261,14 @@ def _has_alternate_data_stream(path_name: str) -> bool:
     """Detecta flujos de datos alternativos (ADS) NTFS, comúnmente utilizados para ocultar payloads."""
     return ":" in path_name and len(path_name.split(":")) > 2
 
-def _is_system_or_hidden(path_str: str) -> bool:
-    """Determina si un archivo tiene atributos de sistema, oculto u offline del sistema de archivos."""
-    if not os.path.exists(path_str): return False
-    attrs = _get_file_attrs(path_str)
-    return bool(attrs & (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | Win32Attr.TEMPORARY))
-
-def _is_reparse_point(path_str: str) -> bool:
-    """Verifica si una ruta es un punto de unión (Junction) o enlace simbólico, que pueden causar bucles infinitos."""
-    if os.name != 'nt': return os.path.islink(path_str)
-    return bool(_get_file_attrs(path_str) & Win32Attr.REPARSE_POINT)
-
-def _is_sparse_file(path_str: str) -> bool:
-    """Verifica si un archivo está marcado como disperso (Sparse) para evitar problemas de lectura ineficiente."""
-    if os.name != 'nt' or not os.path.exists(path_str): return False
-    return bool(_get_file_attrs(path_str) & Win32Attr.SPARSE_FILE)
-
-def _is_encrypted_or_compressed(path_str: str) -> bool:
-    """Detecta flags NTFS de cifrado o compresión que podrían impedir el acceso o análisis."""
-    if os.name != 'nt' or not os.path.exists(path_str): return False
-    return bool(_get_file_attrs(path_str) & (Win32Attr.COMPRESSED | Win32Attr.ENCRYPTED))
-
-def _is_offline(path_str: str) -> bool:
-    """Detecta si un archivo es un marcador de posición de nube (offline), evitando descargas accidentales."""
-    if os.name != 'nt' or not os.path.exists(path_str): return False
-    return bool(_get_file_attrs(path_str) & Win32Attr.OFFLINE)
+def _get_security_descriptor(path: Path) -> SecurityDescriptor:
+    """Construye un descriptor de seguridad para evaluar el archivo."""
+    attrs = _get_file_attrs(str(path))
+    return SecurityDescriptor(
+        attrs=attrs,
+        is_protected_system=bool(attrs & (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | Win32Attr.TEMPORARY)),
+        is_in_use=_is_file_locked_by_other_process(str(path))
+    )
 
 @lru_cache(maxsize=1024)
 def _is_file_locked_by_other_process(path_str: str) -> bool:
@@ -328,15 +321,15 @@ def _rule(reason: ProtectionReason, predicate: ViolationPredicate) -> _Integrity
 # Lista de validadores de integridad aplicada secuencialmente
 _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _rule(ProtectionReason.SYMLINK, lambda p, _: p.is_symlink()),
-    _rule(ProtectionReason.REPARSE_POINT, lambda p, _: _is_reparse_point(str(p))),
+    _rule(ProtectionReason.REPARSE_POINT, lambda p, _: _is_directory_junction(str(p))),
     _rule(ProtectionReason.KERNEL_LOCKED, lambda p, _: _is_kernel_managed(p)),
     _rule(ProtectionReason.READ_ONLY, lambda _, st: not bool(st.st_mode & stat.S_IWRITE)),
     _rule(ProtectionReason.VOLUME_READ_ONLY, lambda p, _: _is_volume_readonly(str(p))),
     _rule(ProtectionReason.IN_USE, lambda p, _: _is_file_locked_by_other_process(str(p))),
-    _rule(ProtectionReason.SYSTEM_HIDDEN, lambda p, _: _is_system_or_hidden(str(p))),
-    _rule(ProtectionReason.OFFLINE, lambda p, _: _is_offline(str(p))),
-    _rule(ProtectionReason.ENCRYPTED_OR_COMPRESSED, lambda p, _: _is_encrypted_or_compressed(str(p))),
-    _rule(ProtectionReason.SPARSE_FILE, lambda p, _: _is_sparse_file(str(p))),
+    _rule(ProtectionReason.SYSTEM_HIDDEN, lambda p, _: _get_security_descriptor(p).is_protected_system),
+    _rule(ProtectionReason.OFFLINE, lambda p, _: _get_security_descriptor(p).has_flag(Win32Attr.OFFLINE)),
+    _rule(ProtectionReason.ENCRYPTED_OR_COMPRESSED, lambda p, _: bool(_get_security_descriptor(p).attrs & (Win32Attr.COMPRESSED | Win32Attr.ENCRYPTED))),
+    _rule(ProtectionReason.SPARSE_FILE, lambda p, _: _get_security_descriptor(p).has_flag(Win32Attr.SPARSE_FILE)),
     _rule(ProtectionReason.HARD_LINK, lambda p, st: p.is_file() and st.st_nlink > 1),
     _rule(ProtectionReason.ADS, lambda p, _: _has_alternate_data_stream(p.name)),
     _rule(ProtectionReason.EMPTY_FILE, lambda p, st: p.is_file() and st.st_size == 0),
@@ -458,7 +451,7 @@ def normalize(path: PathLike) -> Path:
         for part in p.parts:
             if part in (os.sep, os.altsep): continue
             current_subpath = current_subpath / part
-            if os.path.exists(str(current_subpath)) and _is_reparse_point(str(current_subpath)):
+            if os.path.exists(str(current_subpath)) and _is_directory_junction(str(current_subpath)):
                 raise UnsafePathError("Segmento de ruta contiene punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         
         if _is_device_file(p): raise UnsafePathError("Acceso a dispositivo bloqueado.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
@@ -618,7 +611,7 @@ def _validate_ntfs_reparse_redirection(path: Path) -> None:
     """Verifica que las redirecciones NTFS (Junctions) no apunten fuera de la jerarquía permitida."""
     if not path.exists(): return
     for parent in path.parents:
-        if _is_reparse_point(str(parent)):
+        if _is_directory_junction(str(parent)):
             raise UnsafePathError("Segmento de ruta contiene punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
             
     final_path = _get_final_path_normalized(path)
@@ -663,7 +656,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             if os.name == 'nt' and _is_file_locked_by_other_process(str(parent)):
                 raise UnsafePathError("Directorio contenedor bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE)
             for p_seg in parent.parents:
-                if _is_reparse_point(str(p_seg)):
+                if _is_directory_junction(str(p_seg)):
                     raise UnsafePathError("Ruta base contiene punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
     return p
 
@@ -697,15 +690,15 @@ def describe_protection(path: PathLike) -> str:
     try:
         if p.exists():
             if p.is_symlink(): return f"'{p}' es un enlace simbólico."
-            if _is_reparse_point(str(p)): return f"'{p}' es un punto de reparse (Junction/Symlink)."
+            if _is_directory_junction(str(p)): return f"'{p}' es un punto de reparse (Junction/Symlink)."
             if os.path.ismount(p): return f"'{p}' es un punto de montaje."
             if _is_readonly(str(p)): return f"'{p}' es solo lectura."
             if _is_volume_readonly(str(p)): return f"'{p}' pertenece a un volumen de solo lectura."
             if _is_file_locked_by_other_process(str(p)): return f"'{p}' en uso."
-            if _is_encrypted_or_compressed(str(p)): return f"'{p}' archivo cifrado o comprimido."
-            if _is_sparse_file(str(p)): return f"'{p}' archivo disperso (sparse)."
-            if _is_offline(str(p)): return f"'{p}' archivo offline/nube."
-            if _is_system_or_hidden(str(p)): return f"'{p}' atributo oculto/sistema/temporal."
+            if _get_security_descriptor(p).attrs & (Win32Attr.COMPRESSED | Win32Attr.ENCRYPTED): return f"'{p}' archivo cifrado o comprimido."
+            if _get_security_descriptor(p).has_flag(Win32Attr.SPARSE_FILE): return f"'{p}' archivo disperso (sparse)."
+            if _get_security_descriptor(p).has_flag(Win32Attr.OFFLINE): return f"'{p}' archivo offline/nube."
+            if _get_security_descriptor(p).is_protected_system: return f"'{p}' atributo oculto/sistema/temporal."
             if _has_alternate_data_stream(p.name): return f"'{p}' contiene ADS."
             if not (p.is_file() or p.is_dir()): return f"'{p}' tipo de objeto no soportado."
             if p.is_file() and p.stat().st_size == 0: return f"'{p}' archivo vacío (potencialmente crítico)."

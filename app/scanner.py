@@ -168,8 +168,11 @@ ALL_CHECKS: Final[List[SuspicionCheck]] = [
 
 class Scanner:
     """
-    Coordinador de escaneo recursivo basado en pila para recorrer el sistema de archivos.
-    Mantiene el estado de rutas visitadas y caché de seguridad para optimización.
+    Motor recursivo de escaneo mediante pila.
+    
+    Gestiona el ciclo de vida del recorrido, manteniendo un registro de rutas 
+    visitadas para evitar bucles infinitos y aplicando filtros de seguridad 
+    por cada entrada encontrada en el sistema de archivos.
     """
     def __init__(self, base_root: Path) -> None:
         self.results: List[Suspicion] = []
@@ -197,8 +200,12 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
-        Realiza una validación de seguridad de la entrada con caché de directorios protegidos.
-        Retorna True solo si la ruta es segura, accesible y no es un punto de reanálisis.
+        Valida que la entrada sea segura para el escaneo.
+        
+        Aplica:
+        1. Filtros de estructura de nombre y longitud.
+        2. Verificación de sandbox (no salir de base_root).
+        3. Exclusión de puntos de reanálisis y rutas protegidas por safety.py.
         """
         if not entry or not entry.path or not entry.name:
             return False
