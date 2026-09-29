@@ -143,7 +143,8 @@ def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
 
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
-    Calcula el hash SHA256 completo del archivo leyendo por bloques.
+    Calcula el hash SHA256 completo del archivo. Se emplea para la confirmación
+    final cuando múltiples archivos tienen el mismo tamaño y hash parcial.
     """
     if chunk_size <= 0:
         return None
@@ -167,7 +168,8 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
-    Calcula un hash SHA256 rápido usando solo el inicio del archivo.
+    Calcula un hash rápido basándose únicamente en los primeros 64KB.
+    Sirve como filtro de alto rendimiento para descartar candidatos disímiles.
     """
     if read_bytes <= 0:
         return None
@@ -200,8 +202,8 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
 
 def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     """
-    Realiza una primera pasada sobre la lista de rutas, agrupándolas solo 
-    por tamaño para minimizar el costo computacional del hashing.
+    Agrupa rutas por tamaño de archivo. Es la primera fase del análisis para
+    reducir drásticamente el espacio de búsqueda del hashing costoso.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
@@ -231,7 +233,8 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
-    Escaneo recursivo profundo usando os.scandir y evitando resoluciones innecesarias.
+    Realiza un escaneo recursivo mediante os.scandir para identificar archivos
+    candidatos. Filtra por tamaño mínimo y restricciones de seguridad.
     """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     stack: List[str] = [str(r) for d in directories if (r := _resolve_and_verify_root(d))]
@@ -267,7 +270,10 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Aplica una función de hash a un listado y devuelve grupos solo si hay colisiones."""
+    """
+    Aplica la función de hash dada a una colección de rutas y agrupa por el
+    digest resultante, omitiendo grupos únicos (sin duplicados).
+    """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if (digest := hash_func(path)):
@@ -277,7 +283,8 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
-    Pipeline de hashing jerárquico para optimizar el rendimiento.
+    Orquestador jerárquico que elige entre hash parcial o completo según el tamaño
+    del archivo para optimizar el rendimiento del proceso de detección.
     """
     if not paths or size <= 0:
         return []
@@ -295,7 +302,7 @@ def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[Dupl
 
 
 def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
-    """Orquestador: coordina la recolección de archivos y su posterior validación por hashing."""
+    """Orquestador principal: gestiona la recolección, filtrado y posterior validación mediante hashing."""
     size_map = _collect_candidates(directories, min_size, skip_protected)
     groups: List[DuplicateGroup] = []
     for size, paths in size_map.items():
@@ -340,8 +347,8 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """
-    Genera una lista de cadenas con información del grupo, marcando el 
-    archivo seleccionado como 'conservar' y el resto como 'duplicado'.
+    Genera una representación textual formateada de un grupo de duplicados,
+    indicando explícitamente qué archivo es el seleccionado para conservar.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return ["Error: Grupo inválido o vacío"]

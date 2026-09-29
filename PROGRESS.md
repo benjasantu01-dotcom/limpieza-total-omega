@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 41
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 227
+- Rechazadas por guardia de seguridad: 40
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-27 | 45 | 10 | 11 | 5 | 47 |
+| 2026-09-27 | 43 | 10 | 10 | 5 | 46 |
 | 2026-09-28 | 140 | 13 | 29 | 10 | 158 |
-| 2026-09-29 | 10 | 1 | 1 | 2 | 22 |
+| 2026-09-29 | 13 | 1 | 1 | 3 | 22 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **44**
+- legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **43**
 - seguridad defensiva: **40**
 - robustez ante casos límite: **39**
-- rendimiento: **29**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **19**
-- `duplicates.py`: **18**
-- `healthscore.py`: **18**
+- `duplicates.py`: **19**
+- `healthscore.py`: **19**
+- `safety.py`: **18**
 - `browser.py`: **18**
-- `quarantine.py`: **17**
+- `diskreport.py`: **17**
 - `scanner.py`: **16**
-- `diskreport.py`: **16**
+- `quarantine.py`: **16**
 - `memory.py`: **14**
 - `settings.py`: **13**
 - `assistant.py`: **13**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-29T01:42:05` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad del módulo documentando los propósitos de las constantes críticas, añadiendo type hints faltantes en funciones internas y refactorizando la estructura de datos `_PIPELINE_MAP` para separar la definición de las reglas de su instanciación, facilitando su lectura y mantenimiento.
+- `2026-09-29T01:41:51` **duplicates.py** (legibilidad y documentación): Mejora la documentación técnica mediante docstrings explicativos en las funciones de hashing y el orquestador, y añade anotaciones de tipo más específicas para clarificar los retornos de las funciones internas, facilitando el mantenimiento y la auditoría del flujo de datos.
+- `2026-09-29T01:41:15` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados con los parámetros y retornos (`Args`/`Returns`) siguiendo el estándar Google Style, además de clarificar la intención de los tipos complejos para facilitar el mantenimiento futuro.
 - `2026-09-29T01:32:00` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints refinados en los métodos de renderizado de la UI para clarificar el flujo de coordenadas y las dependencias de escala, facilitando el mantenimiento técnico.
 - `2026-09-29T01:31:37` **assistant.py** (legibilidad y documentación): Documenté con type hints y docstrings precisos las clases y funciones de soporte de seguridad, facilitando la comprensión del flujo de datos no confiables y reforzando la trazabilidad del saneamiento.
 - `2026-09-29T01:30:30` **settings.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de archivos en `save()` y `_load_impl` centralizando la validación de integridad mediante un bloque `try-except` más específico y añadiendo una verificación de tamaño de archivo pre-lectura para evitar potenciales ataques de agotamiento de memoria.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-29T01:00:27` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez del módulo agregando validaciones de tipo y de estado en las funciones críticas de resolución de rutas, evitando posibles fallos ante entradas `None` o rutas malformadas que podrían disparar excepciones innecesarias.
 - `2026-09-28T14:18:35` **safety.py** (seguridad defensiva): Se añadió la verificación de que el sistema de archivos sea local y compatible (evitando unidades de red o volúmenes no soportados) en el chequeo de integridad (`_check_file_integrity`) para reforzar la seguridad defensiva, asegurando que solo se operen archivos en volúmenes validados.
 - `2026-09-28T14:06:52` **healthscore.py** (seguridad defensiva): Se reforzó la integridad de los datos de entrada en `SystemMetrics` mediante la implementación de una validación más estricta (`is_finite` y sanitización), garantizando que las métricas recibidas de componentes externos no inyecten valores corruptos o infinitos que puedan alterar el cálculo del puntaje.
-- `2026-09-28T13:58:07` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_excluded_path` añadiendo una validación explícita para rutas UNC (nombres de servidor/recurso) y bloqueando el acceso a archivos en uso que levantan `PermissionError` durante el análisis, reforzando la seguridad defensiva contra posibles errores de sistema al intentar acceder a rutas críticas o bloqueadas.
-- `2026-09-28T13:57:54` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_process_file_entry` añadiendo una validación explícita mediante `is_safe_to_modify` antes de procesar cada subdirectorio, asegurando que cualquier recursión mantenga el cumplimiento de las políticas de acceso incluso si la estructura de carpetas cambió dinámicamente durante el escaneo.
-- `2026-09-28T13:56:18` **assistant.py** (seguridad defensiva): Reforcé la integridad del asistente implementando una verificación de "prohibición de respuesta vacía" y saneamiento explícito en la salida de `local_answer` para garantizar que, incluso ante un fallo lógico en el motor, el asistente siempre retorne una respuesta segura y no nula que no rompa la UI.
