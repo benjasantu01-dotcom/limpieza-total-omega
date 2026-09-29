@@ -5,38 +5,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **195** (38.8% de aceptación)
 - Rechazadas por tests: 23
 - Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 228
+- Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-28 | 66 | 8 | 11 | 6 | 65 |
-| 2026-09-29 | 130 | 15 | 22 | 18 | 163 |
+| 2026-09-28 | 64 | 8 | 11 | 6 | 63 |
+| 2026-09-29 | 131 | 15 | 22 | 18 | 164 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **44**
-- legibilidad y documentación: **41**
+- legibilidad y documentación: **42**
 - robustez ante casos límite: **39**
 - manejo de errores y validación de entradas: **38**
-- rendimiento: **34**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **21**
+- `healthscore.py`: **20**
 - `quarantine.py`: **18**
-- `memory.py`: **17**
+- `assistant.py`: **17**
 - `safety.py`: **16**
 - `scanner.py`: **16**
 - `settings.py`: **16**
 - `browser.py`: **16**
-- `assistant.py`: **16**
+- `memory.py`: **16**
 - `diskreport.py`: **15**
 - `branding.py`: **12**
 - `duplicates.py`: **12**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-29T15:07:39` **assistant.py** (legibilidad y documentación): Se introdujeron type hints en los parámetros y retornos de funciones clave (especialmente en `_get_source_value` y `_apply_field`) y se reemplazó la lógica manual de validación de `ProblemCriterion` por una propiedad `@property` más limpia, eliminando la redundancia y mejorando la legibilidad del contrato de datos.
 - `2026-09-29T14:57:30` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_path_stat_robust` y `_is_volume_readonly` añadiendo capturas específicas para errores comunes de acceso (`WinError 5` y `32`), evitando que la validación falle ruidosamente en archivos bloqueados por el sistema, lo cual es vital para una ejecución estable en Windows.
 - `2026-09-29T14:49:12` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` agregando validaciones preventivas sobre la existencia y legibilidad de la ruta origen antes de iniciar cualquier operación, evitando condiciones de carrera y manejo de excepciones innecesarias.
 - `2026-09-29T14:47:01` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_get_entry_value` para capturar errores de ejecución de `winfo_exists` y asegurar que la sanitización de caracteres no imprima fallos si el widget fue destruido durante el proceso, cumpliendo estrictamente con el enfoque de validación de entradas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-29T12:43:39` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_summary_data` y `walk_files` para evitar la lectura de archivos bloqueados por el sistema operativo mediante el uso de `os.access(..., os.R_OK)`, evitando excepciones silenciosas innecesarias y mejorando la robustez frente a archivos en uso exclusivo.
 - `2026-09-29T12:35:23` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_process_file_entry` añadiendo una comprobación explícita mediante `is_safe_to_modify` para los archivos individuales, previniendo así cualquier acceso no autorizado a archivos sensibles que pudieran existir dentro de un directorio legítimo.
 - `2026-09-29T12:35:10` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `branding.py` mediante la refactorización de `save_logo_svg` y `_validate_destination`, sustituyendo el uso potencial de rutas relativas peligrosas por una normalización estricta (`Path.resolve()`) y la verificación obligatoria contra la lista de exclusión definida en `safety.py` antes de cualquier operación de escritura.
-- `2026-09-29T12:34:30` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva al inyectar un control de longitud estricto (`_MAX_MSG_CHUNK`) y validación de tipos directamente en el método `format_if_triggered` de `ProblemCriterion`, evitando posibles inyecciones o desbordamientos durante el formateo de mensajes dinámicos basados en métricas.

@@ -333,12 +333,11 @@ class SystemContext:
             return default
         return float(val)
 
-    @cached_property
+    @property
     def active_problems(self) -> tuple[str, ...]:
         """Retorna tuple de problemas detectados tras evaluar los criterios de salud."""
         if not self.analyzed: return ()
-        problems = [c.format_if_triggered(self) for c in _CRITERIOS_SALUD]
-        return tuple(p for p in problems if p)
+        return tuple(p for p in (c.format_if_triggered(self) for c in _CRITERIOS_SALUD) if p)
 
     @property
     def is_empty(self) -> bool:
@@ -395,8 +394,6 @@ class SystemContext:
                 for k, v in updates.items():
                     object.__setattr__(self, k, v)
                 object.__setattr__(self, 'analyzed', True)
-                if 'active_problems' in self.__dict__:
-                    del self.__dict__['active_problems']
                 return True
             except Exception:
                 return False

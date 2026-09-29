@@ -1178,3 +1178,11 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-29T14:58:22` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-09-29T14:58:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T14:58:22` Corrida terminada. Total usado hoy: 348.
+- `2026-09-29T15:06:06` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-29T15:06:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T15:06:38` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-29T15:06:53` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T15:07:39` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Se introdujeron type hints en los parámetros y retornos de funciones clave (especialmente en `_get_source_value` y `_apply_field`) y se reemplazó la lógica manual de validación de `ProblemCriterion` por una propiedad `@property` más limpia, eliminando la redundancia y mejorando la legibilidad del contrato de datos.
+- `2026-09-29T15:07:39` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-09-29T15:07:39` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T15:07:39` Corrida terminada. Total usado hoy: 350.
