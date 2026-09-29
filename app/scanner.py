@@ -201,11 +201,6 @@ class Scanner:
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
         Valida que la entrada sea segura para el escaneo.
-        
-        Aplica:
-        1. Filtros de estructura de nombre y longitud.
-        2. Verificación de sandbox (no salir de base_root).
-        3. Exclusión de puntos de reanálisis y rutas protegidas por safety.py.
         """
         if not entry or not entry.path or not entry.name:
             return False
@@ -219,16 +214,16 @@ class Scanner:
                 return False
             if not os.access(entry.path, os.R_OK):
                 return False
+            
             parent_dir = os.path.dirname(entry.path)
             if parent_dir not in self.protected_cache:
                 if is_protected_path(Path(parent_dir)):
                     return False
                 self.protected_cache.add(parent_dir)
-            if is_protected_path(Path(entry.path)):
-                return False
+            
+            return not is_protected_path(Path(entry.path))
         except (OSError, RuntimeError, FileNotFoundError):
             return False
-        return True
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Registra una carpeta válida en la pila de procesamiento si no ha sido visitada."""

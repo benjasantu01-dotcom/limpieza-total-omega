@@ -144,7 +144,7 @@ class _SettingsManager:
     """Clase singleton para gestionar el estado en memoria y la persistencia de settings."""
     def __init__(self) -> None:
         self.cache: dict[str, tuple[float, AppSettings]] = {}
-        self.path_cache: dict[Path, Path] = {}
+        self.path_cache: dict[Optional[str], Path] = {}
 
     def clear(self) -> None:
         self.cache.clear()
@@ -270,17 +270,19 @@ def _build_validator_map() -> MappingProxyType[ConfigKey, _ValidatorEntry]:
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
     """Retorna la ruta absoluta al archivo de configuración, creando el directorio si es necesario."""
-    if custom_base is None: base_path = SETTINGS_DIR
-    else: base_path = Path(custom_base).expanduser().resolve()
+    cache_key = str(custom_base) if custom_base else None
+    if cache_key in _MANAGER.path_cache:
+        return _MANAGER.path_cache[cache_key]
     
-    if base_path in _MANAGER.path_cache: return _MANAGER.path_cache[base_path]
+    base_path = Path(custom_base).expanduser().resolve() if custom_base else SETTINGS_DIR
     
     try:
         if _Validators._is_safe_path(str(base_path)) and not _Validators._is_reparse_point(base_path):
             if not base_path.exists(): base_path.mkdir(parents=True, exist_ok=True)
             if os.access(base_path, os.R_OK | os.W_OK):
-                _MANAGER.path_cache[base_path] = base_path / SETTINGS_FILE
-                return _MANAGER.path_cache[base_path]
+                full_path = base_path / SETTINGS_FILE
+                _MANAGER.path_cache[cache_key] = full_path
+                return full_path
     except (OSError, RuntimeError, PermissionError):
         pass
     return SETTINGS_DIR / SETTINGS_FILE
