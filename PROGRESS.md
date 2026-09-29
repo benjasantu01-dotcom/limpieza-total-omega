@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
-- Rechazadas por tests: 22
+- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 23
 - Sin respuesta de la IA (error o límite): 228
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-28 | 108 | 12 | 23 | 7 | 118 |
-| 2026-09-29 | 86 | 10 | 14 | 16 | 110 |
+| 2026-09-28 | 106 | 11 | 22 | 7 | 118 |
+| 2026-09-29 | 89 | 10 | 15 | 16 | 110 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **44**
+- legibilidad y documentación: **43**
 - seguridad defensiva: **39**
-- rendimiento: **38**
+- manejo de errores y validación de entradas: **39**
+- rendimiento: **37**
 - robustez ante casos límite: **37**
-- manejo de errores y validación de entradas: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **21**
 - `browser.py`: **18**
-- `assistant.py`: **16**
+- `memory.py`: **17**
 - `diskreport.py`: **16**
-- `memory.py`: **16**
+- `quarantine.py`: **16**
 - `scanner.py`: **16**
-- `quarantine.py`: **15**
+- `assistant.py`: **15**
 - `duplicates.py`: **14**
 - `safety.py`: **14**
 - `settings.py`: **13**
 - `branding.py`: **12**
-- `organizer.py`: **10**
+- `organizer.py`: **11**
 - `main.py`: **7**
-- `startup.py`: **6**
+- `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-29T10:12:09` **quarantine.py** (manejo de errores y validación de entradas): Mejora la robustez de `quarantine.py` mediante la implementación de validación estricta de estados (`None`, tipos de datos y consistencia de manifiesto) en los métodos de carga y persistencia, previniendo fallos en tiempo de ejecución por archivos de configuración corruptos o entradas de diccionario mal formadas.
+- `2026-09-29T10:11:29` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_safe_for_disk_op` y `_process_directory` implementando un manejo defensivo de errores mediante la captura explícita de `OSError` y `ValueError` al resolver rutas, evitando que condiciones de carrera o estados de sistema inconsistentes propaguen excepciones que interrumpan el escaneo.
+- `2026-09-29T10:11:01` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_process_path` y `trim_working_set` capturando errores de `ctypes` y validaciones de entrada, asegurando que `is_protected_path` no sea llamado con valores nulos y estandarizando la salida de errores.
 - `2026-09-29T10:01:19` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `summarize` reemplazando chequeos tipo `isinstance` por validaciones de estado más seguras y protegiendo el bucle principal contra fallos en las funciones de `scorer` mediante un manejo de excepciones localizado.
 - `2026-09-29T09:51:31` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemContext.ingest` y `ProblemCriterion.format_if_triggered` aplicando validaciones de tipo más estrictas y manejo defensivo de errores, asegurando que datos malformados o tipos inesperados no comprometan la integridad del contexto ni la estabilidad de la UI.
 - `2026-09-29T08:29:15` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_load_impl` y `save` eliminando el uso de `json.load(f)` y `json.dumps` sobre buffers sin control estricto de tamaño, añadiendo una validación de integridad previa a la deserialización que asegura que el archivo no haya sido modificado maliciosamente durante la lectura (prevención de Time-of-Check Time-of-Use).
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-29T07:58:44` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `branding.py` mediante la normalización de rutas en `save_logo_svg` y el uso de `is_safe_to_modify` antes de cualquier operación de escritura, asegurando que las validaciones de seguridad se apliquen consistentemente sobre rutas resueltas y no manipulables por ataques de "path traversal" o colisiones de rutas protegidas.
 - `2026-09-29T07:48:07` **safety.py** (robustez ante casos límite): Se ha añadido una validación temprana en `ensure_safe_to_modify` para detectar si el sistema de archivos actual es de solo lectura a nivel de volumen (ej. medios ópticos o protegidos por hardware), evitando fallos de I/O en etapas posteriores del proceso de verificación.
 - `2026-09-29T07:38:00` **organizer.py** (robustez ante casos límite): Se introdujo una comprobación crítica en `_process_directory` y `scan_for_junk` para detectar archivos con atributos de lectura exclusiva o bloqueados por el sistema operativo antes de intentar procesarlos, reduciendo la exposición a `PermissionError` y mejorando la robustez frente a directorios de sistema mal configurados.
-- `2026-09-29T07:37:33` **memory.py** (robustez ante casos límite): Mejora la robustez de `parse_windows_process_csv` añadiendo manejo explícito de excepciones y validación de tipos ante posibles valores de retorno inesperados de PowerShell, evitando que el módulo falle silenciosamente o con errores de tipo durante la iteración.
-- `2026-09-29T07:29:11` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_target_choice_changed` añadiendo una validación explícita mediante `safety.is_safe_to_modify` antes de aceptar cualquier ruta seleccionada por el usuario, evitando que rutas inválidas o peligrosas entren en el estado de la aplicación.
-- `2026-09-29T07:18:58` **browser.py** (robustez ante casos límite): Mejoré la robustez ante rutas inexistentes o inaccesibles en `_sum_directory_recursive` mediante el uso de `os.scandir` dentro de un bloque `try-except` más granular, previniendo que una sola carpeta con permisos restringidos (muy común en cachés de navegador) aborte prematuramente el escaneo completo de otros perfiles.

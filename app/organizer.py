@@ -192,7 +192,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if stats.st_mtime > datetime.now().timestamp() + 3600: return False
         
         return not _is_file_locked(src)
-    except (OSError, RuntimeError, AttributeError):
+    except (OSError, RuntimeError, AttributeError, ValueError):
         return False
 
 def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> bool:
@@ -227,11 +227,10 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                             _process_directory(Path(item.path), found, depth + 1, protected_cache, visited)
                     elif item.is_file(follow_symlinks=False):
                         stats = item.stat(follow_symlinks=False)
-                        # Verificación proactiva de acceso antes de procesar para evitar excepciones de lectura bloqueada
                         if _is_valid_junk_entry(item, stats) and is_safe_to_modify(Path(item.path)) and os.access(item.path, os.R_OK):
                             found.append(JunkFile(Path(item.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
-                except (OSError, PermissionError): continue
-    except (OSError, PermissionError, RuntimeError): pass
+                except (OSError, PermissionError, ValueError): continue
+    except (OSError, PermissionError, RuntimeError, ValueError): pass
 
 def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[JunkFile]:
     """Inicia la detección de archivos basura en los directorios de escaneo configurados."""
@@ -242,10 +241,9 @@ def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[Ju
     for d in scan_list:
         try:
             p = Path(d).expanduser()
-            # Validación de existencia y permisos mínimos de lectura antes de recurrir
             if p.exists() and p.is_dir() and not _is_unc_path(p) and is_safe_to_modify(p) and os.access(p, os.R_OK):
                 _process_directory(p, found, 0, protected_cache, visited)
-        except (OSError, RuntimeError): continue
+        except (OSError, RuntimeError, ValueError): continue
     return found
 
 def sort_junk(files: Sequence[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:

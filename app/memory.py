@@ -288,8 +288,7 @@ def _is_system_process(pid: int) -> bool:
 def _get_process_path(pid: int) -> Optional[Path]:
     """
     Obtiene la ruta del ejecutable de un proceso mediante la API de PSAPI.
-    Realiza una validación de seguridad contra is_protected_path para prevenir
-    operaciones no autorizadas sobre binarios del sistema.
+    Realiza una validación de seguridad contra is_protected_path.
     """
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.OpenProcess(SAFE_VALIDATION_MASK, False, pid)
@@ -303,9 +302,10 @@ def _get_process_path(pid: int) -> Optional[Path]:
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
             if buf.value:
                 p = Path(buf.value)
-                # Validamos contra la protección general y la protección de sistema
-                if p.is_file() and not is_protected_path(str(p)) and not is_protected_path(str(p)):
-                    return p
+                if p.is_file():
+                    path_str = str(p)
+                    if not is_protected_path(path_str):
+                        return p
     except (ctypes.ArgumentError, OSError, ValueError, TypeError):
         return None
     finally:
@@ -313,51 +313,44 @@ def _get_process_path(pid: int) -> Optional[Path]:
     return None
 
 def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
-    """
-    Verifica si un proceso es candidato seguro para la reducción de working set.
-    Valida la existencia del binario y que su ubicación no esté en la blocklist.
-    """
+    """Verifica si un proceso es candidato seguro para la reducción de working set."""
     exec_path = _get_process_path(pid)
     if exec_path is None:
-        return False, "Acceso denegado, proceso de sistema o ruta no válida."
+        return False, "Proceso protegido o inaccesible."
     if not is_safe_to_modify(str(exec_path)):
-        return False, "Ruta protegida por seguridad."
+        return False, "Ruta no permitida para operaciones de modificación."
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """
-    Ejecuta el trim del working set mediante la API EmptyWorkingSet.
-    Requiere que el proceso no sea crítico y que la ruta pase los filtros de seguridad.
-    """
+    """Ejecuta el trim del working set mediante la API EmptyWorkingSet."""
     if not _is_windows: return False, "Solo soportado en Windows."
     try: 
         target_pid = int(pid)
     except (ValueError, TypeError): 
-        return False, "PID no válido."
+        return False, "PID proporcionado no es un número válido."
     
     if _is_system_process(target_pid): 
-        return False, "Proceso crítico protegido."
+        return False, "Operación denegada en procesos del sistema."
     
     psapi = ctypes.windll.psapi
     if not hasattr(psapi, "EmptyWorkingSet"): 
-        return False, "Función no disponible."
+        return False, "API de memoria no disponible en este sistema."
 
     is_safe, err = _is_safe_to_trim(target_pid)
-    if not is_safe: return False, err or "Verificación fallida."
+    if not is_safe: return False, err or "Verificación de seguridad fallida."
 
     kernel32 = ctypes.windll.kernel32
-    # Abrimos con TRIM_ACCESS_MASK (Query + SetQuota) necesario para EmptyWorkingSet.
     proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
         if kernel32.GetLastError() == ERROR_ACCESS_DENIED:
-            return False, "Acceso denegado: requiere privilegios elevados."
-        return False, "No se pudo abrir el proceso."
+            return False, "Acceso denegado: se requieren privilegios de administrador."
+        return False, "No se pudo obtener acceso al proceso."
     
     try:
         if psapi.EmptyWorkingSet(proc_handle) == 0:
-            return False, "Operación denegada por el sistema."
+            return False, "El sistema rechazó la solicitud de limpieza."
         return True, f"Working set liberado. {TRIM_WARNING}"
     except (ctypes.ArgumentError, OSError):
-        return False, "Error fatal al intentar modificar el proceso."
+        return False, "Error interno de bajo nivel al ejecutar la limpieza."
     finally: 
         kernel32.CloseHandle(proc_handle)

@@ -100,7 +100,7 @@ class QuarantineItem:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> Optional[QuarantineItem]:
+    def from_dict(cls, data: Any) -> Optional[QuarantineItem]:
         """Crea un ítem desde un diccionario validando su esquema básico."""
         if not isinstance(data, dict):
             return None
@@ -374,7 +374,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineIte
             data = json.load(f)
         if not isinstance(data, list):
             return []
-        items = [QuarantineItem.from_dict(d) for d in data if isinstance(d, dict)]
+        items = [QuarantineItem.from_dict(d) for d in data]
         return [item for item in items if item is not None]
     except (json.JSONDecodeError, OSError, PermissionError, UnsafePathError, ValueError):
         return []

@@ -622,3 +622,14 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-09-29T10:02:56` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-09-29T10:02:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T10:02:56` Corrida terminada. Total usado hoy: 236.
+- `2026-09-29T10:10:05` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-09-29T10:10:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T10:10:12` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-29T10:10:20` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-29T10:11:01` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_get_process_path` y `trim_working_set` capturando errores de `ctypes` y validaciones de entrada, asegurando que `is_protected_path` no sea llamado con valores nulos y estandarizando la salida de errores.
+- `2026-09-29T10:11:29` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_safe_for_disk_op` y `_process_directory` implementando un manejo defensivo de errores mediante la captura explícita de `OSError` y `ValueError` al resolver rutas, evitando que condiciones de carrera o estados de sistema inconsistentes propaguen excepciones que interrumpan el escaneo.
+- `2026-09-29T10:12:09` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `quarantine.py` mediante la implementación de validación estricta de estados (`None`, tipos de datos y consistencia de manifiesto) en los métodos de carga y persistencia, previniendo fallos en tiempo de ejecución por archivos de configuración corruptos o entradas de diccionario mal formadas.
+- `2026-09-29T10:12:10` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T10:12:19` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-09-29T10:12:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T10:12:19` Corrida terminada. Total usado hoy: 240.
