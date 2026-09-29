@@ -213,10 +213,11 @@ class Scanner:
             return False
         
         try:
+            # os.DirEntry.is_symlink() y los chequeos de atributos son menos costosos que os.access
             if self._is_reparse_point(entry) or entry.is_symlink():
                 return False
             
-            # os.access no sigue symlinks y es seguro
+            # Verificación de permisos básica
             if not os.access(entry.path, os.R_OK):
                 return False
             
@@ -249,19 +250,20 @@ class Scanner:
         Clasifica una entrada detectada: si es directorio, lo encola para inspección profunda;
         si es archivo, verifica su extensión y aplica las heurísticas de seguridad.
         """
-        if not self._is_safe_entry(entry):
-            return
-
         try:
+            if not self._is_safe_entry(entry):
+                return
+
             # Caso: Directorio.
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, directory_stack)
             
-            # Caso: Archivo. Valida existencia y relevancia antes de procesar.
+            # Caso: Archivo.
             elif entry.is_file(follow_symlinks=False):
                 if self._is_relevant_extension(entry.name):
                     self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError, FileNotFoundError):
+            # El archivo pudo haber sido borrado o movido durante el escaneo
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:

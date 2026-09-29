@@ -394,6 +394,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             f.flush()
             os.fsync(f.fileno())
         
+        # Verificación crítica: el archivo temp debe ser válido antes de rotar
         if not _is_file_secure_to_read(temp_path): raise PermissionError("Temp file invalid")
         
         if ruta.exists():

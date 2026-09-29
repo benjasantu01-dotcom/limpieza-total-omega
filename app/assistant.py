@@ -427,19 +427,22 @@ def _ensure_safe_text(text: Any) -> bool:
         return False
     if _REGEX_CONTROL.search(text):
         return False
+    # Bloqueo de caracteres usados en inyección de comandos
+    if any(c in text for c in "<>|&^"):
+        return False
         
     sanitized = text.encode("utf-8", "ignore").decode("utf-8")
     if is_protected_path(sanitized): return False
     if sanitized.startswith(("\\\\", "//", "UNC")): return False
-    if any(c in sanitized for c in "<>|&^"): return False
     
     try:
-        if any(token in sanitized.lower() for token in ["c:\\", "d:\\", "system32", "/etc/"]): return False
+        # Verificación explícita de rutas para evitar manipulación del sistema
         p = Path(sanitized)
         if p.is_absolute() or sanitized.startswith(("./", "../", "..\\")):
             return False
+        if any(token in sanitized.lower() for token in ["c:\\", "d:\\", "system32", "/etc/"]): return False
     except (ValueError, TypeError, OSError):
-        pass
+        return False
     
     return not any(pattern.search(sanitized) for pattern in SECURITY_PATTERNS)
 

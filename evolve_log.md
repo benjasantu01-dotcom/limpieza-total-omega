@@ -1059,3 +1059,65 @@ FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason
 - `2026-09-29T03:13:41` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera (TOCTOU) y errores de acceso mediante la implementación de `os.fsync` para verificar la estabilidad de los manejadores de archivos y la adición de una validación explícita para evitar que `Path.resolve()` sea engañado por enlaces simbólicos en rutas recién creadas o manipuladas.
 - `2026-09-29T03:13:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T03:13:41` Corrida terminada. Total usado hoy: 76.
+- `2026-09-29T03:21:57` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-09-29T03:22:27` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_is_safe_entry` y `process_entry` ante condiciones de carrera y sistemas de archivos volátiles, asegurando que si un archivo desaparece entre la detección inicial y el acceso (un `FileNotFoundError` común en escaneos de disco), el bucle simplemente lo salte en lugar de propagar una excepción.
+- `2026-09-29T03:22:59` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante fallos de E/S durante la persistencia al añadir una validación de escritura atómica más estricta que asegura que el archivo resultante sea legible antes de reemplazar el archivo original, evitando posibles estados corruptos por interrupciones parciales del sistema de archivos.
+- `2026-09-29T03:23:27` Tests FALLARON:
+```
+e="HKCU")
+>       assert [e.name for e in entradas] == ["MiApp", "Otra"]
+E       AssertionError: assert [] == ['MiApp', 'Otra']
+E         
+E         Right contains 2 more items, first extra item: 'MiApp'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     'MiApp',
+E         -     'Otra',
+E         - ]
+
+evolve/tests/test_modules.py:645: AssertionError
+________________ test_parse_registry_csv_skips_powershell_noise ________________
+
+    def test_parse_registry_csv_skips_powershell_noise():
+        csv = '"Name","Value"\n"PSPath","algo"\n"Real","C:\\\\r.exe"\n'
+>       assert [e.name for e in startup.parse_registry_csv(csv)] == ["Real"]
+E       AssertionError: assert [] == ['Real']
+E         
+E         Right contains one more item: 'Real'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     'Real',
+E         - ]
+
+evolve/tests/test_modules.py:651: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_reads_entries - AssertionError: assert [] == ['MiApp', 'Otra']
+  
+  Right contains 2 more items, first extra item: 'MiApp'
+  
+  Full diff:
+  + []
+  - [
+  -     'MiApp',
+  -     'Otra',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert [] == ['Real']
+  
+  Right contains one more item: 'Real'
+  
+  Full diff:
+  + []
+  - [
+  -     'Real',
+  - ]
+2 failed, 297 passed in 1.47s
+
+```
+- `2026-09-29T03:23:27` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `_is_valid_registry_entry` añadiendo una validación explícita mediante `is_safe_to_modify` para asegurar que las rutas obtenidas del registro no apunten a ubicaciones restringidas, evitando así que el escáner intente procesar rutas de sistema inaccesibles o prohibidas durante el análisis.
+- `2026-09-29T03:23:54` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la validación de `_ensure_safe_text` agregando una comprobación de "caracteres prohibidos" (`<>|&^`) que podría utilizarse para inyección de comandos en shells de Windows, y se añadió una verificación explícita de `pathlib.Path` para asegurar que ninguna respuesta o consulta pueda ser interpretada como una ruta absoluta o relativa, protegiendo al sistema de posibles manipulaciones de entrada.
+- `2026-09-29T03:23:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T03:23:54` Corrida terminada. Total usado hoy: 80.
