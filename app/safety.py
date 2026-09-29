@@ -392,11 +392,12 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
         raise UnsafePathError(f"Acceso a dispositivo bloqueado: {path.name}", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
     try:
         return path.stat()
-    except PermissionError:
-        raise UnsafePathError(f"Permisos insuficientes para acceder a metadatos: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+    except PermissionError as e:
+        # Detectar errores específicos de bloqueo de SO (WinError 5: Access Denied, 32: Sharing Violation)
+        if hasattr(e, 'winerror') and e.winerror in (5, 32):
+             raise UnsafePathError(f"Archivo bloqueado o acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+        raise UnsafePathError(f"Permisos insuficientes: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     except (OSError, ValueError, TypeError) as e:
-        if isinstance(e, OSError) and hasattr(e, 'winerror') and e.winerror == 5:
-            raise UnsafePathError(f"Acceso denegado a {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
         raise UnsafePathError(f"Error al leer metadatos de {path.name}: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
