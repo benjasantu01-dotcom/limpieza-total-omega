@@ -480,7 +480,7 @@ def _validate_file_transfer_preconditions(source: Path, destination: Path) -> No
 
 def _create_temp_file(source: Path, destination: Path) -> Path:
     """Genera una ruta temporal única para la transferencia."""
-    return destination.parent / f".{destination.name}.{uuid.uuid4().hex[:8]}.tmp"
+    return destination.parent / f".{destination.name}.{uuid.uuid4().hex}.tmp"
 
 
 def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> None:
@@ -636,6 +636,9 @@ def quarantine_file(
         raise FileNotFoundError("Archivo origen no encontrado.")
     if not p_source.is_file():
         raise ValueError("El origen debe ser un archivo regular.")
+    if not os.access(p_source, os.R_OK):
+        raise PermissionError("Archivo origen sin permisos de lectura.")
+    
     source_path = _validate_source_for_quarantine(p_source)
     original_size = source_path.stat().st_size
     dest_dir = quarantine_dir(base)
@@ -643,9 +646,8 @@ def quarantine_file(
         raise UnsafePathError("Archivo ya en el sandbox.")
     _validate_isolation_request(source_path, dest_dir)
     destination = dest_dir / _generate_safe_stored_name(source_path, uuid.uuid4().hex[:12])
-    temp_path: Optional[Path] = None
+    
     try:
-        temp_path = dest_dir / f".{destination.name}.{uuid.uuid4().hex[:8]}.tmp"
         file_hash = _atomic_isolate_file(source_path, destination, original_size)
         
         if not destination.exists() or _get_sha256(destination) != file_hash:
@@ -661,9 +663,6 @@ def quarantine_file(
         _verify_transaction_integrity(item, destination)
         return item
     except Exception as e:
-        if temp_path and temp_path.exists():
-            try: temp_path.unlink()
-            except OSError: pass
         _cleanup_orphaned_destination(destination)
         raise RuntimeError(f"Error durante aislamiento: {e}")
 

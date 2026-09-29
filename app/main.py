@@ -941,7 +941,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 except ValueError:
                     return default
             return clean_raw
-        except (ValueError, TypeError, tk.TclError):
+        except (ValueError, TypeError, tk.TclError, AttributeError):
             return default
 
     def _is_safe_disk_operation(self, path: Union[str, Path]) -> bool:
