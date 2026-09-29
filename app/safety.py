@@ -109,7 +109,7 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         return attrs if attrs != 0xFFFFFFFF else 0
-    except (AttributeError, OSError, ctypes.ArgumentError, TypeError, Exception):
+    except (AttributeError, OSError, ctypes.ArgumentError, TypeError):
         return 0
 
 class SafetyValidationErrorCode(IntEnum):
@@ -281,7 +281,7 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
         )
         if handle == -1: return True
         kernel32.CloseHandle(handle)
-    except (OSError, Exception):
+    except (OSError, ctypes.ArgumentError):
         return True
     return False
 
@@ -292,7 +292,7 @@ def _is_file_in_use_by_system(path_str: str) -> bool:
         # Detecta si el archivo es parte de un proceso crítico o DLL de sistema cargada
         h_module = ctypes.windll.kernel32.GetModuleHandleW(path_str)
         return h_module != 0
-    except Exception: return False
+    except (OSError, ctypes.ArgumentError): return False
 
 @lru_cache(maxsize=128)
 def _is_volume_readonly(path_str: Optional[str]) -> bool:
@@ -387,11 +387,10 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
         return path.stat()
     except PermissionError:
         raise UnsafePathError(f"Permisos insuficientes para acceder a metadatos: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
-    except OSError as e:
-        # Windows error codes: 5 (ACCESS_DENIED), 2 (NOT_FOUND)
-        if hasattr(e, 'winerror') and e.winerror == 5:
+    except (OSError, ValueError, TypeError) as e:
+        if isinstance(e, OSError) and hasattr(e, 'winerror') and e.winerror == 5:
             raise UnsafePathError(f"Acceso denegado a {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
-        raise UnsafePathError(f"Error de sistema al leer {path.name}: {e.strerror}", SafetyValidationErrorCode.IO_ERROR)
+        raise UnsafePathError(f"Error al leer metadatos de {path.name}: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     """
@@ -401,19 +400,17 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     if os.name == 'nt':
         root = path.anchor
         if root:
-            drive_type = ctypes.windll.kernel32.GetDriveTypeW(root)
-            if drive_type not in (DRIVE_FIXED, DRIVE_RAMDISK):
-                raise UnsafePathError(f"Volumen no compatible/remoto: {root}", SafetyValidationErrorCode.IO_ERROR)
+            try:
+                drive_type = ctypes.windll.kernel32.GetDriveTypeW(root)
+                if drive_type not in (DRIVE_FIXED, DRIVE_RAMDISK):
+                    raise UnsafePathError(f"Volumen no compatible/remoto: {root}", SafetyValidationErrorCode.IO_ERROR)
+            except (AttributeError, ctypes.ArgumentError):
+                pass
 
     if not os.access(path, os.R_OK):
         raise UnsafePathError(f"Acceso de lectura denegado a {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     
-    try:
-        current_stat = _get_path_stat_robust(path)
-    except UnsafePathError as e:
-        raise e
-    except Exception as e:
-        raise UnsafePathError(f"Falla crítica en integridad: {str(e)}", SafetyValidationErrorCode.IO_ERROR)
+    current_stat = _get_path_stat_robust(path)
     
     # Detección de TOCTOU: Si el ID de dispositivo o inodo cambió, el archivo fue sustituido.
     if current_stat.st_dev != initial_stat.st_dev or current_stat.st_ino != initial_stat.st_ino:
@@ -469,10 +466,8 @@ def normalize(path: PathLike) -> Path:
         resolved = p.resolve()
         if ".." in p.parts: raise UnsafePathError("Path traversal detectado.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
         return resolved
-    except (OSError, PermissionError) as e:
-        raise UnsafePathError(f"Acceso denegado o error de sistema en {path_str}: {e}", SafetyValidationErrorCode.ACCESS_DENIED)
-    except (RuntimeError, TypeError, ValueError) as e:
-        raise UnsafePathError(f"Error irrecuperable al normalizar {path_str}: {e}", SafetyValidationErrorCode.IO_ERROR)
+    except (OSError, PermissionError, RuntimeError, ValueError, TypeError) as e:
+        raise UnsafePathError(f"Error al normalizar ruta {path_str}: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 def is_absolute_path_allowed(path: PathLike) -> bool:
     """Verifica si la ruta provista cumple con el requisito de ser absoluta para garantizar la trazabilidad."""
@@ -612,7 +607,7 @@ def _get_final_path_normalized(path: Path) -> Optional[Path]:
                 return Path(buf.value).resolve()
         finally:
             kernel32.CloseHandle(handle)
-    except (OSError, AttributeError, Exception):
+    except (OSError, AttributeError, ctypes.ArgumentError):
         return None
     return None
 

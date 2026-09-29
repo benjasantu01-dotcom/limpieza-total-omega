@@ -389,6 +389,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         if not os.access(parent, os.W_OK) or _Validators._is_reparse_point(parent): return None
         if not _Validators._is_safe_path(str(parent)): return None
+        if ruta.exists() and not is_safe_to_modify(str(ruta)): return None
     except (TypeError, ValueError, OSError, PermissionError): return None
     
     temp_path = ruta.with_suffix(".tmp")

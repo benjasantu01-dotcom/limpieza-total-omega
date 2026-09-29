@@ -633,3 +633,36 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-09-29T10:12:19` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
 - `2026-09-29T10:12:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T10:12:19` Corrida terminada. Total usado hoy: 240.
+- `2026-09-29T10:20:16` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-09-29T10:20:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T10:20:22` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-29T10:20:29` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-29T10:21:26` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se introdujo una captura más granular de excepciones en `_get_path_stat_robust` y en la lógica de resolución de `ensure_safe_to_modify` para evitar el uso de excepciones genéricas, mejorando la robustez ante errores de I/O inesperados durante la validación.
+- `2026-09-29T10:21:27` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T10:21:58` Tests FALLARON:
+```
+      # La misma heurística tiene que valer con rutas estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+>       flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: check_system_lookalike() missing 2 required positional arguments: 'entry' and 'now_ts'
+
+evolve/tests/test_basic.py:212: TypeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_double_extension_detection - TypeError: check_double_extension() missing 2 required positional arguments: 'entry' and 'now_ts'
+FAILED evolve/tests/test_basic.py::test_scanner_normal_file_is_clean - TypeError: check_double_extension() missing 2 required positional arguments: 'entry' and 'now_ts'
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - TypeError: check_system_lookalike() missing 2 required positional arguments: 'entry' and 'now_ts'
+FAILED evolve/tests/test_basic.py::test_scanner_does_not_flag_real_system_file - TypeError: check_system_lookalike() missing 2 required positional arguments: 'entry' and 'now_ts'
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - TypeError: check_system_lookalike() missing 2 required positional arguments: 'entry' and 'now_ts'
+5 failed, 294 passed in 1.57s
+
+```
+- `2026-09-29T10:21:58` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de las heurísticas centralizando la validación de `path` y `entry` dentro de `_run_file_heuristics`, asegurando que ninguna función de chequeo reciba valores `None` o rutas inexistentes que pudieran causar excepciones inesperadas.
+- `2026-09-29T10:21:59` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T10:22:03` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-29T10:22:42` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la validación al añadir una verificación explícita de `is_safe_to_modify` en `save()` antes de intentar escribir en el sistema, asegurando que la ruta destino no esté protegida antes de iniciar el proceso de reemplazo atómico, reduciendo el riesgo de intentos fallidos por permisos o restricciones de seguridad.
+- `2026-09-29T10:22:43` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T10:22:47` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-29T10:23:07` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-29T10:23:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T10:23:07` Corrida terminada. Total usado hoy: 244.
