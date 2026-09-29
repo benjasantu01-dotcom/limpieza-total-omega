@@ -4,11 +4,11 @@ branding.py — identidad visual de Limpieza Total Omega.
 Centraliza la gestión de activos visuales, paletas de colores, jerarquías 
 tipográficas y sistemas de renderizado vectorial (SVG/Canvas).
 
-GLOSARIO VISUAL:
-  - Surface: Fondos de contenedores y áreas de trabajo.
-  - Accent: Colores de marca para llamados a la carga o elementos destacados.
-  - Glow: Efectos de iluminación sutil para resaltar estados de salud.
-  - Severity: Código cromático para niveles de riesgo (OK, Info, Warning, Danger).
+CONFIGURACIÓN Y ESTADOS:
+  - La paleta se expone vía MappingProxyType para garantizar inmutabilidad.
+  - Los gradientes utilizan segmentación por agrupación de colores consecutivos 
+    para reducir el número de llamadas de dibujo en el objeto Canvas.
+  - Las funciones de dibujo capturan excepciones para mantener la estabilidad UI.
 
 NOTA DE SEGURIDAD:
   Las funciones de dibujo (Canvas) y generación de archivos (SVG) operan 
@@ -450,7 +450,9 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """
     Renderiza el logo corporativo sobre un lienzo canvas provisto.
-    El parámetro 'size' define el diámetro total (128 units base).
+    :param size: Diámetro total del logo (escala base 128 units).
+    :param canvas_x: Coordenada X de origen superior-izquierda.
+    :param canvas_y: Coordenada Y de origen superior-izquierda.
     """
     try:
         s = float(size)
@@ -486,7 +488,11 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
               track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
     """
     Renderiza un gráfico circular indicativo de salud (0-100%).
-    'size' define el diámetro y 'thickness' el grosor del anillo.
+    :param percent: Valor numérico 0-100 para el arco de progreso.
+    :param size: Diámetro total del anillo en píxeles.
+    :param thickness: Grosor del trazado del anillo.
+    :param track: Color opcional para el anillo de fondo.
+    :param fill: Color opcional para el arco de progreso activo.
     """
     if percent is None or not isinstance(percent, (int, float)): return
     try:

@@ -42,6 +42,11 @@ JunctionChecker: TypeAlias = Callable[[str], bool]
 BrowserMap: TypeAlias = Dict[str, str]
 OSPath: TypeAlias = Union[str, Path]
 
+class ScanResult(NamedTuple):
+    """Estructura que representa el resultado de un escaneo de directorio."""
+    bytes_found: int
+    success: bool
+
 class FileAttributes(NamedTuple):
     """Flags de Win32 para filtrar archivos del sistema mediante bitmask."""
     READONLY: int = 0x01
@@ -197,30 +202,30 @@ def _process_file_entry(
     kernel32: Optional[ctypes.WinDLL],
     visited_inodes: Set[int],
     depth: int
-) -> int:
+) -> ScanResult:
     """
     Procesa un nodo de archivo: realiza chequeos de identidad (ino) 
     y recursión segura.
     """
     try:
         if not _is_path_inside_base(entry.path, root_abs_path):
-            return 0
+            return ScanResult(0, True)
             
         st = entry.stat(follow_symlinks=False)
         if st.st_ino in visited_inodes:
-            return 0
+            return ScanResult(0, True)
         visited_inodes.add(st.st_ino)
         
         if entry.is_dir(follow_symlinks=False):
             path_obj = Path(entry.path)
             # Validación robusta antes de entrar a recursión
             if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
-                return 0
+                return ScanResult(0, True)
             return _sum_directory_recursive(path_obj, root_abs_path, kernel32, visited_inodes, depth + 1)
         
-        return st.st_size
+        return ScanResult(st.st_size, True)
     except (OSError, PermissionError, TypeError):
-        return 0
+        return ScanResult(0, False)
 
 def _sum_directory_recursive(
     root_path: Path, 
@@ -228,12 +233,12 @@ def _sum_directory_recursive(
     kernel32: Optional[ctypes.WinDLL],
     visited_inodes: Set[int],
     depth: int = 0
-) -> int:
+) -> ScanResult:
     """
     Recorre jerárquicamente un directorio usando set para tracking de inodos.
     """
     if depth > MAX_SCAN_DEPTH or not isinstance(root_path, Path):
-        return 0
+        return ScanResult(0, False)
     
     total_bytes: int = 0
     try:
@@ -241,11 +246,12 @@ def _sum_directory_recursive(
             for entry in it:
                 if _should_skip_entry(entry, kernel32, _IS_JUNCTION_FN):
                     continue
-                total_bytes += _process_file_entry(entry, root_abs_path, kernel32, visited_inodes, depth)
+                result = _process_file_entry(entry, root_abs_path, kernel32, visited_inodes, depth)
+                total_bytes += result.bytes_found
     except (OSError, PermissionError):
-        pass
+        return ScanResult(total_bytes, False)
         
-    return total_bytes
+    return ScanResult(total_bytes, True)
 
 
 def directory_size(path: Optional[OSPath]) -> int:
@@ -257,7 +263,7 @@ def directory_size(path: Optional[OSPath]) -> int:
         p = Path(path).resolve(strict=True)
         if not p.is_dir() or not is_safe_to_modify(p) or is_protected_path(p):
             return 0
-        return _sum_directory_recursive(p, str(p), _get_kernel32(), set(), 0)
+        return _sum_directory_recursive(p, str(p), _get_kernel32(), set(), 0).bytes_found
     except (OSError, RuntimeError, PermissionError):
         return 0
 
@@ -312,9 +318,9 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             for browser_name, rel_str in browser_map.items():
                 candidate = _resolve_browser_path(real_base, rel_str)
                 if candidate and _is_valid_cache_path(candidate, real_base_str):
-                    size = _sum_directory_recursive(candidate, str(candidate), k32, global_visited_inodes)
-                    if size > 0:
-                        found.append(BrowserCache(str(browser_name), candidate, size))
+                    scan_res = _sum_directory_recursive(candidate, str(candidate), k32, global_visited_inodes)
+                    if scan_res.bytes_found > 0:
+                        found.append(BrowserCache(str(browser_name), candidate, scan_res.bytes_found))
         except (OSError, RuntimeError):
             continue
                 
