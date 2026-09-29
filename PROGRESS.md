@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 39
+- Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 225
+- Sin respuesta de la IA (error o límite): 228
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-28 | 110 | 12 | 25 | 7 | 118 |
-| 2026-09-29 | 85 | 10 | 14 | 16 | 107 |
+| 2026-09-28 | 108 | 12 | 23 | 7 | 118 |
+| 2026-09-29 | 86 | 10 | 14 | 16 | 110 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **46**
+- legibilidad y documentación: **44**
 - seguridad defensiva: **39**
 - rendimiento: **38**
 - robustez ante casos límite: **37**
-- manejo de errores y validación de entradas: **35**
+- manejo de errores y validación de entradas: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **20**
+- `healthscore.py`: **21**
 - `browser.py`: **18**
-- `scanner.py`: **17**
-- `quarantine.py`: **16**
 - `assistant.py`: **16**
 - `diskreport.py`: **16**
 - `memory.py`: **16**
+- `scanner.py`: **16**
+- `quarantine.py`: **15**
 - `duplicates.py`: **14**
 - `safety.py`: **14**
 - `settings.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-29T10:01:19` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `summarize` reemplazando chequeos tipo `isinstance` por validaciones de estado más seguras y protegiendo el bucle principal contra fallos en las funciones de `scorer` mediante un manejo de excepciones localizado.
 - `2026-09-29T09:51:31` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemContext.ingest` y `ProblemCriterion.format_if_triggered` aplicando validaciones de tipo más estrictas y manejo defensivo de errores, asegurando que datos malformados o tipos inesperados no comprometan la integridad del contexto ni la estabilidad de la UI.
 - `2026-09-29T08:29:15` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_load_impl` y `save` eliminando el uso de `json.load(f)` y `json.dumps` sobre buffers sin control estricto de tamaño, añadiendo una validación de integridad previa a la deserialización que asegura que el archivo no haya sido modificado maliciosamente durante la lectura (prevención de Time-of-Check Time-of-Use).
 - `2026-09-29T08:28:37` **scanner.py** (seguridad defensiva): Mejoré la seguridad del método `_is_safe_entry` en `Scanner` asegurando que la validación de rutas `is_protected_path` se realice sobre la ruta resuelta (`resolve()`) para evitar ataques de desbordamiento de directorio mediante el uso de ".." o enlaces relativos que eludirían la verificación de seguridad.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-29T07:37:33` **memory.py** (robustez ante casos límite): Mejora la robustez de `parse_windows_process_csv` añadiendo manejo explícito de excepciones y validación de tipos ante posibles valores de retorno inesperados de PowerShell, evitando que el módulo falle silenciosamente o con errores de tipo durante la iteración.
 - `2026-09-29T07:29:11` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_target_choice_changed` añadiendo una validación explícita mediante `safety.is_safe_to_modify` antes de aceptar cualquier ruta seleccionada por el usuario, evitando que rutas inválidas o peligrosas entren en el estado de la aplicación.
 - `2026-09-29T07:18:58` **browser.py** (robustez ante casos límite): Mejoré la robustez ante rutas inexistentes o inaccesibles en `_sum_directory_recursive` mediante el uso de `os.scandir` dentro de un bloque `try-except` más granular, previniendo que una sola carpeta con permisos restringidos (muy común en cachés de navegador) aborte prematuramente el escaneo completo de otros perfiles.
-- `2026-09-29T07:18:07` **assistant.py** (robustez ante casos límite): Mejora la robustez del motor de ingesta de datos del `SystemContext` ante valores inesperados, tipos de datos incompatibles o métricas fuera de rango mediante el uso de `getattr(..., default)` y validaciones más estrictas en `ingest()`, evitando que un dato malformado corrompa el estado del sistema.

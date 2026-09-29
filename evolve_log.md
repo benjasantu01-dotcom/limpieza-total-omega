@@ -611,3 +611,14 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-09-29T09:52:23` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_get_kernel32` y `base_directories` al centralizar la validación de entornos críticos, evitando que errores de configuración o de tipo en `os.environ` provoquen comportamientos inesperados en las funciones consumidoras.
 - `2026-09-29T09:52:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T09:52:23` Corrida terminada. Total usado hoy: 232.
+- `2026-09-29T09:59:52` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-09-29T10:00:20` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-29T10:00:20` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T10:00:51` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-29T10:01:19` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` y `summarize` reemplazando chequeos tipo `isinstance` por validaciones de estado más seguras y protegiendo el bucle principal contra fallos en las funciones de `scorer` mediante un manejo de excepciones localizado.
+- `2026-09-29T10:01:20` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T10:01:24` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-29T10:02:30` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-29T10:02:56` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-29T10:02:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T10:02:56` Corrida terminada. Total usado hoy: 236.

@@ -187,20 +187,18 @@ def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], ratio: NormalizedRatio, findings: List[str]) -> None:
     for rule in rules:
         try:
-            if not isinstance(ratio, (float, int)): continue
             if rule.check(metrics, ratio):
                 raw_msg = rule.message_factory(metrics)
                 if isinstance(raw_msg, str):
                     clean_msg = "".join(c for c in raw_msg if c.isprintable()).strip()
                     if clean_msg: findings.append(clean_msg[:200])
-        except (ValueError, TypeError, AttributeError, ZeroDivisionError):
+        except Exception:
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
+    if metrics is None or not metrics.is_finite:
         metrics = SystemMetrics()
-    else:
-        metrics.validate()
+    metrics.validate()
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -214,7 +212,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             points = int(round(area_ratio * weight))
             metric_breakdown[area] = max(0, min(points, weight))
             accumulated_score += metric_breakdown[area]
-        except (ValueError, TypeError, ZeroDivisionError, Exception, KeyError):
+        except Exception:
             metric_breakdown[area] = 0
             
     if metrics.quarantined_count > 0:
@@ -229,7 +227,7 @@ def _render_bar(points: int, max_val: int) -> str:
     return ('#' * p) + ('.' * (limit - p))
 
 def summarize(result: HealthResult | None) -> List[str]:
-    if not isinstance(result, HealthResult): return ["Error: Informe de salud no disponible."]
+    if result is None: return ["Error: Informe de salud no disponible."]
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, maximo in WEIGHTS.items():
         points = result.breakdown.get(area, 0)
