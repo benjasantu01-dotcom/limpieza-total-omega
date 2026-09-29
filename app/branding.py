@@ -402,10 +402,11 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     if not path:
         return None
     try:
+        # Garantizar que el directorio exista y sea seguro
         if not path.parent.exists():
             path.parent.mkdir(parents=True, exist_ok=True)
         
-        # Validar nuevamente antes de escritura final tras resolver la ruta
+        # Validar nuevamente contra el chequeo de seguridad de escritura
         ensure_safe_to_modify(path)
         safe_size = max(16, min(1024, int(size)))
         path.write_text(logo_svg(safe_size), encoding="utf-8")
@@ -414,12 +415,12 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         return None
 
 def _validate_destination(dest: Any) -> Optional[Path]:
-    """Verifica si la ruta destino es apta para escritura."""
+    """Verifica si la ruta destino es apta para escritura mediante resolución absoluta."""
     if not isinstance(dest, (str, Path)):
         return None
     try:
         path = Path(dest).resolve()
-        # Verificar protección y seguridad de la ruta resuelta
+        # Verificar protección y seguridad mediante los módulos autorizados
         if is_protected_path(path) or not is_safe_to_modify(path):
             return None
         return path

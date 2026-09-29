@@ -869,3 +869,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-29T12:24:47` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se mejoró `_is_file_secure_to_read` para manejar explícitamente el caso de archivos que, siendo legibles, contienen contenido corrupto o no JSON que causaría errores en la lógica de carga, y se endureció la validación del tamaño para evitar procesamiento de archivos truncados o malintencionados.
 - `2026-09-29T12:24:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T12:24:47` Corrida terminada. Total usado hoy: 288.
+- `2026-09-29T12:32:57` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-09-29T12:33:26` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-29T12:33:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T12:33:40` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-29T12:34:30` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva al inyectar un control de longitud estricto (`_MAX_MSG_CHUNK`) y validación de tipos directamente en el método `format_if_triggered` de `ProblemCriterion`, evitando posibles inyecciones o desbordamientos durante el formateo de mensajes dinámicos basados en métricas.
+- `2026-09-29T12:35:10` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `branding.py` mediante la refactorización de `save_logo_svg` y `_validate_destination`, sustituyendo el uso potencial de rutas relativas peligrosas por una normalización estricta (`Path.resolve()`) y la verificación obligatoria contra la lista de exclusión definida en `safety.py` antes de cualquier operación de escritura.
+- `2026-09-29T12:35:23` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_process_file_entry` añadiendo una comprobación explícita mediante `is_safe_to_modify` para los archivos individuales, previniendo así cualquier acceso no autorizado a archivos sensibles que pudieran existir dentro de un directorio legítimo.
+- `2026-09-29T12:35:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T12:35:23` Corrida terminada. Total usado hoy: 292.

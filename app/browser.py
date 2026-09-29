@@ -190,7 +190,8 @@ def _process_file_entry(
 ) -> ScanResult:
     """Procesa una entrada de directorio o archivo y gestiona la recursión."""
     try:
-        if not _is_path_inside_base(entry.path, root_abs_path):
+        path_obj = Path(entry.path)
+        if not _is_path_inside_base(entry.path, root_abs_path) or not is_safe_to_modify(path_obj):
             return ScanResult(0, True)
             
         st = entry.stat(follow_symlinks=False)
@@ -199,8 +200,7 @@ def _process_file_entry(
         visited_inodes.add(st.st_ino)
         
         if entry.is_dir(follow_symlinks=False):
-            path_obj = Path(entry.path)
-            if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
+            if is_protected_path(path_obj):
                 return ScanResult(0, True)
             return _sum_directory_recursive(path_obj, root_abs_path, kernel32, visited_inodes, depth + 1)
         

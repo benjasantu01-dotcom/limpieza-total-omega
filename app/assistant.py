@@ -74,6 +74,13 @@ __all__ = [
 DEFAULT_METRIC_VAL: Final[float] = -1.0
 DEFAULT_RAM_PCT: Final[float] = 50.0
 
+# Límites de seguridad y tamaño
+_MAX_TEXT_LENGTH: Final[int] = 1000
+_MAX_RESPONSE_BYTES: Final[int] = 32768
+_MAX_MSG_CHUNK: Final[int] = 200
+_MAX_PROMPT_LIMIT: Final[int] = 4000
+_MAX_NESTING_DEPTH: Final[int] = 2
+
 def _is_safe_key(key: str) -> bool:
     """Valida que una clave de diccionario o atributo no sea privada o interna."""
     return isinstance(key, str) and not (key.startswith("__") or key.startswith("_") or key == "ingest")
@@ -164,8 +171,8 @@ class ProblemCriterion(NamedTuple):
             return None
             
         try:
-            # Aseguramos que val sea compatible con el formato, capturando errores de tipo
-            msg: str = self.message_format.format(val)[:_MAX_MSG_CHUNK]
+            # Aseguramos tipo y longitud antes de retornar
+            msg: str = str(self.message_format.format(val))[:_MAX_MSG_CHUNK]
             return msg if _ensure_safe_text(msg) else None
         except (ValueError, TypeError, KeyError):
             return None
@@ -174,13 +181,6 @@ class AreaExplanation(NamedTuple):
     """Mapeo para descripciones pedagógicas de cada área de la aplicación."""
     key: str
     description: str
-
-# Límites de seguridad y tamaño
-_MAX_TEXT_LENGTH: Final[int] = 1000
-_MAX_RESPONSE_BYTES: Final[int] = 32768
-_MAX_MSG_CHUNK: Final[int] = 200
-_MAX_PROMPT_LIMIT: Final[int] = 4000
-_MAX_NESTING_DEPTH: Final[int] = 2
 
 SENSITIVE_KEYS_NEVER_SENT: Final[tuple[str, ...]] = (
     "rutas de archivos", "nombres de archivos", "contenido de archivos",
