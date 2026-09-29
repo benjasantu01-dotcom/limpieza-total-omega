@@ -196,6 +196,7 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> boo
     """Filtra directorios aptos para escaneo con caché para optimizar rendimiento."""
     if not _is_allowed_directory(entry.name) or _is_junction(entry): return False
     if entry.path in protected_cache: return False
+    # Verificación de seguridad solo si no está cacheado
     if is_protected_path(Path(entry.path)):
         protected_cache.add(entry.path)
         return False

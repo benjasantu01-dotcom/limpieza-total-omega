@@ -365,14 +365,12 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineIte
     try:
         base_dir = quarantine_dir(base)
         m_path = _manifest_path(base_dir)
-        # Verificamos si existe el archivo y si tiene contenido antes de intentar abrirlo
         if not m_path.exists() or not m_path.is_file() or m_path.stat().st_size == 0:
             return []
         with open(m_path, "r", encoding="utf-8") as f:
             data = json.load(f)
         if not isinstance(data, list):
             return []
-            
         items = [QuarantineItem.from_dict(d) for d in data if isinstance(d, dict)]
         return [item for item in items if item is not None]
     except (json.JSONDecodeError, OSError, PermissionError, UnsafePathError, ValueError):

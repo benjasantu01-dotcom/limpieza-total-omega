@@ -7,26 +7,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **200** (39.7% de aceptación)
-- Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-27 | 35 | 7 | 9 | 5 | 42 |
+| 2026-09-27 | 33 | 5 | 9 | 5 | 42 |
 | 2026-09-28 | 140 | 13 | 29 | 10 | 158 |
-| 2026-09-29 | 25 | 1 | 4 | 4 | 22 |
+| 2026-09-29 | 27 | 1 | 5 | 4 | 23 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **40**
-- rendimiento: **33**
-- robustez ante casos límite: **32**
+- seguridad defensiva: **39**
+- rendimiento: **35**
+- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,19 +34,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **19**
 - `healthscore.py`: **19**
 - `diskreport.py`: **18**
-- `quarantine.py`: **17**
+- `quarantine.py`: **18**
 - `safety.py`: **17**
 - `scanner.py`: **15**
-- `assistant.py`: **14**
 - `memory.py`: **14**
-- `settings.py`: **13**
+- `assistant.py`: **13**
+- `settings.py`: **12**
 - `branding.py`: **10**
 - `main.py`: **9**
-- `organizer.py`: **8**
+- `organizer.py`: **9**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-29T02:32:35` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` mediante el uso de un diccionario (hash map) para la resolución de ítems, reduciendo la complejidad de O(N^2) a O(N) al realizar búsquedas por ID en operaciones recurrentes como `restore_item` y `purge_item`.
+- `2026-09-29T02:31:56` **organizer.py** (rendimiento): Se ha optimizado `_process_directory` reemplazando la verificación repetida de `is_protected_path` por una búsqueda en el conjunto `protected_cache`, reduciendo drásticamente las llamadas a funciones costosas del sistema de archivos durante el escaneo recursivo.
 - `2026-09-29T02:23:07` **main.py** (rendimiento): Se implementó un sistema de "lazy-init" para los componentes pesados del dashboard de salud dentro de `_compile_metrics`, evitando el cálculo innecesario de métricas de disco y RAM si la pestaña de Salud no ha sido visitada o si los datos ya están en caché válida, reduciendo el consumo de CPU y latencia al iniciar la app.
 - `2026-09-29T02:22:12` **healthscore.py** (rendimiento): Optimicé el bucle de `compute_score` eliminando búsquedas innecesarias en diccionarios y llamadas repetitivas a `_PIPELINE_MAP` mediante el uso directo de los valores pre-calculados, mejorando la eficiencia en el procesamiento de métricas.
 - `2026-09-29T02:21:46` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando un conjunto (`set`) para registrar las rutas ya visitadas durante la recursión, evitando la redundancia y el procesamiento innecesario en estructuras de directorios con enlaces complejos o jerarquías profundas, además de reducir las llamadas redundantes a `is_safe_to_modify` dentro del loop.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-29T01:54:27` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones críticas y se ha refactorizado `_is_safe_for_disk_op` para separar la validación de seguridad de la lógica de negocio, facilitando la comprensión y el mantenimiento.
 - `2026-09-29T01:53:55` **memory.py** (legibilidad y documentación): Mejoré la documentación interna incluyendo docstrings detallados en las funciones de bajo nivel y refiné los tipos y nombres de las constantes para alinear la arquitectura con las guías de legibilidad del proyecto.
 - `2026-09-29T01:42:05` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad del módulo documentando los propósitos de las constantes críticas, añadiendo type hints faltantes en funciones internas y refactorizando la estructura de datos `_PIPELINE_MAP` para separar la definición de las reglas de su instanciación, facilitando su lectura y mantenimiento.
-- `2026-09-29T01:41:51` **duplicates.py** (legibilidad y documentación): Mejora la documentación técnica mediante docstrings explicativos en las funciones de hashing y el orquestador, y añade anotaciones de tipo más específicas para clarificar los retornos de las funciones internas, facilitando el mantenimiento y la auditoría del flujo de datos.
-- `2026-09-29T01:41:15` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados con los parámetros y retornos (`Args`/`Returns`) siguiendo el estándar Google Style, además de clarificar la intención de los tipos complejos para facilitar el mantenimiento futuro.

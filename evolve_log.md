@@ -997,3 +997,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-29T02:23:07` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un sistema de "lazy-init" para los componentes pesados del dashboard de salud dentro de `_compile_metrics`, evitando el cálculo innecesario de métricas de disco y RAM si la pestaña de Salud no ha sido visitada o si los datos ya están en caché válida, reduciendo el consumo de CPU y latencia al iniciar la app.
 - `2026-09-29T02:23:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T02:23:07` Corrida terminada. Total usado hoy: 56.
+- `2026-09-29T02:31:04` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-09-29T02:31:31` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-09-29T02:31:56` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se ha optimizado `_process_directory` reemplazando la verificación repetida de `is_protected_path` por una búsqueda en el conjunto `protected_cache`, reduciendo drásticamente las llamadas a funciones costosas del sistema de archivos durante el escaneo recursivo.
+- `2026-09-29T02:32:35` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `load_manifest` mediante el uso de un diccionario (hash map) para la resolución de ítems, reduciendo la complejidad de O(N^2) a O(N) al realizar búsquedas por ID en operaciones recurrentes como `restore_item` y `purge_item`.
+- `2026-09-29T02:32:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-29T02:32:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T02:32:38` Corrida terminada. Total usado hoy: 60.
