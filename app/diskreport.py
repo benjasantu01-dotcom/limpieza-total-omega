@@ -107,25 +107,21 @@ def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
     Evalúa si un `os.DirEntry` debe omitirse del análisis (RTL, nulos, symlinks inseguros o protegidos).
     """
     try:
-        # Bloqueo heurístico de nombres maliciosos
         if any(c in entry.name for c in SUSPICIOUS_CHARS) or '\0' in entry.name:
             return True
         
-        path_str = entry.path
-        if path_str.startswith(r'\\'):
+        # Validar que la ruta real sea subdirectorio de la raíz para prevenir traversal por symlinks
+        resolved_path = str(Path(entry.path).resolve())
+        if not resolved_path.startswith(root_path_str):
             return True
-        
-        # Omitir symlinks para evitar ciclos infinitos o lectura fuera de raíz
+            
         try:
             if entry.is_symlink() or (os.name == 'nt' and entry.is_dir() and (entry.stat().st_file_attributes & 0x400)):
                 return True
         except (OSError, PermissionError):
             return True
-        
-        if not path_str.startswith(root_path_str):
-            return True
             
-        return is_protected_path(Path(path_str))
+        return is_protected_path(Path(entry.path))
     except (OSError, PermissionError, AttributeError, RuntimeError, TypeError):
         return True
 
