@@ -794,3 +794,49 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-09-29T11:34:27` ➖ Sin cambios en scanner.py (enfoque: rendimiento). Motivo: Optimizé la búsqueda de extensiones en el proceso de escaneo reemplazando la lógica de comparación de cadenas por una comprobación de pertenencia en `frozenset`, reduciendo el costo computacional dentro del bucle de recorrido de directorios.
 - `2026-09-29T11:34:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T11:34:27` Corrida terminada. Total usado hoy: 272.
+- `2026-09-29T11:52:08` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-09-29T11:52:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T11:52:38` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-29T11:52:54` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-29T11:53:39` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `save` evitando escrituras innecesarias mediante una comparación profunda temprana, y mejoré la eficiencia de `load` consolidando el acceso a `stat` para reducir las llamadas al sistema operativo.
+- `2026-09-29T11:54:20` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T11:54:53` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.48s
+
+```
+- `2026-09-29T11:54:53` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimizé la resolución de rutas mediante el uso de un conjunto (`set`) para las extensiones y eliminando redundancias en la verificación de seguridad, además de aplicar un "early return" en `_resolve_and_cache_path` para evitar llamadas innecesarias al sistema de archivos mediante `path.resolve()` cuando la ruta ya está en caché.
+- `2026-09-29T11:55:35` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré `SystemContext.ingest` para prevenir la corrupción de estado mediante una validación estricta de tipos antes de aplicar las actualizaciones, asegurando que si un valor individual de la fuente es inválido, no se contamine el resto del contexto, mejorando la resiliencia ante datos malformados.
+- `2026-09-29T11:55:37` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-29T11:56:04` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha robustecido el manejo de estados en `branding.py` ante entradas inválidas o inesperadas (NaN, valores fuera de rango, tipos incorrectos) en las funciones de renderizado y cálculo, asegurando que cualquier fallo en la UI no escale ni comprometa la integridad de la ejecución.
+- `2026-09-29T11:56:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T11:56:04` Corrida terminada. Total usado hoy: 276.

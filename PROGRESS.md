@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
-- Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 36
+- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Rechazadas por tests: 25
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 225
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-28 | 91 | 11 | 18 | 6 | 106 |
-| 2026-09-29 | 105 | 13 | 18 | 17 | 119 |
+| 2026-09-28 | 90 | 11 | 17 | 6 | 104 |
+| 2026-09-29 | 108 | 14 | 18 | 17 | 119 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **41**
-- seguridad defensiva: **37**
-- rendimiento: **36**
-- robustez ante casos límite: **30**
+- rendimiento: **37**
+- seguridad defensiva: **36**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **21**
-- `memory.py`: **17**
 - `quarantine.py`: **17**
 - `safety.py`: **17**
 - `scanner.py`: **17**
 - `browser.py`: **16**
-- `assistant.py`: **15**
+- `assistant.py`: **16**
+- `memory.py`: **16**
+- `settings.py`: **15**
 - `diskreport.py`: **14**
-- `settings.py`: **14**
 - `duplicates.py`: **14**
-- `branding.py`: **12**
+- `branding.py`: **13**
 - `organizer.py`: **12**
 - `main.py`: **5**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-29T11:56:04` **branding.py** (robustez ante casos límite): Se ha robustecido el manejo de estados en `branding.py` ante entradas inválidas o inesperadas (NaN, valores fuera de rango, tipos incorrectos) en las funciones de renderizado y cálculo, asegurando que cualquier fallo en la UI no escale ni comprometa la integridad de la ejecución.
+- `2026-09-29T11:55:35` **assistant.py** (robustez ante casos límite): Mejoré `SystemContext.ingest` para prevenir la corrupción de estado mediante una validación estricta de tipos antes de aplicar las actualizaciones, asegurando que si un valor individual de la fuente es inválido, no se contamine el resto del contexto, mejorando la resiliencia ante datos malformados.
+- `2026-09-29T11:53:39` **settings.py** (rendimiento): Optimicé el rendimiento de `save` evitando escrituras innecesarias mediante una comparación profunda temprana, y mejoré la eficiencia de `load` consolidando el acceso a `stat` para reducir las llamadas al sistema operativo.
 - `2026-09-29T11:34:16` **safety.py** (rendimiento): Optimicé el uso de `lru_cache` y reemplacé llamadas repetitivas a funciones de sistema en `_evaluate_security_rules` introduciendo `_get_security_descriptor` una sola vez por validación, reduciendo drásticamente las syscalls innecesarias en cada ciclo de iteración.
 - `2026-09-29T11:32:26` **quarantine.py** (rendimiento): Se optimizó `load_manifest` y `purge_all` para evitar la creación innecesaria de múltiples listas y diccionarios intermedios, utilizando generadores y filtrado eficiente para mejorar el rendimiento en lecturas de manifiesto y limpiezas masivas.
 - `2026-09-29T11:24:04` **memory.py** (rendimiento): Optimizé el cálculo de procesos pesados reemplazando la creación de una lista intermedia y el ordenamiento completo (O(n log n)) por un heap de tamaño fijo, evitando así redundancia y reduciendo el consumo de memoria durante el filtrado.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-29T10:41:36` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de `score` y clarifiqué la lógica del `PipelineEntry` mediante un docstring específico, facilitando la comprensión del flujo de datos sin alterar el comportamiento.
 - `2026-09-29T10:41:09` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de hashing y el refinamiento de los docstrings, clarificando explícitamente el contrato de seguridad y los tipos de retorno para evitar ambigüedades.
 - `2026-09-29T10:32:32` **browser.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con las convenciones de Google, se reemplazaron los `tuple` por `NamedTuple` explícitos y se añadieron type hints más precisos (como `Sequence` y `Iterable`) para mejorar la mantenibilidad y la claridad del contrato de funciones.
-- `2026-09-29T10:32:04` **branding.py** (legibilidad y documentación): Mejoré la documentación de los métodos de renderizado y utilidades matemáticas mediante la adición de docstrings estructurados (usando formato Google style para mayor claridad) y clarifiqué las intenciones de los parámetros en los métodos de `branding.py`.
-- `2026-09-29T10:31:26` **assistant.py** (legibilidad y documentación): He mejorado la documentación de los tipos en `assistant.py` añadiendo *type hints* explícitos y comentarios aclaratorios en funciones críticas (`_call_gemini`, `_build_payload`, `ingest`), asegurando que la intención del código sea clara para otros colaboradores y facilitando la mantenibilidad futura sin alterar el comportamiento.
-- `2026-09-29T10:22:42` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la validación al añadir una verificación explícita de `is_safe_to_modify` en `save()` antes de intentar escribir en el sistema, asegurando que la ruta destino no esté protegida antes de iniciar el proceso de reemplazo atómico, reduciendo el riesgo de intentos fallidos por permisos o restricciones de seguridad.

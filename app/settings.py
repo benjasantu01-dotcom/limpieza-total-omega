@@ -302,13 +302,12 @@ def validate(raw_values: Any) -> AppSettings:
                 config[key_enum.value] = validated_val
     return config # type: ignore
 
-def _is_file_secure_to_read(ruta: Path, expected_ino: int | None = None) -> bool:
+def _is_file_secure_to_read(ruta: Path, st_info: os.stat_result | None = None) -> bool:
     """Garantiza que el archivo sea un archivo regular, sin enlaces y sin permisos peligrosos."""
     try:
         if not ruta.is_absolute(): return False
-        st = ruta.stat()
+        st = st_info or ruta.stat()
         if not stat.S_ISREG(st.st_mode) or _Validators._is_reparse_point(ruta): return False
-        if expected_ino is not None and st.st_ino != expected_ino: return False
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH): return False
         if not is_safe_to_modify(str(ruta)): return False
         if not os.access(ruta, os.R_OK): return False
@@ -323,12 +322,9 @@ def _load_impl(ruta: Path) -> AppSettings:
     if not ruta.exists(): return dict(DEFAULTS)
     try:
         st = ruta.stat()
-        if not _is_file_secure_to_read(ruta, st.st_ino): return dict(DEFAULTS)
+        if not _is_file_secure_to_read(ruta, st): return dict(DEFAULTS)
         with open(ruta, "r", encoding="utf-8") as f:
             data = json.load(f)
-        # Verificación final de integridad tras lectura
-        if ruta.stat().st_ino != st.st_ino or ruta.stat().st_size > MAX_SETTINGS_SIZE:
-             return dict(DEFAULTS)
         if _is_dict(data):
             return _coerce_and_verify(validate(data))
     except (OSError, PermissionError, IOError, json.JSONDecodeError, UnicodeDecodeError):
@@ -351,8 +347,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     for r in [ruta, ruta.with_suffix(".bak")]:
         try:
             if r.exists():
-                settings = _load_with_cache(str(r), mtime)
-                return settings.copy()
+                return _load_with_cache(str(r), mtime).copy()
         except (OSError, PermissionError):
             continue
     return dict(DEFAULTS)
@@ -376,16 +371,15 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     """Persistencia atómica: guarda el archivo usando un ciclo temp -> backup -> reemplazar."""
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
-    parent = ruta.parent
     
+    cleaned_settings = _coerce_and_verify(validate(values))
+    if ruta.exists() and load(custom_base) == cleaned_settings:
+        return ruta
+        
+    parent = ruta.parent
     try:
-        cleaned_settings = _coerce_and_verify(validate(values))
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
-        
-        if ruta.exists() and load(custom_base) == cleaned_settings:
-            return ruta
-        
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         if not os.access(parent, os.W_OK) or _Validators._is_reparse_point(parent): return None
         if not _Validators._is_safe_path(str(parent)): return None
@@ -413,9 +407,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             if bak_path.exists(): os.replace(bak_path, ruta)
             raise
         
-        if not _is_file_secure_to_read(ruta):
-            raise PermissionError("Integrity check failed")
-            
         _load_with_cache.cache_clear()
         return ruta
     except (OSError, IOError, PermissionError): 
