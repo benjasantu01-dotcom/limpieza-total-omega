@@ -610,18 +610,16 @@ def quarantine_file(
     try:
         temp_path = dest_dir / f".{destination.name}.{uuid.uuid4().hex[:8]}.tmp"
         file_hash = _atomic_isolate_file(source_path, destination, original_size)
-        retries = 3
-        while retries > 0:
-            if not source_path.exists():
-                break
+        
+        # Eliminación controlada del origen post-verificación de integridad
+        if source_path.exists():
             try:
+                # Intento simple de eliminación; si falla, se reporta como error de estado
                 source_path.unlink()
-                break
-            except OSError:
-                retries -= 1
-                time.sleep(0.1)
-                if retries == 0:
-                    raise RuntimeError("El archivo origen sigue bloqueado por el sistema.")
+            except OSError as e:
+                # Si el archivo fue copiado e integrado, el fallo aquí es excepcional
+                raise RuntimeError(f"Aislamiento exitoso, pero falla al remover origen: {e}")
+                
         item = _register_quarantine_item(destination, source_path, file_hash, reason, original_size, base)
         _verify_transaction_integrity(item, destination)
         return item

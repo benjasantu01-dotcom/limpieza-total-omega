@@ -383,11 +383,12 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
         raise UnsafePathError(f"Acceso a dispositivo bloqueado: {path.name}", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
     try:
         return path.stat()
-    except FileNotFoundError:
-        raise UnsafePathError(f"Ruta inexistente: {path.name}", SafetyValidationErrorCode.IO_ERROR)
     except PermissionError:
         raise UnsafePathError(f"Permisos insuficientes para acceder a metadatos: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     except OSError as e:
+        # Windows error codes: 5 (ACCESS_DENIED), 2 (NOT_FOUND)
+        if hasattr(e, 'winerror') and e.winerror == 5:
+            raise UnsafePathError(f"Acceso denegado a {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
         raise UnsafePathError(f"Error de sistema al leer {path.name}: {e.strerror}", SafetyValidationErrorCode.IO_ERROR)
 
 def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
@@ -405,7 +406,12 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     if not os.access(path, os.R_OK):
         raise UnsafePathError(f"Acceso de lectura denegado a {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     
-    current_stat = _get_path_stat_robust(path)
+    try:
+        current_stat = _get_path_stat_robust(path)
+    except UnsafePathError as e:
+        raise e
+    except Exception as e:
+        raise UnsafePathError(f"Falla crítica en integridad: {str(e)}", SafetyValidationErrorCode.IO_ERROR)
     
     # Detección de TOCTOU: Si el ID de dispositivo o inodo cambió, el archivo fue sustituido.
     if current_stat.st_dev != initial_stat.st_dev or current_stat.st_ino != initial_stat.st_ino:

@@ -188,7 +188,7 @@ class Scanner:
         """Determina si un directorio es una unión o symlink mediante atributos de sistema."""
         return bool(_get_file_attributes(entry) & LIMITS.reparse_point_attr_mask)
 
-    def _is_safe_entry(self, entry: os.DirEntry, is_dir: bool = False) -> bool:
+    def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
         Realiza una validación de seguridad de la entrada con caché de directorios protegidos.
         Retorna True solo si la ruta es segura, accesible y no es un punto de reanálisis.
@@ -238,18 +238,17 @@ class Scanner:
         Clasifica una entrada detectada: si es directorio, lo encola para inspección profunda;
         si es archivo, verifica su extensión y aplica las heurísticas de seguridad.
         """
-        try:
-            # Validar integridad antes de cualquier operación
-            if not self._is_safe_entry(entry):
-                return
+        if not self._is_safe_entry(entry):
+            return
 
-            # Caso: Directorio. Valida recursividad y permisos antes de continuar.
+        try:
+            # Caso: Directorio.
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, directory_stack)
             
-            # Caso: Archivo. Valida existencia física y relevancia antes de procesar.
+            # Caso: Archivo. Valida existencia y relevancia antes de procesar.
             elif entry.is_file(follow_symlinks=False):
-                if entry.exists() and self._is_relevant_extension(entry.name):
+                if self._is_relevant_extension(entry.name):
                     self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError, FileNotFoundError):
             pass
@@ -303,13 +302,13 @@ def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
     directory_stack: List[str] = [str(base_path)]
     scanner.seen.add(str(base_path).lower())
     
-    # Bucle principal de recorrido iterativo
     while directory_stack:
-        current_dir: str = directory_stack.pop()
+        current_dir = directory_stack.pop()
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    scanner.process_entry(entry, directory_stack)
+                    if entry is not None:
+                        scanner.process_entry(entry, directory_stack)
         except (PermissionError, OSError):
             continue
     return scanner.results
