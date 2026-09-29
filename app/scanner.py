@@ -220,15 +220,14 @@ class Scanner:
             if not os.access(entry.path, os.R_OK):
                 return False
             
-            # Validación adicional: no procesar rutas marcadas como protegidas
-            if is_protected_path(Path(entry.path)):
-                return False
-
             parent_dir = os.path.dirname(entry.path)
             if parent_dir not in self.protected_cache:
                 if is_protected_path(Path(parent_dir)):
                     return False
                 self.protected_cache.add(parent_dir)
+            
+            if is_protected_path(Path(entry.path)):
+                return False
         except (OSError, RuntimeError, FileNotFoundError):
             return False
             

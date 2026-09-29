@@ -373,11 +373,15 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     parent = ruta.parent
     
     try:
+        cleaned_settings = _coerce_and_verify(validate(values))
+        # Optimización: evitar escritura si los valores no cambiaron
+        if ruta.exists() and load(custom_base) == cleaned_settings:
+            return ruta
+        
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         if not os.access(parent, os.W_OK) or _Validators._is_reparse_point(parent): return None
         if not _Validators._is_safe_path(str(parent)): return None
         
-        cleaned_settings = _coerce_and_verify(validate(values))
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
     except (TypeError, ValueError, OSError, PermissionError): return None

@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-27 | 33 | 5 | 9 | 5 | 42 |
+| 2026-09-27 | 30 | 5 | 9 | 4 | 42 |
 | 2026-09-28 | 140 | 13 | 29 | 10 | 158 |
-| 2026-09-29 | 27 | 1 | 5 | 4 | 23 |
+| 2026-09-29 | 29 | 1 | 5 | 5 | 24 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **39**
-- rendimiento: **35**
+- rendimiento: **37**
+- seguridad defensiva: **36**
 - robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **19**
-- `duplicates.py`: **19**
 - `healthscore.py`: **19**
-- `diskreport.py`: **18**
 - `quarantine.py`: **18**
+- `browser.py`: **18**
+- `duplicates.py`: **18**
 - `safety.py`: **17**
-- `scanner.py`: **15**
+- `diskreport.py`: **17**
+- `scanner.py`: **16**
 - `memory.py`: **14**
+- `settings.py`: **13**
 - `assistant.py`: **13**
-- `settings.py`: **12**
 - `branding.py`: **10**
 - `main.py`: **9**
 - `organizer.py`: **9**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-29T02:43:03` **settings.py** (rendimiento): Optimizé la persistencia de la configuración implementando una verificación temprana de cambios (`current != new_settings`) antes de iniciar el ciclo completo de serialización y E/S en disco, evitando escrituras redundantes cuando no hay cambios efectivos.
+- `2026-09-29T02:42:32` **scanner.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo sustituyendo la verificación repetitiva `is_protected_path(Path(parent_dir))` por una comprobación booleana simplificada sobre el caché interno, evitando llamadas costosas a funciones externas dentro del bucle principal.
 - `2026-09-29T02:32:35` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` mediante el uso de un diccionario (hash map) para la resolución de ítems, reduciendo la complejidad de O(N^2) a O(N) al realizar búsquedas por ID en operaciones recurrentes como `restore_item` y `purge_item`.
 - `2026-09-29T02:31:56` **organizer.py** (rendimiento): Se ha optimizado `_process_directory` reemplazando la verificación repetida de `is_protected_path` por una búsqueda en el conjunto `protected_cache`, reduciendo drásticamente las llamadas a funciones costosas del sistema de archivos durante el escaneo recursivo.
 - `2026-09-29T02:23:07` **main.py** (rendimiento): Se implementó un sistema de "lazy-init" para los componentes pesados del dashboard de salud dentro de `_compile_metrics`, evitando el cálculo innecesario de métricas de disco y RAM si la pestaña de Salud no ha sido visitada o si los datos ya están en caché válida, reduciendo el consumo de CPU y latencia al iniciar la app.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-29T02:02:15` **scanner.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en el encabezado de las funciones de heurística y se estandarizaron los docstrings siguiendo convenciones claras, facilitando la comprensión del flujo de análisis para futuros contribuidores.
 - `2026-09-29T01:54:57` **quarantine.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de aislamiento al extraer la validación de condiciones de seguridad a una nueva función `_validate_isolation_constraints`, reduciendo la complejidad ciclomática de `_check_isolation_safety` y facilitando su auditoría.
 - `2026-09-29T01:54:27` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones críticas y se ha refactorizado `_is_safe_for_disk_op` para separar la validación de seguridad de la lógica de negocio, facilitando la comprensión y el mantenimiento.
-- `2026-09-29T01:53:55` **memory.py** (legibilidad y documentación): Mejoré la documentación interna incluyendo docstrings detallados en las funciones de bajo nivel y refiné los tipos y nombres de las constantes para alinear la arquitectura con las guías de legibilidad del proyecto.
-- `2026-09-29T01:42:05` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad del módulo documentando los propósitos de las constantes críticas, añadiendo type hints faltantes en funciones internas y refactorizando la estructura de datos `_PIPELINE_MAP` para separar la definición de las reglas de su instanciación, facilitando su lectura y mantenimiento.

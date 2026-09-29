@@ -1004,3 +1004,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-29T02:32:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-09-29T02:32:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-29T02:32:38` Corrida terminada. Total usado hoy: 60.
+- `2026-09-29T02:41:15` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-09-29T02:42:03` ➖ Sin cambios en safety.py (enfoque: rendimiento). Motivo: Se implementó un cache LRU en `is_protected_path` y `is_sensitive_file` y, más importante aún, se optimizó el chequeo en `_is_system_path_raw` reemplazando la lógica de búsqueda secuencial en `PROTECTED_DIR_NAMES` mediante `any()` por una comprobación directa de conjuntos, lo que reduce la complejidad de O(N) a O(1) por cada componente de la ruta al evaluar si pertenece a una carpeta protegida.
+- `2026-09-29T02:42:32` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo recursivo sustituyendo la verificación repetitiva `is_protected_path(Path(parent_dir))` por una comprobación booleana simplificada sobre el caché interno, evitando llamadas costosas a funciones externas dentro del bucle principal.
+- `2026-09-29T02:43:03` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la persistencia de la configuración implementando una verificación temprana de cambios (`current != new_settings`) antes de iniciar el ciclo completo de serialización y E/S en disco, evitando escrituras redundantes cuando no hay cambios efectivos.
+- `2026-09-29T02:43:16` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-29T02:43:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-29T02:43:16` Corrida terminada. Total usado hoy: 64.
