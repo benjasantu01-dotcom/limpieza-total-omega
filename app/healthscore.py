@@ -122,6 +122,7 @@ _RULES: Final[Dict[MetricKey, Tuple[RecommendationRule, ...]]] = {
 }
 
 _PIPELINE_MAP: Final[Dict[MetricKey, PipelineEntry]] = {
+    # Mapeo de métricas crudas a la lógica de scoring normalizado (0.0 a 1.0)
     "seguridad": PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), _RULES["seguridad"]),
     "disco": PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), _RULES["disco"]),
     "memoria": PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), _RULES["memoria"]),
@@ -151,6 +152,7 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
+        """Asegura que los valores sean finitos, positivos y estén dentro de rangos lógicos."""
         def _v(v: Any) -> float:
             val = float(v) if isinstance(v, (int, float)) else 0.0
             return val if math.isfinite(val) else 0.0
@@ -166,6 +168,7 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
+        """Verifica que todos los campos numéricos sean números finitos válidos."""
         vals = (self.junk_mb, self.suspicious_count, self.suspicious_warnings, self.memory_available_percent, self.disk_free_percent, self.duplicate_mb, self.startup_count, self.quarantined_count)
         return all(math.isfinite(float(v)) for v in vals)
 
@@ -180,6 +183,7 @@ class HealthResult:
     def is_healthy(self) -> bool: return 80 <= self.score <= 100
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
+    """Recorta un valor numérico entre min_val y max_val."""
     val = float(value)
     if not math.isfinite(val) or math.isnan(val): return min_val
     return max(min_val, min(val, max_val))

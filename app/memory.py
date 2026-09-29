@@ -57,7 +57,7 @@ PROCESS_SET_QUOTA: Final[int] = 0x100
 PROCESS_QUERY_INFORMATION: Final[int] = 0x0400
 # Máscara para verificar metadatos de procesos de forma segura (sin privilegios de lectura total).
 SAFE_VALIDATION_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION 
-# Máscara para la operación de limpieza, requiere privilegios de cuota para modificar el working set.
+# TRIM_ACCESS_MASK combina Query para validar estado y SetQuota para ejecutar EmptyWorkingSet.
 TRIM_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
 
 STILL_ACTIVE_EXIT_CODE: Final[int] = 259
@@ -286,7 +286,11 @@ def _is_system_process(pid: int) -> bool:
     return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
 
 def _get_process_path(pid: int) -> Optional[Path]:
-    """Obtiene y valida la ruta absoluta del ejecutable de un PID mediante la API Win32."""
+    """
+    Obtiene la ruta del ejecutable de un proceso mediante la API de PSAPI.
+    Realiza una validación de seguridad contra is_protected_path para prevenir
+    operaciones no autorizadas sobre binarios del sistema.
+    """
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.OpenProcess(SAFE_VALIDATION_MASK, False, pid)
     if not handle: return None
@@ -299,7 +303,6 @@ def _get_process_path(pid: int) -> Optional[Path]:
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
             if buf.value:
                 p = Path(buf.value)
-                # Validación estricta de seguridad contra rutas protegidas
                 if p.is_file() and not is_protected_path(str(p)):
                     return p
     except (ctypes.ArgumentError, OSError, ValueError, TypeError):
@@ -309,7 +312,10 @@ def _get_process_path(pid: int) -> Optional[Path]:
     return None
 
 def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
-    """Verifica si un proceso puede recibir operaciones de gestión de memoria de forma segura."""
+    """
+    Verifica si un proceso es candidato seguro para la reducción de working set.
+    Valida la existencia del binario y que su ubicación no esté en la blocklist.
+    """
     exec_path = _get_process_path(pid)
     if exec_path is None:
         return False, "Acceso denegado, proceso de sistema o ruta no válida."
@@ -318,7 +324,10 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Intenta reducir el working set de un proceso específico si es seguro."""
+    """
+    Ejecuta el trim del working set mediante la API EmptyWorkingSet.
+    Requiere que el proceso no sea crítico y que la ruta pase los filtros de seguridad.
+    """
     if not _is_windows: return False, "Solo soportado en Windows."
     try: 
         target_pid = int(pid)
@@ -336,6 +345,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if not is_safe: return False, err or "Verificación fallida."
 
     kernel32 = ctypes.windll.kernel32
+    # Abrimos con TRIM_ACCESS_MASK (Query + SetQuota) necesario para EmptyWorkingSet.
     proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
         if kernel32.GetLastError() == ERROR_ACCESS_DENIED:
