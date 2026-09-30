@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **205** (40.7% de aceptación)
+- Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-29 | 85 | 11 | 15 | 12 | 117 |
-| 2026-09-30 | 120 | 11 | 27 | 13 | 93 |
+| 2026-09-29 | 85 | 11 | 15 | 12 | 113 |
+| 2026-09-30 | 123 | 11 | 28 | 13 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
+- seguridad defensiva: **51**
 - legibilidad y documentación: **49**
-- seguridad defensiva: **48**
 - robustez ante casos límite: **41**
 - manejo de errores y validación de entradas: **39**
 - rendimiento: **28**
@@ -34,18 +34,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **19**
 - `assistant.py`: **18**
 - `diskreport.py`: **17**
+- `safety.py`: **16**
 - `branding.py`: **15**
 - `browser.py`: **15**
+- `scanner.py`: **15**
+- `settings.py`: **15**
 - `organizer.py`: **15**
-- `safety.py`: **15**
 - `duplicates.py`: **14**
-- `scanner.py`: **14**
-- `settings.py`: **14**
 - `startup.py`: **5**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-30T11:25:22` **settings.py** (seguridad defensiva): Se endureció la seguridad defensiva de `settings.py` implementando una validación estricta de "Owner" y permisos en el archivo de configuración antes de su lectura, bloqueando ataques de escalada de privilegios o persistencia maliciosa donde un usuario sin privilegios podría reemplazar el archivo por uno manipulado con permisos de escritura abiertos.
+- `2026-09-30T11:25:04` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_safe_stat` y `_is_reparse_point` para asegurar que el acceso a atributos se realice de forma consistente y atómica, evitando posibles excepciones de acceso denegado durante la inspección de archivos bloqueados o en uso.
+- `2026-09-30T11:24:31` **safety.py** (seguridad defensiva): Se introdujo la verificación `_is_volume_compressed_or_encrypted` mediante `GetVolumeInformationW` en `ensure_safe_to_modify` para denegar modificaciones en volúmenes cifrados (BitLocker) o comprimidos a nivel de sistema de archivos, mejorando la seguridad defensiva al evitar operaciones impredecibles en volúmenes con protecciones criptográficas o compresión transparente.
 - `2026-09-30T11:16:11` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva al evitar el acceso a archivos de sistema/ocultos durante la lectura de metadatos en `QuarantineItem.from_dict` y `_validate_integrity`, añadiendo una validación explícita de `is_file()` y `is_symlink()` para prevenir vulnerabilidades por sustitución o enlaces maliciosos antes de procesar archivos del sandbox.
 - `2026-09-30T11:15:15` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_process_path` al asegurar que el manejo del `handle` de Windows siempre ocurra dentro de un bloque `try...finally` garantizando su liberación inmediata, y se ha añadido una validación adicional para descartar rutas que no sean archivos válidos antes de aplicar los filtros de seguridad, previniendo errores de resolución en rutas especiales de Windows.
 - `2026-09-30T11:04:50` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante una validación estricta de las entradas en `_evaluate_rules` y `compute_score`, asegurando que el motor de inferencia no procese datos malformados o excepciones inesperadas durante la generación de recomendaciones.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-30T10:45:10` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a disco en la función `_is_safe_entry` y se ha implementado un filtrado más estricto en `scan_directory` para manejar archivos bloqueados o inexistentes durante el escaneo iterativo, evitando excepciones no capturadas durante la resolución de rutas.
 - `2026-09-30T10:44:50` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la detección de archivos de sistema al añadir una verificación explícita para evitar errores de tipo o acceso durante la resolución de rutas en el bucle `is_protected_path`, previniendo que una excepción inesperada durante la normalización haga que una ruta potencialmente insegura sea tratada como segura por defecto.
 - `2026-09-30T10:43:27` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_in_use_by_system` implementando un manejo explícito de `OSError` al intentar obtener atributos, previniendo fallos cuando el archivo es bloqueado por acceso denegado o procesos del sistema, asegurando que el estado de "en uso" se determine de forma segura.
-- `2026-09-30T10:37:13` **organizer.py** (robustez ante casos límite): Se introdujo una comprobación crítica en `_is_safe_for_disk_op` para validar que el sistema de archivos de origen soporte operaciones de movimiento (no sea de solo lectura) y se añadió una gestión robusta de `PermissionError` en el escaneo recursivo para asegurar que el proceso no aborte silenciosamente ante archivos con permisos restringidos, mejorando la resiliencia en casos límite.
-- `2026-09-30T10:36:58` **memory.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `top_memory_processes` añadiendo un bloque `try-finally` para asegurar que el proceso de PowerShell no quede colgado en caso de excepciones imprevistas, y se mejoró la resiliencia ante ejecuciones que devuelven resultados vacíos o malformados, evitando caché de datos inválidos.
-- `2026-09-30T10:24:27` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `_collect_candidates` ante casos límite añadiendo un chequeo explícito de `exists()` antes de procesar cada entrada del sistema de archivos, previniendo errores de acceso si un archivo es eliminado o renombrado por un proceso externo durante la ejecución del escaneo.

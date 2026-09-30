@@ -144,6 +144,7 @@ class SafetyValidationErrorCode(IntEnum):
     SPARSE_FILE_DETECTED = 27
     DEVICE_FILE_DETECTED = 28
     EMPTY_FILE = 29
+    VOLUME_RESTRICTED = 30
 
 class UnsafePathError(Exception):
     """Excepción lanzada cuando una ruta no supera los filtros de seguridad."""
@@ -176,6 +177,7 @@ class ProtectionReason(Enum):
     TOCTOU_VIOLATION = "violación de consistencia (TOCTOU)"
     SPARSE_FILE = "archivo disperso (sparse file)"
     DEVICE_FILE = "archivo de dispositivo detectado"
+    VOLUME_RESTRICTED = "volumen cifrado o comprimido"
 
 class ValidationContext(Enum):
     """Contexto de la validación: Estructural (nombres) o Integridad (disco)."""
@@ -313,9 +315,24 @@ def _is_volume_readonly(path_str: Optional[str]) -> bool:
         if not drive_path: return False
         root = drive_path + "\\"
         flags = ctypes.c_ulong()
-        # GetVolumeInformationW devuelve 0 si falla. Validamos puntero y retorno.
         if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
             return bool(flags.value & 0x80000)
+    except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
+        pass
+    return False
+
+@lru_cache(maxsize=128)
+def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
+    """Verifica si el volumen está comprimido o cifrado (BitLocker), restringiendo modificaciones."""
+    if os.name != 'nt' or not isinstance(path_str, str) or not path_str or _is_path_too_long(path_str): return False
+    try:
+        drive_path = os.path.splitdrive(path_str)[0]
+        if not drive_path: return False
+        root = drive_path + "\\"
+        flags = ctypes.c_ulong()
+        # FILE_FILE_COMPRESSION (0x10) | FILE_SUPPORTS_ENCRYPTION (0x20000)
+        if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
+            return bool(flags.value & (0x10 | 0x20000))
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
         pass
     return False
@@ -345,6 +362,7 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _rule(ProtectionReason.KERNEL_LOCKED, lambda p, _, __: _is_kernel_managed(p)),
     _rule(ProtectionReason.READ_ONLY, lambda _, st, __: not bool(st.st_mode & stat.S_IWRITE)),
     _rule(ProtectionReason.VOLUME_READ_ONLY, lambda p, _, __: _is_volume_readonly(str(p))),
+    _rule(ProtectionReason.VOLUME_RESTRICTED, lambda p, _, __: _is_volume_compressed_or_encrypted(str(p))),
     _rule(ProtectionReason.IN_USE, lambda _, __, sd: sd.is_in_use),
     _rule(ProtectionReason.SYSTEM_HIDDEN, lambda _, __, sd: sd.is_protected_system),
     _rule(ProtectionReason.OFFLINE, lambda _, __, sd: sd.has_flag(Win32Attr.OFFLINE)),
@@ -367,6 +385,7 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
     ProtectionReason.REPARSE_POINT: SafetyValidationErrorCode.REPARSE_POINT_DETECTED,
     ProtectionReason.ADS: SafetyValidationErrorCode.ADS_DETECTED,
     ProtectionReason.VOLUME_READ_ONLY: SafetyValidationErrorCode.VOLUME_READ_ONLY,
+    ProtectionReason.VOLUME_RESTRICTED: SafetyValidationErrorCode.VOLUME_RESTRICTED,
     ProtectionReason.REMOTE_DRIVE: SafetyValidationErrorCode.REMOTE_DRIVE_DETECTED,
     ProtectionReason.REMOVABLE_DRIVE: SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED,
     ProtectionReason.KERNEL_LOCKED: SafetyValidationErrorCode.KERNEL_LOCKED_FILE,
@@ -403,7 +422,6 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
     except PermissionError:
         raise UnsafePathError(f"Permisos insuficientes: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     except OSError as e:
-        # WinError 32: Sharing violation (archivo en uso)
         if hasattr(e, 'winerror') and e.winerror == 32:
              raise UnsafePathError(f"Archivo bloqueado por otro proceso: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
         raise UnsafePathError(f"I/O fallido: {path.name}", SafetyValidationErrorCode.IO_ERROR)
@@ -431,7 +449,6 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     
     current_stat = _get_path_stat_robust(path)
     
-    # Detección de TOCTOU: Si el ID de dispositivo o inodo cambió, el archivo fue sustituido.
     if current_stat.st_dev != initial_stat.st_dev or current_stat.st_ino != initial_stat.st_ino:
         raise UnsafePathError(f"Consistencia fallida (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
     
@@ -504,10 +521,8 @@ def is_drive_root(path: PathLike) -> bool:
 def _is_system_path_raw(path_str: str) -> bool:
     """Comprueba si una ruta pertenece a directorios críticos del sistema basándose en nombres protegidos."""
     path_lower = path_str.lower()
-    # Verifica si la ruta es subdirectorio de una ruta de sistema global
     if any(path_lower.startswith(root) for root in _SYSTEM_ROOT_PATHS_TUPLE):
         return True
-    # Verifica si algún segmento del path coincide con los nombres protegidos
     parts = path_lower.split(os.sep)
     return not PROTECTED_DIR_NAMES.isdisjoint(parts)
 
@@ -516,7 +531,6 @@ def is_protected_path(path: PathLike) -> bool:
     """Valida si la ruta está marcada como protegida contra modificaciones del usuario."""
     if not isinstance(path, (str, Path)) or not path: return True
     try:
-        # Validación defensiva: asegurar que el objeto sea procesable
         p_str = str(path)
         p = normalize(p_str)
         if p == Path(p.anchor): return True
@@ -569,7 +583,6 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     if _is_device_file(target_path):
         raise UnsafePathError("Acceso a dispositivo bloqueado.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
     
-    # Prevenir bypass de separadores
     if "/" in path_string and os.altsep == "/":
         if path_string.replace("/", "\\") != path_string.replace("\\", "\\"):
             raise UnsafePathError("Ruta mal formada con separadores inconsistentes.", SafetyValidationErrorCode.INVALID_CHARS)
@@ -615,6 +628,8 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
                      raise UnsafePathError("Unidad extraíble bloqueada.", SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED)
                 if drive_type == DRIVE_CDROM or _is_volume_readonly(str(target_path)):
                      raise UnsafePathError("Volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY)
+                if _is_volume_compressed_or_encrypted(str(target_path)):
+                     raise UnsafePathError("Volumen cifrado o comprimido.", SafetyValidationErrorCode.VOLUME_RESTRICTED)
         except (OSError, AttributeError, ctypes.ArgumentError) as e:
              raise UnsafePathError(f"Fallo al consultar unidad: {e}", SafetyValidationErrorCode.IO_ERROR)
     
@@ -665,10 +680,9 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     if path is None:
         raise UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC)
     
-    # Pre-validación rápida de volumen
     p = normalize(path)
-    if os.name == 'nt' and _is_volume_readonly(str(p)):
-        raise UnsafePathError(f"Volumen de solo lectura: {p.anchor}", SafetyValidationErrorCode.VOLUME_READ_ONLY)
+    if os.name == 'nt' and (_is_volume_readonly(str(p)) or _is_volume_compressed_or_encrypted(str(p))):
+        raise UnsafePathError(f"Volumen restringido/solo lectura: {p.anchor}", SafetyValidationErrorCode.VOLUME_READ_ONLY)
 
     if not allow_sensitive and is_sensitive_file(p):
         raise UnsafePathError(f"Extensión bloqueada '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION)
@@ -737,6 +751,7 @@ def describe_protection(path: PathLike) -> str:
             if os.path.ismount(p): return f"'{p}' es un punto de montaje."
             if _is_readonly(str(p)): return f"'{p}' es solo lectura."
             if _is_volume_readonly(str(p)): return f"'{p}' pertenece a un volumen de solo lectura."
+            if _is_volume_compressed_or_encrypted(str(p)): return f"'{p}' pertenece a un volumen cifrado/comprimido."
             if _is_file_locked_by_other_process(str(p)): return f"'{p}' en uso."
             if _get_security_descriptor(p).attrs & (Win32Attr.COMPRESSED | Win32Attr.ENCRYPTED): return f"'{p}' archivo cifrado o comprimido."
             if _get_security_descriptor(p).has_flag(Win32Attr.SPARSE_FILE): return f"'{p}' archivo disperso (sparse)."

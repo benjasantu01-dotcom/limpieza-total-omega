@@ -69,13 +69,12 @@ SYSTEM32_LOWER: Final[str] = "system32"
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """
     Intenta obtener los metadatos de un archivo de forma segura.
-    
-    Verifica que la entrada no sea un punto de reanálisis (Junction/Symlink) 
-    antes de acceder al sistema de archivos para evitar seguir rutas no deseadas.
+    Verifica que la entrada no sea un punto de reanálisis antes de acceder.
     """
     if not isinstance(entry, os.DirEntry):
         return None
     try:
+        # Usamos follow_symlinks=False para evitar seguir accesos fuera del scope
         if not entry.is_symlink() and not (_get_file_attributes(entry) & LIMITS.reparse_point_attr_mask):
             return entry.stat(follow_symlinks=False)
         return None
@@ -83,11 +82,12 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         return None
 
 def _get_file_attributes(entry: os.DirEntry) -> int:
-    """Extrae la máscara de bits de atributos Win32 desde el stat ya cacheado."""
+    """Extrae la máscara de bits de atributos Win32 sin seguir enlaces."""
     try:
+        # Acceso directo al stat cacheado por la entrada del sistema
         stat_res = entry.stat(follow_symlinks=False)
         return int(getattr(stat_res, "st_file_attributes", 0))
-    except (AttributeError, OSError):
+    except (AttributeError, OSError, PermissionError):
         return 0
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
@@ -173,10 +173,7 @@ class Scanner:
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Determina si la entrada es un punto de reanálisis (Junction/Symlink)."""
-        try:
-            return bool(_get_file_attributes(entry) & LIMITS.reparse_point_attr_mask)
-        except (OSError, PermissionError):
-            return True
+        return bool(_get_file_attributes(entry) & LIMITS.reparse_point_attr_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Realiza validación de seguridad antes de procesar una ruta."""
