@@ -176,10 +176,10 @@ class SystemMetrics:
         
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
-        self.suspicious_count = int(max(0, int(_to_float(self.suspicious_count))))
-        self.suspicious_warnings = int(max(0, int(_to_float(self.suspicious_warnings))))
-        self.startup_count = int(max(0, int(_to_float(self.startup_count))))
-        self.quarantined_count = int(max(0, int(_to_float(self.quarantined_count))))
+        self.suspicious_count = int(max(0.0, _to_float(self.suspicious_count)))
+        self.suspicious_warnings = int(max(0.0, _to_float(self.suspicious_warnings)))
+        self.startup_count = int(max(0.0, _to_float(self.startup_count)))
+        self.quarantined_count = int(max(0.0, _to_float(self.quarantined_count)))
         self.memory_available_percent = _clamp(_to_float(self.memory_available_percent), 0.0, 100.0)
         self.disk_free_percent = _clamp(_to_float(self.disk_free_percent), 0.0, 100.0)
 
@@ -242,7 +242,7 @@ def _render_bar(points: int, max_val: int) -> str:
     """Genera una representación visual de barra para el resumen de salud."""
     limit = max(1, max_val)
     p = max(0, min(points, limit))
-    return ('#' * p) + ('.' * (limit - p))
+    return "".join(["#"] * p + ["."] * (limit - p))
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera un reporte textual estructurado a partir del resultado de salud."""

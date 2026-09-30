@@ -1013,3 +1013,13 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel
 - `2026-09-30T09:43:35` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y acceso al diccionario de `ext_stats` dentro del loop, reduciendo la carga de resolución de cadenas y búsqueda de claves en cada iteración.
 - `2026-09-30T09:43:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T09:43:35` Corrida terminada. Total usado hoy: 228.
+- `2026-09-30T09:51:33` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-09-30T09:52:07` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-09-30T09:52:42` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del `SystemMetrics.validate()` eliminando la sobrecarga de `int()` y `float()` repetidos, y refactoricé `_render_bar` para evitar el uso intensivo de strings mediante concatenación, utilizando pre-cálculo para mejorar el rendimiento en el bucle de renderizado.
+- `2026-09-30T09:52:43` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-30T09:53:46` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-30T09:54:52` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-30T09:56:04` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-30T09:56:33` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el proceso de recolección de memoria de procesos mediante el uso de una lista de comprensión con filtrado directo en `parse_windows_process_csv`, eliminando llamadas redundantes a `strip()` y `isdigit()` en bucles internos, y se mejoró la eficiencia del filtrado en `top_memory_processes` delegando la lógica de exclusión de PIDs directamente a PowerShell para evitar procesar registros innecesarios en Python.
+- `2026-09-30T09:56:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T09:56:33` Corrida terminada. Total usado hoy: 232.

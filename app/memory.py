@@ -191,22 +191,19 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     top_heap: List[ProcessMemory] = []
     seen_pids: Set[int] = set()
 
-    for line in raw_csv_text.splitlines():
-        line = line.strip()
-        if not line: continue
-        parts = line.split(",", 2)
-        if len(parts) != 3: continue
+    for line in (l for l in raw_csv_text.splitlines() if l and "," in l):
         try:
-            pid = int(''.join(filter(str.isdigit, parts[1])))
-            ws = _safe_int_conversion(parts[2])
+            name, pid_str, ws_str = line.split(",", 2)
+            pid = int("".join(filter(str.isdigit, pid_str)))
+            ws = _safe_int_conversion(ws_str)
             if pid > 0 and pid not in seen_pids and 0 < ws < MAX_VALID_PROCESS_MEM:
                 seen_pids.add(pid)
-                proc = ProcessMemory(parts[0].strip("'\" "), pid, ws)
+                proc = ProcessMemory(name.strip("'\" "), pid, ws)
                 if len(top_heap) < limit:
                     heapq.heappush(top_heap, proc)
                 elif proc.working_set > top_heap[0].working_set:
                     heapq.heapreplace(top_heap, proc)
-        except (ValueError, TypeError, AttributeError):
+        except (ValueError, TypeError):
             continue
             
     return sorted(top_heap, key=lambda p: p.working_set, reverse=True)
@@ -247,13 +244,12 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if (now - _proc_cache_time) > 60:
         cmd = [
             'powershell', '-NoProfile', '-NonInteractive', '-Command', 
-            'Get-Process | Where-Object { $_.Id -notin 0,4 } | Select-Object -Property Name,Id,WorkingSet | ConvertTo-Csv -NoTypeInformation'
+            "Get-Process | Where-Object { $_.Id -ne 0 -and $_.Id -ne 4 } | Select-Object -Property Name,Id,WorkingSet | ConvertTo-Csv -NoTypeInformation"
         ]
         try:
             res = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
             if res.returncode == 0:
-                lines = res.stdout.splitlines()[2:]
-                _proc_cache_data = parse_windows_process_csv("\n".join(lines), limit=limit)
+                _proc_cache_data = parse_windows_process_csv(res.stdout, limit=limit)
                 _proc_cache_time = now
         except (OSError, subprocess.SubprocessError): pass
     return _proc_cache_data
