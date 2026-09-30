@@ -200,8 +200,9 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
-                raw_msg = rule.message_factory(metrics)
-                clean_msg = "".join(c for c in str(raw_msg) if c.isprintable()).strip()
+                raw_msg = str(rule.message_factory(metrics))
+                # Filtro defensivo: solo caracteres imprimibles, sin saltos de línea ni inyección
+                clean_msg = "".join(c for c in raw_msg if c.isprintable()).strip()
                 if clean_msg: 
                     findings.append(clean_msg[:200])
         except (ValueError, TypeError, AttributeError, ZeroDivisionError):

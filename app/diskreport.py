@@ -110,8 +110,9 @@ def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
         if any(c in entry.name for c in SUSPICIOUS_CHARS) or '\0' in entry.name:
             return True
         
-        # Validación estricta: asegurar que la resolución no escape de la raíz (traversal)
-        resolved_path = str(Path(entry.path).resolve())
+        # Validación estricta contra path traversal: resolver ruta sin seguir symlinks externos
+        target_path = Path(entry.path)
+        resolved_path = str(target_path.resolve(strict=False))
         if not resolved_path.startswith(root_path_str):
             return True
             
@@ -123,7 +124,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
         except (OSError, PermissionError):
             return True
             
-        return is_protected_path(Path(entry.path))
+        return is_protected_path(target_path)
     except (OSError, PermissionError, AttributeError, RuntimeError, TypeError):
         return True
 

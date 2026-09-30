@@ -250,7 +250,9 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                     try:
                         # Evitar re-procesar rutas mediante comprobaciones rápidas
                         if entry.is_dir(follow_symlinks=False):
-                            stack.append(entry.path)
+                            path_obj = Path(entry.path)
+                            if not is_junction(path_obj) and not path_obj.is_symlink():
+                                stack.append(entry.path)
                             continue
                         
                         if not entry.is_file(follow_symlinks=False):
