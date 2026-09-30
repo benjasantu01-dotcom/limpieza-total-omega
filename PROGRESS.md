@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 23
 - Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 230
+- Sin respuesta de la IA (error o límite): 229
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-28 | 47 | 6 | 9 | 3 | 61 |
+| 2026-09-28 | 45 | 6 | 9 | 3 | 59 |
 | 2026-09-29 | 131 | 15 | 22 | 18 | 164 |
-| 2026-09-30 | 12 | 2 | 5 | 4 | 5 |
+| 2026-09-30 | 15 | 2 | 5 | 4 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
-- seguridad defensiva: **39**
 - manejo de errores y validación de entradas: **38**
-- robustez ante casos límite: **32**
+- seguridad defensiva: **37**
+- robustez ante casos límite: **35**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **20**
-- `memory.py`: **17**
+- `healthscore.py`: **19**
+- `assistant.py`: **18**
 - `quarantine.py`: **17**
-- `assistant.py`: **17**
 - `scanner.py`: **16**
 - `settings.py`: **16**
-- `browser.py`: **15**
+- `browser.py`: **16**
+- `memory.py`: **16**
 - `diskreport.py`: **15**
 - `safety.py`: **14**
 - `duplicates.py`: **12**
+- `branding.py`: **12**
 - `organizer.py`: **11**
-- `branding.py`: **11**
 - `main.py`: **6**
 - `startup.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-30T01:22:38` **browser.py** (robustez ante casos límite): Se introdujo un chequeo de 'lock' (bloqueo) mediante el intento de apertura del archivo con `os.open` en modo exclusivo, previniendo así errores de acceso denegado durante la recursión en archivos abiertos por el navegador.
+- `2026-09-30T01:22:26` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `draw_ring` y `draw_logo` ante valores extremos o malformados de entrada mediante el uso de `math.isfinite` y validación de tipos, evitando posibles excepciones durante el renderizado en canvas.
+- `2026-09-30T01:21:46` **assistant.py** (robustez ante casos límite): Introduje una validación defensiva en el método `ingest` de `SystemContext` para manejar la posible presencia de valores `NaN` (Not a Number) o infinitos que, aunque no rompen el tipo de dato, pueden corromper la lógica de los criterios de salud, asegurando la integridad del estado del sistema ante datos de entrada malformados.
 - `2026-09-30T01:12:07` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando lecturas de disco innecesarias mediante una verificación previa del tamaño y la fecha de modificación del archivo (`mtime`) antes de recargar, manteniendo la coherencia de la caché.
 - `2026-09-30T01:11:51` **scanner.py** (rendimiento): Optimizé el rendimiento de `_is_safe_entry` eliminando la resolución innecesaria de rutas (`.resolve()`) y la creación de objetos `Path` adicionales en cada llamada, utilizando en su lugar operaciones directas sobre `entry.path`, lo que reduce drásticamente las llamadas al sistema operativo (I/O).
 - `2026-09-30T00:50:30` **browser.py** (rendimiento): Optimicé el cálculo del tamaño de directorios mediante la conversión de `NEVER_TOUCH` a un `frozenset` pre-calculado y la sustitución de `os.path.normcase(os.path.normpath(...))` en bucles críticos por una comparación de cadenas simplificada, reduciendo la sobrecarga de llamadas a funciones del sistema operativo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-30T00:19:46` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de cálculo, aclarando el propósito de las constantes globales y refinando la visibilidad de los tipos para facilitar la comprensión del motor de scoring.
 - `2026-09-30T00:10:50` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando tipos explícitos en docstrings y aclarando el flujo lógico de las estrategias de hashing para asegurar la mantenibilidad del código.
 - `2026-09-30T00:10:39` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings técnicos detallados en las funciones de escaneo (`walk_files` y `_collect_summary_data`) para aclarar el manejo de memoria (heaps), la lógica de exclusión y el comportamiento ante errores, facilitando el mantenimiento.
-- `2026-09-29T15:07:39` **assistant.py** (legibilidad y documentación): Se introdujeron type hints en los parámetros y retornos de funciones clave (especialmente en `_get_source_value` y `_apply_field`) y se reemplazó la lógica manual de validación de `ProblemCriterion` por una propiedad `@property` más limpia, eliminando la redundancia y mejorando la legibilidad del contrato de datos.
-- `2026-09-29T14:57:30` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_path_stat_robust` y `_is_volume_readonly` añadiendo capturas específicas para errores comunes de acceso (`WinError 5` y `32`), evitando que la validación falle ruidosamente en archivos bloqueados por el sistema, lo cual es vital para una ejecución estable en Windows.
-- `2026-09-29T14:49:12` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` agregando validaciones preventivas sobre la existencia y legibilidad de la ruta origen antes de iniciar cualquier operación, evitando condiciones de carrera y manejo de excepciones innecesarias.

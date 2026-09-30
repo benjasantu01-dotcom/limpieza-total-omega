@@ -182,6 +182,15 @@ def _should_skip_entry(
         return True
     return False
 
+def _is_file_in_use(path: str) -> bool:
+    """Verifica si un archivo está bloqueado por otro proceso."""
+    try:
+        fd = os.open(path, os.O_RDONLY | os.O_EXCL)
+        os.close(fd)
+        return False
+    except OSError:
+        return True
+
 def _process_file_entry(
     entry: os.DirEntry,
     root_abs_path: str,
@@ -205,6 +214,9 @@ def _process_file_entry(
                 return ScanResult(0, True)
             return _sum_directory_recursive(path_obj, root_abs_path, kernel32, visited_inodes, depth + 1)
         
+        if _is_file_in_use(entry.path):
+            return ScanResult(0, True)
+            
         return ScanResult(st.st_size, True)
     except (OSError, PermissionError, TypeError):
         return ScanResult(0, False)

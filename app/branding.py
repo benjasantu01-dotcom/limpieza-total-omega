@@ -536,8 +536,8 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         track: Color opcional para el anillo de fondo.
         fill: Color opcional para el arco de progreso activo.
     """
-    if percent is None or not isinstance(percent, (int, float)): return
     try:
+        if percent is None: return
         val = float(percent)
         cx, cy = float(canvas_x), float(canvas_y)
         if not math.isfinite(val): val = 0.0

@@ -360,7 +360,8 @@ class SystemContext:
         if val is None or not spec.is_valid_type(val): return None
         try:
             float_val = float(val)
-            if not _is_metric_within_bounds(float_val, spec): return None
+            # Aseguramos que sea finito antes de validar rangos
+            if not math.isfinite(float_val) or not _is_metric_within_bounds(float_val, spec): return None
             return spec.cast_func(float_val)
         except (TypeError, ValueError):
             return None
