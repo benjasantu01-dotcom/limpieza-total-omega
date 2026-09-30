@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 37
+- Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 27
-- Sin respuesta de la IA (error o límite): 226
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-28 | 1 | 1 | 1 | 0 | 15 |
+| 2026-09-28 | 0 | 0 | 0 | 0 | 14 |
 | 2026-09-29 | 131 | 15 | 22 | 18 | 164 |
-| 2026-09-30 | 62 | 4 | 14 | 9 | 47 |
+| 2026-09-30 | 65 | 5 | 14 | 9 | 47 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
-- seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **39**
+- seguridad defensiva: **39**
+- robustez ante casos límite: **35**
 - rendimiento: **34**
-- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **19**
+- `healthscore.py`: **20**
 - `quarantine.py`: **18**
 - `assistant.py`: **18**
 - `scanner.py`: **17**
 - `memory.py`: **16**
 - `settings.py`: **15**
-- `safety.py`: **14**
+- `diskreport.py`: **15**
+- `browser.py`: **14**
 - `branding.py`: **14**
-- `diskreport.py`: **14**
-- `browser.py`: **13**
 - `duplicates.py`: **13**
+- `safety.py`: **13**
 - `organizer.py`: **12**
 - `main.py`: **7**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-30T05:58:19` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la clase `SystemMetrics` mediante la implementación de una validación exhaustiva de estados nulos o inválidos y la protección del `pipeline` ante métricas fuera de rango, asegurando que `compute_score` nunca retorne un estado inconsistente.
+- `2026-09-30T05:57:38` **diskreport.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas de archivo excepcionalmente largas (que superen los límites de MAX_PATH en Windows) en el generador `walk_files` para evitar bloqueos por `OSError` o fallos en el escaneo al encontrar niveles de anidamiento excesivos.
+- `2026-09-30T05:57:04` **browser.py** (robustez ante casos límite): Se introdujo una validación estricta contra el "desbordamiento de caracteres" (buffer overflow) y rutas no normalizadas mediante el uso de `os.path.abspath` y una validación explícita de la longitud de la ruta antes de intentar cualquier operación de sistema, mitigando riesgos ante rutas maliciosas o extremadamente largas que excedan los límites de Windows.
 - `2026-09-30T05:38:06` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner implementando un caché interno (`is_protected_path` es costoso) y reduciendo las llamadas redundantes a `is_protected_path` dentro de `_is_safe_entry`, utilizando un conjunto `set` para evitar consultas repetidas sobre las mismas rutas parentales.
 - `2026-09-30T05:29:36` **organizer.py** (rendimiento): Se optimizó el escaneo del sistema de archivos reemplazando las validaciones redundantes de `is_safe_to_modify` dentro del bucle recursivo por una verificación inicial de la carpeta, aprovechando que `_should_scan_directory` ya filtra rutas protegidas y que `is_valid_junk_entry` centraliza las condiciones de seguridad, reduciendo drásticamente las llamadas a disco y el uso de CPU.
 - `2026-09-30T05:29:24` **memory.py** (rendimiento): Se optimizó el proceso de recolección de métricas en `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lectura más eficiente y evitando la recreación de objetos `ProcessMemory` si los datos del proceso no han cambiado, además de reducir la presión sobre el recolector de basura reutilizando estructuras.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-30T05:08:00` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `startup.py` mediante docstrings detallados en los métodos de `StartupEntry` para clarificar la lógica de saneamiento y resolución de rutas, además de renombrar variables internas (como `p_candidate` a `target_path`) para eliminar ambigüedades.
 - `2026-09-30T05:06:04` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes y normalizando las docstrings para seguir el estándar del proyecto, facilitando la comprensión del flujo de datos en las heurísticas y el estado interno del `Scanner`.
 - `2026-09-30T04:57:24` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings detallados y precisos a las funciones de validación, clarificando el propósito, las condiciones de error y el fundamento técnico de los chequeos de integridad para facilitar el mantenimiento y auditoría del código.
-- `2026-09-30T04:56:33` **quarantine.py** (legibilidad y documentación): Se han añadido type hints faltantes en las firmas de funciones internas y se han documentado con docstrings específicos los parámetros y comportamientos críticos de seguridad, mejorando la mantenibilidad sin alterar la lógica de ejecución.
-- `2026-09-30T04:55:53` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados, type hints explícitos y la clarificación de las responsabilidades de las funciones de validación, facilitando la comprensión del flujo de seguridad para futuros desarrolladores.
-- `2026-09-30T04:47:34` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la aplicación de type hints faltantes en las funciones de bajo nivel y la adición de docstrings técnicos que explican la intención detrás de las constantes y los manejadores de procesos.

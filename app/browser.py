@@ -141,11 +141,12 @@ def _is_path_inside_base(target_abs: str, base_abs: str) -> bool:
     if not isinstance(target_abs, str) or not isinstance(base_abs, str):
         return False
     try:
+        # Validación crítica de longitud antes de normalizar
         if '\0' in target_abs or len(target_abs) >= MAX_PATH_LEN:
             return False
-        # Normalización realizada una única vez para comparación eficiente
-        target_norm = os.path.normcase(os.path.normpath(target_abs))
-        base_norm = os.path.normcase(os.path.normpath(base_abs))
+        # Normalización absoluta estricta
+        target_norm = os.path.normcase(os.path.abspath(target_abs))
+        base_norm = os.path.normcase(os.path.abspath(base_abs))
         return target_norm.startswith(base_norm)
     except (OSError, ValueError):
         return False
@@ -202,8 +203,11 @@ def _process_file_entry(
 ) -> ScanResult:
     """Procesa una entrada de directorio o archivo y gestiona la recursión."""
     try:
+        if not _is_path_inside_base(entry.path, root_abs_path):
+            return ScanResult(0, True)
+        
         path_obj = Path(entry.path)
-        if not _is_path_inside_base(entry.path, root_abs_path) or not is_safe_to_modify(path_obj):
+        if not is_safe_to_modify(path_obj):
             return ScanResult(0, True)
             
         st = entry.stat(follow_symlinks=False)

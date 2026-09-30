@@ -228,7 +228,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             points = int(round(area_ratio * entry.weight))
             metric_breakdown[entry.area] = max(0, min(points, entry.weight))
             accumulated_score += metric_breakdown[entry.area]
-        except (ValueError, TypeError, AttributeError):
+        except (ValueError, TypeError, AttributeError, ZeroDivisionError):
             metric_breakdown[entry.area] = 0
             
     if metrics.quarantined_count > 0:

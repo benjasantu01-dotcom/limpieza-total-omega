@@ -239,6 +239,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     stack: List[str] = [root_path_str]
     while stack:
         current_dir = stack.pop()
+        # Protección contra rutas excesivamente largas antes de entrar al directorio
+        if len(current_dir) >= 32767: continue
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:

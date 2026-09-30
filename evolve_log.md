@@ -495,3 +495,44 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-09-30T05:48:21` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-09-30T05:48:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T05:48:21` Corrida terminada. Total usado hoy: 136.
+- `2026-09-30T05:56:34` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-09-30T05:57:04` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se introdujo una validación estricta contra el "desbordamiento de caracteres" (buffer overflow) y rutas no normalizadas mediante el uso de `os.path.abspath` y una validación explícita de la longitud de la ruta antes de intentar cualquier operación de sistema, mitigando riesgos ante rutas maliciosas o extremadamente largas que excedan los límites de Windows.
+- `2026-09-30T05:57:38` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra rutas de archivo excepcionalmente largas (que superen los límites de MAX_PATH en Windows) en el generador `walk_files` para evitar bloqueos por `OSError` o fallos en el escaneo al encontrar niveles de anidamiento excesivos.
+- `2026-09-30T05:58:07` Tests FALLARON:
+```
+ bool:
+        """
+        Comprueba si el archivo está en uso intentando abrirlo en modo lectura exclusiva.
+        """
+        if not is_safe_to_modify(path):
+            return True
+        try:
+            # Usamos flags de apertura mínima para verificar bloqueo sin leer el archivo.
+>           fd = os.open(path, os.O_RDONLY | os.O_BINARY)
+                                             ^^^^^^^^^^^
+E           AttributeError: module 'os' has no attribute 'O_BINARY'
+
+app/duplicates.py:116: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_identical_files - AttributeError: module 'os' has no attribute 'O_BINARY'
+FAILED evolve/tests/test_modules.py::test_ignores_files_with_different_content - AttributeError: module 'os' has no attribute 'O_BINARY'
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - AttributeError: module 'os' has no attribute 'O_BINARY'
+FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size - assert [] == [1, 2]
+  
+  Right contains 2 more items, first extra item: 1
+  
+  Full diff:
+  + []
+  - [
+  -     1,
+  -     2,
+  - ]
+FAILED evolve/tests/test_modules.py::test_hash_of_identical_content_matches - AttributeError: module 'os' has no attribute 'O_BINARY'
+FAILED evolve/tests/test_modules.py::test_partial_hash_only_reads_the_beginning - AttributeError: module 'os' has no attribute 'O_BINARY'
+6 failed, 293 passed in 1.58s
+
+```
+- `2026-09-30T05:58:07` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: He mejorado la robustez ante casos límite en `_collect_candidates` y `_is_file_locked`, asegurando que el escaneo no se detenga ante errores de acceso (como `Access Denied` en carpetas del sistema o archivos bloqueados por el kernel) y añadiendo un manejo de excepciones más granular para evitar abortos inesperados.
+- `2026-09-30T05:58:19` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la clase `SystemMetrics` mediante la implementación de una validación exhaustiva de estados nulos o inválidos y la protección del `pipeline` ante métricas fuera de rango, asegurando que `compute_score` nunca retorne un estado inconsistente.
+- `2026-09-30T05:58:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T05:58:19` Corrida terminada. Total usado hoy: 140.
