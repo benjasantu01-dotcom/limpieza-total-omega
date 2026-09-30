@@ -631,3 +631,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-09-30T06:49:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-30T06:49:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T06:49:14` Corrida terminada. Total usado hoy: 160.
+- `2026-09-30T06:57:51` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-09-30T06:58:37` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación preventiva contra "Path Traversal" mediante caracteres nulos incrustados y secuencias de escape no permitidas, y se ha fortalecido `_validate_structural_safety` para rechazar explícitamente rutas que contengan el carácter separador de directorios alternativo de Windows (`/`) junto con el estándar, eliminando así una vulnerabilidad de inconsistencia en la validación de rutas.
+- `2026-09-30T06:59:06` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-09-30T06:59:39` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en la función `_is_file_secure_to_read` para prevenir ataques de "Time-of-check to time-of-use" (TOCTOU) y garantizar integridad, asegurando que el archivo de configuración no sea un enlace simbólico que apunte a una ubicación sensible después de la validación inicial.
+- `2026-09-30T06:59:52` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-09-30T06:59:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T06:59:52` Corrida terminada. Total usado hoy: 164.

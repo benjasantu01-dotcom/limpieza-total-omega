@@ -566,6 +566,11 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     if _is_device_file(target_path):
         raise UnsafePathError("Acceso a dispositivo bloqueado.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
     
+    # Prevenir bypass de separadores
+    if "/" in path_string and os.altsep == "/":
+        if path_string.replace("/", "\\") != path_string.replace("\\", "\\"):
+            raise UnsafePathError("Ruta mal formada con separadores inconsistentes.", SafetyValidationErrorCode.INVALID_CHARS)
+    
     try:
         if target_path.exists() and not target_path.is_absolute():
             raise UnsafePathError("Ruta inconsistente con el sistema.", SafetyValidationErrorCode.GENERIC)
