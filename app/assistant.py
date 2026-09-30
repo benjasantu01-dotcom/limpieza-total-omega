@@ -466,16 +466,17 @@ def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> Syst
 @lru_cache(maxsize=16)
 def _generate_context_cached(ctx: SystemContext) -> str:
     """Genera bloque de resumen del sistema optimizado para prompts."""
-    return (
+    lines = [
         f"Puntaje de salud: {ctx.score if ctx.score is not None else 'N/A'}"
-        f"{f' nota {ctx.grade[:5]}' if ctx.grade else ''}\n"
-        f"Basura: {_fmt_metric(ctx.junk_mb, ' MB', 0)}\n"
-        f"Sospechosos: {int(ctx.suspicious_count)}\n"
-        f"RAM disponible: {_fmt_metric(ctx.memory_available_percent, '%', 0)}\n"
-        f"Disco libre: {_fmt_metric(ctx.disk_free_percent, '%', 0)}\n"
-        f"Duplicados: {_fmt_metric(ctx.duplicate_mb, ' MB', 0)}\n"
+        f"{f' nota {ctx.grade[:5]}' if ctx.grade else ''}",
+        f"Basura: {_fmt_metric(ctx.junk_mb, ' MB', 0)}",
+        f"Sospechosos: {int(ctx.suspicious_count)}",
+        f"RAM disponible: {_fmt_metric(ctx.memory_available_percent, '%', 0)}",
+        f"Disco libre: {_fmt_metric(ctx.disk_free_percent, '%', 0)}",
+        f"Duplicados: {_fmt_metric(ctx.duplicate_mb, ' MB', 0)}",
         f"Inicio: {int(ctx.startup_count)} items"
-    )
+    ]
+    return "\n".join(lines)
 
 def context_as_text(context: SystemContext) -> str:
     """Convierte el contexto en un string serializado listo para ser embebido en prompts."""

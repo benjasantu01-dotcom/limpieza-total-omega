@@ -1293,3 +1293,41 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-09-30T00:32:23` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo `scanner.py` integrando docstrings que especifican contratos de entrada/salida y justificando el uso de `os.DirEntry` sobre `pathlib` para el escaneo recursivo, además de tipar explícitamente los errores controlados para mejorar la mantenibilidad de la lógica de seguridad.
 - `2026-09-30T00:32:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T00:32:23` Corrida terminada. Total usado hoy: 12.
+- `2026-09-30T00:39:48` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-09-30T00:40:21` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-09-30T00:40:50` Tests FALLARON:
+```
+acted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+app/startup.py:129
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:129: SyntaxWarning: invalid escape sequence '\R'
+    raw_command: Línea de comando original (ej. '"C:\Ruta\App.exe" /arg').
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 8 warnings in 1.42s
+
+```
+- `2026-09-30T00:40:50` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación y legibilidad de `StartupEntry` mediante la adopción de docstrings estructurados (estilo Google) que clarifican las responsabilidades de cada método, facilitando el mantenimiento y la auditoría de seguridad del código.
+- `2026-09-30T00:41:31` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_generate_context_cached` pasando de una construcción lenta de strings con llamadas múltiples a métricas, a un uso eficiente de listas pre-formateadas y `join`, reduciendo la carga en cada iteración del bucle de UI.
+- `2026-09-30T00:41:50` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-09-30T00:41:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T00:41:50` Corrida terminada. Total usado hoy: 16.
