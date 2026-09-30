@@ -293,10 +293,11 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """Verifica disponibilidad de espacio en la unidad destino y genera una ruta segura."""
     try:
-        if not dest_base.exists(): return None
-        usage = shutil.disk_usage(dest_base.anchor)
+        anchor = dest_base.anchor
+        if not anchor: return None
+        usage = shutil.disk_usage(anchor)
         if usage.free < (junk_file.size_bytes + MIN_FREE_SPACE_BYTES): return None
-    except (OSError, FileNotFoundError, AttributeError): return None
+    except (OSError, AttributeError, ValueError): return None
     safe_name = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
     return _generate_unique_target(dest_base / safe_name)
 

@@ -197,7 +197,9 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         parts = line.split(",", 2)
         if len(parts) != 3: continue
         try:
-            pid = int(''.join(filter(str.isdigit, parts[1])))
+            pid_part = ''.join(filter(str.isdigit, parts[1]))
+            if not pid_part: continue
+            pid = int(pid_part)
             ws = _safe_int_conversion(parts[2])
             if pid > 0 and pid not in seen_pids and 0 < ws < MAX_VALID_PROCESS_MEM:
                 seen_pids.add(pid)
@@ -301,14 +303,13 @@ def _get_process_path(pid: int) -> Optional[Path]:
             return None
         psapi = ctypes.windll.psapi
         buf = ctypes.create_unicode_buffer(1024)
-        if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
-            if buf.value:
-                # Normalizar la ruta para evitar ambigüedades antes de filtrar
-                p = Path(buf.value).resolve()
-                path_str = str(p)
-                # Validar seguridad: verificar que no esté en la lista negra ni sea ruta protegida
-                if not is_protected_path(path_str):
-                    return p
+        if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0 and buf.value:
+            # Normalizar la ruta para evitar ambigüedades antes de filtrar
+            p = Path(buf.value).resolve()
+            path_str = str(p)
+            # Validar seguridad: verificar que no esté en la lista negra ni sea ruta protegida
+            if not is_protected_path(path_str):
+                return p
     except (ctypes.ArgumentError, OSError, ValueError, TypeError):
         return None
     finally:
