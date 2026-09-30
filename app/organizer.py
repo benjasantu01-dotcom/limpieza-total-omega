@@ -252,6 +252,7 @@ def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[Ju
     scan_list: Sequence[str | Path] = directories or DEFAULT_SCAN_DIRS
     for d in scan_list:
         try:
+            if not d: continue
             p = Path(d).expanduser()
             if p.exists() and p.is_dir() and not _is_unc_path(p) and is_safe_to_modify(p) and os.access(p, os.R_OK):
                 _process_directory(p, found, 0, protected_cache, visited)
@@ -274,7 +275,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     except (OSError, RuntimeError, PermissionError): return None
     
     for junk_file in files:
-        if not junk_file.path.exists(): continue
+        if not junk_file or not junk_file.path.exists(): continue
         if not is_safe_to_modify(junk_file.path): continue
         if not _is_safe_for_disk_op(junk_file.path, dest_res): continue
         target_path = _can_move_file(junk_file, dest_res)
@@ -282,7 +283,9 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             try:
                 ensure_safe_to_modify(junk_file.path)
                 shutil.move(str(junk_file.path), str(target_path))
-            except (OSError, shutil.Error, PermissionError): continue
+            except (OSError, shutil.Error, PermissionError) as e:
+                logger.error(f"Error moviendo {junk_file.path}: {e}")
+                continue
     return dest_res
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
@@ -300,12 +303,11 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     """Ejecuta la eliminación permanente de archivos en el directorio de revisión tras confirmación."""
     try:
         dest = Path(review_dir).expanduser().resolve()
-        if not dest.is_dir(): return 0
+        if not dest.is_dir() or not is_safe_to_modify(dest): return 0
         count = 0
         for item in dest.iterdir():
             if item.is_file():
                 try:
-                    if not item.exists(): continue
                     ensure_safe_to_modify(item)
                     item.unlink()
                     count += 1
