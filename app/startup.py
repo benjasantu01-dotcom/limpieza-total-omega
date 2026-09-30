@@ -89,8 +89,9 @@ class StartupEntry:
     @property
     def is_valid(self) -> bool:
         """
-        Valida si la cadena de comando es estructuralmente segura. 
-        Rechaza rutas que contengan caracteres de control o referencias a dispositivos lógicos.
+        Realiza un chequeo preventivo de la integridad del comando.
+        Devuelve False si el comando contiene caracteres o dispositivos reservados
+        que podrían usarse para técnicas de evasión o ejecución maliciosa.
         """
         if not self.command or self._is_path_suspicious(self.command):
             return False
@@ -99,7 +100,11 @@ class StartupEntry:
         return True
 
     def _is_reserved_device_name(self, path_str: str) -> bool:
-        """Determina si un nombre de archivo intenta usar un dispositivo lógico reservado por el kernel."""
+        """
+        Compara el nombre base del archivo contra una lista negra de dispositivos
+        reservados de Windows (ej. NUL, CON) que pueden causar errores al ser 
+        invocados como ejecutables.
+        """
         try:
             if "\0" in path_str:
                 return True
@@ -108,26 +113,32 @@ class StartupEntry:
             return True
 
     def _is_path_suspicious(self, path_string: str) -> bool:
-        """Detecta metacaracteres de shell o rutas UNC prohibidas para evitar ejecuciones involuntarias."""
+        """
+        Verifica la presencia de metacaracteres de shell o rutas de red (UNC)
+        que no deben ser procesadas para evitar inyección de comandos.
+        """
         return any(c in path_string for c in SUSPICIOUS_CHARS) or path_string.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Confirma que la ruta sea un archivo ejecutable permitido y no un symlink (para prevenir escapes)."""
+        """
+        Verifica que el archivo sea un ejecutable legítimo, restringiendo 
+        el acceso a enlaces simbólicos para evitar ser redirigido a rutas arbitrarias.
+        """
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_command: str) -> str:
-        """Elimina caracteres de control (ASCII < 32) de la línea de comandos extraída."""
+        """Limpia caracteres de control (no imprimibles) de la cadena de comando."""
         if not isinstance(raw_command, str):
             return ""
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae y normaliza una ruta desde una cadena entrecomillada. 
-        Asegura que la ruta extraída no realice 'path traversal' ni acceda a áreas protegidas.
+        Aísla el path del ejecutable en líneas de comandos entrecomilladas.
+        Aplica validación estricta de 'path traversal' (`..`) antes de permitir el procesamiento.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
@@ -155,8 +166,8 @@ class StartupEntry:
 
     def _validate_file_access(self, p: Path) -> bool:
         """
-        Verifica la integridad del archivo mediante `safety.py`. 
-        Asegura que la ruta resuelta sea un archivo real, existente y no protegido.
+        Valida que el archivo exista, sea un archivo (no carpeta) y esté fuera
+        de las rutas protegidas definidas en `safety.py`.
         """
         try:
             if not p.exists():
@@ -169,8 +180,8 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
-        Resuelve una ruta a su forma absoluta y canónica. 
-        Utiliza _EXISTS_CACHE para minimizar consultas al sistema de archivos.
+        Resuelve una ruta relativa o corta a su ruta absoluta absoluta.
+        Usa una caché interna (`_EXISTS_CACHE`) para minimizar llamadas al sistema de archivos.
         """
         if not isinstance(path_string, str) or not self.is_valid:
             return ""
@@ -206,8 +217,8 @@ class StartupEntry:
 
     def _resolve_path_from_command(self, command_line: str) -> str:
         """
-        Descompone una línea de comandos completa para aislar la ruta del ejecutable primario,
-        gestionando tanto rutas entrecomilladas como comandos simples.
+        Parses la línea de comando para identificar el ejecutable, diferenciando
+        entre comandos con paths entrecomillados y argumentos directos.
         """
         if not command_line or not isinstance(command_line, str):
             return ""
@@ -232,8 +243,8 @@ class StartupEntry:
     @property
     def executable(self) -> str:
         """
-        Retorna la ruta absoluta del ejecutable tras validación. 
-        El resultado se memoiza internamente para evitar re-cálculos costosos.
+        Devuelve el path absoluto del ejecutable. El valor se memoiza tras
+        la primera resolución exitosa para optimizar lecturas recurrentes.
         """
         if self._checked_exists:
             return self._exec_cache or ""
