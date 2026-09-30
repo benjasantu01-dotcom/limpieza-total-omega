@@ -22,7 +22,7 @@ import heapq
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Generator, Iterable, Dict, List, Tuple, Optional, Union, NamedTuple, TypeAlias, Any
+from typing import Generator, Iterable, Dict, List, Tuple, Optional, Union, NamedTuple, TypeAlias, Any, Callable
 
 from safety import is_protected_path
 
@@ -52,7 +52,7 @@ SizeReport: TypeAlias = Tuple[int, int]
 
 
 class ExtStats:
-    """Contenedor mutable para acumular métricas por extensión durante el escaneo secuencial."""
+    """Acumulador de métricas para una extensión específica durante el escaneo."""
     __slots__ = ('total_bytes', 'count')
     def __init__(self) -> None:
         self.total_bytes: int = 0
@@ -60,7 +60,11 @@ class ExtStats:
 
 
 class SummaryData(NamedTuple):
-    """Estructura inmutable que consolida las métricas tras un escaneo completo."""
+    """
+    Consolidado inmutable de un escaneo.
+    Contiene el total global y los diccionarios de agregación necesarios para 
+    reportes de extensiones y archivos pesados.
+    """
     total_bytes: int
     total_files: int
     ext_stats: Dict[str, ExtStats]
@@ -227,7 +231,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """Generador recursivo de archivos (yields Path, size)."""
+    """Generador recursivo de archivos (yields Path, size) evitando ciclos mediante inodos."""
     root_path = _validate_root(directory)
     if root_path is None: return
     root_path_str = str(root_path)
@@ -309,13 +313,16 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """Recorre el sistema de archivos de forma exhaustiva y consolida métricas globales."""
+    """
+    Recorre el sistema de archivos de forma exhaustiva y consolida métricas globales.
+    Usa un heap para mantener los N archivos más grandes durante el escaneo en una sola pasada.
+    """
     total_bytes: int = 0
     total_files: int = 0
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
     top_heap: List[Tuple[int, Path]] = []
     
-    get_ext = lambda p: p.suffix.lower() or "(sin extensión)"
+    get_ext: Callable[[Path], str] = lambda p: p.suffix.lower() or "(sin extensión)"
     
     for path, size_bytes in walk_files(directory, skip_protected):
         try:

@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 40
-- Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 220
+- Rechazadas por guardia de seguridad: 39
+- Sin cambios (nada sustancial que mejorar): 24
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-29 | 64 | 9 | 11 | 11 | 93 |
-| 2026-09-30 | 134 | 12 | 29 | 14 | 127 |
+| 2026-09-29 | 63 | 9 | 10 | 10 | 92 |
+| 2026-09-30 | 138 | 12 | 29 | 14 | 127 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **52**
+- legibilidad y documentación: **43**
 - robustez ante casos límite: **41**
 - manejo de errores y validación de entradas: **39**
-- legibilidad y documentación: **39**
-- rendimiento: **27**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **18**
+- `healthscore.py`: **19**
 - `assistant.py`: **18**
-- `healthscore.py`: **18**
+- `diskreport.py`: **18**
 - `memory.py`: **17**
-- `diskreport.py`: **17**
+- `quarantine.py`: **17**
 - `safety.py`: **16**
 - `settings.py`: **15**
 - `scanner.py`: **14**
+- `browser.py`: **14**
 - `organizer.py`: **14**
-- `browser.py`: **13**
+- `duplicates.py`: **14**
 - `branding.py`: **13**
-- `duplicates.py`: **13**
 - `main.py`: **6**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-30T13:37:55` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings técnicos detallados en `compute_score` y `summarize`, y se ha refactorizado la validación de `SystemMetrics` para mejorar la legibilidad y robustez de los tipos.
+- `2026-09-30T13:37:39` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de Type Hints detallados, normalización de los docstrings siguiendo el estándar de Google, y la clarificación de las responsabilidades de las funciones mediante una estructura de comentarios más rigurosa, facilitando la comprensión del flujo de datos.
+- `2026-09-30T13:37:10` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el propósito de las estructuras auxiliares y clarifiqué la lógica del recolector de datos `_collect_summary_data`, además de tipar explícitamente los lambdas internos para mejorar la legibilidad y mantenibilidad.
+- `2026-09-30T13:36:40` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `browser.py` mediante la implementación de type hints más precisos, la adición de docstrings técnicos que explican las restricciones de seguridad (sandbox) y la extracción de la lógica de conversión de unidades a una propiedad computada, centralizando la lógica de negocio.
 - `2026-09-30T13:27:41` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `ProblemCriterion` convirtiendo la lógica de comparación de un diccionario mutable y condicional a una estructura cerrada y robusta, eliminando el uso de `operator.get` por una lógica de evaluación explícita y mejor documentada.
 - `2026-09-30T13:26:56` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `StartupEntry._extract_quoted_path` validando explícitamente el resultado de `Path(path_str).parts` para evitar excepciones o rutas malformadas cuando el índice de búsqueda de comillas falla o devuelve un path vacío.
 - `2026-09-30T13:26:28` **settings.py** (manejo de errores y validación de entradas): Se reforzó la robustez en la validación de tipos dentro de `_coerce_and_verify` y `validate` para prevenir inyecciones de valores inesperados que pudieran comprometer la estabilidad, además de asegurar que `_load_impl` maneje errores de acceso al sistema de archivos de manera más granular.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-30T12:56:45` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` validando explícitamente el acceso a las rutas antes de procesarlas y añadiendo una gestión de excepciones más granular en `os.scandir` y `os.stat` para evitar que fallos inesperados de permisos (comunes en escaneos de disco) detengan la operación.
 - `2026-09-30T12:48:45` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del método `SystemContext.ingest` y `_apply_field` implementando un manejo de errores más estricto frente a valores inesperados, asegurando que solo datos tipados correctamente y dentro de rangos lógicos alcancen el estado interno, evitando posibles inconsistencias de tipo.
 - `2026-09-30T11:34:07` **startup.py** (seguridad defensiva): Se ha restringido el acceso a archivos de sistema prohibidos dentro del método `_validate_file_access` asegurando que, además de las verificaciones de existencia, se valide la ruta contra `is_protected_path` de forma explícita antes de cualquier operación de resolución, fortaleciendo la defensa contra ataques de tipo 'time-of-check to time-of-use' (TOCTOU).
-- `2026-09-30T11:25:22` **settings.py** (seguridad defensiva): Se endureció la seguridad defensiva de `settings.py` implementando una validación estricta de "Owner" y permisos en el archivo de configuración antes de su lectura, bloqueando ataques de escalada de privilegios o persistencia maliciosa donde un usuario sin privilegios podría reemplazar el archivo por uno manipulado con permisos de escritura abiertos.
-- `2026-09-30T11:25:04` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_safe_stat` y `_is_reparse_point` para asegurar que el acceso a atributos se realice de forma consistente y atómica, evitando posibles excepciones de acceso denegado durante la inspección de archivos bloqueados o en uso.
-- `2026-09-30T11:24:31` **safety.py** (seguridad defensiva): Se introdujo la verificación `_is_volume_compressed_or_encrypted` mediante `GetVolumeInformationW` en `ensure_safe_to_modify` para denegar modificaciones en volúmenes cifrados (BitLocker) o comprimidos a nivel de sistema de archivos, mejorando la seguridad defensiva al evitar operaciones impredecibles en volúmenes con protecciones criptográficas o compresión transparente.
-- `2026-09-30T11:16:11` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva al evitar el acceso a archivos de sistema/ocultos durante la lectura de metadatos en `QuarantineItem.from_dict` y `_validate_integrity`, añadiendo una validación explícita de `is_file()` y `is_symlink()` para prevenir vulnerabilidades por sustitución o enlaces maliciosos antes de procesar archivos del sandbox.

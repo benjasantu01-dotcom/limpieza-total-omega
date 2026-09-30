@@ -166,22 +166,22 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
-        """Limpia y asegura que los valores de las métricas sean numéricos válidos."""
-        def _to_float(v: Any) -> float:
+        """Normaliza y valida los tipos y rangos de las métricas de entrada."""
+        def _to_finite_float(val: Any, default: float = 0.0) -> float:
             try:
-                f = float(v)
-                return f if math.isfinite(f) else 0.0
+                num = float(val)
+                return num if math.isfinite(num) else default
             except (TypeError, ValueError):
-                return 0.0
+                return default
         
-        self.junk_mb = max(0.0, _to_float(self.junk_mb))
-        self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
-        self.suspicious_count = int(max(0.0, _to_float(self.suspicious_count)))
-        self.suspicious_warnings = int(max(0.0, _to_float(self.suspicious_warnings)))
-        self.startup_count = int(max(0.0, _to_float(self.startup_count)))
-        self.quarantined_count = int(max(0.0, _to_float(self.quarantined_count)))
-        self.memory_available_percent = _clamp(_to_float(self.memory_available_percent), 0.0, 100.0)
-        self.disk_free_percent = _clamp(_to_float(self.disk_free_percent), 0.0, 100.0)
+        self.junk_mb = max(0.0, _to_finite_float(self.junk_mb))
+        self.duplicate_mb = max(0.0, _to_finite_float(self.duplicate_mb))
+        self.suspicious_count = int(max(0, _to_finite_float(self.suspicious_count)))
+        self.suspicious_warnings = int(max(0, _to_finite_float(self.suspicious_warnings)))
+        self.startup_count = int(max(0, _to_finite_float(self.startup_count)))
+        self.quarantined_count = int(max(0, _to_finite_float(self.quarantined_count)))
+        self.memory_available_percent = _clamp(_to_finite_float(self.memory_available_percent, 100.0), 0.0, 100.0)
+        self.disk_free_percent = _clamp(_to_finite_float(self.disk_free_percent, 100.0), 0.0, 100.0)
 
     @property
     def is_finite(self) -> bool:
@@ -214,7 +214,10 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Procesa el pipeline completo: normaliza métricas, pondera sub-scores y agrega hallazgos."""
+    """
+    Ejecuta el pipeline de evaluación: normaliza cada métrica, calcula su aporte al 
+    puntaje total según pesos definidos y genera recomendaciones basadas en umbrales.
+    """
     if not isinstance(metrics, SystemMetrics):
         metrics = SystemMetrics()
     metrics.validate()
@@ -247,7 +250,10 @@ def _render_bar(points: int, max_val: int) -> str:
     return "".join(["#"] * p + ["."] * (limit - p))
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """Genera un reporte textual estructurado a partir del resultado de salud."""
+    """
+    Transforma el resultado analítico en una lista de strings legible por el usuario,
+    incluyendo barras de progreso para cada métrica individual.
+    """
     if not result: return ["Error: Informe de salud no disponible."]
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, maximo in WEIGHTS.items():
