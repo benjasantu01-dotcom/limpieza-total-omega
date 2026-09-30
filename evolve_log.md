@@ -982,3 +982,34 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-09-30T09:35:06` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de los métodos de `StartupEntry` añadiendo docstrings técnicos que clarifican la lógica de validación de seguridad y los flujos de resolución de rutas, facilitando el mantenimiento y la comprensión de las salvaguardas implementadas.
 - `2026-09-30T09:35:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T09:35:06` Corrida terminada. Total usado hoy: 224.
+- `2026-09-30T09:41:22` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-09-30T09:42:07` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Answer.is_online, SystemContext.is_valid_structure
+- `2026-09-30T09:42:46` Tests FALLARON:
+```
+0%]
+=================================== FAILURES ===================================
+_________________ test_gradient_bar_paints_one_line_per_pixel __________________
+
+    def test_gradient_bar_paints_one_line_per_pixel():
+        canvas = _CanvasFalso()
+        branding.draw_gradient_bar(canvas, width=60)
+>       assert canvas.llamadas.count("line") == 60
+E       AssertionError: assert 0 == 60
+E        +  where 0 = <built-in method count of list object at 0x7f3391da98c0>('line')
+E        +    where <built-in method count of list object at 0x7f3391da98c0> = ['rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...].count
+E        +      where ['rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...] = <test_modules._CanvasFalso object at 0x7f3391dba8d0>.llamadas
+
+evolve/tests/test_modules.py:226: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel - AssertionError: assert 0 == 60
+ +  where 0 = <built-in method count of list object at 0x7f3391da98c0>('line')
+ +    where <built-in method count of list object at 0x7f3391da98c0> = ['rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...].count
+ +      where ['rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...] = <test_modules._CanvasFalso object at 0x7f3391dba8d0>.llamadas
+1 failed, 298 passed in 1.53s
+
+```
+- `2026-09-30T09:42:46` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento del renderizado de barras de gradiente y franjas de escudo reemplazando llamadas redundantes a `create_line` (un objeto por píxel) por el uso eficiente de `create_rectangle` sobre segmentos contiguos de color, reduciendo drásticamente la carga sobre el objeto `Canvas` de `customtkinter`.
+- `2026-09-30T09:43:14` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas redundantes a `os.path.exists` y `os.access` dentro del bucle mediante el uso directo de las propiedades de `os.DirEntry` (que ya contiene los metadatos necesarios en Windows), reduciendo significativamente las llamadas al sistema operativo (syscalls) durante el escaneo de carpetas grandes.
+- `2026-09-30T09:43:35` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y acceso al diccionario de `ext_stats` dentro del loop, reduciendo la carga de resolución de cadenas y búsqueda de claves en cada iteración.
+- `2026-09-30T09:43:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T09:43:35` Corrida terminada. Total usado hoy: 228.

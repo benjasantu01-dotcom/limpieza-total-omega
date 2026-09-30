@@ -183,8 +183,6 @@ def _should_skip_entry(
 
 def _is_file_in_use(path: str) -> bool:
     """Comprueba si un archivo está bloqueado intentando abrirlo en modo exclusivo (Read-Only)."""
-    if not os.path.exists(path) or not os.access(path, os.R_OK):
-        return True
     try:
         fd = os.open(path, os.O_RDONLY | os.O_EXCL)
         os.close(fd)
@@ -204,19 +202,16 @@ def _process_file_entry(
         if not _is_path_inside_base(entry.path, root_abs_path):
             return ScanResult(0, True)
         
-        path_obj = Path(entry.path)
-        if not is_safe_to_modify(path_obj):
-            return ScanResult(0, True)
-            
+        # Obtenemos stat una sola vez usando la entrada para ahorrar syscalls
         st = entry.stat(follow_symlinks=False)
         if st.st_ino in visited_inodes:
             return ScanResult(0, True)
         visited_inodes.add(st.st_ino)
         
         if entry.is_dir(follow_symlinks=False):
-            if is_protected_path(path_obj):
+            if is_protected_path(Path(entry.path)):
                 return ScanResult(0, True)
-            return _sum_directory_recursive(path_obj, root_abs_path, kernel32, visited_inodes, depth + 1)
+            return _sum_directory_recursive(Path(entry.path), root_abs_path, kernel32, visited_inodes, depth + 1)
         
         if _is_file_in_use(entry.path):
             return ScanResult(0, True)

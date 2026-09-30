@@ -323,30 +323,24 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Recorre el sistema de archivos de forma exhaustiva y consolida métricas globales.
-    
-    Args:
-        directory: Ruta base (Path) ya validada.
-        skip_protected: Flag para omitir rutas marcadas por safety.py.
-        limit: Cantidad máxima de archivos pesados a trackear en el heap.
-        
-    Returns:
-        SummaryData con el peso total, cantidad de archivos y estadísticas desglosadas.
     """
     total_bytes: int = 0
     total_files: int = 0
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
     top_heap: List[Tuple[int, Path]] = []
     
+    # Pre-caché para lookup rápido
+    get_ext = lambda p: p.suffix.lower() or "(sin extensión)"
+    
     for path, size_bytes in walk_files(directory, skip_protected):
         try:
             total_bytes += size_bytes
             total_files += 1
-            ext = path.suffix.lower() or "(sin extensión)"
-            stats: ExtStats = ext_stats[ext]
+            stats = ext_stats[get_ext(path)]
             stats.total_bytes += size_bytes
             stats.count += 1
             
-            # Mantenimiento de heap para los N archivos más pesados
+            # Mantenimiento de heap
             if limit > 0:
                 if len(top_heap) < limit: 
                     heapq.heappush(top_heap, (size_bytes, path))
