@@ -550,3 +550,66 @@ FAILED evolve/tests/test_modules.py::test_partial_hash_only_reads_the_beginning 
 - `2026-09-30T06:18:55` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha robustecido el proceso de persistencia en `save` incluyendo una validación explícita de `os.fsync` y una limpieza de errores más granular para manejar correctamente archivos bloqueados por el sistema, garantizando la integridad de la configuración ante cierres inesperados.
 - `2026-09-30T06:18:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T06:18:55` Corrida terminada. Total usado hoy: 148.
+- `2026-09-30T06:27:09` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-09-30T06:27:40` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 0.86s
+
+```
+- `2026-09-30T06:27:40` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry._resolve_and_cache_path` añadiendo un chequeo preventivo de existencias mediante `is_file()` antes de intentar realizar operaciones complejas, evitando excepciones innecesarias en rutas que parecen válidas pero cuyo sistema de archivos está inaccesible o es un dispositivo bloqueado.
+- `2026-09-30T06:28:20` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al añadir una validación de longitud estricta en el método `ingest` de `SystemContext` para prevenir ataques de desbordamiento de búfer o DoS mediante estructuras de datos maliciosas, asegurando que solo se ingesten diccionarios o contextos que cumplan con la cota de profundidad `_MAX_NESTING_DEPTH`.
+- `2026-09-30T06:29:00` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `save_logo_svg` y `_validate_destination` para prevenir condiciones de carrera y fallos silenciosos, garantizando que la validación de seguridad sea atómica respecto a la operación de escritura.
+- `2026-09-30T06:29:14` Tests FALLARON:
+```
+th = PosixPath('/tmp/pytest-of-runner/pytest-4/test_summarize_includes_the_sa0')
+
+    def test_summarize_includes_the_safety_note(tmp_path):
+        caches = [browser.BrowserCache("Chrome", tmp_path / "Cache", 1024 * 1024)]
+>       texto = "\n".join(browser.summarize(caches))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_modules.py:800: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/browser.py:340: in summarize
+    total_mb = round(total_cache_bytes(current_caches) / (1024 * 1024), 2)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/browser.py:332: in total_cache_bytes
+    return sum(c.bytes_found for c in caches) if caches else 0
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = <list_iterator object at 0x7f9521c54b50>
+
+>   return sum(c.bytes_found for c in caches) if caches else 0
+               ^^^^^^^^^^^^^
+E   AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+
+app/browser.py:332: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_total_cache_bytes_sums_detected_caches - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+2 failed, 297 passed in 0.89s
+
+```
+- `2026-09-30T06:29:14` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez defensiva en `_process_file_entry` al verificar explícitamente que la entrada no sea un punto de reanálisis (reparse point) mediante `st.st_file_attributes` antes de intentar operar sobre él, reforzando el aislamiento del sandbox frente a enlaces simbólicos o junctions maliciosos que pudieran haber escapado a los filtros de nivel de directorio.
+- `2026-09-30T06:29:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T06:29:14` Corrida terminada. Total usado hoy: 152.

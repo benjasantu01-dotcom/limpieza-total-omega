@@ -380,6 +380,10 @@ class SystemContext:
         if not (isinstance(source, (dict, SystemContext)) or hasattr(source, "__dict__")) or _is_input_too_deep_or_complex(source):
             return False
         
+        # Validación de tamaño para prevenir ataques de inyección masiva en diccionario
+        if isinstance(source, dict) and len(source) > 100:
+            return False
+        
         updates = {}
         for key, spec in _VALIDATORS.items():
             val = self._apply_field(source, key, spec)
