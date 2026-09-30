@@ -359,8 +359,8 @@ class SystemContext:
         val = _get_source_value(source, key)
         if val is None or not spec.is_valid_type(val): return None
         try:
+            # Forzamos conversión basada en el tipo esperado por la spec
             float_val = float(val)
-            # Aseguramos que sea finito antes de validar rangos
             if not math.isfinite(float_val) or not _is_metric_within_bounds(float_val, spec): return None
             return spec.cast_func(float_val)
         except (TypeError, ValueError):
@@ -382,15 +382,14 @@ class SystemContext:
         if not (isinstance(source, (dict, SystemContext)) or hasattr(source, "__dict__")) or _is_input_too_deep_or_complex(source):
             return False
         
-        # Validación de tamaño para prevenir ataques de inyección masiva en diccionario
         if isinstance(source, dict) and len(source) > 100:
             return False
         
         updates = {}
         for key, spec in _VALIDATORS.items():
-            val = self._apply_field(source, key, spec)
-            if val is not None:
-                updates[key] = val
+            res = self._apply_field(source, key, spec)
+            if res is not None:
+                updates[key] = res
         
         grade_val = self._clean_grade(_get_source_value(source, "grade"))
         if grade_val:
