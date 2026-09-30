@@ -194,6 +194,8 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if _is_recursive_violation(src, dest) or not os.access(src, os.R_OK): return False
         
         stats = src.stat()
+        # Verificar hard links (st_nlink > 1) para evitar efectos colaterales en otros punteros
+        if stats.st_nlink > 1: return False
         if not (0 <= stats.st_size < MAX_FILE_SIZE_BYTES): return False
         if stats.st_mtime > datetime.now().timestamp() + 3600: return False
         

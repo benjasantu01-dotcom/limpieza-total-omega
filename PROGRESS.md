@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Mejoras aceptadas: **209** (41.5% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 37
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 30
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-29 | 131 | 15 | 22 | 18 | 162 |
-| 2026-09-30 | 75 | 7 | 15 | 12 | 47 |
+| 2026-09-29 | 131 | 15 | 22 | 18 | 158 |
+| 2026-09-30 | 78 | 7 | 16 | 12 | 47 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
-- seguridad defensiva: **44**
+- seguridad defensiva: **47**
 - robustez ante casos límite: **40**
 - manejo de errores y validación de entradas: **39**
 - rendimiento: **34**
@@ -30,22 +30,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **21**
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
 - `assistant.py`: **19**
 - `scanner.py`: **18**
-- `memory.py`: **17**
+- `memory.py`: **18**
 - `settings.py`: **16**
 - `diskreport.py`: **16**
 - `branding.py`: **15**
 - `browser.py`: **14**
 - `duplicates.py`: **14**
+- `organizer.py`: **14**
 - `safety.py`: **13**
-- `organizer.py`: **13**
 - `main.py`: **7**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-30T06:49:11` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `quarantine.py` mediante la implementación de una validación de `st_ino` (inodo/índice de archivo) antes de realizar operaciones críticas de borrado o movimiento, mitigando así el riesgo de condiciones de carrera (TOCTOU) donde un archivo en el sistema podría haber sido reemplazado por otro mientras el script está en ejecución.
+- `2026-09-30T06:48:31` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` añadiendo una validación explícita de `st_nlink` para detectar hard links y prevenir la manipulación accidental de archivos con múltiples punteros en el sistema de archivos.
+- `2026-09-30T06:48:04` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_process_path` y `trim_working_set` al centralizar y validar la obtención de rutas mediante un enfoque de acceso limitado (`PROCESS_QUERY_LIMITED_INFORMATION`), asegurando que solo se operen procesos cuyos ejecutables residan en rutas permitidas y verificables mediante `is_safe_to_modify`, evitando así cualquier manipulación accidental de procesos en rutas sensibles o protegidas del sistema.
 - `2026-09-30T06:39:02` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del sistema ante datos de entrada maliciosos o malformados en `_evaluate_rules` y `compute_score`, implementando un filtrado estricto de los mensajes generados por los `message_factory` para evitar la inyección de caracteres de control o texto no imprimible que pudiera comprometer la integridad del reporte.
 - `2026-09-30T06:38:34` **duplicates.py** (seguridad defensiva): Se introdujo la verificación `is_junction` en `_collect_candidates` para evitar seguir puntos de reparse (junctions/symlinks) durante la recursión, garantizando que el escaneo no escape de las carpetas permitidas ni entre en bucles infinitos de sistema, cumpliendo estrictamente con el enfoque de seguridad defensiva.
 - `2026-09-30T06:37:55` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_excluded_path` añadiendo una comprobación explícita para evitar que `os.path.realpath` o `resolve` sigan enlaces simbólicos maliciosos o bucles infinitos durante la validación de rutas, asegurando que la ruta analizada se mantenga estrictamente dentro de los límites del directorio raíz solicitado.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-30T06:08:30` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` y `_get_process_path` para manejar situaciones donde el proceso termina inesperadamente entre la consulta y la ejecución, añadiendo una validación explícita mediante `ctypes.WinError` y evitando cierres de handles nulos.
 - `2026-09-30T05:58:19` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la clase `SystemMetrics` mediante la implementación de una validación exhaustiva de estados nulos o inválidos y la protección del `pipeline` ante métricas fuera de rango, asegurando que `compute_score` nunca retorne un estado inconsistente.
 - `2026-09-30T05:57:38` **diskreport.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas de archivo excepcionalmente largas (que superen los límites de MAX_PATH en Windows) en el generador `walk_files` para evitar bloqueos por `OSError` o fallos en el escaneo al encontrar niveles de anidamiento excesivos.
-- `2026-09-30T05:57:04` **browser.py** (robustez ante casos límite): Se introdujo una validación estricta contra el "desbordamiento de caracteres" (buffer overflow) y rutas no normalizadas mediante el uso de `os.path.abspath` y una validación explícita de la longitud de la ruta antes de intentar cualquier operación de sistema, mitigando riesgos ante rutas maliciosas o extremadamente largas que excedan los límites de Windows.
-- `2026-09-30T05:38:06` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner implementando un caché interno (`is_protected_path` es costoso) y reduciendo las llamadas redundantes a `is_protected_path` dentro de `_is_safe_entry`, utilizando un conjunto `set` para evitar consultas repetidas sobre las mismas rutas parentales.
-- `2026-09-30T05:29:36` **organizer.py** (rendimiento): Se optimizó el escaneo del sistema de archivos reemplazando las validaciones redundantes de `is_safe_to_modify` dentro del bucle recursivo por una verificación inicial de la carpeta, aprovechando que `_should_scan_directory` ya filtra rutas protegidas y que `is_valid_junk_entry` centraliza las condiciones de seguridad, reduciendo drásticamente las llamadas a disco y el uso de CPU.

@@ -300,6 +300,7 @@ def _get_process_path(pid: int) -> Optional[Path]:
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0 and buf.value:
             p = Path(buf.value).resolve()
+            # Validación defensiva de seguridad antes de retornar una ruta
             if not is_protected_path(str(p)):
                 return p
     except (ctypes.ArgumentError, OSError, ValueError):

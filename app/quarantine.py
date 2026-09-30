@@ -79,6 +79,7 @@ class QuarantineItem:
     reason: str
     quarantined_at: str
     sha256: str = ""
+    file_inode: int = 0  # Identificador de inodo para validación TOCTOU
 
     def __post_init__(self) -> None:
         try:
@@ -120,7 +121,8 @@ class QuarantineItem:
                 size_bytes=int(data["size_bytes"]),
                 reason=str(data["reason"]),
                 quarantined_at=str(data["quarantined_at"]),
-                sha256=str(data.get("sha256", ""))
+                sha256=str(data.get("sha256", "")),
+                file_inode=int(data.get("file_inode", 0))
             )
         except (ValueError, TypeError):
             return None
@@ -131,6 +133,9 @@ class QuarantineItem:
         try:
             st = stored_path.stat()
             if stored_path.is_symlink() or (hasattr(stored_path, 'is_junction') and stored_path.is_junction()):
+                return False
+            # Validar inodo si está disponible para evitar sustituciones
+            if self.file_inode != 0 and st.st_ino != self.file_inode:
                 return False
             return (
                 stored_path.is_file() and 
@@ -200,12 +205,15 @@ def _is_file_locked(path: Path) -> bool:
     """Wrapper para chequeo de bloqueos de archivos en el sistema operativo."""
     return _is_file_in_use_by_system(path)
 
-def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
+def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: int = 0) -> bool:
     """
-    Eliminación validada (sandbox-aware).
+    Eliminación validada (sandbox-aware) con chequeo de inodo.
     """
     try:
         if not path.exists() or not path.is_absolute():
+            return False
+        st = path.stat()
+        if expected_inode != 0 and st.st_ino != expected_inode:
             return False
         if path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction()):
             return False
@@ -509,7 +517,7 @@ def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> 
         raise OSError(f"Falla durante operación I/O de copia: {e}")
 
 
-def _write_temp_to_final(source: Path, destination: Path) -> str:
+def _write_temp_to_final(source: Path, destination: Path) -> tuple[str, int]:
     """Escribe un archivo en destino usando una copia temporal verificada."""
     _check_path_syntax_integrity(destination)
     _validate_file_transfer_preconditions(source, destination)
@@ -524,7 +532,7 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
         _copy_with_verification(source, temp_dest, source_hash)
         os.replace(temp_dest, destination)
         ensure_safe_to_modify(destination, allow_sensitive=True)
-        return source_hash
+        return source_hash, destination.stat().st_ino
     except Exception as e:
         if temp_dest.exists():
             try: temp_dest.unlink()
@@ -534,7 +542,7 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
         raise OSError(f"Error crítico en transferencia: {e}")
 
 
-def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> str:
+def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> tuple[str, int]:
     """Ejecuta el aislamiento atómico de un archivo."""
     if not source.exists() or not source.is_file():
         raise FileNotFoundError("Archivo origen inexistente o inválido al iniciar copia.")
@@ -555,6 +563,7 @@ def _register_quarantine_item(
     destination: Path,
     source_path: Path,
     file_hash: str,
+    file_inode: int,
     reason: str,
     original_size: int,
     base: PathLike
@@ -570,6 +579,7 @@ def _register_quarantine_item(
             reason=str(reason) if reason else "Sin motivo",
             quarantined_at=datetime.now().isoformat(timespec="seconds"),
             sha256=file_hash,
+            file_inode=file_inode,
         )
         items_list.append(quarantine_item)
         save_manifest(items_list, base)
@@ -641,7 +651,7 @@ def quarantine_file(
         raise FileExistsError("Colisión: el nombre de destino ya existe en la cuarentena.")
 
     try:
-        file_hash = _atomic_isolate_file(source_path, destination, original_size)
+        file_hash, file_inode = _atomic_isolate_file(source_path, destination, original_size)
         
         if not destination.exists() or _get_sha256(destination) != file_hash:
             raise RuntimeError("Falla crítica: el destino no es coherente tras la copia.")
@@ -652,7 +662,7 @@ def quarantine_file(
             except OSError as e:
                 raise RuntimeError(f"Aislamiento exitoso, pero falla al remover origen: {e}")
                 
-        item = _register_quarantine_item(destination, source_path, file_hash, reason, original_size, base)
+        item = _register_quarantine_item(destination, source_path, file_hash, file_inode, reason, original_size, base)
         _verify_transaction_integrity(item, destination)
         return item
     except Exception as e:
@@ -736,7 +746,7 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
         return True
     if not quarantine_item.verify_integrity(stored_file):
         raise UnsafePathError(f"Integridad fallida para {item_id}.")
-    if _safe_unlink(stored_file, expected_hash=quarantine_item.sha256):
+    if _safe_unlink(stored_file, expected_hash=quarantine_item.sha256, expected_inode=quarantine_item.file_inode):
         save_manifest([i for i in items if i.item_id != item_id], base)
         return True
     return False
@@ -752,7 +762,7 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) ->
         return False
     return (
         item.verify_integrity(file_path) and
-        _safe_unlink(file_path, expected_hash=item.sha256)
+        _safe_unlink(file_path, expected_hash=item.sha256, expected_inode=item.file_inode)
     )
 
 
