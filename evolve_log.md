@@ -1475,3 +1475,13 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not define
 - `2026-09-30T14:30:02` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 100): unterminated string literal (detected at line 100)
 - `2026-09-30T14:30:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T14:30:02` Corrida terminada. Total usado hoy: 340.
+- `2026-09-30T14:37:29` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-30T14:38:21` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el rendimiento de `is_protected_path` reemplazando la lógica de comparación basada en `os.sep.split()` (que es costosa debido a la creación de listas intermedias) por una búsqueda directa de prefijos de cadena, aprovechando el diseño actual de `_SYSTEM_ROOT_PATHS_TUPLE` y mejorando la eficiencia del cache al simplificar la normalización.
+- `2026-09-30T14:39:01` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escáner reemplazando la lógica de filtrado de extensiones basada en `os.path.splitext` (que genera tuplas y realiza llamadas adicionales al sistema de archivos) por una comprobación directa de sufijo con `frozenset`, reduciendo la carga de CPU durante el recorrido de directorios grandes.
+- `2026-09-30T14:39:36` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de la persistencia agregando un chequeo de pre-guardado para evitar E/S de disco y serialización innecesaria si la configuración cargada coincide con la nueva, reduciendo además la frecuencia de limpieza de caché.
+- `2026-09-30T14:39:36` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-30T14:39:44` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-30T14:39:51` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-30T14:40:07` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-30T14:40:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T14:40:07` Corrida terminada. Total usado hoy: 344.

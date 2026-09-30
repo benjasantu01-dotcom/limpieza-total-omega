@@ -202,8 +202,9 @@ class Scanner:
 
     def _is_relevant_extension(self, name: str) -> bool:
         """Filtra archivos con extensiones no relevantes para el análisis heurístico."""
-        _, ext = os.path.splitext(name)
-        return ext.lower() in SUSPICIOUS_ALL_EXTS
+        # Optimizacion: Buscamos el ultimo punto en la cadena en vez de splitext
+        idx = name.rfind('.')
+        return name[idx:].lower() in SUSPICIOUS_ALL_EXTS if idx != -1 else False
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Valida, categoriza y delega el procesamiento de una entrada."""

@@ -393,7 +393,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         except OSError:
             if bak_path.exists(): os.replace(bak_path, ruta)
             raise
-        _load_cached.cache_clear()
         return ruta
     except (OSError, IOError, PermissionError): return None
     finally:
@@ -412,7 +411,9 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
             if val is not None and val != current.get(k):
                 current[k] = val
                 modified = True
-    if modified: save(current, custom_base)
+    if modified: 
+        save(current, custom_base)
+        _load_cached.cache_clear()
     return current
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
