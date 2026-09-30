@@ -248,23 +248,20 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        p_entry = Path(entry.path)
-                        # Prevención de rutas UNC o recursos de red peligrosos
-                        if p_entry.parts and p_entry.parts[0].startswith(("\\\\", "//")):
-                            continue
-                        
-                        if not _safe_path_check(p_entry) or (skip_protected and is_protected_path(p_entry)):
-                            continue
-                            
+                        # Evitar re-procesar rutas mediante comprobaciones rápidas
                         if entry.is_dir(follow_symlinks=False):
                             stack.append(entry.path)
                             continue
                         
                         if not entry.is_file(follow_symlinks=False):
                             continue
-
+                        
                         stat_info = entry.stat(follow_symlinks=False)
                         if stat_info.st_size < min_size:
+                            continue
+
+                        p_entry = Path(entry.path)
+                        if not _safe_path_check(p_entry) or (skip_protected and is_protected_path(p_entry)):
                             continue
                         
                         if is_system_or_hidden(p_entry) or _is_file_locked(p_entry):

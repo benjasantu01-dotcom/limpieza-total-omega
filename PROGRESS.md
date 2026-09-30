@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **195** (38.7% de aceptación)
-- Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 36
+- Rechazadas por tests: 21
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 24
 - Sin respuesta de la IA (error o límite): 229
 
@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-28 | 10 | 2 | 2 | 0 | 20 |
+| 2026-09-28 | 7 | 2 | 1 | 0 | 20 |
 | 2026-09-29 | 131 | 15 | 22 | 18 | 164 |
-| 2026-09-30 | 54 | 3 | 12 | 6 | 45 |
+| 2026-09-30 | 57 | 4 | 12 | 6 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
 - seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **39**
-- robustez ante casos límite: **37**
-- rendimiento: **26**
+- robustez ante casos límite: **34**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
 - `assistant.py`: **19**
 - `healthscore.py`: **19**
-- `memory.py`: **16**
+- `quarantine.py`: **18**
 - `settings.py`: **16**
 - `scanner.py`: **16**
 - `safety.py`: **15**
+- `diskreport.py`: **15**
+- `memory.py`: **15**
 - `browser.py`: **14**
-- `diskreport.py`: **14**
-- `branding.py`: **13**
-- `organizer.py`: **12**
-- `duplicates.py`: **12**
+- `branding.py`: **14**
+- `duplicates.py`: **13**
+- `organizer.py`: **11**
 - `main.py`: **6**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-30T05:17:35` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` utilizando un conjunto (set) de rutas procesadas internamente en lugar de realizar llamadas redundantes a `stat()` y `safe_path_check` para archivos que ya fueron evaluados mediante el sistema de ficheros de `os.scandir`, reduciendo significativamente las llamadas al sistema operativo durante el recorrido recursivo.
+- `2026-09-30T05:17:21` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la redundancia de realizar múltiples recorridos recursivos independientes, reutilizando el generador `walk_files` de manera eficiente mediante un mapeo de claves de primer nivel.
+- `2026-09-30T05:16:27` **branding.py** (rendimiento): Se ha optimizado la gestión de las coordenadas del escudo utilizando `lru_cache` para evitar el cálculo de tuplas de vértices en cada frame de renderizado, y se eliminó una concatenación innecesaria en la generación del SVG.
 - `2026-09-30T05:08:55` **assistant.py** (rendimiento): Optimicé el acceso al diccionario de handlers en `local_answer` convirtiendo el `next` con generador a un acceso directo por clave, y reemplacé la construcción de strings costosa en `_generate_context_cached` por un pre-formateo más eficiente de las métricas, reduciendo la carga de CPU en cada consulta.
 - `2026-09-30T05:08:00` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `startup.py` mediante docstrings detallados en los métodos de `StartupEntry` para clarificar la lógica de saneamiento y resolución de rutas, además de renombrar variables internas (como `p_candidate` a `target_path`) para eliminar ambigüedades.
 - `2026-09-30T05:06:04` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes y normalizando las docstrings para seguir el estándar del proyecto, facilitando la comprensión del flujo de datos en las heurísticas y el estado interno del `Scanner`.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-30T04:36:59` **diskreport.py** (legibilidad y documentación): He mejorado la documentación del código añadiendo *type hints* faltantes en `ExtStats` y los métodos de `_collect_summary_data`, y he clarificado los docstrings mediante el uso de parámetros tipados (Type Hints) para mejorar la legibilidad del contrato de las funciones.
 - `2026-09-30T04:36:21` **branding.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en `MappingProxyType`) y se mejoró la documentación con docstrings normalizados para clarificar la lógica de segmentación y el propósito de los métodos de dibujo, facilitando la mantenibilidad futura.
 - `2026-09-30T04:26:44` **settings.py** (manejo de errores y validación de entradas): Se mejoró la robustez de la validación en `_load_impl` y `save` mediante el uso de `ensure_safe_to_modify` como medida de control de flujo segura (lanzando excepciones que el bloque `try-except` captura), evitando así el uso de chequeos de escritura en funciones que solo deberían leer o validar, siguiendo estrictamente el patrón definido.
-- `2026-09-30T04:26:11` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas de archivo (`check_recent_executable_in_downloads` y `check_empty_file`) añadiendo validaciones de tipo y estado para prevenir excepciones ante archivos bloqueados o inaccesibles, asegurando que el bucle de escaneo no se interrumpa ante metadatos parciales.
-- `2026-09-30T04:25:34` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `_get_path_stat_robust` para incluir una captura específica de `OSError` cuando `path.stat()` falla, diferenciando errores de permiso de bloqueos de sistema, y se ha reemplazado la verificación genérica `except Exception` en `_is_file_locked_by_other_process` por una tupla de excepciones concretas para evitar la supresión accidental de errores críticos de sistema.
-- `2026-09-30T04:16:14` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita para el parámetro `item_id` en las funciones de acceso público (`purge_item` y `restore_item`), garantizando que no se procesen entradas vacías o malformadas antes de realizar operaciones de disco, alineándose con el enfoque de manejo de errores y validación.

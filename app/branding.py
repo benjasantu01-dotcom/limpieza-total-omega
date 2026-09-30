@@ -379,7 +379,7 @@ def logo_svg(size: int = 128) -> str:
     """Genera el código XML del logo corporativo en formato SVG."""
     s = max(1, min(4096, int(size)))
     
-    svg_structure = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
   <defs>
     <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">{_SVG_GRADIENT_STOPS}    </linearGradient>
     <radialGradient id="omegaGlow" cx="0.5" cy="0.4" r="0.6">
@@ -394,7 +394,6 @@ def logo_svg(size: int = 128) -> str:
   <path d="M75 41 L89 38 L92 52 Z" fill="{C_BACKGROUND}"/>
   <text x="64" y="98" font-family="{UI_FONT_FAMILY}" font-size="26" font-weight="{UI_FONT_BOLD}" fill="{C_BACKGROUND}" text-anchor="middle">&#937;</text>
 </svg>"""
-    return svg_structure
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optional[Path]:
     """Guarda el logo SVG tras validar la seguridad del destino."""

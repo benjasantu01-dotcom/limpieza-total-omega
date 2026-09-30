@@ -281,19 +281,25 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     """Analiza carpetas de primer nivel para determinar su tamaño total acumulado."""
     root = _validate_root(directory)
     if not root: return []
+    
     stats: Dict[Path, List[int]] = defaultdict(lambda: [0, 0])
-    try:
-        with os.scandir(root) as it:
-            for entry in it:
-                if entry.is_dir(follow_symlinks=False):
-                    path = Path(entry.path)
-                    # Verifica acceso antes de entrar en subcarpetas
-                    if skip_protected and (is_protected_path(path) or not os.access(path, os.R_OK)):
-                        continue
-                    for f_path, f_size in walk_files(path, skip_protected):
-                        stats[path][0] += f_size
-                        stats[path][1] += 1
-    except (OSError, PermissionError): pass
+    
+    # Recorrido único: clasificamos cada archivo encontrado en su carpeta de nivel superior
+    with os.scandir(root) as it:
+        top_level = {Path(e.path): Path(e.path) for e in it if e.is_dir()}
+    
+    for path, size in walk_files(root, skip_protected):
+        # Encontrar a qué carpeta de primer nivel pertenece
+        try:
+            relative = path.relative_to(root)
+            parts = relative.parts
+            if parts:
+                top_folder = root / parts[0]
+                if top_folder in top_level:
+                    stats[top_folder][0] += size
+                    stats[top_folder][1] += 1
+        except ValueError: continue
+
     results = [FolderUsage(p, s[0], s[1]) for p, s in stats.items()]
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)
 
