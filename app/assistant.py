@@ -467,17 +467,20 @@ def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> Syst
 @lru_cache(maxsize=16)
 def _generate_context_cached(ctx: SystemContext) -> str:
     """Genera bloque de resumen del sistema optimizado para prompts."""
-    lines = [
-        f"Puntaje de salud: {ctx.score if ctx.score is not None else 'N/A'}"
-        f"{f' nota {ctx.grade[:5]}' if ctx.grade else ''}",
+    # Pre-formateo eficiente de métricas
+    sc = f"Puntaje de salud: {ctx.score if ctx.score is not None else 'N/A'}"
+    if ctx.grade:
+        sc += f" nota {ctx.grade[:5]}"
+    
+    return "\n".join([
+        sc,
         f"Basura: {_fmt_metric(ctx.junk_mb, ' MB', 0)}",
         f"Sospechosos: {int(ctx.suspicious_count)}",
         f"RAM disponible: {_fmt_metric(ctx.memory_available_percent, '%', 0)}",
         f"Disco libre: {_fmt_metric(ctx.disk_free_percent, '%', 0)}",
         f"Duplicados: {_fmt_metric(ctx.duplicate_mb, ' MB', 0)}",
         f"Inicio: {int(ctx.startup_count)} items"
-    ]
-    return "\n".join(lines)
+    ])
 
 def context_as_text(context: SystemContext) -> str:
     """Convierte el contexto en un string serializado listo para ser embebido en prompts."""
@@ -599,10 +602,10 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     if not q_sanitized:
         return Answer("Entrada no válida.")
     
-    tokens = set(_TOKEN_REGEX.findall(q_sanitized.lower()))
-    handler = next((_TOKENS_MAP[t] for t in tokens if t in _TOKENS_MAP), None)
-    if handler:
-        return handler(context, question)
+    tokens = _TOKEN_REGEX.findall(q_sanitized.lower())
+    for t in tokens:
+        if t in _TOKENS_MAP:
+            return _TOKENS_MAP[t](context, question)
             
     cuerpo = _format_problem_message(context.active_problems, context.score or "N/A")
     ans = Answer(_validate_response_length(cuerpo), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)

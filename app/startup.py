@@ -89,8 +89,8 @@ class StartupEntry:
     @property
     def is_valid(self) -> bool:
         """
-        Valida que el comando esté libre de inyecciones de control, caracteres 
-        prohibidos o referencias a dispositivos de sistema heredados.
+        Valida si la cadena de comando es estructuralmente segura. 
+        Rechaza rutas que contengan caracteres de control o referencias a dispositivos lógicos.
         """
         if not self.command or self._is_path_suspicious(self.command):
             return False
@@ -119,15 +119,15 @@ class StartupEntry:
             return False
 
     def _sanitize_command(self, raw_command: str) -> str:
-        """Limpia caracteres de control o no imprimibles de la línea de comandos extraída."""
+        """Elimina caracteres de control (ASCII < 32) de la línea de comandos extraída."""
         if not isinstance(raw_command, str):
             return ""
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae y normaliza una ruta desde una cadena entrecomillada. Realiza 
-        validaciones de seguridad para asegurar que la ruta sea absoluta y permitida.
+        Extrae y normaliza una ruta desde una cadena entrecomillada. 
+        Asegura que la ruta extraída no realice 'path traversal' ni acceda a áreas protegidas.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
@@ -155,8 +155,8 @@ class StartupEntry:
 
     def _validate_file_access(self, p: Path) -> bool:
         """
-        Realiza chequeos finales de integridad mediante `safety.py`. Verifica 
-        que el objeto sea un archivo existente y no esté en una ruta protegida.
+        Verifica la integridad del archivo mediante `safety.py`. 
+        Asegura que la ruta resuelta sea un archivo real, existente y no protegido.
         """
         try:
             if not p.exists():
@@ -169,8 +169,8 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
-        Resuelve una ruta relativa/absoluta a su forma canónica. Implementa una
-        caché interna para reducir llamadas repetitivas al sistema de archivos.
+        Resuelve una ruta a su forma absoluta y canónica. 
+        Utiliza _EXISTS_CACHE para minimizar consultas al sistema de archivos.
         """
         if not isinstance(path_string, str) or not self.is_valid:
             return ""
@@ -206,8 +206,8 @@ class StartupEntry:
 
     def _resolve_path_from_command(self, command_line: str) -> str:
         """
-        Analiza una línea de comandos completa (ej. "ruta.exe" -arg1) para 
-        aislar exclusivamente la ruta ejecutable principal.
+        Descompone una línea de comandos completa para aislar la ruta del ejecutable primario,
+        gestionando tanto rutas entrecomilladas como comandos simples.
         """
         if not command_line or not isinstance(command_line, str):
             return ""
@@ -232,8 +232,8 @@ class StartupEntry:
     @property
     def executable(self) -> str:
         """
-        Retorna la ruta absoluta del ejecutable tras validación. El cálculo es
-        perezoso y se memoiza automáticamente en la primera llamada.
+        Retorna la ruta absoluta del ejecutable tras validación. 
+        El resultado se memoiza internamente para evitar re-cálculos costosos.
         """
         if self._checked_exists:
             return self._exec_cache or ""
@@ -304,8 +304,8 @@ def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
             return False
         if any(c in clean_path for c in SUSPICIOUS_CHARS):
             return False
-        p_candidate = Path(clean_path)
-        if is_protected_path(p_candidate) or ".." in str(p_candidate):
+        target_path = Path(clean_path)
+        if is_protected_path(target_path) or ".." in str(target_path):
             return False
         return True
     except (ValueError, TypeError, OSError, RuntimeError):

@@ -416,3 +416,13 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-09-30T04:57:24` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna agregando docstrings detallados y precisos a las funciones de validación, clarificando el propósito, las condiciones de error y el fundamento técnico de los chequeos de integridad para facilitar el mantenimiento y auditoría del código.
 - `2026-09-30T04:57:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T04:57:24` Corrida terminada. Total usado hoy: 116.
+- `2026-09-30T05:05:34` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-09-30T05:06:04` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del módulo añadiendo type hints faltantes y normalizando las docstrings para seguir el estándar del proyecto, facilitando la comprensión del flujo de datos en las heurísticas y el estado interno del `Scanner`.
+- `2026-09-30T05:06:42` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._check_path_safety, _Validators._is_reparse_point, _Validators._is_safe_path, _Validators._run_safety_checks
+- `2026-09-30T05:07:01` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-30T05:07:24` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-30T05:08:00` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `startup.py` mediante docstrings detallados en los métodos de `StartupEntry` para clarificar la lógica de saneamiento y resolución de rutas, además de renombrar variables internas (como `p_candidate` a `target_path`) para eliminar ambigüedades.
+- `2026-09-30T05:08:25` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-30T05:08:55` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el acceso al diccionario de handlers en `local_answer` convirtiendo el `next` con generador a un acceso directo por clave, y reemplacé la construcción de strings costosa en `_generate_context_cached` por un pre-formateo más eficiente de las métricas, reduciendo la carga de CPU en cada consulta.
+- `2026-09-30T05:08:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T05:08:55` Corrida terminada. Total usado hoy: 120.
