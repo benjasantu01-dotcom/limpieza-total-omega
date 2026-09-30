@@ -310,6 +310,8 @@ def _is_file_secure_to_read(ruta: Path, st_info: os.stat_result | None = None) -
         if not stat.S_ISREG(st.st_mode) or _Validators._is_reparse_point(ruta): return False
         # Bloquear archivos con bits de ejecución o escritura abierta a otros usuarios
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
+        # Refuerzo: Bloquear escritura del grupo o otros (world-writable)
+        if st.st_mode & (stat.S_IWGRP | stat.S_IWOTH): return False
         if not is_safe_to_modify(str(ruta)): return False
         if not os.access(ruta, os.R_OK): return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
