@@ -226,7 +226,11 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """Generador recursivo que recorre archivos, evitando ciclos de inodos y rutas protegidas."""
+    """
+    Generador recursivo de archivos (yields Path, size).
+    Evita ciclos de inodos comparando (dev, ino) y saltea rutas protegidas o bloqueadas.
+    La navegación es mediante stack iterativo para evitar recursión profunda.
+    """
     root_path = _validate_root(directory)
     if root_path is None: return
     root_path_str = str(root_path)
@@ -299,7 +303,11 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """Ejecuta un escaneo recursivo consolidando métricas y manteniendo un heap para archivos top."""
+    """
+    Recorre el sistema de archivos y consolida métricas globales.
+    Usa un min-heap (heapq) para mantener solo los 'limit' archivos más pesados en memoria,
+    optimizando el uso de recursos ante grandes volúmenes de datos.
+    """
     total_bytes, total_files = 0, 0
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
     top_heap: List[Tuple[int, Path]] = []
@@ -314,6 +322,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         stats.total_bytes += size_bytes
         stats.count += 1
         
+        # Gestión de archivos Top-N mediante heap para evitar ordenamiento global costoso
         if limit > 0:
             if len(top_heap) < limit: 
                 heapq.heappush(top_heap, (size_bytes, path))

@@ -1238,3 +1238,42 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-29T23:38:36` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-29T23:48:48` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-29T23:58:55` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-09-30T00:09:05` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-09-30T00:09:42` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-09-30T00:10:10` Tests FALLARON:
+```
+th = PosixPath('/tmp/pytest-of-runner/pytest-1/test_summarize_includes_the_sa0')
+
+    def test_summarize_includes_the_safety_note(tmp_path):
+        caches = [browser.BrowserCache("Chrome", tmp_path / "Cache", 1024 * 1024)]
+>       texto = "\n".join(browser.summarize(caches))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_modules.py:800: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/browser.py:327: in summarize
+    total_mb = round(total_cache_bytes(current_caches) / (1024 * 1024), 2)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/browser.py:319: in total_cache_bytes
+    return sum(c.bytes_found for c in caches) if caches else 0
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = <list_iterator object at 0x7f4f7ba59420>
+
+>   return sum(c.bytes_found for c in caches) if caches else 0
+               ^^^^^^^^^^^^^
+E   AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+
+app/browser.py:319: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_total_cache_bytes_sums_detected_caches - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+2 failed, 297 passed in 1.47s
+
+```
+- `2026-09-30T00:10:10` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados que aclaran las dependencias de bajo nivel (Win32 API) y las precondiciones de seguridad necesarias, garantizando que el propósito de cada función sea explícito para futuros colaboradores.
+- `2026-09-30T00:10:39` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del módulo añadiendo docstrings técnicos detallados en las funciones de escaneo (`walk_files` y `_collect_summary_data`) para aclarar el manejo de memoria (heaps), la lógica de exclusión y el comportamiento ante errores, facilitando el mantenimiento.
+- `2026-09-30T00:10:50` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo incorporando tipos explícitos en docstrings y aclarando el flujo lógico de las estrategias de hashing para asegurar la mantenibilidad del código.
+- `2026-09-30T00:10:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T00:10:50` Corrida terminada. Total usado hoy: 4.
