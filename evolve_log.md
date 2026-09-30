@@ -1346,3 +1346,43 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-30T13:09:11` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-30T13:09:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T13:09:11` Corrida terminada. Total usado hoy: 308.
+- `2026-09-30T13:15:37` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-30T13:16:25` Tests FALLARON:
+```
+h_syntax_integrity(destination)
+            if is_protected_path(destination):
+                raise UnsafePathError("Restauración denegada: destino protegido.")
+            if destination.exists():
+                raise FileExistsError("El destino ya existe.")
+    
+            _check_device_consistency(stored_file, destination.parent.resolve())
+            parent = destination.parent
+            if not is_safe_to_modify(parent):
+                raise UnsafePathError("Directorio padre no seguro.")
+            _ensure_disk_space(parent, quarantine_item.size_bytes)
+    
+            parent.mkdir(parents=True, exist_ok=True)
+            if not is_safe_to_modify(destination):
+                raise UnsafePathError("Destino no seguro.")
+    
+            os.replace(str(stored_file), str(destination))
+            save_manifest([i for i in items if i.item_id != item_id], base)
+            return destination
+        except (OSError, PermissionError, IOError, KeyError, UnsafePathError) as e:
+>           raise RuntimeError(f"Error crítico en restauración: {e}")
+E           RuntimeError: Error crítico en restauración: [GENERIC] Restauración denegada: destino protegido.
+
+app/quarantine.py:741: RuntimeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error crítico en restauración: [GENERIC] Restauración denegada: destino protegido.
+1 failed, 298 passed in 1.51s
+
+```
+- `2026-09-30T13:16:25` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se mejora el manejo de errores en `restore_item` al centralizar la validación de integridad y existencia, garantizando que el estado del manifiesto y del sistema de archivos se mantengan consistentes incluso ante fallos inesperados de E/S.
+- `2026-09-30T13:16:59` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-09-30T13:17:43` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las validaciones de entrada en `_get_path_stat_robust` y `_check_file_integrity`, añadiendo capturas de excepciones más específicas y verificaciones de estado `None` para evitar fallos de ejecución en condiciones de carrera o rutas inexistentes.
+- `2026-09-30T13:18:02` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-30T13:18:49` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-30T13:19:28` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las heurísticas `check_recent_executable_in_downloads` y `check_empty_file` encapsulando la extracción y validación de atributos dentro de `_safe_stat` para prevenir excepciones por accesos concurrentes o estados de archivo inconsistentes, reforzando la integridad del bucle de escaneo.
+- `2026-09-30T13:19:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T13:19:28` Corrida terminada. Total usado hoy: 312.

@@ -112,12 +112,9 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
     stats = _safe_stat(entry) if entry else None
     if stats:
-        try:
-            mtime = float(getattr(stats, "st_mtime", 0.0))
-            if mtime > 0 and (now_ts - mtime) < (LIMITS.recent_hours * 3600):
-                return Suspicion(path, f"Ejecutable reciente detectado (<{LIMITS.recent_hours}h)", "info")
-        except (AttributeError, TypeError, ValueError):
-            return None
+        mtime = getattr(stats, "st_mtime", 0.0)
+        if isinstance(mtime, (int, float)) and mtime > 0 and (now_ts - float(mtime)) < (LIMITS.recent_hours * 3600):
+            return Suspicion(path, f"Ejecutable reciente detectado (<{LIMITS.recent_hours}h)", "info")
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
@@ -135,11 +132,9 @@ def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: fl
     """Heurística: Detecta ejecutables de 0 bytes, utilizados frecuentemente como señuelos."""
     stats = _safe_stat(entry) if entry else None
     if stats is not None:
-        try:
-            if int(getattr(stats, "st_size", -1)) == 0:
-                return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
-        except (AttributeError, TypeError, ValueError):
-            return None
+        size = getattr(stats, "st_size", -1)
+        if isinstance(size, int) and size == 0:
+            return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
     return None
 
 ALL_CHECKS: Final[List[SuspicionCheck]] = [

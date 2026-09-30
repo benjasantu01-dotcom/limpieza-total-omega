@@ -419,12 +419,10 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
         raise UnsafePathError(f"Punto de reparse detectado durante acceso estático: {path.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
     try:
         return path.stat()
-    except PermissionError:
-        raise UnsafePathError(f"Permisos insuficientes: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
-    except OSError as e:
-        if hasattr(e, 'winerror') and e.winerror == 32:
+    except (PermissionError, OSError) as e:
+        if getattr(e, 'winerror', 0) == 32:
              raise UnsafePathError(f"Archivo bloqueado por otro proceso: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
-        raise UnsafePathError(f"I/O fallido: {path.name}", SafetyValidationErrorCode.IO_ERROR)
+        raise UnsafePathError(f"Acceso fallido: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     except (ValueError, TypeError) as e:
         raise UnsafePathError(f"Error al leer metadatos de {path.name}: {e}", SafetyValidationErrorCode.IO_ERROR)
 
@@ -434,6 +432,9 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     Verifica que el archivo no haya sido reemplazado y pertenezca a un volumen local permitido
     comparando los identificadores de dispositivo e inodo contra el estado inicial.
     """
+    if not path.exists():
+        raise UnsafePathError("El archivo ya no existe (TOCTOU).", SafetyValidationErrorCode.IO_ERROR)
+        
     if os.name == 'nt':
         root = path.anchor
         if root:
