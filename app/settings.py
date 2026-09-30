@@ -332,23 +332,21 @@ def _load_impl(ruta: Path) -> AppSettings:
         pass
     return dict(DEFAULTS)
 
-@lru_cache(maxsize=4)
-def _load_with_cache(ruta_str: str, mtime: float) -> AppSettings:
-    """Carga interna cacheada para evitar E/S redundante."""
+@lru_cache(maxsize=8)
+def _load_cached(ruta_str: str, mtime: float) -> AppSettings:
+    """Carga interna cacheada usando el mtime para evitar E/S innecesaria."""
     return _load_impl(Path(ruta_str))
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Carga los ajustes desde el disco, utilizando caché de tiempo de modificación (mtime)."""
+    """Carga los ajustes desde el disco, utilizando caché por mtime."""
     ruta = settings_path(custom_base)
-    try:
-        mtime = ruta.stat().st_mtime if ruta.exists() else 0.0
-    except OSError:
-        mtime = 0.0
+    bak = ruta.with_suffix(".bak")
     
-    for r in [ruta, ruta.with_suffix(".bak")]:
+    for r in [ruta, bak]:
         try:
             if r.exists():
-                return _load_with_cache(str(r), mtime).copy()
+                st = r.stat()
+                return _load_cached(str(r), st.st_mtime).copy()
         except (OSError, PermissionError):
             continue
     return dict(DEFAULTS)
@@ -408,7 +406,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             if bak_path.exists(): os.replace(bak_path, ruta)
             raise
         
-        _load_with_cache.cache_clear()
+        _load_cached.cache_clear()
         return ruta
     except (OSError, IOError, PermissionError): 
         return None
@@ -434,7 +432,7 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
 def reset(custom_base: PathLike | None = None) -> AppSettings:
     """Restaura los valores predeterminados y limpia la caché."""
     save(DEFAULTS, custom_base)
-    _load_with_cache.cache_clear()
+    _load_cached.cache_clear()
     return dict(DEFAULTS)
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:

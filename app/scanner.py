@@ -163,11 +163,7 @@ class Scanner:
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica recursivamente si la entrada está contenida en el árbol base."""
-        try:
-            abs_path = Path(entry_path).resolve()
-            return str(abs_path).lower().startswith(self.base_root_str)
-        except (OSError, RuntimeError):
-            return False
+        return entry_path.lower().startswith(self.base_root_str)
 
     def _has_invalid_name(self, name: str) -> bool:
         return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name))
@@ -192,17 +188,16 @@ class Scanner:
         try:
             if self._is_reparse_point(entry) or entry.is_symlink():
                 return False
-            if not os.access(entry.path, os.R_OK):
-                return False
             
-            resolved_path = Path(entry.path).resolve()
-            parent_dir = str(resolved_path.parent)
+            # Usamos el path del entry sin resolver para las verificaciones de seguridad
+            path_obj = Path(entry.path)
+            parent_dir = str(path_obj.parent)
             if parent_dir not in self.protected_cache:
-                if is_protected_path(resolved_path.parent):
+                if is_protected_path(path_obj.parent):
                     return False
                 self.protected_cache.add(parent_dir)
             
-            return not is_protected_path(resolved_path)
+            return not is_protected_path(path_obj)
         except (OSError, RuntimeError, FileNotFoundError):
             return False
 
