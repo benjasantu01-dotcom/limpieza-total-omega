@@ -170,11 +170,14 @@ class StartupEntry:
         de las rutas protegidas definidas en `safety.py`.
         """
         try:
+            # Primero protegemos contra rutas sensibles antes de tocar el disco
+            if is_protected_path(p):
+                return False
             if not p.exists():
                 return False
             if not p.is_file() or p.is_symlink():
                 return False
-            return not is_protected_path(p)
+            return True
         except (OSError, PermissionError, FileNotFoundError, AttributeError):
             return False
 

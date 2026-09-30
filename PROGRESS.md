@@ -6,22 +6,22 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
+- Mejoras aceptadas: **209** (41.5% de aceptación)
 - Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-29 | 85 | 11 | 15 | 12 | 113 |
-| 2026-09-30 | 123 | 11 | 28 | 13 | 93 |
+| 2026-09-29 | 85 | 11 | 15 | 12 | 109 |
+| 2026-09-30 | 124 | 11 | 28 | 13 | 96 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **51**
+- seguridad defensiva: **52**
 - legibilidad y documentación: **49**
 - robustez ante casos límite: **41**
 - manejo de errores y validación de entradas: **39**
@@ -41,11 +41,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **15**
 - `organizer.py`: **15**
 - `duplicates.py`: **14**
-- `startup.py`: **5**
+- `startup.py`: **6**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-30T11:34:07` **startup.py** (seguridad defensiva): Se ha restringido el acceso a archivos de sistema prohibidos dentro del método `_validate_file_access` asegurando que, además de las verificaciones de existencia, se valide la ruta contra `is_protected_path` de forma explícita antes de cualquier operación de resolución, fortaleciendo la defensa contra ataques de tipo 'time-of-check to time-of-use' (TOCTOU).
 - `2026-09-30T11:25:22` **settings.py** (seguridad defensiva): Se endureció la seguridad defensiva de `settings.py` implementando una validación estricta de "Owner" y permisos en el archivo de configuración antes de su lectura, bloqueando ataques de escalada de privilegios o persistencia maliciosa donde un usuario sin privilegios podría reemplazar el archivo por uno manipulado con permisos de escritura abiertos.
 - `2026-09-30T11:25:04` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_safe_stat` y `_is_reparse_point` para asegurar que el acceso a atributos se realice de forma consistente y atómica, evitando posibles excepciones de acceso denegado durante la inspección de archivos bloqueados o en uso.
 - `2026-09-30T11:24:31` **safety.py** (seguridad defensiva): Se introdujo la verificación `_is_volume_compressed_or_encrypted` mediante `GetVolumeInformationW` en `ensure_safe_to_modify` para denegar modificaciones en volúmenes cifrados (BitLocker) o comprimidos a nivel de sistema de archivos, mejorando la seguridad defensiva al evitar operaciones impredecibles en volúmenes con protecciones criptográficas o compresión transparente.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-30T10:53:24` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante errores de E/S y corrupción de estado al implementar un chequeo de pre-condiciones en `_is_file_secure_to_read` que detecta archivos "vacíos" o con metadatos inconsistentes antes de intentar procesarlos, evitando el fallo de `json.load` en situaciones de archivos parcialmente escritos o bloqueados.
 - `2026-09-30T10:45:10` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a disco en la función `_is_safe_entry` y se ha implementado un filtrado más estricto en `scan_directory` para manejar archivos bloqueados o inexistentes durante el escaneo iterativo, evitando excepciones no capturadas durante la resolución de rutas.
 - `2026-09-30T10:44:50` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la detección de archivos de sistema al añadir una verificación explícita para evitar errores de tipo o acceso durante la resolución de rutas en el bucle `is_protected_path`, previniendo que una excepción inesperada durante la normalización haga que una ruta potencialmente insegura sea tratada como segura por defecto.
-- `2026-09-30T10:43:27` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_in_use_by_system` implementando un manejo explícito de `OSError` al intentar obtener atributos, previniendo fallos cuando el archivo es bloqueado por acceso denegado o procesos del sistema, asegurando que el estado de "en uso" se determine de forma segura.
