@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
-- Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 37
+- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Rechazadas por tests: 22
+- Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 220
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-28 | 35 | 6 | 7 | 3 | 27 |
+| 2026-09-28 | 33 | 5 | 6 | 3 | 27 |
 | 2026-09-29 | 131 | 15 | 22 | 18 | 164 |
-| 2026-09-30 | 33 | 2 | 8 | 4 | 29 |
+| 2026-09-30 | 33 | 2 | 8 | 4 | 33 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - seguridad defensiva: **44**
 - robustez ante casos límite: **41**
-- manejo de errores y validación de entradas: **33**
+- manejo de errores y validación de entradas: **31**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
@@ -38,10 +38,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **16**
 - `diskreport.py`: **16**
 - `memory.py`: **16**
-- `safety.py`: **15**
+- `safety.py`: **14**
 - `branding.py`: **13**
 - `duplicates.py`: **13**
-- `organizer.py`: **12**
+- `organizer.py`: **11**
 - `main.py`: **6**
 - `startup.py`: **3**
 
