@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **190** (37.7% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 36
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 232
+- Sin respuesta de la IA (error o límite): 234
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-28 | 27 | 3 | 6 | 3 | 27 |
+| 2026-09-28 | 24 | 3 | 5 | 3 | 27 |
 | 2026-09-29 | 131 | 15 | 22 | 18 | 164 |
-| 2026-09-30 | 33 | 2 | 8 | 4 | 41 |
+| 2026-09-30 | 35 | 2 | 8 | 4 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **46**
 - seguridad defensiva: **44**
+- legibilidad y documentación: **43**
 - robustez ante casos límite: **41**
 - rendimiento: **31**
-- manejo de errores y validación de entradas: **29**
+- manejo de errores y validación de entradas: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **20**
+- `assistant.py`: **19**
+- `healthscore.py`: **19**
 - `quarantine.py`: **18**
-- `assistant.py`: **18**
-- `memory.py`: **16**
 - `settings.py`: **16**
 - `scanner.py`: **15**
 - `browser.py`: **15**
 - `diskreport.py`: **15**
+- `memory.py`: **15**
 - `safety.py`: **14**
+- `branding.py`: **13**
 - `duplicates.py`: **12**
-- `branding.py`: **12**
-- `organizer.py`: **11**
+- `organizer.py`: **10**
 - `main.py`: **6**
 - `startup.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-30T03:56:42` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `_validate_destination` al normalizar la entrada de rutas y añadir validaciones explícitas de tipo y estado, asegurando que las excepciones de I/O no silencien errores de configuración sin romper el flujo de la aplicación.
+- `2026-09-30T03:56:05` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_text_from_gemini_json` envolviendo el acceso a la estructura anidada de la API en un manejo de errores más específico y validando explícitamente la presencia de las claves antes de intentar acceder a ellas, evitando así posibles caídas silenciosas o retornos inesperados ante respuestas inesperadas de la API.
 - `2026-09-30T02:33:23` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `startup.py` añadiendo un chequeo explícito en `_extract_quoted_path` para prevenir el uso de rutas que contienen la secuencia `..`, mitigando posibles ataques de "path traversal" al procesar entradas del registro malintencionadas.
 - `2026-09-30T02:32:56` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_file_secure_to_read` añadiendo una comprobación explícita para evitar que se carguen archivos que posean permisos de escritura para el grupo o "otros" (world-writable), lo cual es una vulnerabilidad común en archivos de configuración que pueden ser manipulados por otros usuarios del sistema.
 - `2026-09-30T02:23:49` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `_get_path_stat_robust` y `_check_file_integrity` para manejar específicamente el caso de archivos en uso (WinError 32) de manera diferenciada, y se añadió una validación explícita para evitar que `_get_path_stat_robust` sea llamado sobre rutas que han sido detectadas como puntos de reparse (junciones) antes de la resolución física, reforzando la defensa contra el seguimiento de enlaces fuera del sandbox.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-30T02:02:43` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `save_logo_svg` y `_validate_destination` para prevenir ataques de trayectoria (path traversal) y asegurar que cualquier intento de escritura sobre un archivo, incluso si es solo un logo, pase por el filtrado estricto del módulo `safety`.
 - `2026-09-30T02:02:03` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación explícita de `_ensure_safe_text` sobre el resultado extraído antes de retornarlo, cerrando una brecha potencial donde un JSON manipulado o inesperadamente formado podría inyectar contenido no verificado al flujo de la aplicación.
 - `2026-09-30T01:52:50` **settings.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_secure_to_read` para detectar archivos con bits de permisos inusualmente laxos (como permisos de escritura para el grupo o "otros") antes de leer la configuración, previniendo la carga de archivos manipulados malintencionadamente por otros usuarios del sistema.
-- `2026-09-30T01:52:17` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la validación de rutas dentro de `Scanner._is_safe_entry` mediante la normalización de la ruta absoluta con `.resolve()` antes de comparar con `base_root_str`, evitando así inconsistencias por enlaces simbólicos o rutas relativas que podrían eludir el aislamiento del escáner.
-- `2026-09-30T01:51:50` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `_get_security_descriptor` y `_get_path_stat_robust` envolviendo las llamadas a `os.stat` y `ctypes` en bloques `try-except` más granulares, para prevenir que errores de sistema (como `FileNotFoundError` o `OSError` inesperados) interrumpan el proceso durante el escaneo de directorios con contenido volátil.

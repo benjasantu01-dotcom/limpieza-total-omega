@@ -668,13 +668,18 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
         return None
         
     try:
-        # Navegación profunda segura por la estructura de candidatos de la API
-        parts = data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])
-        text_val = parts[0].get("text")
+        candidates = data.get("candidates")
+        if not isinstance(candidates, list) or not candidates: return None
         
+        content = candidates[0].get("content")
+        if not isinstance(content, dict): return None
+        
+        parts = content.get("parts")
+        if not isinstance(parts, list) or not parts: return None
+        
+        text_val = parts[0].get("text")
         if isinstance(text_val, str):
             sanitized = _validate_response_length(text_val)
-            # Validación de seguridad: verificamos que el texto extraído cumpla con las reglas
             if _ensure_safe_text(sanitized):
                 return sanitized
     except (AttributeError, TypeError, IndexError, KeyError): 
