@@ -278,24 +278,22 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """Analiza carpetas de primer nivel para determinar su tamaño total acumulado."""
+    """Analiza carpetas de primer nivel para determinar su tamaño total acumulado en una sola pasada."""
     root = _validate_root(directory)
     if not root: return []
     
     stats: Dict[Path, List[int]] = defaultdict(lambda: [0, 0])
-    
+    # Pre-cálculo de subcarpetas de primer nivel válidas
     try:
-        with os.scandir(root) as it:
-            top_level = {Path(e.path): Path(e.path) for e in it if e.is_dir() and os.access(e.path, os.R_OK)}
+        top_folders = {root / e.name: root / e.name for e in os.scandir(root) if e.is_dir()}
     except (OSError, PermissionError): return []
     
     for path, size in walk_files(root, skip_protected):
         try:
-            relative = path.relative_to(root)
-            parts = relative.parts
+            parts = path.relative_to(root).parts
             if parts:
                 top_folder = root / parts[0]
-                if top_folder in top_level:
+                if top_folder in top_folders:
                     stats[top_folder][0] += size
                     stats[top_folder][1] += 1
         except (ValueError, OSError): continue

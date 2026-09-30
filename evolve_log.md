@@ -1452,3 +1452,14 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not define
 - `2026-09-30T14:08:36` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé `_sum_directory_recursive` y `_process_file_entry` reemplazando llamadas repetitivas a `os.path.abspath` y `os.path.normcase` dentro del bucle principal por una comparación de prefijos de cadenas de bytes normalizadas, evitando el sobrecosto de resolución de rutas en cada iteración.
 - `2026-09-30T14:08:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T14:08:36` Corrida terminada. Total usado hoy: 332.
+- `2026-09-30T14:17:04` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-30T14:17:36` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `largest_folders` para evitar la redundancia de realizar múltiples iteraciones sobre el sistema de archivos: ahora el cálculo del tamaño de carpetas se realiza en una sola pasada delegada a `_collect_summary_data`, reutilizando la lógica existente.
+- `2026-09-30T14:18:04` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `_collect_candidates` para reducir drásticamente las llamadas a `stat()` y `exists()` utilizando la información ya disponible en `os.DirEntry` y moviendo las comprobaciones más costosas (`is_system_or_hidden` e `_is_file_locked`) al final del flujo, después de los filtros baratos.
+- `2026-09-30T14:18:04` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-30T14:18:11` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-30T14:18:54` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-30T14:19:08` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-30T14:20:07` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-30T14:21:08` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se implementó un sistema de "Dirty Flag" y comparación de estado en `_apply_card_updates` para evitar el redibujo innecesario de widgets de texto (`Label`) cuando los valores calculados no han variado, reduciendo la carga en el hilo principal durante actualizaciones recurrentes.
+- `2026-09-30T14:21:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T14:21:08` Corrida terminada. Total usado hoy: 336.

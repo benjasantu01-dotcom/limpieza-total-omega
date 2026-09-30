@@ -220,12 +220,10 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        p_entry = Path(entry.path)
-                        if not _safe_path_check(p_entry):
-                            continue
-
+                        # Filtros rápidos primero (sin I/O adicional)
                         if entry.is_dir(follow_symlinks=False):
-                            if not is_junction(p_entry):
+                            p_entry = Path(entry.path)
+                            if _safe_path_check(p_entry) and not is_junction(p_entry):
                                 stack.append(entry.path)
                             continue
                         
@@ -236,10 +234,11 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                         if stat_info.st_size < min_size:
                             continue
 
+                        p_entry = Path(entry.path)
+                        # Chequeos de seguridad e integridad al final
                         if skip_protected and is_protected_path(p_entry):
                             continue
-                        
-                        if is_system_or_hidden(p_entry) or _is_file_locked(p_entry):
+                        if not _safe_path_check(p_entry) or is_system_or_hidden(p_entry) or _is_file_locked(p_entry):
                             continue
                             
                         size_to_paths_map[stat_info.st_size].append(p_entry)
