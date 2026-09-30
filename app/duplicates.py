@@ -292,11 +292,24 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
 
+def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
+    """
+    Refina grupos de archivos grandes usando hash parcial para descartar candidatos
+    y luego aplica hash completo para confirmar duplicados reales.
+    """
+    partial_groups = _group_paths_by_hash(paths, partial_hash)
+    final_results = {}
+    for candidate_subset in partial_groups.values():
+        full_hash_groups = _group_paths_by_hash(candidate_subset, hash_file)
+        final_results.update(full_hash_groups)
+    return final_results
+
+
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
     Determina la estrategia de hashing:
     1. Si size <= 64KB: Usa hash completo (única pasada).
-    2. Si size > 64KB: Usa hash parcial para agrupar, luego hash completo como filtro.
+    2. Si size > 64KB: Usa hash parcial y luego hash completo como filtro.
     """
     if not paths or size <= 0:
         return []
@@ -304,12 +317,7 @@ def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[Dupl
     if size <= PARTIAL_READ_BYTES:
         final_groups = _group_paths_by_hash(paths, hash_file)
     else:
-        # Optimización: reducir el conjunto de archivos usando hash parcial antes de leer archivos pesados
-        partial_groups = _group_paths_by_hash(paths, partial_hash)
-        final_groups = {}
-        for candidate_subset in partial_groups.values():
-            full_hash_groups = _group_paths_by_hash(candidate_subset, hash_file)
-            final_groups.update(full_hash_groups)
+        final_groups = _process_large_file_subset(paths)
             
     return [DuplicateGroup(d, size, sorted(p)) for d, p in final_groups.items()]
 

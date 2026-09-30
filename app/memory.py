@@ -291,8 +291,10 @@ def _is_system_process(pid: int) -> bool:
 
 def _get_process_path(pid: int) -> Optional[Path]:
     """
-    Obtiene la ruta del ejecutable de un proceso mediante la API de PSAPI.
-    Realiza una validación de seguridad contra is_protected_path.
+    Obtiene la ruta absoluta del ejecutable de un proceso mediante la API de PSAPI.
+    
+    Usa el handle obtenido de la máscara SAFE_VALIDATION_MASK para validar 
+    la existencia del proceso sin requerir privilegios administrativos innecesarios.
     """
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.OpenProcess(SAFE_VALIDATION_MASK, False, pid)
@@ -304,10 +306,8 @@ def _get_process_path(pid: int) -> Optional[Path]:
         psapi = ctypes.windll.psapi
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0 and buf.value:
-            # Normalizar la ruta para evitar ambigüedades antes de filtrar
             p = Path(buf.value).resolve()
             path_str = str(p)
-            # Validar seguridad: verificar que no esté en la lista negra ni sea ruta protegida
             if not is_protected_path(path_str):
                 return p
     except (ctypes.ArgumentError, OSError, ValueError, TypeError):
@@ -326,7 +326,7 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Ejecuta el trim del working set mediante la API EmptyWorkingSet."""
+    """Ejecuta la liberación del conjunto de trabajo (Working Set) de un proceso mediante la API de Win32."""
     if not _is_windows: return False, "Solo soportado en Windows."
     try: 
         target_pid = int(pid)
