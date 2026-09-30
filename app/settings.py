@@ -306,20 +306,12 @@ def _is_file_secure_to_read(ruta: Path, st_info: os.stat_result | None = None) -
     """Garantiza que el archivo sea un archivo regular, sin enlaces y con permisos restringidos."""
     try:
         st = st_info or ruta.stat()
-        # Verificar tamaño y tipo de archivo
         if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
         if not stat.S_ISREG(st.st_mode) or _Validators._is_reparse_point(ruta): return False
-        
-        # Verificar permisos (prohibido escritura para grupo/otros, prohibido ejecución)
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
-        
-        # Verificar propiedad si estamos en sistema POSIX (evitar archivos de otros usuarios)
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-        
-        # Verificación de integridad física y accesibilidad
         real_path = Path(os.path.realpath(ruta))
         if real_path != ruta.resolve() or not is_safe_to_modify(str(ruta)): return False
-        
         return os.access(ruta, os.R_OK)
     except (OSError, PermissionError):
         return False
@@ -329,8 +321,7 @@ def _load_impl(ruta: Path) -> AppSettings:
     if not ruta.exists(): return dict(DEFAULTS)
     try:
         with open(ruta, "r", encoding="utf-8") as f:
-            fd = f.fileno()
-            st = os.fstat(fd)
+            st = os.fstat(f.fileno())
             if not _is_file_secure_to_read(ruta, st): return dict(DEFAULTS)
             data = json.load(f)
         if _is_dict(data):
@@ -348,7 +339,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga los ajustes desde el disco, utilizando caché por mtime."""
     ruta = settings_path(custom_base)
     bak = ruta.with_suffix(".bak")
-    
     for r in [ruta, bak]:
         try:
             if r.exists():
@@ -362,11 +352,10 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """Asegura consistencia de tipos y reglas de negocio, revirtiendo a defaults ante inconsistencias."""
     final = dict(DEFAULTS)
     try:
-        for key, expected_type in DEFAULTS.items():
+        for key, expected_val in DEFAULTS.items():
             val = settings.get(key)
-            if val is not None and isinstance(val, type(expected_type)):
+            if val is not None and isinstance(val, type(expected_val)):
                 final[key] = val
-        
         if final["asistente_activado"] and not (final["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
             final["asistente_activado"] = False
         return final # type: ignore
@@ -378,8 +367,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
     cleaned_settings = _coerce_and_verify(validate(values))
-    if ruta.exists() and load(custom_base) == cleaned_settings:
-        return ruta
+    if ruta.exists() and load(custom_base) == cleaned_settings: return ruta
     parent = ruta.parent
     try:
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)

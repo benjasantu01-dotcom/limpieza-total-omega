@@ -152,12 +152,10 @@ class StartupEntry:
         # Validar traversal antes de cualquier procesamiento
         if not path_str or ".." in path_str or self._is_path_suspicious(path_str) or self._is_reserved_device_name(path_str):
             return ""
-        
-        if len(path_str) < 3:
-            return ""
             
         try:
             p: Path = Path(path_str)
+            # Asegurar que el path tiene contenido y no es solo una unidad o raíz inválida
             if not p.parts or is_protected_path(p):
                 return ""
             return str(p)

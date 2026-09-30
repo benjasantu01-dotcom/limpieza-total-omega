@@ -149,10 +149,14 @@ class ProblemCriterion(NamedTuple):
     message_format: str # Template para string format (ej: "{:.0f}% de RAM")
 
     def _evaluate_metric(self, val: float) -> bool:
-        """Aplica lógica booleana sobre el valor comparándolo con el umbral."""
-        ops = {"<": operator.lt, ">": operator.gt}
-        op_func = ops.get(self.operator)
-        return op_func(val, self.threshold) if op_func and math.isfinite(val) else False
+        """Aplica lógica de comparación basada en el operador definido."""
+        if not math.isfinite(val):
+            return False
+        if self.operator == "<":
+            return val < self.threshold
+        if self.operator == ">":
+            return val > self.threshold
+        return False
 
     def is_triggered_by(self, ctx: SystemContext) -> bool:
         """Verifica si la condición de riesgo se cumple para el contexto actual."""
@@ -166,7 +170,7 @@ class ProblemCriterion(NamedTuple):
         """
         val: float = ctx.get_metric(self.metric_key, DEFAULT_METRIC_VAL)
         
-        if val < 0 or not math.isfinite(val) or not self._evaluate_metric(val):
+        if val < 0 or not self._evaluate_metric(val):
             return None
             
         try:
