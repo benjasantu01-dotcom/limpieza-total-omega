@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 24
 - Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 227
+- Sin respuesta de la IA (error o límite): 229
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-28 | 56 | 7 | 10 | 4 | 61 |
+| 2026-09-28 | 53 | 7 | 9 | 4 | 61 |
 | 2026-09-29 | 131 | 15 | 22 | 18 | 164 |
-| 2026-09-30 | 9 | 2 | 3 | 0 | 2 |
+| 2026-09-30 | 10 | 2 | 4 | 0 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **38**
-- robustez ante casos límite: **36**
-- rendimiento: **28**
+- robustez ante casos límite: **33**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **20**
-- `quarantine.py`: **18**
 - `assistant.py`: **18**
 - `memory.py`: **17**
+- `quarantine.py`: **17**
 - `scanner.py`: **16**
+- `browser.py`: **16**
 - `diskreport.py`: **16**
-- `safety.py`: **15**
-- `browser.py`: **15**
 - `settings.py`: **15**
+- `safety.py`: **14**
 - `duplicates.py`: **13**
-- `organizer.py`: **12**
 - `branding.py`: **12**
+- `organizer.py`: **11**
 - `main.py`: **6**
 - `startup.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-30T00:50:30` **browser.py** (rendimiento): Optimicé el cálculo del tamaño de directorios mediante la conversión de `NEVER_TOUCH` a un `frozenset` pre-calculado y la sustitución de `os.path.normcase(os.path.normpath(...))` en bucles críticos por una comparación de cadenas simplificada, reduciendo la sobrecarga de llamadas a funciones del sistema operativo.
 - `2026-09-30T00:41:31` **assistant.py** (rendimiento): Optimicé el rendimiento de `_generate_context_cached` pasando de una construcción lenta de strings con llamadas múltiples a métricas, a un uso eficiente de listas pre-formateadas y `join`, reduciendo la carga en cada iteración del bucle de UI.
 - `2026-09-30T00:32:23` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `scanner.py` integrando docstrings que especifican contratos de entrada/salida y justificando el uso de `os.DirEntry` sobre `pathlib` para el escaneo recursivo, además de tipar explícitamente los errores controlados para mejorar la mantenibilidad de la lógica de seguridad.
 - `2026-09-30T00:31:12` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados a las funciones de bajo nivel que gestionan la E/S y el aislamiento, explicando explícitamente las asunciones de seguridad y los riesgos que cada una mitiga.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-29T14:49:12` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` agregando validaciones preventivas sobre la existencia y legibilidad de la ruta origen antes de iniciar cualquier operación, evitando condiciones de carrera y manejo de excepciones innecesarias.
 - `2026-09-29T14:47:01` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_get_entry_value` para capturar errores de ejecución de `winfo_exists` y asegurar que la sanitización de caracteres no imprima fallos si el widget fue destruido durante el proceso, cumpliendo estrictamente con el enfoque de validación de entradas.
 - `2026-09-29T14:36:48` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` validando explícitamente el resultado de `os.scandir` y `entry.stat()` antes de procesar para evitar excepciones no capturadas al encontrar entradas con permisos restringidos o sistemas de archivos inestables.
-- `2026-09-29T14:35:56` **browser.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `directory_size` y `_sum_directory_recursive` mediante la validación explícita de tipos en los parámetros de entrada y la propagación de un estado de éxito (`success`) más robusto, evitando procesar valores `None` o rutas mal formadas.

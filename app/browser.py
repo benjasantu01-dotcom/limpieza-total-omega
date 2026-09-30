@@ -143,6 +143,7 @@ def _is_path_inside_base(target_abs: str, base_abs: str) -> bool:
     try:
         if '\0' in target_abs or len(target_abs) >= MAX_PATH_LEN:
             return False
+        # Normalización realizada una única vez para comparación eficiente
         target_norm = os.path.normcase(os.path.normpath(target_abs))
         base_norm = os.path.normcase(os.path.normpath(base_abs))
         return target_norm.startswith(base_norm)
