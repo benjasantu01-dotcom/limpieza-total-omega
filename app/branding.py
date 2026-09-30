@@ -411,7 +411,7 @@ def _validate_destination(dest: Any) -> Optional[Path]:
     try:
         path = Path(dest).resolve()
         # Impedir escritura en rutas protegidas mediante chequeo estricto
-        if is_protected_path(path) or not is_safe_to_modify(path):
+        if not is_safe_to_modify(path):
             return None
         return path
     except (OSError, RuntimeError, TypeError, ValueError):

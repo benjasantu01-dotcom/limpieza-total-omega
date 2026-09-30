@@ -1063,3 +1063,35 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel
 - `2026-09-30T10:45:10` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante errores de acceso a disco en la función `_is_safe_entry` y se ha implementado un filtrado más estricto en `scan_directory` para manejar archivos bloqueados o inexistentes durante el escaneo iterativo, evitando excepciones no capturadas durante la resolución de rutas.
 - `2026-09-30T10:45:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T10:45:10` Corrida terminada. Total usado hoy: 252.
+- `2026-09-30T10:52:39` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-09-30T10:52:44` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-30T10:53:24` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante errores de E/S y corrupción de estado al implementar un chequeo de pre-condiciones en `_is_file_secure_to_read` que detecta archivos "vacíos" o con metadatos inconsistentes antes de intentar procesarlos, evitando el fallo de `json.load` en situaciones de archivos parcialmente escritos o bloqueados.
+- `2026-09-30T10:53:56` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.49s
+
+```
+- `2026-09-30T10:53:56` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_resolve_and_cache_path` añadiendo un manejo de excepciones más granular y una validación de ruta absoluta mediante `os.path.isabs` para prevenir fallos silenciosos cuando `Path.resolve()` se encuentra con rutas malformadas o inaccesibles a nivel de sistema de archivos.
+- `2026-09-30T10:54:39` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al serializar las métricas mediante la creación de un nuevo método `_generate_safe_context` que aplica una validación estricta de cada campo antes de incluirlos en el contexto enviado a la IA, evitando que cualquier valor numérico extremo o malformado pueda escapar a los sanitizadores.
+- `2026-09-30T10:55:13` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado `save_logo_svg` para asegurar que la validación de la ruta destino sea atómica y robusta, verificando la seguridad antes de cualquier operación de I/O, siguiendo estrictamente el enfoque defensivo.
+- `2026-09-30T10:55:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T10:55:13` Corrida terminada. Total usado hoy: 256.

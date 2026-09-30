@@ -305,17 +305,19 @@ def validate(raw_values: Any) -> AppSettings:
 def _is_file_secure_to_read(ruta: Path, st_info: os.stat_result | None = None) -> bool:
     """Garantiza que el archivo sea un archivo regular, sin enlaces y sin permisos peligrosos."""
     try:
-        # Resolvemos la ruta antes de verificar permisos para evitar TOCTOU via symlinks
+        # Pre-chequeo de metadatos críticos
+        st = st_info or ruta.stat()
+        if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
+        
+        # Resolución post-stat para verificar integridad física
         real_path = Path(os.path.realpath(ruta))
         if not real_path.is_absolute() or real_path != ruta.resolve(): return False
         
-        st = st_info or ruta.stat()
         if not stat.S_ISREG(st.st_mode) or _Validators._is_reparse_point(ruta): return False
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
         if not is_safe_to_modify(str(ruta)): return False
         if not os.access(ruta, os.R_OK): return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-        if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
         return True
     except (OSError, PermissionError):
         return False

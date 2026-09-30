@@ -470,23 +470,27 @@ def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> Syst
             ctx.ingest(s)
     return ctx
 
+def _generate_safe_context(ctx: SystemContext) -> str:
+    """Genera bloque de resumen del sistema validando cada métrica estrictamente antes de serializar."""
+    metrics_list = []
+    
+    # Lista de tuplas: (key, unidad, precision)
+    to_include = [("score", "", 0), ("junk_mb", " MB", 0), ("suspicious_count", "", 0), 
+                  ("memory_available_percent", "%", 0), ("disk_free_percent", "%", 0),
+                  ("duplicate_mb", " MB", 0), ("startup_count", "", 0)]
+    
+    for key, unit, precision in to_include:
+        val = ctx.get_metric(key, -1.0)
+        # Validación de seguridad: solo enviar si es un número válido y dentro de límites lógicos conocidos
+        if val >= 0 and val < 1e12: 
+            metrics_list.append(f"{key}: {_fmt_metric(val, unit, precision)}")
+            
+    return "\n".join(metrics_list)
+
 @lru_cache(maxsize=16)
 def _generate_context_cached(ctx: SystemContext) -> str:
     """Genera bloque de resumen del sistema optimizado para prompts."""
-    # Pre-formateo eficiente de métricas
-    sc = f"Puntaje de salud: {ctx.score if ctx.score is not None else 'N/A'}"
-    if ctx.grade:
-        sc += f" nota {ctx.grade[:5]}"
-    
-    return "\n".join([
-        sc,
-        f"Basura: {_fmt_metric(ctx.junk_mb, ' MB', 0)}",
-        f"Sospechosos: {int(ctx.suspicious_count)}",
-        f"RAM disponible: {_fmt_metric(ctx.memory_available_percent, '%', 0)}",
-        f"Disco libre: {_fmt_metric(ctx.disk_free_percent, '%', 0)}",
-        f"Duplicados: {_fmt_metric(ctx.duplicate_mb, ' MB', 0)}",
-        f"Inicio: {int(ctx.startup_count)} items"
-    ])
+    return _generate_safe_context(ctx)
 
 def context_as_text(context: SystemContext) -> str:
     """Convierte el contexto en un string serializado listo para ser embebido en prompts."""
