@@ -156,6 +156,7 @@ class Scanner:
         self.results: List[Suspicion] = []
         self.seen: set[str] = set()
         self.protected_cache: set[str] = set()
+        self.safe_cache: set[str] = set()
         self.base_root: Path = base_root.resolve()
         self.base_root_str: str = str(self.base_root).lower()
         self.now_ts: float = datetime.now().timestamp()
@@ -179,7 +180,7 @@ class Scanner:
         """
         Realiza validación de seguridad antes de procesar una ruta.
         
-        Utiliza un caché de directorios protegidos para minimizar llamadas 
+        Utiliza cachés de directorios y archivos protegidos para minimizar llamadas 
         externas a safety.py y asegura que no se sigan enlaces externos.
         """
         if not entry or not entry.path or not entry.name:
@@ -193,14 +194,16 @@ class Scanner:
             if self._is_reparse_point(entry) or entry.is_symlink():
                 return False
             
-            path_obj = Path(entry.path)
-            parent_dir = str(path_obj.parent)
-            if parent_dir not in self.protected_cache:
-                if is_protected_path(path_obj.parent):
-                    return False
-                self.protected_cache.add(parent_dir)
+            path_str = entry.path
+            if path_str in self.safe_cache:
+                return True
             
-            return not is_protected_path(path_obj)
+            path_obj = Path(path_str)
+            if is_protected_path(path_obj):
+                return False
+            
+            self.safe_cache.add(path_str)
+            return True
         except (OSError, RuntimeError, FileNotFoundError):
             return False
 
