@@ -155,7 +155,6 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: List[Suspicion] = []
         self.seen: set[str] = set()
-        self.protected_cache: set[str] = set()
         self.safe_cache: set[str] = set()
         self.base_root: Path = base_root.resolve()
         self.base_root_str: str = str(self.base_root).lower()
@@ -165,7 +164,7 @@ class Scanner:
         """Verifica recursivamente si la ruta está contenida en el árbol base."""
         try:
             return str(Path(entry_path).resolve()).lower().startswith(self.base_root_str)
-        except OSError:
+        except (OSError, RuntimeError):
             return False
 
     def _has_invalid_name(self, name: str) -> bool:
@@ -180,9 +179,7 @@ class Scanner:
             return True
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """
-        Realiza validación de seguridad antes de procesar una ruta.
-        """
+        """Realiza validación de seguridad antes de procesar una ruta."""
         if not entry or not entry.path or not entry.name:
             return False
         if not _is_valid_path_structure(entry.path) or self._has_invalid_name(entry.name):
@@ -194,15 +191,13 @@ class Scanner:
             if self._is_reparse_point(entry) or entry.is_symlink():
                 return False
             
-            path_str = entry.path
-            if path_str in self.safe_cache:
+            if entry.path in self.safe_cache:
                 return True
             
-            path_obj = Path(path_str)
-            if is_protected_path(path_obj):
+            if is_protected_path(Path(entry.path)):
                 return False
             
-            self.safe_cache.add(path_str)
+            self.safe_cache.add(entry.path)
             return True
         except (OSError, RuntimeError):
             return False
@@ -268,7 +263,7 @@ def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
     
     try:
         base_path = Path(path_str).resolve()
-        if not base_path.is_dir() or base_path.is_symlink() or not os.access(base_path, os.R_OK):
+        if not base_path.exists() or not base_path.is_dir() or base_path.is_symlink() or not os.access(base_path, os.R_OK):
             return []
         if is_protected_path(base_path): return []
     except (OSError, RuntimeError): 

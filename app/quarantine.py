@@ -184,9 +184,13 @@ def _is_file_in_use_by_system(path: Path) -> bool:
     if not path.exists():
         return False
     if os.name == 'nt':
-        # Atributos de sistema/oculto
-        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-        if attrs != -1 and (attrs & 0x02 or attrs & 0x04): return True
+        try:
+            # Atributos de sistema/oculto
+            attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+            if attrs != -1 and (attrs & 0x02 or attrs & 0x04): return True
+        except (OSError, AttributeError):
+            return True
+            
         # Intento de apertura exclusiva con msvcrt
         try:
             import msvcrt
@@ -323,10 +327,13 @@ def _check_windows_file_attributes(path_str: str) -> None:
     path_obj = Path(path_str)
     if not path_obj.exists():
         return
-    attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path_obj))
-    if attrs != -1:
-        if attrs & 0x02 or attrs & 0x04:
-            raise UnsafePathError("Archivo con atributos del sistema/oculto no permitido.")
+    try:
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path_obj))
+        if attrs != -1:
+            if attrs & 0x02 or attrs & 0x04:
+                raise UnsafePathError("Archivo con atributos del sistema/oculto no permitido.")
+    except (OSError, AttributeError):
+        pass
 
 def _check_device_consistency(source: Path, target_dir: Path) -> None:
     """Asegura que la operación de movimiento no cruce límites de volúmenes físicos."""
@@ -477,9 +484,12 @@ def _validate_file_transfer_preconditions(source: Path, destination: Path) -> No
     if not source.is_file():
         raise OSError("Archivo origen inaccesible para copia.")
     if os.name == 'nt':
-        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(source))
-        if attrs != -1 and (attrs & 0x01):
-            raise PermissionError("Archivo origen marcado como solo lectura.")
+        try:
+            attrs = ctypes.windll.kernel32.GetFileAttributesW(str(source))
+            if attrs != -1 and (attrs & 0x01):
+                raise PermissionError("Archivo origen marcado como solo lectura.")
+        except (OSError, AttributeError):
+            pass
     if destination.exists():
         raise FileExistsError(f"El destino ya existe: {destination}")
 

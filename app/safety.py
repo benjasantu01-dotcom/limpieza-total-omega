@@ -516,10 +516,12 @@ def is_protected_path(path: PathLike) -> bool:
     """Valida si la ruta está marcada como protegida contra modificaciones del usuario."""
     if not isinstance(path, (str, Path)) or not path: return True
     try:
-        p = normalize(path)
+        # Validación defensiva: asegurar que el objeto sea procesable
+        p_str = str(path)
+        p = normalize(p_str)
         if p == Path(p.anchor): return True
         return _is_system_path_raw(str(p))
-    except (UnsafePathError, TypeError, OSError, RuntimeError): return True
+    except (UnsafePathError, TypeError, OSError, RuntimeError, ValueError): return True
 
 @lru_cache(maxsize=4096)
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
