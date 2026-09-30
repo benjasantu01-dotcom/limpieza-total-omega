@@ -132,12 +132,16 @@ class QuarantineItem:
         """Verifica existencia, tipo, inodo y tamaño del archivo físico en el sandbox."""
         if not stored_path.exists(): return False
         try:
-            st = stored_path.stat()
+            # Prevenir acceso a enlaces fuera del sandbox físico
             if stored_path.is_symlink() or (hasattr(stored_path, 'is_junction') and stored_path.is_junction()):
                 return False
-            # Validar inodo si está disponible para evitar sustituciones (Time-of-Check to Time-of-Use)
+            
+            st = stored_path.stat()
+            # Validar inodo si está disponible para evitar sustituciones (TOCTOU)
             if self.file_inode != 0 and st.st_ino != self.file_inode:
                 return False
+            
+            # Verificación estricta de archivo regular y tamaño
             return (
                 stored_path.is_file() and 
                 st.st_size == self.size_bytes and

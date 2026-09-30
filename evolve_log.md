@@ -1102,3 +1102,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-30T11:04:50` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante una validación estricta de las entradas en `_evaluate_rules` y `compute_score`, asegurando que el motor de inferencia no procese datos malformados o excepciones inesperadas durante la generación de recomendaciones.
 - `2026-09-30T11:04:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T11:04:50` Corrida terminada. Total usado hoy: 260.
+- `2026-09-30T11:13:04` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-09-30T11:13:09` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-30T11:13:13` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-30T11:13:20` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-30T11:14:32` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-30T11:15:15` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_get_process_path` al asegurar que el manejo del `handle` de Windows siempre ocurra dentro de un bloque `try...finally` garantizando su liberación inmediata, y se ha añadido una validación adicional para descartar rutas que no sean archivos válidos antes de aplicar los filtros de seguridad, previniendo errores de resolución en rutas especiales de Windows.
+- `2026-09-30T11:15:45` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-09-30T11:16:11` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al evitar el acceso a archivos de sistema/ocultos durante la lectura de metadatos en `QuarantineItem.from_dict` y `_validate_integrity`, añadiendo una validación explícita de `is_file()` y `is_symlink()` para prevenir vulnerabilidades por sustitución o enlaces maliciosos antes de procesar archivos del sandbox.
+- `2026-09-30T11:16:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T11:16:11` Corrida terminada. Total usado hoy: 264.
