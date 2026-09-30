@@ -212,7 +212,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     return sorted(top_heap, key=lambda p: p.working_set, reverse=True)
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Consulta la API GlobalMemoryStatusEx de Windows para obtener estadísticas globales."""
+    """Consulta la API GlobalMemoryStatusEx de Windows para obtener estadísticas globales. Retorna _EMPTY_SNAPSHOT ante fallo."""
     kernel32 = ctypes.windll.kernel32
     if not hasattr(kernel32, "GlobalMemoryStatusEx"): return _EMPTY_SNAPSHOT
     mem_status = _create_mem_status_ex()
@@ -291,7 +291,7 @@ def _is_system_process(pid: int) -> bool:
     return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
 
 def _get_process_path(pid: int) -> Optional[Path]:
-    """Obtiene la ruta absoluta del ejecutable de un proceso mediante la API de PSAPI."""
+    """Obtiene la ruta absoluta del ejecutable de un proceso mediante la API de PSAPI. Retorna None si es inaccesible."""
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.OpenProcess(SAFE_VALIDATION_MASK, False, pid)
     if not handle: return None
