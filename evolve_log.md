@@ -488,3 +488,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-09-30T05:38:06` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escáner implementando un caché interno (`is_protected_path` es costoso) y reduciendo las llamadas redundantes a `is_protected_path` dentro de `_is_safe_entry`, utilizando un conjunto `set` para evitar consultas repetidas sobre las mismas rutas parentales.
 - `2026-09-30T05:38:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T05:38:06` Corrida terminada. Total usado hoy: 132.
+- `2026-09-30T05:46:20` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-09-30T05:46:53` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidatorEntry
+- `2026-09-30T05:47:20` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-30T05:48:01` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `SystemContext.ingest` ante datos de entrada malformados (como tipos inesperados, iterables muy largos o estructuras profundamente anidadas) mediante la adición de un chequeo de profundidad y validación de tipos estricta, previniendo posibles fallos de serialización o desbordamiento en el hilo de la UI.
+- `2026-09-30T05:48:21` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-30T05:48:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T05:48:21` Corrida terminada. Total usado hoy: 136.
