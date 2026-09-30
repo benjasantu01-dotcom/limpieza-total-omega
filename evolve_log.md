@@ -1504,3 +1504,4 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not define
 - `2026-09-30T14:59:16` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T14:59:16` Corrida terminada. Total usado hoy: 350.
 - `2026-09-30T15:08:11` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-09-30T15:18:24` Presupuesto diario agotado (350 usados). Corte hasta mañana.
