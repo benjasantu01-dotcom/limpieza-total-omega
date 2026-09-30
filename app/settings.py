@@ -308,10 +308,7 @@ def _is_file_secure_to_read(ruta: Path, st_info: os.stat_result | None = None) -
         if not ruta.is_absolute(): return False
         st = st_info or ruta.stat()
         if not stat.S_ISREG(st.st_mode) or _Validators._is_reparse_point(ruta): return False
-        # Bloquear archivos con bits de ejecución o escritura abierta a otros usuarios
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
-        # Refuerzo: Bloquear escritura del grupo o otros (world-writable)
-        if st.st_mode & (stat.S_IWGRP | stat.S_IWOTH): return False
         if not is_safe_to_modify(str(ruta)): return False
         if not os.access(ruta, os.R_OK): return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
@@ -327,6 +324,7 @@ def _load_impl(ruta: Path) -> AppSettings:
         with open(ruta, "r", encoding="utf-8") as f:
             fd = f.fileno()
             st = os.fstat(fd)
+            # Validación de seguridad: lectura pura, sin forzar cambios
             if not _is_file_secure_to_read(ruta, st): return dict(DEFAULTS)
             data = json.load(f)
         if _is_dict(data):
@@ -385,7 +383,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         if not os.access(parent, os.W_OK) or _Validators._is_reparse_point(parent): return None
         if not _Validators._is_safe_path(str(parent)): return None
-        if ruta.exists() and not is_safe_to_modify(str(ruta)): return None
+        # Validación: solo proceder si la ruta no está protegida contra escritura
+        if ruta.exists(): ensure_safe_to_modify(ruta)
     except (TypeError, ValueError, OSError, PermissionError): return None
     
     temp_path = ruta.with_suffix(".tmp")
@@ -399,8 +398,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if not _is_file_secure_to_read(temp_path): raise PermissionError("Temp file invalid")
         
         if ruta.exists():
-            ensure_safe_to_modify(ruta)
-            if bak_path.exists(): ensure_safe_to_modify(bak_path)
+            ensure_safe_to_modify(bak_path)
             os.replace(ruta, bak_path)
         
         try:

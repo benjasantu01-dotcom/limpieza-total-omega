@@ -267,7 +267,7 @@ def _get_security_descriptor(path: Path) -> SecurityDescriptor:
     in_use = False
     try:
         in_use = _is_file_locked_by_other_process(str(path))
-    except Exception:
+    except (OSError, AttributeError, ctypes.ArgumentError):
         in_use = True
     return SecurityDescriptor(
         attrs=attrs,
@@ -287,7 +287,7 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
         if handle == -1: return True
         kernel32.CloseHandle(handle)
         return False
-    except (OSError, ctypes.ArgumentError, Exception):
+    except (OSError, ctypes.ArgumentError, AttributeError):
         return True
 
 def _is_file_in_use_by_system(path_str: str) -> bool:
@@ -392,11 +392,13 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
         raise UnsafePathError(f"Punto de reparse detectado durante acceso estático: {path.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
     try:
         return path.stat()
-    except (PermissionError, OSError) as e:
+    except PermissionError:
+        raise UnsafePathError(f"Permisos insuficientes: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+    except OSError as e:
         # WinError 32: Sharing violation (archivo en uso)
         if hasattr(e, 'winerror') and e.winerror == 32:
              raise UnsafePathError(f"Archivo bloqueado por otro proceso: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
-        raise UnsafePathError(f"Permisos insuficientes o I/O fallido: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+        raise UnsafePathError(f"I/O fallido: {path.name}", SafetyValidationErrorCode.IO_ERROR)
     except (ValueError, TypeError) as e:
         raise UnsafePathError(f"Error al leer metadatos de {path.name}: {e}", SafetyValidationErrorCode.IO_ERROR)
 

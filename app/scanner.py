@@ -115,7 +115,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if stats:
         try:
             mtime = float(getattr(stats, "st_mtime", 0.0))
-            if 0 < mtime <= now_ts and (now_ts - mtime) < (LIMITS.recent_hours * 3600):
+            if mtime > 0 and (now_ts - mtime) < (LIMITS.recent_hours * 3600):
                 return Suspicion(path, f"Ejecutable reciente detectado (<{LIMITS.recent_hours}h)", "info")
         except (AttributeError, TypeError, ValueError):
             return None
