@@ -504,7 +504,11 @@ def _create_temp_file(source: Path, destination: Path) -> Path:
 
 
 def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> None:
-    """Copia datos de forma atómica y verifica el hash tras la escritura."""
+    """
+    Copia datos de forma atómica y verifica el hash tras la escritura.
+    Utiliza descriptores de archivo de bajo nivel para asegurar que el I/O
+    sea regular y evitar manipulación externa durante la copia.
+    """
     try:
         fd_src = os.open(str(source), os.O_RDONLY | os.O_NOFOLLOW)
     except OSError as e:

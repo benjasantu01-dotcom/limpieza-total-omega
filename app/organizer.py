@@ -137,8 +137,8 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Determina si un archivo está bloqueado por otro proceso usando I/O de bajo nivel.
-    Retorna True si el archivo está inaccesible para escritura/bloqueo exclusivo.
+    Determina si un archivo está bloqueado por otro proceso intentando abrirlo en solo lectura.
+    Retorna True si el archivo está inaccesible para operaciones de E/S.
     """
     if not path.is_file():
         return True
@@ -152,7 +152,7 @@ def _is_file_locked(path: Path) -> bool:
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """
     Previene movimientos cíclicos donde el destino contenga al origen.
-    Verifica si el path del destino es un sub-directorio del origen.
+    Verifica si el path del destino es un sub-directorio del origen (o viceversa).
     """
     try:
         s, d = str(src.resolve()), str(dest.resolve())
@@ -168,7 +168,7 @@ def _has_forbidden_chars(path: Path) -> bool:
 def _validate_path_security(src: Path, dest: Path) -> bool:
     """
     Valida requisitos técnicos de seguridad sobre rutas antes de operar.
-    Verifica: formato UNC, caracteres prohibidos, longitud máxima y protección de sistema.
+    Verifica formatos de red (UNC), caracteres prohibidos y protección de sistema.
     """
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     if len(str(src)) > MAX_PATH_LENGTH or len(str(dest)) > MAX_PATH_LENGTH: return False
@@ -177,6 +177,7 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Auditoría completa de seguridad antes de cualquier movimiento de archivos.
+    Debe retornar False ante cualquier duda sobre la integridad del origen o destino.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     try:
@@ -195,7 +196,6 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if not (0 <= stats.st_size < MAX_FILE_SIZE_BYTES): return False
         if stats.st_mtime > datetime.now().timestamp() + 3600: return False
         
-        # Validación extra: asegurarse que el origen permita escritura (necesario para mover/borrar)
         if not os.access(src.parent, os.W_OK): return False
         
         return not _is_file_locked(src)
@@ -203,7 +203,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         return False
 
 def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> bool:
-    """Filtra directorios aptos para escaneo recursivo."""
+    """Filtra directorios aptos para escaneo recursivo, omitiendo junctions y rutas protegidas."""
     if not _is_allowed_directory(entry.name) or _is_junction(entry): return False
     if entry.path in protected_cache: return False
     if is_protected_path(Path(entry.path)):
@@ -219,7 +219,11 @@ def _is_valid_junk_entry(entry: os.DirEntry, stats: os.stat_result) -> bool:
             is_valid_junk_extension(entry.name))
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
-    """Recorrido recursivo del sistema de archivos limitado a 50 niveles de profundidad."""
+    """
+    Recorrido recursivo limitado para encontrar archivos basura.
+    `depth`: limita la profundidad para evitar desbordamiento de pila.
+    `visited`: evita ciclos en el sistema de archivos mediante resolución de rutas.
+    """
     if depth > 50 or not current_dir.exists(): return
     try:
         resolved_dir = current_dir.resolve()

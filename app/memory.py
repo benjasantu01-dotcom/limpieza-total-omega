@@ -54,12 +54,10 @@ MAX_VALID_PROCESS_MEM: Final[int] = 128 * 1024 * BYTES_IN_MB
 # Máscaras de acceso Win32 (Permisos requeridos para consultar o modificar procesos).
 # PROCESS_QUERY_LIMITED_INFORMATION: Acceso mínimo para obtener metadatos sin elevar privilegios.
 # PROCESS_SET_QUOTA: Necesario para realizar operaciones de gestión de memoria (EmptyWorkingSet).
-# PROCESS_QUERY_INFORMATION: Acceso estándar para obtener estadísticas detalladas.
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x0400
 PROCESS_QUERY_INFORMATION: Final[int] = 0x0400
-# Máscara para verificar metadatos de procesos de forma segura (sin privilegios de lectura total).
-SAFE_VALIDATION_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION 
+
 # TRIM_ACCESS_MASK combina Query para validar estado y SetQuota para ejecutar EmptyWorkingSet.
 TRIM_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
 
@@ -255,8 +253,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
                     _proc_cache_time = now
         except (OSError, subprocess.SubprocessError):
             pass
-        finally:
-            pass
     return _proc_cache_data
 
 @lru_cache(maxsize=8)
@@ -294,7 +290,7 @@ def _is_system_process(pid: int) -> bool:
 def _get_process_path(pid: int) -> Optional[Path]:
     """Obtiene la ruta absoluta del ejecutable de un proceso mediante la API de PSAPI. Retorna None si es inaccesible."""
     kernel32 = ctypes.windll.kernel32
-    handle = kernel32.OpenProcess(SAFE_VALIDATION_MASK, False, pid)
+    handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
     if not handle: return None
     try:
         psapi = ctypes.windll.psapi
