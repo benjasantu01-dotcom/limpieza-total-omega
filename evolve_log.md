@@ -1338,3 +1338,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-30T00:51:31` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
 - `2026-09-30T00:51:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T00:51:31` Corrida terminada. Total usado hoy: 20.
+- `2026-09-30T01:00:11` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-09-30T01:01:13` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-30T01:02:29` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se implementó un sistema de "invalidez de caché selectiva" en las tarjetas de estado (`_apply_card_updates`) y en el redibujo del gauge central para eliminar recálculos y operaciones de UI innecesarias cuando los datos no han variado, reduciendo significativamente la carga sobre el hilo principal.
+- `2026-09-30T01:02:55` ➖ Sin cambios en memory.py (enfoque: rendimiento). Motivo: Optimicé `parse_windows_process_csv` para usar un enfoque de un solo paso (`heapq` con comparación directa) que evita la creación de listas intermedias y reduce drásticamente las llamadas a `sorted()` y las operaciones de filtrado redundantes en cada iteración del bucle.
+- `2026-09-30T01:03:23` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-30T01:03:44` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `load_manifest` y `purge_all` transformando las búsquedas sobre listas en búsquedas de complejidad O(1) mediante el uso de diccionarios (hashing), reduciendo significativamente el tiempo de procesamiento al manipular manifiestos grandes.
+- `2026-09-30T01:03:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T01:03:44` Corrida terminada. Total usado hoy: 24.
