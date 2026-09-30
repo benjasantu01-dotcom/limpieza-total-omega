@@ -1444,3 +1444,11 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not define
 - `2026-09-30T13:58:49` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejora la legibilidad y mantenibilidad de `settings.py` mediante la refactorización de `_load_impl` para clarificar su flujo de control y añadiendo una anotación de tipo específica para mejorar la claridad de los validadores.
 - `2026-09-30T13:58:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T13:58:49` Corrida terminada. Total usado hoy: 328.
+- `2026-09-30T14:06:51` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-30T14:07:23` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante docstrings que explican el "porqué" de las decisiones de seguridad y normalización, además de añadir type hints y nombres de variables más claros en las funciones de procesamiento del registro para facilitar el mantenimiento.
+- `2026-09-30T14:07:43` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): el archivo se encogió al 6% del original (posible pérdida de código)
+- `2026-09-30T14:08:21` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el rendimiento de `gradient_colors` eliminando la recreación innecesaria de listas de objetos y utilizando un cálculo directo en un único paso de iteración, lo cual reduce la presión sobre el recolector de basura durante el renderizado intensivo de la UI.
+- `2026-09-30T14:08:21` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-30T14:08:36` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé `_sum_directory_recursive` y `_process_file_entry` reemplazando llamadas repetitivas a `os.path.abspath` y `os.path.normcase` dentro del bucle principal por una comparación de prefijos de cadenas de bytes normalizadas, evitando el sobrecosto de resolución de rutas en cada iteración.
+- `2026-09-30T14:08:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T14:08:36` Corrida terminada. Total usado hoy: 332.

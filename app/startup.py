@@ -138,7 +138,8 @@ class StartupEntry:
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
         Aísla el path del ejecutable en líneas de comandos entrecomilladas.
-        Aplica validación estricta de 'path traversal' (`..`) antes de permitir el procesamiento.
+        La separación de quotes es necesaria porque el registro de Windows suele
+        almacenar rutas con espacios entre comillas que rompen los split() estándar.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
@@ -149,7 +150,7 @@ class StartupEntry:
             
         path_str: str = raw_command[1:end_quote].strip()
         
-        # Validar traversal antes de cualquier procesamiento
+        # Validar traversal antes de cualquier procesamiento para evitar acceso fuera de base
         if not path_str or ".." in path_str or self._is_path_suspicious(path_str) or self._is_reserved_device_name(path_str):
             return ""
             
@@ -334,7 +335,11 @@ def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupEntry]:
-    """Convierte la salida CSV de PowerShell en objetos de datos seguros mediante dict parsing."""
+    """
+    Convierte la salida CSV de PowerShell en objetos de datos seguros mediante dict parsing.
+    La estructura de la CSV de PowerShell varía según la versión, por lo que usamos
+    los índices de las columnas para asegurar compatibilidad robusta.
+    """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
         
@@ -348,26 +353,26 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
         if not reader or not reader.fieldnames or len(reader.fieldnames) < 2:
             return []
             
-        f_name: str = reader.fieldnames[0]
-        f_cmd: str = reader.fieldnames[1]
+        header_name: str = reader.fieldnames[0]
+        header_cmd: str = reader.fieldnames[1]
             
         for row in reader:
             if not isinstance(row, dict):
                 continue
             
-            val_name: Optional[str] = row.get(f_name)
-            val_cmd: Optional[str] = row.get(f_cmd)
+            raw_val_name: Optional[str] = row.get(header_name)
+            raw_val_cmd: Optional[str] = row.get(header_cmd)
             
-            if val_name is None or val_cmd is None:
+            if raw_val_name is None or raw_val_cmd is None:
                 continue
             
-            raw_n, raw_c = str(val_name), str(val_cmd)
-            name: str = "".join(c for c in raw_n if ord(c) >= 32).strip()
-            cmd: str = "".join(c for c in raw_c if ord(c) >= 32).strip()
+            # Sanitización básica para asegurar compatibilidad con strings de Python
+            clean_name: str = "".join(c for c in str(raw_val_name) if ord(c) >= 32).strip()
+            clean_cmd: str = "".join(c for c in str(raw_val_cmd) if ord(c) >= 32).strip()
             
-            if _is_valid_registry_entry(name, cmd, seen_commands):
-                seen_commands.add(cmd)
-                parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
+            if _is_valid_registry_entry(clean_name, clean_cmd, seen_commands):
+                seen_commands.add(clean_cmd)
+                parsed_entries.append(StartupEntry(name=clean_name, command=clean_cmd, source=source))
             
     except (csv.Error, OSError, ValueError, TypeError):
         return []
@@ -379,26 +384,28 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
     if os.name != "nt":
         return []
     
-    # Filtrado estricto para evitar inyección de argumentos en la shell
-    safe_keys = []
-    for k in keys:
-        if isinstance(k, str) and k.upper().startswith(('HKCU:', 'HKLM:')):
-            safe_keys.append(f"'{k}'")
+    # Filtrado estricto de las claves para evitar inyección de argumentos en la shell
+    safe_keys: List[str] = []
+    for key in keys:
+        if isinstance(key, str) and key.upper().startswith(('HKCU:', 'HKLM:')):
+            safe_keys.append(f"'{key}'")
             
     if not safe_keys:
         return []
         
-    targets: str = ", ".join(safe_keys)
-    ps_cmd: str = f"Get-ItemProperty {targets} -ErrorAction SilentlyContinue | Select-Object * -ExcludeProperty PS* | ConvertTo-Csv -NoTypeInformation"
+    target_registry_keys: str = ", ".join(safe_keys)
+    # Ejecutamos Get-ItemProperty sin cargar perfiles de usuario (más rápido y seguro)
+    ps_cmd: str = f"Get-ItemProperty {target_registry_keys} -ErrorAction SilentlyContinue | Select-Object * -ExcludeProperty PS* | ConvertTo-Csv -NoTypeInformation"
     
     try:
-        result: subprocess.CompletedProcess = subprocess.run(
+        process: subprocess.CompletedProcess = subprocess.run(
             ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_cmd],
             capture_output=True, text=True, timeout=30, check=False
         )
-        if result.returncode == 0 and result.stdout:
-            clean_out: str = "".join(c for c in result.stdout if ord(c) >= 32 or c in "\r\n")
-            return parse_registry_csv(clean_out)
+        if process.returncode == 0 and process.stdout:
+            # Limpiamos los bytes de retorno y caracteres de control antes de parsear
+            clean_output: str = "".join(c for c in process.stdout if ord(c) >= 32 or c in "\r\n")
+            return parse_registry_csv(clean_output)
     except (OSError, subprocess.SubprocessError):
         pass
     return []

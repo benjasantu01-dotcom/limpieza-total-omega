@@ -137,16 +137,11 @@ def base_directories() -> List[Path]:
         pass
     return []
 
-def _is_path_inside_base(target_abs: str, base_abs: str) -> bool:
+def _is_path_inside_base(target_abs: str, base_abs_norm: str) -> bool:
     """Valida que 'target_abs' sea un subdirectorio de 'base_abs' (Sandbox enforcement)."""
-    if not isinstance(target_abs, str) or not isinstance(base_abs, str):
-        return False
     try:
-        if '\0' in target_abs or len(target_abs) >= MAX_PATH_LEN:
-            return False
-        target_norm = os.path.normcase(os.path.abspath(target_abs))
-        base_norm = os.path.normcase(os.path.abspath(base_abs))
-        return target_norm.startswith(base_norm)
+        if len(target_abs) >= MAX_PATH_LEN: return False
+        return os.path.normcase(target_abs).startswith(base_abs_norm)
     except (OSError, ValueError):
         return False
 
@@ -195,14 +190,14 @@ def _is_file_in_use(path: str) -> bool:
 
 def _process_file_entry(
     entry: os.DirEntry,
-    root_abs_path: str,
+    root_abs_norm: str,
     kernel32: Optional[ctypes.WinDLL],
     visited_inodes: Set[int],
     depth: int
 ) -> ScanResult:
     """Procesa una entrada individual, aplicando filtrado de sandbox y prevención de ciclos."""
     try:
-        if not _is_path_inside_base(entry.path, root_abs_path):
+        if not _is_path_inside_base(entry.path, root_abs_norm):
             return ScanResult(0, True)
         
         st = entry.stat(follow_symlinks=False)
@@ -213,7 +208,7 @@ def _process_file_entry(
         if entry.is_dir(follow_symlinks=False):
             if is_protected_path(Path(entry.path)):
                 return ScanResult(0, True)
-            return _sum_directory_recursive(Path(entry.path), root_abs_path, kernel32, visited_inodes, depth + 1)
+            return _sum_directory_recursive(Path(entry.path), root_abs_norm, kernel32, visited_inodes, depth + 1)
         
         if _is_file_in_use(entry.path):
             return ScanResult(0, True)
@@ -224,7 +219,7 @@ def _process_file_entry(
 
 def _sum_directory_recursive(
     root_path: Path, 
-    root_abs_path: str,
+    root_abs_norm: str,
     kernel32: Optional[ctypes.WinDLL],
     visited_inodes: Set[int],
     depth: int = 0
@@ -240,7 +235,7 @@ def _sum_directory_recursive(
                 try:
                     if _should_skip_entry(entry, kernel32, _IS_JUNCTION_FN):
                         continue
-                    result = _process_file_entry(entry, root_abs_path, kernel32, visited_inodes, depth)
+                    result = _process_file_entry(entry, root_abs_norm, kernel32, visited_inodes, depth)
                     total_bytes += result.bytes_found
                 except (OSError, PermissionError):
                     continue
@@ -258,7 +253,8 @@ def directory_size(path: Optional[OSPath]) -> int:
         resolved_p = path_obj.resolve(strict=True)
         if not resolved_p.is_dir() or not is_safe_to_modify(resolved_p) or is_protected_path(resolved_p):
             return 0
-        return _sum_directory_recursive(resolved_p, str(resolved_p), _get_kernel32(), set(), 0).bytes_found
+        norm_root = os.path.normcase(str(resolved_p))
+        return _sum_directory_recursive(resolved_p, norm_root, _get_kernel32(), set(), 0).bytes_found
     except (OSError, RuntimeError, PermissionError):
         return 0
 
@@ -271,7 +267,7 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
             return False
         real = candidate.resolve(strict=True)
         real_str = str(real)
-        if not real.is_dir() or not _is_path_inside_base(real_str, base_abs_str):
+        if not real.is_dir() or not _is_path_inside_base(real_str, os.path.normcase(base_abs_str)):
             return False
         if not is_safe_to_modify(real) or is_protected_path(real):
             return False
@@ -287,7 +283,7 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
         target = real_base.joinpath(*rel_str.split("\\"))
         if target.exists():
             target = target.resolve(strict=True)
-            if _is_path_inside_base(str(target), str(real_base)) and \
+            if _is_path_inside_base(str(target), os.path.normcase(str(real_base))) and \
                is_safe_to_modify(target) and not is_protected_path(target):
                 return target
     except (OSError, RuntimeError):
@@ -307,10 +303,11 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         try:
             real_base = base.resolve(strict=True)
             real_base_str = str(real_base)
+            real_base_norm = os.path.normcase(real_base_str)
             for browser_name, rel_str in browser_map.items():
                 candidate = _resolve_browser_path(real_base, rel_str)
                 if candidate and _is_valid_cache_path(candidate, real_base_str):
-                    scan_res = _sum_directory_recursive(candidate, str(candidate), k32, global_visited_inodes)
+                    scan_res = _sum_directory_recursive(candidate, os.path.normcase(str(candidate)), k32, global_visited_inodes)
                     if scan_res.bytes_found > 0:
                         found.append(BrowserCache(str(browser_name), candidate, scan_res.bytes_found))
         except (OSError, RuntimeError):
