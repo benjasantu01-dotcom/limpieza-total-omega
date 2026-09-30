@@ -137,8 +137,9 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si un archivo está bloqueado intentando abrirlo para lectura exclusiva.
-    Retorna True si el archivo está en uso por otro proceso o no tiene permisos.
+    Determina si un archivo está bloqueado por otro proceso.
+    Intenta abrirlo en modo lectura binaria; si falla, el archivo está 
+    en uso o carece de los privilegios necesarios para ser manipulado.
     """
     if not path.is_file():
         return True
@@ -149,7 +150,11 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
-    """Evita ciclos verificando si el directorio de destino es subdirectorio del origen."""
+    """
+    Previene movimientos cíclicos donde el destino contenga al origen.
+    Verifica si el path del destino es un sub-directorio del origen, lo cual 
+    podría causar bucles infinitos en el escaneo de archivos.
+    """
     try:
         s, d = str(src.resolve()), str(dest.resolve())
         return os.path.commonpath([s, d]) == s
@@ -169,9 +174,10 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
-    Valida si una operación de movimiento es segura.
-    Realiza chequeos de: existencia, bloqueos, rutas protegidas, permisos,
-    evita cruce de unidades de disco y validación de metadatos (tamaño/fecha).
+    Realiza una auditoría completa antes de cualquier movimiento de archivos.
+    Valida integridad, pertenencia a zonas protegidas, accesibilidad del SO, 
+    evita cruce entre unidades de disco (cross-drive move) y comprueba bloqueos
+    para asegurar que el archivo no está en uso crítico.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     try:

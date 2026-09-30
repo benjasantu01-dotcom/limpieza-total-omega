@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-28 | 63 | 8 | 10 | 6 | 63 |
+| 2026-09-28 | 59 | 8 | 10 | 6 | 63 |
 | 2026-09-29 | 131 | 15 | 22 | 18 | 164 |
-| 2026-09-30 | 2 | 1 | 0 | 0 | 1 |
+| 2026-09-30 | 6 | 1 | 0 | 0 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **48**
 - seguridad defensiva: **44**
-- legibilidad y documentación: **44**
 - robustez ante casos límite: **39**
 - manejo de errores y validación de entradas: **38**
-- rendimiento: **31**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **20**
+- `healthscore.py`: **21**
 - `quarantine.py`: **17**
 - `assistant.py`: **17**
-- `safety.py`: **16**
-- `scanner.py`: **16**
-- `settings.py`: **16**
+- `memory.py`: **17**
 - `browser.py`: **16**
 - `diskreport.py`: **16**
-- `memory.py`: **16**
+- `safety.py`: **15**
+- `scanner.py`: **15**
+- `settings.py`: **15**
 - `duplicates.py`: **13**
+- `organizer.py`: **12**
 - `branding.py`: **12**
-- `organizer.py`: **11**
-- `main.py`: **6**
-- `startup.py`: **4**
+- `main.py`: **7**
+- `startup.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-30T00:21:49` **organizer.py** (legibilidad y documentación): He mejorado la documentación interna agregando docstrings descriptivos con las causas y el "porqué" de las validaciones de seguridad más complejas (`_is_safe_for_disk_op`, `_is_recursive_violation`, `_is_file_locked`), facilitando el mantenimiento futuro y clarificando la intención técnica detrás de cada restricción.
+- `2026-09-30T00:21:26` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo incorporando tipos explícitos en la estructura `MEMORYSTATUSEX` y clarificando mediante comentarios detallados el propósito y alcance de las máscaras de acceso Win32, asegurando que la intención del código sea evidente para cualquier colaborador futuro.
+- `2026-09-30T00:20:57` **main.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `main.py` mediante la refactorización de `_collect_settings` y la extracción del manejo de entrada de datos en la pestaña de Ajustes hacia un método dedicado `_update_entry_fields`, reduciendo el acoplamiento y la duplicación de lógica en la gestión del ciclo de vida de los widgets.
+- `2026-09-30T00:19:46` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de cálculo, aclarando el propósito de las constantes globales y refinando la visibilidad de los tipos para facilitar la comprensión del motor de scoring.
 - `2026-09-30T00:10:50` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando tipos explícitos en docstrings y aclarando el flujo lógico de las estrategias de hashing para asegurar la mantenibilidad del código.
 - `2026-09-30T00:10:39` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings técnicos detallados en las funciones de escaneo (`walk_files` y `_collect_summary_data`) para aclarar el manejo de memoria (heaps), la lógica de exclusión y el comportamiento ante errores, facilitando el mantenimiento.
 - `2026-09-29T15:07:39` **assistant.py** (legibilidad y documentación): Se introdujeron type hints en los parámetros y retornos de funciones clave (especialmente en `_get_source_value` y `_apply_field`) y se reemplazó la lógica manual de validación de `ProblemCriterion` por una propiedad `@property` más limpia, eliminando la redundancia y mejorando la legibilidad del contrato de datos.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-29T13:05:52` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_load_impl` y `save` sustituyendo el uso de `json.load` y `open` directos por una validación estricta de permisos y metadatos antes de la lectura, evitando posibles condiciones de carrera o manipulación de archivos mediante el chequeo `os.fstat` para verificar que el descriptor del archivo abierto no haya sido reemplazado tras la apertura inicial.
 - `2026-09-29T13:04:36` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `_get_security_descriptor` y `_is_file_locked_by_other_process` añadiendo manejo de errores más específico para evitar cierres inesperados de la app ante archivos bloqueados por el kernel o con descriptores de seguridad inaccesibles.
 - `2026-09-29T12:55:08` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` mediante la implementación de una validación de coherencia en el flujo de movimiento, asegurando que `os.rename` (en `restore_item`) se realice solo después de verificar explícitamente que la ruta destino no fue alterada ni interceptada desde el chequeo inicial, y encapsulando el movimiento en un bloque que garantiza la integridad del manifiesto.
-- `2026-09-29T12:53:55` **memory.py** (seguridad defensiva): Se ha mejorado la robustez de `_get_process_path` integrando explícitamente `is_protected_path` sobre la ruta resuelta antes de permitir cualquier retorno, asegurando que no se expongan metadatos de rutas críticas del sistema incluso si la API de Windows devuelve información parcial.
-- `2026-09-29T12:45:36` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` encapsulando la validación de rutas dentro de `run_async` mediante una pre-validación explícita, evitando que tareas de fondo (que pueden ejecutarse en hilos desvinculados) operen sobre rutas que fueron alteradas o no autorizadas tras el inicio del hilo.
-- `2026-09-29T12:44:35` **healthscore.py** (seguridad defensiva): Se ha robustecido el motor de normalización de métricas (`_clamp` y `validate`) para evitar propagación de errores de punto flotante o valores fuera de rango que podrían derivar en inestabilidad en el cálculo del puntaje final.
-- `2026-09-29T12:43:39` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_summary_data` y `walk_files` para evitar la lectura de archivos bloqueados por el sistema operativo mediante el uso de `os.access(..., os.R_OK)`, evitando excepciones silenciosas innecesarias y mejorando la robustez frente a archivos en uso exclusivo.

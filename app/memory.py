@@ -52,6 +52,9 @@ BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 MAX_VALID_PROCESS_MEM: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
 # Máscaras de acceso Win32 (Permisos requeridos para consultar o modificar procesos).
+# PROCESS_QUERY_LIMITED_INFORMATION: Acceso mínimo para obtener metadatos sin elevar privilegios.
+# PROCESS_SET_QUOTA: Necesario para realizar operaciones de gestión de memoria (EmptyWorkingSet).
+# PROCESS_QUERY_INFORMATION: Acceso estándar para obtener estadísticas detalladas.
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x100
 PROCESS_QUERY_INFORMATION: Final[int] = 0x0400
@@ -88,7 +91,7 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura Win32 mapeada para la API GlobalMemoryStatusEx."""
+    """Estructura Win32 mapeada para la API GlobalMemoryStatusEx con tipos explícitos."""
     _fields_: List[Tuple[str, type]] = [
         ("dwLength", ctypes.c_ulong),
         ("dwMemoryLoad", ctypes.c_ulong),

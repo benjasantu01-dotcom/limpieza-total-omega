@@ -71,6 +71,7 @@ __all__ = [
     "summarize",
 ]
 
+# Límites críticos para normalización
 _LIMIT_JUNK_MB: Final[float] = 5000.0
 _LIMIT_DUPLICATE_MB: Final[float] = 2000.0
 _LIMIT_STARTUP_COUNT: Final[int] = 20
@@ -78,6 +79,7 @@ _LIMIT_RAM_PERCENT: Final[float] = 35.0
 _LIMIT_DISK_PERCENT: Final[float] = 25.0
 
 def _safe_inv(val: float, fallback: float = 1.0) -> float:
+    """Calcula el inverso multiplicativo evitando divisiones por cero."""
     return 1.0 / val if (math.isfinite(val) and val != 0) else fallback
 
 _INV_JUNK: Final[float] = _safe_inv(_LIMIT_JUNK_MB)
@@ -103,16 +105,34 @@ if sum(WEIGHTS.values()) != 100:
     raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
+    """Asegura que un valor esté dentro de los límites definidos [min_val, max_val]."""
     val = float(value)
     if not math.isfinite(val) or math.isnan(val): return min_val
     return max(min_val, min(val, max_val))
 
-def score_junk(junk_mb: float | int) -> NormalizedRatio: return _clamp(1.0 - (float(junk_mb) * _INV_JUNK))
-def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: return _clamp(1.0 - _clamp((float(suspicious_count) * 0.05) + (float(warnings) * 0.25), 0.0, 1.0))
-def score_memory(available_percent: float | int) -> NormalizedRatio: return _clamp(float(available_percent) * _INV_RAM)
-def score_disk(free_percent: float | int) -> NormalizedRatio: return _clamp(float(free_percent) * _INV_DISK)
-def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: return _clamp(1.0 - (float(duplicate_mb) * _INV_DUP))
-def score_startup(startup_count: int | float) -> NormalizedRatio: return _clamp(1.0 - (float(startup_count) * _INV_STARTUP))
+def score_junk(junk_mb: float | int) -> NormalizedRatio: 
+    """Calcula el impacto de la basura acumulada."""
+    return _clamp(1.0 - (float(junk_mb) * _INV_JUNK))
+
+def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
+    """Calcula el score de seguridad basado en hallazgos y alertas."""
+    return _clamp(1.0 - _clamp((float(suspicious_count) * 0.05) + (float(warnings) * 0.25), 0.0, 1.0))
+
+def score_memory(available_percent: float | int) -> NormalizedRatio: 
+    """Calcula el score de disponibilidad de memoria RAM."""
+    return _clamp(float(available_percent) * _INV_RAM)
+
+def score_disk(free_percent: float | int) -> NormalizedRatio: 
+    """Calcula el score de espacio libre en disco."""
+    return _clamp(float(free_percent) * _INV_DISK)
+
+def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
+    """Calcula el score basado en el volumen de archivos duplicados."""
+    return _clamp(1.0 - (float(duplicate_mb) * _INV_DUP))
+
+def score_startup(startup_count: int | float) -> NormalizedRatio: 
+    """Calcula el score basado en la cantidad de programas que inician con el sistema."""
+    return _clamp(1.0 - (float(startup_count) * _INV_STARTUP))
 
 _RULES: Final[Dict[MetricKey, Tuple[RecommendationRule, ...]]] = {
     "seguridad": (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, lambda m: f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad.", lambda m, r: r < WARN_THRESHOLD_HIGH),),
@@ -147,6 +167,7 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
+        """Normaliza y valida los datos de entrada para evitar errores de cálculo."""
         def _v(v: Any) -> float:
             val = float(v) if isinstance(v, (int, float)) else 0.0
             return val if math.isfinite(val) else 0.0
@@ -187,6 +208,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
+    """Ejecuta el pipeline de evaluación: normaliza, pondera y genera recomendaciones."""
     if metrics is None or not metrics.is_finite:
         metrics = SystemMetrics()
     metrics.validate()
@@ -215,11 +237,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."])
 
 def _render_bar(points: int, max_val: int) -> str:
+    """Genera una representación visual de barra para el resumen de salud."""
     limit = max(1, max_val)
     p = max(0, min(points, limit))
     return ('#' * p) + ('.' * (limit - p))
 
 def summarize(result: HealthResult | None) -> List[str]:
+    """Genera un reporte textual estructurado a partir del resultado de salud."""
     if result is None: return ["Error: Informe de salud no disponible."]
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, maximo in WEIGHTS.items():

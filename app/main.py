@@ -860,22 +860,23 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         self._add_setting_label(grilla, "Duplicados desde (KB):", 2, 0)
         self.min_dup_entry = self._entry(grilla, "64", 100)
-        try:
-            self.min_dup_entry.insert(0, str(self.settings.get("duplicados_tamano_minimo_kb", 64)))
-        except (tk.TclError, AttributeError):
-            pass
-        self.min_dup_entry.grid(row=2, column=1, sticky="w")
-
+        
         self._add_setting_label(grilla, "Top de archivos:", 2, 2)
         self.top_files_entry = self._entry(grilla, "15", 100)
-        try:
-            self.top_files_entry.insert(0, str(self.settings.get("top_archivos", 15)))
-        except (tk.TclError, AttributeError):
-            pass
-        self.top_files_entry.grid(row=2, column=3, sticky="w")
+        
+        self._update_entry_fields(self.min_dup_entry, "duplicados_tamano_minimo_kb", 64)
+        self._update_entry_fields(self.top_files_entry, "top_archivos", 15)
 
         self._build_ia_settings(tab)
         self._make_output("Ajustes", tab)
+
+    def _update_entry_fields(self, widget: ctk.CTkEntry, key: str, default: int) -> None:
+        """Helper para inicializar campos de entrada en ajustes."""
+        try:
+            widget.insert(0, str(self.settings.get(key, default)))
+            widget.grid(row=2, column=3 if "top" in key else 1, sticky="w")
+        except (tk.TclError, AttributeError):
+            pass
 
     def _build_ia_settings(self, tab: ctk.CTk) -> None:
         """Construye la sección de configuración para el asistente IA."""
