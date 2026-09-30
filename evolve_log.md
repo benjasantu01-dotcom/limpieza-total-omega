@@ -1412,3 +1412,35 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-09-30T13:50:36` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante docstrings más precisos en funciones críticas de transferencia atómica y validación de seguridad, clarificando la intención técnica y los riesgos abordados en cada paso para facilitar auditorías futuras.
 - `2026-09-30T13:50:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T13:50:36` Corrida terminada. Total usado hoy: 324.
+- `2026-09-30T13:56:35` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-30T13:56:59` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-30T13:57:02` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-30T13:57:07` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-30T13:57:15` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-30T13:57:28` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-30T13:58:22` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: Scanner._is_reparse_point
+- `2026-09-30T13:58:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-30T13:58:26` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-30T13:58:49` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+_______________ ERROR collecting evolve/tests/test_assistant.py ________________
+evolve/tests/test_assistant.py:25: in <module>
+    import assistant  # noqa: E402
+    ^^^^^^^^^^^^^^^^
+app/assistant.py:55: in <module>
+    import settings
+app/settings.py:25: in <module>
+    ValidatorFunc: TypeAlias = Callable[[ConfigKey, Any], Any]
+                                         ^^^^^^^^^
+E   NameError: name 'ConfigKey' is not defined
+=========================== short test summary info ============================
+ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not defined
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.30s
+
+```
+- `2026-09-30T13:58:49` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejora la legibilidad y mantenibilidad de `settings.py` mediante la refactorización de `_load_impl` para clarificar su flujo de control y añadiendo una anotación de tipo específica para mejorar la claridad de los validadores.
+- `2026-09-30T13:58:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T13:58:49` Corrida terminada. Total usado hoy: 328.
