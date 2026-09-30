@@ -137,9 +137,10 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Determina si un archivo está bloqueado por otro proceso.
-    Intenta abrirlo en modo lectura binaria; si falla, el archivo está 
-    en uso o carece de los privilegios necesarios para ser manipulado.
+    Determina si un archivo está bloqueado por otro proceso mediante intento de apertura.
+    
+    Returns:
+        True si no es un archivo o si no se puede abrir (bloqueado/sin permisos).
     """
     if not path.is_file():
         return True
@@ -152,8 +153,7 @@ def _is_file_locked(path: Path) -> bool:
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """
     Previene movimientos cíclicos donde el destino contenga al origen.
-    Verifica si el path del destino es un sub-directorio del origen, lo cual 
-    podría causar bucles infinitos en el escaneo de archivos.
+    Verifica si el path del destino es un sub-directorio del origen.
     """
     try:
         s, d = str(src.resolve()), str(dest.resolve())
@@ -174,10 +174,10 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
-    Realiza una auditoría completa antes de cualquier movimiento de archivos.
-    Valida integridad, pertenencia a zonas protegidas, accesibilidad del SO, 
-    evita cruce entre unidades de disco (cross-drive move) y comprueba bloqueos
-    para asegurar que el archivo no está en uso crítico.
+    Auditoría completa antes de cualquier movimiento de archivos.
+    
+    Realiza validaciones de seguridad, integridad, pertenencia a zonas protegidas, 
+    accesibilidad del SO, evita cruce de unidades y comprueba bloqueos activos.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     try:
@@ -185,7 +185,6 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if not is_safe_to_modify(src) or not _validate_path_security(src, dest): return False
         
         target_dir = dest.parent if dest.exists() else dest
-        # Validación extra de seguridad sobre la carpeta destino
         if is_protected_path(target_dir) or not target_dir.is_dir() or not os.access(target_dir, os.W_OK): 
             return False
         
@@ -222,10 +221,10 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
     
     Args:
         current_dir: Directorio base del escaneo actual.
-        found: Lista acumulativa de JunkFiles encontrados.
-        depth: Profundidad actual de recursión.
-        protected_cache: Conjunto de rutas protegidas ya validadas.
-        visited: Conjunto de rutas ya escaneadas para evitar ciclos.
+        found: Lista acumulativa de objetos JunkFile hallados.
+        depth: Profundidad actual de recursión para evitar desbordamiento.
+        protected_cache: Caché de rutas protegidas para no re-validar.
+        visited: Conjunto de rutas ya procesadas para evitar bucles.
     """
     if depth > 50 or not current_dir.exists(): return
     try:
@@ -249,7 +248,9 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
 def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[JunkFile]:
     """
     Inicia la detección de archivos basura en los directorios configurados.
-    Retorna una lista plana de JunkFiles identificados.
+    
+    Returns:
+        Lista plana de objetos JunkFile identificados.
     """
     found: List[JunkFile] = []
     protected_cache: set[str] = set()

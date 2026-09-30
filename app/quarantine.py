@@ -181,8 +181,6 @@ def _get_sha256(path: Path) -> str:
 def _is_file_in_use_by_system(path: Path) -> bool:
     """
     Determina si un archivo está bloqueado por el SO o procesos activos.
-    En Windows, utiliza la API de kernel para obtener atributos y un intento de 
-    bloqueo exclusivo vía msvcrt para verificar si el archivo está siendo editado.
     """
     if not path.exists():
         return False
@@ -285,7 +283,6 @@ def _ensure_path_ownership(path: Path) -> None:
 def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     """
     Inicializa y valida el directorio base para la cuarentena.
-    Realiza chequeos de seguridad contra paths protegidos y puntos de unión/reparse.
     """
     if not base:
         raise ValueError("El directorio base no puede estar vacío.")
@@ -417,8 +414,6 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineIte
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     """
     Persiste el manifiesto usando una operación de escritura atómica.
-    Utiliza archivos temporales y `os.replace` para evitar que un fallo de 
-    sistema durante la escritura corrompa el manifiesto original.
     """
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista.")
@@ -503,8 +498,6 @@ def _create_temp_file(source: Path, destination: Path) -> Path:
 def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> None:
     """
     Copia byte a byte usando descriptores de archivos de bajo nivel.
-    Implementa verificación de integridad post-escritura comparando el hash 
-    del archivo origen contra el archivo destino.
     """
     try:
         fd_src = os.open(str(source), os.O_RDONLY | os.O_NOFOLLOW)

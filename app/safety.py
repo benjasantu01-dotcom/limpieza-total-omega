@@ -262,7 +262,10 @@ def _has_alternate_data_stream(path_name: str) -> bool:
     return ":" in path_name and len(path_name.split(":")) > 2
 
 def _get_security_descriptor(path: Path) -> SecurityDescriptor:
-    """Construye un descriptor de seguridad para evaluar el archivo."""
+    """
+    Construye un descriptor de seguridad para evaluar el archivo en un instante dado.
+    Determina si el archivo es un sistema oculto o si está bloqueado por otro proceso.
+    """
     attrs = _get_file_attrs(str(path))
     in_use = False
     try:
@@ -277,7 +280,10 @@ def _get_security_descriptor(path: Path) -> SecurityDescriptor:
 
 @lru_cache(maxsize=1024)
 def _is_file_locked_by_other_process(path_str: str) -> bool:
-    """Verifica si un archivo está en uso exclusivo, evitando errores de I/O en operaciones de escritura."""
+    """
+    Verifica si un archivo está en uso exclusivo mediante la API CreateFile.
+    Si el handle falla con sharing violation, se considera el archivo bloqueado.
+    """
     if not isinstance(path_str, str) or os.name != 'nt' or _is_path_too_long(path_str): return False
     kernel32 = ctypes.windll.kernel32
     try:
@@ -383,6 +389,7 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
 def _get_path_stat_robust(path: Path) -> os.stat_result:
     """
     Obtiene los metadatos de un archivo de manera segura, bloqueando el acceso a archivos de dispositivo.
+    Valida que el archivo no sea un dispositivo o un punto de reparse antes de realizar la consulta stat().
     """
     if not isinstance(path, Path):
         raise UnsafePathError("Tipo de objeto de ruta inválido", SafetyValidationErrorCode.GENERIC)
@@ -405,7 +412,8 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
 def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     """
     Previene ataques Time-of-Check to Time-of-Use (TOCTOU).
-    Verifica que el archivo no haya sido reemplazado y pertenezca a un volumen local permitido.
+    Verifica que el archivo no haya sido reemplazado y pertenezca a un volumen local permitido
+    comparando los identificadores de dispositivo e inodo contra el estado inicial.
     """
     if os.name == 'nt':
         root = path.anchor
@@ -452,7 +460,7 @@ def _validate_access_permissions(path: Path) -> None:
 def normalize(path: PathLike) -> Path:
     """
     Normaliza una ruta y valida componentes para prevenir ataques de Path Traversal.
-    Verifica la normalización Unicode para evitar bypasses de filtros por caracteres.
+    Aplica normalización NFKC para prevenir bypasses por caracteres equivalentes Unicode.
     """
     if path is None: raise UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC)
     path_str = str(path).strip()
@@ -493,7 +501,7 @@ def is_drive_root(path: PathLike) -> bool:
 
 @lru_cache(maxsize=4096)
 def _is_system_path_raw(path_str: str) -> bool:
-    """Comprueba si una ruta pertenece a directorios críticos del sistema."""
+    """Comprueba si una ruta pertenece a directorios críticos del sistema basándose en nombres protegidos."""
     path_lower = path_str.lower()
     # Verifica si la ruta es subdirectorio de una ruta de sistema global
     if any(path_lower.startswith(root) for root in _SYSTEM_ROOT_PATHS_TUPLE):
@@ -535,7 +543,10 @@ def is_sensitive_file(path: PathLike) -> bool:
     except (TypeError, ValueError, OSError): return True 
 
 def _validate_structural_safety(target_path: Path, path_string: str) -> None:
-    """Realiza validaciones sobre la estructura de la cadena de texto para prevenir inyecciones o bypasses."""
+    """
+    Realiza validaciones sobre la estructura de la cadena de texto para prevenir inyecciones
+    o bypasses mediante rutas mal formadas, nombres reservados o caracteres inválidos.
+    """
     if not isinstance(path_string, str):
         raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC)
     if _is_unc_path(path_string):
@@ -608,7 +619,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
         raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS)
 
 def _get_final_path_normalized(path: Path) -> Optional[Path]:
-    """Resuelve la ruta física real de un archivo, expandiendo enlaces y puntos de unión."""
+    """Resuelve la ruta física real de un archivo, expandiendo enlaces y puntos de unión mediante el handle."""
     if _is_path_too_long(str(path)): return None
     kernel32 = ctypes.windll.kernel32
     try:
@@ -641,7 +652,7 @@ def _validate_ntfs_reparse_redirection(path: Path) -> None:
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
     Función de entrada principal para validar si es seguro aplicar una modificación.
-    Combina validaciones de estructura, límites, permisos y metadatos.
+    Combina validaciones de estructura, límites, permisos y metadatos del sistema de archivos.
     """
     if path is None:
         raise UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC)
