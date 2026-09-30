@@ -708,8 +708,9 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     try:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
-        items_map = {i.item_id: i for i in items}
-        quarantine_item = items_map.get(item_id)
+        # Búsqueda directa sin crear un mapa auxiliar si no es estrictamente necesario
+        quarantine_item = next((i for i in items if i.item_id == item_id), None)
+        
         if quarantine_item is None:
             raise KeyError(f"Ítem no encontrado: {item_id}")
         
@@ -758,8 +759,8 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
         raise ValueError("ID de ítem vacío o inválido.")
     base_path = quarantine_dir(base)
     items = load_manifest(base)
-    items_map = {i.item_id: i for i in items}
-    quarantine_item = items_map.get(item_id)
+    quarantine_item = next((i for i in items if i.item_id == item_id), None)
+    
     if quarantine_item is None:
         return False
     stored_file = base_path / quarantine_item.stored_name
@@ -795,6 +796,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     except (OSError, RuntimeError, UnsafePathError):
         return 0
     items = load_manifest(base)
+    # Convertimos a dict solo para iteración, minimizando copias excesivas
     item_map = {i.stored_name: i for i in items}
     purged_ids: Set[str] = set()
     try:

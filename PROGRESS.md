@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Mejoras aceptadas: **202** (40.1% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 42
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 219
+- Rechazadas por guardia de seguridad: 43
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-29 | 55 | 9 | 9 | 5 | 90 |
-| 2026-09-30 | 146 | 13 | 33 | 15 | 129 |
+| 2026-09-29 | 54 | 9 | 9 | 4 | 88 |
+| 2026-09-30 | 148 | 13 | 34 | 15 | 130 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **52**
+- seguridad defensiva: **51**
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **39**
 - robustez ante casos límite: **35**
-- rendimiento: **28**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
 - `healthscore.py`: **19**
-- `quarantine.py`: **18**
-- `memory.py`: **17**
+- `quarantine.py`: **19**
+- `memory.py`: **18**
 - `assistant.py`: **17**
 - `safety.py`: **15**
 - `duplicates.py`: **15**
-- `branding.py`: **14**
 - `settings.py`: **14**
 - `organizer.py`: **14**
 - `browser.py`: **14**
 - `scanner.py`: **13**
+- `branding.py`: **13**
 - `startup.py`: **7**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-30T14:29:36` **quarantine.py** (rendimiento): Se optimizó `load_manifest` para evitar la creación innecesaria de una lista intermedia y su conversión a un mapa temporal dentro de `restore_item` y `purge_item` (que es una operación $O(N)$), utilizando en su lugar una búsqueda directa y eficiente mediante comprensión de listas o filtrado, reduciendo el overhead de memoria y tiempo en escaneos frecuentes.
+- `2026-09-30T14:27:45` **memory.py** (rendimiento): Se optimizó el proceso de recolección de memoria de los procesos (top_memory_processes) reemplazando la creación de una lista completa en memoria antes de filtrar por un enfoque de procesamiento en stream y heap (ya implementado parcialmente) y, más importante, eliminando la creación innecesaria de objetos `ProcessMemory` para procesos que no entrarán en el top N, reduciendo así la presión sobre el recolector de basura.
 - `2026-09-30T14:18:04` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para reducir drásticamente las llamadas a `stat()` y `exists()` utilizando la información ya disponible en `os.DirEntry` y moviendo las comprobaciones más costosas (`is_system_or_hidden` e `_is_file_locked`) al final del flujo, después de los filtros baratos.
 - `2026-09-30T14:17:36` **diskreport.py** (rendimiento): Optimizé la función `largest_folders` para evitar la redundancia de realizar múltiples iteraciones sobre el sistema de archivos: ahora el cálculo del tamaño de carpetas se realiza en una sola pasada delegada a `_collect_summary_data`, reutilizando la lógica existente.
 - `2026-09-30T14:08:36` **browser.py** (rendimiento): Optimizé `_sum_directory_recursive` y `_process_file_entry` reemplazando llamadas repetitivas a `os.path.abspath` y `os.path.normcase` dentro del bucle principal por una comparación de prefijos de cadenas de bytes normalizadas, evitando el sobrecosto de resolución de rutas en cada iteración.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-30T13:37:10` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el propósito de las estructuras auxiliares y clarifiqué la lógica del recolector de datos `_collect_summary_data`, además de tipar explícitamente los lambdas internos para mejorar la legibilidad y mantenibilidad.
 - `2026-09-30T13:36:40` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `browser.py` mediante la implementación de type hints más precisos, la adición de docstrings técnicos que explican las restricciones de seguridad (sandbox) y la extracción de la lógica de conversión de unidades a una propiedad computada, centralizando la lógica de negocio.
 - `2026-09-30T13:27:41` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `ProblemCriterion` convirtiendo la lógica de comparación de un diccionario mutable y condicional a una estructura cerrada y robusta, eliminando el uso de `operator.get` por una lógica de evaluación explícita y mejor documentada.
-- `2026-09-30T13:26:56` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `StartupEntry._extract_quoted_path` validando explícitamente el resultado de `Path(path_str).parts` para evitar excepciones o rutas malformadas cuando el índice de búsqueda de comillas falla o devuelve un path vacío.
-- `2026-09-30T13:26:28` **settings.py** (manejo de errores y validación de entradas): Se reforzó la robustez en la validación de tipos dentro de `_coerce_and_verify` y `validate` para prevenir inyecciones de valores inesperados que pudieran comprometer la estabilidad, además de asegurar que `_load_impl` maneje errores de acceso al sistema de archivos de manera más granular.

@@ -196,11 +196,10 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
             ws = _safe_int_conversion(ws_str)
             if pid > 0 and pid not in seen_pids and 0 < ws < MAX_VALID_PROCESS_MEM:
                 seen_pids.add(pid)
-                proc = ProcessMemory(name.strip("'\" "), pid, ws)
                 if len(top_heap) < limit:
-                    heapq.heappush(top_heap, proc)
-                elif proc.working_set > top_heap[0].working_set:
-                    heapq.heapreplace(top_heap, proc)
+                    heapq.heappush(top_heap, ProcessMemory(name.strip("'\" "), pid, ws))
+                elif ws > top_heap[0].working_set:
+                    heapq.heapreplace(top_heap, ProcessMemory(name.strip("'\" "), pid, ws))
         except (ValueError, TypeError):
             continue
             
