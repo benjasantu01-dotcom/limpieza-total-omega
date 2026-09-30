@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
-- Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 235
+- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Rechazadas por tests: 21
+- Rechazadas por guardia de seguridad: 36
+- Sin cambios (nada sustancial que mejorar): 24
+- Sin respuesta de la IA (error o límite): 233
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-28 | 15 | 3 | 4 | 2 | 26 |
+| 2026-09-28 | 14 | 3 | 4 | 1 | 24 |
 | 2026-09-29 | 131 | 15 | 22 | 18 | 164 |
-| 2026-09-30 | 43 | 2 | 9 | 5 | 45 |
+| 2026-09-30 | 45 | 3 | 10 | 5 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **44**
 - robustez ante casos límite: **41**
+- legibilidad y documentación: **41**
 - manejo de errores y validación de entradas: **39**
-- legibilidad y documentación: **39**
-- rendimiento: **26**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **19**
 - `quarantine.py`: **18**
 - `assistant.py`: **18**
-- `memory.py`: **16**
 - `settings.py`: **16**
+- `diskreport.py`: **15**
+- `memory.py`: **15**
 - `scanner.py`: **15**
-- `diskreport.py`: **14**
+- `branding.py`: **14**
 - `safety.py`: **14**
 - `browser.py`: **14**
-- `branding.py`: **13**
 - `duplicates.py`: **12**
 - `organizer.py`: **11**
 - `main.py`: **6**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-30T04:36:59` **diskreport.py** (legibilidad y documentación): He mejorado la documentación del código añadiendo *type hints* faltantes en `ExtStats` y los métodos de `_collect_summary_data`, y he clarificado los docstrings mediante el uso de parámetros tipados (Type Hints) para mejorar la legibilidad del contrato de las funciones.
+- `2026-09-30T04:36:21` **branding.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en `MappingProxyType`) y se mejoró la documentación con docstrings normalizados para clarificar la lógica de segmentación y el propósito de los métodos de dibujo, facilitando la mantenibilidad futura.
 - `2026-09-30T04:26:44` **settings.py** (manejo de errores y validación de entradas): Se mejoró la robustez de la validación en `_load_impl` y `save` mediante el uso de `ensure_safe_to_modify` como medida de control de flujo segura (lanzando excepciones que el bloque `try-except` captura), evitando así el uso de chequeos de escritura en funciones que solo deberían leer o validar, siguiendo estrictamente el patrón definido.
 - `2026-09-30T04:26:11` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas de archivo (`check_recent_executable_in_downloads` y `check_empty_file`) añadiendo validaciones de tipo y estado para prevenir excepciones ante archivos bloqueados o inaccesibles, asegurando que el bucle de escaneo no se interrumpa ante metadatos parciales.
 - `2026-09-30T04:25:34` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `_get_path_stat_robust` para incluir una captura específica de `OSError` cuando `path.stat()` falla, diferenciando errores de permiso de bloqueos de sistema, y se ha reemplazado la verificación genérica `except Exception` en `_is_file_locked_by_other_process` por una tupla de excepciones concretas para evitar la supresión accidental de errores críticos de sistema.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-30T02:33:23` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `startup.py` añadiendo un chequeo explícito en `_extract_quoted_path` para prevenir el uso de rutas que contienen la secuencia `..`, mitigando posibles ataques de "path traversal" al procesar entradas del registro malintencionadas.
 - `2026-09-30T02:32:56` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_file_secure_to_read` añadiendo una comprobación explícita para evitar que se carguen archivos que posean permisos de escritura para el grupo o "otros" (world-writable), lo cual es una vulnerabilidad común en archivos de configuración que pueden ser manipulados por otros usuarios del sistema.
 - `2026-09-30T02:23:49` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `_get_path_stat_robust` y `_check_file_integrity` para manejar específicamente el caso de archivos en uso (WinError 32) de manera diferenciada, y se añadió una validación explícita para evitar que `_get_path_stat_robust` sea llamado sobre rutas que han sido detectadas como puntos de reparse (junciones) antes de la resolución física, reforzando la defensa contra el seguimiento de enlaces fuera del sandbox.
-- `2026-09-30T02:22:56` **quarantine.py** (seguridad defensiva): Se introdujo una validación de "punto de reparse" (junction/reparse point) en `_safe_unlink` y `purge_item` para asegurar que las operaciones de borrado nunca atraviesen enlaces simbólicos o puntos de unión, reforzando la seguridad defensiva contra manipulación de rutas en la carpeta de cuarentena.
-- `2026-09-30T02:22:15` **organizer.py** (seguridad defensiva): Se ha robustecido `_is_safe_for_disk_op` integrando explícitamente `is_protected_path` sobre la ruta destino y consolidando las comprobaciones de integridad antes de cualquier operación de movimiento, garantizando que no se violen las reglas de seguridad defensiva ni se realicen escrituras en zonas críticas del sistema.

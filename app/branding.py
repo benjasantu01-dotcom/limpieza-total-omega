@@ -204,7 +204,7 @@ def tab_label(section: Optional[str]) -> str:
     return f"{icon(section)}  {section}"
 
 def _parse_severity(severity: Optional[str]) -> Optional[SeverityType]:
-    """Helper interno para convertir strings de entrada a SeverityType."""
+    """Convierte una cadena de severidad cruda al enum correspondiente."""
     if isinstance(severity, str):
         try:
             return SeverityType(severity.lower())

@@ -309,9 +309,14 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Recorre el sistema de archivos y consolida métricas globales.
-    Usa un min-heap (heapq) para mantener solo los 'limit' archivos más pesados en memoria.
+    
+    Args:
+        directory: Ruta base desde la que iniciar el escaneo.
+        skip_protected: Flag para filtrar rutas del sistema.
+        limit: Máximo número de archivos pesados a mantener en memoria.
     """
-    total_bytes, total_files = 0, 0
+    total_bytes: int = 0
+    total_files: int = 0
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
     top_heap: List[Tuple[int, Path]] = []
     
@@ -320,7 +325,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             total_bytes += size_bytes
             total_files += 1
             ext = path.suffix.lower() or "(sin extensión)"
-            stats = ext_stats[ext]
+            stats: ExtStats = ext_stats[ext]
             stats.total_bytes += size_bytes
             stats.count += 1
             
