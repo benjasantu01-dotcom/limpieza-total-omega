@@ -187,7 +187,7 @@ def _is_file_in_use(path: str) -> bool:
         fd = os.open(path, os.O_RDONLY | os.O_EXCL)
         os.close(fd)
         return False
-    except OSError:
+    except (OSError, PermissionError, FileNotFoundError):
         return True
 
 def _process_file_entry(

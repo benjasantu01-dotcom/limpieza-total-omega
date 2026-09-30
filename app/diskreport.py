@@ -261,6 +261,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode)
                                 stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
+                            # Verificar acceso antes de stat para evitar bloqueos
                             if os.access(entry.path, os.R_OK):
                                 st = entry.stat(follow_symlinks=False)
                                 if st.st_size >= 0: yield Path(entry.path), st.st_size

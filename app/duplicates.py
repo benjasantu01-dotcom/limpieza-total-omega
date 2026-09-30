@@ -190,7 +190,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """Valida si un archivo satisface las condiciones de escaneo: sin bloqueos ni atributos del sistema."""
     try:
-        if not _safe_path_check(path):
+        if not path.exists() or not _safe_path_check(path):
             return False
         if is_system_or_hidden(path) or _is_file_locked(path):
             return False
@@ -209,7 +209,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
             continue
         try:
             path_obj = Path(p).absolute()
-            if _safe_path_check(path_obj):
+            if path_obj.exists() and _safe_path_check(path_obj):
                 st_size = path_obj.stat().st_size
                 if _is_valid_candidate(path_obj, st_size):
                     groups[st_size].append(path_obj)
@@ -247,6 +247,9 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        if not entry.path or not os.path.exists(entry.path):
+                            continue
+                            
                         if entry.is_dir(follow_symlinks=False):
                             path_obj = Path(entry.path)
                             if not is_junction(path_obj) and not path_obj.is_symlink():

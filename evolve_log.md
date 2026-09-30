@@ -1037,3 +1037,11 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel
 - `2026-09-30T10:13:45` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: SystemContext.__hash__, SystemContext.is_valid_structure
 - `2026-09-30T10:13:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T10:13:45` Corrida terminada. Total usado hoy: 240.
+- `2026-09-30T10:22:05` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-09-30T10:22:53` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-30T10:22:53` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-30T10:23:30` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_file_in_use` añadiendo un manejo de excepciones específico para `PermissionError` y `FileNotFoundError` (posibles en entornos de alta concurrencia), evitando que el escáner aborte ante archivos que desaparecen o están bloqueados por el sistema durante la iteración.
+- `2026-09-30T10:24:07` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se añadió una verificación de estado de archivo en `walk_files` para manejar `OSError` al intentar leer atributos de archivos que podrían estar bloqueados o desapareciendo durante el escaneo, aumentando la robustez ante condiciones de carrera en el sistema de archivos.
+- `2026-09-30T10:24:27` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_collect_candidates` ante casos límite añadiendo un chequeo explícito de `exists()` antes de procesar cada entrada del sistema de archivos, previniendo errores de acceso si un archivo es eliminado o renombrado por un proceso externo durante la ejecución del escaneo.
+- `2026-09-30T10:24:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T10:24:27` Corrida terminada. Total usado hoy: 244.
