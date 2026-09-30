@@ -678,13 +678,15 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
         candidates = data.get("candidates")
         if not isinstance(candidates, list) or not candidates: return None
         
-        content = candidates[0].get("content")
+        # Validar jerarquía completa para evitar IndexError
+        first = candidates[0]
+        if not isinstance(first, dict): return None
+        content = first.get("content")
         if not isinstance(content, dict): return None
-        
         parts = content.get("parts")
         if not isinstance(parts, list) or not parts: return None
-        
         text_val = parts[0].get("text")
+        
         if isinstance(text_val, str):
             sanitized = _validate_response_length(text_val)
             if _ensure_safe_text(sanitized):
@@ -710,7 +712,8 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     try:
         req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"}, method="POST")
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
-            if res.status != 200: return None
+            if res.status != 200: 
+                return None
             raw_res = res.read(_MAX_RESPONSE_BYTES + 1)
             if not isinstance(raw_res, bytes) or len(raw_res) > _MAX_RESPONSE_BYTES: return None
             

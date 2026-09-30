@@ -395,13 +395,26 @@ def logo_svg(size: int = 128) -> str:
   <text x="64" y="98" font-family="{UI_FONT_FAMILY}" font-size="26" font-weight="{UI_FONT_BOLD}" fill="{C_BACKGROUND}" text-anchor="middle">&#937;</text>
 </svg>"""
 
+def _validate_destination(dest: Any) -> Optional[Path]:
+    """Verifica si la ruta destino es apta para escritura mediante resolución absoluta."""
+    if not isinstance(dest, (str, Path)):
+        return None
+    try:
+        path = Path(dest).resolve()
+        # Impedir escritura en rutas protegidas mediante chequeo estricto
+        if is_protected_path(path) or not is_safe_to_modify(path):
+            return None
+        return path
+    except (OSError, RuntimeError, TypeError, ValueError):
+        return None
+
 def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optional[Path]:
     """Guarda el logo SVG tras validar la seguridad del destino."""
     path = _validate_destination(destination)
     if not path:
         return None
     try:
-        # Validación de seguridad re-verificada ante posibles cambios de estado
+        # Validación de seguridad: ensure_safe_to_modify lanza si no es apto
         ensure_safe_to_modify(path)
         if not path.parent.exists():
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -409,19 +422,6 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         path.write_text(logo_svg(safe_size), encoding="utf-8")
         return path if path.is_file() else None
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError, AttributeError):
-        return None
-
-def _validate_destination(dest: Any) -> Optional[Path]:
-    """Verifica si la ruta destino es apta para escritura mediante resolución absoluta."""
-    if not isinstance(dest, (str, Path)):
-        return None
-    try:
-        path = Path(dest).resolve()
-        # Impedir escritura en rutas protegidas antes de la operación
-        if is_protected_path(path) or not is_safe_to_modify(path):
-            return None
-        return path
-    except (OSError, RuntimeError, TypeError, ValueError):
         return None
 
 def logo_ascii() -> str:
