@@ -123,12 +123,9 @@ class AssistantConfig(NamedTuple):
 @dataclass(frozen=True)
 class MetricSpec:
     """
-    Define un contrato de validación para métricas numéricas.
-    
-    Attributes:
-        cast_func: Función de conversión (int/float).
-        min_val: Cota inferior inclusiva (debe ser finita).
-        max_val: Cota superior inclusiva (debe ser finita).
+    Define el contrato de validación para métricas numéricas, asegurando que 
+    los valores crudos (datos de hardware/sistema) se ajusten a rangos lógicos
+    antes de ser procesados por la lógica de diagnóstico.
     """
     cast_func: Callable[[Any], Any]
     min_val: float
@@ -140,14 +137,16 @@ class MetricSpec:
 
 class ProblemCriterion(NamedTuple):
     """
-    Regla de negocio para determinar si una métrica representa un problema.
+    Representa una regla de detección de problemas de salud del sistema.
     
-    Ejemplo: {disk_free_percent, 10.0, "<", "X% de disco libre"}
+    Permite evaluar de forma declarativa si una métrica (ej. 'disk_free_percent')
+    cae por debajo o supera un umbral crítico, generando mensajes pedagógicos
+    predefinidos.
     """
     metric_key: str
     threshold: float
     operator: str # "<" (menor que), ">" (mayor que)
-    message_format: str # Template para string format (debe aceptar 1 argumento)
+    message_format: str # Template para string format (ej: "{:.0f}% de RAM")
 
     def _evaluate_metric(self, val: float) -> bool:
         """Aplica lógica booleana sobre el valor comparándolo con el umbral."""
@@ -307,10 +306,11 @@ def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
 @dataclass
 class SystemContext:
     """
-    Agregador centralizado del estado del sistema. 
-    Contiene métricas normalizadas, valida la integridad de los datos entrantes y
-    expone métodos de consulta para la lógica de diagnóstico, manteniendo el 
-    contrato de anonimidad sobre rutas y archivos.
+    Contenedor principal que consolida el estado del sistema tras un escaneo.
+    
+    Esta clase actúa como única fuente de verdad para el asistente. Sus datos son
+    ingestados dinámicamente, validados mediante `MetricSpec` y anonimizados, 
+    garantizando que ninguna ruta o dato personal llegue al motor de IA.
     """
     score: Optional[int] = None
     grade: str = ""
@@ -374,8 +374,10 @@ class SystemContext:
 
     def ingest(self, source: Any) -> bool:
         """
-        Ingesta datos de una fuente externa y los normaliza en el contexto.
-        Utiliza actualización atómica para evitar estados parciales corruptos.
+        Normaliza datos de entrada y actualiza el estado del sistema.
+        
+        Implementa una carga atómica: solo si los campos superan la validación
+        de seguridad, el objeto actualiza su estado interno.
         """
         if not (isinstance(source, (dict, SystemContext)) or hasattr(source, "__dict__")) or _is_input_too_deep_or_complex(source):
             return False

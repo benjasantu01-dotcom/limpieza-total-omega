@@ -303,12 +303,15 @@ def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
 @lru_cache(maxsize=128)
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
     """
-    Realiza interpolación lineal entre dos colores.
+    Realiza interpolación lineal (lerp) entre dos colores HEX.
     
     Args:
-        start: Color de origen.
-        end: Color de destino.
-        ratio: Factor de mezcla entre 0.0 y 1.0.
+        start: Color de origen en formato hexadecimal.
+        end: Color de destino en formato hexadecimal.
+        ratio: Factor de mezcla (0.0 a 1.0).
+        
+    Returns:
+        Hexadecimal resultante de la mezcla.
     """
     try:
         r1, g1, b1 = _hex_to_rgb(start)
@@ -333,7 +336,13 @@ def _interpolate_rgb(s1: RGBTuple, s2: RGBTuple, delta: float) -> RGBTuple:
 
 @lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
-    """Crea una serie de colores interpolados para formar un gradiente visual."""
+    """
+    Genera una secuencia de colores interpolados (gradiente) basada en puntos de control.
+    
+    Args:
+        steps: Número de pasos deseados en la secuencia.
+        stops: Tupla de colores hex que definen los nodos del gradiente.
+    """
     try:
         n = max(1, int(steps))
         if not stops or len(stops) < 2: 

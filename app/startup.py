@@ -265,6 +265,23 @@ def startup_folders() -> List[Path]:
     return [c for c in candidates if c and c.is_dir() and not c.is_symlink() and not is_protected_path(c)]
 
 
+def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
+    """Procesa un archivo individual en una carpeta de inicio, retornando un objeto o None."""
+    try:
+        if not entry.is_file(follow_symlinks=False):
+            return None
+        _, ext = os.path.splitext(entry.name)
+        if ext.lower() not in EXECUTABLE_EXTS:
+            return None
+        p = Path(entry.path)
+        if is_protected_path(p):
+            return None
+        name = "".join(c for c in os.path.splitext(entry.name)[0] if ord(c) >= 32)
+        return StartupEntry(name=name, command=entry.path, source="carpeta")
+    except (OSError, PermissionError, ValueError):
+        return None
+
+
 def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[StartupEntry]:
     """Escanea directorios de inicio del sistema y usuario buscando ejecutables válidos."""
     found_entries: List[StartupEntry] = []
@@ -276,17 +293,9 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
         try:
             with os.scandir(folder) as it:
                 for entry in it:
-                    if entry.is_file(follow_symlinks=False):
-                        _, ext = os.path.splitext(entry.name)
-                        if ext.lower() in EXECUTABLE_EXTS:
-                            p = Path(entry.path)
-                            if not is_protected_path(p):
-                                name = "".join(c for c in os.path.splitext(entry.name)[0] if ord(c) >= 32)
-                                found_entries.append(StartupEntry(
-                                    name=name,
-                                    command=entry.path,
-                                    source="carpeta"
-                                ))
+                    processed = _process_folder_entry(entry)
+                    if processed:
+                        found_entries.append(processed)
         except (OSError, PermissionError):
             continue
     return found_entries
