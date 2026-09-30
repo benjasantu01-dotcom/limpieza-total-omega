@@ -174,14 +174,14 @@ class Scanner:
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Determina si la entrada es un punto de reanálisis (Junction/Symlink)."""
-        return bool(_get_file_attributes(entry) & LIMITS.reparse_point_attr_mask)
+        try:
+            return bool(_get_file_attributes(entry) & LIMITS.reparse_point_attr_mask)
+        except (OSError, PermissionError):
+            return True
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
         Realiza validación de seguridad antes de procesar una ruta.
-        
-        Utiliza cachés de directorios y archivos protegidos para minimizar llamadas 
-        externas a safety.py y asegura que no se sigan enlaces externos.
         """
         if not entry or not entry.path or not entry.name:
             return False
@@ -204,7 +204,7 @@ class Scanner:
             
             self.safe_cache.add(path_str)
             return True
-        except (OSError, RuntimeError, FileNotFoundError):
+        except (OSError, RuntimeError):
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
@@ -229,7 +229,7 @@ class Scanner:
                 if self._is_relevant_extension(entry.name):
                     self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError):
-            pass
+            return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta todas las heurísticas registradas sobre un archivo."""

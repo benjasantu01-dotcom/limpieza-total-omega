@@ -324,7 +324,6 @@ def _load_impl(ruta: Path) -> AppSettings:
         with open(ruta, "r", encoding="utf-8") as f:
             fd = f.fileno()
             st = os.fstat(fd)
-            # Validación de seguridad: lectura pura, sin forzar cambios
             if not _is_file_secure_to_read(ruta, st): return dict(DEFAULTS)
             data = json.load(f)
         if _is_dict(data):
@@ -371,11 +370,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     """Persistencia atómica: guarda el archivo usando un ciclo temp -> backup -> reemplazar."""
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
-    
     cleaned_settings = _coerce_and_verify(validate(values))
     if ruta.exists() and load(custom_base) == cleaned_settings:
         return ruta
-        
     parent = ruta.parent
     try:
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
@@ -383,10 +380,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         if not os.access(parent, os.W_OK) or _Validators._is_reparse_point(parent): return None
         if not _Validators._is_safe_path(str(parent)): return None
-        # Validación: solo proceder si la ruta no está protegida contra escritura
         if ruta.exists(): ensure_safe_to_modify(ruta)
     except (TypeError, ValueError, OSError, PermissionError): return None
-    
     temp_path = ruta.with_suffix(".tmp")
     bak_path = ruta.with_suffix(".bak")
     try:
@@ -394,25 +389,20 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             f.write(serialized)
             f.flush()
             os.fsync(f.fileno())
-        
         if not _is_file_secure_to_read(temp_path): raise PermissionError("Temp file invalid")
-        
         if ruta.exists():
             ensure_safe_to_modify(bak_path)
             os.replace(ruta, bak_path)
-        
         try:
             os.replace(temp_path, ruta)
         except OSError:
             if bak_path.exists(): os.replace(bak_path, ruta)
             raise
-        
         _load_cached.cache_clear()
         return ruta
-    except (OSError, IOError, PermissionError): 
-        return None
+    except (OSError, IOError, PermissionError): return None
     finally:
-        if temp_path.exists() and is_safe_to_modify(str(temp_path)):
+        if temp_path.exists():
             try: os.remove(temp_path)
             except (OSError, PermissionError): pass
 
