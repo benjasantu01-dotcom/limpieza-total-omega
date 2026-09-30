@@ -1045,3 +1045,13 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel
 - `2026-09-30T10:24:27` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_collect_candidates` ante casos límite añadiendo un chequeo explícito de `exists()` antes de procesar cada entrada del sistema de archivos, previniendo errores de acceso si un archivo es eliminado o renombrado por un proceso externo durante la ejecución del escaneo.
 - `2026-09-30T10:24:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T10:24:27` Corrida terminada. Total usado hoy: 244.
+- `2026-09-30T10:32:17` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-09-30T10:32:45` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-09-30T10:33:45` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-30T10:34:48` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-30T10:35:54` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-30T10:36:11` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-30T10:36:58` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha robustecido el manejo de errores en `top_memory_processes` añadiendo un bloque `try-finally` para asegurar que el proceso de PowerShell no quede colgado en caso de excepciones imprevistas, y se mejoró la resiliencia ante ejecuciones que devuelven resultados vacíos o malformados, evitando caché de datos inválidos.
+- `2026-09-30T10:37:13` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se introdujo una comprobación crítica en `_is_safe_for_disk_op` para validar que el sistema de archivos de origen soporte operaciones de movimiento (no sea de solo lectura) y se añadió una gestión robusta de `PermissionError` en el escaneo recursivo para asegurar que el proceso no aborte silenciosamente ante archivos con permisos restringidos, mejorando la resiliencia en casos límite.
+- `2026-09-30T10:37:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T10:37:13` Corrida terminada. Total usado hoy: 248.

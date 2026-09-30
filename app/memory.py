@@ -248,10 +248,15 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         ]
         try:
             res = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
-            if res.returncode == 0:
-                _proc_cache_data = parse_windows_process_csv(res.stdout, limit=limit)
-                _proc_cache_time = now
-        except (OSError, subprocess.SubprocessError): pass
+            if res.returncode == 0 and res.stdout:
+                parsed = parse_windows_process_csv(res.stdout, limit=limit)
+                if parsed:
+                    _proc_cache_data = parsed
+                    _proc_cache_time = now
+        except (OSError, subprocess.SubprocessError):
+            pass
+        finally:
+            pass
     return _proc_cache_data
 
 @lru_cache(maxsize=8)

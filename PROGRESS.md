@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-29 | 87 | 11 | 15 | 12 | 135 |
-| 2026-09-30 | 106 | 10 | 26 | 13 | 89 |
+| 2026-09-29 | 85 | 11 | 15 | 12 | 133 |
+| 2026-09-30 | 108 | 10 | 26 | 13 | 91 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
-- seguridad defensiva: **42**
+- seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **39**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **37**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **19**
+- `memory.py`: **18**
 - `assistant.py`: **17**
-- `memory.py`: **17**
 - `quarantine.py`: **17**
 - `diskreport.py`: **16**
-- `scanner.py`: **14**
-- `settings.py`: **14**
+- `organizer.py`: **15**
 - `branding.py`: **14**
 - `browser.py`: **14**
-- `organizer.py`: **14**
 - `safety.py`: **14**
 - `duplicates.py`: **13**
+- `scanner.py`: **13**
+- `settings.py`: **13**
 - `startup.py`: **5**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-30T10:37:13` **organizer.py** (robustez ante casos límite): Se introdujo una comprobación crítica en `_is_safe_for_disk_op` para validar que el sistema de archivos de origen soporte operaciones de movimiento (no sea de solo lectura) y se añadió una gestión robusta de `PermissionError` en el escaneo recursivo para asegurar que el proceso no aborte silenciosamente ante archivos con permisos restringidos, mejorando la resiliencia en casos límite.
+- `2026-09-30T10:36:58` **memory.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `top_memory_processes` añadiendo un bloque `try-finally` para asegurar que el proceso de PowerShell no quede colgado en caso de excepciones imprevistas, y se mejoró la resiliencia ante ejecuciones que devuelven resultados vacíos o malformados, evitando caché de datos inválidos.
 - `2026-09-30T10:24:27` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `_collect_candidates` ante casos límite añadiendo un chequeo explícito de `exists()` antes de procesar cada entrada del sistema de archivos, previniendo errores de acceso si un archivo es eliminado o renombrado por un proceso externo durante la ejecución del escaneo.
 - `2026-09-30T10:24:07` **diskreport.py** (robustez ante casos límite): Se añadió una verificación de estado de archivo en `walk_files` para manejar `OSError` al intentar leer atributos de archivos que podrían estar bloqueados o desapareciendo durante el escaneo, aumentando la robustez ante condiciones de carrera en el sistema de archivos.
 - `2026-09-30T10:23:30` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_in_use` añadiendo un manejo de excepciones específico para `PermissionError` y `FileNotFoundError` (posibles en entornos de alta concurrencia), evitando que el escáner aborte ante archivos que desaparecen o están bloqueados por el sistema durante la iteración.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-30T09:22:07` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones críticas de validación y recorrido, aclarando las precondiciones de seguridad y el manejo de excepciones para facilitar el mantenimiento y la auditoría.
 - `2026-09-30T09:21:25` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en los retornos de funciones de bajo nivel y refinando los docstrings para especificar el comportamiento ante errores, facilitando el mantenimiento y la auditoría del código.
 - `2026-09-30T09:12:29` **healthscore.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings descriptivos en `SystemMetrics` y `compute_score` para clarificar la lógica de transformación de datos y mitigar la ambigüedad en el pipeline de evaluación.
-- `2026-09-30T09:11:59` **duplicates.py** (legibilidad y documentación): Se han documentado mediante docstrings detallados las funciones internas y el flujo lógico de las estrategias de hashing para clarificar la intención detrás de la optimización por tamaño, facilitando el mantenimiento a futuro.
-- `2026-09-30T09:11:25` **diskreport.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones internas de recolección de datos y validación para mejorar la mantenibilidad y la claridad sobre las expectativas de tipo, siguiendo las directrices de legibilidad.
