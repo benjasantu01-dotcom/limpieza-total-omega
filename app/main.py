@@ -229,7 +229,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         referencias a widgets y control de hilos de ejecución.
         """
         self._initialized_tabs: Dict[str, bool] = {name: False for name in TABS}
-        self._health_bars_initialized = False
+        self._health_components_lazy_loaded = False
         
         # Concurrencia y control de estado
         self._executor: Optional[concurrent.futures.ThreadPoolExecutor] = None
@@ -586,32 +586,36 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._action(row, "Limpiar panel", lambda: self.clear("Salud"),
                      secondary=True, column=1)
 
-        card_container = ctk.CTkFrame(tab, fg_color="transparent")
-        card_container.pack(fill="x", padx=12, pady=(14, 0))
-        self._build_health_metrics_row(card_container)
-
-        center_container = ctk.CTkFrame(tab, fg_color="transparent")
-        center_container.pack(fill="x", padx=12, pady=(16, 0))
-        center_container.grid_columnconfigure(1, weight=1)
+        self.health_container = ctk.CTkFrame(tab, fg_color="transparent")
+        self.health_container.pack(fill="x", padx=12, pady=(14, 0))
+        
+        self.center_container = ctk.CTkFrame(tab, fg_color="transparent")
+        self.center_container.pack(fill="x", padx=12, pady=(16, 0))
+        self.center_container.grid_columnconfigure(1, weight=1)
 
         self.gauge = tk.Canvas(
-            center_container, width=176, height=176,
+            self.center_container, width=176, height=176,
             bg=branding.color("surface"), highlightthickness=0, bd=0,
         )
         self.gauge.grid(row=0, column=0, padx=(4, 22))
-        self._draw_gauge(0, "-")
-
-        self._build_health_area_bars(center_container)
-
+        
         self._hint(tab, "Combina limpieza, seguridad, memoria, disco y arranque en un solo "
                         "puntaje. Es un análisis de solo lectura: no modifica nada.")
         self._make_output("Salud", tab)
+        
+        # Inicialización diferida de las métricas visuales
+        self._lazy_init_health_ui()
+        self._draw_gauge(0, "-")
+
+    def _lazy_init_health_ui(self) -> None:
+        """Carga los componentes pesados del dashboard de salud bajo demanda."""
+        if self._health_components_lazy_loaded: return
+        self._build_health_metrics_row(self.health_container)
+        self._build_health_area_bars(self.center_container)
+        self._health_components_lazy_loaded = True
 
     def _build_health_metrics_row(self, container: ctk.CTkFrame) -> None:
-        """
-        Renderiza las tarjetas de métricas del dashboard de salud.
-        Itera dinámicamente sobre la configuración centralizada para crear cada KPI.
-        """
+        """Renderiza las tarjetas de métricas del dashboard de salud."""
         for i, (clave, titulo) in enumerate(HEALTH_METRICS_CONFIG):
             container.grid_columnconfigure(i, weight=1)
             self.cards[clave] = self._metric_card(container, titulo, i)
@@ -636,7 +640,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         area_container.grid_columnconfigure(1, weight=1)
         for row_idx, (clave, etiqueta) in enumerate(HEALTH_AREAS):
             self._build_single_health_bar(area_container, clave, etiqueta, row_idx)
-        self._health_bars_initialized = True
 
     def _build_single_health_bar(self, container: ctk.CTkFrame, clave: str, etiqueta: str, row_idx: int) -> None:
         """Crea una barra de progreso individual para un área específica."""
@@ -1225,6 +1228,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @ensure_safety
     def on_full_analysis(self) -> None:
         """Inicia el análisis completo de salud."""
+        # Asegurar inicialización UI antes de arrancar
+        self._lazy_init_health_ui()
+
         def task() -> None:
             self.set_status("Analizando el sistema...")
             self.clear("Salud")

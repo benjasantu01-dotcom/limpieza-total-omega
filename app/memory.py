@@ -56,7 +56,7 @@ MAX_VALID_PROCESS_MEM: Final[int] = 128 * 1024 * BYTES_IN_MB
 # PROCESS_SET_QUOTA: Necesario para realizar operaciones de gestión de memoria (EmptyWorkingSet).
 # PROCESS_QUERY_INFORMATION: Acceso estándar para obtener estadísticas detalladas.
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
-PROCESS_SET_QUOTA: Final[int] = 0x100
+PROCESS_SET_QUOTA: Final[int] = 0x0400
 PROCESS_QUERY_INFORMATION: Final[int] = 0x0400
 # Máscara para verificar metadatos de procesos de forma segura (sin privilegios de lectura total).
 SAFE_VALIDATION_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION 
@@ -197,9 +197,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         parts = line.split(",", 2)
         if len(parts) != 3: continue
         try:
-            pid_part = ''.join(filter(str.isdigit, parts[1]))
-            if not pid_part: continue
-            pid = int(pid_part)
+            pid = int(''.join(filter(str.isdigit, parts[1])))
             ws = _safe_int_conversion(parts[2])
             if pid > 0 and pid not in seen_pids and 0 < ws < MAX_VALID_PROCESS_MEM:
                 seen_pids.add(pid)
@@ -242,19 +240,22 @@ def read_snapshot() -> MemorySnapshot:
     return _get_cached_snapshot(int(time.time() / 5))
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Retorna los procesos que más memoria RAM consumen, actualizando la lista cada 60s."""
+    """Retorna los procesos que más memoria RAM consumen, usando caché temporal."""
     global _proc_cache_time, _proc_cache_data
     if not _is_windows: return []
     now = time.time()
     if (now - _proc_cache_time) > 60:
+        cmd = [
+            'powershell', '-NoProfile', '-NonInteractive', '-Command', 
+            'Get-Process | Where-Object { $_.Id -notin 0,4 } | Select-Object -Property Name,Id,WorkingSet | ConvertTo-Csv -NoTypeInformation'
+        ]
         try:
-            cmd = ['powershell', '-NoProfile', '-NonInteractive', '-Command', 
-                   'Get-Process | Where-Object { $_.Id -notin 0,4 } | ForEach-Object { "$($_.Name),$($_.Id),$($_.WorkingSet)" }']
-            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3, check=False)
-            if proc.returncode == 0 and proc.stdout:
-                _proc_cache_data = parse_windows_process_csv(proc.stdout, limit=limit)
+            res = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
+            if res.returncode == 0:
+                lines = res.stdout.splitlines()[2:]
+                _proc_cache_data = parse_windows_process_csv("\n".join(lines), limit=limit)
                 _proc_cache_time = now
-        except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired): pass
+        except (OSError, subprocess.SubprocessError): pass
     return _proc_cache_data
 
 @lru_cache(maxsize=8)
@@ -290,27 +291,18 @@ def _is_system_process(pid: int) -> bool:
     return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
 
 def _get_process_path(pid: int) -> Optional[Path]:
-    """
-    Obtiene la ruta absoluta del ejecutable de un proceso mediante la API de PSAPI.
-    
-    Usa el handle obtenido de la máscara SAFE_VALIDATION_MASK para validar 
-    la existencia del proceso sin requerir privilegios administrativos innecesarios.
-    """
+    """Obtiene la ruta absoluta del ejecutable de un proceso mediante la API de PSAPI."""
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.OpenProcess(SAFE_VALIDATION_MASK, False, pid)
     if not handle: return None
     try:
-        exit_code = ctypes.c_ulong()
-        if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
-            return None
         psapi = ctypes.windll.psapi
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0 and buf.value:
             p = Path(buf.value).resolve()
-            path_str = str(p)
-            if not is_protected_path(path_str):
+            if not is_protected_path(str(p)):
                 return p
-    except (ctypes.ArgumentError, OSError, ValueError, TypeError):
+    except (ctypes.ArgumentError, OSError, ValueError):
         return None
     finally:
         kernel32.CloseHandle(handle)
@@ -328,33 +320,24 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """Ejecuta la liberación del conjunto de trabajo (Working Set) de un proceso mediante la API de Win32."""
     if not _is_windows: return False, "Solo soportado en Windows."
-    try: 
-        target_pid = int(pid)
-    except (ValueError, TypeError): 
-        return False, "PID proporcionado no es un número válido."
+    try: target_pid = int(pid)
+    except (ValueError, TypeError): return False, "PID no válido."
     
-    if _is_system_process(target_pid): 
-        return False, "Operación denegada en procesos del sistema."
+    if _is_system_process(target_pid): return False, "Operación denegada en procesos del sistema."
     
     psapi = ctypes.windll.psapi
-    if not hasattr(psapi, "EmptyWorkingSet"): 
-        return False, "API de memoria no disponible en este sistema."
+    if not hasattr(psapi, "EmptyWorkingSet"): return False, "API no disponible."
 
     is_safe, err = _is_safe_to_trim(target_pid)
     if not is_safe: return False, err or "Verificación de seguridad fallida."
 
     kernel32 = ctypes.windll.kernel32
     proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
-    if not proc_handle: 
-        if kernel32.GetLastError() == ERROR_ACCESS_DENIED:
-            return False, "Acceso denegado: se requieren privilegios de administrador."
-        return False, "El proceso terminó o no pudo ser accedido."
+    if not proc_handle: return False, "El proceso terminó o no pudo ser accedido."
     
     try:
         if psapi.EmptyWorkingSet(proc_handle) == 0:
             return False, "El sistema rechazó la solicitud de limpieza."
         return True, f"Working set liberado. {TRIM_WARNING}"
-    except (ctypes.ArgumentError, OSError):
-        return False, "Error interno de bajo nivel al ejecutar la limpieza."
     finally: 
         kernel32.CloseHandle(proc_handle)

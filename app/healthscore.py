@@ -134,23 +134,21 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
     """Normaliza cantidad de procesos en arranque: menos es mejor."""
     return _clamp(1.0 - (float(startup_count) * _INV_STARTUP))
 
-_RULES: Final[Dict[MetricKey, Tuple[RecommendationRule, ...]]] = {
-    "seguridad": (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, lambda m: f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad.", lambda m, r: r < WARN_THRESHOLD_HIGH),),
-    "disco": (RecommendationRule("disco", WARN_THRESHOLD_LOW, lambda m: f"Queda {m.disk_free_percent:.1f}% de disco libre.", lambda m, r: r < WARN_THRESHOLD_LOW),),
-    "memoria": (RecommendationRule("memoria", WARN_THRESHOLD_LOW, lambda m: "Memoria disponible baja: cerrá procesos innecesarios.", lambda m, r: r < WARN_THRESHOLD_LOW),),
-    "basura": (RecommendationRule("basura", WARN_THRESHOLD_MED, lambda m: f"Hay {m.junk_mb:.0f} MB de archivos temporales.", lambda m, r: r < WARN_THRESHOLD_MED),),
-    "duplicados": (RecommendationRule("duplicados", WARN_THRESHOLD_MED, lambda m: f"Podrías recuperar {m.duplicate_mb:.0f} MB eliminando duplicados.", lambda m, r: r < WARN_THRESHOLD_MED),),
-    "arranque": (RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),),
-}
-
-_PIPELINE_MAP: Final[Dict[MetricKey, PipelineEntry]] = {
-    "seguridad": PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), _RULES["seguridad"]),
-    "disco": PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), _RULES["disco"]),
-    "memoria": PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), _RULES["memoria"]),
-    "basura": PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), _RULES["basura"]),
-    "duplicados": PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), _RULES["duplicados"]),
-    "arranque": PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), _RULES["arranque"]),
-}
+# Estructura de pipeline optimizada para acceso directo en bucle
+_PIPELINE_ORDERED: Final[Tuple[PipelineEntry, ...]] = (
+    PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), 
+                  (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, lambda m: f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad.", lambda m, r: r < WARN_THRESHOLD_HIGH),)),
+    PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), 
+                  (RecommendationRule("disco", WARN_THRESHOLD_LOW, lambda m: f"Queda {m.disk_free_percent:.1f}% de disco libre.", lambda m, r: r < WARN_THRESHOLD_LOW),)),
+    PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), 
+                  (RecommendationRule("memoria", WARN_THRESHOLD_LOW, lambda m: "Memoria disponible baja: cerrá procesos innecesarios.", lambda m, r: r < WARN_THRESHOLD_LOW),)),
+    PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), 
+                  (RecommendationRule("basura", WARN_THRESHOLD_MED, lambda m: f"Hay {m.junk_mb:.0f} MB de archivos temporales.", lambda m, r: r < WARN_THRESHOLD_MED),)),
+    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), 
+                  (RecommendationRule("duplicados", WARN_THRESHOLD_MED, lambda m: f"Podrías recuperar {m.duplicate_mb:.0f} MB eliminando duplicados.", lambda m, r: r < WARN_THRESHOLD_MED),)),
+    PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), 
+                  (RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),)),
+)
 
 @dataclass
 class SystemMetrics:
@@ -203,7 +201,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
         try:
             if rule.check(metrics, ratio):
                 raw_msg = rule.message_factory(metrics)
-                # Sanitización defensiva: solo caracteres imprimibles, sin saltos de línea, limitación de longitud
                 clean_msg = "".join(c for c in str(raw_msg) if c.isprintable()).strip()
                 if clean_msg: 
                     findings.append(clean_msg[:200])
@@ -220,9 +217,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     metric_breakdown: Dict[MetricKey, int] = {}
     accumulated_score: int = 0
     
-    for area in WEIGHTS:
+    for entry in _PIPELINE_ORDERED:
         try:
-            entry = _PIPELINE_MAP[area]
             area_ratio = entry.scorer(metrics)
             if not math.isfinite(area_ratio):
                 area_ratio = 0.0
@@ -230,10 +226,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             
             points = int(round(area_ratio * entry.weight))
-            metric_breakdown[area] = max(0, min(points, entry.weight))
-            accumulated_score += metric_breakdown[area]
+            metric_breakdown[entry.area] = max(0, min(points, entry.weight))
+            accumulated_score += metric_breakdown[entry.area]
         except (ValueError, TypeError, AttributeError):
-            metric_breakdown[area] = 0
+            metric_breakdown[entry.area] = 0
             
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena.")

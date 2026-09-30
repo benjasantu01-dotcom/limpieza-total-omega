@@ -218,18 +218,11 @@ def _is_valid_junk_entry(entry: os.DirEntry, stats: os.stat_result) -> bool:
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
     """
     Recorrido recursivo del sistema de archivos limitado a 50 niveles.
-    
-    Args:
-        current_dir: Directorio base del escaneo actual.
-        found: Lista acumulativa de objetos JunkFile hallados.
-        depth: Profundidad actual de recursión para evitar desbordamiento.
-        protected_cache: Caché de rutas protegidas para no re-validar.
-        visited: Conjunto de rutas ya procesadas para evitar bucles.
     """
     if depth > 50 or not current_dir.exists(): return
     try:
         resolved_dir = current_dir.resolve()
-        if resolved_dir in visited or not is_safe_to_modify(resolved_dir): return
+        if resolved_dir in visited: return
         visited.add(resolved_dir)
         
         with os.scandir(current_dir) as iterator:
@@ -240,7 +233,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                             _process_directory(Path(item.path), found, depth + 1, protected_cache, visited)
                     elif item.is_file(follow_symlinks=False):
                         stats = item.stat(follow_symlinks=False)
-                        if _is_valid_junk_entry(item, stats) and is_safe_to_modify(Path(item.path)) and os.access(item.path, os.R_OK):
+                        if _is_valid_junk_entry(item, stats) and os.access(item.path, os.R_OK):
                             found.append(JunkFile(Path(item.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
                 except (OSError, PermissionError, ValueError): continue
     except (OSError, PermissionError, RuntimeError, ValueError): pass
@@ -248,9 +241,6 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
 def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[JunkFile]:
     """
     Inicia la detección de archivos basura en los directorios configurados.
-    
-    Returns:
-        Lista plana de objetos JunkFile identificados.
     """
     found: List[JunkFile] = []
     protected_cache: set[str] = set()
