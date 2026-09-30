@@ -124,7 +124,7 @@ def _safe_path_check(path: Path) -> bool:
     Filtro de seguridad centralizado: valida que la ruta sea segura, no esté 
     protegida, no sea un enlace simbólico ni un junction point.
     """
-    return is_safe_to_modify(path) and not is_protected_path(path) and not is_junction(path) and not path.is_symlink()
+    return isinstance(path, Path) and is_safe_to_modify(path) and not is_protected_path(path) and not is_junction(path) and not path.is_symlink()
 
 
 def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
@@ -285,6 +285,8 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
+        if not isinstance(path, Path):
+            continue
         if (digest := hash_func(path)):
             groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
@@ -348,6 +350,8 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     
     candidates: List[Tuple[Tuple[float, int], Path]] = []
     for p in group.paths:
+        if not isinstance(p, Path):
+            continue
         if score := _calculate_keeper_heuristic(p):
             candidates.append((score, p))
             

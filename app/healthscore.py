@@ -204,10 +204,10 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             if rule.check(metrics, ratio):
                 raw_msg = rule.message_factory(metrics)
                 # Sanitización defensiva: solo caracteres imprimibles, sin saltos de línea, limitación de longitud
-                clean_msg = "".join(c for c in raw_msg if c.isprintable()).strip()
+                clean_msg = "".join(c for c in str(raw_msg) if c.isprintable()).strip()
                 if clean_msg: 
                     findings.append(clean_msg[:200])
-        except Exception:
+        except (ValueError, TypeError, AttributeError, ZeroDivisionError):
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -226,11 +226,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             area_ratio = entry.scorer(metrics)
             if not math.isfinite(area_ratio):
                 area_ratio = 0.0
+            
             _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
+            
             points = int(round(area_ratio * entry.weight))
             metric_breakdown[area] = max(0, min(points, entry.weight))
             accumulated_score += metric_breakdown[area]
-        except Exception:
+        except (ValueError, TypeError, AttributeError):
             metric_breakdown[area] = 0
             
     if metrics.quarantined_count > 0:

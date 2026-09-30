@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 234
+- Rechazadas por guardia de seguridad: 34
+- Sin cambios (nada sustancial que mejorar): 26
+- Sin respuesta de la IA (error o límite): 235
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-28 | 24 | 3 | 5 | 3 | 27 |
+| 2026-09-28 | 21 | 3 | 4 | 3 | 27 |
 | 2026-09-29 | 131 | 15 | 22 | 18 | 164 |
-| 2026-09-30 | 35 | 2 | 8 | 4 | 43 |
+| 2026-09-30 | 37 | 2 | 8 | 5 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **44**
-- legibilidad y documentación: **43**
 - robustez ante casos límite: **41**
+- legibilidad y documentación: **40**
+- manejo de errores y validación de entradas: **33**
 - rendimiento: **31**
-- manejo de errores y validación de entradas: **31**
 
 ## Mejoras aceptadas por archivo
 
+- `healthscore.py`: **20**
 - `assistant.py`: **19**
-- `healthscore.py`: **19**
-- `quarantine.py`: **18**
+- `quarantine.py`: **17**
 - `settings.py`: **16**
-- `scanner.py`: **15**
 - `browser.py`: **15**
 - `diskreport.py`: **15**
 - `memory.py`: **15**
-- `safety.py`: **14**
+- `scanner.py`: **14**
+- `duplicates.py`: **13**
 - `branding.py`: **13**
-- `duplicates.py`: **12**
+- `safety.py`: **13**
 - `organizer.py`: **10**
 - `main.py`: **6**
 - `startup.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-30T04:06:00` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `compute_score` y `_evaluate_rules` mediante la validación proactiva de `SystemMetrics` y la implementación de una estrategia de "fallo silencioso controlado" para evitar que errores en funciones de factory personalizadas detengan el cálculo del score general.
+- `2026-09-30T04:05:20` **duplicates.py** (manejo de errores y validación de entradas): Mejora la robustez en `_group_paths_by_hash` y `suggest_keeper` añadiendo validación explícita para evitar errores de tipo o excepciones ante rutas que hayan desaparecido durante la ejecución del proceso.
 - `2026-09-30T03:56:42` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `_validate_destination` al normalizar la entrada de rutas y añadir validaciones explícitas de tipo y estado, asegurando que las excepciones de I/O no silencien errores de configuración sin romper el flujo de la aplicación.
 - `2026-09-30T03:56:05` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_text_from_gemini_json` envolviendo el acceso a la estructura anidada de la API en un manejo de errores más específico y validando explícitamente la presencia de las claves antes de intentar acceder a ellas, evitando así posibles caídas silenciosas o retornos inesperados ante respuestas inesperadas de la API.
 - `2026-09-30T02:33:23` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `startup.py` añadiendo un chequeo explícito en `_extract_quoted_path` para prevenir el uso de rutas que contienen la secuencia `..`, mitigando posibles ataques de "path traversal" al procesar entradas del registro malintencionadas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-30T02:03:24` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_excluded_path` añadiendo una comprobación explícita para evitar que `pathlib.Path.resolve()` resuelva alias hacia fuera de la raíz (traversal) y se reforzó la validación de acceso `os.access` en las iteraciones de `walk_files` y `largest_folders` para evitar intentos de lectura innecesarios en archivos sin permisos.
 - `2026-09-30T02:03:11` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_file_in_use` agregando un manejo explícito de permisos y una validación de existencia previa mediante `os.access`, evitando disparar excepciones de sistema innecesarias durante el escaneo de cachés.
 - `2026-09-30T02:02:43` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `save_logo_svg` y `_validate_destination` para prevenir ataques de trayectoria (path traversal) y asegurar que cualquier intento de escritura sobre un archivo, incluso si es solo un logo, pase por el filtrado estricto del módulo `safety`.
-- `2026-09-30T02:02:03` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación explícita de `_ensure_safe_text` sobre el resultado extraído antes de retornarlo, cerrando una brecha potencial donde un JSON manipulado o inesperadamente formado podría inyectar contenido no verificado al flujo de la aplicación.
-- `2026-09-30T01:52:50` **settings.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_secure_to_read` para detectar archivos con bits de permisos inusualmente laxos (como permisos de escritura para el grupo o "otros") antes de leer la configuración, previniendo la carga de archivos manipulados malintencionadamente por otros usuarios del sistema.

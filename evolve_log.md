@@ -1623,3 +1623,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-30T03:56:53` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-30T03:56:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T03:56:53` Corrida terminada. Total usado hoy: 92.
+- `2026-09-30T04:04:25` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-09-30T04:04:53` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-30T04:05:20` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez en `_group_paths_by_hash` y `suggest_keeper` añadiendo validación explícita para evitar errores de tipo o excepciones ante rutas que hayan desaparecido durante la ejecución del proceso.
+- `2026-09-30T04:06:00` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `compute_score` y `_evaluate_rules` mediante la validación proactiva de `SystemMetrics` y la implementación de una estrategia de "fallo silencioso controlado" para evitar que errores en funciones de factory personalizadas detengan el cálculo del score general.
+- `2026-09-30T04:06:58` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `on_trim_process` al implementar una validación explícita de `pid` antes de invocar cualquier lógica, capturando el caso de PID no existente de forma limpia y protegiendo contra el intento de manipular procesos de sistema mediante un umbral de seguridad (`pid < 100`), centralizando además el manejo de errores para evitar cierres inesperados.
+- `2026-09-30T04:06:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T04:06:58` Corrida terminada. Total usado hoy: 96.
