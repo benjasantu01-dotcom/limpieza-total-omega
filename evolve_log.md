@@ -1370,3 +1370,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-30T01:36:30` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-09-30T01:36:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T01:36:30` Corrida terminada. Total usado hoy: 36.
+- `2026-09-30T01:40:55` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-09-30T01:41:29` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-30T01:41:54` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-30T01:42:32` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `quarantine_file` al introducir una verificación de existencia y estado del archivo origen justo antes de la operación de copia, además de asegurar que el archivo de destino no sea reemplazado si ya existe, mitigando riesgos de condiciones de carrera y archivos corruptos.
+- `2026-09-30T01:42:36` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-30T01:42:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T01:42:36` Corrida terminada. Total usado hoy: 40.

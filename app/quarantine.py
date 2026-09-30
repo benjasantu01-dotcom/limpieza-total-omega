@@ -558,10 +558,9 @@ def _write_temp_to_final(source: Path, destination: Path) -> str:
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> str:
     """Ejecuta el aislamiento atómico de un archivo."""
-    if not source.is_file():
-        raise FileNotFoundError("Archivo origen inexistente o inválido.")
-    if not source.exists():
-        raise FileNotFoundError("El archivo origen ha desaparecido antes de comenzar el aislamiento.")
+    # Verificación final de integridad de origen antes de la transferencia
+    if not source.exists() or not source.is_file():
+        raise FileNotFoundError("Archivo origen inexistente o inválido al iniciar copia.")
     if source.resolve() == destination.resolve():
         raise UnsafePathError("El origen ya reside en el directorio destino.")
     _validate_quarantine_path(destination, destination.parent)
@@ -663,6 +662,9 @@ def quarantine_file(
     _validate_isolation_request(source_path, dest_dir)
     destination = dest_dir / _generate_safe_stored_name(source_path, uuid.uuid4().hex[:12])
     
+    if destination.exists():
+        raise FileExistsError("Colisión: el nombre de destino ya existe en la cuarentena.")
+
     try:
         file_hash = _atomic_isolate_file(source_path, destination, original_size)
         
