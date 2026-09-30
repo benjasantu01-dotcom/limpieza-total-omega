@@ -137,17 +137,16 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Determina si un archivo está bloqueado por otro proceso.
-    
-    Usa apertura en modo 'rb' para testear accesibilidad.
-    Devuelve True si el archivo es inalcanzable, está bloqueado o es un directorio.
+    Determina si un archivo está bloqueado por otro proceso usando I/O de bajo nivel.
+    Retorna True si el archivo está inaccesible para escritura/bloqueo exclusivo.
     """
     if not path.is_file():
         return True
     try:
-        with open(path, 'rb') as f:
-            f.peek(1)
-            return False
+        # Intenta abrir el archivo en modo solo lectura sin cargar buffer
+        fd = os.open(path, os.O_RDONLY | getattr(os, 'O_NONBLOCK', 0))
+        os.close(fd)
+        return False
     except (PermissionError, OSError):
         return True
 
