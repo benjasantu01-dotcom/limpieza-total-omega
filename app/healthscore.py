@@ -152,6 +152,7 @@ _PIPELINE_ORDERED: Final[Tuple[PipelineEntry, ...]] = (
 
 @dataclass
 class SystemMetrics:
+    """Contenedor de datos crudos del sistema requeridos para el cálculo de salud."""
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -165,7 +166,7 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
-        """Normaliza y valida los datos de entrada para evitar errores de cálculo."""
+        """Limpia y asegura que los valores de las métricas sean numéricos válidos."""
         def _to_float(v: Any) -> float:
             try:
                 f = float(v)
@@ -200,6 +201,7 @@ class HealthResult:
 def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], ratio: NormalizedRatio, findings: List[str]) -> None:
+    """Aplica las reglas de recomendación al pipeline y captura mensajes imprimibles."""
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
@@ -211,7 +213,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Ejecuta el pipeline de evaluación: normaliza, pondera y genera recomendaciones."""
+    """Procesa el pipeline completo: normaliza métricas, pondera sub-scores y agrega hallazgos."""
     metrics = metrics or SystemMetrics()
     metrics.validate()
     

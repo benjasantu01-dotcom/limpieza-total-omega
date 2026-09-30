@@ -50,11 +50,6 @@ FILE_ATTRIBUTE_SYSTEM: int = 0x4
 def is_junction(path: Path) -> bool:
     """
     Determina si la ruta es un punto de unión (junction) de NTFS.
-    
-    Args:
-        path: Objeto Path a verificar.
-    Returns:
-        bool: True si es un reparse point, False en caso contrario o error.
     """
     if not isinstance(path, Path) or not is_safe_to_modify(path):
         return False
@@ -145,7 +140,8 @@ def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
 
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
-    Calcula el hash SHA256 completo del archivo mediante lectura por bloques.
+    Calcula el hash SHA256 completo del archivo. 
+    Usa un buffer de memoria fijo para manejar archivos grandes sin saturar la RAM.
     """
     if chunk_size <= 0:
         return None
@@ -171,7 +167,8 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
-    Calcula un hash rápido basándose únicamente en los primeros bytes (default 64KB).
+    Calcula un hash rápido (SHA256) de los primeros 'read_bytes' del archivo.
+    Se utiliza como filtro heurístico preliminar para archivos grandes.
     """
     if read_bytes <= 0:
         return None
@@ -234,7 +231,7 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
-    Realiza una búsqueda recursiva profunda (DFS) en los directorios indicados.
+    Realiza una búsqueda recursiva profunda (DFS) para catalogar archivos candidatos por tamaño.
     """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     stack: List[str] = [str(r) for d in directories if (r := _resolve_and_verify_root(d))]
@@ -250,7 +247,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Evitar re-procesar rutas mediante comprobaciones rápidas
                         if entry.is_dir(follow_symlinks=False):
                             path_obj = Path(entry.path)
                             if not is_junction(path_obj) and not path_obj.is_symlink():
@@ -282,7 +278,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
-    Agrupa rutas aplicando una función de hash específica.
+    Agrupa rutas aplicando una función de hash, descartando aquellos que no tienen coincidencias.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
@@ -295,8 +291,8 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
     """
-    Refina grupos de archivos grandes usando hash parcial para descartar candidatos
-    y luego aplica hash completo para confirmar duplicados reales.
+    Refina grupos de archivos grandes usando hash parcial (64KB) para descartar 
+    candidatos rápidamente antes de proceder a la validación por hash completo.
     """
     partial_groups = _group_paths_by_hash(paths, partial_hash)
     final_results = {}
@@ -308,9 +304,9 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 
 def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
-    Determina la estrategia de hashing:
-    1. Si size <= 64KB: Usa hash completo (única pasada).
-    2. Si size > 64KB: Usa hash parcial y luego hash completo como filtro.
+    Selecciona la estrategia de hashing basada en el tamaño del archivo:
+    - Small files (<= 64KB): Hash completo directo.
+    - Large files (> 64KB): Hash parcial para reducir E/S, seguido de hash completo.
     """
     if not paths or size <= 0:
         return []

@@ -105,6 +105,12 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
     """
     Evalúa si un `os.DirEntry` debe omitirse del análisis (RTL, nulos, symlinks inseguros o protegidos).
+    
+    Verifica:
+    1. Caracteres sospechosos en el nombre.
+    2. Path traversal (evitar salir del root original).
+    3. Symlinks o puntos de unión (junctions) en Windows.
+    4. Rutas marcadas como protegidas en `safety.py`.
     """
     try:
         if any(c in entry.name for c in SUSPICIOUS_CHARS) or '\0' in entry.name:
@@ -119,6 +125,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
         try:
             if entry.is_symlink():
                 return True
+            # Detectar Junction points en NTFS (0x400 = FILE_ATTRIBUTE_REPARSE_POINT)
             if os.name == 'nt' and entry.is_dir() and (entry.stat().st_file_attributes & 0x400):
                 return True
         except (OSError, PermissionError):
@@ -315,12 +322,15 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Recorre el sistema de archivos y consolida métricas globales.
+    Recorre el sistema de archivos de forma exhaustiva y consolida métricas globales.
     
     Args:
-        directory: Ruta base desde la que iniciar el escaneo.
-        skip_protected: Flag para filtrar rutas del sistema.
-        limit: Máximo número de archivos pesados a mantener en memoria.
+        directory: Ruta base (Path) ya validada.
+        skip_protected: Flag para omitir rutas marcadas por safety.py.
+        limit: Cantidad máxima de archivos pesados a trackear en el heap.
+        
+    Returns:
+        SummaryData con el peso total, cantidad de archivos y estadísticas desglosadas.
     """
     total_bytes: int = 0
     total_files: int = 0
@@ -336,6 +346,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             stats.total_bytes += size_bytes
             stats.count += 1
             
+            # Mantenimiento de heap para los N archivos más pesados
             if limit > 0:
                 if len(top_heap) < limit: 
                     heapq.heappush(top_heap, (size_bytes, path))
