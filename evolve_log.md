@@ -1030,3 +1030,10 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel
 - `2026-09-30T10:04:00` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
 - `2026-09-30T10:04:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T10:04:00` Corrida terminada. Total usado hoy: 236.
+- `2026-09-30T10:11:54` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-09-30T10:12:21` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_relevant_extension
+- `2026-09-30T10:12:50` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _SettingsManager, _SettingsManager.__init__, _SettingsManager.clear, _ValidationResult
+- `2026-09-30T10:13:21` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-30T10:13:45` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: SystemContext.__hash__, SystemContext.is_valid_structure
+- `2026-09-30T10:13:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T10:13:45` Corrida terminada. Total usado hoy: 240.
