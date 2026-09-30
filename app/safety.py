@@ -264,7 +264,6 @@ def _has_alternate_data_stream(path_name: str) -> bool:
 def _get_security_descriptor(path: Path) -> SecurityDescriptor:
     """Construye un descriptor de seguridad para evaluar el archivo."""
     attrs = _get_file_attrs(str(path))
-    # Intentar detectar bloqueo; si falla el acceso, asumir precaución (en uso)
     in_use = False
     try:
         in_use = _is_file_locked_by_other_process(str(path))
@@ -282,7 +281,6 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
     if not isinstance(path_str, str) or os.name != 'nt' or _is_path_too_long(path_str): return False
     kernel32 = ctypes.windll.kernel32
     try:
-        # Abre el archivo en modo compartido solo para lectura de metadatos (0 access)
         handle = kernel32.CreateFileW(
             _to_long_path(path_str), 0, 0x00000003, None, 3, 0x00000080, None
         )
@@ -392,12 +390,11 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
         raise UnsafePathError(f"Acceso a dispositivo bloqueado: {path.name}", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
     try:
         return path.stat()
-    except PermissionError as e:
-        # Detectar errores específicos de bloqueo de SO (WinError 5: Access Denied, 32: Sharing Violation)
+    except (PermissionError, OSError) as e:
         if hasattr(e, 'winerror') and e.winerror in (5, 32):
              raise UnsafePathError(f"Archivo bloqueado o acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
-        raise UnsafePathError(f"Permisos insuficientes: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
-    except (OSError, ValueError, TypeError) as e:
+        raise UnsafePathError(f"Permisos insuficientes o I/O fallido: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+    except (ValueError, TypeError) as e:
         raise UnsafePathError(f"Error al leer metadatos de {path.name}: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:

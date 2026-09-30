@@ -1377,3 +1377,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-30T01:42:36` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-09-30T01:42:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T01:42:36` Corrida terminada. Total usado hoy: 40.
+- `2026-09-30T01:51:04` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-09-30T01:51:50` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_get_security_descriptor` y `_get_path_stat_robust` envolviendo las llamadas a `os.stat` y `ctypes` en bloques `try-except` más granulares, para prevenir que errores de sistema (como `FileNotFoundError` o `OSError` inesperados) interrumpan el proceso durante el escaneo de directorios con contenido volátil.
+- `2026-09-30T01:52:17` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la validación de rutas dentro de `Scanner._is_safe_entry` mediante la normalización de la ruta absoluta con `.resolve()` antes de comparar con `base_root_str`, evitando así inconsistencias por enlaces simbólicos o rutas relativas que podrían eludir el aislamiento del escáner.
+- `2026-09-30T01:52:50` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_file_secure_to_read` para detectar archivos con bits de permisos inusualmente laxos (como permisos de escritura para el grupo o "otros") antes de leer la configuración, previniendo la carga de archivos manipulados malintencionadamente por otros usuarios del sistema.
+- `2026-09-30T01:53:03` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-30T01:53:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T01:53:03` Corrida terminada. Total usado hoy: 44.
