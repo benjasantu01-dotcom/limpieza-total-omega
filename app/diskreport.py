@@ -105,18 +105,11 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
     """
     Evalúa si un `os.DirEntry` debe omitirse del análisis (RTL, nulos, symlinks inseguros o protegidos).
-    
-    Verifica:
-    1. Caracteres sospechosos en el nombre.
-    2. Path traversal (evitar salir del root original).
-    3. Symlinks o puntos de unión (junctions) en Windows.
-    4. Rutas marcadas como protegidas en `safety.py`.
     """
     try:
         if any(c in entry.name for c in SUSPICIOUS_CHARS) or '\0' in entry.name:
             return True
         
-        # Validación estricta contra path traversal: resolver ruta sin seguir symlinks
         real_entry_path = str(Path(entry.path).resolve())
         if not real_entry_path.startswith(root_path_str):
             return True
@@ -124,7 +117,6 @@ def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
         try:
             if entry.is_symlink():
                 return True
-            # Detectar Junction points en NTFS (0x400 = FILE_ATTRIBUTE_REPARSE_POINT)
             if os.name == 'nt' and entry.is_dir() and (entry.stat().st_file_attributes & 0x400):
                 return True
         except (OSError, PermissionError):
@@ -235,10 +227,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """
-    Generador recursivo de archivos (yields Path, size).
-    Evita ciclos de inodos comparando (dev, ino) y saltea rutas protegidas o bloqueadas.
-    """
+    """Generador recursivo de archivos (yields Path, size)."""
     root_path = _validate_root(directory)
     if root_path is None: return
     root_path_str = str(root_path)
@@ -293,7 +282,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     try:
         with os.scandir(root) as it:
-            top_level = {Path(e.path): Path(e.path) for e in it if e.is_dir()}
+            top_level = {Path(e.path): Path(e.path) for e in it if e.is_dir() and os.access(e.path, os.R_OK)}
     except (OSError, PermissionError): return []
     
     for path, size in walk_files(root, skip_protected):
@@ -320,9 +309,7 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """
-    Recorre el sistema de archivos de forma exhaustiva y consolida métricas globales.
-    """
+    """Recorre el sistema de archivos de forma exhaustiva y consolida métricas globales."""
     total_bytes: int = 0
     total_files: int = 0
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)

@@ -157,7 +157,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
                 chunk = f.read(chunk_size)
                 if not chunk:
                     break
-                if not isinstance(chunk, bytes):
+                if not isinstance(chunk, (bytes, bytearray)):
                     return None
                 digest.update(chunk)
         return digest.hexdigest()
@@ -180,7 +180,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
     try:
         with open(p, "rb") as f:
             content = f.read(read_bytes)
-            if not content or not isinstance(content, bytes): 
+            if not content or not isinstance(content, (bytes, bytearray)): 
                 return None
             return hashlib.sha256(content).hexdigest()
     except (OSError, PermissionError, IOError, ValueError):

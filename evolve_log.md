@@ -1325,3 +1325,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-30T12:48:45` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del método `SystemContext.ingest` y `_apply_field` implementando un manejo de errores más estricto frente a valores inesperados, asegurando que solo datos tipados correctamente y dentro de rangos lógicos alcancen el estado interno, evitando posibles inconsistencias de tipo.
 - `2026-09-30T12:48:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T12:48:45` Corrida terminada. Total usado hoy: 300.
+- `2026-09-30T12:55:08` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-30T12:55:48` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-30T12:56:18` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-30T12:56:45` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `largest_folders` validando explícitamente el acceso a las rutas antes de procesarlas y añadiendo una gestión de excepciones más granular en `os.scandir` y `os.stat` para evitar que fallos inesperados de permisos (comunes en escaneos de disco) detengan la operación.
+- `2026-09-30T12:56:45` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-30T12:56:49` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-30T12:56:56` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-30T12:57:20` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `hash_file` y `partial_hash` ante errores inesperados durante la lectura de archivos, encapsulando la lógica de apertura en un bloque `try-except` más granular y validando explícitamente el tipo de buffer leído para evitar propagación de excepciones.
+- `2026-09-30T12:57:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T12:57:20` Corrida terminada. Total usado hoy: 304.
