@@ -107,7 +107,7 @@ if sum(WEIGHTS.values()) != 100:
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     """Asegura que un valor esté dentro de los límites definidos [min_val, max_val]."""
     val = float(value)
-    if not math.isfinite(val) or math.isnan(val): return min_val
+    if not math.isfinite(val): return min_val
     return max(min_val, min(val, max_val))
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
@@ -210,7 +210,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
                 if clean_msg: 
                     findings.append(clean_msg[:200])
         except Exception:
-            # Fallo silente en regla individual no debe detener el cómputo del sistema
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:

@@ -212,15 +212,15 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
     while stack:
         current_dir = stack.pop()
-        if current_dir in visited:
-            continue
-        visited.add(current_dir)
-        
         try:
+            real_path = str(Path(current_dir).resolve())
+            if real_path in visited:
+                continue
+            visited.add(real_path)
+            
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Filtros rápidos primero (sin I/O adicional)
                         if entry.is_dir(follow_symlinks=False):
                             p_entry = Path(entry.path)
                             if _safe_path_check(p_entry) and not is_junction(p_entry):
@@ -235,7 +235,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                             continue
 
                         p_entry = Path(entry.path)
-                        # Chequeos de seguridad e integridad al final
                         if skip_protected and is_protected_path(p_entry):
                             continue
                         if not _safe_path_check(p_entry) or is_system_or_hidden(p_entry) or _is_file_locked(p_entry):
@@ -244,7 +243,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                         size_to_paths_map[stat_info.st_size].append(p_entry)
                     except (OSError, PermissionError):
                         continue
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, RuntimeError):
             continue
             
     return {sz: files for sz, files in size_to_paths_map.items() if len(files) > 1}

@@ -5,10 +5,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **203** (40.4% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 18
 - Sin respuesta de la IA (error o límite): 219
 
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-29 | 50 | 7 | 9 | 3 | 87 |
-| 2026-09-30 | 154 | 13 | 34 | 15 | 132 |
+| 2026-09-29 | 47 | 7 | 8 | 3 | 87 |
+| 2026-09-30 | 156 | 13 | 34 | 15 | 132 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **47**
 - legibilidad y documentación: **47**
+- seguridad defensiva: **44**
+- robustez ante casos límite: **40**
 - manejo de errores y validación de entradas: **39**
-- robustez ante casos límite: **38**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
+- `healthscore.py`: **19**
 - `diskreport.py`: **19**
 - `assistant.py`: **18**
-- `healthscore.py`: **18**
 - `quarantine.py`: **18**
 - `memory.py`: **17**
-- `safety.py`: **16**
-- `settings.py`: **15**
-- `duplicates.py`: **15**
-- `scanner.py`: **14**
+- `duplicates.py`: **16**
+- `safety.py`: **15**
 - `organizer.py`: **14**
+- `settings.py`: **14**
 - `branding.py`: **14**
 - `browser.py`: **14**
+- `scanner.py`: **13**
 - `startup.py`: **7**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-30T14:59:16` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `healthscore.py` ante valores extremos o métricas no inicializadas, asegurando que `compute_score` siempre retorne un resultado válido incluso si `SystemMetrics` llega con datos atípicos, y garantizando la integridad de las representaciones visuales.
+- `2026-09-30T14:58:28` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar ciclos infinitos en el sistema de archivos (reparse points/links cíclicos) dentro de `_collect_candidates`, validando la ruta real con `path.resolve()` antes de añadirla a la pila de exploración.
 - `2026-09-30T14:50:07` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `walk_files` y `_collect_summary_data` frente a archivos que desaparecen durante la iteración (concurrencia) y errores de acceso inesperados, envolviendo el `st_size` y la lógica de contabilidad en bloques `try-except` más granulares para evitar que un error puntual en un archivo único interrumpa un escaneo completo.
 - `2026-09-30T14:49:08` **branding.py** (robustez ante casos límite): Se reforzó la robustez de las funciones de entrada y renderizado añadiendo validaciones de rango (nan/inf) y tipos en los parámetros geométricos y de configuración, evitando fallos silenciosos o excepciones inesperadas al procesar valores corrompidos.
 - `2026-09-30T14:48:29` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `ProblemCriterion.format_if_triggered` para manejar entradas maliciosas o malformadas (como tipos de datos inesperados o valores infinitos/NaN) mediante validación explícita, evitando que el asistente falle o procese datos inválidos en el hilo principal.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-30T14:08:36` **browser.py** (rendimiento): Optimizé `_sum_directory_recursive` y `_process_file_entry` reemplazando llamadas repetitivas a `os.path.abspath` y `os.path.normcase` dentro del bucle principal por una comparación de prefijos de cadenas de bytes normalizadas, evitando el sobrecosto de resolución de rutas en cada iteración.
 - `2026-09-30T14:08:21` **branding.py** (rendimiento): Se optimizó el rendimiento de `gradient_colors` eliminando la recreación innecesaria de listas de objetos y utilizando un cálculo directo en un único paso de iteración, lo cual reduce la presión sobre el recolector de basura durante el renderizado intensivo de la UI.
 - `2026-09-30T14:07:23` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el "porqué" de las decisiones de seguridad y normalización, además de añadir type hints y nombres de variables más claros en las funciones de procesamiento del registro para facilitar el mantenimiento.
-- `2026-09-30T13:50:36` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más precisos en funciones críticas de transferencia atómica y validación de seguridad, clarificando la intención técnica y los riesgos abordados en cada paso para facilitar auditorías futuras.
-- `2026-09-30T13:50:11` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la adición de Type Hints explícitos, la corrección de una inconsistencia en la firma de `JunkFile` (añadiendo el tipo correcto para la fecha), y la mejora de los docstrings en funciones críticas para esclarecer las precondiciones de seguridad y el comportamiento del bucle recursivo.

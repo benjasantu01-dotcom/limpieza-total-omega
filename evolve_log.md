@@ -1495,3 +1495,11 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not define
 - `2026-09-30T14:50:07` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de `walk_files` y `_collect_summary_data` frente a archivos que desaparecen durante la iteración (concurrencia) y errores de acceso inesperados, envolviendo el `st_size` y la lógica de contabilidad en bloques `try-except` más granulares para evitar que un error puntual en un archivo único interrumpa un escaneo completo.
 - `2026-09-30T14:50:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T14:50:07` Corrida terminada. Total usado hoy: 348.
+- `2026-09-30T14:57:57` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-30T14:58:28` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para evitar ciclos infinitos en el sistema de archivos (reparse points/links cíclicos) dentro de `_collect_candidates`, validando la ruta real con `path.resolve()` antes de añadirla a la pila de exploración.
+- `2026-09-30T14:58:29` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-30T14:58:35` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-30T14:59:16` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `healthscore.py` ante valores extremos o métricas no inicializadas, asegurando que `compute_score` siempre retorne un resultado válido incluso si `SystemMetrics` llega con datos atípicos, y garantizando la integridad de las representaciones visuales.
+- `2026-09-30T14:59:16` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-09-30T14:59:16` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T14:59:16` Corrida terminada. Total usado hoy: 350.
