@@ -388,11 +388,14 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
         raise UnsafePathError("Tipo de objeto de ruta inválido", SafetyValidationErrorCode.GENERIC)
     if _is_device_file(path):
         raise UnsafePathError(f"Acceso a dispositivo bloqueado: {path.name}", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
+    if _is_directory_junction(str(path)):
+        raise UnsafePathError(f"Punto de reparse detectado durante acceso estático: {path.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
     try:
         return path.stat()
     except (PermissionError, OSError) as e:
-        if hasattr(e, 'winerror') and e.winerror in (5, 32):
-             raise UnsafePathError(f"Archivo bloqueado o acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+        # WinError 32: Sharing violation (archivo en uso)
+        if hasattr(e, 'winerror') and e.winerror == 32:
+             raise UnsafePathError(f"Archivo bloqueado por otro proceso: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
         raise UnsafePathError(f"Permisos insuficientes o I/O fallido: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     except (ValueError, TypeError) as e:
         raise UnsafePathError(f"Error al leer metadatos de {path.name}: {e}", SafetyValidationErrorCode.IO_ERROR)

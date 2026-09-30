@@ -136,9 +136,11 @@ class QuarantineItem:
         if not stored_path.exists(): return False
         try:
             st = stored_path.stat()
+            # Validación adicional contra puntos de reparse
+            if stored_path.is_symlink() or (hasattr(stored_path, 'is_junction') and stored_path.is_junction()):
+                return False
             return (
                 stored_path.is_file() and 
-                not stored_path.is_symlink() and 
                 st.st_size == self.size_bytes and
                 st.st_size > 0
             )
@@ -212,10 +214,13 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
     try:
         if not path.exists() or not path.is_absolute():
             return False
+        # Verificación estricta de reparse
+        if path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction()):
+            return False
         resolved = path.resolve()
         if not is_safe_to_modify(resolved) or is_protected_path(resolved):
             return False
-        if not resolved.is_file() or resolved.is_symlink():
+        if not resolved.is_file():
             return False
         if expected_hash and _get_sha256(resolved) != expected_hash:
             return False
@@ -775,7 +780,9 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) ->
         return False
     if not _is_within_quarantine_sandbox(file_path.resolve(), base_path.resolve()):
         return False
-    # Verificamos que el archivo en disco corresponda al manifiesto
+    # Verificamos que el archivo en disco corresponda al manifiesto y no sea reparse point
+    if hasattr(file_path, 'is_junction') and file_path.is_junction():
+        return False
     return (
         item.verify_integrity(file_path) and
         _safe_unlink(file_path, expected_hash=item.sha256)
