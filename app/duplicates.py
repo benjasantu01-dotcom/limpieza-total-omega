@@ -209,7 +209,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
             continue
         try:
             path_obj = Path(p).absolute()
-            if path_obj.exists() and _safe_path_check(path_obj):
+            if _safe_path_check(path_obj) and path_obj.exists():
                 st_size = path_obj.stat().st_size
                 if _is_valid_candidate(path_obj, st_size):
                     groups[st_size].append(path_obj)
@@ -247,12 +247,12 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if not entry.path or not os.path.exists(entry.path):
+                        p_entry = Path(entry.path)
+                        if not _safe_path_check(p_entry):
                             continue
-                            
+
                         if entry.is_dir(follow_symlinks=False):
-                            path_obj = Path(entry.path)
-                            if not is_junction(path_obj) and not path_obj.is_symlink():
+                            if not is_junction(p_entry):
                                 stack.append(entry.path)
                             continue
                         
@@ -263,8 +263,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                         if stat_info.st_size < min_size:
                             continue
 
-                        p_entry = Path(entry.path)
-                        if not _safe_path_check(p_entry) or (skip_protected and is_protected_path(p_entry)):
+                        if skip_protected and is_protected_path(p_entry):
                             continue
                         
                         if is_system_or_hidden(p_entry) or _is_file_locked(p_entry):

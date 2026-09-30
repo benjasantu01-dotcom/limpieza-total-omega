@@ -205,16 +205,19 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
-                raw_msg = str(rule.message_factory(metrics))
-                clean_msg = "".join(c for c in raw_msg if c.isprintable()).strip()
+                # Se fuerza la conversión a string y limpieza para evitar inyección accidental
+                msg = str(rule.message_factory(metrics))
+                clean_msg = "".join(c for c in msg if c.isprintable()).strip()
                 if clean_msg: 
                     findings.append(clean_msg[:200])
-        except Exception:
+        except (Exception, TypeError, ValueError):
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Procesa el pipeline completo: normaliza métricas, pondera sub-scores y agrega hallazgos."""
     metrics = metrics or SystemMetrics()
+    if not isinstance(metrics, SystemMetrics):
+        metrics = SystemMetrics()
     metrics.validate()
     
     recommendations: List[str] = []
@@ -229,7 +232,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             points = int(round(area_ratio * entry.weight))
             metric_breakdown[entry.area] = max(0, min(points, entry.weight))
             accumulated_score += metric_breakdown[entry.area]
-        except Exception:
+        except (Exception, TypeError, ValueError):
             metric_breakdown[entry.area] = 0
             
     if metrics.quarantined_count > 0:

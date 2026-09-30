@@ -183,6 +183,8 @@ def _should_skip_entry(
 
 def _is_file_in_use(path: str) -> bool:
     """Comprueba si un archivo está bloqueado intentando abrirlo en modo exclusivo (Read-Only)."""
+    if not is_safe_to_modify(Path(path)) or is_protected_path(Path(path)):
+        return True
     try:
         fd = os.open(path, os.O_RDONLY | os.O_EXCL)
         os.close(fd)

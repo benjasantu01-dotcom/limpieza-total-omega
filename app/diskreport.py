@@ -116,10 +116,9 @@ def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
         if any(c in entry.name for c in SUSPICIOUS_CHARS) or '\0' in entry.name:
             return True
         
-        # Validación estricta contra path traversal: resolver ruta sin seguir symlinks externos
-        target_path = Path(entry.path)
-        resolved_path = str(target_path.resolve(strict=False))
-        if not resolved_path.startswith(root_path_str):
+        # Validación estricta contra path traversal: resolver ruta sin seguir symlinks
+        real_entry_path = str(Path(entry.path).resolve())
+        if not real_entry_path.startswith(root_path_str):
             return True
             
         try:
@@ -131,7 +130,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
         except (OSError, PermissionError):
             return True
             
-        return is_protected_path(target_path)
+        return is_protected_path(Path(entry.path))
     except (OSError, PermissionError, AttributeError, RuntimeError, TypeError):
         return True
 
@@ -261,7 +260,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode)
                                 stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            # Verificar acceso antes de stat para evitar bloqueos
                             if os.access(entry.path, os.R_OK):
                                 st = entry.stat(follow_symlinks=False)
                                 if st.st_size >= 0: yield Path(entry.path), st.st_size
@@ -330,7 +328,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
     top_heap: List[Tuple[int, Path]] = []
     
-    # Pre-caché para lookup rápido
     get_ext = lambda p: p.suffix.lower() or "(sin extensión)"
     
     for path, size_bytes in walk_files(directory, skip_protected):
@@ -341,7 +338,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             stats.total_bytes += size_bytes
             stats.count += 1
             
-            # Mantenimiento de heap
             if limit > 0:
                 if len(top_heap) < limit: 
                     heapq.heappush(top_heap, (size_bytes, path))
