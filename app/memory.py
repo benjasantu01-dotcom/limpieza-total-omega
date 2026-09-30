@@ -303,9 +303,10 @@ def _get_process_path(pid: int) -> Optional[Path]:
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
             if buf.value:
-                p = Path(buf.value)
+                # Normalizar la ruta para evitar ambigüedades antes de filtrar
+                p = Path(buf.value).resolve()
                 path_str = str(p)
-                # Validar seguridad antes de exponer la ruta
+                # Validar seguridad: verificar que no esté en la lista negra ni sea ruta protegida
                 if not is_protected_path(path_str):
                     return p
     except (ctypes.ArgumentError, OSError, ValueError, TypeError):

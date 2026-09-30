@@ -1391,3 +1391,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-30T02:03:24` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_is_excluded_path` añadiendo una comprobación explícita para evitar que `pathlib.Path.resolve()` resuelva alias hacia fuera de la raíz (traversal) y se reforzó la validación de acceso `os.access` en las iteraciones de `walk_files` y `largest_folders` para evitar intentos de lectura innecesarios en archivos sin permisos.
 - `2026-09-30T02:03:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T02:03:24` Corrida terminada. Total usado hoy: 48.
+- `2026-09-30T02:11:34` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-09-30T02:12:03` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se introdujo una validación explícita para detectar y saltar puntos de montaje o unidades de red UNC en `_collect_candidates` utilizando `path.parts`, previniendo que el escaneo intente acceder a rutas externas que no sean locales o que contengan caracteres de control de red inseguros.
+- `2026-09-30T02:12:31` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_evaluate_rules` mediante la sanitización de mensajes de error dinámicos para prevenir inyección de caracteres de control o texto malicioso en los reportes, asegurando que el pipeline de salud sea robusto ante datos de entrada mal formados.
+- `2026-09-30T02:13:31` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-30T02:14:34` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-30T02:15:40` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-30T02:15:53` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-30T02:16:21` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_get_process_path` introduciendo un filtrado estricto contra la `SYSTEM_FOLDER_BLOCKLIST` (a través de `is_protected_path`) y asegurando que las rutas obtenidas sean normalizadas antes de cualquier validación, evitando posibles bypasses por rutas relativas o formato malicioso.
+- `2026-09-30T02:16:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T02:16:21` Corrida terminada. Total usado hoy: 52.

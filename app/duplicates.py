@@ -249,6 +249,10 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                 for entry in iterator:
                     try:
                         p_entry = Path(entry.path)
+                        # Prevención de rutas UNC o recursos de red peligrosos
+                        if p_entry.parts and p_entry.parts[0].startswith(("\\\\", "//")):
+                            continue
+                        
                         if not _safe_path_check(p_entry) or (skip_protected and is_protected_path(p_entry)):
                             continue
                             
