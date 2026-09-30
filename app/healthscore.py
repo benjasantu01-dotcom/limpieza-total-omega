@@ -166,23 +166,26 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Normaliza y valida los datos de entrada para evitar errores de cálculo."""
-        def _v(v: Any) -> float:
-            val = float(v) if isinstance(v, (int, float)) else 0.0
-            return val if math.isfinite(val) else 0.0
+        def _to_float(v: Any) -> float:
+            try:
+                f = float(v)
+                return f if math.isfinite(f) else 0.0
+            except (TypeError, ValueError):
+                return 0.0
         
-        self.junk_mb = max(0.0, _v(self.junk_mb))
-        self.duplicate_mb = max(0.0, _v(self.duplicate_mb))
-        self.suspicious_count = int(max(0, int(_v(self.suspicious_count))))
-        self.suspicious_warnings = int(max(0, int(_v(self.suspicious_warnings))))
-        self.startup_count = int(max(0, int(_v(self.startup_count))))
-        self.quarantined_count = int(max(0, int(_v(self.quarantined_count))))
-        self.memory_available_percent = _clamp(_v(self.memory_available_percent), 0.0, 100.0)
-        self.disk_free_percent = _clamp(_v(self.disk_free_percent), 0.0, 100.0)
+        self.junk_mb = max(0.0, _to_float(self.junk_mb))
+        self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
+        self.suspicious_count = int(max(0, int(_to_float(self.suspicious_count))))
+        self.suspicious_warnings = int(max(0, int(_to_float(self.suspicious_warnings))))
+        self.startup_count = int(max(0, int(_to_float(self.startup_count))))
+        self.quarantined_count = int(max(0, int(_to_float(self.quarantined_count))))
+        self.memory_available_percent = _clamp(_to_float(self.memory_available_percent), 0.0, 100.0)
+        self.disk_free_percent = _clamp(_to_float(self.disk_free_percent), 0.0, 100.0)
 
     @property
     def is_finite(self) -> bool:
-        vals = (self.junk_mb, self.suspicious_count, self.suspicious_warnings, self.memory_available_percent, self.disk_free_percent, self.duplicate_mb, self.startup_count, self.quarantined_count)
-        return all(math.isfinite(float(v)) for v in vals)
+        return all(isinstance(v, (int, float)) and math.isfinite(float(v)) 
+                   for v in [self.junk_mb, self.suspicious_count, self.memory_available_percent, self.disk_free_percent])
 
 @dataclass
 class HealthResult:
@@ -201,17 +204,15 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
         try:
             if rule.check(metrics, ratio):
                 raw_msg = str(rule.message_factory(metrics))
-                # Filtro defensivo: solo caracteres imprimibles, sin saltos de línea ni inyección
                 clean_msg = "".join(c for c in raw_msg if c.isprintable()).strip()
                 if clean_msg: 
                     findings.append(clean_msg[:200])
-        except (ValueError, TypeError, AttributeError, ZeroDivisionError):
+        except Exception:
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Ejecuta el pipeline de evaluación: normaliza, pondera y genera recomendaciones."""
-    if metrics is None or not metrics.is_finite:
-        metrics = SystemMetrics()
+    metrics = metrics or SystemMetrics()
     metrics.validate()
     
     recommendations: List[str] = []
@@ -220,20 +221,17 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for entry in _PIPELINE_ORDERED:
         try:
-            area_ratio = entry.scorer(metrics)
-            if not math.isfinite(area_ratio):
-                area_ratio = 0.0
-            
+            area_ratio = _clamp(entry.scorer(metrics))
             _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             
             points = int(round(area_ratio * entry.weight))
             metric_breakdown[entry.area] = max(0, min(points, entry.weight))
             accumulated_score += metric_breakdown[entry.area]
-        except (ValueError, TypeError, AttributeError, ZeroDivisionError):
+        except Exception:
             metric_breakdown[entry.area] = 0
             
     if metrics.quarantined_count > 0:
-        recommendations.append(f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena.")
+        recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
     
     final_score = max(0, min(accumulated_score, 100))
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."])
@@ -246,7 +244,7 @@ def _render_bar(points: int, max_val: int) -> str:
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera un reporte textual estructurado a partir del resultado de salud."""
-    if result is None: return ["Error: Informe de salud no disponible."]
+    if not result: return ["Error: Informe de salud no disponible."]
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, maximo in WEIGHTS.items():
         points = result.breakdown.get(area, 0)

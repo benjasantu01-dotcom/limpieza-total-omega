@@ -844,3 +844,42 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-09-30T08:22:56` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` y `_validate_destination` al unificar la validación de seguridad y asegurar que la creación de directorios solo ocurra si el destino es efectivamente seguro, evitando excepciones en tiempo de ejecución al manipular rutas malformadas o bloqueadas.
 - `2026-09-30T08:22:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T08:22:56` Corrida terminada. Total usado hoy: 196.
+- `2026-09-30T08:29:52` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-09-30T08:30:21` Tests FALLARON:
+```
+th = PosixPath('/tmp/pytest-of-runner/pytest-1/test_summarize_includes_the_sa0')
+
+    def test_summarize_includes_the_safety_note(tmp_path):
+        caches = [browser.BrowserCache("Chrome", tmp_path / "Cache", 1024 * 1024)]
+>       texto = "\n".join(browser.summarize(caches))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_modules.py:800: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/browser.py:337: in summarize
+    total_mb = round(total_cache_bytes(current_caches) / (1024 * 1024), 2)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/browser.py:329: in total_cache_bytes
+    return sum(c.bytes_found for c in caches) if caches else 0
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = <list_iterator object at 0x7fde3d1389d0>
+
+>   return sum(c.bytes_found for c in caches) if caches else 0
+               ^^^^^^^^^^^^^
+E   AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+
+app/browser.py:329: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_total_cache_bytes_sums_detected_caches - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+2 failed, 297 passed in 1.58s
+
+```
+- `2026-09-30T08:30:21` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_is_file_in_use` agregando un manejo explícito de errores para `PermissionError` y `OSError`, asegurando que el módulo no aborte escaneos masivos si encuentra archivos con descriptores restringidos o en uso crítico por el sistema.
+- `2026-09-30T08:30:48` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `largest_folders` agregando manejo de excepciones específicas (como `ValueError` al calcular rutas relativas o `FileNotFoundError` si un archivo desaparece durante el escaneo) y validando la integridad del sistema de archivos mediante `entry.is_file` y `entry.is_dir` antes de intentar operar, evitando interrupciones inesperadas del bucle.
+- `2026-09-30T08:31:15` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `hash_file` y `partial_hash` ante errores inesperados durante la lectura de archivos, encapsulando la lógica de apertura en un bloque `try-except` más granular y validando explícitamente el tipo de los datos leídos para evitar errores de tipo si el archivo es modificado durante la ejecución.
+- `2026-09-30T08:31:27` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `SystemMetrics` y `compute_score` validando los parámetros de entrada antes de operar, asegurando que `validate` sea idempotent y que `compute_score` maneje gracefully cualquier fallo en el pipeline, evitando que un error en una sola regla de recomendación comprometa el cálculo total del score.
+- `2026-09-30T08:31:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T08:31:27` Corrida terminada. Total usado hoy: 200.

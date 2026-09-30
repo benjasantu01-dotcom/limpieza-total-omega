@@ -240,7 +240,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     stack: List[str] = [root_path_str]
     while stack:
         current_dir = stack.pop()
-        # Protección contra rutas excesivamente largas antes de entrar al directorio
         if len(current_dir) >= 32767: continue
         try:
             with os.scandir(current_dir) as iterator:
@@ -255,11 +254,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode)
                                 stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            # Validar acceso antes de procesar archivos
                             if os.access(entry.path, os.R_OK):
                                 st = entry.stat(follow_symlinks=False)
                                 if st.st_size >= 0: yield Path(entry.path), st.st_size
-                    except (OSError, PermissionError): continue
+                    except (OSError, PermissionError, FileNotFoundError): continue
         except (PermissionError, OSError): continue
 
 
@@ -287,12 +285,12 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     stats: Dict[Path, List[int]] = defaultdict(lambda: [0, 0])
     
-    # Recorrido único: clasificamos cada archivo encontrado en su carpeta de nivel superior
-    with os.scandir(root) as it:
-        top_level = {Path(e.path): Path(e.path) for e in it if e.is_dir()}
+    try:
+        with os.scandir(root) as it:
+            top_level = {Path(e.path): Path(e.path) for e in it if e.is_dir()}
+    except (OSError, PermissionError): return []
     
     for path, size in walk_files(root, skip_protected):
-        # Encontrar a qué carpeta de primer nivel pertenece
         try:
             relative = path.relative_to(root)
             parts = relative.parts
@@ -301,7 +299,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
                 if top_folder in top_level:
                     stats[top_folder][0] += size
                     stats[top_folder][1] += 1
-        except ValueError: continue
+        except (ValueError, OSError): continue
 
     results = [FolderUsage(p, s[0], s[1]) for p, s in stats.items()]
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)
