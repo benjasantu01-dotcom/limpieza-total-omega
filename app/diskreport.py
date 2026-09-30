@@ -110,13 +110,15 @@ def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
         if any(c in entry.name for c in SUSPICIOUS_CHARS) or '\0' in entry.name:
             return True
         
-        # Validar que la ruta real sea subdirectorio de la raíz para prevenir traversal por symlinks
+        # Validación estricta: asegurar que la resolución no escape de la raíz (traversal)
         resolved_path = str(Path(entry.path).resolve())
         if not resolved_path.startswith(root_path_str):
             return True
             
         try:
-            if entry.is_symlink() or (os.name == 'nt' and entry.is_dir() and (entry.stat().st_file_attributes & 0x400)):
+            if entry.is_symlink():
+                return True
+            if os.name == 'nt' and entry.is_dir() and (entry.stat().st_file_attributes & 0x400):
                 return True
         except (OSError, PermissionError):
             return True
@@ -229,7 +231,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """
     Generador recursivo de archivos (yields Path, size).
     Evita ciclos de inodos comparando (dev, ino) y saltea rutas protegidas o bloqueadas.
-    La navegación es mediante stack iterativo para evitar recursión profunda.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -251,8 +252,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode)
                                 stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            st = entry.stat(follow_symlinks=False)
-                            if st.st_size >= 0: yield Path(entry.path), st.st_size
+                            # Validar acceso antes de procesar archivos
+                            if os.access(entry.path, os.R_OK):
+                                st = entry.stat(follow_symlinks=False)
+                                if st.st_size >= 0: yield Path(entry.path), st.st_size
                     except (OSError, PermissionError): continue
         except (PermissionError, OSError): continue
 
@@ -284,6 +287,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             for entry in it:
                 if entry.is_dir(follow_symlinks=False):
                     path = Path(entry.path)
+                    # Verifica acceso antes de entrar en subcarpetas
                     if skip_protected and (is_protected_path(path) or not os.access(path, os.R_OK)):
                         continue
                     for f_path, f_size in walk_files(path, skip_protected):
@@ -305,8 +309,7 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Recorre el sistema de archivos y consolida métricas globales.
-    Usa un min-heap (heapq) para mantener solo los 'limit' archivos más pesados en memoria,
-    optimizando el uso de recursos ante grandes volúmenes de datos.
+    Usa un min-heap (heapq) para mantener solo los 'limit' archivos más pesados en memoria.
     """
     total_bytes, total_files = 0, 0
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
@@ -314,8 +317,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     
     for path, size_bytes in walk_files(directory, skip_protected):
         try:
-            if not os.access(path, os.R_OK):
-                continue
             total_bytes += size_bytes
             total_files += 1
             ext = path.suffix.lower() or "(sin extensión)"
@@ -323,7 +324,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             stats.total_bytes += size_bytes
             stats.count += 1
             
-            # Gestión de archivos Top-N mediante heap para evitar ordenamiento global costoso
             if limit > 0:
                 if len(top_heap) < limit: 
                     heapq.heappush(top_heap, (size_bytes, path))

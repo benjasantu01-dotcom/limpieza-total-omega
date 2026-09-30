@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 23
 - Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 228
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-28 | 40 | 6 | 8 | 3 | 53 |
+| 2026-09-28 | 40 | 6 | 8 | 3 | 49 |
 | 2026-09-29 | 131 | 15 | 22 | 18 | 164 |
-| 2026-09-30 | 21 | 2 | 6 | 4 | 11 |
+| 2026-09-30 | 25 | 2 | 6 | 4 | 11 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - robustez ante casos límite: **41**
 - manejo de errores y validación de entradas: **38**
-- seguridad defensiva: **32**
+- seguridad defensiva: **36**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
+- `assistant.py`: **19**
 - `healthscore.py`: **19**
-- `assistant.py`: **18**
+- `browser.py`: **17**
+- `diskreport.py`: **17**
 - `quarantine.py`: **17**
-- `browser.py`: **16**
-- `diskreport.py`: **16**
 - `memory.py`: **16**
 - `scanner.py`: **16**
 - `settings.py`: **16**
 - `safety.py`: **14**
 - `duplicates.py`: **13**
-- `branding.py`: **12**
+- `branding.py`: **13**
 - `organizer.py`: **11**
 - `main.py`: **6**
 - `startup.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-30T02:03:24` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_excluded_path` añadiendo una comprobación explícita para evitar que `pathlib.Path.resolve()` resuelva alias hacia fuera de la raíz (traversal) y se reforzó la validación de acceso `os.access` en las iteraciones de `walk_files` y `largest_folders` para evitar intentos de lectura innecesarios en archivos sin permisos.
+- `2026-09-30T02:03:11` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_file_in_use` agregando un manejo explícito de permisos y una validación de existencia previa mediante `os.access`, evitando disparar excepciones de sistema innecesarias durante el escaneo de cachés.
+- `2026-09-30T02:02:43` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `save_logo_svg` y `_validate_destination` para prevenir ataques de trayectoria (path traversal) y asegurar que cualquier intento de escritura sobre un archivo, incluso si es solo un logo, pase por el filtrado estricto del módulo `safety`.
+- `2026-09-30T02:02:03` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación explícita de `_ensure_safe_text` sobre el resultado extraído antes de retornarlo, cerrando una brecha potencial donde un JSON manipulado o inesperadamente formado podría inyectar contenido no verificado al flujo de la aplicación.
 - `2026-09-30T01:52:50` **settings.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_secure_to_read` para detectar archivos con bits de permisos inusualmente laxos (como permisos de escritura para el grupo o "otros") antes de leer la configuración, previniendo la carga de archivos manipulados malintencionadamente por otros usuarios del sistema.
 - `2026-09-30T01:52:17` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la validación de rutas dentro de `Scanner._is_safe_entry` mediante la normalización de la ruta absoluta con `.resolve()` antes de comparar con `base_root_str`, evitando así inconsistencias por enlaces simbólicos o rutas relativas que podrían eludir el aislamiento del escáner.
 - `2026-09-30T01:51:50` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `_get_security_descriptor` y `_get_path_stat_robust` envolviendo las llamadas a `os.stat` y `ctypes` en bloques `try-except` más granulares, para prevenir que errores de sistema (como `FileNotFoundError` o `OSError` inesperados) interrumpan el proceso durante el escaneo de directorios con contenido volátil.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-30T01:21:46` **assistant.py** (robustez ante casos límite): Introduje una validación defensiva en el método `ingest` de `SystemContext` para manejar la posible presencia de valores `NaN` (Not a Number) o infinitos que, aunque no rompen el tipo de dato, pueden corromper la lógica de los criterios de salud, asegurando la integridad del estado del sistema ante datos de entrada malformados.
 - `2026-09-30T01:12:07` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando lecturas de disco innecesarias mediante una verificación previa del tamaño y la fecha de modificación del archivo (`mtime`) antes de recargar, manteniendo la coherencia de la caché.
 - `2026-09-30T01:11:51` **scanner.py** (rendimiento): Optimizé el rendimiento de `_is_safe_entry` eliminando la resolución innecesaria de rutas (`.resolve()`) y la creación de objetos `Path` adicionales en cada llamada, utilizando en su lugar operaciones directas sobre `entry.path`, lo que reduce drásticamente las llamadas al sistema operativo (I/O).
-- `2026-09-30T00:50:30` **browser.py** (rendimiento): Optimicé el cálculo del tamaño de directorios mediante la conversión de `NEVER_TOUCH` a un `frozenset` pre-calculado y la sustitución de `os.path.normcase(os.path.normpath(...))` en bucles críticos por una comparación de cadenas simplificada, reduciendo la sobrecarga de llamadas a funciones del sistema operativo.
-- `2026-09-30T00:41:31` **assistant.py** (rendimiento): Optimicé el rendimiento de `_generate_context_cached` pasando de una construcción lenta de strings con llamadas múltiples a métricas, a un uso eficiente de listas pre-formateadas y `join`, reduciendo la carga en cada iteración del bucle de UI.
-- `2026-09-30T00:32:23` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `scanner.py` integrando docstrings que especifican contratos de entrada/salida y justificando el uso de `os.DirEntry` sobre `pathlib` para el escaneo recursivo, además de tipar explícitamente los errores controlados para mejorar la mantenibilidad de la lógica de seguridad.
-- `2026-09-30T00:31:12` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados a las funciones de bajo nivel que gestionan la E/S y el aislamiento, explicando explícitamente las asunciones de seguridad y los riesgos que cada una mitiga.

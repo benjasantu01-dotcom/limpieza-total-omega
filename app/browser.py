@@ -183,7 +183,9 @@ def _should_skip_entry(
     return False
 
 def _is_file_in_use(path: str) -> bool:
-    """Verifica si un archivo está bloqueado por otro proceso."""
+    """Verifica si un archivo está bloqueado por otro proceso usando acceso exclusivo."""
+    if not os.path.exists(path) or not os.access(path, os.R_OK):
+        return True
     try:
         fd = os.open(path, os.O_RDONLY | os.O_EXCL)
         os.close(fd)

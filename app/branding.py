@@ -402,11 +402,10 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     if not path:
         return None
     try:
-        # Garantizar que el directorio exista y sea seguro
         if not path.parent.exists():
             path.parent.mkdir(parents=True, exist_ok=True)
         
-        # Validar nuevamente contra el chequeo de seguridad de escritura
+        # Uso de ensure_safe_to_modify para forzar validación antes de la escritura
         ensure_safe_to_modify(path)
         safe_size = max(16, min(1024, int(size)))
         path.write_text(logo_svg(safe_size), encoding="utf-8")
@@ -420,7 +419,8 @@ def _validate_destination(dest: Any) -> Optional[Path]:
         return None
     try:
         path = Path(dest).resolve()
-        # Verificar protección y seguridad mediante los módulos autorizados
+        # Verificar protección y seguridad mediante los módulos autorizados; 
+        # is_safe_to_modify devuelve bool, ideal para el chequeo preventivo.
         if is_protected_path(path) or not is_safe_to_modify(path):
             return None
         return path

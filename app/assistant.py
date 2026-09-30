@@ -673,7 +673,10 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
         text_val = parts[0].get("text")
         
         if isinstance(text_val, str):
-            return _validate_response_length(text_val)
+            sanitized = _validate_response_length(text_val)
+            # Validación de seguridad: verificamos que el texto extraído cumpla con las reglas
+            if _ensure_safe_text(sanitized):
+                return sanitized
     except (AttributeError, TypeError, IndexError, KeyError): 
         pass
     return None
