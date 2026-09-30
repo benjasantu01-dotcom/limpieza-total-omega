@@ -1360,3 +1360,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-30T01:22:38` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se introdujo un chequeo de 'lock' (bloqueo) mediante el intento de apertura del archivo con `os.open` en modo exclusivo, previniendo así errores de acceso denegado durante la recursión en archivos abiertos por el navegador.
 - `2026-09-30T01:22:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T01:22:38` Corrida terminada. Total usado hoy: 32.
+- `2026-09-30T01:30:43` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-09-30T01:31:14` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de `_collect_summary_data` ante archivos que cambian de tamaño, son eliminados por procesos externos o se vuelven inaccesibles durante la iteración, mediante la implementación de bloques `try-except` granulares en el ciclo de recolección de métricas.
+- `2026-09-30T01:31:43` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_collect_candidates` ante errores de lectura mediante la inclusión de un chequeo explícito de `path.is_file()` dentro del bucle de escaneo, evitando excepciones innecesarias al intentar realizar estadísticas sobre entradas que podrían haber sido eliminadas o bloqueadas justo después de su descubrimiento por `os.scandir`.
+- `2026-09-30T01:32:09` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-09-30T01:33:09` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-30T01:34:12` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-30T01:35:18` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-09-30T01:36:30` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-30T01:36:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T01:36:30` Corrida terminada. Total usado hoy: 36.

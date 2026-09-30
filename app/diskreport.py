@@ -313,21 +313,24 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        if not os.access(path, os.R_OK):
+        try:
+            if not os.access(path, os.R_OK):
+                continue
+            total_bytes += size_bytes
+            total_files += 1
+            ext = path.suffix.lower() or "(sin extensión)"
+            stats = ext_stats[ext]
+            stats.total_bytes += size_bytes
+            stats.count += 1
+            
+            # Gestión de archivos Top-N mediante heap para evitar ordenamiento global costoso
+            if limit > 0:
+                if len(top_heap) < limit: 
+                    heapq.heappush(top_heap, (size_bytes, path))
+                elif size_bytes > top_heap[0][0]: 
+                    heapq.heapreplace(top_heap, (size_bytes, path))
+        except (OSError, PermissionError):
             continue
-        total_bytes += size_bytes
-        total_files += 1
-        ext = path.suffix.lower() or "(sin extensión)"
-        stats = ext_stats[ext]
-        stats.total_bytes += size_bytes
-        stats.count += 1
-        
-        # Gestión de archivos Top-N mediante heap para evitar ordenamiento global costoso
-        if limit > 0:
-            if len(top_heap) < limit: 
-                heapq.heappush(top_heap, (size_bytes, path))
-            elif size_bytes > top_heap[0][0]: 
-                heapq.heapreplace(top_heap, (size_bytes, path))
                 
     return SummaryData(total_bytes, total_files, dict(ext_stats), top_heap)
 

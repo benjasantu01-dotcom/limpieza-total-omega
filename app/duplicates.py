@@ -256,6 +256,9 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                             stack.append(entry.path)
                             continue
                         
+                        if not entry.is_file(follow_symlinks=False):
+                            continue
+
                         stat_info = entry.stat(follow_symlinks=False)
                         if stat_info.st_size < min_size:
                             continue

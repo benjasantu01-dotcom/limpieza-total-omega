@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **190** (37.7% de aceptación)
 - Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 36
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 229
+- Sin respuesta de la IA (error o límite): 231
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-28 | 45 | 6 | 9 | 3 | 59 |
+| 2026-09-28 | 42 | 6 | 8 | 3 | 59 |
 | 2026-09-29 | 131 | 15 | 22 | 18 | 164 |
-| 2026-09-30 | 15 | 2 | 5 | 4 | 6 |
+| 2026-09-30 | 17 | 2 | 5 | 4 | 8 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **38**
-- seguridad defensiva: **37**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **37**
+- seguridad defensiva: **34**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **19**
 - `assistant.py`: **18**
-- `quarantine.py`: **17**
-- `scanner.py`: **16**
 - `settings.py`: **16**
 - `browser.py`: **16**
+- `diskreport.py`: **16**
 - `memory.py`: **16**
-- `diskreport.py`: **15**
-- `safety.py`: **14**
-- `duplicates.py`: **12**
+- `quarantine.py`: **16**
+- `scanner.py`: **15**
+- `duplicates.py`: **13**
+- `safety.py`: **13**
 - `branding.py`: **12**
 - `organizer.py`: **11**
 - `main.py`: **6**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-30T01:31:43` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez de `_collect_candidates` ante errores de lectura mediante la inclusión de un chequeo explícito de `path.is_file()` dentro del bucle de escaneo, evitando excepciones innecesarias al intentar realizar estadísticas sobre entradas que podrían haber sido eliminadas o bloqueadas justo después de su descubrimiento por `os.scandir`.
+- `2026-09-30T01:31:14` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `_collect_summary_data` ante archivos que cambian de tamaño, son eliminados por procesos externos o se vuelven inaccesibles durante la iteración, mediante la implementación de bloques `try-except` granulares en el ciclo de recolección de métricas.
 - `2026-09-30T01:22:38` **browser.py** (robustez ante casos límite): Se introdujo un chequeo de 'lock' (bloqueo) mediante el intento de apertura del archivo con `os.open` en modo exclusivo, previniendo así errores de acceso denegado durante la recursión en archivos abiertos por el navegador.
 - `2026-09-30T01:22:26` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `draw_ring` y `draw_logo` ante valores extremos o malformados de entrada mediante el uso de `math.isfinite` y validación de tipos, evitando posibles excepciones durante el renderizado en canvas.
 - `2026-09-30T01:21:46` **assistant.py** (robustez ante casos límite): Introduje una validación defensiva en el método `ingest` de `SystemContext` para manejar la posible presencia de valores `NaN` (Not a Number) o infinitos que, aunque no rompen el tipo de dato, pueden corromper la lógica de los criterios de salud, asegurando la integridad del estado del sistema ante datos de entrada malformados.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-30T00:21:26` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo incorporando tipos explícitos en la estructura `MEMORYSTATUSEX` y clarificando mediante comentarios detallados el propósito y alcance de las máscaras de acceso Win32, asegurando que la intención del código sea evidente para cualquier colaborador futuro.
 - `2026-09-30T00:20:57` **main.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `main.py` mediante la refactorización de `_collect_settings` y la extracción del manejo de entrada de datos en la pestaña de Ajustes hacia un método dedicado `_update_entry_fields`, reduciendo el acoplamiento y la duplicación de lógica en la gestión del ciclo de vida de los widgets.
 - `2026-09-30T00:19:46` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de cálculo, aclarando el propósito de las constantes globales y refinando la visibilidad de los tipos para facilitar la comprensión del motor de scoring.
-- `2026-09-30T00:10:50` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando tipos explícitos en docstrings y aclarando el flujo lógico de las estrategias de hashing para asegurar la mantenibilidad del código.
-- `2026-09-30T00:10:39` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings técnicos detallados en las funciones de escaneo (`walk_files` y `_collect_summary_data`) para aclarar el manejo de memoria (heaps), la lógica de exclusión y el comportamiento ante errores, facilitando el mantenimiento.
