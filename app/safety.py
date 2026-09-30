@@ -313,7 +313,8 @@ def _is_volume_readonly(path_str: Optional[str]) -> bool:
         if not drive_path: return False
         root = drive_path + "\\"
         flags = ctypes.c_ulong()
-        if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0):
+        # GetVolumeInformationW devuelve 0 si falla. Validamos puntero y retorno.
+        if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
             return bool(flags.value & 0x80000)
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
         pass

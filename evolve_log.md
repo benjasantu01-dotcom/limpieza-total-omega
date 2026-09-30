@@ -890,3 +890,55 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-09-30T08:42:35` ➖ Sin cambios en quarantine.py (enfoque: manejo de errores y validación de entradas). Motivo: Se mejoró la robustez de `load_manifest` añadiendo un manejo de excepciones más granular y validación de tipos ante un archivo JSON malformado o inexistente, evitando que una corrupción trivial en el archivo de texto bloquee el acceso al historial de cuarentena.
 - `2026-09-30T08:42:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T08:42:35` Corrida terminada. Total usado hoy: 204.
+- `2026-09-30T08:50:17` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-09-30T08:50:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-09-30T08:51:33` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_volume_readonly` al capturar errores de ejecución y validar explícitamente el tipo de retorno de la API Win32, y optimicé la consistencia de las validaciones en `ensure_safe_to_modify` para asegurar que los chequeos de escritura sean siempre consistentes con el estado del sistema de archivos.
+- `2026-09-30T08:51:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-30T08:52:06` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-30T08:52:29` Tests FALLARON:
+```
+patch.setenv(settings.API_KEY_ENV_VAR, "clave")
+        settings.save({**settings.DEFAULTS, "asistente_activado": True,
+                       "asistente_enviar_metricas": False}, tmp_path)
+    
+        enviado = {}
+    
+        def espia(question, context_text, api_key, model):
+            enviado["texto"] = context_text
+            return "ok"
+    
+        monkeypatch.setattr(assistant, "_call_gemini", espia)
+        assistant.ask("¿qué hago?", _contexto_lleno(), tmp_path)
+>       assert "2400" not in enviado["texto"]
+E       AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+E         
+E         '2400' is contained here:
+E           Puntaje de salud: 61 nota C
+E           Basura: 2400 MB
+E         ?         ++++
+E           Sospechosos: 3
+E           RAM disponible: 11%
+E           Disco libre: 6%
+E           Duplicados: 900 MB
+E           Inicio: 19 items
+
+evolve/tests/test_assistant.py:418: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_text_numbers_are_accepted - assert 15 == 25
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+  
+  '2400' is contained here:
+    Puntaje de salud: 61 nota C
+    Basura: 2400 MB
+  ?         ++++
+    Sospechosos: 3
+    RAM disponible: 11%
+    Disco libre: 6%
+    Duplicados: 900 MB
+    Inicio: 19 items
+2 failed, 297 passed in 0.87s
+
+```
+- `2026-09-30T08:52:29` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de la validación al añadir una verificación explícita para asegurar que los valores numéricos no solo sean enteros, sino que estén dentro de los rangos permitidos antes de ser procesados, evitando potenciales desbordamientos o valores atípicos que puedan corromper la configuración.
+- `2026-09-30T08:52:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T08:52:29` Corrida terminada. Total usado hoy: 208.
