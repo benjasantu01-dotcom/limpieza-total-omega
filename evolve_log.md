@@ -1284,3 +1284,12 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-09-30T00:21:49` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). He mejorado la documentación interna agregando docstrings descriptivos con las causas y el "porqué" de las validaciones de seguridad más complejas (`_is_safe_for_disk_op`, `_is_recursive_violation`, `_is_file_locked`), facilitando el mantenimiento futuro y clarificando la intención técnica detrás de cada restricción.
 - `2026-09-30T00:21:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T00:21:49` Corrida terminada. Total usado hoy: 8.
+- `2026-09-30T00:29:36` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-09-30T00:29:54` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-30T00:30:27` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-30T00:31:12` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados a las funciones de bajo nivel que gestionan la E/S y el aislamiento, explicando explícitamente las asunciones de seguridad y los riesgos que cada una mitiga.
+- `2026-09-30T00:31:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-30T00:32:11` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ValidationContext, _CheckResult
+- `2026-09-30T00:32:23` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo `scanner.py` integrando docstrings que especifican contratos de entrada/salida y justificando el uso de `os.DirEntry` sobre `pathlib` para el escaneo recursivo, además de tipar explícitamente los errores controlados para mejorar la mantenibilidad de la lógica de seguridad.
+- `2026-09-30T00:32:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T00:32:23` Corrida terminada. Total usado hoy: 12.

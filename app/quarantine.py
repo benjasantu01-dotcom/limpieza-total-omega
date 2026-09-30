@@ -156,7 +156,11 @@ class QuarantineItem:
 
 
 def _get_sha256(path: Path) -> str:
-    """Calcula el hash SHA-256 de un archivo en trozos para minimizar uso de memoria."""
+    """
+    Calcula el hash SHA-256 de un archivo.
+    Usa buffer de lectura (CHUNK_SIZE) para evitar cargar archivos grandes 
+    en memoria RAM, previniendo errores de OOM (Out of Memory).
+    """
     if not path.is_file():
         return ""
     sha256_hash = hashlib.sha256()
@@ -173,7 +177,11 @@ def _get_sha256(path: Path) -> str:
 
 
 def _is_file_in_use_by_system(path: Path) -> bool:
-    """Verifica si un archivo está bloqueado por el sistema o en uso exclusivo."""
+    """
+    Determina si un archivo está bloqueado por el SO o procesos activos.
+    En Windows, utiliza la API de kernel para obtener atributos y un intento de 
+    bloqueo exclusivo vía msvcrt para verificar si el archivo está siendo editado.
+    """
     if not path.exists():
         return False
     if os.name == 'nt':
@@ -197,11 +205,9 @@ def _is_file_locked(path: Path) -> bool:
 
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
     """
-    Borrado validado: asegura que el archivo pertenezca al sandbox y mantenga integridad.
-    
-    Args:
-        path: Ruta absoluta hacia el archivo a eliminar.
-        expected_hash: Hash opcional para verificar antes de desvincular.
+    Eliminación validada (sandbox-aware).
+    Solo permite el borrado si la ruta está dentro de la cuarentena, es un archivo
+    simple y, opcionalmente, coincide con un hash conocido para prevenir borrados accidentales.
     """
     try:
         if not path.exists() or not path.is_absolute():
@@ -221,7 +227,11 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None) -> bool:
         return False
 
 def _check_path_syntax_integrity(path: Path) -> None:
-    """Valida la sintaxis de la ruta para prevenir ataques de inyección o desbordamiento."""
+    """
+    Valida que la estructura del path no contenga caracteres maliciosos.
+    Bloquea nombres reservados de Windows, profundidad excesiva (buffer overflow prevention)
+    y uso de flujos de datos alternos (ADS) para evitar inyección de código oculto.
+    """
     path_str = str(path)
     if any(ord(c) < 32 for c in path_str) or "\0" in path_str:
         raise UnsafePathError("Ruta con caracteres de control.")
@@ -244,7 +254,11 @@ def _sanitize_filename(filename: str) -> str:
     return "".join(c for c in filename if c.isalnum() or c in "._-")
 
 def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
-    """Crea un identificador único para el almacenamiento interno en cuarentena."""
+    """
+    Crea un nombre para el archivo dentro del sandbox.
+    Asegura que el archivo sea representable en Windows, evitando nombres 
+    reservados (ej: NUL, CON) y truncando a longitudes seguras.
+    """
     sanitized = _sanitize_filename(original_path.name)
     if not sanitized or sanitized in (".", ".."):
         sanitized = "unknown_file"
@@ -266,11 +280,7 @@ def _ensure_path_ownership(path: Path) -> None:
 def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     """
     Inicializa y valida el directorio base para la cuarentena.
-    
-    Args:
-        base: Ruta del directorio deseado.
-    Returns:
-        Ruta absoluta validada.
+    Realiza chequeos de seguridad contra paths protegidos y puntos de unión/reparse.
     """
     if not base:
         raise ValueError("El directorio base no puede estar vacío.")
@@ -401,7 +411,9 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineIte
 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     """
-    Persiste el manifiesto usando una operación de escritura atómica para evitar corrupción.
+    Persiste el manifiesto usando una operación de escritura atómica.
+    Utiliza archivos temporales y `os.replace` para evitar que un fallo de 
+    sistema durante la escritura corrompa el manifiesto original.
     """
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista.")
@@ -484,7 +496,11 @@ def _create_temp_file(source: Path, destination: Path) -> Path:
 
 
 def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> None:
-    """Copia el archivo byte a byte con verificación de integridad posterior."""
+    """
+    Copia byte a byte usando descriptores de archivos de bajo nivel.
+    Implementa verificación de integridad post-escritura comparando el hash 
+    del archivo origen contra el archivo destino.
+    """
     try:
         fd_src = os.open(str(source), os.O_RDONLY | os.O_NOFOLLOW)
     except OSError as e:

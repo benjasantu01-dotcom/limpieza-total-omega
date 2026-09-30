@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 228
+- Rechazadas por guardia de seguridad: 34
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-28 | 59 | 8 | 10 | 6 | 63 |
+| 2026-09-28 | 58 | 8 | 10 | 4 | 62 |
 | 2026-09-29 | 131 | 15 | 22 | 18 | 164 |
-| 2026-09-30 | 6 | 1 | 0 | 0 | 1 |
+| 2026-09-30 | 8 | 1 | 2 | 0 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **48**
+- legibilidad y documentación: **50**
 - seguridad defensiva: **44**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **38**
 - manejo de errores y validación de entradas: **38**
 - rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **21**
-- `quarantine.py`: **17**
+- `quarantine.py`: **18**
 - `assistant.py`: **17**
 - `memory.py`: **17**
-- `browser.py`: **16**
+- `scanner.py`: **16**
 - `diskreport.py`: **16**
 - `safety.py`: **15**
-- `scanner.py`: **15**
+- `browser.py`: **15**
 - `settings.py`: **15**
 - `duplicates.py`: **13**
 - `organizer.py`: **12**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-30T00:32:23` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `scanner.py` integrando docstrings que especifican contratos de entrada/salida y justificando el uso de `os.DirEntry` sobre `pathlib` para el escaneo recursivo, además de tipar explícitamente los errores controlados para mejorar la mantenibilidad de la lógica de seguridad.
+- `2026-09-30T00:31:12` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados a las funciones de bajo nivel que gestionan la E/S y el aislamiento, explicando explícitamente las asunciones de seguridad y los riesgos que cada una mitiga.
 - `2026-09-30T00:21:49` **organizer.py** (legibilidad y documentación): He mejorado la documentación interna agregando docstrings descriptivos con las causas y el "porqué" de las validaciones de seguridad más complejas (`_is_safe_for_disk_op`, `_is_recursive_violation`, `_is_file_locked`), facilitando el mantenimiento futuro y clarificando la intención técnica detrás de cada restricción.
 - `2026-09-30T00:21:26` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo incorporando tipos explícitos en la estructura `MEMORYSTATUSEX` y clarificando mediante comentarios detallados el propósito y alcance de las máscaras de acceso Win32, asegurando que la intención del código sea evidente para cualquier colaborador futuro.
 - `2026-09-30T00:20:57` **main.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `main.py` mediante la refactorización de `_collect_settings` y la extracción del manejo de entrada de datos en la pestaña de Ajustes hacia un método dedicado `_update_entry_fields`, reduciendo el acoplamiento y la duplicación de lógica en la gestión del ciclo de vida de los widgets.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-29T14:36:48` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` validando explícitamente el resultado de `os.scandir` y `entry.stat()` antes de procesar para evitar excepciones no capturadas al encontrar entradas con permisos restringidos o sistemas de archivos inestables.
 - `2026-09-29T14:35:56` **browser.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `directory_size` y `_sum_directory_recursive` mediante la validación explícita de tipos en los parámetros de entrada y la propagación de un estado de éxito (`success`) más robusto, evitando procesar valores `None` o rutas mal formadas.
 - `2026-09-29T13:05:52` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_load_impl` y `save` sustituyendo el uso de `json.load` y `open` directos por una validación estricta de permisos y metadatos antes de la lectura, evitando posibles condiciones de carrera o manipulación de archivos mediante el chequeo `os.fstat` para verificar que el descriptor del archivo abierto no haya sido reemplazado tras la apertura inicial.
-- `2026-09-29T13:04:36` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `_get_security_descriptor` y `_is_file_locked_by_other_process` añadiendo manejo de errores más específico para evitar cierres inesperados de la app ante archivos bloqueados por el kernel o con descriptores de seguridad inaccesibles.
-- `2026-09-29T12:55:08` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` mediante la implementación de una validación de coherencia en el flujo de movimiento, asegurando que `os.rename` (en `restore_item`) se realice solo después de verificar explícitamente que la ruta destino no fue alterada ni interceptada desde el chequeo inicial, y encapsulando el movimiento en un bloque que garantiza la integridad del manifiesto.
