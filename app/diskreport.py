@@ -239,7 +239,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     stack: List[str] = [root_path_str]
     while stack:
         current_dir = stack.pop()
-        if len(current_dir) >= 32767: continue
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
@@ -253,9 +252,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode)
                                 stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            if os.access(entry.path, os.R_OK):
-                                st = entry.stat(follow_symlinks=False)
-                                if st.st_size >= 0: yield Path(entry.path), st.st_size
+                            st = entry.stat(follow_symlinks=False)
+                            if st.st_size >= 0: yield Path(entry.path), st.st_size
                     except (OSError, PermissionError, FileNotFoundError): continue
         except (PermissionError, OSError): continue
 
@@ -283,7 +281,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     if not root: return []
     
     stats: Dict[Path, List[int]] = defaultdict(lambda: [0, 0])
-    # Pre-cálculo de subcarpetas de primer nivel válidas
     try:
         top_folders = {root / e.name: root / e.name for e in os.scandir(root) if e.is_dir()}
     except (OSError, PermissionError): return []
@@ -335,7 +332,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
                     heapq.heappush(top_heap, (size_bytes, path))
                 elif size_bytes > top_heap[0][0]: 
                     heapq.heapreplace(top_heap, (size_bytes, path))
-        except (OSError, PermissionError):
+        except (KeyError, TypeError, OSError):
             continue
                 
     return SummaryData(total_bytes, total_files, dict(ext_stats), top_heap)

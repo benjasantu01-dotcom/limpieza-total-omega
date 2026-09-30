@@ -1485,3 +1485,13 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not define
 - `2026-09-30T14:40:07` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-09-30T14:40:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T14:40:07` Corrida terminada. Total usado hoy: 344.
+- `2026-09-30T14:47:44` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-30T14:48:29` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext.ingest` y `ProblemCriterion.format_if_triggered` para manejar entradas maliciosas o malformadas (como tipos de datos inesperados o valores infinitos/NaN) mediante validación explícita, evitando que el asistente falle o procese datos inválidos en el hilo principal.
+- `2026-09-30T14:49:08` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de las funciones de entrada y renderizado añadiendo validaciones de rango (nan/inf) y tipos en los parámetros geométricos y de configuración, evitando fallos silenciosos o excepciones inesperadas al procesar valores corrompidos.
+- `2026-09-30T14:49:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-30T14:49:13` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-30T14:49:19` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-30T14:49:36` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-30T14:50:07` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de `walk_files` y `_collect_summary_data` frente a archivos que desaparecen durante la iteración (concurrencia) y errores de acceso inesperados, envolviendo el `st_size` y la lógica de contabilidad en bloques `try-except` más granulares para evitar que un error puntual en un archivo único interrumpa un escaneo completo.
+- `2026-09-30T14:50:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T14:50:07` Corrida terminada. Total usado hoy: 348.

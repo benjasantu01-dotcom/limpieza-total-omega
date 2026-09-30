@@ -513,6 +513,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
         w_val = max(1, min(4096, int(width)))
         h_val = max(1, min(1024, int(height)))
         cx, cy = float(canvas_x), float(canvas_y)
+        if not math.isfinite(cx) or not math.isfinite(cy): return
         colors = gradient_colors(w_val, stops)
         for segment in _get_grouped_segments(colors):
             canvas.create_line(cx + segment.start_index, cy, 
@@ -537,7 +538,7 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         if percent is None: return
         val = float(percent)
         cx, cy = float(canvas_x), float(canvas_y)
-        if not math.isfinite(val): val = 0.0
+        if not math.isfinite(val) or not math.isfinite(cx) or not math.isfinite(cy): val = 0.0
         val = max(0.0, min(100.0, val))
         diam = max(20, min(2048, int(size)))
         thick = max(2, min(int(thickness), (diam // 2) - 1))
