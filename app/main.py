@@ -936,7 +936,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             raw = entry_widget.get().strip()
             if not raw:
                 return default
-            # Sanitizar eliminando caracteres no imprimibles antes de cualquier validación
+            # Sanitizar eliminando caracteres no imprimibles y de control
             clean_raw = "".join(c for c in raw if c.isprintable())
             if numeric:
                 try:

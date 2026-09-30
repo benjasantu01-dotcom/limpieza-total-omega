@@ -1335,3 +1335,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-30T12:57:20` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `hash_file` y `partial_hash` ante errores inesperados durante la lectura de archivos, encapsulando la lógica de apertura en un bloque `try-except` más granular y validando explícitamente el tipo de buffer leído para evitar propagación de excepciones.
 - `2026-09-30T12:57:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-30T12:57:20` Corrida terminada. Total usado hoy: 304.
+- `2026-09-30T13:05:26` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-30T13:05:55` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se ha robustecido el manejo de excepciones en `_evaluate_rules` y `compute_score` mediante el uso de una lógica de validación más explícita y un filtrado de errores que evita que fallos en funciones lambda individuales propaguen excepciones hacia arriba, garantizando que el `HealthResult` siempre contenga datos consistentes incluso ante métricas malformadas.
+- `2026-09-30T13:05:56` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-30T13:07:00` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-30T13:08:22` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación robusta y centralizada en `_safe_get_entry_value` para prevenir inyecciones de caracteres invisibles o de control en campos de texto, protegiendo tanto la lógica de negocio como los logs de la aplicación contra entradas malformadas.
+- `2026-09-30T13:08:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-30T13:08:54` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-30T13:08:55` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-30T13:09:11` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-30T13:09:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-30T13:09:11` Corrida terminada. Total usado hoy: 308.
