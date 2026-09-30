@@ -140,12 +140,14 @@ def _is_file_locked(path: Path) -> bool:
     Determina si un archivo está bloqueado por otro proceso mediante intento de apertura.
     
     Returns:
-        True si no es un archivo o si no se puede abrir (bloqueado/sin permisos).
+        True si no es un archivo, si no se puede abrir (bloqueado/sin permisos), o si la ruta es inaccesible.
     """
     if not path.is_file():
         return True
     try:
+        # Intenta abrir en modo lectura exclusiva para verificar bloqueo sin modificar datos
         with open(path, 'rb') as f:
+            f.peek(1)
             return False
     except (PermissionError, OSError):
         return True

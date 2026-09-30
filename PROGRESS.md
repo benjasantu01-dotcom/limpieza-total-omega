@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 36
-- Sin cambios (nada sustancial que mejorar): 27
-- Sin respuesta de la IA (error o límite): 225
+- Sin cambios (nada sustancial que mejorar): 28
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-28 | 0 | 0 | 0 | 0 | 14 |
+| 2026-09-28 | 0 | 0 | 0 | 0 | 10 |
 | 2026-09-29 | 131 | 15 | 22 | 18 | 164 |
-| 2026-09-30 | 65 | 5 | 14 | 9 | 47 |
+| 2026-09-30 | 68 | 5 | 14 | 10 | 47 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
 - manejo de errores y validación de entradas: **39**
 - seguridad defensiva: **39**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **38**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **20**
-- `quarantine.py`: **18**
+- `quarantine.py`: **19**
 - `assistant.py`: **18**
 - `scanner.py`: **17**
-- `memory.py`: **16**
+- `memory.py`: **17**
 - `settings.py`: **15**
 - `diskreport.py`: **15**
 - `browser.py`: **14**
 - `branding.py`: **14**
 - `duplicates.py`: **13**
 - `safety.py`: **13**
-- `organizer.py`: **12**
+- `organizer.py`: **13**
 - `main.py`: **7**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-30T06:09:24` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de concurrencia y estado de archivo más robusta al detectar archivos bloqueados por el sistema antes de iniciar cualquier operación de I/O en `_is_file_in_use_by_system`, mejorando la resiliencia ante accesos simultáneos mediante el uso de `msvcrt` con manejo explícito de excepciones y verificación de atributos.
+- `2026-09-30T06:08:57` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para gestionar archivos vacíos o con acceso restringido, evitando excepciones innecesarias y mejorando la fiabilidad de la verificación previa al movimiento en entornos con permisos variables.
+- `2026-09-30T06:08:30` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` y `_get_process_path` para manejar situaciones donde el proceso termina inesperadamente entre la consulta y la ejecución, añadiendo una validación explícita mediante `ctypes.WinError` y evitando cierres de handles nulos.
 - `2026-09-30T05:58:19` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la clase `SystemMetrics` mediante la implementación de una validación exhaustiva de estados nulos o inválidos y la protección del `pipeline` ante métricas fuera de rango, asegurando que `compute_score` nunca retorne un estado inconsistente.
 - `2026-09-30T05:57:38` **diskreport.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas de archivo excepcionalmente largas (que superen los límites de MAX_PATH en Windows) en el generador `walk_files` para evitar bloqueos por `OSError` o fallos en el escaneo al encontrar niveles de anidamiento excesivos.
 - `2026-09-30T05:57:04` **browser.py** (robustez ante casos límite): Se introdujo una validación estricta contra el "desbordamiento de caracteres" (buffer overflow) y rutas no normalizadas mediante el uso de `os.path.abspath` y una validación explícita de la longitud de la ruta antes de intentar cualquier operación de sistema, mitigando riesgos ante rutas maliciosas o extremadamente largas que excedan los límites de Windows.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-30T05:17:21` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la redundancia de realizar múltiples recorridos recursivos independientes, reutilizando el generador `walk_files` de manera eficiente mediante un mapeo de claves de primer nivel.
 - `2026-09-30T05:16:27` **branding.py** (rendimiento): Se ha optimizado la gestión de las coordenadas del escudo utilizando `lru_cache` para evitar el cálculo de tuplas de vértices en cada frame de renderizado, y se eliminó una concatenación innecesaria en la generación del SVG.
 - `2026-09-30T05:08:55` **assistant.py** (rendimiento): Optimicé el acceso al diccionario de handlers en `local_answer` convirtiendo el `next` con generador a un acceso directo por clave, y reemplacé la construcción de strings costosa en `_generate_context_cached` por un pre-formateo más eficiente de las métricas, reduciendo la carga de CPU en cada consulta.
-- `2026-09-30T05:08:00` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `startup.py` mediante docstrings detallados en los métodos de `StartupEntry` para clarificar la lógica de saneamiento y resolución de rutas, además de renombrar variables internas (como `p_candidate` a `target_path`) para eliminar ambigüedades.
-- `2026-09-30T05:06:04` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes y normalizando las docstrings para seguir el estándar del proyecto, facilitando la comprensión del flujo de datos en las heurísticas y el estado interno del `Scanner`.
-- `2026-09-30T04:57:24` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings detallados y precisos a las funciones de validación, clarificando el propósito, las condiciones de error y el fundamento técnico de los chequeos de integridad para facilitar el mantenimiento y auditoría del código.

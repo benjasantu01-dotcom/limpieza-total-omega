@@ -337,7 +337,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     try:
         if psapi.EmptyWorkingSet(proc_handle) == 0:
-            return False, "El sistema rechazó la solicitud de limpieza."
+            error_code = ctypes.get_last_error()
+            if error_code == ERROR_ACCESS_DENIED:
+                return False, "Acceso denegado al proceso (requiere privilegios)."
+            return False, f"El sistema rechazó la solicitud (código {error_code})."
         return True, f"Working set liberado. {TRIM_WARNING}"
     finally: 
         kernel32.CloseHandle(proc_handle)
