@@ -21,7 +21,10 @@ import os
 import ctypes
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Sequence, Dict, List, Optional, Callable, Union, TypeAlias, NamedTuple, Set
+from typing import (
+    Iterable, Sequence, Dict, List, Optional, Callable, 
+    Union, TypeAlias, NamedTuple, Set, TypeGuard
+)
 
 from safety import is_protected_path, is_safe_to_modify
 
@@ -53,7 +56,6 @@ class FileAttributes(NamedTuple):
     SYSTEM: int = 0x04
     REPARSE_POINT: int = 0x400
 
-# Combinación de flags para identificar elementos no aptos para escaneo directo
 SYSTEM_HIDDEN_FLAGS: int = (
     FileAttributes().HIDDEN | 
     FileAttributes().SYSTEM | 
@@ -116,11 +118,9 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
     except (OSError, AttributeError, TypeError):
         return None
 
-def _is_unc_path(path_str: Optional[str]) -> bool:
-    """Verifica si la ruta corresponde a un recurso de red (UNC), los cuales se omiten por seguridad."""
-    if not isinstance(path_str, str) or not path_str:
-        return False
-    return path_str.startswith(r"\\") or path_str.startswith("//")
+def _is_unc_path(path_str: Optional[str]) -> TypeGuard[str]:
+    """Verifica si la ruta corresponde a un recurso de red (UNC)."""
+    return isinstance(path_str, str) and (path_str.startswith(r"\\") or path_str.startswith("//"))
 
 def _ensure_within_base(target: str, base_norm: str) -> bool:
     """Defensa: valida que la ruta normalizada esté contenida estrictamente en la base permitida."""
@@ -146,7 +146,7 @@ def base_directories() -> List[Path]:
         pass
     return []
 
-def _is_excluded_file(name: Optional[str]) -> bool:
+def _is_excluded_file(name: Optional[str]) -> TypeGuard[str]:
     """Verifica si el nombre de archivo coincide con archivos de usuario sensibles."""
     return name is not None and name.lower() in NEVER_TOUCH
 

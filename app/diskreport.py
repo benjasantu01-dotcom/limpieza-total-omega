@@ -22,7 +22,7 @@ import heapq
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Generator, Iterable, Dict, List, Tuple, Optional, Union, NamedTuple, TypeAlias, Any, Callable
+from typing import Generator, Iterable, Dict, List, Tuple, Optional, Union, NamedTuple, TypeAlias, Any
 
 from safety import is_protected_path
 
@@ -45,15 +45,16 @@ __all__ = [
 MB_SIZE: int = 1024 * 1024
 SUSPICIOUS_CHARS: Tuple[str, ...] = ('\u202E', '\u202D', '\u200E', '\u200F')
 
-# Identificador único de inodo en sistema de archivos (dispositivo, número de inodo)
+# Identificador único de inodo en sistema de archivos: (ID de dispositivo, Número de inodo)
 Inode: TypeAlias = Tuple[int, int]
 # Métricas básicas: (tamaño_total_en_bytes, cantidad_total_de_archivos)
 SizeReport: TypeAlias = Tuple[int, int]
 
 
 class ExtStats:
-    """Acumulador de métricas para una extensión específica durante el escaneo."""
+    """Acumulador de métricas para una extensión de archivo específica."""
     __slots__ = ('total_bytes', 'count')
+    
     def __init__(self) -> None:
         self.total_bytes: int = 0
         self.count: int = 0
@@ -61,9 +62,13 @@ class ExtStats:
 
 class SummaryData(NamedTuple):
     """
-    Consolidado inmutable de un escaneo.
-    Contiene el total global y los diccionarios de agregación necesarios para 
-    reportes de extensiones y archivos pesados.
+    Estructura consolidada de un escaneo completo.
+    
+    Attributes:
+        total_bytes: Suma total de bytes de todos los archivos procesados.
+        total_files: Conteo total de archivos procesados.
+        ext_stats: Diccionario mapeando extensiones a sus estadísticas (`ExtStats`).
+        top_files: Lista de tuplas `(tamaño_en_bytes, ruta_archivo)` del top N.
     """
     total_bytes: int
     total_files: int
@@ -73,8 +78,8 @@ class SummaryData(NamedTuple):
 
 def _bytes_to_mb(size_bytes: int | float | None) -> float:
     """
-    Conversión estándar a MB. 
-    Nota: Se utiliza float para mantener la precisión decimal necesaria en la UI.
+    Convierte bytes a MB con precisión de dos decimales.
+    Si el valor es inválido o negativo, retorna 0.0.
     """
     try:
         if size_bytes is None or not isinstance(size_bytes, (int, float)) or size_bytes < 0:
@@ -95,11 +100,10 @@ def _validate_limit(limit: Any) -> int:
 
 
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
-    """Valida que la ruta sea existente, sea un directorio, y sea segura según `safety.py`."""
+    """Valida que la ruta sea existente, directorio y sea segura según `safety.py`."""
     if directory is None:
         return None
     try:
-        # Prevenir inyección de rutas con caracteres nulos
         raw_path = Path(str(directory).split('\0')[0]).resolve()
         if not raw_path.exists() or not raw_path.is_dir():
             return None
@@ -111,20 +115,16 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 
 def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
-    """
-    Evalúa si un `os.DirEntry` debe omitirse del análisis.
-    """
+    """Evalúa si un objeto del sistema de archivos debe omitirse del análisis."""
     try:
         if any(c in entry.name for c in SUSPICIOUS_CHARS) or '\0' in entry.name:
             return True
         
-        # Validar consistencia de prefijo para evitar escape de directorio
         if not os.path.commonpath([entry.path, root_path_str]) == root_path_str:
             return True
             
         try:
             st = entry.stat(follow_symlinks=False)
-            # 0x0400 es el atributo FILE_ATTRIBUTE_REPARSE_POINT en Windows
             is_reparse = (st.st_file_attributes & 0x0400) if os.name == 'nt' else entry.is_symlink()
             if is_reparse:
                 return True
@@ -137,7 +137,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
 
 
 def _get_local_windows_drives() -> List[str]:
-    """Lista letras de unidad (A-Z) disponibles en Windows, filtrando rutas protegidas."""
+    """Lista letras de unidad (A-Z) disponibles en Windows, omitiendo rutas protegidas."""
     import string
     drives: List[str] = []
     for letter in string.ascii_uppercase:
@@ -198,12 +198,11 @@ class DriveUsage:
 
     @property
     def is_almost_full(self) -> bool:
-        """Determina si la unidad está al límite (menos del 10% de espacio libre)."""
         return self.total > 0 and (self.free / self.total) < 0.10
 
 
 def format_size(num: Union[int, float, None]) -> str:
-    """Convierte bytes crudos a una cadena formateada legible (e.g., 1.5 GB)."""
+    """Convierte bytes a formato humano (ej. 1.5 GB)."""
     if not isinstance(num, (int, float)) or num < 0:
         return "0 B"
     value = float(num)
@@ -216,7 +215,7 @@ def format_size(num: Union[int, float, None]) -> str:
 
 
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
-    """Devuelve las métricas de uso de disco para un punto de montaje específico."""
+    """Obtiene métricas de uso para un punto de montaje."""
     if mount is None:
         return None
     try:
@@ -230,15 +229,13 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
 
 
 def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]:
-    """Obtiene reporte de uso para múltiples unidades o las detectadas por defecto."""
+    """Obtiene reporte de uso para múltiples unidades."""
     targets = mounts if mounts is not None else (_get_local_windows_drives() if os.name == "nt" else ["/"])
     return [d for m in targets if (d := drive_usage(m)) is not None]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """
-    Generador recursivo de archivos utilizando `os.scandir` para eficiencia de I/O.
-    """
+    """Generador recursivo de archivos usando `os.scandir`."""
     root_path = _validate_root(directory)
     if root_path is None: return
     root_path_str = str(root_path)
@@ -254,7 +251,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if skip_protected and _is_excluded_path(entry, root_path_str):
                             continue
                         
-                        # Chequeo de acceso antes de procesar
                         if not os.access(entry.path, os.R_OK):
                             continue
 
@@ -268,11 +264,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             else:
                                 stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            # Seguridad extra: Validar archivo individual contra política
                             if skip_protected and is_protected_path(Path(entry.path)):
                                 continue
                             st = entry.stat(follow_symlinks=False)
-                            # Aseguramos que el tamaño sea un entero válido
                             sz = int(st.st_size) if hasattr(st, 'st_size') else 0
                             if sz >= 0: yield Path(entry.path), sz
                     except (OSError, PermissionError, FileNotFoundError, AttributeError): 
@@ -290,7 +284,7 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
 
 
 def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
-    """Calcula estadísticas agregadas por extensión de archivo."""
+    """Calcula estadísticas agregadas por extensión."""
     root = _validate_root(directory)
     if not root: return []
     data = _collect_summary_data(root, skip_protected, limit=0)
@@ -299,7 +293,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """Analiza carpetas de primer nivel para determinar su tamaño total acumulado en una sola pasada."""
+    """Analiza carpetas de primer nivel para determinar su tamaño total."""
     root = _validate_root(directory)
     if not root: return []
     
@@ -319,7 +313,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
 
 
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> SizeReport:
-    """Retorna una tupla (tamaño_total_bytes, conteo_archivos) para la ruta indicada."""
+    """Retorna (tamaño_total_bytes, conteo_archivos) para la ruta indicada."""
     root = _validate_root(directory)
     if not root: return (0, 0)
     data = _collect_summary_data(root, skip_protected, limit=0)
@@ -327,17 +321,13 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """
-    Recorre el sistema de archivos de forma exhaustiva y consolida métricas globales.
-    Optimizado mediante el cálculo eficiente de extensiones y reducción de llamadas en loop.
-    """
+    """Recorre el sistema de archivos y consolida métricas globales."""
     total_bytes: int = 0
     total_files: int = 0
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        # Doble validación de seguridad y saneamiento de tipo
         if skip_protected and is_protected_path(path):
             continue
             
@@ -364,7 +354,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
-    """Genera una representación en texto del análisis de disco para visualización."""
+    """Genera reporte de texto para visualización."""
     root = _validate_root(directory)
     if root is None: return ["Error: Ruta no válida o inaccesible."]
     data = _collect_summary_data(root, skip_protected, limit=20)
