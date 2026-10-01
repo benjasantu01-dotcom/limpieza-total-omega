@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Mejoras aceptadas: **217** (43.1% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 44
-- Sin cambios (nada sustancial que mejorar): 16
+- Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-30 | 109 | 10 | 24 | 10 | 87 |
-| 2026-10-01 | 107 | 6 | 20 | 6 | 125 |
+| 2026-09-30 | 106 | 10 | 24 | 9 | 87 |
+| 2026-10-01 | 111 | 6 | 20 | 6 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **50**
-- legibilidad y documentación: **47**
+- legibilidad y documentación: **44**
+- manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **42**
-- manejo de errores y validación de entradas: **39**
 - rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **23**
-- `quarantine.py`: **20**
+- `diskreport.py`: **24**
 - `duplicates.py`: **20**
-- `organizer.py`: **17**
-- `memory.py`: **16**
+- `quarantine.py`: **19**
+- `assistant.py`: **16**
+- `branding.py`: **16**
 - `healthscore.py`: **16**
+- `organizer.py`: **16**
 - `settings.py`: **16**
 - `safety.py`: **15**
 - `scanner.py`: **15**
-- `assistant.py`: **15**
-- `branding.py`: **15**
-- `browser.py`: **13**
+- `memory.py`: **15**
+- `browser.py`: **14**
 - `startup.py`: **12**
 - `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-01T11:17:49` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `summarize` y `_collect_summary_data` validando que los tamaños devueltos por el sistema sean siempre numéricos no negativos antes de realizar operaciones aritméticas, mitigando potenciales errores de propagación ante lecturas corruptas de metadatos.
+- `2026-10-01T11:17:37` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_file_in_use` y `directory_size` validando explícitamente los parámetros de entrada y manejando fallos de `os.open` con un filtrado de excepciones más preciso para evitar interrupciones innecesarias en el escaneo.
+- `2026-10-01T11:17:08` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `draw_ring` mediante la validación temprana de parámetros críticos (como `thickness` frente a `size`), evitando divisiones por cero y estados inválidos mediante `math.isfinite` y el manejo de excepciones, cumpliendo con el enfoque de validación de entradas.
+- `2026-10-01T11:16:30` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_text_from_gemini_json` para prevenir fallos silenciosos al procesar respuestas malformadas de la API, añadiendo validaciones de tipo explícitas en cada nivel de la estructura de datos anidada.
 - `2026-10-01T09:46:01` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo implementando una validación explícita mediante `os.access(..., os.R_OK)` antes de intentar procesar cualquier entrada, garantizando que el escáner no intente acceder a archivos o directorios donde no tiene permisos de lectura, evitando así excepciones innecesarias y aumentando la eficiencia en entornos restringidos.
 - `2026-10-01T09:45:47` **safety.py** (seguridad defensiva): Se añadió una validación explícita para evitar modificaciones en archivos con permisos de solo lectura a nivel de sistema de archivos (atributo `FILE_ATTRIBUTE_READONLY`), complementando el chequeo de permisos de `stat()`, ya que en Windows `os.access` no siempre refleja fielmente el bit de solo lectura en todos los escenarios.
 - `2026-10-01T09:44:36` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_safe_unlink` eliminando el uso de `os.fsync` (que no es necesario para un borrado y puede fallar en ciertos sistemas de archivos o permisos) y asegurando que la validación de `expected_inode` sea estricta incluso si el valor es 0, además de centralizar las precondiciones de borrado para evitar estados intermedios.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-01T09:24:03` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `branding.py` mediante una validación explícita de `path` en `save_logo_svg` y una limpieza en la entrada de datos en `logo_svg` para prevenir posibles inyecciones de rutas o valores fuera de rango que puedan comprometer la integridad del sistema de archivos.
 - `2026-10-01T09:15:17` **assistant.py** (seguridad defensiva): Mejoré la seguridad de `_sanitize_query` y `ask` al mover la validación de seguridad antes de cualquier manipulación de texto, garantizando que el asistente nunca procese consultas que contengan caracteres de control o inyección, siguiendo estrictamente el principio de defensa en profundidad.
 - `2026-10-01T09:14:16` **settings.py** (robustez ante casos límite): Mejoré `_is_file_secure_to_read` para manejar robustamente casos donde la ruta no existe o es inaccesible, evitando que `st.stat()` lance excepciones que interrumpan el flujo de carga durante la validación de archivos de configuración.
-- `2026-10-01T09:05:10` **safety.py** (robustez ante casos límite): Se introdujo la verificación `_is_volume_removable_media` para detectar de forma robusta unidades de medios extraíbles (tipo SD, USB o discos externos) mediante `GetDriveTypeW`, previniendo que la aplicación intente realizar modificaciones en volúmenes inestables o de almacenamiento externo que podrían desconectarse durante la operación, incrementando la robustez ante casos límite de hardware.
-- `2026-10-01T09:04:19` **quarantine.py** (robustez ante casos límite): Se introdujo `_check_io_error_context` para manejar errores transitorios (como archivos bloqueados o falta de permisos) mediante una lógica de reintento con espera exponencial, mejorando la resiliencia ante condiciones de carrera y bloqueos temporales del sistema de archivos al manipular la cuarentena.
-- `2026-10-01T09:03:35` **organizer.py** (robustez ante casos límite): Se introdujo una validación de coherencia en `_is_safe_for_disk_op` para prevenir errores de E/S en archivos que han cambiado de estado (ej. borrados o movidos por otro proceso) entre la detección y la ejecución, usando `path.stat()` para verificar que el inodo y el tamaño sigan siendo consistentes con el objeto `JunkFile`.
-- `2026-10-01T09:01:03` **memory.py** (robustez ante casos límite): Se ha añadido un robusto manejo de errores en `top_memory_processes` ante posibles salidas malformadas de PowerShell o subprocesos interrumpidos, asegurando que el estado del módulo no se corrompa si el comando falla o devuelve contenido parcial.

@@ -680,17 +680,19 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
         return None
         
     try:
-        candidates: list[Any] = data.get("candidates", [])
+        candidates = data.get("candidates")
         if not isinstance(candidates, list) or not candidates: return None
         
-        first: dict[str, Any] = candidates[0]
+        first = candidates[0]
         if not isinstance(first, dict): return None
-        content: dict[str, Any] = first.get("content", {})
-        if not isinstance(content, dict): return None
-        parts: list[Any] = content.get("parts", [])
-        if not isinstance(parts, list) or not parts: return None
-        text_val: Any = parts[0].get("text")
         
+        content = first.get("content")
+        if not isinstance(content, dict): return None
+        
+        parts = content.get("parts")
+        if not isinstance(parts, list) or not parts: return None
+        
+        text_val = parts[0].get("text")
         if isinstance(text_val, str):
             sanitized: str = _validate_response_length(text_val)
             if _ensure_safe_text(sanitized):

@@ -543,9 +543,10 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         if not math.isfinite(val) or not math.isfinite(cx) or not math.isfinite(cy): val = 0.0
         val = max(0.0, min(100.0, val))
         
-        # Validar tamaño mínimo de anillo para asegurar que el grosor es viable
+        # Validar tamaño y grosor para evitar inconsistencias geométricas
         diam = max(20, min(2048, int(size)))
-        thick = max(2, min(int(thickness), (diam // 2) - 1))
+        max_thick = (diam // 2) - 1
+        thick = max(2, min(int(thickness), max_thick))
         
         borde: float = float(thick) / 2.0
         caja = (cx + borde, cy + borde, cx + diam - borde, cy + diam - borde)
@@ -554,4 +555,4 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         if val > 0: 
             fill_color = fill or score_color(val)
             canvas.create_arc(*caja, start=90, extent=-(val / 100 * 359.9), style="arc", outline=fill_color, width=thick)
-    except (ValueError, TypeError, AttributeError, OverflowError): return
+    except (ValueError, TypeError, AttributeError, OverflowError, ZeroDivisionError): return

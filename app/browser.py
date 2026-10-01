@@ -181,7 +181,7 @@ def _should_skip_entry(
 
 def _is_file_in_use(path_obj: Path) -> bool:
     """Verifica si un archivo está bloqueado abriéndolo en modo exclusivo."""
-    if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
+    if not isinstance(path_obj, Path) or not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
         return True
     try:
         fd: int = os.open(str(path_obj), os.O_RDONLY | os.O_EXCL)

@@ -272,7 +272,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             if skip_protected and is_protected_path(Path(entry.path)):
                                 continue
                             st = entry.stat(follow_symlinks=False)
-                            if st.st_size >= 0: yield Path(entry.path), st.st_size
+                            # Aseguramos que el tamaño sea un entero válido
+                            sz = int(st.st_size) if hasattr(st, 'st_size') else 0
+                            if sz >= 0: yield Path(entry.path), sz
                     except (OSError, PermissionError, FileNotFoundError, AttributeError): 
                         continue
         except (PermissionError, OSError): 
@@ -335,25 +337,26 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        # Doble validación de seguridad antes de procesar la métrica
+        # Doble validación de seguridad y saneamiento de tipo
         if skip_protected and is_protected_path(path):
             continue
             
-        if size_bytes >= 0:
+        s = int(size_bytes) if isinstance(size_bytes, (int, float)) else 0
+        if s >= 0:
             try:
-                total_bytes += size_bytes
+                total_bytes += s
                 total_files += 1
                 
                 ext = path.suffix.lower() or "(sin extensión)"
                 stats = ext_stats[ext]
-                stats.total_bytes += size_bytes
+                stats.total_bytes += s
                 stats.count += 1
                 
                 if limit > 0:
                     if len(top_heap) < limit: 
-                        heapq.heappush(top_heap, (size_bytes, path))
-                    elif size_bytes > top_heap[0][0]: 
-                        heapq.heapreplace(top_heap, (size_bytes, path))
+                        heapq.heappush(top_heap, (s, path))
+                    elif s > top_heap[0][0]: 
+                        heapq.heapreplace(top_heap, (s, path))
             except (KeyError, TypeError, OSError):
                 continue
                 

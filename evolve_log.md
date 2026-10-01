@@ -1475,3 +1475,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-01T11:09:43` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-10-01T11:09:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-01T11:09:43` Corrida terminada. Total usado hoy: 264.
+- `2026-10-01T11:15:43` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-10-01T11:16:30` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_extract_text_from_gemini_json` para prevenir fallos silenciosos al procesar respuestas malformadas de la API, añadiendo validaciones de tipo explícitas en cada nivel de la estructura de datos anidada.
+- `2026-10-01T11:17:08` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `draw_ring` mediante la validación temprana de parámetros críticos (como `thickness` frente a `size`), evitando divisiones por cero y estados inválidos mediante `math.isfinite` y el manejo de excepciones, cumpliendo con el enfoque de validación de entradas.
+- `2026-10-01T11:17:37` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_is_file_in_use` y `directory_size` validando explícitamente los parámetros de entrada y manejando fallos de `os.open` con un filtrado de excepciones más preciso para evitar interrupciones innecesarias en el escaneo.
+- `2026-10-01T11:17:49` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `summarize` y `_collect_summary_data` validando que los tamaños devueltos por el sistema sean siempre numéricos no negativos antes de realizar operaciones aritméticas, mitigando potenciales errores de propagación ante lecturas corruptas de metadatos.
+- `2026-10-01T11:17:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-01T11:17:49` Corrida terminada. Total usado hoy: 268.
