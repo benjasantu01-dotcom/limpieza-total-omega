@@ -238,10 +238,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador recursivo de archivos utilizando `os.scandir` para eficiencia de I/O.
-    
-    Implementa un stack explícito para evitar recursión profunda y mantiene un 
-    conjunto de `visited_inodes` (dispositivo + número de inodo) para detectar 
-    y saltar enlaces simbólicos cíclicos, evitando bucles infinitos en el FS.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -321,20 +317,21 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Recorre el sistema de archivos de forma exhaustiva y consolida métricas globales.
+    Optimizado mediante el cálculo eficiente de extensiones y reducción de llamadas en loop.
     """
     total_bytes: int = 0
     total_files: int = 0
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
     top_heap: List[Tuple[int, Path]] = []
     
-    get_ext: Callable[[Path], str] = lambda p: p.suffix.lower() or "(sin extensión)"
-    
     for path, size_bytes in walk_files(directory, skip_protected):
-        if size_bytes is not None and size_bytes >= 0:
+        if size_bytes >= 0:
             try:
                 total_bytes += size_bytes
                 total_files += 1
-                stats = ext_stats[get_ext(path)]
+                
+                ext = path.suffix.lower() or "(sin extensión)"
+                stats = ext_stats[ext]
                 stats.total_bytes += size_bytes
                 stats.count += 1
                 

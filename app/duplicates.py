@@ -199,10 +199,10 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """Realiza una búsqueda profunda para catalogar archivos según su peso."""
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
-    stack: List[Tuple[str, int]] = []
+    stack: List[Tuple[Path, int]] = []
     for d in directories:
         if (r := _resolve_and_verify_root(d)):
-            stack.append((str(r), 0))
+            stack.append((r, 0))
     
     visited: set[str] = set()
     while stack:
@@ -211,21 +211,22 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             continue
             
         try:
-            real_path = str(Path(current_dir).resolve())
-            if real_path in visited: continue
-            visited.add(real_path)
+            real_path_str = str(current_dir.resolve())
+            if real_path_str in visited: continue
+            visited.add(real_path_str)
             
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    p_entry = Path(entry.path)
                     if entry.is_dir(follow_symlinks=False):
+                        p_entry = Path(entry.path)
                         if _safe_path_check(p_entry):
-                            stack.append((entry.path, depth + 1))
+                            stack.append((p_entry, depth + 1))
                         continue
                     
                     if entry.is_file(follow_symlinks=False):
                         stat_info = entry.stat(follow_symlinks=False)
                         if stat_info.st_size >= min_size:
+                            p_entry = Path(entry.path)
                             if not (skip_protected and is_protected_path(p_entry)) and _is_valid_candidate(p_entry, stat_info.st_size):
                                 size_to_paths_map[stat_info.st_size].append(p_entry)
         except (OSError, PermissionError, RuntimeError):

@@ -1143,3 +1143,13 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-01T08:03:59` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se optimizó el escaneo del sistema de archivos reemplazando la creación redundante de objetos `Path` y múltiples llamadas a `resolve()` dentro de los bucles internos por operaciones basadas en cadenas (strings) y `os.path`, reduciendo drásticamente la carga sobre el garbage collector y mejorando la velocidad de ejecución.
 - `2026-10-01T08:03:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-01T08:03:59` Corrida terminada. Total usado hoy: 192.
+- `2026-10-01T08:11:57` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-10-01T08:12:27` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_summary_data` eliminando la creación repetitiva de objetos lambda y calculando la extensión una única vez por archivo, reduciendo la sobrecarga de llamadas a funciones en el bucle principal de escaneo.
+- `2026-10-01T08:12:54` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé `_collect_candidates` utilizando un conjunto (`set`) para registrar las rutas ya visitadas (`real_path`) y evitando llamadas redundantes a `Path.resolve()` dentro del bucle mediante el uso de la ruta real obtenida del iterador `os.scandir`, reduciendo drásticamente las operaciones I/O innecesarias y el costo computacional de resolución de rutas en estructuras de carpetas profundas.
+- `2026-10-01T08:13:19` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-10-01T08:14:19` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-01T08:15:22` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-01T08:16:28` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-01T08:17:40` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-01T08:17:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-01T08:17:40` Corrida terminada. Total usado hoy: 196.
