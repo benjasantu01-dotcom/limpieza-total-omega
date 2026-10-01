@@ -313,7 +313,6 @@ def _is_file_secure_to_read(ruta: Path, st_info: os.stat_result | None = None) -
         if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
         if not stat.S_ISREG(st.st_mode) or _Validators._is_reparse_point(ruta): return False
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
-        # Comprobar consistencia de propietario y verificación de integridad técnica
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if st.st_nlink != 1: return False
         real_path = Path(os.path.realpath(ruta))
@@ -327,13 +326,12 @@ def _load_impl(ruta: Path) -> AppSettings:
     if not ruta.exists(): return dict(DEFAULTS)
     try:
         with open(ruta, "r", encoding="utf-8") as f:
-            # Obtener estado tras abrir para prevenir TOCTOU
             st = os.fstat(f.fileno())
             if not _is_file_secure_to_read(ruta, st): return dict(DEFAULTS)
             data = json.load(f)
         if _is_dict(data):
             return _coerce_and_verify(validate(data))
-    except (OSError, PermissionError, IOError, json.JSONDecodeError, UnicodeDecodeError):
+    except (OSError, PermissionError, IOError, json.JSONDecodeError, UnicodeDecodeError, EOFError):
         pass
     return dict(DEFAULTS)
 
@@ -381,7 +379,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
-        # Validación explícita de seguridad antes de cualquier escritura
         if not is_safe_to_modify(str(ruta)): return None
         if not os.access(parent, os.W_OK) or _Validators._is_reparse_point(parent): return None
         if not _Validators._is_safe_path(str(parent)): return None

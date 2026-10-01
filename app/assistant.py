@@ -429,12 +429,12 @@ def _ensure_safe_text(text: Any) -> bool:
     """
     if not isinstance(text, str) or not text or len(text) > _MAX_TEXT_LENGTH:
         return False
+    # Filtro estricto de caracteres invisibles Unicode y secuencias ANSI
     if _REGEX_CONTROL.search(text):
         return False
-    # Bloqueo de caracteres usados en inyección de comandos
     if any(c in text for c in "<>|&^"):
         return False
-        
+    
     sanitized = text.encode("utf-8", "ignore").decode("utf-8")
     if is_protected_path(sanitized): return False
     if sanitized.startswith(("\\\\", "//", "UNC")): return False
@@ -494,7 +494,7 @@ def _generate_context_cached(ctx: SystemContext) -> str:
 
 def context_as_text(context: SystemContext) -> str:
     """Serializa el contexto a un formato textual seguro para el prompt del asistente."""
-    return _generate_context_cached(context) if not context.is_empty else ""
+    return _generate_safe_context(context) if not context.is_empty else ""
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     """Formatea métricas numéricas convirtiéndolas a strings legibles."""

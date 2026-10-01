@@ -403,7 +403,6 @@ def _es_ruta_segura_para_escritura(dest: Any) -> Optional[Path]:
         return None
     try:
         path = Path(dest).resolve()
-        # Verificamos que la ruta pueda existir o ser creada, y que sea segura según el contrato de la app
         return path if is_safe_to_modify(path) else None
     except (OSError, RuntimeError, TypeError, ValueError):
         return None
@@ -414,6 +413,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     if not path:
         return None
     try:
+        # Forzar chequeo explícito antes de cualquier operación de I/O
         ensure_safe_to_modify(path)
         if not path.parent.exists():
             path.parent.mkdir(parents=True, exist_ok=True)
