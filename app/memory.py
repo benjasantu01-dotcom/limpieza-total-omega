@@ -272,7 +272,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if not _is_windows: return []
     now = time.time()
     if (now - _proc_cache_time) > 60:
-        # Optimización: Filtramos en origen dentro de PowerShell para minimizar E/S y carga.
         ps_query = (
             "Get-Process | Where-Object { $_.Id -ne 0 -and $_.Id -ne 4 } | "
             "Sort-Object WorkingSet -Descending | Select-Object -First 50 | "

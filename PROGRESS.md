@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **217** (43.1% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 46
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-30 | 126 | 11 | 28 | 11 | 120 |
-| 2026-10-01 | 92 | 5 | 18 | 5 | 88 |
+| 2026-09-30 | 124 | 11 | 26 | 11 | 120 |
+| 2026-10-01 | 93 | 5 | 18 | 5 | 91 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **43**
+- seguridad defensiva: **41**
 - rendimiento: **38**
-- robustez ante casos límite: **37**
+- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **23**
 - `duplicates.py`: **21**
 - `quarantine.py`: **19**
-- `settings.py`: **17**
 - `healthscore.py`: **17**
+- `memory.py`: **17**
 - `branding.py`: **16**
-- `memory.py`: **16**
 - `organizer.py`: **16**
-- `safety.py`: **15**
+- `settings.py`: **16**
 - `assistant.py`: **15**
 - `scanner.py`: **15**
+- `safety.py`: **14**
 - `startup.py`: **13**
 - `browser.py`: **12**
 - `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-01T09:01:03` **memory.py** (robustez ante casos límite): Se ha añadido un robusto manejo de errores en `top_memory_processes` ante posibles salidas malformadas de PowerShell o subprocesos interrumpidos, asegurando que el estado del módulo no se corrompa si el comando falla o devuelve contenido parcial.
 - `2026-10-01T08:44:46` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` implementando un chequeo explícito de accesibilidad y estados de error mediante un bloque `try-except` más granular dentro del loop de `os.scandir`, asegurando que archivos bloqueados o con errores de lectura (comunes en sistemas con alta concurrencia) no aborten el recorrido ni propaguen excepciones inesperadas.
 - `2026-10-01T08:44:33` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_in_use` añadiendo el manejo del error `AccessError` (WinError 5) y otros fallos de acceso común en Windows, asegurando que el intento de abrir archivos bloqueados (típicos en cachés de navegadores activos) no propague excepciones inesperadas.
 - `2026-10-01T08:43:19` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_get_source_value` para manejar objetos dinámicos mediante una verificación estricta de tipos y un bloque `try-except` más granular, evitando que el asistente falle o procese basura si el objeto de origen contiene atributos inesperados o maliciosos durante la ingesta.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-01T08:03:09` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` eliminando la creación repetitiva de listas y la ejecución innecesaria de iteraciones mediante el uso de un diccionario de tokens para acceso O(1) y una búsqueda de coincidencia temprana, evitando procesar toda la consulta si un token relevante ya fue identificado.
 - `2026-10-01T08:02:27` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando `Type Hints` faltantes en las funciones públicas y docstrings detallados que explican el "porqué" de las validaciones de seguridad en los métodos de `StartupEntry`.
 - `2026-10-01T07:53:33` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de docstrings técnicos en funciones clave y la sustitución de comentarios genéricos por anotaciones que clarifican el propósito de las validaciones, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
-- `2026-10-01T07:52:45` **safety.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos en las clases `SecurityDescriptor` y `FileMetadata`, y se refactorizó la lógica de chequeo de `_VALIDATORS` para usar un `Enum` de razones más claro, mejorando la legibilidad sin alterar el comportamiento.
