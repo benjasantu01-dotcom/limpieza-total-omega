@@ -202,6 +202,8 @@ def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], ratio: NormalizedRatio, findings: List[str]) -> None:
     """Aplica las reglas de recomendación al pipeline y captura mensajes imprimibles."""
+    if not metrics or rules is None:
+        return
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
@@ -210,7 +212,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
                 clean_msg = "".join(c for c in msg if c.isprintable()).strip()
                 if clean_msg: 
                     findings.append(clean_msg[:200])
-        except Exception:
+        except (ValueError, TypeError, AttributeError, ZeroDivisionError):
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:

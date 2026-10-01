@@ -100,7 +100,7 @@ def _is_file_locked(path: Path) -> bool:
         fd = os.open(path, os.O_RDONLY)
         os.close(fd)
         return False
-    except (PermissionError, OSError, ValueError):
+    except (PermissionError, OSError, ValueError, FileNotFoundError):
         return True
 
 
@@ -181,7 +181,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     """Agrupa una secuencia de rutas según el tamaño de archivo."""
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
-        if not p:
+        if not isinstance(p, (str, Path)):
             continue
         try:
             path_obj = Path(p).absolute()
@@ -197,7 +197,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
     """Valida que un directorio raíz sea navegable y seguro."""
     try:
-        if not item: return None
+        if not item or not isinstance(item, (str, Path)): return None
         root = Path(item).absolute()
         if root.is_dir() and _safe_path_check(root):
             return root
@@ -208,8 +208,11 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """Realiza una búsqueda profunda para catalogar archivos según su peso."""
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
-    # Stack guarda tuplas (ruta, profundidad_actual)
-    stack: List[Tuple[str, int]] = [(str(r), 0) for d in directories if (r := _resolve_and_verify_root(d))]
+    stack: List[Tuple[str, int]] = []
+    for d in directories:
+        if (r := _resolve_and_verify_root(d)):
+            stack.append((str(r), 0))
+    
     visited: set[str] = set()
 
     while stack:

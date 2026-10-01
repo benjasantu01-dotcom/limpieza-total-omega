@@ -287,9 +287,9 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
-            parts = path.relative_to(root).parts
-            if parts:
-                top_folder = root / parts[0]
+            relative = path.relative_to(root)
+            if relative.parts:
+                top_folder = root / relative.parts[0]
                 if top_folder in top_folders:
                     stats[top_folder][0] += size
                     stats[top_folder][1] += 1

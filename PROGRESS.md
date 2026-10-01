@@ -8,45 +8,48 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **205** (40.7% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-29 | 35 | 4 | 7 | 2 | 50 |
+| 2026-09-29 | 32 | 4 | 6 | 2 | 50 |
 | 2026-09-30 | 156 | 13 | 34 | 15 | 132 |
-| 2026-10-01 | 14 | 3 | 3 | 1 | 35 |
+| 2026-10-01 | 17 | 3 | 3 | 1 | 36 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **53**
 - robustez ante casos límite: **44**
-- legibilidad y documentación: **42**
+- legibilidad y documentación: **39**
+- manejo de errores y validación de entradas: **36**
 - rendimiento: **33**
-- manejo de errores y validación de entradas: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
-- `quarantine.py`: **19**
-- `healthscore.py`: **18**
+- `diskreport.py`: **21**
+- `healthscore.py`: **19**
+- `quarantine.py`: **18**
+- `duplicates.py`: **17**
 - `assistant.py`: **16**
 - `memory.py`: **16**
-- `duplicates.py`: **16**
-- `organizer.py`: **15**
-- `safety.py`: **15**
 - `settings.py`: **15**
 - `branding.py`: **15**
 - `scanner.py`: **14**
+- `safety.py`: **14**
 - `browser.py`: **14**
+- `organizer.py`: **14**
 - `startup.py`: **7**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-01T02:25:34` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del cálculo de métricas agregando validaciones preventivas contra divisiones por cero y datos de entrada malformados en `_evaluate_rules`, evitando que una regla mal implementada bloquee todo el pipeline de salud.
+- `2026-10-01T02:25:22` **duplicates.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta de tipos en `group_by_size` y `_collect_candidates` para evitar errores en tiempo de ejecución si se pasan elementos no compatibles, y se mejoró la resiliencia de `_is_file_locked` capturando `OSError` de forma más explícita para evitar abortos inesperados en archivos del sistema.
+- `2026-10-01T02:24:56` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` integrando validaciones de estado de ruta en tiempo real y manejo de errores ante cambios de acceso mientras se recorre el árbol de directorios, evitando que excepciones de acceso parcial detengan el escaneo completo.
 - `2026-10-01T02:17:05` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_es_ruta_segura_para_escritura` implementando una validación explícita de `Path.exists()` para evitar errores de resolución en rutas inexistentes y asegurando que las excepciones de `Path.resolve()` sean capturadas, previniendo fallos en la interfaz durante la generación de logos.
 - `2026-10-01T00:53:56` **settings.py** (seguridad defensiva): Se reforzó la seguridad de la persistencia agregando `os.replace` (que es atómico en sistemas POSIX y Windows si el destino existe) dentro de un bloque `try-except` más robusto, y asegurando que las rutas temporales se eliminen explícitamente mediante `finally` tanto en éxito como en fallo, evitando fugas de archivos temporales que podrían ser usados para ataques de enlace simbólico.
 - `2026-10-01T00:53:26` **scanner.py** (seguridad defensiva): Se reforzó `_is_safe_entry` en `scanner.py` para prevenir la resolución de rutas mediante `resolve()` en el contexto del escáner, evitando que enlaces simbólicos o junctions que apunten fuera de `base_root` puedan evadir la lógica de protección durante la validación inicial.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-01T00:25:56` **branding.py** (seguridad defensiva): Se ha añadido un método `_es_ruta_segura_para_escritura` que encapsula la verificación de seguridad, eliminando la duplicación de lógica de validación entre `_validate_destination` y `save_logo_svg` y asegurando que ninguna operación de escritura accidental pase por alto las restricciones de `safety.py`.
 - `2026-10-01T00:13:42` **settings.py** (robustez ante casos límite): Se añadió una verificación de integridad mediante `os.stat` en `_is_file_secure_to_read` para prevenir ataques de condiciones de carrera (TOCTOU) y detectar posibles cambios de propietario o permisos durante la ejecución del bucle, robusteciendo la carga ante manipulaciones externas inesperadas.
 - `2026-10-01T00:12:52` **safety.py** (robustez ante casos límite): Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de carrera (TOCTOU) y errores de acceso, añadiendo una validación explícita para archivos "reparse point" de nivel superior antes de realizar operaciones de metadatos, evitando así posibles excepciones bloqueantes en rutas mal formadas.
-- `2026-10-01T00:05:34` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine_file` añadiendo una comprobación explícita para evitar condiciones de carrera (TOCTOU) y posibles errores de E/S mediante un pre-chequeo del sistema de archivos antes de iniciar la copia atómica.
-- `2026-10-01T00:05:05` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la manipulación de archivos en `organizer.py` implementando una validación explícita de `is_safe_to_modify` antes de cada operación crítica de eliminación en `delete_reviewed` y se añadió un manejo de excepciones más granular para evitar que archivos bloqueados temporalmente interrumpan el flujo de procesamiento de toda la lista.
-- `2026-09-30T14:59:16` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `healthscore.py` ante valores extremos o métricas no inicializadas, asegurando que `compute_score` siempre retorne un resultado válido incluso si `SystemMetrics` llega con datos atípicos, y garantizando la integridad de las representaciones visuales.
