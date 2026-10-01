@@ -99,7 +99,8 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     if directory is None:
         return None
     try:
-        raw_path = Path(directory).resolve()
+        # Prevenir inyección de rutas con caracteres nulos
+        raw_path = Path(str(directory).split('\0')[0]).resolve()
         if not raw_path.exists() or not raw_path.is_dir():
             return None
         if is_protected_path(raw_path) or not os.access(raw_path, os.R_OK):
@@ -117,8 +118,8 @@ def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
         if any(c in entry.name for c in SUSPICIOUS_CHARS) or '\0' in entry.name:
             return True
         
-        # Uso directo de entry.path que ya es absoluto si el root lo es
-        if not entry.path.startswith(root_path_str):
+        # Validar consistencia de prefijo para evitar escape de directorio
+        if not os.path.commonpath([entry.path, root_path_str]) == root_path_str:
             return True
             
         try:
@@ -254,7 +255,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             continue
                         if entry.is_dir(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
-                            # Verificamos st_ino y st_dev por seguridad en sistemas no estándares
                             if hasattr(st, 'st_ino') and hasattr(st, 'st_dev'):
                                 inode = (st.st_dev, st.st_ino)
                                 if inode not in visited_inodes:
