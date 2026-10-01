@@ -338,22 +338,12 @@ def _interpolate_rgb(s1: RGBTuple, s2: RGBTuple, delta: float) -> RGBTuple:
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
     """
     Genera una secuencia de colores interpolados mediante una progresión de nodos.
-    
-    Aplica una interpolación lineal segmentada entre los colores especificados 
-    en 'stops' para asegurar transiciones suaves distribuidas uniformemente.
-    
-    Args:
-        steps: Número total de pasos deseados en la gradiente.
-        stops: Tupla de colores base que definen los puntos de control.
-        
-    Returns:
-        Tupla de colores HEX calculados para la rampa de color.
     """
     n = max(1, int(steps))
     if not stops or len(stops) < 2: 
         return (stops[0] if stops else C_TEXT_MUTED,) * n
     
-    rgb_stops = [_hex_to_rgb(s) for s in stops]
+    rgb_stops = tuple(_hex_to_rgb(s) for s in stops)
     tramos = len(stops) - 1
     paso = float(n - 1) if n > 1 else 1.0
     

@@ -112,19 +112,13 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
     """
     Evalúa si un `os.DirEntry` debe omitirse del análisis.
-    
-    Verifica:
-    1. Caracteres sospechosos (RTL, nulos) que podrían ofuscar extensiones.
-    2. Saltos fuera del directorio raíz (prevención de fugas).
-    3. Symlinks y puntos de reparse (evita recursión infinita y duplicidad).
-    4. Rutas protegidas declaradas en `safety.py`.
     """
     try:
         if any(c in entry.name for c in SUSPICIOUS_CHARS) or '\0' in entry.name:
             return True
         
-        real_entry_path = str(Path(entry.path).resolve())
-        if not real_entry_path.startswith(root_path_str):
+        # Uso directo de entry.path que ya es absoluto si el root lo es
+        if not entry.path.startswith(root_path_str):
             return True
             
         try:
@@ -242,14 +236,13 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador recursivo de archivos (yields Path, size).
-    Usa un conjunto de inodos (`visited_inodes`) para detectar y evitar ciclos 
-    o procesamiento redundante en sistemas de archivos con enlaces simbólicos.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
     root_path_str = str(root_path)
     visited_inodes: set[Inode] = set()
     stack: List[str] = [root_path_str]
+    
     while stack:
         current_dir = stack.pop()
         try:
@@ -294,18 +287,14 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     if not root: return []
     
     stats: Dict[Path, List[int]] = defaultdict(lambda: [0, 0])
-    try:
-        top_folders = {root / e.name: root / e.name for e in os.scandir(root) if e.is_dir()}
-    except (OSError, PermissionError): return []
     
     for path, size in walk_files(root, skip_protected):
         try:
             relative = path.relative_to(root)
             if relative.parts:
                 top_folder = root / relative.parts[0]
-                if top_folder in top_folders:
-                    stats[top_folder][0] += size
-                    stats[top_folder][1] += 1
+                stats[top_folder][0] += size
+                stats[top_folder][1] += 1
         except (ValueError, OSError): continue
 
     results = [FolderUsage(p, s[0], s[1]) for p, s in stats.items()]
@@ -323,8 +312,6 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Recorre el sistema de archivos de forma exhaustiva y consolida métricas globales.
-    Usa un heap de min-valor (`top_heap`) para mantener los N archivos más grandes 
-    con una complejidad O(N log k) durante el recorrido.
     """
     total_bytes: int = 0
     total_files: int = 0
