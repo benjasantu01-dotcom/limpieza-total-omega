@@ -1174,3 +1174,12 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-01T08:37:42` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `entries_from_folders` reemplazando la iteración secuencial de archivos por un filtrado proactivo que evita crear objetos `StartupEntry` innecesarios antes de validar la existencia o el estado del binario, reduciendo así la carga sobre la caché de I/O.
 - `2026-10-01T08:37:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-01T08:37:42` Corrida terminada. Total usado hoy: 204.
+- `2026-10-01T08:42:35` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-10-01T08:43:19` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_get_source_value` para manejar objetos dinámicos mediante una verificación estricta de tipos y un bloque `try-except` más granular, evitando que el asistente falle o procese basura si el objeto de origen contiene atributos inesperados o maliciosos durante la ingesta.
+- `2026-10-01T08:43:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-01T08:44:00` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-10-01T08:44:00` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-01T08:44:33` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_file_in_use` añadiendo el manejo del error `AccessError` (WinError 5) y otros fallos de acceso común en Windows, asegurando que el intento de abrir archivos bloqueados (típicos en cachés de navegadores activos) no propague excepciones inesperadas.
+- `2026-10-01T08:44:46` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` implementando un chequeo explícito de accesibilidad y estados de error mediante un bloque `try-except` más granular dentro del loop de `os.scandir`, asegurando que archivos bloqueados o con errores de lectura (comunes en sistemas con alta concurrencia) no aborten el recorrido ni propaguen excepciones inesperadas.
+- `2026-10-01T08:44:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-01T08:44:46` Corrida terminada. Total usado hoy: 208.

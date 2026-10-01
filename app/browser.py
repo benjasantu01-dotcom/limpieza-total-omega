@@ -184,10 +184,12 @@ def _is_file_in_use(path_obj: Path) -> bool:
     if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
         return True
     try:
+        # Se intenta abrir solo lectura con modo exclusivo
         fd: int = os.open(str(path_obj), os.O_RDONLY | os.O_EXCL)
         os.close(fd)
         return False
-    except (OSError, PermissionError, FileNotFoundError):
+    except (OSError, PermissionError, FileNotFoundError, InterruptedError):
+        # Captura errores comunes de acceso, incluyendo bloqueo por el SO
         return True
 
 def _process_file_entry(

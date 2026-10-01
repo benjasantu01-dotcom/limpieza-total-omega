@@ -455,13 +455,13 @@ def _get_source_value(source: Any, key: str) -> Any:
     if not _is_safe_key(key): return None
     try:
         if isinstance(source, dict):
-            val = source.get(key)
-        else:
-            if key.startswith("__") or hasattr(type(source), key) and callable(getattr(source, key)):
-                return None
-            val = getattr(source, key, None)
-        
-        return None if isinstance(val, (type, type(None))) else val
+            return source.get(key)
+        # Acceso a objetos generales
+        val = getattr(source, key, None)
+        # Impedimos acceder a métodos o atributos de clase/tipo
+        if callable(val) or isinstance(val, type):
+            return None
+        return val
     except Exception:
         return None
 

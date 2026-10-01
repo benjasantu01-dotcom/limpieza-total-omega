@@ -253,6 +253,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     try:
                         if skip_protected and _is_excluded_path(entry, root_path_str):
                             continue
+                        
+                        # Chequeo de acceso antes de procesar
+                        if not os.access(entry.path, os.R_OK):
+                            continue
+
                         if entry.is_dir(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             if hasattr(st, 'st_ino') and hasattr(st, 'st_dev'):
@@ -265,8 +270,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             if st.st_size >= 0: yield Path(entry.path), st.st_size
-                    except (OSError, PermissionError, FileNotFoundError, AttributeError): continue
-        except (PermissionError, OSError): continue
+                    except (OSError, PermissionError, FileNotFoundError, AttributeError): 
+                        continue
+        except (PermissionError, OSError): 
+            continue
 
 
 def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
