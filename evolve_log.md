@@ -746,3 +746,43 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-01T04:08:07` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 579): unterminated string literal (detected at line 579)
 - `2026-10-01T04:08:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-01T04:08:07` Corrida terminada. Total usado hoy: 100.
+- `2026-10-01T04:16:29` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-10-01T04:17:09` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha añadido validación de límites numéricos y detección de errores de representación en `draw_ring` para prevenir desbordamientos de geometría (overflow) al procesar valores extremos o inesperados, manteniendo la estabilidad del renderizado gráfico.
+- `2026-10-01T04:17:35` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-01T04:18:04` Tests FALLARON:
+```
+path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_summarize_includes_the_sa0')
+
+    def test_summarize_includes_the_safety_note(tmp_path):
+        caches = [browser.BrowserCache("Chrome", tmp_path / "Cache", 1024 * 1024)]
+>       texto = "\n".join(browser.summarize(caches))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_modules.py:800: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/browser.py:333: in summarize
+    total_mb = round(total_cache_bytes(current_caches) / BYTES_TO_MB, 2)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/browser.py:325: in total_cache_bytes
+    return sum(c.bytes_found for c in caches) if caches else 0
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = <list_iterator object at 0x7f16ed9309a0>
+
+>   return sum(c.bytes_found for c in caches) if caches else 0
+               ^^^^^^^^^^^^^
+E   AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+
+app/browser.py:325: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_total_cache_bytes_sums_detected_caches - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+2 failed, 297 passed in 1.14s
+
+```
+- `2026-10-01T04:18:04` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `_is_file_in_use` para manejar correctamente archivos con permisos denegados o inexistentes (evitando `OSError` inesperado) y se ha optimizado la lógica de `_is_system_hidden` para realizar una validación de seguridad más estricta antes de invocar la API de Windows, reduciendo llamadas innecesarias al sistema operativo en rutas inválidas.
+- `2026-10-01T04:18:30` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de existencia de `st.st_ino` en `walk_files` y `_is_excluded_path` para prevenir errores en sistemas de archivos (como algunos drivers de red o sistemas virtuales) que no soportan inodos y retornan valores nulos, mejorando la robustez ante casos límite de acceso a disco.
+- `2026-10-01T04:18:42` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `_is_file_locked` para manejar situaciones donde el archivo desaparece o cambia de permisos durante la ejecución (Race Conditions), evitando que el programa se cuelgue al intentar operar sobre descriptores inválidos.
+- `2026-10-01T04:18:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-01T04:18:42` Corrida terminada. Total usado hoy: 104.

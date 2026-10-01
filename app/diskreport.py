@@ -124,9 +124,10 @@ def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
         try:
             st = entry.stat(follow_symlinks=False)
             # 0x0400 es el atributo FILE_ATTRIBUTE_REPARSE_POINT en Windows
-            if (st.st_file_attributes & 0x0400) if os.name == 'nt' else entry.is_symlink():
+            is_reparse = (st.st_file_attributes & 0x0400) if os.name == 'nt' else entry.is_symlink()
+            if is_reparse:
                 return True
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, AttributeError):
             return True
             
         return is_protected_path(Path(entry.path))
@@ -253,14 +254,18 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             continue
                         if entry.is_dir(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
-                            inode = (st.st_dev, st.st_ino)
-                            if inode not in visited_inodes:
-                                visited_inodes.add(inode)
+                            # Verificamos st_ino y st_dev por seguridad en sistemas no estándares
+                            if hasattr(st, 'st_ino') and hasattr(st, 'st_dev'):
+                                inode = (st.st_dev, st.st_ino)
+                                if inode not in visited_inodes:
+                                    visited_inodes.add(inode)
+                                    stack.append(entry.path)
+                            else:
                                 stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             if st.st_size >= 0: yield Path(entry.path), st.st_size
-                    except (OSError, PermissionError, FileNotFoundError): continue
+                    except (OSError, PermissionError, FileNotFoundError, AttributeError): continue
         except (PermissionError, OSError): continue
 
 

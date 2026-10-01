@@ -93,8 +93,8 @@ class DuplicateGroup:
 
 
 def _is_file_locked(path: Path) -> bool:
-    """Determina si un archivo está bloqueado intentando abrirlo en modo lectura."""
-    if not is_safe_to_modify(path):
+    """Determina si un archivo está bloqueado o inaccesible intentando abrirlo."""
+    if not is_safe_to_modify(path) or not path.exists():
         return True
     try:
         fd = os.open(path, os.O_RDONLY)

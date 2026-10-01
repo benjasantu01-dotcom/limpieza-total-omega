@@ -543,6 +543,7 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         if not math.isfinite(val) or not math.isfinite(cx) or not math.isfinite(cy): val = 0.0
         val = max(0.0, min(100.0, val))
         diam = max(20, min(2048, int(size)))
+        # Evitar grosores negativos o que excedan el radio para prevenir errores de renderizado
         thick = max(2, min(int(thickness), (diam // 2) - 1))
         borde: float = float(thick) / 2.0
         caja = (cx + borde, cy + borde, cx + diam - borde, cy + diam - borde)
