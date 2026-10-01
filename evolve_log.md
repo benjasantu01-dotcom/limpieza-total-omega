@@ -730,3 +730,4 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-10-01T15:52:35` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-01T16:02:56` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-01T16:13:09` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-10-01T16:23:24` Presupuesto diario agotado (350 usados). Corte hasta mañana.
