@@ -190,12 +190,12 @@ class _Validators:
 
     @staticmethod
     def _check_path_safety(p: Path) -> bool:
-        """Helper interno para validar propiedades básicas de seguridad de una ruta."""
+        """Helper para validar que la ruta sea absoluta y supere los chequeos de `safety.py`."""
         return p.is_absolute() and _Validators._run_safety_checks(str(p))
 
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
-        """Verifica que el string de la ruta sea seguro para ser persistido."""
+        """Verifica restricciones de longitud, caracteres prohibidos y seguridad de ruta para persistencia."""
         if not path_str or len(path_str) > 2048 or any(c in path_str for c in ("\0", "^", "\033")): return False
         if path_str.startswith(("\\\\", "//")): return False
         try:
@@ -205,7 +205,7 @@ class _Validators:
 
     @staticmethod
     def bool(key: ConfigKey, val: Any) -> Optional[bool]:
-        """Normaliza entradas de usuario a booleanos mediante un conjunto de valores permitidos."""
+        """Normaliza tipos booleanos permitiendo strings representativos (ej: 'si', 'true')."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
@@ -216,7 +216,7 @@ class _Validators:
     @staticmethod
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
-        """Convierte y acota valores numéricos según los rangos definidos en _NUMERIC_LIMITS."""
+        """Convierte a entero y aplica los límites definidos en _NUMERIC_LIMITS para evitar desbordes."""
         if val is None: return None
         parsed_value = int(val)
         limit = _NUMERIC_LIMITS.get(key)
@@ -225,7 +225,7 @@ class _Validators:
 
     @staticmethod
     def path(key: ConfigKey, val: Any) -> Optional[str]:
-        """Valida y normaliza rutas para asegurar que residan en directorios seguros."""
+        """Valida que la ruta sea un string seguro y pase los chequeos de sistema."""
         if val == "": return ""
         if not isinstance(val, str): return None
         path_string = val.strip()
@@ -234,7 +234,7 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
-        """Comprueba si el string pertenece a un conjunto predefinido de opciones válidas."""
+        """Comprueba si el string está dentro del conjunto permitido (ej: temas, acentos)."""
         val = text.lower()
         allowed = _ENUM_VALS.get(key)
         if allowed: return val if val in allowed else None
@@ -243,7 +243,7 @@ class _Validators:
     @staticmethod
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
-        """Sanitiza strings generales eliminando caracteres de control y validando longitudes."""
+        """Sanitiza strings, bloqueando caracteres de control y secuencias de escape (ej: '..')."""
         if val is None: return None
         text = str(val).strip()
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
@@ -292,7 +292,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
-    """Valida y limpia una estructura de datos externa contra el esquema oficial, retornando un nuevo dict."""
+    """Valida y limpia una estructura de datos externa contra el esquema oficial."""
     if not _is_dict(raw_values): 
         return dict(DEFAULTS)
     
@@ -307,7 +307,7 @@ def validate(raw_values: Any) -> AppSettings:
     return config # type: ignore
 
 def _is_file_secure_to_read(ruta: Path) -> bool:
-    """Garantiza que el archivo sea un archivo regular, sin enlaces y con permisos restringidos."""
+    """Garantiza que el archivo sea regular, sin enlaces y con permisos restringidos de lectura."""
     try:
         if not ruta.is_file(): return False
         st = ruta.stat()
@@ -373,7 +373,12 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
         return dict(DEFAULTS)
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
-    """Persistencia atómica: guarda el archivo usando un ciclo temp -> backup -> reemplazar."""
+    """
+    Persistencia atómica.
+    Utiliza un archivo temporal, luego un respaldo (.bak) y finalmente el reemplazo
+    atómico para asegurar que el archivo de configuración nunca quede corrupto
+    durante una interrupción.
+    """
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
     cleaned_settings = _coerce_and_verify(validate(values))

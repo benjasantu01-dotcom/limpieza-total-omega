@@ -497,7 +497,7 @@ def _generate_context_cached(ctx: SystemContext) -> str:
 
 def context_as_text(context: SystemContext) -> str:
     """Serializa el contexto a un formato textual seguro para el prompt del asistente."""
-    return _generate_safe_context(context) if not context.is_empty else ""
+    return _generate_context_cached(context) if not context.is_empty else ""
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     """Formatea métricas numéricas convirtiéndolas a strings legibles."""
@@ -511,7 +511,7 @@ def explain_area(area: Any) -> str:
         return "No tengo una explicación para esa área."
     return _validate_response_length(_EXPLANATION_MAP.get(area.strip().lower(), "No tengo una explicación para esa área."))
 
-@lru_cache(maxsize=32)
+@lru_cache(maxsize=128)
 def _format_problem_message(problems: tuple[str, ...], score: int | str) -> str:
     """Crea una oración descriptiva basada en los problemas de salud detectados."""
     clean_score = str(score)
