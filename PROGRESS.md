@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **214** (42.5% de aceptación)
-- Rechazadas por tests: 21
+- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-29 | 47 | 6 | 8 | 3 | 70 |
+| 2026-09-29 | 47 | 6 | 8 | 3 | 66 |
 | 2026-09-30 | 156 | 13 | 34 | 15 | 132 |
-| 2026-10-01 | 11 | 2 | 3 | 0 | 4 |
+| 2026-10-01 | 13 | 3 | 3 | 0 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **51**
+- seguridad defensiva: **53**
 - legibilidad y documentación: **47**
 - robustez ante casos límite: **44**
 - manejo de errores y validación de entradas: **39**
@@ -38,15 +38,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **17**
 - `organizer.py`: **16**
 - `safety.py`: **16**
-- `settings.py`: **15**
+- `settings.py`: **16**
 - `branding.py`: **15**
 - `browser.py`: **15**
-- `scanner.py`: **13**
+- `scanner.py`: **14**
 - `startup.py`: **7**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-01T00:53:56` **settings.py** (seguridad defensiva): Se reforzó la seguridad de la persistencia agregando `os.replace` (que es atómico en sistemas POSIX y Windows si el destino existe) dentro de un bloque `try-except` más robusto, y asegurando que las rutas temporales se eliminen explícitamente mediante `finally` tanto en éxito como en fallo, evitando fugas de archivos temporales que podrían ser usados para ataques de enlace simbólico.
+- `2026-10-01T00:53:26` **scanner.py** (seguridad defensiva): Se reforzó `_is_safe_entry` en `scanner.py` para prevenir la resolución de rutas mediante `resolve()` en el contexto del escáner, evitando que enlaces simbólicos o junctions que apunten fuera de `base_root` puedan evadir la lógica de protección durante la validación inicial.
 - `2026-10-01T00:43:44` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `purge_all` implementando una validación de "sandbox-lock" que asegura que solo se eliminen archivos cuyas rutas coincidan exactamente con la base de cuarentena, evitando posibles ataques de recorrido de directorios o manipulación de inodos durante la iteración masiva de archivos.
 - `2026-10-01T00:43:02` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `delete_reviewed` y `stage_for_review` añadiendo una validación explícita mediante `is_protected_path` antes de realizar operaciones de borrado o movimiento, asegurando que el directorio de revisión no haya sido alterado para apuntar a rutas críticas del sistema (como `C:\Windows` o `System32`), evitando así posibles vulnerabilidades de inyección de rutas.
 - `2026-10-01T00:33:24` **healthscore.py** (seguridad defensiva): Se ha implementado un filtrado de caracteres no imprimibles y una limitación de longitud estricta en los mensajes de recomendación dentro de `_evaluate_rules`, evitando que datos malformados o inyectados en las métricas alcancen la interfaz de usuario o comprometan la integridad de los informes.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-01T00:05:05` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la manipulación de archivos en `organizer.py` implementando una validación explícita de `is_safe_to_modify` antes de cada operación crítica de eliminación en `delete_reviewed` y se añadió un manejo de excepciones más granular para evitar que archivos bloqueados temporalmente interrumpan el flujo de procesamiento de toda la lista.
 - `2026-09-30T14:59:16` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `healthscore.py` ante valores extremos o métricas no inicializadas, asegurando que `compute_score` siempre retorne un resultado válido incluso si `SystemMetrics` llega con datos atípicos, y garantizando la integridad de las representaciones visuales.
 - `2026-09-30T14:58:28` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar ciclos infinitos en el sistema de archivos (reparse points/links cíclicos) dentro de `_collect_candidates`, validando la ruta real con `path.resolve()` antes de añadirla a la pila de exploración.
-- `2026-09-30T14:50:07` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `walk_files` y `_collect_summary_data` frente a archivos que desaparecen durante la iteración (concurrencia) y errores de acceso inesperados, envolviendo el `st_size` y la lógica de contabilidad en bloques `try-except` más granulares para evitar que un error puntual en un archivo único interrumpa un escaneo completo.
-- `2026-09-30T14:49:08` **branding.py** (robustez ante casos límite): Se reforzó la robustez de las funciones de entrada y renderizado añadiendo validaciones de rango (nan/inf) y tipos en los parámetros geométricos y de configuración, evitando fallos silenciosos o excepciones inesperadas al procesar valores corrompidos.

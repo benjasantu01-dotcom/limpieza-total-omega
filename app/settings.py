@@ -371,6 +371,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     ruta = settings_path(custom_base)
     cleaned_settings = _coerce_and_verify(validate(values))
     if ruta.exists() and load(custom_base) == cleaned_settings: return ruta
+    
     parent = ruta.parent
     try:
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
@@ -380,6 +381,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if not _Validators._is_safe_path(str(parent)): return None
         if ruta.exists(): ensure_safe_to_modify(ruta)
     except (TypeError, ValueError, OSError, PermissionError): return None
+    
     temp_path = ruta.with_suffix(".tmp")
     bak_path = ruta.with_suffix(".bak")
     try:
@@ -391,11 +393,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if ruta.exists():
             ensure_safe_to_modify(bak_path)
             os.replace(ruta, bak_path)
-        try:
-            os.replace(temp_path, ruta)
-        except OSError:
-            if bak_path.exists(): os.replace(bak_path, ruta)
-            raise
+        os.replace(temp_path, ruta)
         return ruta
     except (OSError, IOError, PermissionError): return None
     finally:

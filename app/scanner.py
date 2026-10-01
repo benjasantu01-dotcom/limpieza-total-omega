@@ -151,14 +151,15 @@ class Scanner:
         self.results: List[Suspicion] = []
         self.seen: set[str] = set()
         self.safe_cache: set[str] = set()
-        self.base_root: Path = base_root.resolve()
-        self.base_root_str: str = str(self.base_root).lower()
+        # Se guarda el path absoluto original sin resolver enlaces para prevenir escape de root
+        self.base_root_str: str = str(base_root.absolute()).lower()
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica recursivamente si la ruta está contenida en el árbol base."""
         try:
-            return str(Path(entry_path).resolve()).lower().startswith(self.base_root_str)
+            # Comparamos rutas absolutas de forma directa
+            return str(Path(entry_path).absolute()).lower().startswith(self.base_root_str)
         except (OSError, RuntimeError):
             return False
 
@@ -176,13 +177,14 @@ class Scanner:
             return False
         if not _is_valid_path_structure(entry.path) or self._has_invalid_name(entry.name):
             return False
-        if not self._is_inside_base_root(entry.path):
-            return False
         
         try:
             if self._is_reparse_point(entry) or entry.is_symlink():
                 return False
             
+            if not self._is_inside_base_root(entry.path):
+                return False
+                
             if entry.path in self.safe_cache:
                 return True
             

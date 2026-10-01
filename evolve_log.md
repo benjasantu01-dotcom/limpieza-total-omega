@@ -409,3 +409,34 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-10-01T00:43:50` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-01T00:43:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-01T00:43:50` Corrida terminada. Total usado hoy: 20.
+- `2026-10-01T00:52:14` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-10-01T00:52:58` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-10-01T00:53:26` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó `_is_safe_entry` en `scanner.py` para prevenir la resolución de rutas mediante `resolve()` en el contexto del escáner, evitando que enlaces simbólicos o junctions que apunten fuera de `base_root` puedan evadir la lógica de protección durante la validación inicial.
+- `2026-10-01T00:53:56` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad de la persistencia agregando `os.replace` (que es atómico en sistemas POSIX y Windows si el destino existe) dentro de un bloque `try-except` más robusto, y asegurando que las rutas temporales se eliminen explícitamente mediante `finally` tanto en éxito como en fallo, evitando fugas de archivos temporales que podrían ser usados para ataques de enlace simbólico.
+- `2026-10-01T00:54:10` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 0.93s
+
+```
+- `2026-10-01T00:54:10` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva de `startup.py` al implementar la validación de integridad antes de la ejecución de comandos PowerShell, asegurando que solo se procesen claves de registro estrictamente predefinidas y evitando la inyección de comandos mediante el uso de listas blancas (`REGISTRY_RUN_KEYS`) y validación explícita de rutas (`Path.resolve`) antes de cualquier acceso al disco, evitando además seguir enlaces simbólicos malintencionados.
+- `2026-10-01T00:54:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-01T00:54:10` Corrida terminada. Total usado hoy: 24.
