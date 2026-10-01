@@ -119,9 +119,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if stats:
         try:
             mtime = getattr(stats, "st_mtime", 0.0)
-            if isinstance(mtime, (int, float)) and mtime > 0 and (now_ts - float(mtime)) < (LIMITS.recent_hours * 3600):
-                return Suspicion(path, f"Ejecutable reciente detectado (<{LIMITS.recent_hours}h)", "info")
-        except Exception:
+            if isinstance(mtime, (int, float)) and mtime > 0:
+                if (now_ts - float(mtime)) < (LIMITS.recent_hours * 3600):
+                    return Suspicion(path, f"Ejecutable reciente detectado (<{LIMITS.recent_hours}h)", "info")
+        except (AttributeError, TypeError, ValueError):
             return None
     return None
 
@@ -235,17 +236,15 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta todas las funciones heurísticas registradas sobre el archivo actual."""
+        if not path or not entry:
+            return
         for check_fn in ALL_CHECKS:
             try:
-                if not callable(check_fn):
-                    continue
                 finding = check_fn(path, entry, self.now_ts)
                 if finding is not None:
                     self.results.append(finding)
-            except (AttributeError, TypeError, ValueError, OSError) as e:
-                logger.warning(f"Error lógico en heurística {check_fn.__name__} para {path}: {e}")
             except Exception as e:
-                logger.debug(f"Error inesperado en heurística {check_fn.__name__} para {path}: {e}")
+                logger.warning(f"Error en heurística {check_fn.__name__} para {path}: {e}")
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> List[Suspicion]:
     """Realiza un análisis estático de un archivo puntual sin recursión."""

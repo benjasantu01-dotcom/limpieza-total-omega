@@ -414,11 +414,19 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineIte
         with open(m_path, "r", encoding="utf-8") as f:
             try:
                 data = json.load(f)
-            except json.JSONDecodeError:
+            except (json.JSONDecodeError, TypeError, ValueError):
                 return []
+        
         if not isinstance(data, list):
             return []
-        return [item for d in data if (item := QuarantineItem.from_dict(d)) is not None]
+            
+        items: List[QuarantineItem] = []
+        for d in data:
+            if not isinstance(d, dict): continue
+            item = QuarantineItem.from_dict(d)
+            if item:
+                items.append(item)
+        return items
     except (OSError, PermissionError, UnsafePathError):
         return []
 

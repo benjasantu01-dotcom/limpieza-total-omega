@@ -479,10 +479,13 @@ def _is_readonly(path_str: str) -> bool:
 
 def _validate_access_permissions(path: Path) -> None:
     """Valida los permisos de lectura y escritura del usuario actual sobre el archivo."""
-    if not os.access(path, os.R_OK):
-        raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED)
-    if not os.access(path, os.W_OK):
-        raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
+    try:
+        if not os.access(path, os.R_OK):
+            raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED)
+        if not os.access(path, os.W_OK):
+            raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
+    except PermissionError:
+        raise UnsafePathError("Acceso al archivo denegado por el sistema.", SafetyValidationErrorCode.ACCESS_DENIED)
 
 @lru_cache(maxsize=4096)
 def normalize(path: PathLike) -> Path:
@@ -720,21 +723,27 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             raise UnsafePathError("Modificación denegada: hard link hacia sistema.", SafetyValidationErrorCode.HARD_LINK_DETECTED)
         if os.name == 'nt': 
             _validate_ntfs_reparse_redirection(p)
-            if not os.access(p.parent, os.W_OK):
+            try:
+                if not os.access(p.parent, os.W_OK):
                      raise UnsafePathError("Directorio contenedor marcado como solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY)
+            except OSError:
+                pass
         _check_file_integrity(p, initial_stat)
     else:
-        parent = p.parent
-        if parent.exists():
-            if not os.access(parent, os.W_OK):
-                 raise UnsafePathError("Directorio contenedor no tiene permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
-            if is_protected_path(str(parent)):
-                raise UnsafePathError("Creación en directorio restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
-            if os.name == 'nt' and _is_file_locked_by_other_process(str(parent)):
-                raise UnsafePathError("Directorio contenedor bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE)
-            for p_seg in parent.parents:
-                if _is_directory_junction(str(p_seg)):
-                    raise UnsafePathError("Ruta base contiene punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+        try:
+            parent = p.parent
+            if parent.exists():
+                if not os.access(parent, os.W_OK):
+                     raise UnsafePathError("Directorio contenedor no tiene permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
+                if is_protected_path(str(parent)):
+                    raise UnsafePathError("Creación en directorio restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
+                if os.name == 'nt' and _is_file_locked_by_other_process(str(parent)):
+                    raise UnsafePathError("Directorio contenedor bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE)
+                for p_seg in parent.parents:
+                    if _is_directory_junction(str(p_seg)):
+                        raise UnsafePathError("Ruta base contiene punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+        except (OSError, RuntimeError):
+            pass
     return p
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
