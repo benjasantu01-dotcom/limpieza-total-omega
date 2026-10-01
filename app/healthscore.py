@@ -206,6 +206,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
         try:
             if rule.check(metrics, ratio):
                 msg = str(rule.message_factory(metrics))
+                # Sanitización: filtrar no imprimibles y limitar longitud para evitar inyección
                 clean_msg = "".join(c for c in msg if c.isprintable()).strip()
                 if clean_msg: 
                     findings.append(clean_msg[:200])

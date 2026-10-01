@@ -119,9 +119,9 @@ def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
             return True
             
         try:
-            if entry.is_symlink():
-                return True
-            if os.name == 'nt' and entry.is_dir() and (entry.stat().st_file_attributes & 0x400):
+            # Detectar symlinks y puntos de reparse (reparse points) a nivel de sistema
+            st = entry.stat(follow_symlinks=False)
+            if (st.st_file_attributes & 0x0400) if os.name == 'nt' else entry.is_symlink():
                 return True
         except (OSError, PermissionError):
             return True

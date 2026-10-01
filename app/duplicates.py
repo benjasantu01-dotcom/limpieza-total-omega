@@ -45,6 +45,7 @@ PARTIAL_READ_BYTES: int = 64 * 1024
 FILE_ATTRIBUTE_REPARSE_POINT: int = 0x400
 FILE_ATTRIBUTE_HIDDEN: int = 0x2
 FILE_ATTRIBUTE_SYSTEM: int = 0x4
+MAX_RECURSION_DEPTH: int = 100
 
 
 def is_junction(path: Path) -> bool:
@@ -207,11 +208,15 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """Realiza una búsqueda profunda para catalogar archivos según su peso."""
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
-    stack: List[str] = [str(r) for d in directories if (r := _resolve_and_verify_root(d))]
+    # Stack guarda tuplas (ruta, profundidad_actual)
+    stack: List[Tuple[str, int]] = [(str(r), 0) for d in directories if (r := _resolve_and_verify_root(d))]
     visited: set[str] = set()
 
     while stack:
-        current_dir = stack.pop()
+        current_dir, depth = stack.pop()
+        if depth > MAX_RECURSION_DEPTH:
+            continue
+            
         try:
             real_path = str(Path(current_dir).resolve())
             if real_path in visited:
@@ -224,7 +229,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                         if entry.is_dir(follow_symlinks=False):
                             p_entry = Path(entry.path)
                             if _safe_path_check(p_entry) and not is_junction(p_entry):
-                                stack.append(entry.path)
+                                stack.append((entry.path, depth + 1))
                             continue
                         
                         if not entry.is_file(follow_symlinks=False):
