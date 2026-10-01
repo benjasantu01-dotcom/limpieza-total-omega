@@ -390,8 +390,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         # Verificación de seguridad de escritura sobre el directorio de destino
+        if _Validators._is_reparse_point(parent) or not os.access(parent, os.W_OK): return None
         if not is_safe_to_modify(str(ruta)): return None
-        if not os.access(parent, os.W_OK) or _Validators._is_reparse_point(parent): return None
         if not _Validators._is_safe_path(str(parent)): return None
         if ruta.exists(): ensure_safe_to_modify(ruta)
     except (TypeError, ValueError, OSError, PermissionError): return None

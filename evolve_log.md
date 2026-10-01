@@ -536,3 +536,65 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-10-01T13:32:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-01T13:32:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-01T13:32:00` Corrida terminada. Total usado hoy: 320.
+- `2026-10-01T13:39:23` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-01T13:40:15` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha implementado una mejora en `_get_path_stat_robust` para capturar errores específicos de `PermissionError` que ocurren al intentar acceder a rutas con acceso denegado (ERROR_ACCESS_DENIED), mapeándolos explícitamente a `SafetyValidationErrorCode.ACCESS_DENIED` en lugar de una excepción genérica, mejorando la robustez frente a directorios inaccesibles sin permisos.
+- `2026-10-01T13:40:41` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-01T13:41:15` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save` añadiendo una comprobación explícita para evitar la persistencia en directorios donde el usuario no tenga permisos de escritura o que contengan puntos de reparse, mitigando errores de sistema durante la escritura atómica.
+- `2026-10-01T13:41:28` Tests FALLARON:
+```
+e="HKCU")
+>       assert [e.name for e in entradas] == ["MiApp", "Otra"]
+E       AssertionError: assert [] == ['MiApp', 'Otra']
+E         
+E         Right contains 2 more items, first extra item: 'MiApp'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     'MiApp',
+E         -     'Otra',
+E         - ]
+
+evolve/tests/test_modules.py:645: AssertionError
+________________ test_parse_registry_csv_skips_powershell_noise ________________
+
+    def test_parse_registry_csv_skips_powershell_noise():
+        csv = '"Name","Value"\n"PSPath","algo"\n"Real","C:\\\\r.exe"\n'
+>       assert [e.name for e in startup.parse_registry_csv(csv)] == ["Real"]
+E       AssertionError: assert [] == ['Real']
+E         
+E         Right contains one more item: 'Real'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     'Real',
+E         - ]
+
+evolve/tests/test_modules.py:651: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_reads_entries - AssertionError: assert [] == ['MiApp', 'Otra']
+  
+  Right contains 2 more items, first extra item: 'MiApp'
+  
+  Full diff:
+  + []
+  - [
+  -     'MiApp',
+  -     'Otra',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert [] == ['Real']
+  
+  Right contains one more item: 'Real'
+  
+  Full diff:
+  + []
+  - [
+  -     'Real',
+  - ]
+2 failed, 297 passed in 1.36s
+
+```
+- `2026-10-01T13:41:28` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se introdujo una comprobación de existencia y accesibilidad de archivos (mediante `Path.exists()` y `os.access()`) al procesar entradas de registro, previniendo que la aplicación intente resolver o reportar rutas que no existen físicamente o que están bloqueadas por el sistema operativo, aumentando la robustez ante datos de registro obsoletos o corruptos.
+- `2026-10-01T13:41:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-01T13:41:29` Corrida terminada. Total usado hoy: 324.

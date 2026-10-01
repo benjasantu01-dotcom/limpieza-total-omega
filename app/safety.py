@@ -458,7 +458,9 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
         raise UnsafePathError(f"Punto de reparse detectado durante acceso estático: {path.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
     try:
         return path.stat()
-    except (PermissionError, OSError) as e:
+    except PermissionError:
+        raise UnsafePathError(f"Acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+    except OSError as e:
         if getattr(e, 'winerror', 0) == 32:
              raise UnsafePathError(f"Archivo bloqueado por otro proceso: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
         raise UnsafePathError(f"Acceso fallido: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
