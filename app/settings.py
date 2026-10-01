@@ -394,6 +394,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             os.fsync(f.fileno())
         if not _is_file_secure_to_read(temp_path): raise PermissionError("Temp file invalid")
         if ruta.exists():
+            if not is_safe_to_modify(str(bak_path)): raise PermissionError("Backup path insecure")
             ensure_safe_to_modify(bak_path)
             os.replace(ruta, bak_path)
         os.replace(temp_path, ruta)

@@ -162,14 +162,16 @@ class Scanner:
         self.results: List[Suspicion] = []
         self.seen: set[str] = set()
         self.safe_cache: set[str] = set()
-        # Se normaliza a string para comparación eficiente durante la recursión
-        self.base_root_str: str = str(base_root.absolute()).lower()
+        # Se guarda el Path resuelto para asegurar comparaciones canónicas
+        self.base_root: Path = base_root.resolve()
+        self.base_root_str: str = str(self.base_root).lower()
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica que la ruta visitada no escape del directorio raíz definido (sandbox)."""
         try:
-            return str(Path(entry_path).absolute()).lower().startswith(self.base_root_str)
+            target = Path(entry_path).resolve()
+            return str(target).lower().startswith(self.base_root_str)
         except (OSError, RuntimeError):
             return False
 

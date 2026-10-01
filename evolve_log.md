@@ -825,3 +825,12 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-10-01T05:11:07` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha añadido una validación de `st_nlink` (contador de enlaces físicos) en `_validate_integrity` para asegurar que el archivo no esté siendo referenciado por múltiples entradas en el sistema de archivos (hard links), mitigando ataques de suplantación de archivos mientras están en cuarentena.
 - `2026-10-01T05:11:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-01T05:11:07` Corrida terminada. Total usado hoy: 124.
+- `2026-10-01T05:17:39` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-10-01T05:18:01` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-10-01T05:18:47` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-10-01T05:18:47` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-01T05:18:51` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-01T05:19:28` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_safe_entry` y `scan_directory` validando que las rutas normalizadas (`resolve()`) sigan contenidas en el `base_root` original, previniendo así ataques de "path traversal" o saltos fuera del sandbox mediante rutas relativas complejas.
+- `2026-10-01T05:19:45` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en la persistencia mediante la implementación de una validación de integridad antes del reemplazo del archivo (`os.replace`) y una comprobación explícita de `is_safe_to_modify` para el archivo de respaldo (`bak_path`), mitigando riesgos de manipulación de rutas en operaciones críticas de E/S.
+- `2026-10-01T05:19:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-01T05:19:45` Corrida terminada. Total usado hoy: 128.

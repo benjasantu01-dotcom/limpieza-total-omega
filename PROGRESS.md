@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 50
+- Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 198
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-29 | 6 | 1 | 2 | 0 | 21 |
+| 2026-09-29 | 6 | 1 | 2 | 0 | 17 |
 | 2026-09-30 | 156 | 13 | 34 | 15 | 132 |
-| 2026-10-01 | 54 | 4 | 14 | 4 | 48 |
+| 2026-10-01 | 56 | 4 | 15 | 4 | 49 |
 
 ## Mejoras aceptadas por enfoque
 
+- seguridad defensiva: **51**
 - legibilidad y documentación: **50**
-- seguridad defensiva: **49**
 - robustez ante casos límite: **43**
 - manejo de errores y validación de entradas: **41**
 - rendimiento: **33**
@@ -36,10 +36,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **17**
 - `organizer.py`: **17**
 - `branding.py`: **17**
+- `scanner.py`: **16**
+- `settings.py`: **16**
 - `assistant.py`: **15**
 - `memory.py`: **15**
-- `scanner.py`: **15**
-- `settings.py`: **15**
 - `safety.py`: **14**
 - `browser.py`: **13**
 - `startup.py`: **9**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-01T05:19:45` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en la persistencia mediante la implementación de una validación de integridad antes del reemplazo del archivo (`os.replace`) y una comprobación explícita de `is_safe_to_modify` para el archivo de respaldo (`bak_path`), mitigando riesgos de manipulación de rutas en operaciones críticas de E/S.
+- `2026-10-01T05:19:28` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `scan_directory` validando que las rutas normalizadas (`resolve()`) sigan contenidas en el `base_root` original, previniendo así ataques de "path traversal" o saltos fuera del sandbox mediante rutas relativas complejas.
 - `2026-10-01T05:11:07` **quarantine.py** (seguridad defensiva): Se ha añadido una validación de `st_nlink` (contador de enlaces físicos) en `_validate_integrity` para asegurar que el archivo no esté siendo referenciado por múltiples entradas en el sistema de archivos (hard links), mitigando ataques de suplantación de archivos mientras están en cuarentena.
 - `2026-10-01T05:10:14` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva al mejorar la resolución de la ruta del ejecutable del proceso (`_get_process_path`) mediante una validación de existencia antes de realizar operaciones, evitando el tratamiento de rutas mal formadas o inaccesibles que podrían inducir a error en las verificaciones de `is_safe_to_modify`.
 - `2026-10-01T04:58:39` **duplicates.py** (seguridad defensiva): Se introdujo la validación `is_safe_to_modify` dentro de `_collect_candidates` antes de procesar cada archivo para asegurar que, incluso ante errores de permisos durante el `os.scandir`, el sistema no intente acceder o realizar `stat` sobre rutas que violarían las restricciones de seguridad defensiva, unificando el criterio de filtrado previo a cualquier operación de entrada/salida.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-01T04:32:32` **organizer.py** (robustez ante casos límite): Se ha añadido una validación de `os.path.samefile` en `_is_recursive_violation` para mejorar la robustez frente a nombres de rutas que, siendo distintas textualmente, apuntan al mismo inodo en el sistema de archivos, previniendo así errores de lógica en la detección de bucles o movimientos ilegales.
 - `2026-10-01T04:18:42` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_is_file_locked` para manejar situaciones donde el archivo desaparece o cambia de permisos durante la ejecución (Race Conditions), evitando que el programa se cuelgue al intentar operar sobre descriptores inválidos.
 - `2026-10-01T04:18:30` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia de `st.st_ino` en `walk_files` y `_is_excluded_path` para prevenir errores en sistemas de archivos (como algunos drivers de red o sistemas virtuales) que no soportan inodos y retornan valores nulos, mejorando la robustez ante casos límite de acceso a disco.
-- `2026-10-01T04:17:09` **branding.py** (robustez ante casos límite): Se ha añadido validación de límites numéricos y detección de errores de representación en `draw_ring` para prevenir desbordamientos de geometría (overflow) al procesar valores extremos o inesperados, manteniendo la estabilidad del renderizado gráfico.
-- `2026-10-01T04:02:01` **safety.py** (rendimiento): Se implementó un cache para `_get_security_descriptor` utilizando `lru_cache` con una clave basada en `(path_str, mtime)`, mejorando drásticamente el rendimiento en bucles que realizan múltiples consultas sobre el mismo archivo sin necesidad de reinvocar `GetFileAttributesW` o `CreateFileW` (bloqueo) repetidamente.
