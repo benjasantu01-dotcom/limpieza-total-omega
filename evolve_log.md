@@ -1153,3 +1153,12 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-01T08:17:40` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-10-01T08:17:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-01T08:17:40` Corrida terminada. Total usado hoy: 196.
+- `2026-10-01T08:22:10` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-10-01T08:23:05` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el proceso de recolección de memoria de los procesos (que es la operación más costosa del módulo) aplicando un filtro de nombre de columna y una reducción significativa del tamaño del CSV en el lado de PowerShell, evitando la transferencia y parseo de datos innecesarios en Python.
+- `2026-10-01T08:23:07` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-01T08:23:44` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-01T08:24:16` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-10-01T08:25:02` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé `list_items` y `purge_all` para evitar la creación innecesaria de diccionarios temporales y reducir la complejidad algorítmica de O(N) a O(1) en las búsquedas frecuentes mediante el uso de `set` y `dict` optimizados, mejorando el rendimiento al manipular cuarentenas grandes.
+- `2026-10-01T08:25:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-10-01T08:25:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-01T08:25:07` Corrida terminada. Total usado hoy: 200.

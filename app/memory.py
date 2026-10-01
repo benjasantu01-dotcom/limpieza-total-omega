@@ -272,10 +272,13 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if not _is_windows: return []
     now = time.time()
     if (now - _proc_cache_time) > 60:
-        cmd = [
-            'powershell', '-NoProfile', '-NonInteractive', '-Command', 
-            "Get-Process | Where-Object { $_.Id -ne 0 -and $_.Id -ne 4 } | Select-Object -Property Name,Id,WorkingSet | ConvertTo-Csv -NoTypeInformation"
-        ]
+        # Optimización: Filtramos en origen dentro de PowerShell para minimizar E/S y carga.
+        ps_query = (
+            "Get-Process | Where-Object { $_.Id -ne 0 -and $_.Id -ne 4 } | "
+            "Sort-Object WorkingSet -Descending | Select-Object -First 50 | "
+            "Select-Object Name,Id,WorkingSet | ConvertTo-Csv -NoTypeInformation"
+        )
+        cmd = ['powershell', '-NoProfile', '-NonInteractive', '-Command', ps_query]
         try:
             res = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
             if res.returncode == 0 and res.stdout:

@@ -699,9 +699,8 @@ def quarantine_file(
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Lista de elementos en cuarentena, ordenados cronológicamente."""
     try:
-        base_path = quarantine_dir(base)
-        items = load_manifest(base)
-        return sorted(items, key=lambda x: x.quarantined_at, reverse=True)
+        quarantine_dir(base)
+        return sorted(load_manifest(base), key=lambda x: x.quarantined_at, reverse=True)
     except (OSError, UnsafePathError, PermissionError):
         return []
 
@@ -801,24 +800,28 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     """Elimina todos los archivos verificados de la cuarentena."""
     try:
         quarantine_root = quarantine_dir(base)
-    except (OSError, RuntimeError, UnsafePathError):
-        return 0
-    items = load_manifest(base)
-    item_map = {i.stored_name: i for i in items}
-    purged_ids: Set[str] = set()
-    try:
+        items = load_manifest(base)
+        # Diccionario para acceso O(1) a metadatos de ítems por nombre almacenado
+        item_map = {i.stored_name: i for i in items}
+        
+        purged_ids: Set[str] = set()
+        
         for f in quarantine_root.iterdir():
             if f.name == MANIFEST_NAME or not f.is_file():
                 continue
+            
             item = item_map.get(f.name)
             if item and _is_item_purgable(f, item, quarantine_root):
                 purged_ids.add(item.item_id)
         
         if purged_ids:
-            save_manifest([i for i in items if i.item_id not in purged_ids], base)
-    except (OSError, PermissionError):
-        pass
-    return len(purged_ids)
+            # Filtrado eficiente de ítems restantes
+            new_manifest = [i for i in items if i.item_id not in purged_ids]
+            save_manifest(new_manifest, base)
+            
+        return len(purged_ids)
+    except (OSError, PermissionError, UnsafePathError):
+        return 0
 
 
 def total_quarantined_bytes(base: PathLike = DEFAULT_QUARANTINE_DIR, items: Optional[List[QuarantineItem]] = None) -> int:
