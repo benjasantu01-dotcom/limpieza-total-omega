@@ -146,6 +146,9 @@ def format_bytes(num: Optional[int | float]) -> str:
 
     Args:
         num: Cantidad de bytes a convertir.
+
+    Returns:
+        Cadena con unidad formateada.
     """
     if not isinstance(num, (int, float)) or num <= 0:
         return "0 B"
@@ -160,7 +163,13 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
     return mem_status
 
 def _safe_int_conversion(value: Optional[str], multiplier: int = 1) -> BytesValue:
-    """Extrae dígitos de una cadena y devuelve el valor multiplicado."""
+    """
+    Extrae dígitos de una cadena y devuelve el valor multiplicado.
+
+    Args:
+        value: Cadena potencialmente numérica.
+        multiplier: Multiplicador escalar para la conversión (ej. 1024 para KB).
+    """
     if not value: return BytesValue(0)
     clean_val = "".join(c for c in value if c.isdigit())
     return BytesValue(max(0, int(clean_val)) * multiplier) if clean_val else BytesValue(0)
@@ -179,6 +188,9 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 
     Args:
         meminfo_text: Contenido crudo del archivo /proc/meminfo.
+
+    Returns:
+        Snapshot con métricas extraídas o snapshot vacío.
     """
     if not meminfo_text: return _EMPTY_SNAPSHOT
     metrics: Dict[str, BytesValue] = {}
@@ -202,6 +214,9 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     Args:
         raw_csv_text: Salida de 'ConvertTo-Csv' de PowerShell.
         limit: Cantidad máxima de procesos a retornar.
+
+    Returns:
+        Lista ordenada de procesos con mayor consumo.
     """
     if not raw_csv_text: return []
     top_heap: List[ProcessMemory] = []
@@ -282,7 +297,16 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
     return "warning" if avail >= 10 else "danger"
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
-    """Genera un reporte descriptivo sobre el estado de la memoria."""
+    """
+    Genera un reporte descriptivo sobre el estado de la memoria.
+
+    Args:
+        snapshot: Estado actual de la memoria.
+        processes: Lista opcional de procesos principales.
+
+    Returns:
+        Reporte formateado como lista de cadenas.
+    """
     if snapshot.total <= 0: return ["No se pudo leer el estado de la memoria."]
     diagnostics = {
         "ok": "Estado: holgado. La memoria ocupada por caché mejora la velocidad.",
@@ -337,6 +361,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     Args:
         pid: ID del proceso objetivo.
+
+    Returns:
+        Tuple indicando éxito y mensaje de estado.
     """
     if not _is_windows: return False, "Solo soportado en Windows."
     try: target_pid = int(pid)
