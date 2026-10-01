@@ -232,7 +232,7 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
         if expected_hash and _get_sha256(resolved) != expected_hash:
             return False
         if not _is_file_locked(resolved):
-            resolved.unlink()
+            _check_io_error_context(resolved.unlink)
             return True
         return False
     except (OSError, PermissionError, UnsafePathError):

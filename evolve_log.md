@@ -528,3 +528,11 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-10-01T13:21:21` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `on_target_choice_changed` al incorporar una validación de seguridad explícita sobre la entrada de usuario (ruta de carpeta) antes de actualizar el estado de la aplicación, evitando que rutas inválidas o peligrosas se propaguen al bucle de escaneo.
 - `2026-10-01T13:21:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-01T13:21:21` Corrida terminada. Total usado hoy: 316.
+- `2026-10-01T13:29:12` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-01T13:29:45` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-01T13:30:42` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-01T13:31:12` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejora la robustez de la función `_is_safe_for_disk_op` al integrar una verificación de disponibilidad de espacio en disco en tiempo de ejecución, previniendo errores de escritura (IOError) antes de intentar mover archivos en entornos con almacenamiento limitado o volúmenes montados dinámicamente.
+- `2026-10-01T13:31:55` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine.py` ante errores de concurrencia y acceso denegado durante la creación y purga de archivos al implementar un manejo más explícito y resiliente de los descriptores de archivo y las condiciones de carrera mediante bloques `try-finally` en las operaciones de I/O de bajo nivel.
+- `2026-10-01T13:32:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-01T13:32:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-01T13:32:00` Corrida terminada. Total usado hoy: 320.

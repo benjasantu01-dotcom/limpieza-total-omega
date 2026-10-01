@@ -197,6 +197,10 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if is_protected_path(target_dir) or is_protected_path(target_dir.parent): return False
         if not target_dir.is_dir() or not os.access(target_dir, os.W_OK): return False
         
+        # Validar espacio disponible antes de operar
+        usage = shutil.disk_usage(target_dir.anchor)
+        if usage.free < (src.stat().st_size + MIN_FREE_SPACE_BYTES): return False
+
         if _is_unc_path(target_dir) or src.drive != target_dir.drive: return False
         if _is_recursive_violation(src, dest) or not os.access(src, os.R_OK): return False
         
