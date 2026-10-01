@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **217** (43.1% de aceptación)
+- Mejoras aceptadas: **215** (42.7% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 45
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 216
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-30 | 88 | 8 | 19 | 4 | 85 |
-| 2026-10-01 | 129 | 6 | 26 | 8 | 131 |
+| 2026-09-30 | 85 | 7 | 19 | 4 | 85 |
+| 2026-10-01 | 130 | 7 | 26 | 9 | 132 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
-- seguridad defensiva: **50**
+- seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **49**
-- robustez ante casos límite: **36**
-- rendimiento: **31**
+- robustez ante casos límite: **34**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **23**
 - `duplicates.py`: **21**
 - `quarantine.py`: **20**
-- `settings.py`: **18**
-- `assistant.py`: **17**
+- `organizer.py`: **17**
+- `settings.py`: **17**
 - `healthscore.py`: **16**
-- `organizer.py`: **16**
-- `scanner.py`: **15**
+- `assistant.py`: **16**
 - `branding.py`: **15**
 - `memory.py`: **15**
 - `safety.py`: **14**
 - `browser.py`: **14**
+- `scanner.py`: **14**
 - `startup.py`: **11**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-01T12:50:56` **organizer.py** (rendimiento): Optimicé el rendimiento de `_process_directory` integrando la verificación de `is_valid_junk_extension` directamente en `_is_valid_junk_entry` para evitar llamadas redundantes a funciones auxiliares, y pre-calculé la conversión de `st_mtime` a `timestamp` una sola vez dentro del loop principal, reduciendo drásticamente la carga de procesamiento de objetos `datetime` en directorios grandes.
 - `2026-10-01T12:41:43` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantemente costosas a `is_safe_to_modify` y `path.exists()` dentro del bucle mediante el uso de los atributos ya disponibles en `os.DirEntry`.
 - `2026-10-01T12:29:16` **assistant.py** (rendimiento): Se implementó un cacheo más eficiente en `_format_problem_message` y se eliminó la redundancia en `context_as_text`, evitando la regeneración de cadenas innecesarias y reduciendo el costo de cómputo en el bucle principal de la UI.
 - `2026-10-01T12:27:59` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a los métodos de la clase `_Validators` y aclarando el propósito de la lógica de persistencia atómica en `save`, facilitando el mantenimiento y la comprensión de las restricciones de seguridad.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-01T11:48:15` **assistant.py** (legibilidad y documentación): Mejoré la documentación de `SystemContext.ingest` y `_ensure_safe_text` mediante docstrings detallados que explican la lógica de seguridad y el manejo de tipos, facilitando el mantenimiento y la comprensión de las salvaguardas implementadas.
 - `2026-10-01T11:47:17` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save()` agregando una validación previa de integridad mediante `_coerce_and_verify` y capturando explícitamente posibles fallos en la serialización JSON, evitando estados intermedios inconsistentes en el sistema de archivos.
 - `2026-10-01T11:46:44` **scanner.py** (manejo de errores y validación de entradas): He mejorado la robustez de las heurísticas centralizando la validación de `path` y `entry` en un decorador interno (o validación previa explícita) para evitar errores de tipo `None` o `AttributeError` sin necesidad de repetir chequeos `if` en cada función, asegurando que el motor no aborte ante archivos con metadatos inaccesibles.
-- `2026-10-01T11:37:15` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` añadiendo una validación estricta de tipos en el bucle de procesamiento y capturando errores específicos durante la deserialización para evitar que un manifiesto parcialmente corrupto detenga el funcionamiento de la aplicación.

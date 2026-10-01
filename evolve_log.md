@@ -444,3 +444,60 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-01T12:44:24` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-10-01T12:44:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-01T12:44:24` Corrida terminada. Total usado hoy: 300.
+- `2026-10-01T12:48:13` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-01T12:48:17` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-01T12:48:20` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-01T12:48:29` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-01T12:49:41` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-01T12:50:27` Tests FALLARON:
+```
+          '"grande","11","104857600"\n'
+            '"medio","12","10485760"\n'
+        )
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert [] == ['grande', 'medio', 'chico']
+E         
+E         Right contains 3 more items, first extra item: 'grande'
+E         
+E         Full diff:
+E         + []
+E         - [
+E         -     'grande',
+E         -     'medio',
+E         -     'chico',
+E         - ]
+
+evolve/tests/test_modules.py:346: AssertionError
+__________________ test_parse_process_csv_skips_broken_lines ___________________
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed in 1.60s
+
+```
+- `2026-10-01T12:50:27` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se optimizó `top_memory_processes` reemplazando la lógica de filtrado inicial y la recolección de datos en PowerShell por una consulta más eficiente, permitiendo que la lógica de filtrado y ordenamiento ocurra de manera más directa, reduciendo la carga de procesamiento en cada ejecución.
+- `2026-10-01T12:50:56` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento de `_process_directory` integrando la verificación de `is_valid_junk_extension` directamente en `_is_valid_junk_entry` para evitar llamadas redundantes a funciones auxiliares, y pre-calculé la conversión de `st_mtime` a `timestamp` una sola vez dentro del loop principal, reduciendo drásticamente la carga de procesamiento de objetos `datetime` en directorios grandes.
+- `2026-10-01T12:51:24` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `purge_all` y `restore_item` reemplazando búsquedas lineales `O(N)` en listas por diccionarios `O(1)` pre-construidos para evitar iteraciones redundantes sobre el manifiesto.
+- `2026-10-01T12:51:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-01T12:51:24` Corrida terminada. Total usado hoy: 304.

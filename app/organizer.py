@@ -218,24 +218,18 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> boo
         return False
     return True
 
-def _is_valid_junk_entry(entry: os.DirEntry, stats: os.stat_result) -> bool:
-    """Valida si un archivo candidato cumple los criterios de tamaño, fecha y extensión."""
+def _is_valid_junk_entry(entry: os.DirEntry, stats: os.stat_result, now_ts: float) -> bool:
+    """Valida si un archivo cumple criterios; incluye validación rápida de extensión."""
     if entry is None or stats is None: return False
+    name_lower = entry.name.lower()
     return (0 <= stats.st_size < MAX_FILE_SIZE_BYTES and 
-            stats.st_mtime <= datetime.now().timestamp() + 3600 and
+            stats.st_mtime <= now_ts + 3600 and
             not (_get_win_attributes(entry) & WIN_ATTR_MASK) and
-            is_valid_junk_extension(entry.name))
+            any(name_lower.endswith(ext) for ext in JUNK_EXTENSIONS))
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
     """
     Recorrido recursivo limitado para encontrar archivos basura.
-    
-    Args:
-        current_dir: Directorio base del escaneo actual.
-        found: Lista acumulativa de archivos encontrados.
-        depth: Profundidad de recursión para prevenir desbordamiento de stack.
-        protected_cache: Cache de rutas verificadas como protegidas.
-        visited: Conjunto de directorios ya procesados para evitar ciclos.
     """
     if depth > 50 or current_dir is None or not current_dir.exists(): return
     try:
@@ -243,6 +237,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
         if resolved_dir in visited: return
         visited.add(resolved_dir)
         
+        now_ts = datetime.now().timestamp()
         with os.scandir(current_dir) as iterator:
             for item in iterator:
                 try:
@@ -251,7 +246,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                             _process_directory(Path(item.path), found, depth + 1, protected_cache, visited)
                     elif item.is_file(follow_symlinks=False):
                         stats = item.stat(follow_symlinks=False)
-                        if _is_valid_junk_entry(item, stats) and os.access(item.path, os.R_OK):
+                        if _is_valid_junk_entry(item, stats, now_ts) and os.access(item.path, os.R_OK):
                             found.append(JunkFile(Path(item.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
                 except (PermissionError, OSError):
                     continue
