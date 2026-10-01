@@ -5,38 +5,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **502**
-- Mejoras aceptadas: **203** (40.4% de aceptación)
-- Rechazadas por tests: 20
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **205** (40.7% de aceptación)
+- Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-29 | 47 | 7 | 8 | 3 | 87 |
+| 2026-09-29 | 47 | 6 | 8 | 3 | 86 |
 | 2026-09-30 | 156 | 13 | 34 | 15 | 132 |
+| 2026-10-01 | 2 | 0 | 0 | 0 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - seguridad defensiva: **44**
-- robustez ante casos límite: **40**
+- robustez ante casos límite: **42**
 - manejo de errores y validación de entradas: **39**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **19**
+- `quarantine.py`: **19**
 - `diskreport.py`: **19**
 - `assistant.py`: **18**
-- `quarantine.py`: **18**
 - `memory.py`: **17**
 - `duplicates.py`: **16**
+- `organizer.py`: **15**
 - `safety.py`: **15**
-- `organizer.py`: **14**
 - `settings.py`: **14**
 - `branding.py`: **14**
 - `browser.py`: **14**
@@ -46,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-01T00:05:34` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine_file` añadiendo una comprobación explícita para evitar condiciones de carrera (TOCTOU) y posibles errores de E/S mediante un pre-chequeo del sistema de archivos antes de iniciar la copia atómica.
+- `2026-10-01T00:05:05` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la manipulación de archivos en `organizer.py` implementando una validación explícita de `is_safe_to_modify` antes de cada operación crítica de eliminación en `delete_reviewed` y se añadió un manejo de excepciones más granular para evitar que archivos bloqueados temporalmente interrumpan el flujo de procesamiento de toda la lista.
 - `2026-09-30T14:59:16` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `healthscore.py` ante valores extremos o métricas no inicializadas, asegurando que `compute_score` siempre retorne un resultado válido incluso si `SystemMetrics` llega con datos atípicos, y garantizando la integridad de las representaciones visuales.
 - `2026-09-30T14:58:28` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar ciclos infinitos en el sistema de archivos (reparse points/links cíclicos) dentro de `_collect_candidates`, validando la ruta real con `path.resolve()` antes de añadirla a la pila de exploración.
 - `2026-09-30T14:50:07` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `walk_files` y `_collect_summary_data` frente a archivos que desaparecen durante la iteración (concurrencia) y errores de acceso inesperados, envolviendo el `st_size` y la lógica de contabilidad en bloques `try-except` más granulares para evitar que un error puntual en un archivo único interrumpa un escaneo completo.
@@ -59,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-30T14:18:04` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para reducir drásticamente las llamadas a `stat()` y `exists()` utilizando la información ya disponible en `os.DirEntry` y moviendo las comprobaciones más costosas (`is_system_or_hidden` e `_is_file_locked`) al final del flujo, después de los filtros baratos.
 - `2026-09-30T14:17:36` **diskreport.py** (rendimiento): Optimizé la función `largest_folders` para evitar la redundancia de realizar múltiples iteraciones sobre el sistema de archivos: ahora el cálculo del tamaño de carpetas se realiza en una sola pasada delegada a `_collect_summary_data`, reutilizando la lógica existente.
 - `2026-09-30T14:08:36` **browser.py** (rendimiento): Optimizé `_sum_directory_recursive` y `_process_file_entry` reemplazando llamadas repetitivas a `os.path.abspath` y `os.path.normcase` dentro del bucle principal por una comparación de prefijos de cadenas de bytes normalizadas, evitando el sobrecosto de resolución de rutas en cada iteración.
-- `2026-09-30T14:08:21` **branding.py** (rendimiento): Se optimizó el rendimiento de `gradient_colors` eliminando la recreación innecesaria de listas de objetos y utilizando un cálculo directo en un único paso de iteración, lo cual reduce la presión sobre el recolector de basura durante el renderizado intensivo de la UI.
-- `2026-09-30T14:07:23` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el "porqué" de las decisiones de seguridad y normalización, además de añadir type hints y nombres de variables más claros en las funciones de procesamiento del registro para facilitar el mantenimiento.

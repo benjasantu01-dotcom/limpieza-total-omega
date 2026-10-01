@@ -309,9 +309,12 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         for item in dest.iterdir():
             if item.is_file():
                 try:
-                    ensure_safe_to_modify(item)
-                    item.unlink()
-                    count += 1
-                except (OSError, PermissionError): continue
+                    # Validar seguridad antes de cada eliminación
+                    if is_safe_to_modify(item):
+                        ensure_safe_to_modify(item)
+                        item.unlink()
+                        count += 1
+                except (OSError, PermissionError):
+                    continue
         return count
     except (OSError, PermissionError, RuntimeError): return 0

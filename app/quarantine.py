@@ -566,8 +566,13 @@ def _write_temp_to_final(source: Path, destination: Path) -> tuple[str, int]:
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> tuple[str, int]:
     """Ejecuta el aislamiento atómico de un archivo sospechoso."""
-    if not source.exists() or not source.is_file():
-        raise FileNotFoundError("Archivo origen inexistente o inválido al iniciar copia.")
+    # Pre-verificación de integridad antes de iniciar E/S
+    if not source.exists():
+        raise FileNotFoundError("Archivo origen no existe.")
+    stat_orig = source.stat()
+    if stat_orig.st_size != original_size:
+        raise RuntimeError("El archivo cambió durante la validación inicial (TOCTOU).")
+    
     if source.resolve() == destination.resolve():
         raise UnsafePathError("El origen ya reside en el directorio destino.")
     _validate_quarantine_path(destination, destination.parent)
