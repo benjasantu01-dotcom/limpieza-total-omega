@@ -191,10 +191,14 @@ def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], ratio: NormalizedRatio, findings: List[str]) -> None:
     for rule in rules:
         if rule.check(metrics, ratio):
-            msg = rule.message_factory(metrics)
-            clean_msg = "".join(c for c in msg if c.isprintable()).strip()
-            if clean_msg: 
-                findings.append(clean_msg[:200])
+            try:
+                msg = rule.message_factory(metrics)
+                if not isinstance(msg, str): continue
+                clean_msg = "".join(c for c in msg if c.isprintable()).strip()
+                if clean_msg: 
+                    findings.append(clean_msg[:200])
+            except (AttributeError, ValueError, ZeroDivisionError):
+                continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()

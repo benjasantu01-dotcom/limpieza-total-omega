@@ -314,7 +314,6 @@ def _get_process_path(pid: int) -> Optional[Path]:
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0 and buf.value:
             p = Path(buf.value).resolve()
-            # Validamos existencia física antes de considerar la ruta
             if p.exists() and p.is_file() and not is_protected_path(str(p)):
                 return p
     except (ctypes.ArgumentError, OSError, ValueError):
@@ -353,7 +352,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
 
     kernel32 = ctypes.windll.kernel32
     proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
-    if not proc_handle: return False, "El proceso terminó o no pudo ser accedido."
+    if not proc_handle: 
+        return False, f"Acceso denegado. Error: {ctypes.get_last_error()}"
     
     try:
         if psapi.EmptyWorkingSet(proc_handle) == 0:

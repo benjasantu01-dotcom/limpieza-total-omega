@@ -286,17 +286,21 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         dest_base = Path(review_dir).expanduser()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
         dest_res = dest_base.resolve()
+        
         if is_protected_path(dest_res): return None
+        # Validar destino con ensure_safe_to_modify una sola vez
         ensure_safe_to_modify(dest_res)
     except (OSError, RuntimeError, PermissionError): return None
     
     for junk_file in files:
         if not junk_file or not junk_file.path or not junk_file.path.exists(): continue
+        # Usamos is_safe_to_modify como predicado de bucle
         if not is_safe_to_modify(junk_file.path): continue
         if not _is_safe_for_disk_op(junk_file.path, dest_res): continue
         target_path = _can_move_file(junk_file, dest_res)
         if target_path:
             try:
+                # ensure_safe_to_modify vuelve a verificar antes de la acción destructiva
                 ensure_safe_to_modify(junk_file.path)
                 shutil.move(str(junk_file.path), str(target_path))
             except (OSError, shutil.Error, PermissionError) as e:
@@ -320,12 +324,15 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     """Ejecuta la eliminación permanente de archivos en el directorio de revisión."""
     try:
         dest = Path(review_dir).expanduser().resolve()
-        if not dest.is_dir() or not is_safe_to_modify(dest) or is_protected_path(dest): return 0
+        if not dest.is_dir() or is_protected_path(dest): return 0
+        # Validar que la carpeta de cuarentena esté permitida antes de iterar
+        if not is_safe_to_modify(dest): return 0
+        
         count = 0
         for item in dest.iterdir():
             if item.is_file():
                 try:
-                    # Validar seguridad antes de cada eliminación y que no sea ruta protegida
+                    # Validar seguridad antes de cada eliminación individual
                     if is_safe_to_modify(item) and not is_protected_path(item):
                         ensure_safe_to_modify(item)
                         item.unlink()
