@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **212** (42.1% de aceptación)
+- Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 46
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 220
+- Rechazadas por guardia de seguridad: 45
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-30 | 79 | 6 | 19 | 3 | 85 |
-| 2026-10-01 | 133 | 7 | 27 | 10 | 135 |
+| 2026-09-30 | 77 | 6 | 18 | 3 | 84 |
+| 2026-10-01 | 136 | 7 | 27 | 11 | 135 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **43**
-- robustez ante casos límite: **35**
+- seguridad defensiva: **41**
+- robustez ante casos límite: **38**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
-- `quarantine.py`: **20**
-- `duplicates.py`: **20**
+- `diskreport.py`: **23**
+- `duplicates.py`: **21**
+- `quarantine.py`: **19**
 - `settings.py`: **18**
 - `assistant.py`: **17**
+- `healthscore.py`: **16**
 - `organizer.py`: **16**
-- `healthscore.py`: **15**
 - `scanner.py`: **15**
-- `safety.py`: **14**
 - `branding.py`: **14**
 - `browser.py`: **14**
 - `memory.py`: **14**
+- `safety.py`: **13**
 - `startup.py`: **11**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-01T13:20:22` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del motor ante datos inesperados eliminando el riesgo de excepciones en `_evaluate_rules` mediante la validación del resultado de `message_factory` y asegurando que `compute_score` maneje correctamente métricas con valores nulos o atípicos de forma consistente.
+- `2026-10-01T13:19:56` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `_collect_candidates` ante errores de sistema de archivos al añadir un manejo granular de excepciones dentro del bucle de `os.scandir`, evitando que el fallo en una sola entrada interrumpa el escaneo completo de un directorio.
+- `2026-10-01T13:19:29` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `walk_files` y `_collect_summary_data` ante archivos que cambian de tamaño o desaparecen durante el escaneo, envolviendo la lectura de `st_size` en bloques `try/except` específicos y validando la integridad del resultado contra condiciones de carrera comunes en sistemas de archivos en tiempo real.
 - `2026-10-01T13:10:11` **assistant.py** (robustez ante casos límite): Mejora la robustez del manejo de datos externos en `SystemContext.ingest` y `_apply_field`, implementando una validación explícita para evitar que valores `NaN` (Not a Number) o tipos inesperados introducidos por un `source` mal formado (ej. dict con tipos mixtos) desestabilicen el estado interno del asistente.
 - `2026-10-01T13:00:38` **settings.py** (rendimiento): Optimicé el rendimiento de carga y acceso a configuraciones evitando la serialización completa de objetos grandes mediante la implementación de `copy()` sobre el diccionario cacheado en `load` y un acceso directo más eficiente en `get`.
 - `2026-10-01T13:00:20` **scanner.py** (rendimiento): Se implementó un `lru_cache` manual (vía diccionario con límite) en `Scanner._is_inside_base_root` y se optimizó el chequeo de extensiones eliminando el uso de `rfind` y `str.lower` repetitivos en favor de una búsqueda directa en el `frozenset` existente, reduciendo significativamente la carga computacional en recorridos de directorios extensos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-01T12:09:41` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas que explican las precondiciones, el propósito de los parámetros y la lógica de seguridad de las funciones de manipulación de disco, facilitando la comprensión del flujo de datos y los criterios de exclusión.
 - `2026-10-01T12:09:25` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` añadiendo type hints faltantes, docstrings explicativos en funciones críticas y clarificando la intención de los bloques de lógica compleja mediante la extracción de variables descriptivas.
 - `2026-10-01T12:07:14` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad al extraer la lógica de normalización de rangos (`_clamp` y `_safe_inv`) a métodos de clase o utilidades mejor documentadas y clarificando la estructura del pipeline mediante la adición de Type Hints detallados en las funciones de cómputo.
-- `2026-10-01T11:58:19` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de Type Hints detallados, docstrings explicativos en funciones auxiliares (especialmente en la lógica de selección de candidatos y hashing) y la clarificación de variables para asegurar que la intención detrás de cada paso en el pipeline de detección sea evidente.
-- `2026-10-01T11:58:07` **diskreport.py** (legibilidad y documentación): Documenté con type hints más precisos y docstrings estructurados las estructuras de datos auxiliares (`ExtStats`, `SizeReport`, `Inode`), clarificando el propósito técnico de cada una para mejorar la mantenibilidad del módulo.
-- `2026-10-01T11:57:35` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del módulo `browser.py` introduciendo `TypeGuard` y tipado explícito en funciones críticas de validación (`_is_unc_path`, `_is_excluded_file`) para clarificar las asunciones del motor de escaneo y evitar errores de tipo en tiempo de ejecución.

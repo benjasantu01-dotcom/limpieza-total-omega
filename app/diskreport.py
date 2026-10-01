@@ -331,24 +331,26 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         if skip_protected and is_protected_path(path):
             continue
             
-        s = int(size_bytes) if isinstance(size_bytes, (int, float)) else 0
-        if s >= 0:
-            try:
-                total_bytes += s
-                total_files += 1
-                
-                ext = path.suffix.lower() or "(sin extensión)"
-                stats = ext_stats[ext]
-                stats.total_bytes += s
-                stats.count += 1
-                
-                if limit > 0:
-                    if len(top_heap) < limit: 
-                        heapq.heappush(top_heap, (s, path))
-                    elif s > top_heap[0][0]: 
-                        heapq.heapreplace(top_heap, (s, path))
-            except (KeyError, TypeError, OSError):
-                continue
+        try:
+            # Validar existencia nuevamente por si el archivo fue movido/borrado post-walk
+            s = int(size_bytes) if isinstance(size_bytes, (int, float)) else 0
+            if s < 0: continue
+            
+            total_bytes += s
+            total_files += 1
+            
+            ext = path.suffix.lower() or "(sin extensión)"
+            stats = ext_stats[ext]
+            stats.total_bytes += s
+            stats.count += 1
+            
+            if limit > 0:
+                if len(top_heap) < limit: 
+                    heapq.heappush(top_heap, (s, path))
+                elif s > top_heap[0][0]: 
+                    heapq.heapreplace(top_heap, (s, path))
+        except (KeyError, TypeError, OSError, PermissionError):
+            continue
                 
     return SummaryData(total_bytes, total_files, dict(ext_stats), top_heap)
 

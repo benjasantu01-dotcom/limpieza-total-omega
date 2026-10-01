@@ -521,3 +521,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-10-01T13:13:05` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-10-01T13:13:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-01T13:13:05` Corrida terminada. Total usado hoy: 312.
+- `2026-10-01T13:18:59` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-01T13:19:29` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de `walk_files` y `_collect_summary_data` ante archivos que cambian de tamaño o desaparecen durante el escaneo, envolviendo la lectura de `st_size` en bloques `try/except` específicos y validando la integridad del resultado contra condiciones de carrera comunes en sistemas de archivos en tiempo real.
+- `2026-10-01T13:19:56` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_collect_candidates` ante errores de sistema de archivos al añadir un manejo granular de excepciones dentro del bucle de `os.scandir`, evitando que el fallo en una sola entrada interrumpa el escaneo completo de un directorio.
+- `2026-10-01T13:20:22` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Reforcé la robustez del motor ante datos inesperados eliminando el riesgo de excepciones en `_evaluate_rules` mediante la validación del resultado de `message_factory` y asegurando que `compute_score` maneje correctamente métricas con valores nulos o atípicos de forma consistente.
+- `2026-10-01T13:21:21` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `on_target_choice_changed` al incorporar una validación de seguridad explícita sobre la entrada de usuario (ruta de carpeta) antes de actualizar el estado de la aplicación, evitando que rutas inválidas o peligrosas se propaguen al bucle de escaneo.
+- `2026-10-01T13:21:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-01T13:21:21` Corrida terminada. Total usado hoy: 316.

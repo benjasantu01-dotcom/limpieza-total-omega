@@ -204,7 +204,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
         try:
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
-                if isinstance(msg, str):
+                if isinstance(msg, str) and msg:
                     clean_msg = "".join(c for c in msg if c.isprintable()).strip()
                     if clean_msg: 
                         findings.append(clean_msg[:200])
@@ -213,19 +213,19 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Ejecuta el pipeline de puntuación procesando métricas y devolviendo un resultado consolidado."""
-    m: SystemMetrics = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
+    m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
     m.validate()
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
-    accumulated_score: int = 0
+    accumulated_score: float = 0.0
     
     for entry in _PIPELINE_ORDERED:
         try:
             area_ratio: NormalizedRatio = entry.scorer(m)
             _evaluate_rules(m, entry.rules, area_ratio, recommendations)
-            points: int = int(round(area_ratio * entry.weight))
-            metric_breakdown[entry.area] = points
+            points: float = area_ratio * entry.weight
+            metric_breakdown[entry.area] = int(round(points))
             accumulated_score += points
         except Exception:
             metric_breakdown[entry.area] = 0
@@ -234,7 +234,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if m.quarantined_count > 0:
         recommendations.append(f"Tenés {m.quarantined_count} archivo(s) en cuarentena.")
     
-    final_score: int = int(_clamp(float(accumulated_score), 0.0, 100.0))
+    final_score: int = int(round(_clamp(accumulated_score, 0.0, 100.0)))
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."])
 
 def _render_bar(points: int, max_val: int) -> str:
