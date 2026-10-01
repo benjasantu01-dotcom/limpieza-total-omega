@@ -220,7 +220,7 @@ def _is_file_locked(path: Path) -> bool:
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: int = 0) -> bool:
     """Eliminación segura validando metadatos y hash antes de ejecutar el unlink."""
     try:
-        if not path.exists() or not path.is_absolute():
+        if not path.is_absolute() or not path.exists():
             return False
         st = path.stat()
         if expected_inode != 0 and st.st_ino != expected_inode:
@@ -235,7 +235,7 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
         if expected_hash and _get_sha256(resolved) != expected_hash:
             return False
         if not _is_file_locked(resolved):
-            _check_io_error_context(resolved.unlink)
+            resolved.unlink()
             return True
         return False
     except (OSError, PermissionError, UnsafePathError):

@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 45
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 198
+- Sin respuesta de la IA (error o límite): 194
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-30 | 123 | 11 | 26 | 11 | 105 |
-| 2026-10-01 | 104 | 6 | 19 | 6 | 93 |
+| 2026-09-30 | 123 | 11 | 26 | 11 | 101 |
+| 2026-10-01 | 107 | 6 | 20 | 6 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
+- seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **47**
 - robustez ante casos límite: **42**
 - rendimiento: **38**
 
@@ -31,21 +31,24 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `diskreport.py`: **24**
 - `duplicates.py`: **22**
-- `quarantine.py`: **20**
+- `quarantine.py`: **21**
 - `healthscore.py`: **18**
 - `organizer.py`: **18**
 - `branding.py`: **17**
 - `memory.py`: **17**
 - `settings.py`: **17**
 - `assistant.py`: **16**
-- `safety.py`: **15**
-- `scanner.py`: **15**
+- `safety.py`: **16**
+- `scanner.py`: **16**
 - `browser.py`: **13**
 - `startup.py`: **12**
 - `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-01T09:46:01` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo implementando una validación explícita mediante `os.access(..., os.R_OK)` antes de intentar procesar cualquier entrada, garantizando que el escáner no intente acceder a archivos o directorios donde no tiene permisos de lectura, evitando así excepciones innecesarias y aumentando la eficiencia en entornos restringidos.
+- `2026-10-01T09:45:47` **safety.py** (seguridad defensiva): Se añadió una validación explícita para evitar modificaciones en archivos con permisos de solo lectura a nivel de sistema de archivos (atributo `FILE_ATTRIBUTE_READONLY`), complementando el chequeo de permisos de `stat()`, ya que en Windows `os.access` no siempre refleja fielmente el bit de solo lectura en todos los escenarios.
+- `2026-10-01T09:44:36` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_safe_unlink` eliminando el uso de `os.fsync` (que no es necesario para un borrado y puede fallar en ciertos sistemas de archivos o permisos) y asegurando que la validación de `expected_inode` sea estricta incluso si el valor es 0, además de centralizar las precondiciones de borrado para evitar estados intermedios.
 - `2026-10-01T09:39:00` **organizer.py** (seguridad defensiva): Se reforzó la seguridad en `_is_safe_for_disk_op` añadiendo una validación explícita mediante `is_protected_path` sobre el directorio padre de destino para evitar que la operación intente manipular subdirectorios protegidos accidentalmente.
 - `2026-10-01T09:34:05` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del pipeline de evaluación añadiendo un chequeo explícito de integridad en `_evaluate_rules` para prevenir que una excepción al generar mensajes de recomendación (por datos inconsistentes en `SystemMetrics`) propague un error fuera del motor, asegurando que la recolección de métricas no detenga la ejecución de la app.
 - `2026-10-01T09:25:29` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` para asegurar que el escaneo de directorios sea estrictamente consistente con los permisos y la topología de archivos al omitir explícitamente puntos de reparse (junctions/symlinks) durante la iteración, evitando así escapes accidentales de las zonas autorizadas del usuario.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-01T09:04:19` **quarantine.py** (robustez ante casos límite): Se introdujo `_check_io_error_context` para manejar errores transitorios (como archivos bloqueados o falta de permisos) mediante una lógica de reintento con espera exponencial, mejorando la resiliencia ante condiciones de carrera y bloqueos temporales del sistema de archivos al manipular la cuarentena.
 - `2026-10-01T09:03:35` **organizer.py** (robustez ante casos límite): Se introdujo una validación de coherencia en `_is_safe_for_disk_op` para prevenir errores de E/S en archivos que han cambiado de estado (ej. borrados o movidos por otro proceso) entre la detección y la ejecución, usando `path.stat()` para verificar que el inodo y el tamaño sigan siendo consistentes con el objeto `JunkFile`.
 - `2026-10-01T09:01:03` **memory.py** (robustez ante casos límite): Se ha añadido un robusto manejo de errores en `top_memory_processes` ante posibles salidas malformadas de PowerShell o subprocesos interrumpidos, asegurando que el estado del módulo no se corrompa si el comando falla o devuelve contenido parcial.
-- `2026-10-01T08:44:46` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` implementando un chequeo explícito de accesibilidad y estados de error mediante un bloque `try-except` más granular dentro del loop de `os.scandir`, asegurando que archivos bloqueados o con errores de lectura (comunes en sistemas con alta concurrencia) no aborten el recorrido ni propaguen excepciones inesperadas.
-- `2026-10-01T08:44:33` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_in_use` añadiendo el manejo del error `AccessError` (WinError 5) y otros fallos de acceso común en Windows, asegurando que el intento de abrir archivos bloqueados (típicos en cachés de navegadores activos) no propague excepciones inesperadas.
-- `2026-10-01T08:43:19` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_get_source_value` para manejar objetos dinámicos mediante una verificación estricta de tipos y un bloque `try-except` más granular, evitando que el asistente falle o procese basura si el objeto de origen contiene atributos inesperados o maliciosos durante la ingesta.

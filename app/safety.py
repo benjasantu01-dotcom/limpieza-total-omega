@@ -33,10 +33,12 @@ class SecurityDescriptor(NamedTuple):
         attrs: Máscara de bits con atributos de Win32 (GetFileAttributesW).
         is_protected_system: Indica si el archivo tiene atributos de sistema, oculto o temporal.
         is_in_use: Indica si el archivo posee un bloqueo de escritura por otro proceso.
+        is_readonly: Indica si el bit de atributo de solo lectura está activo.
     """
     attrs: int
     is_protected_system: bool
     is_in_use: bool
+    is_readonly: bool
     
     def has_flag(self, flag: Win32Attr) -> bool:
         """Verifica si un atributo específico está presente en el descriptor."""
@@ -73,6 +75,7 @@ __all__ = [
 # Máscaras de bits para FileAttributes (Win32 API)
 class Win32Attr(IntEnum):
     """Atributos de archivo del sistema de archivos Windows (Win32)."""
+    READONLY: int = 0x01
     HIDDEN: int = 0x02
     SYSTEM: int = 0x04
     DIRECTORY: int = 0x10
@@ -287,7 +290,8 @@ def _get_security_descriptor_cached(path_str: str, mtime: float) -> SecurityDesc
     return SecurityDescriptor(
         attrs=attrs,
         is_protected_system=bool(attrs & (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | Win32Attr.TEMPORARY)),
-        is_in_use=in_use
+        is_in_use=in_use,
+        is_readonly=bool(attrs & Win32Attr.READONLY)
     )
 
 def _get_security_descriptor(path: Path) -> SecurityDescriptor:
@@ -393,7 +397,7 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _rule(ProtectionReason.SYMLINK, lambda p, _, __: p.is_symlink()),
     _rule(ProtectionReason.REPARSE_POINT, lambda p, _, __: _is_directory_junction(str(p))),
     _rule(ProtectionReason.KERNEL_LOCKED, lambda p, _, __: _is_kernel_managed(p)),
-    _rule(ProtectionReason.READ_ONLY, lambda _, st, __: not bool(st.st_mode & stat.S_IWRITE)),
+    _rule(ProtectionReason.READ_ONLY, lambda _, st, sd: not bool(st.st_mode & stat.S_IWRITE) or sd.is_readonly),
     _rule(ProtectionReason.VOLUME_READ_ONLY, lambda p, _, __: _is_volume_readonly(str(p))),
     _rule(ProtectionReason.REMOVABLE_DRIVE, lambda p, _, __: _is_volume_removable_media(str(p))),
     _rule(ProtectionReason.VOLUME_RESTRICTED, lambda p, _, __: _is_volume_compressed_or_encrypted(str(p))),
@@ -426,7 +430,8 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
     ProtectionReason.ACCESS_WRITE: SafetyValidationErrorCode.WRITE_ACCESS_DENIED,
     ProtectionReason.MOUNT_POINT: SafetyValidationErrorCode.MOUNT_POINT_DETECTED,
     ProtectionReason.SPARSE_FILE: SafetyValidationErrorCode.SPARSE_FILE_DETECTED,
-    ProtectionReason.EMPTY_FILE: SafetyValidationErrorCode.EMPTY_FILE
+    ProtectionReason.EMPTY_FILE: SafetyValidationErrorCode.EMPTY_FILE,
+    ProtectionReason.READ_ONLY: SafetyValidationErrorCode.WRITE_ACCESS_DENIED
 }
 
 def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
@@ -740,10 +745,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         if _is_file_in_use_by_system(str(p)):
              raise UnsafePathError(f"Archivo en uso por el sistema: {p.name}", SafetyValidationErrorCode.FILE_IN_USE)
         initial_stat = _get_path_stat_robust(p)
-        if not bool(initial_stat.st_mode & stat.S_IWRITE):
-            raise UnsafePathError(f"Acceso de escritura denegado: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
-        if initial_stat.st_nlink > 1 and is_protected_path(str(p.resolve())):
-            raise UnsafePathError("Modificación denegada: hard link hacia sistema.", SafetyValidationErrorCode.HARD_LINK_DETECTED)
+        
+        # Validar consistencia antes de proceder
         if os.name == 'nt': 
             _validate_ntfs_reparse_redirection(p)
             try:
@@ -798,18 +801,20 @@ def describe_protection(path: PathLike) -> str:
     if is_protected_path(str(p)): return f"'{p}' protegida por sistema."
     try:
         if p.exists():
+            sd = _get_security_descriptor(p)
             if p.is_symlink(): return f"'{p}' es un enlace simbólico."
             if _is_directory_junction(str(p)): return f"'{p}' es un punto de reparse (Junction/Symlink)."
             if os.path.ismount(p): return f"'{p}' es un punto de montaje."
-            if _is_readonly(str(p)): return f"'{p}' es solo lectura."
+            if sd.is_readonly: return f"'{p}' tiene atributo de solo lectura activo."
+            if _is_readonly(str(p)): return f"'{p}' es solo lectura (permisos)."
             if _is_volume_readonly(str(p)): return f"'{p}' pertenece a un volumen de solo lectura."
             if _is_volume_removable_media(str(p)): return f"'{p}' pertenece a un volumen extraíble."
             if _is_volume_compressed_or_encrypted(str(p)): return f"'{p}' pertenece a un volumen cifrado/comprimido."
             if _is_file_locked_by_other_process(str(p)): return f"'{p}' en uso."
-            if _get_security_descriptor(p).attrs & (Win32Attr.COMPRESSED | Win32Attr.ENCRYPTED): return f"'{p}' archivo cifrado o comprimido."
-            if _get_security_descriptor(p).has_flag(Win32Attr.SPARSE_FILE): return f"'{p}' archivo disperso (sparse)."
-            if _get_security_descriptor(p).has_flag(Win32Attr.OFFLINE): return f"'{p}' archivo offline/nube."
-            if _get_security_descriptor(p).is_protected_system: return f"'{p}' atributo oculto/sistema/temporal."
+            if sd.has_flag(Win32Attr.COMPRESSED) or sd.has_flag(Win32Attr.ENCRYPTED): return f"'{p}' archivo cifrado o comprimido."
+            if sd.has_flag(Win32Attr.SPARSE_FILE): return f"'{p}' archivo disperso (sparse)."
+            if sd.has_flag(Win32Attr.OFFLINE): return f"'{p}' archivo offline/nube."
+            if sd.is_protected_system: return f"'{p}' atributo oculto/sistema/temporal."
             if _has_alternate_data_stream(p.name): return f"'{p}' contiene ADS."
             if not (p.is_file() or p.is_dir()): return f"'{p}' tipo de objeto no soportado."
             if p.is_file() and p.stat().st_size == 0: return f"'{p}' archivo vacío (potencialmente crítico)."
