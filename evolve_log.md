@@ -1567,3 +1567,12 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not define
 - `2026-10-01T00:05:34` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `quarantine_file` añadiendo una comprobación explícita para evitar condiciones de carrera (TOCTOU) y posibles errores de E/S mediante un pre-chequeo del sistema de archivos antes de iniciar la copia atómica.
 - `2026-10-01T00:05:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-01T00:05:34` Corrida terminada. Total usado hoy: 4.
+- `2026-10-01T00:11:28` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-10-01T00:11:35` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-01T00:12:04` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 116): unterminated string literal (detected at line 116)
+- `2026-10-01T00:12:52` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de carrera (TOCTOU) y errores de acceso, añadiendo una validación explícita para archivos "reparse point" de nivel superior antes de realizar operaciones de metadatos, evitando así posibles excepciones bloqueantes en rutas mal formadas.
+- `2026-10-01T00:13:18` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-01T00:13:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-01T00:13:42` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se añadió una verificación de integridad mediante `os.stat` en `_is_file_secure_to_read` para prevenir ataques de condiciones de carrera (TOCTOU) y detectar posibles cambios de propietario o permisos durante la ejecución del bucle, robusteciendo la carga ante manipulaciones externas inesperadas.
+- `2026-10-01T00:13:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-01T00:13:42` Corrida terminada. Total usado hoy: 8.

@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **205** (40.7% de aceptación)
+- Mejoras aceptadas: **207** (41.1% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 220
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-29 | 47 | 6 | 8 | 3 | 86 |
+| 2026-09-29 | 47 | 6 | 8 | 3 | 82 |
 | 2026-09-30 | 156 | 13 | 34 | 15 | 132 |
-| 2026-10-01 | 2 | 0 | 0 | 0 | 2 |
+| 2026-10-01 | 4 | 0 | 1 | 0 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
+- robustez ante casos límite: **44**
 - seguridad defensiva: **44**
-- robustez ante casos límite: **42**
 - manejo de errores y validación de entradas: **39**
 - rendimiento: **33**
 
@@ -35,10 +35,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **19**
 - `assistant.py`: **18**
 - `memory.py`: **17**
+- `safety.py`: **16**
 - `duplicates.py`: **16**
 - `organizer.py`: **15**
-- `safety.py`: **15**
-- `settings.py`: **14**
+- `settings.py`: **15**
 - `branding.py`: **14**
 - `browser.py`: **14**
 - `scanner.py`: **13**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-01T00:13:42` **settings.py** (robustez ante casos límite): Se añadió una verificación de integridad mediante `os.stat` en `_is_file_secure_to_read` para prevenir ataques de condiciones de carrera (TOCTOU) y detectar posibles cambios de propietario o permisos durante la ejecución del bucle, robusteciendo la carga ante manipulaciones externas inesperadas.
+- `2026-10-01T00:12:52` **safety.py** (robustez ante casos límite): Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de carrera (TOCTOU) y errores de acceso, añadiendo una validación explícita para archivos "reparse point" de nivel superior antes de realizar operaciones de metadatos, evitando así posibles excepciones bloqueantes en rutas mal formadas.
 - `2026-10-01T00:05:34` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine_file` añadiendo una comprobación explícita para evitar condiciones de carrera (TOCTOU) y posibles errores de E/S mediante un pre-chequeo del sistema de archivos antes de iniciar la copia atómica.
 - `2026-10-01T00:05:05` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la manipulación de archivos en `organizer.py` implementando una validación explícita de `is_safe_to_modify` antes de cada operación crítica de eliminación en `delete_reviewed` y se añadió un manejo de excepciones más granular para evitar que archivos bloqueados temporalmente interrumpan el flujo de procesamiento de toda la lista.
 - `2026-09-30T14:59:16` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `healthscore.py` ante valores extremos o métricas no inicializadas, asegurando que `compute_score` siempre retorne un resultado válido incluso si `SystemMetrics` llega con datos atípicos, y garantizando la integridad de las representaciones visuales.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-30T14:29:36` **quarantine.py** (rendimiento): Se optimizó `load_manifest` para evitar la creación innecesaria de una lista intermedia y su conversión a un mapa temporal dentro de `restore_item` y `purge_item` (que es una operación $O(N)$), utilizando en su lugar una búsqueda directa y eficiente mediante comprensión de listas o filtrado, reduciendo el overhead de memoria y tiempo en escaneos frecuentes.
 - `2026-09-30T14:27:45` **memory.py** (rendimiento): Se optimizó el proceso de recolección de memoria de los procesos (top_memory_processes) reemplazando la creación de una lista completa en memoria antes de filtrar por un enfoque de procesamiento en stream y heap (ya implementado parcialmente) y, más importante, eliminando la creación innecesaria de objetos `ProcessMemory` para procesos que no entrarán en el top N, reduciendo así la presión sobre el recolector de basura.
 - `2026-09-30T14:18:04` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para reducir drásticamente las llamadas a `stat()` y `exists()` utilizando la información ya disponible en `os.DirEntry` y moviendo las comprobaciones más costosas (`is_system_or_hidden` e `_is_file_locked`) al final del flujo, después de los filtros baratos.
-- `2026-09-30T14:17:36` **diskreport.py** (rendimiento): Optimizé la función `largest_folders` para evitar la redundancia de realizar múltiples iteraciones sobre el sistema de archivos: ahora el cálculo del tamaño de carpetas se realiza en una sola pasada delegada a `_collect_summary_data`, reutilizando la lógica existente.
-- `2026-09-30T14:08:36` **browser.py** (rendimiento): Optimizé `_sum_directory_recursive` y `_process_file_entry` reemplazando llamadas repetitivas a `os.path.abspath` y `os.path.normcase` dentro del bucle principal por una comparación de prefijos de cadenas de bytes normalizadas, evitando el sobrecosto de resolución de rutas en cada iteración.

@@ -685,12 +685,15 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     if path is None:
         raise UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC)
     
+    # Validación previa de existencia antes de cualquier metadata estática profunda
     p = normalize(path)
+    
     if os.name == 'nt' and (_is_volume_readonly(str(p)) or _is_volume_compressed_or_encrypted(str(p))):
         raise UnsafePathError(f"Volumen restringido/solo lectura: {p.anchor}", SafetyValidationErrorCode.VOLUME_READ_ONLY)
 
     if not allow_sensitive and is_sensitive_file(p):
         raise UnsafePathError(f"Extensión bloqueada '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION)
+        
     _validate_structural_safety(p, str(p))
     _validate_boundary_conditions(p, base_dir)
     
