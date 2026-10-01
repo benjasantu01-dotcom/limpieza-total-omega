@@ -74,14 +74,18 @@ SYSTEM32_LOWER: Final[str] = "system32"
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """
-    Obtiene metadatos asegurando que no se sigan enlaces simbólicos.
-    Captura excepciones de acceso denegado comunes en archivos del sistema.
+    Obtiene metadatos asegurando que no se sigan enlaces simbólicos y 
+    verificando que el archivo no sea un hard link múltiple hacia el sistema.
     """
     if not isinstance(entry, os.DirEntry):
         return None
     try:
         if not entry.is_symlink() and not (_get_file_attributes(entry) & LIMITS.reparse_point_attr_mask):
-            return entry.stat(follow_symlinks=False)
+            stats = entry.stat(follow_symlinks=False)
+            # Defensa contra hard link spoofing: archivos del sistema suelen tener enlaces múltiples
+            if getattr(stats, "st_nlink", 1) > 1:
+                return None
+            return stats
         return None
     except (OSError, PermissionError):
         return None

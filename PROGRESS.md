@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Mejoras aceptadas: **226** (44.8% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-30 | 76 | 6 | 18 | 3 | 65 |
-| 2026-10-01 | 148 | 8 | 29 | 11 | 140 |
+| 2026-09-30 | 76 | 6 | 18 | 3 | 61 |
+| 2026-10-01 | 150 | 8 | 29 | 11 | 142 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
+- seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **48**
 - robustez ante casos límite: **42**
 - rendimiento: **34**
 
@@ -32,20 +32,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **24**
 - `duplicates.py`: **21**
 - `quarantine.py`: **21**
+- `settings.py`: **19**
 - `assistant.py`: **18**
-- `settings.py`: **18**
 - `healthscore.py`: **17**
 - `organizer.py`: **17**
+- `scanner.py`: **16**
 - `branding.py`: **15**
 - `safety.py`: **15**
 - `browser.py`: **15**
 - `memory.py`: **15**
-- `scanner.py`: **15**
 - `startup.py`: **11**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-01T14:21:47` **settings.py** (seguridad defensiva): Mejoré la seguridad de la función `save` al implementar una comprobación previa mediante `is_safe_to_modify` sobre el archivo `.bak` antes de cualquier intento de reemplazo atómico, garantizando que el sistema de respaldo no sea utilizado como vector para sobreescribir rutas protegidas accidentalmente.
+- `2026-10-01T14:20:49` **scanner.py** (seguridad defensiva): Se ha añadido una validación de `st_nlink` (contador de enlaces físicos) en `_safe_stat` para prevenir ataques de redirección mediante enlaces duros ("hard links") hacia archivos del sistema, garantizando que el escáner solo analice archivos con un único enlace, mitigando riesgos de manipulación de punteros en disco.
 - `2026-10-01T14:13:39` **safety.py** (seguridad defensiva): Se implementó un chequeo en `_validate_boundary_conditions` para detectar si la ruta reside en un volumen protegido por el sistema de integridad de Windows (SVI), previniendo modificaciones en carpetas críticas como `System Volume Information` incluso si la ruta no fuera explícitamente bloqueada por nombre, reforzando la seguridad defensiva contra manipulación de puntos de restauración.
 - `2026-10-01T14:12:10` **quarantine.py** (seguridad defensiva): Se ha mejorado `_safe_unlink` para integrar la validación de `is_protected_path` directamente en la lógica de eliminación, asegurando que incluso si una ruta malformada llegara a ser procesada, el sistema de seguridad detendría la operación destructiva antes de ejecutar cualquier llamado al sistema.
 - `2026-10-01T14:07:54` **memory.py** (seguridad defensiva): Se ha robustecido la validación del proceso a manipular eliminando `is_safe_to_modify` en `_is_safe_to_trim` (ya que esta función está diseñada para archivos de disco y no para procesos en ejecución) y sustituyéndola por una lógica que verifica explícitamente que el proceso no sea crítico ni pertenezca a rutas protegidas, evitando llamadas a funciones inapropiadas para el contexto de memoria.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-01T13:31:55` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de concurrencia y acceso denegado durante la creación y purga de archivos al implementar un manejo más explícito y resiliente de los descriptores de archivo y las condiciones de carrera mediante bloques `try-finally` en las operaciones de I/O de bajo nivel.
 - `2026-10-01T13:31:12` **organizer.py** (robustez ante casos límite): Mejora la robustez de la función `_is_safe_for_disk_op` al integrar una verificación de disponibilidad de espacio en disco en tiempo de ejecución, previniendo errores de escritura (IOError) antes de intentar mover archivos en entornos con almacenamiento limitado o volúmenes montados dinámicamente.
 - `2026-10-01T13:20:22` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del motor ante datos inesperados eliminando el riesgo de excepciones en `_evaluate_rules` mediante la validación del resultado de `message_factory` y asegurando que `compute_score` maneje correctamente métricas con valores nulos o atípicos de forma consistente.
-- `2026-10-01T13:19:56` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `_collect_candidates` ante errores de sistema de archivos al añadir un manejo granular de excepciones dentro del bucle de `os.scandir`, evitando que el fallo en una sola entrada interrumpa el escaneo completo de un directorio.
-- `2026-10-01T13:19:29` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `walk_files` y `_collect_summary_data` ante archivos que cambian de tamaño o desaparecen durante el escaneo, envolviendo la lectura de `st_size` en bloques `try/except` específicos y validando la integridad del resultado contra condiciones de carrera comunes en sistemas de archivos en tiempo real.
