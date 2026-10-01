@@ -126,20 +126,18 @@ def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
 
 
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula SHA256 completo usando buffers de memoria para eficiencia."""
+    """Calcula SHA256 completo de un archivo mediante lectura segmentada."""
     if chunk_size <= 0:
         return None
         
     p = _validate_and_resolve_path(path)
-    if p is None or not p.exists():
+    if p is None:
         return None
             
     try:
         digest = hashlib.sha256()
         with open(p, "rb") as f:
             while (chunk := f.read(chunk_size)):
-                if not isinstance(chunk, (bytes, bytearray)):
-                    return None
                 digest.update(chunk)
         return digest.hexdigest()
     except (OSError, PermissionError, IOError, MemoryError, ValueError):
@@ -147,18 +145,18 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Calcula un hash rápido basado solo en los primeros bytes del archivo."""
+    """Calcula SHA256 de los primeros N bytes para filtrado rápido de duplicados."""
     if read_bytes <= 0:
         return None
 
     p = _validate_and_resolve_path(path)
-    if p is None or not p.exists():
+    if p is None:
         return None
 
     try:
         with open(p, "rb") as f:
             content = f.read(read_bytes)
-            if not content or not isinstance(content, (bytes, bytearray)): 
+            if not content: 
                 return None
             return hashlib.sha256(content).hexdigest()
     except (OSError, PermissionError, IOError, ValueError):
@@ -168,11 +166,10 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """Filtra archivos que no cumplen los requisitos básicos de procesamiento."""
     try:
-        if not path.exists() or not _safe_path_check(path):
-            return False
-        if is_system_or_hidden(path) or _is_file_locked(path):
-            return False
-        return st_size > 0
+        return (_safe_path_check(path) and 
+                not is_system_or_hidden(path) and 
+                not _is_file_locked(path) and 
+                st_size > 0)
     except (OSError, ValueError, TypeError, RuntimeError, AttributeError):
         return False
 
@@ -181,23 +178,17 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     """Agrupa una secuencia de rutas según el tamaño de archivo."""
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
-        if not isinstance(p, (str, Path)):
-            continue
-        try:
-            path_obj = Path(p).absolute()
-            if _safe_path_check(path_obj) and path_obj.exists():
-                st_size = path_obj.stat().st_size
-                if _is_valid_candidate(path_obj, st_size):
-                    groups[st_size].append(path_obj)
-        except (OSError, RuntimeError, ValueError):
-            continue
+        path_obj = Path(p).absolute()
+        st_size = path_obj.stat().st_size
+        if _is_valid_candidate(path_obj, st_size):
+            groups[st_size].append(path_obj)
     return groups
 
 
 def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
     """Valida que un directorio raíz sea navegable y seguro."""
     try:
-        if not item or not isinstance(item, (str, Path)): return None
+        if not item: return None
         root = Path(item).absolute()
         if root.is_dir() and _safe_path_check(root):
             return root
@@ -227,17 +218,15 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     p_entry = Path(entry.path)
-                    if not is_safe_to_modify(p_entry): continue
-                    
                     if entry.is_dir(follow_symlinks=False):
-                        if _safe_path_check(p_entry) and not is_junction(p_entry):
+                        if _safe_path_check(p_entry):
                             stack.append((entry.path, depth + 1))
                         continue
                     
                     if entry.is_file(follow_symlinks=False):
                         stat_info = entry.stat(follow_symlinks=False)
                         if stat_info.st_size >= min_size:
-                            if not (skip_protected and is_protected_path(p_entry)) and _safe_path_check(p_entry) and not is_system_or_hidden(p_entry) and not _is_file_locked(p_entry):
+                            if not (skip_protected and is_protected_path(p_entry)) and _is_valid_candidate(p_entry, stat_info.st_size):
                                 size_to_paths_map[stat_info.st_size].append(p_entry)
         except (OSError, PermissionError, RuntimeError):
             continue
@@ -249,8 +238,6 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Aplica una función de hash y agrupa los resultados coincidentes."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if not isinstance(path, Path):
-            continue
         if (digest := hash_func(path)):
             groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
@@ -312,8 +299,6 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     
     candidates: List[Tuple[Tuple[float, int], Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path):
-            continue
         if score := _calculate_keeper_heuristic(p):
             candidates.append((score, p))
             
@@ -331,8 +316,6 @@ def format_group(group: DuplicateGroup) -> List[str]:
     lines = [f"{group.count} copias de {mb_t} MB (recuperable: {mb_w} MB)"]
     
     for path in group.paths:
-        if not isinstance(path, Path):
-            continue
         try:
             if not path.exists():
                 lines.append(f"   [desaparecido] {path}")

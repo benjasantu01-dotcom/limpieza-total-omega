@@ -108,21 +108,27 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     return max(min_val, min(val, max_val))
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
+    """Calcula ratio basado en MB de basura comparado con el umbral global."""
     return _clamp(1.0 - (float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
+    """Calcula ratio de seguridad penalizando conteos y advertencias."""
     return _clamp(1.0 - _clamp((float(suspicious_count) * 0.05) + (float(warnings) * 0.25), 0.0, 1.0))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
+    """Calcula ratio de disponibilidad de memoria RAM."""
     return _clamp(float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
+    """Calcula ratio de disponibilidad de espacio en disco."""
     return _clamp(float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
+    """Calcula ratio de duplicados vs capacidad objetivo de recuperación."""
     return _clamp(1.0 - (float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
+    """Calcula ratio de impacto por programas en arranque."""
     return _clamp(1.0 - (float(startup_count) * _INV_STARTUP))
 
 _PIPELINE_ORDERED: Final[Tuple[PipelineEntry, ...]] = (
@@ -155,6 +161,7 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
+        """Asegura que los valores de las métricas sean finitos, no negativos y dentro de rangos lógicos."""
         def _to_finite_float(val: Any, default: float = 0.0) -> float:
             try:
                 num = float(val)
@@ -201,7 +208,8 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
                 continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
+    """Ejecuta el pipeline de puntuación procesando métricas y devolviendo un resultado consolidado."""
+    m: SystemMetrics = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
     m.validate()
     
     recommendations: List[str] = []

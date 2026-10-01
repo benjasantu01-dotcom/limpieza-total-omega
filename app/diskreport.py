@@ -237,7 +237,11 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador recursivo de archivos (yields Path, size).
+    Generador recursivo de archivos utilizando `os.scandir` para eficiencia de I/O.
+    
+    Implementa un stack explícito para evitar recursión profunda y mantiene un 
+    conjunto de `visited_inodes` (dispositivo + número de inodo) para detectar 
+    y saltar enlaces simbólicos cíclicos, evitando bucles infinitos en el FS.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
