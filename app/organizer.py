@@ -159,6 +159,8 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """
     if src is None or dest is None: return True
     try:
+        if src.exists() and dest.exists() and os.path.samefile(src, dest):
+            return True
         s, d = str(src.resolve()), str(dest.resolve())
         return os.path.commonpath([s, d]) == s
     except (OSError, ValueError):

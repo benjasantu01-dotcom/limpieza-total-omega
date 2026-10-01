@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Mejoras aceptadas: **206** (40.9% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-29 | 8 | 1 | 2 | 0 | 39 |
+| 2026-09-29 | 6 | 1 | 2 | 0 | 37 |
 | 2026-09-30 | 156 | 13 | 34 | 15 | 132 |
-| 2026-10-01 | 43 | 4 | 12 | 3 | 42 |
+| 2026-10-01 | 44 | 4 | 12 | 3 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
-- seguridad defensiva: **45**
+- seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **41**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **39**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
@@ -34,19 +34,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **20**
 - `quarantine.py`: **18**
 - `healthscore.py`: **17**
-- `organizer.py`: **16**
+- `organizer.py`: **17**
 - `branding.py`: **16**
-- `settings.py`: **15**
-- `safety.py`: **14**
 - `assistant.py`: **14**
 - `memory.py`: **14**
 - `scanner.py`: **14**
+- `settings.py`: **14**
 - `browser.py`: **13**
+- `safety.py`: **13**
 - `startup.py`: **9**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-01T04:32:32` **organizer.py** (robustez ante casos límite): Se ha añadido una validación de `os.path.samefile` en `_is_recursive_violation` para mejorar la robustez frente a nombres de rutas que, siendo distintas textualmente, apuntan al mismo inodo en el sistema de archivos, previniendo así errores de lógica en la detección de bucles o movimientos ilegales.
 - `2026-10-01T04:18:42` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_is_file_locked` para manejar situaciones donde el archivo desaparece o cambia de permisos durante la ejecución (Race Conditions), evitando que el programa se cuelgue al intentar operar sobre descriptores inválidos.
 - `2026-10-01T04:18:30` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia de `st.st_ino` en `walk_files` y `_is_excluded_path` para prevenir errores en sistemas de archivos (como algunos drivers de red o sistemas virtuales) que no soportan inodos y retornan valores nulos, mejorando la robustez ante casos límite de acceso a disco.
 - `2026-10-01T04:17:09` **branding.py** (robustez ante casos límite): Se ha añadido validación de límites numéricos y detección de errores de representación en `draw_ring` para prevenir desbordamientos de geometría (overflow) al procesar valores extremos o inesperados, manteniendo la estabilidad del renderizado gráfico.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-01T03:26:37` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados, clarificación de tipos, y la inclusión de comentarios explicativos en los puntos críticos de seguridad, garantizando que el "porqué" de cada validación sea evidente para futuros colaboradores sin modificar la lógica operativa.
 - `2026-10-01T03:16:56` **quarantine.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `quarantine_file` para reducir su complejidad ciclomática, extrayendo la lógica de validación inicial a una función dedicada y documentando las precondiciones con Type Hints explícitos.
 - `2026-10-01T03:16:11` **organizer.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas y la sustitución de comprobaciones manuales por una estructura más clara, garantizando que el "porqué" de las restricciones de seguridad sea evidente para futuros desarrolladores.
-- `2026-10-01T03:15:43` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings siguiendo las convenciones de estilo de Python (Google style), facilitando la comprensión de los parámetros y el propósito de cada función para futuros colaboradores.
