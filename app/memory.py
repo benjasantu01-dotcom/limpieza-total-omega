@@ -33,7 +33,7 @@ from pathlib import Path
 from functools import lru_cache
 from dataclasses import dataclass, field
 from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, Final, Set, NewType
-from safety import is_protected_path, is_safe_to_modify
+from safety import is_protected_path
 
 if TYPE_CHECKING:
     from ctypes import wintypes
@@ -359,11 +359,10 @@ def _get_process_path(pid: int) -> Optional[Path]:
 
 def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
     """Verifica si un proceso es candidato seguro para una operación de trimming."""
-    exec_path = _get_process_path(pid)
-    if exec_path is None:
-        return False, "Proceso protegido o inaccesible para inspección."
-    if not is_safe_to_modify(str(exec_path)):
-        return False, "Ruta del proceso no permitida para operaciones de modificación."
+    if _is_system_process(pid):
+        return False, "Proceso crítico del sistema protegido."
+    if _get_process_path(pid) is None:
+        return False, "Ruta del proceso inaccesible o restringida por seguridad."
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
@@ -382,8 +381,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         target_pid = int(pid)
     except (ValueError, TypeError): 
         return False, "PID proporcionado no es un número válido."
-    
-    if _is_system_process(target_pid): return False, "Operación denegada en procesos del sistema."
     
     psapi = ctypes.windll.psapi
     if not hasattr(psapi, "EmptyWorkingSet"): return False, "API no disponible en este sistema."

@@ -205,6 +205,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
                 if isinstance(msg, str) and msg:
+                    # Filtrado defensivo: solo caracteres imprimibles y límite estricto
                     clean_msg = "".join(c for c in msg if c.isprintable()).strip()
                     if clean_msg: 
                         findings.append(clean_msg[:200])
