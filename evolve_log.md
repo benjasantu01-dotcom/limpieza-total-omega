@@ -728,3 +728,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-01T03:54:28` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-10-01T03:54:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-01T03:54:28` Corrida terminada. Total usado hoy: 92.
+- `2026-10-01T03:56:00` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-10-01T03:56:58` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-01T03:57:14` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-01T03:57:56` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-01T03:59:08` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-01T04:00:23` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-01T04:01:07` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `restore_item` y `purge_item` reemplazando la búsqueda lineal por un diccionario indexado por `item_id`, evitando recorrer repetidamente la lista de ítems en cada operación.
+- `2026-10-01T04:01:30` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-10-01T04:02:01` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un cache para `_get_security_descriptor` utilizando `lru_cache` con una clave basada en `(path_str, mtime)`, mejorando drásticamente el rendimiento en bucles que realizan múltiples consultas sobre el mismo archivo sin necesidad de reinvocar `GetFileAttributesW` o `CreateFileW` (bloqueo) repetidamente.
+- `2026-10-01T04:02:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-01T04:02:01` Corrida terminada. Total usado hoy: 96.

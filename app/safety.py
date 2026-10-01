@@ -263,15 +263,13 @@ def _has_alternate_data_stream(path_name: str) -> bool:
     """Detecta flujos de datos alternativos (ADS) NTFS, comúnmente utilizados para ocultar payloads."""
     return ":" in path_name and len(path_name.split(":")) > 2
 
-def _get_security_descriptor(path: Path) -> SecurityDescriptor:
-    """
-    Construye un descriptor de seguridad para evaluar el archivo en un instante dado.
-    Determina si el archivo es un sistema oculto o si está bloqueado por otro proceso.
-    """
-    attrs = _get_file_attrs(str(path))
+@lru_cache(maxsize=1024)
+def _get_security_descriptor_cached(path_str: str, mtime: float) -> SecurityDescriptor:
+    """Versión cacheada del descriptor de seguridad vinculada al path y su timestamp de modificación."""
+    attrs = _get_file_attrs(path_str)
     in_use = False
     try:
-        in_use = _is_file_locked_by_other_process(str(path))
+        in_use = _is_file_locked_by_other_process(path_str)
     except (OSError, AttributeError, ctypes.ArgumentError):
         in_use = True
     return SecurityDescriptor(
@@ -279,6 +277,17 @@ def _get_security_descriptor(path: Path) -> SecurityDescriptor:
         is_protected_system=bool(attrs & (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | Win32Attr.TEMPORARY)),
         is_in_use=in_use
     )
+
+def _get_security_descriptor(path: Path) -> SecurityDescriptor:
+    """
+    Construye un descriptor de seguridad para evaluar el archivo en un instante dado.
+    Utiliza el mtime del archivo para invalidar el cache si el archivo cambia.
+    """
+    try:
+        mtime = path.stat().st_mtime
+    except OSError:
+        mtime = 0.0
+    return _get_security_descriptor_cached(str(path), mtime)
 
 @lru_cache(maxsize=1024)
 def _is_file_locked_by_other_process(path_str: str) -> bool:
