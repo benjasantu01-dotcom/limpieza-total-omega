@@ -225,11 +225,15 @@ class Scanner:
         """Ejecuta todas las heurísticas registradas sobre un archivo."""
         for check_fn in ALL_CHECKS:
             try:
+                if not callable(check_fn):
+                    continue
                 finding = check_fn(path, entry, self.now_ts)
                 if finding is not None:
                     self.results.append(finding)
+            except (AttributeError, TypeError, ValueError) as e:
+                logger.warning(f"Error lógico en heurística {check_fn.__name__} para {path}: {e}")
             except Exception as e:
-                logger.debug(f"Error en heurística {check_fn.__name__} para {path}: {e}")
+                logger.debug(f"Error inesperado en heurística {check_fn.__name__} para {path}: {e}")
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> List[Suspicion]:
     """Análisis estático de un archivo específico sin recursión."""
