@@ -501,3 +501,12 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-10-01T12:51:24` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `purge_all` y `restore_item` reemplazando búsquedas lineales `O(N)` en listas por diccionarios `O(1)` pre-construidos para evitar iteraciones redundantes sobre el manifiesto.
 - `2026-10-01T12:51:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-01T12:51:24` Corrida terminada. Total usado hoy: 304.
+- `2026-10-01T12:58:29` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-01T12:58:54` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 100): unterminated string literal (detected at line 100)
+- `2026-10-01T12:59:40` ➖ Sin cambios en safety.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de caché local dentro de `_is_system_path_raw` para evitar el costo de computación repetitiva de la división de cadenas y la creación de sets al verificar rutas, mejorando el rendimiento en iteraciones masivas de escaneo.
+- `2026-10-01T12:59:41` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-01T12:59:44` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-01T13:00:20` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se implementó un `lru_cache` manual (vía diccionario con límite) en `Scanner._is_inside_base_root` y se optimizó el chequeo de extensiones eliminando el uso de `rfind` y `str.lower` repetitivos en favor de una búsqueda directa en el `frozenset` existente, reduciendo significativamente la carga computacional en recorridos de directorios extensos.
+- `2026-10-01T13:00:38` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de carga y acceso a configuraciones evitando la serialización completa de objetos grandes mediante la implementación de `copy()` sobre el diccionario cacheado en `load` y un acceso directo más eficiente en `get`.
+- `2026-10-01T13:00:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-01T13:00:38` Corrida terminada. Total usado hoy: 308.

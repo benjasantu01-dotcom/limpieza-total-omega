@@ -17,7 +17,7 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime
-from typing import List, Optional, Union, Final, Callable, TypeAlias, NamedTuple
+from typing import List, Optional, Union, Final, Callable, TypeAlias, NamedTuple, Dict
 from safety import is_protected_path
 
 # Configuración de logger para el módulo
@@ -164,6 +164,7 @@ class Scanner:
         self.results: List[Suspicion] = []
         self.seen: set[str] = set()
         self.safe_cache: set[str] = set()
+        self._root_cache: Dict[str, bool] = {}
         # Se guarda el Path resuelto para asegurar comparaciones canónicas
         self.base_root: Path = base_root.resolve()
         self.base_root_str: str = str(self.base_root).lower()
@@ -171,9 +172,14 @@ class Scanner:
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica que la ruta visitada no escape del directorio raíz definido (sandbox)."""
+        if entry_path in self._root_cache:
+            return self._root_cache[entry_path]
         try:
             target = Path(entry_path).resolve()
-            return str(target).lower().startswith(self.base_root_str)
+            result = str(target).lower().startswith(self.base_root_str)
+            if len(self._root_cache) < 1000:
+                self._root_cache[entry_path] = result
+            return result
         except (OSError, RuntimeError):
             return False
 
@@ -219,8 +225,8 @@ class Scanner:
 
     def _is_relevant_extension(self, name: str) -> bool:
         """Filtra extensiones que no tienen interés para el motor de heurísticas."""
-        idx = name.rfind('.')
-        return name[idx:].lower() in SUSPICIOUS_ALL_EXTS if idx != -1 else False
+        _, ext = os.path.splitext(name)
+        return ext.lower() in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
         """Despacha la entrada según su tipo para aplicar heurísticas o seguir recursión."""

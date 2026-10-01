@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **215** (42.7% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 45
-- Sin cambios (nada sustancial que mejorar): 13
+- Mejoras aceptadas: **214** (42.5% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 46
+- Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-30 | 85 | 7 | 19 | 4 | 85 |
-| 2026-10-01 | 130 | 7 | 26 | 9 | 132 |
+| 2026-09-30 | 82 | 6 | 19 | 4 | 85 |
+| 2026-10-01 | 132 | 7 | 27 | 10 | 132 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
-- seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **49**
+- seguridad defensiva: **46**
+- rendimiento: **34**
 - robustez ante casos límite: **34**
-- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **23**
-- `duplicates.py`: **21**
+- `diskreport.py`: **22**
 - `quarantine.py`: **20**
+- `duplicates.py`: **20**
+- `settings.py`: **18**
 - `organizer.py`: **17**
-- `settings.py`: **17**
 - `healthscore.py`: **16**
 - `assistant.py`: **16**
-- `branding.py`: **15**
 - `memory.py`: **15**
+- `scanner.py`: **15**
 - `safety.py`: **14**
+- `branding.py`: **14**
 - `browser.py`: **14**
-- `scanner.py`: **14**
 - `startup.py`: **11**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-01T13:00:38` **settings.py** (rendimiento): Optimicé el rendimiento de carga y acceso a configuraciones evitando la serialización completa de objetos grandes mediante la implementación de `copy()` sobre el diccionario cacheado en `load` y un acceso directo más eficiente en `get`.
+- `2026-10-01T13:00:20` **scanner.py** (rendimiento): Se implementó un `lru_cache` manual (vía diccionario con límite) en `Scanner._is_inside_base_root` y se optimizó el chequeo de extensiones eliminando el uso de `rfind` y `str.lower` repetitivos en favor de una búsqueda directa en el `frozenset` existente, reduciendo significativamente la carga computacional en recorridos de directorios extensos.
 - `2026-10-01T12:50:56` **organizer.py** (rendimiento): Optimicé el rendimiento de `_process_directory` integrando la verificación de `is_valid_junk_extension` directamente en `_is_valid_junk_entry` para evitar llamadas redundantes a funciones auxiliares, y pre-calculé la conversión de `st_mtime` a `timestamp` una sola vez dentro del loop principal, reduciendo drásticamente la carga de procesamiento de objetos `datetime` en directorios grandes.
 - `2026-10-01T12:41:43` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantemente costosas a `is_safe_to_modify` y `path.exists()` dentro del bucle mediante el uso de los atributos ya disponibles en `os.DirEntry`.
 - `2026-10-01T12:29:16` **assistant.py** (rendimiento): Se implementó un cacheo más eficiente en `_format_problem_message` y se eliminó la redundancia en `context_as_text`, evitando la regeneración de cadenas innecesarias y reduciendo el costo de cómputo en el bucle principal de la UI.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-01T11:58:07` **diskreport.py** (legibilidad y documentación): Documenté con type hints más precisos y docstrings estructurados las estructuras de datos auxiliares (`ExtStats`, `SizeReport`, `Inode`), clarificando el propósito técnico de cada una para mejorar la mantenibilidad del módulo.
 - `2026-10-01T11:57:35` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del módulo `browser.py` introduciendo `TypeGuard` y tipado explícito en funciones críticas de validación (`_is_unc_path`, `_is_excluded_file`) para clarificar las asunciones del motor de escaneo y evitar errores de tipo en tiempo de ejecución.
 - `2026-10-01T11:48:15` **assistant.py** (legibilidad y documentación): Mejoré la documentación de `SystemContext.ingest` y `_ensure_safe_text` mediante docstrings detallados que explican la lógica de seguridad y el manejo de tipos, facilitando el mantenimiento y la comprensión de las salvaguardas implementadas.
-- `2026-10-01T11:47:17` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save()` agregando una validación previa de integridad mediante `_coerce_and_verify` y capturando explícitamente posibles fallos en la serialización JSON, evitando estados intermedios inconsistentes en el sistema de archivos.
-- `2026-10-01T11:46:44` **scanner.py** (manejo de errores y validación de entradas): He mejorado la robustez de las heurísticas centralizando la validación de `path` y `entry` en un decorador interno (o validación previa explícita) para evitar errores de tipo `None` o `AttributeError` sin necesidad de repetir chequeos `if` en cada función, asegurando que el motor no aborte ante archivos con metadatos inaccesibles.

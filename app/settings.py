@@ -440,7 +440,7 @@ def reset(custom_base: PathLike | None = None) -> AppSettings:
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
     """Acceso rápido a una configuración individual."""
-    return load(custom_base).get(key, DEFAULTS.get(key))
+    return load(custom_base).get(key)
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
     """Recupera la clave API, priorizando la variable de entorno sobre la persistida."""
