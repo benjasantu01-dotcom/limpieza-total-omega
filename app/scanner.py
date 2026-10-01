@@ -226,6 +226,8 @@ class Scanner:
         try:
             if not self._is_safe_entry(entry):
                 return
+            
+            # Chequeo tipo antes de evaluar heurísticas o recurrir
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, directory_stack)
             elif entry.is_file(follow_symlinks=False):

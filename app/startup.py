@@ -298,8 +298,6 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
     scan_folders = folders if folders is not None else startup_folders()
     
     for folder in scan_folders:
-        if is_protected_path(folder):
-            continue
         try:
             with os.scandir(folder) as it:
                 for entry in it:

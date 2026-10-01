@@ -549,11 +549,9 @@ def _is_system_path_raw(path_str: str) -> bool:
     if any(path_lower.startswith(root) for root in _SYSTEM_ROOT_PATHS_TUPLE):
         return True
     
-    # Optimizamos la comprobación de partes evitando split()
-    for name in PROTECTED_DIR_NAMES:
-        if f"{os.sep}{name}{os.sep}" in path_lower or path_lower.endswith(f"{os.sep}{name}"):
-            return True
-    return False
+    # Búsqueda eficiente basada en la intersección de partes del path con el conjunto de nombres protegidos
+    parts_set = set(path_lower.split(os.sep))
+    return bool(parts_set & PROTECTED_DIR_NAMES)
 
 @lru_cache(maxsize=4096)
 def is_protected_path(path: PathLike) -> bool:

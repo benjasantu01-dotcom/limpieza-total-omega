@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-30 | 133 | 11 | 28 | 11 | 121 |
-| 2026-10-01 | 85 | 5 | 18 | 5 | 87 |
+| 2026-09-30 | 129 | 11 | 28 | 11 | 121 |
+| 2026-10-01 | 89 | 5 | 18 | 5 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
-- seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **49**
-- rendimiento: **34**
+- seguridad defensiva: **46**
+- rendimiento: **38**
 - robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **23**
-- `duplicates.py`: **22**
+- `diskreport.py`: **22**
+- `duplicates.py`: **21**
 - `quarantine.py`: **20**
-- `healthscore.py`: **18**
 - `memory.py`: **17**
 - `organizer.py`: **17**
-- `settings.py`: **16**
+- `settings.py`: **17**
+- `healthscore.py`: **17**
 - `branding.py`: **16**
-- `safety.py`: **14**
+- `safety.py`: **15**
+- `scanner.py`: **15**
 - `assistant.py`: **14**
-- `scanner.py`: **14**
-- `browser.py`: **12**
-- `startup.py`: **12**
+- `startup.py`: **13**
+- `browser.py`: **11**
 - `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-01T08:37:42` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_folders` reemplazando la iteración secuencial de archivos por un filtrado proactivo que evita crear objetos `StartupEntry` innecesarios antes de validar la existencia o el estado del binario, reduciendo así la carga sobre la caché de I/O.
+- `2026-10-01T08:35:46` **settings.py** (rendimiento): Se optimizó `_load_impl` para evitar redundancias eliminando la validación del estado del archivo (`_is_file_secure_to_read`) antes de abrirlo, confiando en su lugar en el manejo de excepciones y las verificaciones integradas de integridad post-parsing, lo que reduce llamadas innecesarias al sistema de archivos.
+- `2026-10-01T08:34:10` **scanner.py** (rendimiento): Se optimizó el acceso a atributos y estadísticas en `process_entry` mediante la eliminación de llamadas redundantes a `entry.is_file()` y `entry.is_dir()`, consolidando la lógica de filtrado de extensiones y validación antes de realizar consultas costosas al sistema de archivos.
+- `2026-10-01T08:33:34` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` reemplazando la iteración completa sobre `PROTECTED_DIR_NAMES` por una búsqueda en conjunto (`set`/`frozenset`) y evitando manipulaciones de strings costosas dentro del bucle, manteniendo la semántica de detección.
 - `2026-10-01T08:25:02` **quarantine.py** (rendimiento): Optimicé `list_items` y `purge_all` para evitar la creación innecesaria de diccionarios temporales y reducir la complejidad algorítmica de O(N) a O(1) en las búsquedas frecuentes mediante el uso de `set` y `dict` optimizados, mejorando el rendimiento al manipular cuarentenas grandes.
 - `2026-10-01T08:23:05` **memory.py** (rendimiento): Se optimizó el proceso de recolección de memoria de los procesos (que es la operación más costosa del módulo) aplicando un filtro de nombre de columna y una reducción significativa del tamaño del CSV en el lado de PowerShell, evitando la transferencia y parseo de datos innecesarios en Python.
 - `2026-10-01T08:12:54` **duplicates.py** (rendimiento): Optimicé `_collect_candidates` utilizando un conjunto (`set`) para registrar las rutas ya visitadas (`real_path`) y evitando llamadas redundantes a `Path.resolve()` dentro del bucle mediante el uso de la ruta real obtenida del iterador `os.scandir`, reduciendo drásticamente las operaciones I/O innecesarias y el costo computacional de resolución de rutas en estructuras de carpetas profundas.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-01T07:46:37` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones internas críticas y se añadieron `type hints` consistentes en las funciones de manejo de archivos para mejorar la mantenibilidad y claridad del código.
 - `2026-10-01T07:45:41` **memory.py** (legibilidad y documentación): Se introdujeron type hints en los retornos y parámetros faltantes, y se mejoró la documentación mediante Google-style docstrings, clarificando las responsabilidades de las funciones y los tipos de datos manejados para facilitar el mantenimiento.
 - `2026-10-01T07:32:59` **healthscore.py** (legibilidad y documentación): Se introdujeron type hints explícitos en la interfaz de la función `compute_score` y `SystemMetrics.validate` para mejorar la legibilidad y robustez, y se documentó mediante docstrings el contrato de las funciones de scoring para clarificar el comportamiento del pipeline.
-- `2026-10-01T07:32:47` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `duplicates.py` añadiendo type hints faltantes, documentando con docstrings las responsabilidades de las funciones internas de hashing y normalizando las verificaciones de seguridad para reducir la redundancia en el flujo de procesamiento de archivos.
-- `2026-10-01T07:32:21` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica y la mantenibilidad de `walk_files` añadiendo un docstring que detalla el uso de `os.scandir` para optimización de I/O y aclarando que la prevención de ciclos de directorios se basa en la comparación de inodos.
-- `2026-10-01T07:31:45` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de Type Hints faltantes (especialmente en el chequeo de kernels) y la refactorización de `SYSTEM_HIDDEN_FLAGS` para mejorar la claridad de su propósito, asegurando que las constantes de atributos de Windows sean legibles y mantengan la integridad del sistema.
-- `2026-10-01T07:23:02` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de procesamiento de JSON y una clarificación en los docstrings sobre el flujo de seguridad, facilitando la auditoría del código sin alterar la lógica.

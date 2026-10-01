@@ -306,10 +306,10 @@ def validate(raw_values: Any) -> AppSettings:
                 config[key_enum.value] = validated_val
     return config # type: ignore
 
-def _is_file_secure_to_read(ruta: Path, st_info: os.stat_result | None = None) -> bool:
+def _is_file_secure_to_read(ruta: Path) -> bool:
     """Garantiza que el archivo sea un archivo regular, sin enlaces y con permisos restringidos."""
     try:
-        st = st_info or ruta.stat()
+        st = ruta.stat()
         if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
         if not stat.S_ISREG(st.st_mode) or _Validators._is_reparse_point(ruta): return False
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
@@ -326,10 +326,8 @@ def _load_impl(ruta: Path) -> AppSettings:
     if not ruta.exists(): return dict(DEFAULTS)
     try:
         with open(ruta, "r", encoding="utf-8") as f:
-            st = os.fstat(f.fileno())
-            if not _is_file_secure_to_read(ruta, st): return dict(DEFAULTS)
             data = json.load(f)
-        if _is_dict(data):
+        if _is_dict(data) and _is_file_secure_to_read(ruta):
             return _coerce_and_verify(validate(data))
     except (OSError, PermissionError, IOError, json.JSONDecodeError, UnicodeDecodeError, EOFError):
         pass
