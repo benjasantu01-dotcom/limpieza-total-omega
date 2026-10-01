@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **225** (44.6% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-30 | 123 | 11 | 26 | 11 | 113 |
-| 2026-10-01 | 98 | 6 | 19 | 5 | 92 |
+| 2026-09-30 | 123 | 11 | 26 | 11 | 109 |
+| 2026-10-01 | 102 | 6 | 19 | 5 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **49**
+- seguridad defensiva: **45**
 - robustez ante casos límite: **42**
-- seguridad defensiva: **41**
 - rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **23**
-- `duplicates.py`: **21**
+- `diskreport.py`: **24**
+- `duplicates.py`: **22**
 - `quarantine.py`: **20**
+- `branding.py`: **17**
 - `healthscore.py`: **17**
 - `memory.py`: **17**
 - `organizer.py`: **17**
 - `settings.py`: **17**
 - `assistant.py`: **16**
-- `branding.py`: **16**
 - `safety.py`: **15**
 - `scanner.py`: **15**
+- `browser.py`: **13**
 - `startup.py`: **12**
-- `browser.py`: **12**
 - `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-01T09:25:29` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` para asegurar que el escaneo de directorios sea estrictamente consistente con los permisos y la topología de archivos al omitir explícitamente puntos de reparse (junctions/symlinks) durante la iteración, evitando así escapes accidentales de las zonas autorizadas del usuario.
+- `2026-10-01T09:25:02` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo en `walk_files` y `_collect_summary_data` al añadir una validación de seguridad explícita (`is_protected_path`) antes de procesar cualquier archivo individual encontrado, previniendo que archivos protegidos que pudieran estar dentro de carpetas escaneables sean contabilizados o indexados accidentalmente.
+- `2026-10-01T09:24:32` **browser.py** (seguridad defensiva): Se ha mejorado la defensa contra ataques de tipo "Time-of-Check Time-of-Use" (TOCTOU) y validación de rutas al delegar la normalización absoluta de la base antes del escaneo recursivo, asegurando que cada nodo visitado se valide explícitamente contra `is_safe_to_modify` dentro del proceso de escaneo.
+- `2026-10-01T09:24:03` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `branding.py` mediante una validación explícita de `path` en `save_logo_svg` y una limpieza en la entrada de datos en `logo_svg` para prevenir posibles inyecciones de rutas o valores fuera de rango que puedan comprometer la integridad del sistema de archivos.
 - `2026-10-01T09:15:17` **assistant.py** (seguridad defensiva): Mejoré la seguridad de `_sanitize_query` y `ask` al mover la validación de seguridad antes de cualquier manipulación de texto, garantizando que el asistente nunca procese consultas que contengan caracteres de control o inyección, siguiendo estrictamente el principio de defensa en profundidad.
 - `2026-10-01T09:14:16` **settings.py** (robustez ante casos límite): Mejoré `_is_file_secure_to_read` para manejar robustamente casos donde la ruta no existe o es inaccesible, evitando que `st.stat()` lance excepciones que interrumpan el flujo de carga durante la validación de archivos de configuración.
 - `2026-10-01T09:05:10` **safety.py** (robustez ante casos límite): Se introdujo la verificación `_is_volume_removable_media` para detectar de forma robusta unidades de medios extraíbles (tipo SD, USB o discos externos) mediante `GetDriveTypeW`, previniendo que la aplicación intente realizar modificaciones en volúmenes inestables o de almacenamiento externo que podrían desconectarse durante la operación, incrementando la robustez ante casos límite de hardware.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-01T08:43:19` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_get_source_value` para manejar objetos dinámicos mediante una verificación estricta de tipos y un bloque `try-except` más granular, evitando que el asistente falle o procese basura si el objeto de origen contiene atributos inesperados o maliciosos durante la ingesta.
 - `2026-10-01T08:37:42` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_folders` reemplazando la iteración secuencial de archivos por un filtrado proactivo que evita crear objetos `StartupEntry` innecesarios antes de validar la existencia o el estado del binario, reduciendo así la carga sobre la caché de I/O.
 - `2026-10-01T08:35:46` **settings.py** (rendimiento): Se optimizó `_load_impl` para evitar redundancias eliminando la validación del estado del archivo (`_is_file_secure_to_read`) antes de abrirlo, confiando en su lugar en el manejo de excepciones y las verificaciones integradas de integridad post-parsing, lo que reduce llamadas innecesarias al sistema de archivos.
-- `2026-10-01T08:34:10` **scanner.py** (rendimiento): Se optimizó el acceso a atributos y estadísticas en `process_entry` mediante la eliminación de llamadas redundantes a `entry.is_file()` y `entry.is_dir()`, consolidando la lógica de filtrado de extensiones y validación antes de realizar consultas costosas al sistema de archivos.
-- `2026-10-01T08:33:34` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` reemplazando la iteración completa sobre `PROTECTED_DIR_NAMES` por una búsqueda en conjunto (`set`/`frozenset`) y evitando manipulaciones de strings costosas dentro del bucle, manteniendo la semántica de detección.
-- `2026-10-01T08:25:02` **quarantine.py** (rendimiento): Optimicé `list_items` y `purge_all` para evitar la creación innecesaria de diccionarios temporales y reducir la complejidad algorítmica de O(N) a O(1) en las búsquedas frecuentes mediante el uso de `set` y `dict` optimizados, mejorando el rendimiento al manipular cuarentenas grandes.
-- `2026-10-01T08:23:05` **memory.py** (rendimiento): Se optimizó el proceso de recolección de memoria de los procesos (que es la operación más costosa del módulo) aplicando un filtro de nombre de columna y una reducción significativa del tamaño del CSV en el lado de PowerShell, evitando la transferencia y parseo de datos innecesarios en Python.

@@ -268,6 +268,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             else:
                                 stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
+                            # Seguridad extra: Validar archivo individual contra política
+                            if skip_protected and is_protected_path(Path(entry.path)):
+                                continue
                             st = entry.stat(follow_symlinks=False)
                             if st.st_size >= 0: yield Path(entry.path), st.st_size
                     except (OSError, PermissionError, FileNotFoundError, AttributeError): 
@@ -332,6 +335,10 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
+        # Doble validación de seguridad antes de procesar la métrica
+        if skip_protected and is_protected_path(path):
+            continue
+            
         if size_bytes >= 0:
             try:
                 total_bytes += size_bytes

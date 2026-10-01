@@ -378,8 +378,8 @@ def _get_scaled_poly(scale: float, canvas_x: float, canvas_y: float) -> Tuple[fl
 
 @lru_cache(maxsize=8)
 def logo_svg(size: int = 128) -> str:
-    """Genera el código XML del logo corporativo en formato SVG."""
-    s = max(1, min(4096, int(size)))
+    """Genera el código XML del logo corporativo en formato SVG con parámetros validados."""
+    s = max(16, min(1024, int(size)))
     
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
   <defs>
@@ -417,8 +417,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         ensure_safe_to_modify(path)
         if not path.parent.exists():
             path.parent.mkdir(parents=True, exist_ok=True)
-        safe_size = max(16, min(1024, int(size)))
-        path.write_text(logo_svg(safe_size), encoding="utf-8")
+        path.write_text(logo_svg(size), encoding="utf-8")
         return path if path.is_file() else None
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError, AttributeError):
         return None

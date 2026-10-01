@@ -184,12 +184,10 @@ def _is_file_in_use(path_obj: Path) -> bool:
     if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
         return True
     try:
-        # Se intenta abrir solo lectura con modo exclusivo
         fd: int = os.open(str(path_obj), os.O_RDONLY | os.O_EXCL)
         os.close(fd)
         return False
     except (OSError, PermissionError, FileNotFoundError, InterruptedError):
-        # Captura errores comunes de acceso, incluyendo bloqueo por el SO
         return True
 
 def _process_file_entry(
@@ -201,7 +199,8 @@ def _process_file_entry(
 ) -> ScanResult:
     """Gestiona la lógica de recursión o conteo para archivos y directorios."""
     try:
-        if not _ensure_within_base(entry.path, root_abs_norm):
+        p_entry = Path(entry.path)
+        if not _ensure_within_base(str(p_entry), root_abs_norm) or not is_safe_to_modify(p_entry):
             return ScanResult(0, True)
         
         st: os.stat_result = entry.stat(follow_symlinks=False)
@@ -210,11 +209,11 @@ def _process_file_entry(
         visited_inodes.add(st.st_ino)
         
         if entry.is_dir(follow_symlinks=False):
-            if is_protected_path(Path(entry.path)):
+            if is_protected_path(p_entry):
                 return ScanResult(0, True)
-            return _sum_directory_recursive(Path(entry.path), root_abs_norm, kernel32, visited_inodes, depth + 1)
+            return _sum_directory_recursive(p_entry, root_abs_norm, kernel32, visited_inodes, depth + 1)
         
-        if _is_file_in_use(Path(entry.path)):
+        if _is_file_in_use(p_entry):
             return ScanResult(0, True)
             
         return ScanResult(st.st_size, True)
