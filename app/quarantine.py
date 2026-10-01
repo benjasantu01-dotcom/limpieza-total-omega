@@ -29,7 +29,7 @@ import time
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
-from typing import List, Union, Dict, Any, TypeAlias, Set, Tuple, Optional
+from typing import List, Union, Dict, Any, TypeAlias, Set, Tuple, Optional, Callable
 
 from safety import (
     UnsafePathError,
@@ -68,6 +68,17 @@ WINDOWS_RESERVED_NAMES: Set[str] = {
     "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", 
     "LPT6", "LPT7", "LPT8", "LPT9"
 }
+
+def _check_io_error_context(func: Callable, *args, **kwargs) -> Any:
+    """Implementa reintento con espera para operaciones de I/O susceptibles a bloqueos."""
+    max_retries = 3
+    for i in range(max_retries):
+        try:
+            return func(*args, **kwargs)
+        except (OSError, IOError, PermissionError) as e:
+            if i == max_retries - 1:
+                raise e
+            time.sleep(0.1 * (2 ** i))
 
 @dataclass
 class QuarantineItem:
@@ -224,7 +235,7 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
         if expected_hash and _get_sha256(resolved) != expected_hash:
             return False
         if not _is_file_locked(resolved):
-            resolved.unlink()
+            _check_io_error_context(resolved.unlink)
             return True
         return False
     except (OSError, PermissionError, UnsafePathError):
@@ -287,7 +298,7 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
              raise UnsafePathError("Ruta de cuarentena no puede ser un punto de reparse.")
         ensure_safe_to_modify(path)
         if not path.exists():
-            path.mkdir(parents=True, exist_ok=True)
+            _check_io_error_context(path.mkdir, parents=True, exist_ok=True)
         if not os.access(path, os.W_OK | os.R_OK):
             raise PermissionError("Permisos insuficientes en directorio.")
         _ensure_path_ownership(path)
@@ -454,7 +465,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         raise RuntimeError(f"Error crítico al persistir manifiesto: {e}")
     finally:
         if temp_path and temp_path.exists():
-            try: os.remove(temp_path)
+            try: _check_io_error_context(os.remove, temp_path)
             except OSError: pass
 
 
@@ -467,7 +478,7 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
     test_file = dest_dir / f".test_{uuid.uuid4().hex}"
     try:
         test_file.touch()
-        test_file.unlink()
+        _check_io_error_context(test_file.unlink)
     except OSError:
         raise OSError("Sistema de archivos del destino marcado como solo lectura.")
     usage = shutil.disk_usage(dest_dir)
@@ -528,7 +539,7 @@ def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> 
             raise OSError("Falla crítica: el hash del archivo copiado no coincide.")
     except (OSError, IOError) as e:
         if temp_dest.exists():
-            try: os.remove(temp_dest)
+            try: _check_io_error_context(temp_dest.unlink)
             except OSError: pass
         raise OSError(f"Falla durante operación I/O de copia: {e}")
 
@@ -551,7 +562,7 @@ def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, int]:
         return source_hash, destination.stat().st_ino
     except Exception as e:
         if temp_dest.exists():
-            try: temp_dest.unlink()
+            try: _check_io_error_context(temp_dest.unlink)
             except OSError: pass
         if destination.exists():
             _safe_unlink(destination)
@@ -685,7 +696,7 @@ def quarantine_file(
             
         if source_path.exists():
             try:
-                source_path.unlink()
+                _check_io_error_context(source_path.unlink)
             except OSError as e:
                 raise RuntimeError(f"Aislamiento exitoso, pero falla al remover origen: {e}")
                 
@@ -740,7 +751,7 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         
         if not parent.exists():
             try:
-                parent.mkdir(parents=True, exist_ok=True)
+                _check_io_error_context(parent.mkdir, parents=True, exist_ok=True)
             except OSError as e:
                 raise RuntimeError(f"Falla al crear destino: {e}")
         

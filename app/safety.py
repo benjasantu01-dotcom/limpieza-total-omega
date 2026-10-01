@@ -343,6 +343,18 @@ def _is_volume_readonly(path_str: Optional[str]) -> bool:
     return False
 
 @lru_cache(maxsize=128)
+def _is_volume_removable_media(path_str: Optional[str]) -> bool:
+    """Verifica si el volumen es extraíble (USB, SD, etc.) para evitar riesgos de desconexión."""
+    if os.name != 'nt' or not isinstance(path_str, str) or not path_str or _is_path_too_long(path_str): return False
+    try:
+        drive_path = os.path.splitdrive(path_str)[0]
+        if not drive_path: return False
+        root = drive_path + "\\"
+        return ctypes.windll.kernel32.GetDriveTypeW(root) == DRIVE_REMOVABLE
+    except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
+        return False
+
+@lru_cache(maxsize=128)
 def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
     """Verifica si el volumen está comprimido o cifrado (BitLocker), restringiendo modificaciones."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str or _is_path_too_long(path_str): return False
@@ -383,6 +395,7 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _rule(ProtectionReason.KERNEL_LOCKED, lambda p, _, __: _is_kernel_managed(p)),
     _rule(ProtectionReason.READ_ONLY, lambda _, st, __: not bool(st.st_mode & stat.S_IWRITE)),
     _rule(ProtectionReason.VOLUME_READ_ONLY, lambda p, _, __: _is_volume_readonly(str(p))),
+    _rule(ProtectionReason.REMOVABLE_DRIVE, lambda p, _, __: _is_volume_removable_media(str(p))),
     _rule(ProtectionReason.VOLUME_RESTRICTED, lambda p, _, __: _is_volume_compressed_or_encrypted(str(p))),
     _rule(ProtectionReason.IN_USE, lambda _, __, sd: sd.is_in_use),
     _rule(ProtectionReason.SYSTEM_HIDDEN, lambda _, __, sd: sd.is_protected_system),
@@ -406,9 +419,9 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
     ProtectionReason.REPARSE_POINT: SafetyValidationErrorCode.REPARSE_POINT_DETECTED,
     ProtectionReason.ADS: SafetyValidationErrorCode.ADS_DETECTED,
     ProtectionReason.VOLUME_READ_ONLY: SafetyValidationErrorCode.VOLUME_READ_ONLY,
+    ProtectionReason.REMOVABLE_DRIVE: SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED,
     ProtectionReason.VOLUME_RESTRICTED: SafetyValidationErrorCode.VOLUME_RESTRICTED,
     ProtectionReason.REMOTE_DRIVE: SafetyValidationErrorCode.REMOTE_DRIVE_DETECTED,
-    ProtectionReason.REMOVABLE_DRIVE: SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED,
     ProtectionReason.KERNEL_LOCKED: SafetyValidationErrorCode.KERNEL_LOCKED_FILE,
     ProtectionReason.ACCESS_WRITE: SafetyValidationErrorCode.WRITE_ACCESS_DENIED,
     ProtectionReason.MOUNT_POINT: SafetyValidationErrorCode.MOUNT_POINT_DETECTED,
@@ -790,6 +803,7 @@ def describe_protection(path: PathLike) -> str:
             if os.path.ismount(p): return f"'{p}' es un punto de montaje."
             if _is_readonly(str(p)): return f"'{p}' es solo lectura."
             if _is_volume_readonly(str(p)): return f"'{p}' pertenece a un volumen de solo lectura."
+            if _is_volume_removable_media(str(p)): return f"'{p}' pertenece a un volumen extraíble."
             if _is_volume_compressed_or_encrypted(str(p)): return f"'{p}' pertenece a un volumen cifrado/comprimido."
             if _is_file_locked_by_other_process(str(p)): return f"'{p}' en uso."
             if _get_security_descriptor(p).attrs & (Win32Attr.COMPRESSED | Win32Attr.ENCRYPTED): return f"'{p}' archivo cifrado o comprimido."

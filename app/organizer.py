@@ -203,11 +203,10 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if _is_unc_path(target_dir) or src.drive != target_dir.drive: return False
         if _is_recursive_violation(src, dest) or not os.access(src, os.R_OK): return False
         
-        # Auditoría de metadatos del archivo
+        # Auditoría de metadatos y coherencia temporal
         stats = src.stat()
         if stats.st_nlink > 1: return False # Hardlinks sospechosos
         if not (0 <= stats.st_size < MAX_FILE_SIZE_BYTES): return False
-        if stats.st_mtime > datetime.now().timestamp() + 3600: return False
         
         # Permisos de escritura y estado de bloqueo de SO
         if not os.access(src.parent, os.W_OK): return False

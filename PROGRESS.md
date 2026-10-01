@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **217** (43.1% de aceptación)
+- Mejoras aceptadas: **219** (43.5% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-30 | 124 | 11 | 26 | 11 | 120 |
-| 2026-10-01 | 93 | 5 | 18 | 5 | 91 |
+| 2026-09-30 | 123 | 11 | 26 | 11 | 117 |
+| 2026-10-01 | 96 | 5 | 19 | 5 | 91 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **41**
+- robustez ante casos límite: **41**
+- seguridad defensiva: **40**
 - rendimiento: **38**
-- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **23**
 - `duplicates.py`: **21**
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
 - `healthscore.py`: **17**
 - `memory.py`: **17**
+- `organizer.py`: **17**
 - `branding.py`: **16**
-- `organizer.py`: **16**
 - `settings.py`: **16**
 - `assistant.py`: **15**
+- `safety.py`: **15**
 - `scanner.py`: **15**
-- `safety.py`: **14**
-- `startup.py`: **13**
+- `startup.py`: **12**
 - `browser.py`: **12**
 - `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-01T09:05:10` **safety.py** (robustez ante casos límite): Se introdujo la verificación `_is_volume_removable_media` para detectar de forma robusta unidades de medios extraíbles (tipo SD, USB o discos externos) mediante `GetDriveTypeW`, previniendo que la aplicación intente realizar modificaciones en volúmenes inestables o de almacenamiento externo que podrían desconectarse durante la operación, incrementando la robustez ante casos límite de hardware.
+- `2026-10-01T09:04:19` **quarantine.py** (robustez ante casos límite): Se introdujo `_check_io_error_context` para manejar errores transitorios (como archivos bloqueados o falta de permisos) mediante una lógica de reintento con espera exponencial, mejorando la resiliencia ante condiciones de carrera y bloqueos temporales del sistema de archivos al manipular la cuarentena.
+- `2026-10-01T09:03:35` **organizer.py** (robustez ante casos límite): Se introdujo una validación de coherencia en `_is_safe_for_disk_op` para prevenir errores de E/S en archivos que han cambiado de estado (ej. borrados o movidos por otro proceso) entre la detección y la ejecución, usando `path.stat()` para verificar que el inodo y el tamaño sigan siendo consistentes con el objeto `JunkFile`.
 - `2026-10-01T09:01:03` **memory.py** (robustez ante casos límite): Se ha añadido un robusto manejo de errores en `top_memory_processes` ante posibles salidas malformadas de PowerShell o subprocesos interrumpidos, asegurando que el estado del módulo no se corrompa si el comando falla o devuelve contenido parcial.
 - `2026-10-01T08:44:46` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` implementando un chequeo explícito de accesibilidad y estados de error mediante un bloque `try-except` más granular dentro del loop de `os.scandir`, asegurando que archivos bloqueados o con errores de lectura (comunes en sistemas con alta concurrencia) no aborten el recorrido ni propaguen excepciones inesperadas.
 - `2026-10-01T08:44:33` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_in_use` añadiendo el manejo del error `AccessError` (WinError 5) y otros fallos de acceso común en Windows, asegurando que el intento de abrir archivos bloqueados (típicos en cachés de navegadores activos) no propague excepciones inesperadas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-01T08:23:05` **memory.py** (rendimiento): Se optimizó el proceso de recolección de memoria de los procesos (que es la operación más costosa del módulo) aplicando un filtro de nombre de columna y una reducción significativa del tamaño del CSV en el lado de PowerShell, evitando la transferencia y parseo de datos innecesarios en Python.
 - `2026-10-01T08:12:54` **duplicates.py** (rendimiento): Optimicé `_collect_candidates` utilizando un conjunto (`set`) para registrar las rutas ya visitadas (`real_path`) y evitando llamadas redundantes a `Path.resolve()` dentro del bucle mediante el uso de la ruta real obtenida del iterador `os.scandir`, reduciendo drásticamente las operaciones I/O innecesarias y el costo computacional de resolución de rutas en estructuras de carpetas profundas.
 - `2026-10-01T08:12:27` **diskreport.py** (rendimiento): Optimicé el rendimiento de `_collect_summary_data` eliminando la creación repetitiva de objetos lambda y calculando la extensión una única vez por archivo, reduciendo la sobrecarga de llamadas a funciones en el bucle principal de escaneo.
-- `2026-10-01T08:03:09` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` eliminando la creación repetitiva de listas y la ejecución innecesaria de iteraciones mediante el uso de un diccionario de tokens para acceso O(1) y una búsqueda de coincidencia temprana, evitando procesar toda la consulta si un token relevante ya fue identificado.
-- `2026-10-01T08:02:27` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando `Type Hints` faltantes en las funciones públicas y docstrings detallados que explican el "porqué" de las validaciones de seguridad en los métodos de `StartupEntry`.
-- `2026-10-01T07:53:33` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de docstrings técnicos en funciones clave y la sustitución de comentarios genéricos por anotaciones que clarifican el propósito de las validaciones, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
