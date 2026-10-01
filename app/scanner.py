@@ -104,13 +104,19 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     return True
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Heurística: Detecta doble extensión (ej. archivo.pdf.exe) utilizada para engañar al usuario."""
+    """
+    Heurística: Detecta doble extensión (ej. archivo.pdf.exe).
+    Retorna un objeto Suspicion si se detecta ofuscación de tipo, None en caso contrario.
+    """
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Heurística: Identifica archivos ejecutables nuevos en carpetas de descarga temporales."""
+    """
+    Heurística: Identifica ejecutables nuevos en carpetas temporales.
+    Analiza mtime contra now_ts para determinar si es reciente según LIMITS.recent_hours.
+    """
     if not path or not path.parent or path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
     stats = _safe_stat(entry) if entry else None
@@ -122,7 +128,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Heurística: Detecta ejecutables con nombres de procesos críticos fuera de System32."""
+    """
+    Heurística: Detecta ejecutables con nombres críticos fuera de System32.
+    Previene el spoofing de procesos críticos del sistema operativo.
+    """
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         path_str = str(path).lower()
         if SYSTEM32_LOWER not in path_str:
@@ -130,7 +139,10 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Heurística: Detecta archivos de 0 bytes que podrían actuar como marcadores o ejecutables vacíos."""
+    """
+    Heurística: Detecta archivos de 0 bytes.
+    A menudo utilizados como placeholders o marcadores de ejecución maliciosa.
+    """
     stats = _safe_stat(entry) if entry else None
     if stats is not None:
         size = getattr(stats, "st_size", -1)
