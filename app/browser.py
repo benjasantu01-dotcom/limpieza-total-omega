@@ -163,18 +163,21 @@ def _should_skip_entry(
     kernel32: Optional[ctypes.WinDLL], 
     is_junction_fn: JunctionChecker
 ) -> bool:
-    """Determina mediante reglas de seguridad si una entrada del FS debe ignorarse."""
+    """Determina si la entrada debe ignorarse por reglas de seguridad o archivos sensibles."""
     if entry.name is None or _is_excluded_file(entry.name):
         return True
     
+    # Restricciones de seguridad y formato de ruta
+    if _is_unc_path(entry.path) or len(entry.path) >= MAX_PATH_LEN:
+        return True
+    
+    # Detección de atributos de sistema y puntos de reparse (Junctions/Symlinks)
     try:
         if entry.is_symlink() or is_junction_fn(entry.path) or _is_system_hidden(entry.path, kernel32):
             return True
-        path = entry.path
-        if not path or len(path) >= MAX_PATH_LEN or _is_unc_path(path):
-            return True
     except (OSError, AttributeError, TypeError):
         return True
+        
     return False
 
 def _is_file_in_use(path: str) -> bool:
@@ -195,21 +198,24 @@ def _process_file_entry(
     visited_inodes: Set[int],
     depth: int
 ) -> ScanResult:
-    """Procesa una entrada individual, aplicando filtrado de sandbox y prevención de ciclos."""
+    """Gestiona la lógica de recursión o conteo para archivos y directorios."""
     try:
         if not _ensure_within_base(entry.path, root_abs_norm):
             return ScanResult(0, True)
         
+        # Detección de ciclos mediante inodos
         st = entry.stat(follow_symlinks=False)
         if st.st_ino in visited_inodes:
             return ScanResult(0, True)
         visited_inodes.add(st.st_ino)
         
+        # Si es directorio, validar seguridad antes de descender
         if entry.is_dir(follow_symlinks=False):
             if is_protected_path(Path(entry.path)):
                 return ScanResult(0, True)
             return _sum_directory_recursive(Path(entry.path), root_abs_norm, kernel32, visited_inodes, depth + 1)
         
+        # Archivo: verificar si está en uso antes de sumar
         if _is_file_in_use(entry.path):
             return ScanResult(0, True)
             
@@ -232,13 +238,10 @@ def _sum_directory_recursive(
     try:
         with os.scandir(root_path) as it:
             for entry in it:
-                try:
-                    if _should_skip_entry(entry, kernel32, _IS_JUNCTION_FN):
-                        continue
-                    result = _process_file_entry(entry, root_abs_norm, kernel32, visited_inodes, depth)
-                    total_bytes += result.bytes_found
-                except (OSError, PermissionError):
+                if _should_skip_entry(entry, kernel32, _IS_JUNCTION_FN):
                     continue
+                result = _process_file_entry(entry, root_abs_norm, kernel32, visited_inodes, depth)
+                total_bytes += result.bytes_found
     except (OSError, PermissionError):
         return ScanResult(total_bytes, False)
         

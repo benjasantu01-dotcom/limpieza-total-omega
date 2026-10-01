@@ -350,6 +350,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
         f: io.StringIO = io.StringIO(csv_text.strip())
         reader: csv.DictReader = csv.DictReader(f)
         
+        # Validamos que el reader tenga cabeceras y al menos 2 columnas para operar
         if not reader or not reader.fieldnames or len(reader.fieldnames) < 2:
             return []
             
@@ -363,10 +364,10 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             raw_val_name: Optional[str] = row.get(header_name)
             raw_val_cmd: Optional[str] = row.get(header_cmd)
             
+            # Validación estricta de presencia de datos
             if raw_val_name is None or raw_val_cmd is None:
                 continue
             
-            # Sanitización básica para asegurar compatibilidad con strings de Python
             clean_name: str = "".join(c for c in str(raw_val_name) if ord(c) >= 32).strip()
             clean_cmd: str = "".join(c for c in str(raw_val_cmd) if ord(c) >= 32).strip()
             

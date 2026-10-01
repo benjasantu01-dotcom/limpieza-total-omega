@@ -336,7 +336,19 @@ def _interpolate_rgb(s1: RGBTuple, s2: RGBTuple, delta: float) -> RGBTuple:
 
 @lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
-    """Genera una secuencia de colores interpolados (gradiente) basada en nodos."""
+    """
+    Genera una secuencia de colores interpolados mediante una progresión de nodos.
+    
+    Aplica una interpolación lineal segmentada entre los colores especificados 
+    en 'stops' para asegurar transiciones suaves distribuidas uniformemente.
+    
+    Args:
+        steps: Número total de pasos deseados en la gradiente.
+        stops: Tupla de colores base que definen los puntos de control.
+        
+    Returns:
+        Tupla de colores HEX calculados para la rampa de color.
+    """
     n = max(1, int(steps))
     if not stops or len(stops) < 2: 
         return (stops[0] if stops else C_TEXT_MUTED,) * n
@@ -523,6 +535,9 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
               track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
     """
     Renderiza un gráfico circular indicativo de salud (0-100%).
+    
+    Calcula el arco de progreso basándose en una escala de 360 grados y 
+    aplica validaciones de seguridad para evitar desbordamientos de geometría.
     
     Args:
         percent: Valor numérico 0-100 para el arco de progreso.
