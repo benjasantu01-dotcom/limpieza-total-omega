@@ -739,3 +739,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-01T04:02:01` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un cache para `_get_security_descriptor` utilizando `lru_cache` con una clave basada en `(path_str, mtime)`, mejorando drásticamente el rendimiento en bucles que realizan múltiples consultas sobre el mismo archivo sin necesidad de reinvocar `GetFileAttributesW` o `CreateFileW` (bloqueo) repetidamente.
 - `2026-10-01T04:02:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-01T04:02:01` Corrida terminada. Total usado hoy: 96.
+- `2026-10-01T04:06:16` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-10-01T04:06:45` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_relevant_extension
+- `2026-10-01T04:07:13` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._check_path_safety, _Validators._validate_enum_str
+- `2026-10-01T04:07:42` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-10-01T04:08:07` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 579): unterminated string literal (detected at line 579)
+- `2026-10-01T04:08:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-01T04:08:07` Corrida terminada. Total usado hoy: 100.
