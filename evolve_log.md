@@ -510,3 +510,14 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-10-01T13:00:38` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de carga y acceso a configuraciones evitando la serialización completa de objetos grandes mediante la implementación de `copy()` sobre el diccionario cacheado en `load` y un acceso directo más eficiente en `get`.
 - `2026-10-01T13:00:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-01T13:00:38` Corrida terminada. Total usado hoy: 308.
+- `2026-10-01T13:08:43` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-01T13:09:17` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-10-01T13:10:11` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejora la robustez del manejo de datos externos en `SystemContext.ingest` y `_apply_field`, implementando una validación explícita para evitar que valores `NaN` (Not a Number) o tipos inesperados introducidos por un `source` mal formado (ej. dict con tipos mixtos) desestabilicen el estado interno del asistente.
+- `2026-10-01T13:10:21` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-01T13:11:01` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-10-01T13:11:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-01T13:11:59` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-01T13:12:20` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-01T13:13:05` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-01T13:13:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-01T13:13:05` Corrida terminada. Total usado hoy: 312.

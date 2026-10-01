@@ -497,7 +497,7 @@ def _generate_context_cached(ctx: SystemContext) -> str:
 
 def context_as_text(context: SystemContext) -> str:
     """Serializa el contexto a un formato textual seguro para el prompt del asistente."""
-    return _generate_context_cached(context) if not context.is_empty else ""
+    return _generate_safe_context(context) if not context.is_empty else ""
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     """Formatea métricas numéricas convirtiéndolas a strings legibles."""
