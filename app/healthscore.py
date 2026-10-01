@@ -200,16 +200,16 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
         try:
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
-                if not isinstance(msg, str): continue
-                clean_msg = "".join(c for c in msg if c.isprintable()).strip()
-                if clean_msg: 
-                    findings.append(clean_msg[:200])
-        except (AttributeError, ValueError, ZeroDivisionError, TypeError):
+                if isinstance(msg, str):
+                    clean_msg = "".join(c for c in msg if c.isprintable()).strip()
+                    if clean_msg: 
+                        findings.append(clean_msg[:200])
+        except Exception:
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Ejecuta el pipeline de puntuación procesando métricas y devolviendo un resultado consolidado."""
-    m: SystemMetrics = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
+    m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
     m.validate()
     
     recommendations: List[str] = []
@@ -217,11 +217,15 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     accumulated_score: int = 0
     
     for entry in _PIPELINE_ORDERED:
-        area_ratio = entry.scorer(m)
-        _evaluate_rules(m, entry.rules, area_ratio, recommendations)
-        points = int(round(area_ratio * entry.weight))
-        metric_breakdown[entry.area] = points
-        accumulated_score += points
+        try:
+            area_ratio = entry.scorer(m)
+            _evaluate_rules(m, entry.rules, area_ratio, recommendations)
+            points = int(round(area_ratio * entry.weight))
+            metric_breakdown[entry.area] = points
+            accumulated_score += points
+        except Exception:
+            metric_breakdown[entry.area] = 0
+            continue
             
     if m.quarantined_count > 0:
         recommendations.append(f"Tenés {m.quarantined_count} archivo(s) en cuarentena.")

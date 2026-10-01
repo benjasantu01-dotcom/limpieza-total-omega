@@ -1482,3 +1482,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-01T11:17:49` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `summarize` y `_collect_summary_data` validando que los tamaños devueltos por el sistema sean siempre numéricos no negativos antes de realizar operaciones aritméticas, mitigando potenciales errores de propagación ante lecturas corruptas de metadatos.
 - `2026-10-01T11:17:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-01T11:17:49` Corrida terminada. Total usado hoy: 268.
+- `2026-10-01T11:25:52` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-10-01T11:26:22` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-01T11:26:49` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` validando explícitamente el tipo de entrada de `SystemMetrics` y asegurando que las reglas de recomendación no fallen ante errores de ejecución durante la generación de mensajes.
+- `2026-10-01T11:28:03` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `_safe_get_entry_value` y `_collect_settings` mediante una validación más estricta del tipo de dato, evitando que entradas vacías, tipos erróneos o caracteres de control inyectados provoquen comportamientos inesperados en la configuración.
+- `2026-10-01T11:28:03` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-01T11:28:34` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` y sus dependencias validando explícitamente el resultado de las llamadas a `kernel32.OpenProcess` mediante el uso de `ctypes.get_last_error()` en caso de fallos, y aseguré que la conversión de `pid` sea manejada de forma segura antes de realizar operaciones con privilegios sobre el sistema.
+- `2026-10-01T11:28:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-01T11:28:34` Corrida terminada. Total usado hoy: 272.

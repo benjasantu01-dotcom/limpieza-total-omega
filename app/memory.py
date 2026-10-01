@@ -368,13 +368,16 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         Tuple indicando éxito y mensaje de estado.
     """
     if not _is_windows: return False, "Solo soportado en Windows."
-    try: target_pid = int(pid)
-    except (ValueError, TypeError): return False, "PID no válido."
+    
+    try: 
+        target_pid = int(pid)
+    except (ValueError, TypeError): 
+        return False, "PID proporcionado no es un número válido."
     
     if _is_system_process(target_pid): return False, "Operación denegada en procesos del sistema."
     
     psapi = ctypes.windll.psapi
-    if not hasattr(psapi, "EmptyWorkingSet"): return False, "API no disponible."
+    if not hasattr(psapi, "EmptyWorkingSet"): return False, "API no disponible en este sistema."
 
     is_safe, err = _is_safe_to_trim(target_pid)
     if not is_safe: return False, err or "Verificación de seguridad fallida."
@@ -382,13 +385,14 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     kernel32 = ctypes.windll.kernel32
     proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
-        return False, f"Acceso denegado. Error: {ctypes.get_last_error()}"
+        error_code = ctypes.get_last_error()
+        return False, f"No se pudo acceder al proceso (Código: {error_code})."
     
     try:
         if psapi.EmptyWorkingSet(proc_handle) == 0:
             error_code = ctypes.get_last_error()
             if error_code == ERROR_ACCESS_DENIED:
-                return False, "Acceso denegado al proceso (requiere privilegios)."
+                return False, "Acceso denegado al proceso (requiere privilegios de administrador)."
             return False, f"El sistema rechazó la solicitud (código {error_code})."
         return True, f"Working set liberado. {TRIM_WARNING}"
     finally: 
