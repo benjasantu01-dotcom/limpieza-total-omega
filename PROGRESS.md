@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **219** (43.5% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 198
+- Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-29 | 6 | 1 | 2 | 0 | 17 |
+| 2026-09-29 | 6 | 1 | 2 | 0 | 13 |
 | 2026-09-30 | 156 | 13 | 34 | 15 | 132 |
-| 2026-10-01 | 56 | 4 | 15 | 4 | 49 |
+| 2026-10-01 | 57 | 4 | 15 | 4 | 52 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **51**
+- seguridad defensiva: **52**
 - legibilidad y documentación: **50**
 - robustez ante casos límite: **43**
 - manejo de errores y validación de entradas: **41**
@@ -42,11 +42,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **15**
 - `safety.py`: **14**
 - `browser.py`: **13**
-- `startup.py`: **9**
+- `startup.py`: **10**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-01T05:28:19` **startup.py** (seguridad defensiva): Se ha mejorado la defensa contra la inyección de comandos en `entries_from_registry` validando exhaustivamente cada clave contra una lista blanca, asegurando que solo se procesen rutas que realmente residen bajo los nodos de registro permitidos, evitando cualquier posibilidad de manipulación de la shell mediante nombres de registro maliciosos.
 - `2026-10-01T05:19:45` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en la persistencia mediante la implementación de una validación de integridad antes del reemplazo del archivo (`os.replace`) y una comprobación explícita de `is_safe_to_modify` para el archivo de respaldo (`bak_path`), mitigando riesgos de manipulación de rutas en operaciones críticas de E/S.
 - `2026-10-01T05:19:28` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `scan_directory` validando que las rutas normalizadas (`resolve()`) sigan contenidas en el `base_root` original, previniendo así ataques de "path traversal" o saltos fuera del sandbox mediante rutas relativas complejas.
 - `2026-10-01T05:11:07` **quarantine.py** (seguridad defensiva): Se ha añadido una validación de `st_nlink` (contador de enlaces físicos) en `_validate_integrity` para asegurar que el archivo no esté siendo referenciado por múltiples entradas en el sistema de archivos (hard links), mitigando ataques de suplantación de archivos mientras están en cuarentena.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-01T04:37:36` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_in_use_by_system` implementando un manejo de excepciones más granular y un chequeo preventivo de errores de sistema que podrían causar una caída inesperada del bucle ante archivos con descriptores bloqueados por el kernel.
 - `2026-10-01T04:32:32` **organizer.py** (robustez ante casos límite): Se ha añadido una validación de `os.path.samefile` en `_is_recursive_violation` para mejorar la robustez frente a nombres de rutas que, siendo distintas textualmente, apuntan al mismo inodo en el sistema de archivos, previniendo así errores de lógica en la detección de bucles o movimientos ilegales.
 - `2026-10-01T04:18:42` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_is_file_locked` para manejar situaciones donde el archivo desaparece o cambia de permisos durante la ejecución (Race Conditions), evitando que el programa se cuelgue al intentar operar sobre descriptores inválidos.
-- `2026-10-01T04:18:30` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia de `st.st_ino` en `walk_files` y `_is_excluded_path` para prevenir errores en sistemas de archivos (como algunos drivers de red o sistemas virtuales) que no soportan inodos y retornan valores nulos, mejorando la robustez ante casos límite de acceso a disco.

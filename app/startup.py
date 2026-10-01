@@ -384,10 +384,11 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
     if os.name != "nt":
         return []
     
-    # Filtrado estricto de las claves para evitar inyección de argumentos en la shell
+    # Filtrado estricto: solo permite claves que coincidan exactamente con la lista permitida
     safe_keys: List[str] = []
+    allowed_set = set(REGISTRY_RUN_KEYS)
     for key in keys:
-        if isinstance(key, str) and key.upper().startswith(('HKCU:', 'HKLM:')):
+        if isinstance(key, str) and key in allowed_set:
             safe_keys.append(f"'{key}'")
             
     if not safe_keys:
