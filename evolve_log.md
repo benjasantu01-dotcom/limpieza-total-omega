@@ -693,3 +693,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-01T03:17:02` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 118): unterminated string literal (detected at line 118)
 - `2026-10-01T03:17:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-01T03:17:02` Corrida terminada. Total usado hoy: 80.
+- `2026-10-01T03:25:23` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-10-01T03:26:06` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ValidationContext, _CheckResult
+- `2026-10-01T03:26:37` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados, clarificación de tipos, y la inclusión de comentarios explicativos en los puntos críticos de seguridad, garantizando que el "porqué" de cada validación sea evidente para futuros colaboradores sin modificar la lógica operativa.
+- `2026-10-01T03:27:10` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en funciones críticas y la redefinición de `_ValidatorEntry` para clarificar su propósito como envoltorio de validación tipada, facilitando el mantenimiento y auditoría del código.
+- `2026-10-01T03:27:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-01T03:27:29` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna de la clase `StartupEntry` y sus métodos privados mediante docstrings detallados que explican el "porqué" de las validaciones de seguridad, asegurando que la intención técnica sea clara para el mantenimiento futuro.
+- `2026-10-01T03:27:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-01T03:27:29` Corrida terminada. Total usado hoy: 84.

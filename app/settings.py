@@ -69,7 +69,11 @@ class _NumericRange(NamedTuple):
     max: int
 
 class _ValidatorEntry(NamedTuple):
-    """Contenedor para la función de validación asociada a una clave."""
+    """
+    Encapsula una lógica de validación específica.
+    El campo 'func' recibe la clave y el valor crudo, retornando el valor
+    normalizado si es válido, o None en caso contrario.
+    """
     func: Callable[[ConfigKey, Any], Any]
 
 class _ValidationResult(NamedTuple):
