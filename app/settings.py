@@ -359,8 +359,14 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     try:
         for key, expected_val in DEFAULTS.items():
             val = settings.get(key)
+            # Validación estricta de tipo e integridad
             if val is not None and isinstance(val, type(expected_val)):
                 final[key] = val
+        
+        # Validar consistencia específica de negocio
+        if not isinstance(final["ultima_carpeta"], str): final["ultima_carpeta"] = ""
+        if not isinstance(final["asistente_clave_api"], str): final["asistente_clave_api"] = ""
+        
         if final["asistente_activado"] and not (final["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
             final["asistente_activado"] = False
         return final # type: ignore

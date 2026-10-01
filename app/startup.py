@@ -360,10 +360,10 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             if not isinstance(row, dict):
                 continue
             
+            # Validación robusta: verificar que la fila contenga los campos esperados
             raw_val_name: Optional[str] = row.get(header_name)
             raw_val_cmd: Optional[str] = row.get(header_cmd)
             
-            # Validación estricta de presencia de datos
             if raw_val_name is None or raw_val_cmd is None:
                 continue
             

@@ -670,24 +670,29 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
         return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
-    """Extrae de manera segura el contenido textual de la respuesta JSON del motor remoto."""
+    """
+    Extrae de manera segura el contenido textual de la respuesta JSON del motor remoto.
+    
+    Realiza una navegación defensiva por la estructura dict/list de la respuesta
+    de la API, validando cada nivel de anidamiento antes de acceder al contenido.
+    """
     if not isinstance(data, dict):
         return None
         
     try:
-        candidates = data.get("candidates")
+        candidates: list[Any] = data.get("candidates", [])
         if not isinstance(candidates, list) or not candidates: return None
         
-        first = candidates[0]
+        first: dict[str, Any] = candidates[0]
         if not isinstance(first, dict): return None
-        content = first.get("content")
+        content: dict[str, Any] = first.get("content", {})
         if not isinstance(content, dict): return None
-        parts = content.get("parts")
+        parts: list[Any] = content.get("parts", [])
         if not isinstance(parts, list) or not parts: return None
-        text_val = parts[0].get("text")
+        text_val: Any = parts[0].get("text")
         
         if isinstance(text_val, str):
-            sanitized = _validate_response_length(text_val)
+            sanitized: str = _validate_response_length(text_val)
             if _ensure_safe_text(sanitized):
                 return sanitized
     except (AttributeError, TypeError, IndexError, KeyError): 

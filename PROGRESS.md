@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **214** (42.5% de aceptación)
+- Mejoras aceptadas: **217** (43.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 47
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 209
+- Rechazadas por guardia de seguridad: 46
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-30 | 146 | 11 | 31 | 15 | 129 |
-| 2026-10-01 | 68 | 4 | 16 | 4 | 80 |
+| 2026-09-30 | 146 | 11 | 30 | 13 | 128 |
+| 2026-10-01 | 71 | 4 | 16 | 5 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **52**
-- manejo de errores y validación de entradas: **47**
+- manejo de errores y validación de entradas: **49**
 - robustez ante casos límite: **43**
-- legibilidad y documentación: **41**
+- legibilidad y documentación: **42**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
@@ -33,19 +33,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **21**
 - `quarantine.py`: **19**
 - `branding.py`: **18**
+- `settings.py`: **17**
 - `healthscore.py`: **17**
 - `organizer.py`: **17**
 - `scanner.py`: **16**
-- `settings.py`: **16**
+- `assistant.py`: **15**
 - `memory.py`: **15**
-- `assistant.py`: **14**
 - `safety.py`: **14**
 - `browser.py`: **12**
-- `startup.py`: **10**
+- `startup.py`: **11**
 - `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-01T07:23:02` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de procesamiento de JSON y una clarificación en los docstrings sobre el flujo de seguridad, facilitando la auditoría del código sin alterar la lógica.
+- `2026-10-01T07:22:19` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que cada fila del CSV contenga los datos esperados, evitando errores de `KeyError` o procesamiento de filas incompletas que podrían ocurrir con salidas de PowerShell malformadas o inesperadas.
+- `2026-10-01T07:21:49` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `_coerce_and_verify` añadiendo validaciones explícitas de tipo y sanitización básica, evitando que valores inyectados manualmente en el JSON o tipos inesperados propaguen estados inválidos que podrían comprometer la estabilidad de la aplicación.
 - `2026-10-01T07:13:02` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_run_file_heuristics` y el manejo de excepciones en `check_recent_executable_in_downloads` para garantizar que un fallo en una heurística no detenga el escaneo completo ni deje estados inconsistentes, validando además que `path` y `entry` sean válidos antes de procesarlos.
 - `2026-10-01T07:12:48` **safety.py** (manejo de errores y validación de entradas): Mejoré `ensure_safe_to_modify` para que el acceso a `path.parent` no falle ante rutas mal formadas y agregué una validación de `PermissionError` explícita en `_validate_access_permissions` para capturar fallos de acceso a nivel de sistema operativo de forma más granular.
 - `2026-10-01T07:11:40` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` al añadir una validación estricta de tipo y contenido antes de intentar procesar el JSON, evitando posibles excepciones `TypeError` o `ValueError` al manejar datos externos potencialmente corruptos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-01T06:50:46` **branding.py** (manejo de errores y validación de entradas): Se reforzó la validación de entrada en la función `draw_ring` para prevenir desbordamientos geométricos mediante el cálculo defensivo del diámetro mínimo del anillo, y se añadieron chequeos de `None` y tipos en `draw_gradient_bar` para evitar errores de ejecución durante el renderizado.
 - `2026-10-01T06:44:01` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `ingest` en `SystemContext` para asegurar que el procesamiento de datos externos sea más estricto, añadiendo una validación explícita para evitar que diccionarios extremadamente grandes o estructuras mal formadas comprometan la integridad del estado del objeto.
 - `2026-10-01T05:28:19` **startup.py** (seguridad defensiva): Se ha mejorado la defensa contra la inyección de comandos en `entries_from_registry` validando exhaustivamente cada clave contra una lista blanca, asegurando que solo se procesen rutas que realmente residen bajo los nodos de registro permitidos, evitando cualquier posibilidad de manipulación de la shell mediante nombres de registro maliciosos.
-- `2026-10-01T05:19:45` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en la persistencia mediante la implementación de una validación de integridad antes del reemplazo del archivo (`os.replace`) y una comprobación explícita de `is_safe_to_modify` para el archivo de respaldo (`bak_path`), mitigando riesgos de manipulación de rutas en operaciones críticas de E/S.
-- `2026-10-01T05:19:28` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `scan_directory` validando que las rutas normalizadas (`resolve()`) sigan contenidas en el `base_root` original, previniendo así ataques de "path traversal" o saltos fuera del sandbox mediante rutas relativas complejas.
-- `2026-10-01T05:11:07` **quarantine.py** (seguridad defensiva): Se ha añadido una validación de `st_nlink` (contador de enlaces físicos) en `_validate_integrity` para asegurar que el archivo no esté siendo referenciado por múltiples entradas en el sistema de archivos (hard links), mitigando ataques de suplantación de archivos mientras están en cuarentena.
