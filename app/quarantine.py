@@ -782,12 +782,15 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 
 def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
     """Verifica si un ítem cumple con todas las condiciones de integridad para ser purgado."""
-    if not file_path.exists() or not file_path.is_file() or file_path.is_symlink():
+    # Validación estricta de alcance: debe estar en la base exacta, ser archivo real y no enlace
+    if not file_path.is_file() or file_path.is_symlink():
         return False
-    if not _is_within_quarantine_sandbox(file_path.resolve(), base_path.resolve()):
+    if not is_within_directory(file_path.resolve(), base_path.resolve()):
         return False
     if hasattr(file_path, 'is_junction') and file_path.is_junction():
         return False
+    
+    # Verificación final contra el manifiesto y los atributos de archivo
     return (
         item.verify_integrity(file_path) and
         _safe_unlink(file_path, expected_hash=item.sha256, expected_inode=item.file_inode)
@@ -805,6 +808,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     item_map = {i.stored_name: i for i in items}
     purged_ids: Set[str] = set()
     try:
+        # Iteración restringida al directorio sandbox verificado
         for f in quarantine_root.iterdir():
             if f.name == MANIFEST_NAME or not f.is_file():
                 continue
