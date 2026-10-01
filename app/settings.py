@@ -359,14 +359,14 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     try:
         for key, expected_val in DEFAULTS.items():
             val = settings.get(key)
-            # Validación estricta de tipo e integridad
             if val is not None and isinstance(val, type(expected_val)):
                 final[key] = val
         
-        # Validar consistencia específica de negocio
+        # Integridad de campos críticos: forzar consistencia de tipos post-parsing
         if not isinstance(final["ultima_carpeta"], str): final["ultima_carpeta"] = ""
         if not isinstance(final["asistente_clave_api"], str): final["asistente_clave_api"] = ""
         
+        # Validar lógica de negocio: el asistente requiere clave para estar habilitado
         if final["asistente_activado"] and not (final["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
             final["asistente_activado"] = False
         return final # type: ignore
@@ -385,6 +385,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
+        # Verificación de seguridad de escritura sobre el directorio de destino
         if not is_safe_to_modify(str(ruta)): return None
         if not os.access(parent, os.W_OK) or _Validators._is_reparse_point(parent): return None
         if not _Validators._is_safe_path(str(parent)): return None

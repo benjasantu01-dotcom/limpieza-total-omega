@@ -18,7 +18,7 @@ from functools import lru_cache
 import unicodedata
 
 PathLike: TypeAlias = Union[str, os.PathLike]
-ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result], bool]
+ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
 
 class SafetyAction(Enum):
     """Define la criticidad de la operación para ajustar el rigor de la validación."""
@@ -26,7 +26,14 @@ class SafetyAction(Enum):
     MODIFY = auto()    # Mover, renombrar, borrar, editar
 
 class SecurityDescriptor(NamedTuple):
-    """Encapsula el estado del archivo para facilitar decisiones de seguridad."""
+    """
+    Estado consolidado de un archivo tras consultar metadatos del sistema.
+    
+    Attributes:
+        attrs: Máscara de bits con atributos de Win32 (GetFileAttributesW).
+        is_protected_system: Indica si el archivo tiene atributos de sistema, oculto o temporal.
+        is_in_use: Indica si el archivo posee un bloqueo de escritura por otro proceso.
+    """
     attrs: int
     is_protected_system: bool
     is_in_use: bool
@@ -36,7 +43,12 @@ class SecurityDescriptor(NamedTuple):
         return bool(self.attrs & flag)
 
 class FileMetadata(TypedDict):
-    """Representación de los atributos de archivo necesarios para evaluaciones de seguridad."""
+    """
+    Representación de los atributos clave para auditoría de integridad.
+    
+    Utilizado por módulos externos para decidir si un archivo cumple
+    con los criterios de limpieza o escaneo seguros.
+    """
     is_reparse: bool
     is_system_hidden: bool
     is_readonly: bool
@@ -154,30 +166,30 @@ class UnsafePathError(Exception):
 
 class ProtectionReason(Enum):
     """Categorías de riesgo utilizadas para clasificar violaciones de seguridad."""
-    INACCESSIBLE = "inaccesible"
-    REPARSE_POINT = "punto de reparse"
-    READ_ONLY = "solo lectura"
-    IN_USE = "en uso"
-    SYSTEM_HIDDEN = "sistema/oculto/offline/temporal"
-    HARD_LINK = "hard link detectado"
-    SYMLINK = "enlace simbólico detectado"
-    ADS = "ADS (flujos alternativos)"
-    EMPTY_FILE = "archivo vacío"
-    EXCESSIVE_DEPTH = "profundidad excesiva"
-    MOUNT_POINT = "punto de montaje detectado"
-    EXCESSIVE_SIZE = "tamaño de archivo excedido"
-    INVALID_TYPE = "tipo de archivo no soportado"
-    OFFLINE = "archivo offline (nube)"
-    ENCRYPTED_OR_COMPRESSED = "cifrado o comprimido"
-    VOLUME_READ_ONLY = "volumen de solo lectura"
-    REMOTE_DRIVE = "unidad de red detectada"
-    REMOVABLE_DRIVE = "unidad extraíble detectada"
-    KERNEL_LOCKED = "archivo bloqueado por kernel"
-    ACCESS_WRITE = "acceso de escritura denegado"
-    TOCTOU_VIOLATION = "violación de consistencia (TOCTOU)"
-    SPARSE_FILE = "archivo disperso (sparse file)"
-    DEVICE_FILE = "archivo de dispositivo detectado"
-    VOLUME_RESTRICTED = "volumen cifrado o comprimido"
+    INACCESSIBLE = auto()
+    REPARSE_POINT = auto()
+    READ_ONLY = auto()
+    IN_USE = auto()
+    SYSTEM_HIDDEN = auto()
+    HARD_LINK = auto()
+    SYMLINK = auto()
+    ADS = auto()
+    EMPTY_FILE = auto()
+    EXCESSIVE_DEPTH = auto()
+    MOUNT_POINT = auto()
+    EXCESSIVE_SIZE = auto()
+    INVALID_TYPE = auto()
+    OFFLINE = auto()
+    ENCRYPTED_OR_COMPRESSED = auto()
+    VOLUME_READ_ONLY = auto()
+    REMOTE_DRIVE = auto()
+    REMOVABLE_DRIVE = auto()
+    KERNEL_LOCKED = auto()
+    ACCESS_WRITE = auto()
+    TOCTOU_VIOLATION = auto()
+    SPARSE_FILE = auto()
+    DEVICE_FILE = auto()
+    VOLUME_RESTRICTED = auto()
 
 class ValidationContext(Enum):
     """Contexto de la validación: Estructural (nombres) o Integridad (disco)."""
@@ -216,7 +228,7 @@ _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
 class _IntegrityCheck(NamedTuple):
     """Regla de seguridad que vincula un motivo de protección a un predicado evaluable."""
     reason: ProtectionReason
-    predicate: Callable[[Path, os.stat_result, SecurityDescriptor], bool]
+    predicate: ViolationPredicate
 
 class _CheckResult(NamedTuple):
     """Resultado del chequeo de integridad."""
@@ -360,7 +372,7 @@ def _is_sensitive_extension(ext: str) -> bool:
     """Valida si la extensión está en la lista de archivos cuya modificación implica riesgo crítico."""
     return ext.lower() in SENSITIVE_EXTENSIONS
 
-def _rule(reason: ProtectionReason, predicate: Callable[[Path, os.stat_result, SecurityDescriptor], bool]) -> _IntegrityCheck:
+def _rule(reason: ProtectionReason, predicate: ViolationPredicate) -> _IntegrityCheck:
     """Helper de fábrica para definir una nueva regla de integridad."""
     return _IntegrityCheck(reason, predicate)
 
@@ -413,7 +425,7 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
     for rule in _VALIDATORS:
         if rule.predicate(path, current_stat, sd):
             code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
-            raise UnsafePathError(f"Integridad comprometida: {rule.reason.value}", code)
+            raise UnsafePathError(f"Integridad comprometida: {rule.reason.name}", code)
 
 def _get_path_stat_robust(path: Path) -> os.stat_result:
     """
