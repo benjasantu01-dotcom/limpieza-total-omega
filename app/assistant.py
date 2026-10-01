@@ -382,10 +382,11 @@ class SystemContext:
         Realiza una carga atómica y segura: valida cada campo contra sus reglas 
         de seguridad y tipos antes de actualizar el estado interno del sistema.
         """
-        if not (isinstance(source, (dict, SystemContext)) or hasattr(source, "__dict__")) or _is_input_too_deep_or_complex(source):
+        # Evitar procesamiento de fuentes vacías, demasiado complejas o diccionarios sospechosos
+        if source is None: return False
+        if isinstance(source, dict) and (len(source) > 50 or _is_input_too_deep_or_complex(source)):
             return False
-        
-        if isinstance(source, dict) and len(source) > 100:
+        if not (isinstance(source, (dict, SystemContext)) or hasattr(source, "__dict__")):
             return False
         
         updates = {}
