@@ -677,3 +677,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-01T02:58:51` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `browser.py` mediante la refactorización de `_should_skip_entry` y `_process_file_entry` para reducir el anidamiento y la complejidad cognitiva, documentando explícitamente los motivos de exclusión de archivos.
 - `2026-10-01T02:58:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-01T02:58:51` Corrida terminada. Total usado hoy: 72.
+- `2026-10-01T03:05:06` Arrancando corrida. Quedan hoy ~228 peticiones objetivo.
+- `2026-10-01T03:05:38` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `diskreport.py` mediante la adición de Type Hints detallados, la unificación de la lógica de conversión de unidades, y la documentación explicativa en las funciones críticas para clarificar el flujo de procesamiento de archivos.
+- `2026-10-01T03:06:05` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados en funciones críticas, aclarando el propósito y los tipos de retorno, además de refactorizar la lógica de `_collect_candidates` para extraer la validación de entradas de directorio, reduciendo el anidamiento y mejorando la legibilidad.
+- `2026-10-01T03:06:06` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-01T03:06:33` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: SystemMetrics.is_finite
+- `2026-10-01T03:07:33` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-01T03:08:37` ✅ Mejora aceptada en main.py (enfoque: legibilidad y documentación). He mejorado la legibilidad y mantenibilidad del archivo `main.py` documentando las dependencias de los métodos de la clase `LimpiezaTotalOmegaApp` y extrayendo la lógica de gestión de estados de la UI hacia un nuevo método `_set_ui_busy_state`, reduciendo así la duplicación de código y simplificando el mantenimiento de las barras de progreso.
+- `2026-10-01T03:08:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-01T03:08:37` Corrida terminada. Total usado hoy: 76.

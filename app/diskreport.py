@@ -72,7 +72,10 @@ class SummaryData(NamedTuple):
 
 
 def _bytes_to_mb(size_bytes: int | float | None) -> float:
-    """Convierte bytes a megabytes (float) redondeados a 2 decimales; retorna 0.0 si es inválido."""
+    """
+    Conversión estándar a MB. 
+    Nota: Se utiliza float para mantener la precisión decimal necesaria en la UI.
+    """
     try:
         if size_bytes is None or not isinstance(size_bytes, (int, float)) or size_bytes < 0:
             return 0.0
@@ -108,7 +111,13 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
     """
-    Evalúa si un `os.DirEntry` debe omitirse del análisis (RTL, nulos, symlinks inseguros o protegidos).
+    Evalúa si un `os.DirEntry` debe omitirse del análisis.
+    
+    Verifica:
+    1. Caracteres sospechosos (RTL, nulos) que podrían ofuscar extensiones.
+    2. Saltos fuera del directorio raíz (prevención de fugas).
+    3. Symlinks y puntos de reparse (evita recursión infinita y duplicidad).
+    4. Rutas protegidas declaradas en `safety.py`.
     """
     try:
         if any(c in entry.name for c in SUSPICIOUS_CHARS) or '\0' in entry.name:
@@ -119,8 +128,8 @@ def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
             return True
             
         try:
-            # Detectar symlinks y puntos de reparse (reparse points) a nivel de sistema
             st = entry.stat(follow_symlinks=False)
+            # 0x0400 es el atributo FILE_ATTRIBUTE_REPARSE_POINT en Windows
             if (st.st_file_attributes & 0x0400) if os.name == 'nt' else entry.is_symlink():
                 return True
         except (OSError, PermissionError):
@@ -231,7 +240,11 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """Generador recursivo de archivos (yields Path, size) evitando ciclos mediante inodos."""
+    """
+    Generador recursivo de archivos (yields Path, size).
+    Usa un conjunto de inodos (`visited_inodes`) para detectar y evitar ciclos 
+    o procesamiento redundante en sistemas de archivos con enlaces simbólicos.
+    """
     root_path = _validate_root(directory)
     if root_path is None: return
     root_path_str = str(root_path)
@@ -310,7 +323,8 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Recorre el sistema de archivos de forma exhaustiva y consolida métricas globales.
-    Usa un heap para mantener los N archivos más grandes durante el escaneo en una sola pasada.
+    Usa un heap de min-valor (`top_heap`) para mantener los N archivos más grandes 
+    con una complejidad O(N log k) durante el recorrido.
     """
     total_bytes: int = 0
     total_files: int = 0

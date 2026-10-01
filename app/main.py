@@ -1084,24 +1084,36 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             box.see("1.0")
         self.report_data[tab.lower()] = list(lines)
 
+    def _set_ui_busy_state(self, busy: bool) -> None:
+        """Gestor centralizado para alternar estados de actividad (UI busy)."""
+        is_mapped = hasattr(self, 'activity') and self.activity.winfo_exists() and self.activity.winfo_ismapped()
+        
+        if busy:
+            self._toggle_ui_availability(False)
+            if is_mapped:
+                self.activity.start()
+        else:
+            self._toggle_ui_availability(True)
+            if is_mapped:
+                self.activity.stop()
+                self.activity.pack_forget()
+
     def _set_busy(self, busy: bool) -> None:
         """Activa/desactiva la interfaz ante estados de carga."""
         with self._task_lock:
             if busy:
                 self._tasks_running += 1
                 if self._tasks_running == 1 and not self._closing:
-                    self._toggle_ui_availability(False)
                     self._safe_run_ui_callback(lambda: (
-                        self.activity.pack(side="right") if (hasattr(self, 'activity') and self.activity.winfo_exists()) else None,
-                        self.activity.start() if (hasattr(self, 'activity') and self.activity.winfo_exists() and self.activity.winfo_ismapped()) else None
+                        self.activity.pack(side="right") if hasattr(self, 'activity') else None,
+                        self._set_ui_busy_state(True)
                     ))
             else:
                 self._tasks_running = max(0, self._tasks_running - 1)
                 if self._tasks_running == 0 and not self._closing:
-                    self._toggle_ui_availability(True)
                     self._safe_run_ui_callback(lambda: (
-                        self.activity.stop() if (hasattr(self, 'activity') and self.activity.winfo_exists()) else None,
-                        self.activity.pack_forget() if (hasattr(self, 'activity') and self.activity.winfo_exists()) else None
+                        self._set_ui_busy_state(False),
+                        self.set_status("Listo.")
                     ))
 
     def _validate_and_log_error(self, e: Exception, tab: str) -> None:
@@ -1134,7 +1146,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self._safe_run(fn, tab)
         finally:
             if not self._closing:
-                self._safe_run_ui_callback(lambda: (self._set_busy(False), self.set_status("Listo.")))
+                self._set_busy(False)
 
     def run_async(self, fn: AsyncCallback, target: Optional[str] = None) -> None:
         """Envía tarea al pool, validando seguridad de ruta."""

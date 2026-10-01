@@ -205,6 +205,22 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
         return None
 
 
+def _is_valid_entry(entry: os.DirEntry, min_size: int, skip_protected: bool) -> bool:
+    """Valida si un elemento del sistema de archivos es candidato válido."""
+    try:
+        if not entry.is_file(follow_symlinks=False):
+            return False
+        stat_info = entry.stat(follow_symlinks=False)
+        if stat_info.st_size < min_size:
+            return False
+        p = Path(entry.path)
+        if skip_protected and is_protected_path(p):
+            return False
+        return _safe_path_check(p) and not is_system_or_hidden(p) and not _is_file_locked(p)
+    except (OSError, PermissionError):
+        return False
+
+
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """Realiza una búsqueda profunda para catalogar archivos según su peso."""
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
@@ -214,7 +230,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             stack.append((str(r), 0))
     
     visited: set[str] = set()
-
     while stack:
         current_dir, depth = stack.pop()
         if depth > MAX_RECURSION_DEPTH:
@@ -222,35 +237,19 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             
         try:
             real_path = str(Path(current_dir).resolve())
-            if real_path in visited:
-                continue
+            if real_path in visited: continue
             visited.add(real_path)
             
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    try:
-                        if entry.is_dir(follow_symlinks=False):
-                            p_entry = Path(entry.path)
-                            if _safe_path_check(p_entry) and not is_junction(p_entry):
-                                stack.append((entry.path, depth + 1))
-                            continue
-                        
-                        if not entry.is_file(follow_symlinks=False):
-                            continue
-                        
-                        stat_info = entry.stat(follow_symlinks=False)
-                        if stat_info.st_size < min_size:
-                            continue
-
+                    if entry.is_dir(follow_symlinks=False):
                         p_entry = Path(entry.path)
-                        if skip_protected and is_protected_path(p_entry):
-                            continue
-                        if not _safe_path_check(p_entry) or is_system_or_hidden(p_entry) or _is_file_locked(p_entry):
-                            continue
-                            
-                        size_to_paths_map[stat_info.st_size].append(p_entry)
-                    except (OSError, PermissionError):
+                        if _safe_path_check(p_entry) and not is_junction(p_entry):
+                            stack.append((entry.path, depth + 1))
                         continue
+                    
+                    if _is_valid_entry(entry, min_size, skip_protected):
+                        size_to_paths_map[entry.stat().st_size].append(Path(entry.path))
         except (OSError, PermissionError, RuntimeError):
             continue
             
