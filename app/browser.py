@@ -121,6 +121,14 @@ def _is_unc_path(path_str: Optional[str]) -> bool:
         return False
     return path_str.startswith(r"\\") or path_str.startswith("//")
 
+def _ensure_within_base(target: str, base_norm: str) -> bool:
+    """Defensa: valida que la ruta normalizada esté contenida estrictamente en la base permitida."""
+    try:
+        target_norm = os.path.normcase(os.path.abspath(target))
+        return target_norm.startswith(base_norm)
+    except Exception:
+        return False
+
 def base_directories() -> List[Path]:
     """Identifica y valida la ruta base del directorio LOCALAPPDATA, garantizando acceso seguro."""
     local_env = os.environ.get("LOCALAPPDATA")
@@ -136,14 +144,6 @@ def base_directories() -> List[Path]:
     except (OSError, RuntimeError, PermissionError):
         pass
     return []
-
-def _is_path_inside_base(target_abs: str, base_abs_norm: str) -> bool:
-    """Valida que 'target_abs' sea un subdirectorio de 'base_abs' (Sandbox enforcement)."""
-    try:
-        if len(target_abs) >= MAX_PATH_LEN: return False
-        return os.path.normcase(target_abs).startswith(base_abs_norm)
-    except (OSError, ValueError):
-        return False
 
 def _is_excluded_file(name: Optional[str]) -> bool:
     """Verifica si el nombre de archivo coincide con archivos de usuario sensibles."""
@@ -197,7 +197,7 @@ def _process_file_entry(
 ) -> ScanResult:
     """Procesa una entrada individual, aplicando filtrado de sandbox y prevención de ciclos."""
     try:
-        if not _is_path_inside_base(entry.path, root_abs_norm):
+        if not _ensure_within_base(entry.path, root_abs_norm):
             return ScanResult(0, True)
         
         st = entry.stat(follow_symlinks=False)
@@ -267,7 +267,7 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
             return False
         real = candidate.resolve(strict=True)
         real_str = str(real)
-        if not real.is_dir() or not _is_path_inside_base(real_str, os.path.normcase(base_abs_str)):
+        if not real.is_dir() or not _ensure_within_base(real_str, os.path.normcase(base_abs_str)):
             return False
         if not is_safe_to_modify(real) or is_protected_path(real):
             return False
@@ -283,7 +283,7 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
         target = real_base.joinpath(*rel_str.split("\\"))
         if target.exists():
             target = target.resolve(strict=True)
-            if _is_path_inside_base(str(target), os.path.normcase(str(real_base))) and \
+            if _ensure_within_base(str(target), os.path.normcase(str(real_base))) and \
                is_safe_to_modify(target) and not is_protected_path(target):
                 return target
     except (OSError, RuntimeError):
@@ -303,7 +303,6 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         try:
             real_base = base.resolve(strict=True)
             real_base_str = str(real_base)
-            real_base_norm = os.path.normcase(real_base_str)
             for browser_name, rel_str in browser_map.items():
                 candidate = _resolve_browser_path(real_base, rel_str)
                 if candidate and _is_valid_cache_path(candidate, real_base_str):

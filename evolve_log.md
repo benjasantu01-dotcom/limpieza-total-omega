@@ -1576,3 +1576,68 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not define
 - `2026-10-01T00:13:42` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se añadió una verificación de integridad mediante `os.stat` en `_is_file_secure_to_read` para prevenir ataques de condiciones de carrera (TOCTOU) y detectar posibles cambios de propietario o permisos durante la ejecución del bucle, robusteciendo la carga ante manipulaciones externas inesperadas.
 - `2026-10-01T00:13:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-01T00:13:42` Corrida terminada. Total usado hoy: 8.
+- `2026-10-01T00:21:41` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-10-01T00:22:30` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-01T00:23:33` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-01T00:23:49` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-01T00:24:30` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.08s
+
+```
+- `2026-10-01T00:24:30` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_resolve_and_cache_path` añadiendo una validación explícita para rutas que contienen caracteres de espacio iniciales, rutas vacías resultantes de normalización fallida y un manejo más resiliente de `Path.resolve()` ante posibles errores de acceso al sistema de archivos, asegurando que el módulo maneje correctamente escenarios donde el registro contiene rutas "basura" o mal formadas sin interrumpir la ejecución.
+- `2026-10-01T00:24:32` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-01T00:25:18` Tests FALLARON:
+```
+^^^^^^^^^^^
+E       NameError: name '_format_problem_message' is not defined
+
+app/assistant.py:618: NameError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_answers_are_never_empty - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_garbage_questions_still_get_an_answer - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_low_disk_is_reported_as_the_top_priority - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_local_answer_always_says_it_did_not_send_anything - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_ask_stays_local_when_the_assistant_is_off - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_online_failure_falls_back_to_local - NameError: name '_format_problem_message' is not defined
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - NameError: name '_format_problem_message' is not defined
+9 failed, 290 passed in 1.17s
+
+```
+- `2026-10-01T00:25:18` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva al restringir el acceso a atributos y métodos internos mediante `getattr` en `SystemContext.ingest`, evitando la posible ejecución o exposición de métodos sensibles de objetos arbitrarios.
+- `2026-10-01T00:25:56` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha añadido un método `_es_ruta_segura_para_escritura` que encapsula la verificación de seguridad, eliminando la duplicación de lógica de validación entre `_validate_destination` y `save_logo_svg` y asegurando que ninguna operación de escritura accidental pase por alto las restricciones de `safety.py`.
+- `2026-10-01T00:26:31` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-01T00:26:49` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva al centralizar y robustecer la validación de rutas mediante la implementación de `_ensure_within_base` dentro de los procesos de escaneo, asegurando que cualquier acceso al sistema de archivos esté estrictamente limitado al contenedor de la aplicación (`LOCALAPPDATA`) y previniendo el escape de sandbox mediante la validación estricta de rutas normalizadas antes de cualquier operación de I/O.
+- `2026-10-01T00:26:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-01T00:26:49` Corrida terminada. Total usado hoy: 12.

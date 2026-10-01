@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
-- Rechazadas por tests: 19
+- Mejoras aceptadas: **209** (41.5% de aceptación)
+- Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-29 | 47 | 6 | 8 | 3 | 82 |
+| 2026-09-29 | 47 | 6 | 8 | 3 | 78 |
 | 2026-09-30 | 156 | 13 | 34 | 15 | 132 |
-| 2026-10-01 | 4 | 0 | 1 | 0 | 3 |
+| 2026-10-01 | 6 | 2 | 1 | 0 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
+- seguridad defensiva: **46**
 - robustez ante casos límite: **44**
-- seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **39**
 - rendimiento: **33**
 
@@ -39,14 +39,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **16**
 - `organizer.py`: **15**
 - `settings.py`: **15**
-- `branding.py`: **14**
-- `browser.py`: **14**
+- `branding.py`: **15**
+- `browser.py`: **15**
 - `scanner.py`: **13**
 - `startup.py`: **7**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-01T00:26:49` **browser.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva al centralizar y robustecer la validación de rutas mediante la implementación de `_ensure_within_base` dentro de los procesos de escaneo, asegurando que cualquier acceso al sistema de archivos esté estrictamente limitado al contenedor de la aplicación (`LOCALAPPDATA`) y previniendo el escape de sandbox mediante la validación estricta de rutas normalizadas antes de cualquier operación de I/O.
+- `2026-10-01T00:25:56` **branding.py** (seguridad defensiva): Se ha añadido un método `_es_ruta_segura_para_escritura` que encapsula la verificación de seguridad, eliminando la duplicación de lógica de validación entre `_validate_destination` y `save_logo_svg` y asegurando que ninguna operación de escritura accidental pase por alto las restricciones de `safety.py`.
 - `2026-10-01T00:13:42` **settings.py** (robustez ante casos límite): Se añadió una verificación de integridad mediante `os.stat` en `_is_file_secure_to_read` para prevenir ataques de condiciones de carrera (TOCTOU) y detectar posibles cambios de propietario o permisos durante la ejecución del bucle, robusteciendo la carga ante manipulaciones externas inesperadas.
 - `2026-10-01T00:12:52` **safety.py** (robustez ante casos límite): Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de carrera (TOCTOU) y errores de acceso, añadiendo una validación explícita para archivos "reparse point" de nivel superior antes de realizar operaciones de metadatos, evitando así posibles excepciones bloqueantes en rutas mal formadas.
 - `2026-10-01T00:05:34` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine_file` añadiendo una comprobación explícita para evitar condiciones de carrera (TOCTOU) y posibles errores de E/S mediante un pre-chequeo del sistema de archivos antes de iniciar la copia atómica.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-30T14:39:01` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner reemplazando la lógica de filtrado de extensiones basada en `os.path.splitext` (que genera tuplas y realiza llamadas adicionales al sistema de archivos) por una comprobación directa de sufijo con `frozenset`, reduciendo la carga de CPU durante el recorrido de directorios grandes.
 - `2026-09-30T14:38:21` **safety.py** (rendimiento): Se optimizó el rendimiento de `is_protected_path` reemplazando la lógica de comparación basada en `os.sep.split()` (que es costosa debido a la creación de listas intermedias) por una búsqueda directa de prefijos de cadena, aprovechando el diseño actual de `_SYSTEM_ROOT_PATHS_TUPLE` y mejorando la eficiencia del cache al simplificar la normalización.
 - `2026-09-30T14:29:36` **quarantine.py** (rendimiento): Se optimizó `load_manifest` para evitar la creación innecesaria de una lista intermedia y su conversión a un mapa temporal dentro de `restore_item` y `purge_item` (que es una operación $O(N)$), utilizando en su lugar una búsqueda directa y eficiente mediante comprensión de listas o filtrado, reduciendo el overhead de memoria y tiempo en escaneos frecuentes.
-- `2026-09-30T14:27:45` **memory.py** (rendimiento): Se optimizó el proceso de recolección de memoria de los procesos (top_memory_processes) reemplazando la creación de una lista completa en memoria antes de filtrar por un enfoque de procesamiento en stream y heap (ya implementado parcialmente) y, más importante, eliminando la creación innecesaria de objetos `ProcessMemory` para procesos que no entrarán en el top N, reduciendo así la presión sobre el recolector de basura.
-- `2026-09-30T14:18:04` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para reducir drásticamente las llamadas a `stat()` y `exists()` utilizando la información ya disponible en `os.DirEntry` y moviendo las comprobaciones más costosas (`is_system_or_hidden` e `_is_file_locked`) al final del flujo, después de los filtros baratos.
