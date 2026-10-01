@@ -326,20 +326,21 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     get_ext: Callable[[Path], str] = lambda p: p.suffix.lower() or "(sin extensión)"
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        try:
-            total_bytes += size_bytes
-            total_files += 1
-            stats = ext_stats[get_ext(path)]
-            stats.total_bytes += size_bytes
-            stats.count += 1
-            
-            if limit > 0:
-                if len(top_heap) < limit: 
-                    heapq.heappush(top_heap, (size_bytes, path))
-                elif size_bytes > top_heap[0][0]: 
-                    heapq.heapreplace(top_heap, (size_bytes, path))
-        except (KeyError, TypeError, OSError):
-            continue
+        if size_bytes is not None and size_bytes >= 0:
+            try:
+                total_bytes += size_bytes
+                total_files += 1
+                stats = ext_stats[get_ext(path)]
+                stats.total_bytes += size_bytes
+                stats.count += 1
+                
+                if limit > 0:
+                    if len(top_heap) < limit: 
+                        heapq.heappush(top_heap, (size_bytes, path))
+                    elif size_bytes > top_heap[0][0]: 
+                        heapq.heapreplace(top_heap, (size_bytes, path))
+            except (KeyError, TypeError, OSError):
+                continue
                 
     return SummaryData(total_bytes, total_files, dict(ext_stats), top_heap)
 

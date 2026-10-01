@@ -296,7 +296,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     """Genera métricas (mtime, longitud de ruta) para elegir el archivo conservador."""
-    if not _safe_path_check(path):
+    if not isinstance(path, Path) or not _safe_path_check(path):
         return None
     try:
         stat = path.stat()
@@ -339,7 +339,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
             elif not _safe_path_check(path):
                 lines.append(f"   [inaccesible] {path}")
             else:
-                is_keeper = (path == keeper)
+                is_keeper = (keeper is not None and path == keeper)
                 label = 'conservar' if is_keeper else 'duplicado'
                 lines.append(f"   [{label}] {path}")
         except (OSError, RuntimeError):

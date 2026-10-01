@@ -180,12 +180,12 @@ def _should_skip_entry(
         
     return False
 
-def _is_file_in_use(path: str) -> bool:
+def _is_file_in_use(path_obj: Path) -> bool:
     """Verifica si un archivo está bloqueado abriéndolo en modo exclusivo."""
-    if not is_safe_to_modify(Path(path)) or is_protected_path(Path(path)):
+    if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
         return True
     try:
-        fd = os.open(path, os.O_RDONLY | os.O_EXCL)
+        fd = os.open(str(path_obj), os.O_RDONLY | os.O_EXCL)
         os.close(fd)
         return False
     except (OSError, PermissionError, FileNotFoundError):
@@ -216,7 +216,7 @@ def _process_file_entry(
             return _sum_directory_recursive(Path(entry.path), root_abs_norm, kernel32, visited_inodes, depth + 1)
         
         # Archivo: verificar si está en uso antes de sumar
-        if _is_file_in_use(entry.path):
+        if _is_file_in_use(Path(entry.path)):
             return ScanResult(0, True)
             
         return ScanResult(st.st_size, True)
@@ -280,7 +280,7 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
 
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Une la base de perfil con la ruta relativa conocida de caché."""
-    if not isinstance(rel_str, str) or not rel_str:
+    if not isinstance(rel_str, str) or not rel_str or not isinstance(real_base, Path):
         return Path()
     try:
         target = real_base.joinpath(*rel_str.split("\\"))
@@ -308,7 +308,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             real_base_str = str(real_base)
             for browser_name, rel_str in browser_map.items():
                 candidate = _resolve_browser_path(real_base, rel_str)
-                if candidate and _is_valid_cache_path(candidate, real_base_str):
+                if candidate and candidate != Path() and _is_valid_cache_path(candidate, real_base_str):
                     scan_res = _sum_directory_recursive(candidate, os.path.normcase(str(candidate)), k32, global_visited_inodes)
                     if scan_res.bytes_found > 0:
                         found.append(BrowserCache(str(browser_name), candidate, scan_res.bytes_found))

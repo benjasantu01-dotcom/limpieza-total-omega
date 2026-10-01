@@ -509,6 +509,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
         stops: Colores para el gradiente.
     """
     try:
+        if canvas is None or stops is None: return
         w_val = max(1, min(4096, int(width)))
         h_val = max(1, min(1024, int(height)))
         cx, cy = float(canvas_x), float(canvas_y)
@@ -537,14 +538,16 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         fill: Color opcional para el arco de progreso activo.
     """
     try:
-        if percent is None: return
+        if percent is None or canvas is None: return
         val = float(percent)
         cx, cy = float(canvas_x), float(canvas_y)
         if not math.isfinite(val) or not math.isfinite(cx) or not math.isfinite(cy): val = 0.0
         val = max(0.0, min(100.0, val))
+        
+        # Validar tamaño mínimo de anillo para asegurar que el grosor es viable
         diam = max(20, min(2048, int(size)))
-        # Evitar grosores negativos o que excedan el radio para prevenir errores de renderizado
         thick = max(2, min(int(thickness), (diam // 2) - 1))
+        
         borde: float = float(thick) / 2.0
         caja = (cx + borde, cy + borde, cx + diam - borde, cy + diam - borde)
         
