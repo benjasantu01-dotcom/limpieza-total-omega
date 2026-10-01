@@ -1204,3 +1204,35 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-01T09:05:10` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo la verificación `_is_volume_removable_media` para detectar de forma robusta unidades de medios extraíbles (tipo SD, USB o discos externos) mediante `GetDriveTypeW`, previniendo que la aplicación intente realizar modificaciones en volúmenes inestables o de almacenamiento externo que podrían desconectarse durante la operación, incrementando la robustez ante casos límite de hardware.
 - `2026-10-01T09:05:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-01T09:05:10` Corrida terminada. Total usado hoy: 216.
+- `2026-10-01T09:13:14` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-10-01T09:13:41` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-01T09:14:16` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré `_is_file_secure_to_read` para manejar robustamente casos donde la ruta no existe o es inaccesible, evitando que `st.stat()` lance excepciones que interrumpan el flujo de carga durante la validación de archivos de configuración.
+- `2026-10-01T09:14:16` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-01T09:14:49` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.50s
+
+```
+- `2026-10-01T09:14:49` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez ante errores de I/O en `_resolve_and_cache_path` y `_process_folder_entry` mediante un manejo de excepciones más granular, asegurando que fallos al consultar metadatos de archivos (comunes en accesos denegados o bloqueos del SO) no detengan el análisis completo.
+- `2026-10-01T09:15:17` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad de `_sanitize_query` y `ask` al mover la validación de seguridad antes de cualquier manipulación de texto, garantizando que el asistente nunca procese consultas que contengan caracteres de control o inyección, siguiendo estrictamente el principio de defensa en profundidad.
+- `2026-10-01T09:15:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-01T09:15:17` Corrida terminada. Total usado hoy: 220.

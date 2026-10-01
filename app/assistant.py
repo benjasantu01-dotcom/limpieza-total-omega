@@ -730,8 +730,10 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
 def ask(question: str, context: SystemContext | None = None,
         base: str | Path | None = None) -> Answer:
     """Punto de acceso único que orquesta los motores local y remoto."""
+    # Validación temprana antes de cualquier procesamiento
     if not _ensure_safe_text(question):
         return Answer("Entrada no válida.")
+        
     ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()
     respaldo: Answer = local_answer(question, ctx)
     if not available(base):

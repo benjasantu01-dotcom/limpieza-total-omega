@@ -309,6 +309,7 @@ def validate(raw_values: Any) -> AppSettings:
 def _is_file_secure_to_read(ruta: Path) -> bool:
     """Garantiza que el archivo sea un archivo regular, sin enlaces y con permisos restringidos."""
     try:
+        if not ruta.is_file(): return False
         st = ruta.stat()
         if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
         if not stat.S_ISREG(st.st_mode) or _Validators._is_reparse_point(ruta): return False
