@@ -662,6 +662,10 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
     if is_protected_path(str(target_path)):
         raise UnsafePathError("Ruta en directorio del sistema bloqueada.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
     
+    # Prevención explícita contra carpetas protegidas por SVI (System Volume Information)
+    if "system volume information" in str(target_path).lower():
+        raise UnsafePathError("Modificación denegada: Volumen del Sistema.", SafetyValidationErrorCode.VOLUME_RESTRICTED)
+
     if os.name == 'nt':
         try:
             root = target_path.anchor

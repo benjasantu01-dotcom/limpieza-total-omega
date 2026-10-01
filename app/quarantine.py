@@ -219,11 +219,17 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
     try:
         if not path.is_absolute() or not path.exists():
             return False
+        
+        # Seguridad defensiva: chequeo explícito antes de cualquier operación
+        if is_protected_path(path):
+            return False
+            
         st = path.stat()
         if expected_inode != 0 and st.st_ino != expected_inode:
             return False
         if path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction()):
             return False
+        
         resolved = path.resolve()
         if not is_safe_to_modify(resolved) or is_protected_path(resolved):
             return False
