@@ -407,6 +407,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineIte
         m_path = _manifest_path(base_dir)
         if not m_path.exists() or m_path.stat().st_size == 0:
             return []
+        
         with open(m_path, "r", encoding="utf-8") as f:
             try:
                 data = json.load(f)
@@ -419,9 +420,12 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineIte
         items: List[QuarantineItem] = []
         for d in data:
             if not isinstance(d, dict): continue
-            item = QuarantineItem.from_dict(d)
-            if item:
-                items.append(item)
+            try:
+                item = QuarantineItem.from_dict(d)
+                if item:
+                    items.append(item)
+            except (ValueError, TypeError, KeyError):
+                continue
         return items
     except (OSError, PermissionError, UnsafePathError):
         return []

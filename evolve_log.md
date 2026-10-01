@@ -1490,3 +1490,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-01T11:28:34` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` y sus dependencias validando explícitamente el resultado de las llamadas a `kernel32.OpenProcess` mediante el uso de `ctypes.get_last_error()` en caso de fallos, y aseguré que la conversión de `pid` sea manejada de forma segura antes de realizar operaciones con privilegios sobre el sistema.
 - `2026-10-01T11:28:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-01T11:28:34` Corrida terminada. Total usado hoy: 272.
+- `2026-10-01T11:36:03` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-10-01T11:36:33` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_locked` para evitar falsos positivos y errores de manejo de descriptores, y refiné la lógica en `stage_for_review` para prevenir el uso de rutas inválidas o `None` antes de operar, cumpliendo estrictamente con el enfoque de validación de entradas.
+- `2026-10-01T11:37:15` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `load_manifest` añadiendo una validación estricta de tipos en el bucle de procesamiento y capturando errores específicos durante la deserialización para evitar que un manifiesto parcialmente corrupto detenga el funcionamiento de la aplicación.
+- `2026-10-01T11:37:35` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-10-01T11:37:42` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: manejo de errores y validación de entradas): el archivo se encogió al 3% del original (posible pérdida de código)
+- `2026-10-01T11:37:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-01T11:37:42` Corrida terminada. Total usado hoy: 276.

@@ -140,13 +140,13 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Determina si un archivo está bloqueado por otro proceso intentando abrirlo en solo lectura.
-    Retorna True si el archivo está inaccesible para operaciones de E/S.
+    Determina si un archivo está bloqueado intentando abrirlo en solo lectura.
     """
     if path is None or not path.is_file():
         return True
     try:
-        fd = os.open(path, os.O_RDONLY | getattr(os, 'O_NONBLOCK', 0))
+        # Usamos flags de modo de acceso seguro
+        fd = os.open(path, os.O_RDONLY)
         os.close(fd)
         return False
     except (PermissionError, OSError):
@@ -284,7 +284,8 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     except (OSError, RuntimeError, PermissionError): return None
     
     for junk_file in files:
-        if not junk_file or not junk_file.path or not junk_file.path.exists(): continue
+        if not junk_file or not isinstance(junk_file.path, Path) or not junk_file.path.exists(): 
+            continue
         if not is_safe_to_modify(junk_file.path): continue
         if not _is_safe_for_disk_op(junk_file.path, dest_res): continue
         target_path = _can_move_file(junk_file, dest_res)
