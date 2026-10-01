@@ -189,26 +189,21 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     try:
-        # Validación inicial de existencia y tipo de objeto
         if not src.exists() or not src.is_file() or src.is_symlink(): return False
-        
-        # Validaciones de seguridad centralizadas
         if not is_safe_to_modify(src) or not _validate_path_security(src, dest): return False
         
         target_dir = dest.parent if dest.exists() else dest
-        if is_protected_path(target_dir) or not target_dir.is_dir() or not os.access(target_dir, os.W_OK): 
-            return False
+        # Se asegura que la carpeta de destino y sus padres no estén protegidos
+        if is_protected_path(target_dir) or is_protected_path(target_dir.parent): return False
+        if not target_dir.is_dir() or not os.access(target_dir, os.W_OK): return False
         
-        # Validaciones de consistencia de disco y recursión
         if _is_unc_path(target_dir) or src.drive != target_dir.drive: return False
         if _is_recursive_violation(src, dest) or not os.access(src, os.R_OK): return False
         
-        # Auditoría de metadatos y coherencia temporal
         stats = src.stat()
-        if stats.st_nlink > 1: return False # Hardlinks sospechosos
+        if stats.st_nlink > 1: return False
         if not (0 <= stats.st_size < MAX_FILE_SIZE_BYTES): return False
         
-        # Permisos de escritura y estado de bloqueo de SO
         if not os.access(src.parent, os.W_OK): return False
         return not _is_file_locked(src)
     except (OSError, RuntimeError, AttributeError, ValueError):
@@ -234,8 +229,6 @@ def _is_valid_junk_entry(entry: os.DirEntry, stats: os.stat_result) -> bool:
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
     """
     Recorrido recursivo limitado para encontrar archivos basura.
-    `depth`: limita la profundidad para evitar desbordamiento de pila.
-    `visited`: evita ciclos en el sistema de archivos mediante resolución de rutas.
     """
     if depth > 50 or current_dir is None or not current_dir.exists(): return
     try:
@@ -287,19 +280,16 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         dest_res = dest_base.resolve()
         
         if is_protected_path(dest_res): return None
-        # Validar destino con ensure_safe_to_modify una sola vez
         ensure_safe_to_modify(dest_res)
     except (OSError, RuntimeError, PermissionError): return None
     
     for junk_file in files:
         if not junk_file or not junk_file.path or not junk_file.path.exists(): continue
-        # Usamos is_safe_to_modify como predicado de bucle
         if not is_safe_to_modify(junk_file.path): continue
         if not _is_safe_for_disk_op(junk_file.path, dest_res): continue
         target_path = _can_move_file(junk_file, dest_res)
         if target_path:
             try:
-                # ensure_safe_to_modify vuelve a verificar antes de la acción destructiva
                 ensure_safe_to_modify(junk_file.path)
                 shutil.move(str(junk_file.path), str(target_path))
             except (OSError, shutil.Error, PermissionError) as e:
@@ -324,14 +314,12 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     try:
         dest = Path(review_dir).expanduser().resolve()
         if not dest.is_dir() or is_protected_path(dest): return 0
-        # Validar que la carpeta de cuarentena esté permitida antes de iterar
         if not is_safe_to_modify(dest): return 0
         
         count = 0
         for item in dest.iterdir():
             if item.is_file():
                 try:
-                    # Validar seguridad antes de cada eliminación individual
                     if is_safe_to_modify(item) and not is_protected_path(item):
                         ensure_safe_to_modify(item)
                         item.unlink()
