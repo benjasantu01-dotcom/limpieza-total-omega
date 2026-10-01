@@ -114,13 +114,15 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
 
 
-def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
+def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     """Evalúa si un objeto del sistema de archivos debe omitirse del análisis."""
     try:
         if any(c in entry.name for c in SUSPICIOUS_CHARS) or '\0' in entry.name:
             return True
         
-        if not os.path.commonpath([entry.path, root_path_str]) == root_path_str:
+        # Validar confinamiento de ruta
+        entry_path = Path(entry.path).resolve()
+        if root_path not in entry_path.parents and entry_path != root_path:
             return True
             
         try:
@@ -238,9 +240,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """Generador recursivo de archivos usando `os.scandir`."""
     root_path = _validate_root(directory)
     if root_path is None: return
-    root_path_str = str(root_path)
     visited_inodes: set[Inode] = set()
-    stack: List[str] = [root_path_str]
+    stack: List[Path] = [root_path]
     
     while stack:
         current_dir = stack.pop()
@@ -248,7 +249,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if skip_protected and _is_excluded_path(entry, root_path_str):
+                        if skip_protected and _is_excluded_path(entry, root_path):
                             continue
                         
                         if not os.access(entry.path, os.R_OK):
@@ -260,12 +261,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 inode = (st.st_dev, st.st_ino)
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
-                                    stack.append(entry.path)
+                                    stack.append(Path(entry.path))
                             else:
-                                stack.append(entry.path)
+                                stack.append(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
-                            if skip_protected and is_protected_path(Path(entry.path)):
-                                continue
                             st = entry.stat(follow_symlinks=False)
                             sz = int(st.st_size) if hasattr(st, 'st_size') else 0
                             if sz >= 0: yield Path(entry.path), sz
@@ -328,11 +327,11 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        if skip_protected and is_protected_path(path):
+        # Doble verificación de confinamiento para mayor seguridad
+        if skip_protected and (is_protected_path(path) or directory not in path.parents and path != directory):
             continue
             
         try:
-            # Validar existencia nuevamente por si el archivo fue movido/borrado post-walk
             s = int(size_bytes) if isinstance(size_bytes, (int, float)) else 0
             if s < 0: continue
             

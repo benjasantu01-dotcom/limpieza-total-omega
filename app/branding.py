@@ -397,26 +397,18 @@ def logo_svg(size: int = 128) -> str:
   <text x="64" y="98" font-family="{UI_FONT_FAMILY}" font-size="26" font-weight="{UI_FONT_BOLD}" fill="{C_BACKGROUND}" text-anchor="middle">&#937;</text>
 </svg>"""
 
-def _es_ruta_segura_para_escritura(dest: Any) -> Optional[Path]:
-    """Verifica si la ruta destino es apta para escritura mediante resolución absoluta."""
-    if not isinstance(dest, (str, Path)):
-        return None
-    try:
-        path = Path(dest).resolve()
-        return path if is_safe_to_modify(path) else None
-    except (OSError, RuntimeError, TypeError, ValueError):
-        return None
-
 def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optional[Path]:
-    """Guarda el logo SVG tras validar la seguridad del destino."""
-    path = _es_ruta_segura_para_escritura(destination)
-    if not path:
+    """Guarda el logo SVG tras validar la seguridad del destino de forma atómica."""
+    if destination is None:
         return None
     try:
-        # Forzar chequeo explícito antes de cualquier operación de I/O
+        path = Path(destination).resolve()
+        # Chequeo de seguridad pre-operación
         ensure_safe_to_modify(path)
+        
         if not path.parent.exists():
             path.parent.mkdir(parents=True, exist_ok=True)
+            
         path.write_text(logo_svg(size), encoding="utf-8")
         return path if path.is_file() else None
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError, AttributeError):

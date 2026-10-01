@@ -200,7 +200,7 @@ def _process_file_entry(
     """Gestiona la lógica de recursión o conteo para archivos y directorios."""
     try:
         p_entry = Path(entry.path)
-        if not _ensure_within_base(str(p_entry), root_abs_norm) or not is_safe_to_modify(p_entry):
+        if not _ensure_within_base(str(p_entry), root_abs_norm) or not is_safe_to_modify(p_entry) or is_protected_path(p_entry):
             return ScanResult(0, True)
         
         st: os.stat_result = entry.stat(follow_symlinks=False)
@@ -209,8 +209,6 @@ def _process_file_entry(
         visited_inodes.add(st.st_ino)
         
         if entry.is_dir(follow_symlinks=False):
-            if is_protected_path(p_entry):
-                return ScanResult(0, True)
             return _sum_directory_recursive(p_entry, root_abs_norm, kernel32, visited_inodes, depth + 1)
         
         if _is_file_in_use(p_entry):

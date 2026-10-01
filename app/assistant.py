@@ -439,10 +439,11 @@ def _ensure_safe_text(text: Any) -> bool:
         return False
     
     sanitized = text.encode("utf-8", "ignore").decode("utf-8")
+    # Validación explícita de seguridad contra rutas protegidas o maliciosas
     if is_protected_path(sanitized): return False
-    if sanitized.startswith(("\\\\", "//", "UNC")): return False
     
     try:
+        if sanitized.startswith(("\\\\", "//", "UNC")): return False
         p = Path(sanitized)
         if p.is_absolute() or sanitized.startswith(("./", "../", "..\\")):
             return False
