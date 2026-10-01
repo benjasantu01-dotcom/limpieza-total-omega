@@ -722,3 +722,4 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-10-01T14:53:20` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
 - `2026-10-01T14:53:20` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-01T14:53:20` Corrida terminada. Total usado hoy: 350.
+- `2026-10-01T15:01:30` Presupuesto diario agotado (350 usados). Corte hasta mañana.
