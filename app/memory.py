@@ -222,17 +222,23 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     top_heap: List[ProcessMemory] = []
     seen_pids: Set[int] = set()
 
+    # Cada línea tiene el formato: "Nombre,ID,WorkingSet"
     for line in (l for l in raw_csv_text.splitlines() if l and "," in l):
         try:
-            name, pid_str, ws_str = line.split(",", 2)
+            parts = line.split(",", 2)
+            if len(parts) < 3: continue
+            
+            name, pid_str, ws_str = parts
             pid = int("".join(filter(str.isdigit, pid_str)))
             ws = _safe_int_conversion(ws_str)
+            
             if pid > 0 and pid not in seen_pids and 0 < ws < MAX_VALID_PROCESS_MEM:
                 seen_pids.add(pid)
+                process_data = ProcessMemory(name.strip("'\" "), pid, ws)
                 if len(top_heap) < limit:
-                    heapq.heappush(top_heap, ProcessMemory(name.strip("'\" "), pid, ws))
+                    heapq.heappush(top_heap, process_data)
                 elif ws > top_heap[0].working_set:
-                    heapq.heapreplace(top_heap, ProcessMemory(name.strip("'\" "), pid, ws))
+                    heapq.heapreplace(top_heap, process_data)
         except (ValueError, TypeError):
             continue
             
@@ -272,6 +278,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if not _is_windows: return []
     now = time.time()
     if (now - _proc_cache_time) > 60:
+        # Consulta PowerShell filtrando procesos del sistema e identificando el uso de RAM.
         ps_query = (
             "Get-Process | Where-Object { $_.Id -ne 0 -and $_.Id -ne 4 } | "
             "Sort-Object WorkingSet -Descending | Select-Object -First 50 | "
@@ -331,17 +338,19 @@ def _is_system_process(pid: int) -> bool:
     return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
 
 def _get_process_path(pid: int) -> Optional[Path]:
-    """Obtiene la ruta del ejecutable para un PID dado."""
+    """Obtiene la ruta absoluta del ejecutable para un PID dado usando APIs Win32."""
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
     if not handle: return None
     try:
         psapi = ctypes.windll.psapi
-        buf = ctypes.create_unicode_buffer(1024)
-        if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0 and buf.value:
-            p = Path(buf.value).resolve()
-            if p.exists() and p.is_file() and not is_protected_path(str(p)):
-                return p
+        buffer_size = 1024
+        buf = ctypes.create_unicode_buffer(buffer_size)
+        if psapi.GetModuleFileNameExW(handle, None, buf, buffer_size) > 0:
+            path_obj = Path(buf.value).resolve()
+            # Validación de seguridad: debe ser archivo existente y no estar en lista negra
+            if path_obj.exists() and path_obj.is_file() and not is_protected_path(str(path_obj)):
+                return path_obj
     except (ctypes.ArgumentError, OSError, ValueError):
         return None
     finally:
@@ -349,12 +358,12 @@ def _get_process_path(pid: int) -> Optional[Path]:
     return None
 
 def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
-    """Valida si un proceso puede ser sujeto a reducción de working set."""
+    """Verifica si un proceso es candidato seguro para una operación de trimming."""
     exec_path = _get_process_path(pid)
     if exec_path is None:
-        return False, "Proceso protegido o inaccesible."
+        return False, "Proceso protegido o inaccesible para inspección."
     if not is_safe_to_modify(str(exec_path)):
-        return False, "Ruta no permitida para operaciones de modificación."
+        return False, "Ruta del proceso no permitida para operaciones de modificación."
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
@@ -365,7 +374,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         pid: ID del proceso objetivo.
 
     Returns:
-        Tuple indicando éxito y mensaje de estado.
+        Tuple indicando éxito (bool) y mensaje de estado (str).
     """
     if not _is_windows: return False, "Solo soportado en Windows."
     
@@ -379,20 +388,22 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     psapi = ctypes.windll.psapi
     if not hasattr(psapi, "EmptyWorkingSet"): return False, "API no disponible en este sistema."
 
-    is_safe, err = _is_safe_to_trim(target_pid)
-    if not is_safe: return False, err or "Verificación de seguridad fallida."
+    # Verificar seguridad antes de interactuar con el proceso
+    is_safe, error_msg = _is_safe_to_trim(target_pid)
+    if not is_safe: return False, error_msg or "Verificación de seguridad fallida."
 
     kernel32 = ctypes.windll.kernel32
     proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
         error_code = ctypes.get_last_error()
-        return False, f"No se pudo acceder al proceso (Código: {error_code})."
+        return False, f"No se pudo abrir el proceso para trimming (Código: {error_code})."
     
     try:
+        # Ejecución del comando de limpieza de working set vía Win32
         if psapi.EmptyWorkingSet(proc_handle) == 0:
             error_code = ctypes.get_last_error()
             if error_code == ERROR_ACCESS_DENIED:
-                return False, "Acceso denegado al proceso (requiere privilegios de administrador)."
+                return False, "Acceso denegado: requiere privilegios de administrador."
             return False, f"El sistema rechazó la solicitud (código {error_code})."
         return True, f"Working set liberado. {TRIM_WARNING}"
     finally: 

@@ -141,11 +141,11 @@ def _is_allowed_directory(name: str) -> bool:
 def _is_file_locked(path: Path) -> bool:
     """
     Determina si un archivo está bloqueado intentando abrirlo en solo lectura.
+    Retorna True si el archivo está en uso exclusivo o no puede ser accedido.
     """
     if path is None or not path.is_file():
         return True
     try:
-        # Usamos flags de modo de acceso seguro
         fd = os.open(path, os.O_RDONLY)
         os.close(fd)
         return False
@@ -184,8 +184,9 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
-    Auditoría de seguridad exhaustiva previa a E/S.
-    Verifica: integridad, permisos, ausencia de enlaces, límites de tamaño y bloqueos.
+    Auditoría exhaustiva previa a cualquier operación de escritura o movimiento.
+    Valida: existencia, enlaces simbólicos, protección contra escritura, bloqueos de sistema,
+    espacio disponible, y recursividad de rutas.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     try:
@@ -193,7 +194,6 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if not is_safe_to_modify(src) or not _validate_path_security(src, dest): return False
         
         target_dir = dest.parent if dest.exists() else dest
-        # Se asegura que la carpeta de destino y sus padres no estén protegidos
         if is_protected_path(target_dir) or is_protected_path(target_dir.parent): return False
         if not target_dir.is_dir() or not os.access(target_dir, os.W_OK): return False
         
@@ -229,6 +229,13 @@ def _is_valid_junk_entry(entry: os.DirEntry, stats: os.stat_result) -> bool:
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
     """
     Recorrido recursivo limitado para encontrar archivos basura.
+    
+    Args:
+        current_dir: Directorio base del escaneo actual.
+        found: Lista acumulativa de archivos encontrados.
+        depth: Profundidad de recursión para prevenir desbordamiento de stack.
+        protected_cache: Cache de rutas verificadas como protegidas.
+        visited: Conjunto de directorios ya procesados para evitar ciclos.
     """
     if depth > 50 or current_dir is None or not current_dir.exists(): return
     try:

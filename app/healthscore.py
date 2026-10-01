@@ -78,6 +78,7 @@ _LIMIT_RAM_PERCENT: Final[float] = 35.0
 _LIMIT_DISK_PERCENT: Final[float] = 25.0
 
 def _safe_inv(val: float, fallback: float = 1.0) -> float:
+    """Calcula el inverso multiplicativo de forma segura para evitar divisiones por cero."""
     return 1.0 / val if (math.isfinite(val) and val != 0) else fallback
 
 _INV_JUNK: Final[float] = _safe_inv(_LIMIT_JUNK_MB)
@@ -103,6 +104,7 @@ if sum(WEIGHTS.values()) != 100:
     raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
+    """Asegura que un valor numérico se mantenga dentro de los límites [min_val, max_val]."""
     val = float(value)
     if not math.isfinite(val): return min_val
     return max(min_val, min(val, max_val))
@@ -180,6 +182,7 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
+        """Verifica que todas las métricas críticas sean numéricamente válidas."""
         return all(isinstance(v, (int, float)) and math.isfinite(float(v)) 
                    for v in [self.junk_mb, self.suspicious_count, self.memory_available_percent, self.disk_free_percent])
 
@@ -196,6 +199,7 @@ class HealthResult:
 def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], ratio: NormalizedRatio, findings: List[str]) -> None:
+    """Procesa una colección de reglas y añade mensajes de recomendación si se cumplen."""
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
@@ -209,7 +213,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Ejecuta el pipeline de puntuación procesando métricas y devolviendo un resultado consolidado."""
-    m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
+    m: SystemMetrics = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
     m.validate()
     
     recommendations: List[str] = []
@@ -218,9 +222,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for entry in _PIPELINE_ORDERED:
         try:
-            area_ratio = entry.scorer(m)
+            area_ratio: NormalizedRatio = entry.scorer(m)
             _evaluate_rules(m, entry.rules, area_ratio, recommendations)
-            points = int(round(area_ratio * entry.weight))
+            points: int = int(round(area_ratio * entry.weight))
             metric_breakdown[entry.area] = points
             accumulated_score += points
         except Exception:
@@ -230,15 +234,17 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if m.quarantined_count > 0:
         recommendations.append(f"Tenés {m.quarantined_count} archivo(s) en cuarentena.")
     
-    final_score = max(0, min(accumulated_score, 100))
+    final_score: int = int(_clamp(float(accumulated_score), 0.0, 100.0))
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."])
 
 def _render_bar(points: int, max_val: int) -> str:
+    """Crea una representación visual (ASCII) de una barra de progreso."""
     limit = max(1, max_val)
     p = max(0, min(points, limit))
     return "".join(["#"] * p + ["."] * (limit - p))
 
 def summarize(result: HealthResult | None) -> List[str]:
+    """Genera un reporte legible del resultado de salud para mostrar en la UI."""
     if not result: return ["Error: Informe de salud no disponible."]
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, maximo in WEIGHTS.items():
