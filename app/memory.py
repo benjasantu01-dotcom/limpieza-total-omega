@@ -313,9 +313,9 @@ def _get_process_path(pid: int) -> Optional[Path]:
         psapi = ctypes.windll.psapi
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0 and buf.value:
-            path_str = buf.value
-            p = Path(path_str).resolve()
-            if p.is_file() and not is_protected_path(str(p)):
+            p = Path(buf.value).resolve()
+            # Validamos existencia física antes de considerar la ruta
+            if p.exists() and p.is_file() and not is_protected_path(str(p)):
                 return p
     except (ctypes.ArgumentError, OSError, ValueError):
         return None

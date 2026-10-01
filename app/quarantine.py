@@ -137,8 +137,10 @@ class QuarantineItem:
                 return False
             
             st = stored_path.stat()
-            # Validar inodo si está disponible para evitar sustituciones (TOCTOU)
+            # Validar inodo y hard links para prevenir manipulación (TOCTOU/Link attack)
             if self.file_inode != 0 and st.st_ino != self.file_inode:
+                return False
+            if st.st_nlink > 1:
                 return False
             
             # Verificación estricta de archivo regular y tamaño
