@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Mejoras aceptadas: **215** (42.7% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-30 | 101 | 9 | 22 | 9 | 87 |
-| 2026-10-01 | 115 | 6 | 22 | 7 | 126 |
+| 2026-09-30 | 97 | 9 | 22 | 9 | 87 |
+| 2026-10-01 | 118 | 6 | 22 | 7 | 127 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **50**
-- manejo de errores y validación de entradas: **47**
+- manejo de errores y validación de entradas: **49**
 - robustez ante casos límite: **42**
-- legibilidad y documentación: **41**
-- rendimiento: **36**
+- legibilidad y documentación: **42**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **24**
-- `duplicates.py`: **20**
+- `diskreport.py`: **23**
 - `quarantine.py`: **20**
-- `healthscore.py`: **17**
+- `duplicates.py`: **19**
 - `organizer.py`: **17**
+- `settings.py`: **17**
 - `memory.py`: **16**
-- `settings.py`: **16**
-- `assistant.py`: **15**
+- `healthscore.py`: **16**
+- `assistant.py`: **16**
+- `scanner.py`: **15**
 - `branding.py`: **15**
-- `scanner.py`: **14**
 - `browser.py`: **14**
 - `safety.py`: **14**
 - `startup.py`: **11**
-- `main.py`: **3**
+- `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-01T11:48:15` **assistant.py** (legibilidad y documentación): Mejoré la documentación de `SystemContext.ingest` y `_ensure_safe_text` mediante docstrings detallados que explican la lógica de seguridad y el manejo de tipos, facilitando el mantenimiento y la comprensión de las salvaguardas implementadas.
+- `2026-10-01T11:47:17` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save()` agregando una validación previa de integridad mediante `_coerce_and_verify` y capturando explícitamente posibles fallos en la serialización JSON, evitando estados intermedios inconsistentes en el sistema de archivos.
+- `2026-10-01T11:46:44` **scanner.py** (manejo de errores y validación de entradas): He mejorado la robustez de las heurísticas centralizando la validación de `path` y `entry` en un decorador interno (o validación previa explícita) para evitar errores de tipo `None` o `AttributeError` sin necesidad de repetir chequeos `if` en cada función, asegurando que el motor no aborte ante archivos con metadatos inaccesibles.
 - `2026-10-01T11:37:15` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` añadiendo una validación estricta de tipos en el bucle de procesamiento y capturando errores específicos durante la deserialización para evitar que un manifiesto parcialmente corrupto detenga el funcionamiento de la aplicación.
 - `2026-10-01T11:36:33` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_locked` para evitar falsos positivos y errores de manejo de descriptores, y refiné la lógica en `stage_for_review` para prevenir el uso de rutas inválidas o `None` antes de operar, cumpliendo estrictamente con el enfoque de validación de entradas.
 - `2026-10-01T11:28:34` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y sus dependencias validando explícitamente el resultado de las llamadas a `kernel32.OpenProcess` mediante el uso de `ctypes.get_last_error()` en caso de fallos, y aseguré que la conversión de `pid` sea manejada de forma segura antes de realizar operaciones con privilegios sobre el sistema.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-01T09:45:47` **safety.py** (seguridad defensiva): Se añadió una validación explícita para evitar modificaciones en archivos con permisos de solo lectura a nivel de sistema de archivos (atributo `FILE_ATTRIBUTE_READONLY`), complementando el chequeo de permisos de `stat()`, ya que en Windows `os.access` no siempre refleja fielmente el bit de solo lectura en todos los escenarios.
 - `2026-10-01T09:44:36` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_safe_unlink` eliminando el uso de `os.fsync` (que no es necesario para un borrado y puede fallar en ciertos sistemas de archivos o permisos) y asegurando que la validación de `expected_inode` sea estricta incluso si el valor es 0, además de centralizar las precondiciones de borrado para evitar estados intermedios.
 - `2026-10-01T09:39:00` **organizer.py** (seguridad defensiva): Se reforzó la seguridad en `_is_safe_for_disk_op` añadiendo una validación explícita mediante `is_protected_path` sobre el directorio padre de destino para evitar que la operación intente manipular subdirectorios protegidos accidentalmente.
-- `2026-10-01T09:34:05` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del pipeline de evaluación añadiendo un chequeo explícito de integridad en `_evaluate_rules` para prevenir que una excepción al generar mensajes de recomendación (por datos inconsistentes en `SystemMetrics`) propague un error fuera del motor, asegurando que la recolección de métricas no detenga la ejecución de la app.
-- `2026-10-01T09:25:29` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` para asegurar que el escaneo de directorios sea estrictamente consistente con los permisos y la topología de archivos al omitir explícitamente puntos de reparse (junctions/symlinks) durante la iteración, evitando así escapes accidentales de las zonas autorizadas del usuario.
-- `2026-10-01T09:25:02` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo en `walk_files` y `_collect_summary_data` al añadir una validación de seguridad explícita (`is_protected_path`) antes de procesar cualquier archivo individual encontrado, previniendo que archivos protegidos que pudieran estar dentro de carpetas escaneables sean contabilizados o indexados accidentalmente.

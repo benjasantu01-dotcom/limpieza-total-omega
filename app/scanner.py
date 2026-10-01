@@ -105,48 +105,37 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Heurística: Detecta doble extensión (ej. archivo.pdf.exe) utilizada para engañar al usuario."""
-    if path is None or path.name is None:
-        return None
-    if DOUBLE_EXTENSION_RE.search(path.name):
+    if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Heurística: Identifica archivos ejecutables nuevos en carpetas de descarga temporales."""
-    if path is None or path.parent is None or path.parent.name.lower() not in WATCHED_FOLDERS:
+    if not path or not path.parent or path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
     stats = _safe_stat(entry) if entry else None
     if stats:
-        try:
-            mtime = getattr(stats, "st_mtime", 0.0)
-            if isinstance(mtime, (int, float)) and mtime > 0:
-                if (now_ts - float(mtime)) < (LIMITS.recent_hours * 3600):
-                    return Suspicion(path, f"Ejecutable reciente detectado (<{LIMITS.recent_hours}h)", "info")
-        except (AttributeError, TypeError, ValueError):
-            return None
+        mtime = getattr(stats, "st_mtime", 0.0)
+        if isinstance(mtime, (int, float)) and mtime > 0:
+            if (now_ts - float(mtime)) < (LIMITS.recent_hours * 3600):
+                return Suspicion(path, f"Ejecutable reciente detectado (<{LIMITS.recent_hours}h)", "info")
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Heurística: Detecta ejecutables con nombres de procesos críticos fuera de System32."""
-    if path is not None and path.name is not None and path.name.lower() in SYSTEM_LOOKALIKES:
-        try:
-            path_str = str(path).lower()
-            if SYSTEM32_LOWER not in path_str:
-                return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
-        except Exception:
-            return None
+    if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
+        path_str = str(path).lower()
+        if SYSTEM32_LOWER not in path_str:
+            return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Heurística: Detecta archivos de 0 bytes que podrían actuar como marcadores o ejecutables vacíos."""
     stats = _safe_stat(entry) if entry else None
     if stats is not None:
-        try:
-            size = getattr(stats, "st_size", -1)
-            if isinstance(size, int) and size == 0:
-                return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
-        except Exception:
-            return None
+        size = getattr(stats, "st_size", -1)
+        if isinstance(size, int) and size == 0:
+            return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
     return None
 
 ALL_CHECKS: Final[List[SuspicionCheck]] = [

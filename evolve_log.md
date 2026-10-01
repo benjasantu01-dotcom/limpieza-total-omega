@@ -1497,3 +1497,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-01T11:37:42` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: manejo de errores y validación de entradas): el archivo se encogió al 3% del original (posible pérdida de código)
 - `2026-10-01T11:37:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-01T11:37:42` Corrida terminada. Total usado hoy: 276.
+- `2026-10-01T11:46:12` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-10-01T11:46:44` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). He mejorado la robustez de las heurísticas centralizando la validación de `path` y `entry` en un decorador interno (o validación previa explícita) para evitar errores de tipo `None` o `AttributeError` sin necesidad de repetir chequeos `if` en cada función, asegurando que el motor no aborte ante archivos con metadatos inaccesibles.
+- `2026-10-01T11:47:17` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `save()` agregando una validación previa de integridad mediante `_coerce_and_verify` y capturando explícitamente posibles fallos en la serialización JSON, evitando estados intermedios inconsistentes en el sistema de archivos.
+- `2026-10-01T11:47:46` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-01T11:48:15` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la documentación de `SystemContext.ingest` y `_ensure_safe_text` mediante docstrings detallados que explican la lógica de seguridad y el manejo de tipos, facilitando el mantenimiento y la comprensión de las salvaguardas implementadas.
+- `2026-10-01T11:48:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-01T11:48:15` Corrida terminada. Total usado hoy: 280.

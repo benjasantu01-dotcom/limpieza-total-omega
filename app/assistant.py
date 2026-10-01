@@ -377,12 +377,13 @@ class SystemContext:
 
     def ingest(self, source: Any) -> bool:
         """
-        Normaliza datos externos (dict/objeto) hacia el estado del objeto.
+        Normaliza e importa datos externos (dict o instancia) al contexto local.
         
-        Realiza una carga atómica y segura: valida cada campo contra sus reglas 
-        de seguridad y tipos antes de actualizar el estado interno del sistema.
+        Realiza una validación de seguridad de múltiples capas:
+        1. Verifica integridad de estructura (evita objetos recursivos o maliciosos).
+        2. Itera sobre `_VALIDATORS` aplicando `MetricSpec` para forzar tipado y límites.
+        3. Limpia campos string de forma atómica antes de actualizar la instancia.
         """
-        # Evitar procesamiento de fuentes vacías, demasiado complejas o diccionarios sospechosos
         if source is None: return False
         if isinstance(source, dict) and (len(source) > 50 or _is_input_too_deep_or_complex(source)):
             return False
@@ -423,10 +424,11 @@ class Answer:
 
 def _ensure_safe_text(text: Any) -> bool:
     """
-    Valida y desinfecta texto para evitar inyecciones, rutas prohibidas y caracteres de control.
+    Realiza una desinfección estricta y validación de seguridad sobre cadenas.
     
-    Esta función es la barrera final que asegura que solo texto limpio y seguro 
-    llegue tanto al motor local como a la serialización externa.
+    Verifica contra inyecciones, rutas prohibidas, caracteres no imprimibles y 
+    intentos de Directory Traversal. Esta función actúa como el gatekeeper 
+    de todo el texto antes de entrar a la lógica del asistente o ser enviado.
     """
     if not isinstance(text, str) or not text or len(text) > _MAX_TEXT_LENGTH:
         return False

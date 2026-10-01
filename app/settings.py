@@ -405,7 +405,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             os.replace(ruta, bak_path)
         os.replace(temp_path, ruta)
         return ruta
-    except (OSError, IOError, PermissionError): return None
+    except (OSError, IOError, PermissionError, json.JSONDecodeError): return None
     finally:
         if temp_path.exists():
             try: os.remove(temp_path)
