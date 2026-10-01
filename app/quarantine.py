@@ -648,12 +648,8 @@ def _verify_transaction_integrity(item: QuarantineItem, destination: Path) -> No
     if not item.verify_integrity(destination):
         raise RuntimeError("Integridad post-registro fallida.")
 
-def quarantine_file(
-    source: PathLike,
-    reason: str = "Marcado como sospechoso",
-    base: PathLike = DEFAULT_QUARANTINE_DIR,
-) -> QuarantineItem:
-    """Aísla un archivo sospechoso en el sandbox de cuarentena."""
+def _validate_input_path(source: PathLike) -> Path:
+    """Valida la existencia y tipo de la ruta de entrada para aislamiento."""
     if source is None:
         raise ValueError("Ruta de origen nula o vacía.")
     p_source = Path(source)
@@ -668,12 +664,23 @@ def quarantine_file(
         raise ValueError("El origen debe ser un archivo regular.")
     if not os.access(p_source, os.R_OK):
         raise PermissionError("Archivo origen sin permisos de lectura.")
-    
+    return p_source
+
+def quarantine_file(
+    source: PathLike,
+    reason: str = "Marcado como sospechoso",
+    base: PathLike = DEFAULT_QUARANTINE_DIR,
+) -> QuarantineItem:
+    """Aísla un archivo sospechoso en el sandbox de cuarentena."""
+    p_source = _validate_input_path(source)
     source_path = _validate_source_for_quarantine(p_source)
+    
     original_size = source_path.stat().st_size
     dest_dir = quarantine_dir(base)
+    
     if _is_within_quarantine_sandbox(source_path, dest_dir.resolve()):
         raise UnsafePathError("Archivo ya en el sandbox.")
+    
     _validate_isolation_request(source_path, dest_dir)
     destination = dest_dir / _generate_safe_stored_name(source_path, uuid.uuid4().hex[:12])
     
