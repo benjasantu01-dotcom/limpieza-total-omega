@@ -206,16 +206,15 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 
 
 def _is_valid_entry(entry: os.DirEntry, min_size: int, skip_protected: bool) -> bool:
-    """Valida si un elemento del sistema de archivos es candidato válido."""
+    """Valida si un elemento del sistema de archivos es candidato válido usando stat del entry."""
     try:
-        if not entry.is_file(follow_symlinks=False):
-            return False
         stat_info = entry.stat(follow_symlinks=False)
         if stat_info.st_size < min_size:
             return False
         p = Path(entry.path)
         if skip_protected and is_protected_path(p):
             return False
+        # Las verificaciones de seguridad se hacen al final para minimizar llamadas costosas
         return _safe_path_check(p) and not is_system_or_hidden(p) and not _is_file_locked(p)
     except (OSError, PermissionError):
         return False
@@ -248,8 +247,13 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                             stack.append((entry.path, depth + 1))
                         continue
                     
-                    if _is_valid_entry(entry, min_size, skip_protected):
-                        size_to_paths_map[entry.stat().st_size].append(Path(entry.path))
+                    if entry.is_file(follow_symlinks=False):
+                        # Obtenemos stat una sola vez aquí
+                        stat_info = entry.stat(follow_symlinks=False)
+                        if stat_info.st_size >= min_size:
+                            p = Path(entry.path)
+                            if not (skip_protected and is_protected_path(p)) and _safe_path_check(p) and not is_system_or_hidden(p) and not _is_file_locked(p):
+                                size_to_paths_map[stat_info.st_size].append(p)
         except (OSError, PermissionError, RuntimeError):
             continue
             

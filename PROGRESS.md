@@ -8,45 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **210** (41.7% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 46
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 212
+- Rechazadas por guardia de seguridad: 45
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-29 | 18 | 1 | 4 | 1 | 42 |
+| 2026-09-29 | 16 | 1 | 3 | 0 | 42 |
 | 2026-09-30 | 156 | 13 | 34 | 15 | 132 |
-| 2026-10-01 | 36 | 3 | 8 | 3 | 38 |
+| 2026-10-01 | 38 | 3 | 8 | 3 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **53**
 - legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **41**
-- robustez ante casos límite: **37**
-- rendimiento: **29**
+- robustez ante casos límite: **35**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
+- `duplicates.py`: **19**
+- `healthscore.py`: **18**
 - `quarantine.py`: **18**
-- `duplicates.py`: **18**
-- `healthscore.py`: **17**
-- `settings.py`: **16**
 - `branding.py`: **16**
 - `organizer.py`: **16**
-- `scanner.py`: **15**
 - `assistant.py`: **15**
 - `memory.py`: **15**
+- `settings.py`: **15**
 - `browser.py`: **14**
+- `scanner.py`: **14**
 - `safety.py`: **13**
 - `startup.py`: **9**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-01T03:46:53` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` reemplazando los `try-except` dentro del bucle crítico y simplificando el acceso a las reglas de recomendación, evitando la creación de objetos innecesarios y redundancias en cada iteración.
+- `2026-10-01T03:46:20` **duplicates.py** (rendimiento): Optimizé la recolección de candidatos en `_collect_candidates` para realizar una única llamada a `stat().st_size` durante la iteración de `os.scandir`, evitando llamadas redundantes a métodos de ruta y mejorando significativamente la performance en directorios con miles de archivos al reducir la carga de E/S.
 - `2026-10-01T03:39:02` **diskreport.py** (rendimiento): Optimizé la función `walk_files` para reducir el número de llamadas redundantes a `Path.resolve()` y `Path` instanciaciones dentro del bucle crítico, almacenando y operando directamente con las cadenas de texto del sistema de archivos (`str`) durante la traversa.
 - `2026-10-01T03:37:46` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` y el dibujo de franjas eliminando la creación innecesaria de listas intermedias y reduciendo la cantidad de llamadas a `_hex_to_rgb` mediante la pre-conversión de los `stops` a tuplas RGB fijas dentro de la caché.
 - `2026-10-01T03:27:29` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna de la clase `StartupEntry` y sus métodos privados mediante docstrings detallados que explican el "porqué" de las validaciones de seguridad, asegurando que la intención técnica sea clara para el mantenimiento futuro.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-01T03:05:38` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` mediante la adición de Type Hints detallados, la unificación de la lógica de conversión de unidades, y la documentación explicativa en las funciones críticas para clarificar el flujo de procesamiento de archivos.
 - `2026-10-01T02:58:51` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `browser.py` mediante la refactorización de `_should_skip_entry` y `_process_file_entry` para reducir el anidamiento y la complejidad cognitiva, documentando explícitamente los motivos de exclusión de archivos.
 - `2026-10-01T02:58:38` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `branding.py` mediante docstrings detallados en funciones críticas (como `gradient_colors` y `draw_ring`) que explican el contexto matemático y las restricciones de los parámetros para facilitar el mantenimiento y la extensibilidad del sistema de renderizado.
-- `2026-10-01T02:58:00` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `assistant.py` mediante docstrings detallados en clases clave (`SystemContext`, `ProblemCriterion`, `MetricSpec`) y funciones de procesamiento, clarificando el propósito, las restricciones de seguridad y el contrato de datos para facilitar el mantenimiento a largo plazo.
-- `2026-10-01T02:55:22` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_registry_csv` al implementar una validación estricta de la estructura del CSV retornado, asegurando que las columnas críticas existan antes de acceder a ellas, previniendo errores de `IndexError` ante salidas inesperadas de PowerShell.
