@@ -353,7 +353,7 @@ def _is_directory_junction(path_str: str) -> bool:
 
 def _is_kernel_managed(path: Path) -> bool:
     """Identifica archivos del núcleo bloqueados permanentemente (ej. pagefile.sys), evitando su manipulación."""
-    return path.name.lower() in ("pagefile.sys", "hiberfil.sys", "swapfile.sys")
+    return path.name.lower() in ("pagefile.sys", "hiberfil.sys", "swapfile.sys", "dumpstack.log.tmp")
 
 @lru_cache(maxsize=1024)
 def _is_sensitive_extension(ext: str) -> bool:
@@ -694,8 +694,11 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     if path is None:
         raise UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC)
     
-    # Validación previa de existencia antes de cualquier metadata estática profunda
     p = normalize(path)
+    
+    # Pre-check de archivos críticos de kernel antes de cualquier operación
+    if _is_kernel_managed(p):
+        raise UnsafePathError(f"Archivo de sistema crítico: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
     
     if os.name == 'nt' and (_is_volume_readonly(str(p)) or _is_volume_compressed_or_encrypted(str(p))):
         raise UnsafePathError(f"Volumen restringido/solo lectura: {p.anchor}", SafetyValidationErrorCode.VOLUME_READ_ONLY)

@@ -192,7 +192,7 @@ def _is_file_in_use_by_system(path: Path) -> bool:
             # Atributos de sistema/oculto
             attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
             if attrs != -1 and (attrs & 0x02 or attrs & 0x04): return True
-        except (OSError, AttributeError):
+        except (OSError, AttributeError, ValueError):
             return True
             
         # Intento de apertura exclusiva con msvcrt
@@ -203,12 +203,12 @@ def _is_file_in_use_by_system(path: Path) -> bool:
                 # Intento de locking no bloqueante
                 msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
                 msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
-            except OSError:
+            except (OSError, IOError):
                 return True # Archivo en uso por otro proceso
             finally:
                 os.close(fd)
             return False
-        except (OSError, IOError, ImportError):
+        except (OSError, IOError, ImportError, AttributeError):
             return True
     return False
 

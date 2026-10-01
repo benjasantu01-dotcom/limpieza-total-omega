@@ -75,9 +75,7 @@ SYSTEM32_LOWER: Final[str] = "system32"
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """
     Obtiene metadatos asegurando que no se sigan enlaces simbólicos.
-    
-    Esta función es necesaria para evitar que el escáner escape del árbol 
-    de directorios asignado mediante el uso de Junctions o Symlinks.
+    Captura excepciones de acceso denegado comunes en archivos del sistema.
     """
     if not isinstance(entry, os.DirEntry):
         return None
@@ -119,9 +117,12 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
     stats = _safe_stat(entry) if entry else None
     if stats:
-        mtime = getattr(stats, "st_mtime", 0.0)
-        if isinstance(mtime, (int, float)) and mtime > 0 and (now_ts - float(mtime)) < (LIMITS.recent_hours * 3600):
-            return Suspicion(path, f"Ejecutable reciente detectado (<{LIMITS.recent_hours}h)", "info")
+        try:
+            mtime = getattr(stats, "st_mtime", 0.0)
+            if isinstance(mtime, (int, float)) and mtime > 0 and (now_ts - float(mtime)) < (LIMITS.recent_hours * 3600):
+                return Suspicion(path, f"Ejecutable reciente detectado (<{LIMITS.recent_hours}h)", "info")
+        except Exception:
+            return None
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
@@ -139,9 +140,12 @@ def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: fl
     """Heurística: Detecta archivos de 0 bytes que podrían actuar como marcadores o ejecutables vacíos."""
     stats = _safe_stat(entry) if entry else None
     if stats is not None:
-        size = getattr(stats, "st_size", -1)
-        if isinstance(size, int) and size == 0:
-            return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
+        try:
+            size = getattr(stats, "st_size", -1)
+            if isinstance(size, int) and size == 0:
+                return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
+        except Exception:
+            return None
     return None
 
 ALL_CHECKS: Final[List[SuspicionCheck]] = [
@@ -236,7 +240,7 @@ class Scanner:
                 finding = check_fn(path, entry, self.now_ts)
                 if finding is not None:
                     self.results.append(finding)
-            except (AttributeError, TypeError, ValueError) as e:
+            except (AttributeError, TypeError, ValueError, OSError) as e:
                 logger.warning(f"Error lógico en heurística {check_fn.__name__} para {path}: {e}")
             except Exception as e:
                 logger.debug(f"Error inesperado en heurística {check_fn.__name__} para {path}: {e}")
