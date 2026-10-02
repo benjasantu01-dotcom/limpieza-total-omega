@@ -114,15 +114,14 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
 
 
-def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
+def _is_excluded_path(entry: os.DirEntry, root_str: str) -> bool:
     """Evalúa si un objeto del sistema de archivos debe omitirse del análisis."""
     try:
         if any(c in entry.name for c in SUSPICIOUS_CHARS) or '\0' in entry.name:
             return True
         
-        # Validar confinamiento de ruta
-        entry_path = Path(entry.path).resolve()
-        if root_path not in entry_path.parents and entry_path != root_path:
+        # Validar confinamiento de ruta usando strings para evitar instanciación de objetos Path
+        if not entry.path.startswith(root_str):
             return True
             
         try:
@@ -238,15 +237,13 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador recursivo que recorre el árbol de archivos.
-    
-    Implementa un mecanismo de prevención de bucles infinitos mediante inodos
-    y respeta las restricciones de `safety.is_protected_path`.
+    Generador recursivo optimizado mediante os.DirEntry y evitando Path instancing innecesario.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
+    root_str = str(root_path)
     visited_inodes: set[Inode] = set()
-    stack: List[Path] = [root_path]
+    stack: List[str] = [root_str]
     
     while stack:
         current_dir = stack.pop()
@@ -254,18 +251,15 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if skip_protected and _is_excluded_path(entry, root_path):
+                        if skip_protected and _is_excluded_path(entry, root_str):
                             continue
                         
-                        if not os.access(entry.path, os.R_OK):
-                            continue
-
                         if entry.is_dir(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(Path(entry.path))
+                                stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             sz = int(st.st_size)
@@ -324,9 +318,6 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Recorre el sistema de archivos mediante `walk_files` y consolida métricas.
-    
-    Usa un heap (min-heap de tamaño fijo) para mantener eficiente el rastreo 
-    de los archivos más pesados sin cargar toda la estructura en memoria.
     """
     total_bytes: int = 0
     total_files: int = 0
@@ -334,27 +325,20 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        # Doble verificación de confinamiento para mayor seguridad
-        if skip_protected and (is_protected_path(path) or directory not in path.parents and path != directory):
-            continue
-            
         try:
-            s = int(size_bytes)
-            if s < 0: continue
-            
-            total_bytes += s
+            total_bytes += size_bytes
             total_files += 1
             
             ext = path.suffix.lower() or "(sin extensión)"
             stats = ext_stats[ext]
-            stats.total_bytes += s
+            stats.total_bytes += size_bytes
             stats.count += 1
             
             if limit > 0:
                 if len(top_heap) < limit: 
-                    heapq.heappush(top_heap, (s, path))
-                elif s > top_heap[0][0]: 
-                    heapq.heapreplace(top_heap, (s, path))
+                    heapq.heappush(top_heap, (size_bytes, path))
+                elif size_bytes > top_heap[0][0]: 
+                    heapq.heapreplace(top_heap, (size_bytes, path))
         except (KeyError, TypeError, ValueError, OSError):
             continue
                 

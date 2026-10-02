@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **217** (43.1% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-30 | 48 | 3 | 8 | 2 | 41 |
+| 2026-09-30 | 45 | 3 | 7 | 2 | 41 |
 | 2026-10-01 | 150 | 8 | 29 | 11 | 152 |
-| 2026-10-02 | 19 | 1 | 7 | 4 | 21 |
+| 2026-10-02 | 21 | 1 | 8 | 4 | 22 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **53**
 - seguridad defensiva: **50**
 - legibilidad y documentación: **48**
-- robustez ante casos límite: **37**
-- rendimiento: **29**
+- robustez ante casos límite: **34**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
-- `quarantine.py`: **21**
+- `diskreport.py`: **23**
 - `settings.py`: **20**
+- `quarantine.py`: **20**
 - `duplicates.py`: **19**
-- `scanner.py`: **17**
 - `assistant.py`: **17**
-- `safety.py`: **15**
-- `healthscore.py`: **15**
+- `healthscore.py`: **16**
+- `scanner.py`: **16**
 - `organizer.py`: **15**
 - `branding.py`: **14**
 - `browser.py`: **14**
 - `memory.py`: **14**
+- `safety.py`: **14**
 - `startup.py`: **11**
 - `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-02T02:17:20` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` mediante la pre-conversión de los pesos (weights) a una estructura de acceso directo `list` paralela a `_PIPELINE_ORDERED`, evitando búsquedas repetidas en el diccionario `WEIGHTS` y la reconstrucción de `metric_breakdown` en cada iteración del bucle principal.
+- `2026-10-02T02:16:25` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando la creación recurrente de objetos `Path` por el uso de `os.DirEntry` nativo, reduciendo drásticamente la presión sobre el recolector de basura y mejorando la velocidad de escaneo al evitar llamadas innecesarias a `Path.resolve()` y `Path.parents` dentro del bucle crítico.
 - `2026-10-02T02:06:10` **startup.py** (legibilidad y documentación): Documenté el propósito de los métodos de `StartupEntry` y las funciones de escaneo mediante docstrings detallados, clarificando las precondiciones y el manejo de excepciones para mejorar la mantenibilidad del código sin alterar su lógica.
 - `2026-10-02T01:49:11` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_safe_unlink` y `_is_file_in_use_by_system` para reducir el anidamiento y la complejidad ciclomática, facilitando el seguimiento del flujo lógico de seguridad.
 - `2026-10-02T01:48:46` **organizer.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos para aclarar la lógica de las funciones de auditoría de seguridad (`_is_safe_for_disk_op`, `_validate_path_security`), facilitando el mantenimiento y garantizando que las restricciones de seguridad sean evidentes para futuros desarrolladores.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-02T01:16:20` **safety.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `ensure_safe_to_modify` ante condiciones de carrera y estados inconsistentes del sistema de archivos, añadiendo un chequeo preventivo de existencia antes de consultar metadatos críticos para evitar `FileNotFoundError` no capturadas.
 - `2026-10-02T01:06:44` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_safe_for_disk_op` mediante la centralización de validaciones de estado y se mejoró el manejo de excepciones en `stage_for_review` para asegurar que el uso de `ensure_safe_to_modify` no rompa el flujo completo de procesamiento, respetando las reglas de seguridad.
 - `2026-10-02T01:06:33` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` al capturar excepciones en la conversión de PIDs y validar la estructura de las líneas antes de procesar, evitando que una línea malformada detenga el análisis de los procesos restantes.
-- `2026-10-02T01:06:05` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_safe_get_entry_value` y `_validate_numeric_setting` para evitar que entradas de usuario malformadas o inesperadas provoquen errores durante la serialización de los ajustes, asegurando que la aplicación siempre recupere un estado válido en lugar de fallar silenciosamente o corromper la configuración.
-- `2026-10-02T01:04:51` **healthscore.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `compute_score` y `summarize` implementando chequeos explícitos para evitar errores de ejecución ante entradas inesperadas o estados parciales del objeto `SystemMetrics`.

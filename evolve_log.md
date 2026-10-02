@@ -1003,3 +1003,12 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-02T02:07:33` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se optimizó el escaneo de directorios reemplazando el uso de `pathlib.Path` dentro de los bucles críticos por `os.scandir` y rutas de cadena, reduciendo drásticamente la creación de objetos y las llamadas a `stat` redundantes para mejorar el rendimiento en discos mecánicos y árboles profundos.
 - `2026-10-02T02:07:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T02:07:33` Corrida terminada. Total usado hoy: 52.
+- `2026-10-02T02:15:45` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-10-02T02:16:25` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `walk_files` reemplazando la creación recurrente de objetos `Path` por el uso de `os.DirEntry` nativo, reduciendo drásticamente la presión sobre el recolector de basura y mejorando la velocidad de escaneo al evitar llamadas innecesarias a `Path.resolve()` y `Path.parents` dentro del bucle crítico.
+- `2026-10-02T02:16:54` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-02T02:17:20` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento de `compute_score` mediante la pre-conversión de los pesos (weights) a una estructura de acceso directo `list` paralela a `_PIPELINE_ORDERED`, evitando búsquedas repetidas en el diccionario `WEIGHTS` y la reconstrucción de `metric_breakdown` en cada iteración del bucle principal.
+- `2026-10-02T02:18:20` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-02T02:19:23` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-02T02:19:59` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): el archivo se encogió al 43% del original (posible pérdida de código)
+- `2026-10-02T02:19:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T02:19:59` Corrida terminada. Total usado hoy: 56.

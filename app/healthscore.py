@@ -103,6 +103,21 @@ WEIGHTS: Final[Dict[MetricKey, int]] = {
 if sum(WEIGHTS.values()) != 100:
     raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
 
+_PIPELINE_ORDERED: Final[Tuple[PipelineEntry, ...]] = (
+    PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), 
+                  (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, lambda m: f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad.", lambda m, r: r < WARN_THRESHOLD_HIGH),)),
+    PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), 
+                  (RecommendationRule("disco", WARN_THRESHOLD_LOW, lambda m: f"Queda {m.disk_free_percent:.1f}% de disco libre.", lambda m, r: r < WARN_THRESHOLD_LOW),)),
+    PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), 
+                  (RecommendationRule("memoria", WARN_THRESHOLD_LOW, lambda m: "Memoria disponible baja: cerrá procesos innecesarios.", lambda m, r: r < WARN_THRESHOLD_LOW),)),
+    PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), 
+                  (RecommendationRule("basura", WARN_THRESHOLD_MED, lambda m: f"Hay {m.junk_mb:.0f} MB de archivos temporales.", lambda m, r: r < WARN_THRESHOLD_MED),)),
+    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), 
+                  (RecommendationRule("duplicados", WARN_THRESHOLD_MED, lambda m: f"Podrías recuperar {m.duplicate_mb:.0f} MB eliminando duplicados.", lambda m, r: r < WARN_THRESHOLD_MED),)),
+    PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), 
+                  (RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),)),
+)
+
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     """Asegura que un valor numérico se mantenga dentro de los límites [min_val, max_val]."""
     val = float(value)
@@ -132,21 +147,6 @@ def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
     """Calcula ratio de impacto por programas en arranque."""
     return _clamp(1.0 - (float(startup_count) * _INV_STARTUP))
-
-_PIPELINE_ORDERED: Final[Tuple[PipelineEntry, ...]] = (
-    PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), 
-                  (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, lambda m: f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad.", lambda m, r: r < WARN_THRESHOLD_HIGH),)),
-    PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), 
-                  (RecommendationRule("disco", WARN_THRESHOLD_LOW, lambda m: f"Queda {m.disk_free_percent:.1f}% de disco libre.", lambda m, r: r < WARN_THRESHOLD_LOW),)),
-    PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), 
-                  (RecommendationRule("memoria", WARN_THRESHOLD_LOW, lambda m: "Memoria disponible baja: cerrá procesos innecesarios.", lambda m, r: r < WARN_THRESHOLD_LOW),)),
-    PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), 
-                  (RecommendationRule("basura", WARN_THRESHOLD_MED, lambda m: f"Hay {m.junk_mb:.0f} MB de archivos temporales.", lambda m, r: r < WARN_THRESHOLD_MED),)),
-    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), 
-                  (RecommendationRule("duplicados", WARN_THRESHOLD_MED, lambda m: f"Podrías recuperar {m.duplicate_mb:.0f} MB eliminando duplicados.", lambda m, r: r < WARN_THRESHOLD_MED),)),
-    PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), 
-                  (RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),)),
-)
 
 @dataclass
 class SystemMetrics:
