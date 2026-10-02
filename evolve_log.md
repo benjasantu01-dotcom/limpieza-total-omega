@@ -980,3 +980,12 @@ FAILED evolve/tests/test_modules.py::test_min_size_filters_out_tiny_files - Attr
 - `2026-10-02T14:14:29` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `branding.py` mediante una validación estricta y temprana de los parámetros numéricos de entrada en las funciones de dibujo, previniendo errores de cálculo geométrico y garantizando un comportamiento consistente incluso ante valores atípicos o maliciosos.
 - `2026-10-02T14:14:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T14:14:29` Corrida terminada. Total usado hoy: 336.
+- `2026-10-02T14:20:24` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-02T14:20:52` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-02T14:21:52` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-02T14:22:26` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la resiliencia de `_collect_summary_data` y `largest_folders` añadiendo chequeos explícitos para el tamaño de archivos y rutas, garantizando que operaciones de agregación no fallen ante datos inesperados (None o valores negativos), alineado con el enfoque de validación de entradas.
+- `2026-10-02T14:23:27` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-02T14:23:55` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `_calculate_keeper_heuristic` añadiendo validaciones explícitas de tipos y manejo de excepciones ante rutas inexistentes o corrompidas, evitando el retorno de valores `None` inesperados que podrían causar errores en el reporte.
+- `2026-10-02T14:24:07` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del cálculo de puntaje envolviendo la ejecución de las funciones `scorer` en un bloque `try-except` específico dentro del pipeline, evitando que una falla en una métrica individual invalide el cálculo global.
+- `2026-10-02T14:24:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T14:24:07` Corrida terminada. Total usado hoy: 340.

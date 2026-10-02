@@ -301,9 +301,11 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     """Calcula score de preservación: menor tiempo de modificación y menor longitud de ruta."""
-    if not isinstance(path, Path) or not _safe_path_check(path):
+    if not isinstance(path, Path):
         return None
     try:
+        if not path.exists():
+            return None
         stat = path.stat()
         return float(stat.st_mtime), len(str(path))
     except (OSError, PermissionError, ValueError, AttributeError):
@@ -317,8 +319,10 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     
     candidates: List[Tuple[Tuple[float, int], Path]] = []
     for p in group.paths:
-        if isinstance(p, Path) and p.exists() and (score := _calculate_keeper_heuristic(p)):
-            candidates.append((score, p))
+        if isinstance(p, Path):
+            score = _calculate_keeper_heuristic(p)
+            if score is not None:
+                candidates.append((score, p))
             
     return min(candidates, key=lambda x: x[0])[1] if candidates else None
 

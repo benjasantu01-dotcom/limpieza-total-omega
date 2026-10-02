@@ -326,6 +326,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
+            if size < 0: continue
             relative = path.relative_to(root)
             if relative.parts:
                 top_folder = root / relative.parts[0]
@@ -357,6 +358,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     
     for path, size_bytes in walk_files(directory, skip_protected):
         try:
+            if not isinstance(size_bytes, int) or size_bytes < 0: continue
             total_bytes += size_bytes
             total_files += 1
             
