@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **214** (42.5% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 45
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-30 | 33 | 2 | 6 | 2 | 39 |
+| 2026-09-30 | 32 | 2 | 6 | 2 | 36 |
 | 2026-10-01 | 150 | 8 | 29 | 11 | 152 |
-| 2026-10-02 | 31 | 1 | 10 | 5 | 25 |
+| 2026-10-02 | 34 | 1 | 11 | 5 | 25 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **53**
 - legibilidad y documentación: **48**
-- seguridad defensiva: **39**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **41**
+- seguridad defensiva: **38**
 - rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **23**
-- `quarantine.py`: **20**
+- `quarantine.py`: **21**
 - `duplicates.py`: **19**
 - `settings.py`: **19**
 - `assistant.py`: **17**
+- `organizer.py`: **17**
 - `healthscore.py`: **16**
-- `organizer.py`: **16**
+- `safety.py`: **15**
 - `scanner.py`: **15**
-- `safety.py`: **14**
 - `memory.py`: **14**
 - `branding.py`: **14**
 - `browser.py`: **13**
-- `startup.py`: **11**
+- `startup.py`: **10**
 - `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-02T03:08:45` **safety.py** (robustez ante casos límite): Se introdujo una comprobación robusta mediante `ctypes` para detectar rutas que exceden los límites del sistema de archivos (Long Paths) incluso antes de la normalización, evitando errores de `OSError` que podrían disparar excepciones críticas en entornos de producción.
+- `2026-10-02T03:07:55` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de existencia de archivo dentro del bucle de `purge_all` para evitar excepciones `FileNotFoundError` si un archivo es eliminado externamente por el sistema operativo durante la iteración, mejorando la robustez ante la concurrencia.
+- `2026-10-02T03:07:12` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `_is_safe_for_disk_op` añadiendo la verificación de que el archivo no sea un enlace simbólico ni un reparse point (a través de `stat`), evitando manipulaciones de rutas fuera del árbol esperado incluso si `is_safe_to_modify` pasara, y protegiendo contra posibles desbordamientos de `st_nlink` en sistemas de archivos atípicos.
 - `2026-10-02T02:57:27` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del cálculo de `compute_score` ante valores atípicos y fallos inesperados de los escáneres, asegurando que si `area_ratio` no es un número finito, el pipeline asigne 0 puntos en lugar de ignorar la entrada o permitir errores de cálculo de punto flotante.
 - `2026-10-02T02:57:01` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y accesibilidad de archivos dentro de `_process_large_file_subset` y `_group_paths_by_hash` para manejar escenarios de archivos eliminados o bloqueados por procesos externos durante el análisis, evitando así fallos en la iteración y garantizando que solo los archivos válidos participen en el cálculo final de hashes.
 - `2026-10-02T02:48:19` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` frente a errores de acceso y condiciones de carrera (archivos eliminados durante el escaneo) envolviendo la iteración de `os.scandir` y la obtención de atributos (`stat`) en bloques `try-except` más granulares, asegurando que el proceso de recolección de datos no se aborte inesperadamente ante fallos de I/O específicos de sistemas operativos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-02T02:26:28` **memory.py** (rendimiento): Se optimizó `top_memory_processes` eliminando la re-ejecución del comando `Get-Process` (que es costoso) al permitir el uso de caché durante 60 segundos, pero moviendo el filtrado de PIDs fuera de la subshell para reducir la carga de datos procesada por `subprocess.run` y mejorando la eficiencia del parseo.
 - `2026-10-02T02:17:20` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` mediante la pre-conversión de los pesos (weights) a una estructura de acceso directo `list` paralela a `_PIPELINE_ORDERED`, evitando búsquedas repetidas en el diccionario `WEIGHTS` y la reconstrucción de `metric_breakdown` en cada iteración del bucle principal.
 - `2026-10-02T02:16:25` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando la creación recurrente de objetos `Path` por el uso de `os.DirEntry` nativo, reduciendo drásticamente la presión sobre el recolector de basura y mejorando la velocidad de escaneo al evitar llamadas innecesarias a `Path.resolve()` y `Path.parents` dentro del bucle crítico.
-- `2026-10-02T02:06:10` **startup.py** (legibilidad y documentación): Documenté el propósito de los métodos de `StartupEntry` y las funciones de escaneo mediante docstrings detallados, clarificando las precondiciones y el manejo de excepciones para mejorar la mantenibilidad del código sin alterar su lógica.
-- `2026-10-02T01:49:11` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_safe_unlink` y `_is_file_in_use_by_system` para reducir el anidamiento y la complejidad ciclomática, facilitando el seguimiento del flujo lógico de seguridad.
-- `2026-10-02T01:48:46` **organizer.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos para aclarar la lógica de las funciones de auditoría de seguridad (`_is_safe_for_disk_op`, `_validate_path_security`), facilitando el mantenimiento y garantizando que las restricciones de seguridad sean evidentes para futuros desarrolladores.

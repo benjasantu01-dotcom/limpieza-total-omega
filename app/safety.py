@@ -120,7 +120,7 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
     Consulta los atributos de archivo mediante la API Win32 GetFileAttributesW.
     Permite detectar flags de sistema, ocultos o puntos de reparse.
     """
-    if os.name != 'nt' or not path_str or _is_path_too_long(path_str): return 0
+    if os.name != 'nt' or not path_str: return 0
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         return attrs if attrs != 0xFFFFFFFF else 0
@@ -311,7 +311,7 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
     Verifica si un archivo está en uso exclusivo mediante la API CreateFile.
     Si el handle falla con sharing violation, se considera el archivo bloqueado.
     """
-    if not isinstance(path_str, str) or os.name != 'nt' or _is_path_too_long(path_str): return False
+    if not isinstance(path_str, str) or os.name != 'nt': return False
     kernel32 = ctypes.windll.kernel32
     try:
         handle = kernel32.CreateFileW(
@@ -334,7 +334,7 @@ def _is_file_in_use_by_system(path_str: str) -> bool:
 @lru_cache(maxsize=128)
 def _is_volume_readonly(path_str: Optional[str]) -> bool:
     """Consulta los atributos del volumen para verificar si el archivo reside en un medio de solo lectura."""
-    if os.name != 'nt' or not isinstance(path_str, str) or not path_str or _is_path_too_long(path_str): return False
+    if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
     try:
         drive_path = os.path.splitdrive(path_str)[0]
         if not drive_path: return False
@@ -349,7 +349,7 @@ def _is_volume_readonly(path_str: Optional[str]) -> bool:
 @lru_cache(maxsize=128)
 def _is_volume_removable_media(path_str: Optional[str]) -> bool:
     """Verifica si el volumen es extraíble (USB, SD, etc.) para evitar riesgos de desconexión."""
-    if os.name != 'nt' or not isinstance(path_str, str) or not path_str or _is_path_too_long(path_str): return False
+    if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
     try:
         drive_path = os.path.splitdrive(path_str)[0]
         if not drive_path: return False
@@ -362,7 +362,7 @@ def _is_volume_removable_media(path_str: Optional[str]) -> bool:
 @lru_cache(maxsize=128)
 def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
     """Verifica si el volumen está comprimido o cifrado (BitLocker), restringiendo modificaciones."""
-    if os.name != 'nt' or not isinstance(path_str, str) or not path_str or _is_path_too_long(path_str): return False
+    if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
     try:
         drive_path = os.path.splitdrive(path_str)[0]
         if not drive_path: return False
@@ -528,9 +528,13 @@ def normalize(path: PathLike) -> Path:
     """
     if path is None: raise UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC)
     path_str = str(path).strip()
+    
+    # Pre-validacion de longitud externa
+    if os.name == 'nt' and _is_path_too_long(path_str):
+        if not path_str.startswith("\\\\?\\"):
+             raise UnsafePathError("Ruta demasiado larga.", SafetyValidationErrorCode.PATH_TOO_LONG)
+
     if _is_path_empty_or_whitespace(path_str): raise UnsafePathError("Entrada de ruta vacía o inválida.", SafetyValidationErrorCode.GENERIC)
-    if _is_path_too_long(path_str):
-        raise UnsafePathError("Ruta demasiado larga.", SafetyValidationErrorCode.PATH_TOO_LONG)
     if unicodedata.normalize('NFKC', path_str) != path_str:
          raise UnsafePathError("Ruta contiene secuencias Unicode sospechosas.", SafetyValidationErrorCode.SUSPICIOUS_ENCODING)
     try:
@@ -697,7 +701,6 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
 
 def _get_final_path_normalized(path: Path) -> Optional[Path]:
     """Resuelve la ruta física real de un archivo, expandiendo enlaces y puntos de unión mediante el handle."""
-    if _is_path_too_long(str(path)): return None
     kernel32 = ctypes.windll.kernel32
     try:
         handle = kernel32.CreateFileW(_to_long_path(str(path)), 0, 0, None, 3, 0x02000000, None)

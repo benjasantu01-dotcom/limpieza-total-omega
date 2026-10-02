@@ -824,7 +824,8 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         
         # Iterar una sola vez sobre el directorio
         for f in quarantine_root.iterdir():
-            if f.name == MANIFEST_NAME or not f.is_file():
+            # Si el archivo fue eliminado externamente entre iteraciones, saltar.
+            if f.name == MANIFEST_NAME or not f.exists() or not f.is_file():
                 continue
             
             item = item_map.get(f.name)

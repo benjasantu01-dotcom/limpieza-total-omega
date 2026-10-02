@@ -181,7 +181,8 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     try:
-        if not src.is_file() or src.is_symlink(): return False
+        st = src.lstat()
+        if not src.is_file() or (st.st_mode & 0o170000 == 0o120000): return False
         if not is_safe_to_modify(src) or not _validate_path_security(src, dest): return False
         
         target_dir = dest.parent if dest.exists() else dest
@@ -192,7 +193,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if src.drive != target_dir.drive or _is_recursive_violation(src, dest): return False
         if not os.access(src, os.R_OK) or _is_file_locked(src): return False
         
-        return src.stat().st_nlink == 1
+        return st.st_nlink == 1
     except (OSError, RuntimeError, AttributeError, ValueError):
         return False
 

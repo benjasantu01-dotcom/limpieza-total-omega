@@ -1040,3 +1040,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-02T02:58:53` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
 - `2026-10-02T02:58:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T02:58:53` Corrida terminada. Total usado hoy: 72.
+- `2026-10-02T03:06:43` Arrancando corrida. Quedan hoy ~228 peticiones objetivo.
+- `2026-10-02T03:07:12` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_is_safe_for_disk_op` añadiendo la verificación de que el archivo no sea un enlace simbólico ni un reparse point (a través de `stat`), evitando manipulaciones de rutas fuera del árbol esperado incluso si `is_safe_to_modify` pasara, y protegiendo contra posibles desbordamientos de `st_nlink` en sistemas de archivos atípicos.
+- `2026-10-02T03:07:55` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una validación de existencia de archivo dentro del bucle de `purge_all` para evitar excepciones `FileNotFoundError` si un archivo es eliminado externamente por el sistema operativo durante la iteración, mejorando la robustez ante la concurrencia.
+- `2026-10-02T03:08:17` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-02T03:08:45` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo una comprobación robusta mediante `ctypes` para detectar rutas que exceden los límites del sistema de archivos (Long Paths) incluso antes de la normalización, evitando errores de `OSError` que podrían disparar excepciones críticas en entornos de producción.
+- `2026-10-02T03:08:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T03:08:45` Corrida terminada. Total usado hoy: 76.
