@@ -1007,3 +1007,9 @@ FAILED evolve/tests/test_modules.py::test_min_size_filters_out_tiny_files - Attr
 - `2026-10-02T14:44:05` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` y `_load_impl()` capturando excepciones de sistema (como `OSError` o `PermissionError`) de forma más granular durante las operaciones de I/O, asegurando que cualquier fallo parcial en la persistencia atómica no deje el sistema en un estado inconsistente ni bloquee la ejecución.
 - `2026-10-02T14:44:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T14:44:05` Corrida terminada. Total usado hoy: 348.
+- `2026-10-02T14:51:05` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-02T14:51:39` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-02T14:52:25` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: legibilidad y documentación).
+- `2026-10-02T14:52:25` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-10-02T14:52:25` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T14:52:25` Corrida terminada. Total usado hoy: 350.
