@@ -950,3 +950,10 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-10-02T01:49:11` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_safe_unlink` y `_is_file_in_use_by_system` para reducir el anidamiento y la complejidad ciclomática, facilitando el seguimiento del flujo lógico de seguridad.
 - `2026-10-02T01:49:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T01:49:11` Corrida terminada. Total usado hoy: 44.
+- `2026-10-02T01:55:32` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-10-02T01:55:53` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-02T01:56:30` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ValidationContext, _CheckResult
+- `2026-10-02T01:56:57` ➖ Sin cambios en scanner.py (enfoque: legibilidad y documentación). Motivo: Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints faltantes (especialmente en el stack de directorios), la estandarización de las cadenas de documentación (docstrings) para que expliquen la intención del flujo, y la adición de aserciones de tipo para clarificar la naturaleza de los datos en las funciones de recorrido.
+- `2026-10-02T01:57:34` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-02T01:57:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T01:57:34` Corrida terminada. Total usado hoy: 48.
