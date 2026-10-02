@@ -257,18 +257,15 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
                         if entry.is_dir(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
-                            if hasattr(st, 'st_ino') and hasattr(st, 'st_dev'):
-                                inode = (st.st_dev, st.st_ino)
-                                if inode not in visited_inodes:
-                                    visited_inodes.add(inode)
-                                    stack.append(Path(entry.path))
-                            else:
+                            inode = (st.st_dev, st.st_ino)
+                            if inode not in visited_inodes:
+                                visited_inodes.add(inode)
                                 stack.append(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
-                            sz = int(st.st_size) if hasattr(st, 'st_size') else 0
+                            sz = int(st.st_size)
                             if sz >= 0: yield Path(entry.path), sz
-                    except (OSError, PermissionError, FileNotFoundError, AttributeError): 
+                    except (OSError, PermissionError, AttributeError): 
                         continue
         except (PermissionError, OSError): 
             continue
@@ -332,7 +329,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             continue
             
         try:
-            s = int(size_bytes) if isinstance(size_bytes, (int, float)) else 0
+            s = int(size_bytes)
             if s < 0: continue
             
             total_bytes += s
@@ -348,7 +345,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
                     heapq.heappush(top_heap, (s, path))
                 elif s > top_heap[0][0]: 
                     heapq.heapreplace(top_heap, (s, path))
-        except (KeyError, TypeError, OSError, PermissionError):
+        except (KeyError, TypeError, ValueError, OSError):
             continue
                 
     return SummaryData(total_bytes, total_files, dict(ext_stats), top_heap)

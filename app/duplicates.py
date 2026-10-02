@@ -94,7 +94,7 @@ class DuplicateGroup:
 
 def _is_file_locked(path: Path) -> bool:
     """Intenta abrir un archivo en modo lectura para verificar si el SO lo tiene bloqueado."""
-    if not is_safe_to_modify(path) or not path.exists():
+    if not isinstance(path, Path) or not is_safe_to_modify(path) or not path.exists():
         return True
     try:
         fd = os.open(path, os.O_RDONLY)
@@ -121,7 +121,7 @@ def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
             if p.stat().st_size > 0:
                 return p
     except (OSError, RuntimeError, ValueError):
-        pass
+        return None
     return None
 
 
@@ -165,11 +165,12 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """Filtra archivos según criterios de seguridad y estado de sistema."""
+    if not isinstance(path, Path) or st_size <= 0:
+        return False
     try:
         return (_safe_path_check(path) and 
                 not is_system_or_hidden(path) and 
-                not _is_file_locked(path) and 
-                st_size > 0)
+                not _is_file_locked(path))
     except (OSError, ValueError, TypeError, RuntimeError, AttributeError):
         return False
 
@@ -178,25 +179,27 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     """Crea un diccionario mapeando tamaño de archivo a lista de rutas."""
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
-        path_obj = Path(p).absolute()
+        if not p: continue
         try:
+            path_obj = Path(p).absolute()
             st_size = path_obj.stat().st_size
             if _is_valid_candidate(path_obj, st_size):
                 groups[st_size].append(path_obj)
-        except OSError:
+        except (OSError, ValueError, TypeError):
             continue
     return groups
 
 
 def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
     """Valida la raíz de búsqueda para asegurar que es un directorio accesible."""
+    if not item: return None
     try:
-        if not item: return None
         root = Path(item).absolute()
         if root.is_dir() and _safe_path_check(root):
             return root
     except (OSError, ValueError, RuntimeError, TypeError):
         return None
+    return None
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
@@ -283,6 +286,7 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Calcula el total de bytes que se recuperarían borrando todos los duplicados menos un original."""
+    if not groups: return 0
     return sum(g.wasted_bytes for g in groups)
 
 
