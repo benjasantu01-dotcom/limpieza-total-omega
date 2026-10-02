@@ -383,10 +383,14 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError): 
         return False, "PID proporcionado no es un número válido."
     
+    # Verificación de seguridad inmediata antes de cualquier operación
+    if _is_system_process(target_pid):
+        return False, "Operación no permitida en procesos críticos del sistema."
+    
     psapi = ctypes.windll.psapi
     if not hasattr(psapi, "EmptyWorkingSet"): return False, "API no disponible en este sistema."
 
-    # Verificar seguridad antes de interactuar con el proceso
+    # Verificar seguridad profunda del entorno del proceso
     is_safe, error_msg = _is_safe_to_trim(target_pid)
     if not is_safe: return False, error_msg or "Verificación de seguridad fallida."
 

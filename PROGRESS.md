@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **223** (44.2% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 47
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-30 | 32 | 2 | 6 | 2 | 28 |
+| 2026-09-30 | 32 | 2 | 6 | 2 | 24 |
 | 2026-10-01 | 150 | 8 | 29 | 11 | 152 |
-| 2026-10-02 | 39 | 3 | 12 | 5 | 25 |
+| 2026-10-02 | 41 | 3 | 13 | 5 | 26 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **53**
 - legibilidad y documentación: **48**
 - robustez ante casos límite: **43**
-- seguridad defensiva: **41**
+- seguridad defensiva: **43**
 - rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
@@ -35,18 +35,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **20**
 - `duplicates.py`: **19**
 - `assistant.py`: **17**
+- `healthscore.py`: **17**
 - `organizer.py`: **17**
-- `healthscore.py`: **16**
 - `scanner.py`: **16**
 - `safety.py`: **15**
+- `memory.py`: **15**
 - `branding.py`: **15**
 - `browser.py`: **14**
-- `memory.py`: **14**
 - `startup.py`: **10**
 - `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-02T03:41:07` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `trim_working_set` implementando un chequeo de identidad del proceso (`_is_system_process`) antes de abrir su handle, asegurando que solo procesos no críticos puedan ser seleccionados para una operación de modificación de memoria, mitigando riesgos de interferencia con el kernel o procesos de sistema vitales.
+- `2026-10-02T03:38:16` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del motor de puntuación mediante un esquema de validación defensiva en `_evaluate_rules` y `compute_score`, garantizando que ante fallos inesperados en reglas individuales o métricas el proceso no se interrumpa ni propague estados inconsistentes, manteniendo la integridad del pipeline.
 - `2026-10-02T03:28:40` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `_get_local_windows_drives` implementando el uso de `os.path.realpath` para prevenir la resolución de enlaces simbólicos o puntos de reparse que podrían escapar del directorio base, alineándose con las reglas de seguridad.
 - `2026-10-02T03:28:14` **browser.py** (seguridad defensiva): Se ha endurecido el escaneo en `_process_file_entry` mediante la validación estricta de que el archivo no sea un enlace simbólico ni un punto de reparse antes de realizar cualquier operación sobre él, evitando riesgos de escape de directorio y mejorando la seguridad defensiva frente a manipulaciones del sistema de archivos.
 - `2026-10-02T03:27:44` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` aplicando una validación más estricta sobre la ruta de destino mediante `filter_safe_paths`, asegurando que cualquier intento de escritura sea verificado contra la lista de bloqueos antes de procesar el archivo.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-02T02:48:19` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` frente a errores de acceso y condiciones de carrera (archivos eliminados durante el escaneo) envolviendo la iteración de `os.scandir` y la obtención de atributos (`stat`) en bloques `try-except` más granulares, asegurando que el proceso de recolección de datos no se aborte inesperadamente ante fallos de I/O específicos de sistemas operativos.
 - `2026-10-02T02:47:41` **branding.py** (robustez ante casos límite): He mejorado la robustez de `draw_ring` ante entradas numéricas extremas o inválidas y optimizado la validación de los parámetros geométricos para asegurar que el cálculo del radio del arco siempre sea positivo y no cause errores de renderizado en el `Canvas`.
 - `2026-10-02T02:47:04` **assistant.py** (robustez ante casos límite): Se introdujo `_check_metric_integrity` para validar que las métricas obtenidas sean finitas y coherentes antes de su uso, mitigando riesgos de errores de cálculo o desbordamientos en las respuestas del asistente, y se reforzó `_safe_float` para manejar explícitamente valores `NaN` (Not a Number) que podrían evadir chequeos de tipo pero corromper cálculos posteriores.
-- `2026-10-02T02:37:53` **settings.py** (rendimiento): Optimicé el rendimiento de la persistencia agregando un chequeo de 'mtime' (tiempo de última modificación) en `save` antes de realizar operaciones de E/S, evitando escrituras innecesarias en disco cuando los datos no han cambiado.
-- `2026-10-02T02:36:56` **safety.py** (rendimiento): Optimizamos `_is_system_path_raw` reemplazando la creación de un `set` de partes por cada llamada (operación costosa en loops) por una verificación de prefijo más simple y directa, manteniendo la cache activa para mejorar el rendimiento en escaneos masivos.

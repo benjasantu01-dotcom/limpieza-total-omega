@@ -199,20 +199,21 @@ class HealthResult:
 def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], ratio: NormalizedRatio, findings: List[str]) -> None:
-    """Procesa una colección de reglas y añade mensajes de recomendación si se cumplen."""
+    """Procesa una colección de reglas de forma aislada y defensiva."""
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
                 if isinstance(msg, str) and msg:
+                    # Sanitización defensiva de mensajes para evitar inyección de caracteres de control
                     clean_msg = "".join(c for c in msg if c.isprintable()).strip()
                     if clean_msg: 
                         findings.append(clean_msg[:200])
-        except Exception:
+        except (ValueError, TypeError, AttributeError, ZeroDivisionError):
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Ejecuta el pipeline de puntuación procesando métricas y devolviendo un resultado consolidado."""
+    """Ejecuta el pipeline de puntuación con aislamiento de errores en cada etapa."""
     m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
     m.validate()
     
@@ -223,13 +224,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     for entry in _PIPELINE_ORDERED:
         try:
             area_ratio: NormalizedRatio = entry.scorer(m)
-            if not math.isfinite(area_ratio):
-                area_ratio = 0.0
+            area_ratio = _clamp(area_ratio)
             _evaluate_rules(m, entry.rules, area_ratio, recommendations)
+            
             points: float = area_ratio * entry.weight
             metric_breakdown[entry.area] = int(round(points))
             accumulated_score += points
-        except Exception:
+        except (Exception,):
             metric_breakdown[entry.area] = 0
             continue
             
