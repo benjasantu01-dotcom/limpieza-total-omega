@@ -191,7 +191,8 @@ class Scanner:
         if entry_path in self._root_cache:
             return self._root_cache[entry_path]
         try:
-            target = Path(entry_path).resolve()
+            # Resolucion estricta: canonicalización antes de comparar contra base_root
+            target = Path(entry_path).resolve(strict=False)
             result = str(target).lower().startswith(self.base_root_str)
             if len(self._root_cache) < 1000:
                 self._root_cache[entry_path] = result
@@ -221,6 +222,7 @@ class Scanner:
             if self._is_reparse_point(entry) or entry.is_symlink():
                 return False
             
+            # Verificación de confinamiento de ruta (sandboxing)
             if not self._is_inside_base_root(entry.path):
                 return False
                 

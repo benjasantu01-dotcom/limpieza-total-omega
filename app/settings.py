@@ -307,20 +307,17 @@ def validate(raw_values: Any) -> AppSettings:
                 config[key_enum.value] = validated_val
     return config # type: ignore
 
-def _is_file_secure_to_read(ruta: Path) -> bool:
-    """Garantiza que el archivo sea regular, sin enlaces y con permisos restringidos de lectura."""
+def _is_file_secure_to_read(file_obj: Any) -> bool:
+    """Garantiza que el archivo sea regular, sin enlaces y con permisos restringidos de lectura usando descriptor."""
     try:
-        if not ruta.is_file(): return False
-        st = ruta.stat()
+        st = os.fstat(file_obj.fileno())
         if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
-        if not stat.S_ISREG(st.st_mode) or _Validators._is_reparse_point(ruta): return False
+        if not stat.S_ISREG(st.st_mode): return False
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if st.st_nlink != 1: return False
-        real_path = Path(os.path.realpath(ruta))
-        if real_path != ruta.resolve() or is_protected_path(str(ruta)) or not is_safe_to_modify(str(ruta)): return False
-        return os.access(ruta, os.R_OK)
-    except (OSError, PermissionError):
+        return True
+    except (OSError, PermissionError, AttributeError):
         return False
 
 def _load_impl(ruta: Path) -> AppSettings:
@@ -328,12 +325,13 @@ def _load_impl(ruta: Path) -> AppSettings:
     if not ruta.exists(): return dict(DEFAULTS)
     try:
         with open(ruta, "r", encoding="utf-8") as f:
+            if not _is_file_secure_to_read(f): return dict(DEFAULTS)
+            fcntl.flock(f.fileno(), fcntl.LOCK_SH)
             try:
-                fcntl.flock(f.fileno(), fcntl.LOCK_SH)
                 data = json.load(f)
             finally:
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-        if _is_dict(data) and _is_file_secure_to_read(ruta):
+        if _is_dict(data) and is_safe_to_modify(str(ruta)):
             return _coerce_and_verify(validate(data))
     except (OSError, PermissionError, IOError, json.JSONDecodeError, UnicodeDecodeError, EOFError):
         pass
@@ -417,11 +415,13 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
                 os.fsync(f.fileno())
             except OSError:
                 pass
+            
+            if not _is_file_secure_to_read(f):
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                raise PermissionError("Archivo temporal inseguro")
+            
             fcntl.flock(f.fileno(), fcntl.LOCK_UN)
         
-        if not _is_file_secure_to_read(temp_path): 
-            raise PermissionError("Archivo temporal con permisos inválidos")
-            
         if ruta.exists():
             if not is_safe_to_modify(str(bak_path)): 
                 raise PermissionError("Ruta de respaldo insegura")

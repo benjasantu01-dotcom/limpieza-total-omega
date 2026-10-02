@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Mejoras aceptadas: **226** (44.8% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-01 | 137 | 5 | 26 | 11 | 129 |
-| 2026-10-02 | 87 | 6 | 21 | 9 | 73 |
+| 2026-10-01 | 137 | 5 | 26 | 11 | 125 |
+| 2026-10-02 | 89 | 6 | 21 | 9 | 75 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **49**
-- seguridad defensiva: **45**
+- seguridad defensiva: **47**
 - robustez ante casos límite: **43**
 - rendimiento: **35**
 
@@ -31,12 +31,12 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `diskreport.py`: **22**
 - `quarantine.py`: **22**
-- `settings.py`: **20**
+- `settings.py`: **21**
 - `healthscore.py`: **18**
+- `scanner.py`: **18**
 - `safety.py`: **18**
 - `duplicates.py`: **17**
 - `organizer.py`: **17**
-- `scanner.py`: **17**
 - `assistant.py`: **17**
 - `memory.py`: **16**
 - `branding.py`: **15**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-02T08:24:13` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de TOCTOU (Time-of-Check to Time-of-Use) mediante el uso de `os.fstat` sobre el descriptor de archivo abierto en lugar de la ruta, asegurando que las validaciones de metadatos (tipo de archivo, inodos, permisos) se ejecuten sobre el mismo objeto que se va a leer.
+- `2026-10-02T08:23:40` **scanner.py** (seguridad defensiva): Se ha implementado una validación de ruta absoluta canónica y atómica dentro de `Scanner._is_inside_base_root` y `Scanner._is_safe_entry` para prevenir ataques de trayectoria (path traversal) mediante el uso de `.resolve()` previo a cualquier comparación, asegurando que el scanner nunca abandone el contexto restringido del usuario incluso ante manipulaciones de enlaces simbólicos o rutas relativas complejas.
 - `2026-10-02T08:15:14` **safety.py** (seguridad defensiva): Se ha implementado `_is_directory_junction_strict` usando `GetFileInformationByHandle` para una detección robusta de puntos de reparse, eliminando la dependencia exclusiva de atributos de archivo (`FILE_ATTRIBUTE_REPARSE_POINT`), lo cual mejora la seguridad defensiva contra redirecciones NTFS sofisticadas.
 - `2026-10-02T08:14:09` **quarantine.py** (seguridad defensiva): Se reforzó `quarantine_file` añadiendo una validación explícita para evitar que se procesen rutas que contengan nombres reservados de Windows, previniendo errores de sistema al intentar mover archivos a la cuarentena.
 - `2026-10-02T08:03:40` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva de `_evaluate_rules` reemplazando la captura de excepciones genérica `except Exception:` por un manejo de errores robusto, y agregué un límite de seguridad en la longitud de las recomendaciones para prevenir posibles desbordamientos o problemas de inyección de texto en la interfaz.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-02T07:35:28` **quarantine.py** (robustez ante casos límite): Se ha añadido un robusto manejo de estados de carrera y accesos concurrentes mediante un sistema de reintentos con `backoff` exponencial en `_atomic_isolate_file`, asegurando que operaciones de I/O bloqueadas por procesos externos no provoquen una excepción fatal del sistema.
 - `2026-10-02T07:23:23` **healthscore.py** (robustez ante casos límite): Se ha robustecido el motor de `healthscore.py` ante datos corruptos o inesperados en `SystemMetrics` mediante la adición de un chequeo de tipos estricto y la prevención de fallos silenciosos durante la ejecución del pipeline, asegurando que cualquier entrada externa no provoque un cálculo inconsistente.
 - `2026-10-02T07:22:54` **duplicates.py** (robustez ante casos límite): Se introdujo una verificación de integridad en `_group_paths_by_hash` para manejar archivos que podrían desaparecer entre el escaneo inicial y el cálculo de hash, evitando errores de ejecución y mejorando la robustez del bucle frente a cambios en el sistema de archivos durante la operación.
-- `2026-10-02T07:22:25` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de `OSError` específico dentro del bucle de `walk_files` para manejar casos donde el acceso a los atributos de un archivo (como su tamaño) falla durante la iteración, evitando que el escaneo se interrumpa prematuramente ante archivos bloqueados o con metadatos inaccesibles.
-- `2026-10-02T07:13:25` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta de rutas en `save_logo_svg` utilizando `is_safe_to_modify` antes de proceder con el guardado, garantizando que ninguna operación de escritura sobre el disco se ejecute si la ruta destino está protegida, evitando así errores de permisos inesperados o modificaciones no autorizadas en carpetas del sistema.
