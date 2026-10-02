@@ -663,3 +663,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-02T10:58:10` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemContext.__hash__
 - `2026-10-02T10:58:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T10:58:10` Corrida terminada. Total usado hoy: 260.
+- `2026-10-02T11:06:16` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-10-02T11:06:52` ➖ Sin cambios en branding.py (enfoque: rendimiento). Motivo: Se optimizó el rendimiento del renderizado de franjas decorativas en el escudo aplicando una estrategia de `lru_cache` para la geometría base escalada, eliminando el re-cálculo repetitivo de vértices dentro de los bucles de dibujo.
+- `2026-10-02T11:07:17` ➖ Sin cambios en browser.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento del escaneo recursivo de directorios implementando un caché de `st.st_ino` (inodes) a nivel global durante la ejecución de `detect_profiles`, evitando el re-procesamiento de carpetas y archivos en cachés de navegadores que comparten estructuras de datos similares (ej. "Cache" y "Code Cache").
+- `2026-10-02T11:08:21` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-10-02T11:08:33` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` para evitar llamadas redundantes a `stat()` y `exists()`, y reemplacé el `path.resolve()` repetitivo por una validación de ruta optimizada, reduciendo significativamente las llamadas al sistema operativo durante la recursión.
+- `2026-10-02T11:08:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T11:08:33` Corrida terminada. Total usado hoy: 264.

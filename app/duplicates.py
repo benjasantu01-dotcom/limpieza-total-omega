@@ -97,8 +97,6 @@ def _is_file_locked(path: Path) -> bool:
     if not isinstance(path, Path) or not is_safe_to_modify(path):
         return True
     try:
-        if not path.exists():
-            return True
         # Intenta abrir el descriptor de archivo para confirmar disponibilidad
         fd = os.open(path, os.O_RDONLY)
         os.close(fd)
@@ -174,7 +172,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """Filtra archivos aptos para análisis de duplicados según seguridad y atributos."""
-    if not isinstance(path, Path) or st_size <= 0:
+    if st_size <= 0:
         return False
     try:
         return (_safe_path_check(path) and 
@@ -213,7 +211,7 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Realiza un escaneo profundo (stack-based) para recolectar candidatos a duplicados."""
+    """Realiza un escaneo profundo (stack-based) eficiente, reduciendo llamadas de sistema innecesarias."""
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     stack: List[Tuple[Path, int]] = []
     for d in directories:
@@ -226,24 +224,25 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         if depth > MAX_RECURSION_DEPTH:
             continue
             
-        try:
-            real_path = current_dir.resolve()
-            if str(real_path) in visited: continue
-            visited.add(str(real_path))
+        real_path_str = str(current_dir)
+        if real_path_str in visited: continue
+        visited.add(real_path_str)
             
+        try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        p_entry = Path(entry.path).resolve()
                         if entry.is_dir(follow_symlinks=False):
+                            p_entry = Path(entry.path)
                             if _safe_path_check(p_entry) and not is_junction(p_entry):
                                 stack.append((p_entry, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
                             stat = entry.stat()
                             if stat.st_size >= min_size:
+                                p_entry = Path(entry.path)
                                 if not (skip_protected and is_protected_path(p_entry)) and _is_valid_candidate(p_entry, stat.st_size):
                                     size_to_paths_map[stat.st_size].append(p_entry)
-                    except OSError:
+                    except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError, RuntimeError):
             continue
@@ -257,7 +256,6 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     for path in paths:
         if isinstance(path, Path) and path.is_file() and (digest := hash_func(path)):
             groups_by_digest[digest].append(path)
-    # Filtra solo grupos que realmente contienen más de una copia
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
 

@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **217** (43.1% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 44
-- Sin cambios (nada sustancial que mejorar): 17
+- Rechazadas por guardia de seguridad: 43
+- Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-01 | 107 | 4 | 17 | 8 | 108 |
-| 2026-10-02 | 110 | 7 | 27 | 9 | 107 |
+| 2026-10-01 | 105 | 4 | 16 | 8 | 107 |
+| 2026-10-02 | 111 | 7 | 27 | 11 | 108 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **49**
 - seguridad defensiva: **47**
-- robustez ante casos límite: **40**
-- rendimiento: **29**
+- robustez ante casos límite: **38**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
 - `settings.py`: **20**
 - `diskreport.py`: **20**
+- `quarantine.py`: **19**
 - `safety.py`: **18**
 - `assistant.py`: **18**
 - `healthscore.py`: **18**
 - `scanner.py`: **17**
 - `memory.py`: **17**
-- `organizer.py`: **16**
-- `duplicates.py`: **15**
+- `duplicates.py`: **16**
+- `organizer.py`: **15**
 - `browser.py`: **14**
 - `branding.py`: **13**
 - `startup.py`: **9**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-02T11:08:33` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` para evitar llamadas redundantes a `stat()` y `exists()`, y reemplacé el `path.resolve()` repetitivo por una validación de ruta optimizada, reduciendo significativamente las llamadas al sistema operativo durante la recursión.
 - `2026-10-02T10:57:42` **startup.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo añadiendo docstrings detallados en los métodos de la clase `StartupEntry` que explican el *porqué* de las restricciones de seguridad implementadas, además de clarificar la intención de los filtros de entrada en funciones auxiliares.
 - `2026-10-02T10:57:12` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `settings.py` mediante la adición de docstrings detallados en funciones clave y la clarificación de tipos, facilitando la comprensión del flujo de validación y persistencia sin alterar el comportamiento lógico.
 - `2026-10-02T10:56:38` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints en las funciones de heurística y una revisión de la estructura del módulo para clarificar la separación entre las responsabilidades de escaneo y las reglas de detección, manteniendo intacta la lógica funcional.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-02T10:26:16` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` extrayendo la lógica de validación de métricas de `SystemContext.ingest` hacia métodos privados dedicados, y añadiendo docstrings técnicos que clarifican el contrato de seguridad de los métodos de procesamiento.
 - `2026-10-02T10:17:36` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que el `DictReader` haya procesado correctamente el CSV antes de iterar, evitando excepciones silenciosas o procesamientos sobre encabezados nulos o malformados que podrían ocurrir si la salida de PowerShell es inesperada.
 - `2026-10-02T10:16:10` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de acceso al archivo mediante un bloque `try-except` más específico en `ensure_safe_to_modify`, asegurando que cualquier error durante la lectura de metadatos o permisos sea atrapado y traducido a un `UnsafePathError` con su código correspondiente, evitando que excepciones de nivel bajo interrumpan el bucle de control.
-- `2026-10-02T10:05:45` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_linux_meminfo` mediante la adición de una validación explícita para asegurar que los valores parseados no sean negativos, previniendo errores de lógica en el cálculo de memoria disponible y caché.
