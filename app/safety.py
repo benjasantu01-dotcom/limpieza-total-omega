@@ -792,7 +792,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     _validate_structural_safety(p, str(p))
     _validate_boundary_conditions(p, base_dir)
     
-    # Verificación preventiva: si existe, validamos integridad; si no, validamos el directorio contenedor
+    # Verificación preventiva tras asegurar la estructura
     if p.exists():
         try:
             _validate_access_permissions(p)
@@ -800,7 +800,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
                  raise UnsafePathError(f"Archivo en uso por el sistema: {p.name}", SafetyValidationErrorCode.FILE_IN_USE)
             initial_stat = _get_path_stat_robust(p)
             
-            # Validar consistencia antes de proceder
             if os.name == 'nt': 
                 _validate_ntfs_reparse_redirection(p)
                 try:
@@ -814,6 +813,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         except Exception as e:
             raise UnsafePathError(f"Error de acceso inesperado: {e}", SafetyValidationErrorCode.IO_ERROR)
     else:
+        # Validar permisos en el padre si el archivo no existe aún
         try:
             parent = p.parent
             if parent.exists():
@@ -823,8 +823,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
                     raise UnsafePathError("Creación en directorio restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
                 if os.name == 'nt' and _is_file_locked_by_other_process(str(parent)):
                     raise UnsafePathError("Directorio contenedor bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE)
-                if _is_reparse_point_recursive(p):
-                    raise UnsafePathError("Ruta base contiene punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         except (OSError, RuntimeError):
             pass
     return p

@@ -407,8 +407,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
+        # Validación extra de seguridad y estado de sistema antes de persistir
         if _Validators._is_reparse_point(parent) or not os.access(parent, os.W_OK): return None
-        if not is_safe_to_modify(str(ruta)): return None
+        if not is_safe_to_modify(str(ruta)) and ruta.exists(): return None
         if not _Validators._is_safe_path(str(parent)): return None
     except (TypeError, ValueError, OSError, PermissionError): return None
     

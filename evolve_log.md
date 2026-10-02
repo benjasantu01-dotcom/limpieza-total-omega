@@ -734,3 +734,10 @@ FAILED evolve/tests/test_modules.py::test_min_size_filters_out_tiny_files - Attr
 - `2026-10-02T12:03:19` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez ante condiciones de carrera (Race Conditions) y errores de sistema de archivos en `purge_all` al añadir un chequeo explícito de la existencia del archivo antes de intentar purgarlo, evitando excepciones al iterar sobre directorios que cambian dinámicamente.
 - `2026-10-02T12:03:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T12:03:19` Corrida terminada. Total usado hoy: 284.
+- `2026-10-02T12:07:26` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-10-02T12:07:46` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-10-02T12:08:32` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera (TOCTOU) y archivos inaccesibles al asegurar que la verificación de integridad se realice tras la normalización, evitando errores de permisos al intentar acceder a rutas que no existen pero que el sistema operativo podría haber bloqueado.
+- `2026-10-02T12:08:56` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-02T12:09:14` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez ante fallos de disco y condiciones de carrera en `save()` mediante la verificación de la integridad del directorio padre y del archivo existente antes de la escritura, asegurando que no se intente persistir sobre una ruta bloqueada o inexistente debido a cambios externos.
+- `2026-10-02T12:09:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T12:09:14` Corrida terminada. Total usado hoy: 288.

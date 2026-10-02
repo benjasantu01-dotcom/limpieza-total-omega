@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **210** (41.7% de aceptación)
+- Mejoras aceptadas: **212** (42.1% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-01 | 93 | 4 | 14 | 7 | 102 |
-| 2026-10-02 | 117 | 8 | 28 | 15 | 116 |
+| 2026-10-01 | 93 | 4 | 14 | 7 | 98 |
+| 2026-10-02 | 119 | 8 | 29 | 15 | 117 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **49**
+- robustez ante casos límite: **38**
 - seguridad defensiva: **38**
-- robustez ante casos límite: **36**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
+- `settings.py`: **20**
 - `diskreport.py`: **19**
 - `quarantine.py`: **19**
-- `settings.py`: **19**
+- `safety.py`: **19**
 - `healthscore.py`: **18**
-- `safety.py`: **18**
 - `assistant.py`: **17**
 - `memory.py`: **17**
 - `scanner.py`: **16**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-02T12:09:14` **settings.py** (robustez ante casos límite): Mejoré la robustez ante fallos de disco y condiciones de carrera en `save()` mediante la verificación de la integridad del directorio padre y del archivo existente antes de la escritura, asegurando que no se intente persistir sobre una ruta bloqueada o inexistente debido a cambios externos.
+- `2026-10-02T12:08:32` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera (TOCTOU) y archivos inaccesibles al asegurar que la verificación de integridad se realice tras la normalización, evitando errores de permisos al intentar acceder a rutas que no existen pero que el sistema operativo podría haber bloqueado.
 - `2026-10-02T11:47:34` **browser.py** (robustez ante casos límite): Se ha robustecido el manejo de rutas en `_resolve_browser_path` y `detect_profiles` añadiendo validaciones específicas para detectar rutas inexistentes o inaccesibles antes de intentar operaciones de resolución, evitando excepciones innecesarias en sistemas con instalaciones de navegadores parciales.
 - `2026-10-02T11:37:25` **settings.py** (rendimiento): Se implementó un cacheado en memoria (`_MANAGER.settings_cache`) dentro de `_SettingsManager` con validación de `mtime` para evitar lecturas de disco y deserializaciones de JSON redundantes al acceder múltiples veces a la configuración durante un mismo ciclo de ejecución.
 - `2026-10-02T11:29:45` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner reemplazando la llamada repetitiva a `any()` con una búsqueda eficiente en un `frozenset` mediante el método `endswith` indirecto, y eliminé redundancias en el flujo de heurísticas evitando llamadas innecesarias a `exists()` dentro del bucle de procesado de archivos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-02T10:47:23` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings estructurados (con secciones Args/Returns) en las funciones críticas de transferencia y validación, y se han añadido comentarios explicativos en los bloques de lógica compleja para clarificar el "porqué" de las salvaguardas de seguridad.
 - `2026-10-02T10:46:34` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `organizer.py` añadiendo docstrings detallados en las funciones de validación de bajo nivel, explicando explícitamente el "porqué" de las restricciones de seguridad (como los riesgos de recursión en directorios o la manipulación de enlaces simbólicos) para facilitar el mantenimiento futuro por parte del equipo.
 - `2026-10-02T10:38:33` **memory.py** (legibilidad y documentación): Mejoré la documentación interna incluyendo type hints faltantes en funciones críticas y extendí los docstrings para explicar la lógica de los chequeos de seguridad, facilitando el mantenimiento y la auditoría del código.
-- `2026-10-02T10:36:43` **healthscore.py** (legibilidad y documentación): He mejorado la documentación y la robustez del código mediante la implementación de `Docstrings` completos en todas las funciones y clases, clarificando el propósito, argumentos y valores de retorno, además de añadir `type hints` adicionales en `summarize` para mejorar la mantenibilidad.
-- `2026-10-02T10:36:15` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación y robustez del código añadiendo docstrings descriptivos, especificando tipos en variables complejas y descomponiendo lógicas de validación en funciones con nombres más claros, facilitando así la auditoría de seguridad y el mantenimiento a largo plazo.
