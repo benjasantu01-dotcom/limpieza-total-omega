@@ -504,6 +504,10 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     
     current_stat = _get_path_stat_robust(path)
     
+    # Detectar cambio de tipo de archivo (TOCTOU: reemplazar archivo por dir o viceversa)
+    if stat.S_ISREG(initial_stat.st_mode) != stat.S_ISREG(current_stat.st_mode):
+        raise UnsafePathError(f"Cambio de tipo detectado (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
+    
     if current_stat.st_dev != initial_stat.st_dev or current_stat.st_ino != initial_stat.st_ino:
         raise UnsafePathError(f"Consistencia fallida (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
     

@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **214** (42.5% de aceptación)
+- Mejoras aceptadas: **217** (43.1% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-01 | 137 | 5 | 26 | 11 | 145 |
-| 2026-10-02 | 77 | 6 | 19 | 9 | 69 |
+| 2026-10-01 | 137 | 5 | 26 | 11 | 141 |
+| 2026-10-02 | 80 | 6 | 19 | 9 | 70 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **49**
-- robustez ante casos límite: **40**
+- robustez ante casos límite: **43**
 - seguridad defensiva: **38**
 - rendimiento: **35**
 
@@ -31,21 +31,24 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `diskreport.py`: **21**
 - `quarantine.py`: **21**
-- `settings.py`: **19**
+- `settings.py`: **20**
 - `healthscore.py`: **17**
 - `organizer.py`: **17**
 - `scanner.py`: **17**
+- `safety.py`: **17**
 - `duplicates.py`: **16**
 - `assistant.py`: **16**
 - `memory.py`: **16**
-- `safety.py`: **16**
 - `branding.py`: **14**
 - `browser.py`: **13**
-- `startup.py`: **8**
+- `startup.py`: **9**
 - `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-02T07:44:29` **startup.py** (robustez ante casos límite): Mejoré la robustez de `StartupEntry._resolve_path_from_command` añadiendo un manejo de excepciones más granular y un chequeo preventivo de rutas vacías o inválidas para evitar procesar cadenas malformadas que resultan de comandos de registro truncados o corruptos.
+- `2026-10-02T07:44:12` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de persistencia en `save()` y `_load_impl()` ante condiciones de carrera y sistemas de archivos con bloqueos estrictos, introduciendo un manejo más resiliente ante el error `OSError` durante la sincronización de metadatos (`os.fsync`) y verificaciones de integridad post-escritura.
+- `2026-10-02T07:43:12` **safety.py** (robustez ante casos límite): Se añadió una validación crítica en `_check_file_integrity` para detectar el cambio de tipo de archivo (de archivo a directorio o viceversa) durante la ejecución, lo cual previene ataques de reemplazo de objetos (`TOCTOU`) que podrían eludir las verificaciones de seguridad iniciales al cambiar la naturaleza del destino.
 - `2026-10-02T07:35:28` **quarantine.py** (robustez ante casos límite): Se ha añadido un robusto manejo de estados de carrera y accesos concurrentes mediante un sistema de reintentos con `backoff` exponencial en `_atomic_isolate_file`, asegurando que operaciones de I/O bloqueadas por procesos externos no provoquen una excepción fatal del sistema.
 - `2026-10-02T07:23:23` **healthscore.py** (robustez ante casos límite): Se ha robustecido el motor de `healthscore.py` ante datos corruptos o inesperados en `SystemMetrics` mediante la adición de un chequeo de tipos estricto y la prevención de fallos silenciosos durante la ejecución del pipeline, asegurando que cualquier entrada externa no provoque un cálculo inconsistente.
 - `2026-10-02T07:22:54` **duplicates.py** (robustez ante casos límite): Se introdujo una verificación de integridad en `_group_paths_by_hash` para manejar archivos que podrían desaparecer entre el escaneo inicial y el cálculo de hash, evitando errores de ejecución y mejorando la robustez del bucle frente a cambios en el sistema de archivos durante la operación.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-02T07:00:36` **quarantine.py** (rendimiento): Se optimizó `load_manifest` reemplazando la lógica de lectura y carga secuencial mediante la implementación de un diccionario de búsqueda temporal (`item_map`) en `purge_all` y `restore_item`, evitando múltiples recorridos lineales sobre la lista de ítems para mejorar la eficiencia en escenarios con gran cantidad de archivos.
 - `2026-10-02T06:57:04` **organizer.py** (rendimiento): Optimizé el rendimiento de `scan_for_junk` y `_process_directory` eliminando la conversión repetitiva de `item.path` a objetos `Path`, accediendo directamente al atributo `name` y utilizando el `entry` del `scandir` para evitar llamadas innecesarias a `stat()` y `exists()`, reduciendo drásticamente las syscalls por iteración.
 - `2026-10-02T06:56:18` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` evitando la ejecución redundante de PowerShell mediante el uso de un caché temporal más inteligente y refinando el parsing del CSV para reducir las llamadas innecesarias a `split()` y `join()` en bucle.
-- `2026-10-02T06:42:28` **healthscore.py** (rendimiento): Optimicé el bucle de cálculo en `compute_score` pre-calculando el desglose de métricas y evitando la serialización redundante de reglas mediante el uso de un generador y la eliminación de chequeos de tipos innecesarios dentro de los bucles críticos.
-- `2026-10-02T06:41:26` **browser.py** (rendimiento): Se implementó un cacheo local (memoization) en `directory_size` utilizando un diccionario de `visited_dirs` para evitar re-escanear subdirectorios compartidos entre distintas configuraciones de navegador, reduciendo drásticamente la redundancia en I/O.
-- `2026-10-02T06:22:30` **scanner.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en los docstrings de los métodos del motor `Scanner` y se clarificaron los nombres de constantes críticas (`LIMITS`, `WATCHED_FOLDERS`) para mejorar la mantenibilidad, siguiendo el enfoque de legibilidad sin alterar la lógica de ejecución.

@@ -1524,3 +1524,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-02T07:35:32` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-10-02T07:35:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T07:35:32` Corrida terminada. Total usado hoy: 180.
+- `2026-10-02T07:42:22` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-10-02T07:43:12` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se añadió una validación crítica en `_check_file_integrity` para detectar el cambio de tipo de archivo (de archivo a directorio o viceversa) durante la ejecución, lo cual previene ataques de reemplazo de objetos (`TOCTOU`) que podrían eludir las verificaciones de seguridad iniciales al cambiar la naturaleza del destino.
+- `2026-10-02T07:43:38` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-02T07:44:12` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha robustecido el proceso de persistencia en `save()` y `_load_impl()` ante condiciones de carrera y sistemas de archivos con bloqueos estrictos, introduciendo un manejo más resiliente ante el error `OSError` durante la sincronización de metadatos (`os.fsync`) y verificaciones de integridad post-escritura.
+- `2026-10-02T07:44:29` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Mejoré la robustez de `StartupEntry._resolve_path_from_command` añadiendo un manejo de excepciones más granular y un chequeo preventivo de rutas vacías o inválidas para evitar procesar cadenas malformadas que resultan de comandos de registro truncados o corruptos.
+- `2026-10-02T07:44:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T07:44:29` Corrida terminada. Total usado hoy: 184.

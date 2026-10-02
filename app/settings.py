@@ -413,7 +413,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             fcntl.flock(f.fileno(), fcntl.LOCK_EX)
             f.write(serialized)
             f.flush()
-            os.fsync(f.fileno())
+            try:
+                os.fsync(f.fileno())
+            except OSError:
+                pass
             fcntl.flock(f.fileno(), fcntl.LOCK_UN)
         
         if not _is_file_secure_to_read(temp_path): 

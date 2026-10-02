@@ -224,15 +224,15 @@ class StartupEntry:
             return _COMMAND_CACHE[command_line]
         
         result: str = ""
-        if command_line.startswith('"'):
-            result = self._extract_quoted_path(command_line)
-        else:
-            try:
+        try:
+            if command_line.startswith('"'):
+                result = self._extract_quoted_path(command_line)
+            else:
                 parts: List[str] = command_line.split()
-                if parts:
+                if parts and parts[0]:
                     result = self._resolve_and_cache_path(parts[0])
-            except (AttributeError, ValueError):
-                pass
+        except (AttributeError, ValueError, IndexError, OSError, TypeError):
+            result = ""
         
         _COMMAND_CACHE[command_line] = result
         return result
