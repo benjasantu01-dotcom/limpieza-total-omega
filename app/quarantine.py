@@ -656,7 +656,7 @@ def _verify_transaction_integrity(item: QuarantineItem, destination: Path) -> No
 
 def _validate_input_path(source: PathLike) -> Path:
     """Valida los parámetros de entrada para operaciones públicas."""
-    if source is None:
+    if not source:
         raise ValueError("Ruta de origen nula o vacía.")
     p_source = Path(source)
     if not p_source.is_absolute():

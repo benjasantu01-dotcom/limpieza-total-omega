@@ -1365,3 +1365,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-02T05:33:27` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_windows_process_csv` añadiendo validación explícita para evitar errores de tipo al procesar datos crudos, asegurando que cada campo requerido esté presente y sea válido antes de crear el objeto `ProcessMemory`.
 - `2026-10-02T05:33:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T05:33:27` Corrida terminada. Total usado hoy: 132.
+- `2026-10-02T05:39:46` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-10-02T05:39:49` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-02T05:39:53` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-02T05:40:27` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` al reemplazar verificaciones implícitas por validaciones explícitas de estados de error, asegurando que cualquier fallo en la resolución de rutas o acceso al sistema de archivos sea capturado sin detener el flujo de la aplicación.
+- `2026-10-02T05:41:10` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se reforzó la validación de entrada en `quarantine_file` agregando chequeos específicos para evitar el procesamiento de rutas vacías, malformadas o tipos de archivo no deseados antes de entrar en la lógica de IO, evitando excepciones no controladas en el flujo principal.
+- `2026-10-02T05:41:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-10-02T05:42:02` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_get_security_descriptor_cached` añadiendo manejo explícito de excepciones y validación de tipos, evitando que errores intermitentes en la consulta de atributos o bloqueos de archivos degraden la fiabilidad de las verificaciones de seguridad.
+- `2026-10-02T05:42:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T05:42:02` Corrida terminada. Total usado hoy: 136.

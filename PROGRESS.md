@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-30 | 15 | 0 | 2 | 1 | 4 |
+| 2026-09-30 | 12 | 0 | 1 | 1 | 4 |
 | 2026-10-01 | 150 | 8 | 29 | 11 | 152 |
-| 2026-10-02 | 48 | 4 | 14 | 6 | 60 |
+| 2026-10-02 | 51 | 4 | 15 | 6 | 60 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **50**
 - seguridad defensiva: **47**
-- manejo de errores y validación de entradas: **47**
 - robustez ante casos límite: **43**
-- legibilidad y documentación: **40**
-- rendimiento: **36**
+- legibilidad y documentación: **39**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
-- `quarantine.py`: **21**
+- `quarantine.py`: **22**
 - `settings.py`: **20**
 - `duplicates.py`: **18**
+- `organizer.py`: **17**
+- `safety.py`: **16**
 - `scanner.py`: **16**
 - `healthscore.py`: **16**
-- `organizer.py`: **16**
-- `branding.py`: **15**
 - `memory.py`: **15**
-- `safety.py`: **15**
 - `assistant.py`: **15**
-- `browser.py`: **13**
-- `startup.py`: **9**
+- `branding.py`: **14**
+- `browser.py`: **12**
+- `startup.py`: **8**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-02T05:42:02` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_security_descriptor_cached` añadiendo manejo explícito de excepciones y validación de tipos, evitando que errores intermitentes en la consulta de atributos o bloqueos de archivos degraden la fiabilidad de las verificaciones de seguridad.
+- `2026-10-02T05:41:10` **quarantine.py** (manejo de errores y validación de entradas): Se reforzó la validación de entrada en `quarantine_file` agregando chequeos específicos para evitar el procesamiento de rutas vacías, malformadas o tipos de archivo no deseados antes de entrar en la lógica de IO, evitando excepciones no controladas en el flujo principal.
+- `2026-10-02T05:40:27` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` al reemplazar verificaciones implícitas por validaciones explícitas de estados de error, asegurando que cualquier fallo en la resolución de rutas o acceso al sistema de archivos sea capturado sin detener el flujo de la aplicación.
 - `2026-10-02T05:33:27` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` añadiendo validación explícita para evitar errores de tipo al procesar datos crudos, asegurando que cada campo requerido esté presente y sea válido antes de crear el objeto `ProcessMemory`.
 - `2026-10-02T05:30:33` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` reemplazando la captura genérica `except (Exception,)` por una captura específica de errores durante el cálculo del pipeline, garantizando que un fallo en una métrica no detenga el cómputo total pero sí loguee o ignore errores esperados (como errores de división o acceso a datos) de forma predecible.
 - `2026-10-02T05:30:04` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_file_locked` y `_safe_path_check` añadiendo validaciones de tipo y capturas de excepciones más específicas para evitar errores inesperados durante el acceso a archivos, asegurando que las funciones de chequeo nunca fallen silenciosamente al interactuar con el sistema de archivos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-02T03:28:40` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `_get_local_windows_drives` implementando el uso de `os.path.realpath` para prevenir la resolución de enlaces simbólicos o puntos de reparse que podrían escapar del directorio base, alineándose con las reglas de seguridad.
 - `2026-10-02T03:28:14` **browser.py** (seguridad defensiva): Se ha endurecido el escaneo en `_process_file_entry` mediante la validación estricta de que el archivo no sea un enlace simbólico ni un punto de reparse antes de realizar cualquier operación sobre él, evitando riesgos de escape de directorio y mejorando la seguridad defensiva frente a manipulaciones del sistema de archivos.
 - `2026-10-02T03:27:44` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` aplicando una validación más estricta sobre la ruta de destino mediante `filter_safe_paths`, asegurando que cualquier intento de escritura sea verificado contra la lista de bloqueos antes de procesar el archivo.
-- `2026-10-02T03:17:52` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante casos de concurrencia y permisos de archivo al añadir un manejo explícito del bloqueo exclusivo (`msvcrt.locking` en Windows o `fcntl.flock` en sistemas POSIX) durante las operaciones de lectura y escritura, garantizando que el archivo de configuración no se corrompa si procesos simultáneos intentan acceder al mismo.
-- `2026-10-02T03:17:21` **scanner.py** (robustez ante casos límite): Se ha robustecido el escáner implementando un manejo preventivo de excepciones durante la iteración en `Scanner.process_entry` y `scan_directory` para evitar que fallos aislados al leer archivos bloqueados por el sistema (típico en procesos en ejecución o archivos temporales) interrumpan el flujo de escaneo.
-- `2026-10-02T03:08:45` **safety.py** (robustez ante casos límite): Se introdujo una comprobación robusta mediante `ctypes` para detectar rutas que exceden los límites del sistema de archivos (Long Paths) incluso antes de la normalización, evitando errores de `OSError` que podrían disparar excepciones críticas en entornos de producción.

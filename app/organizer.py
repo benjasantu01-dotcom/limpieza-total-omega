@@ -210,7 +210,6 @@ def _is_valid_junk_entry(entry: os.DirEntry, stats: os.stat_result, now_ts: floa
     """Valida si un archivo cumple criterios."""
     if entry is None or stats is None: return False
     name = entry.name
-    # Optimización: buscar extensión usando split una sola vez
     _, ext = os.path.splitext(name)
     return (0 <= stats.st_size < MAX_FILE_SIZE_BYTES and 
             stats.st_mtime <= now_ts + 3600 and
@@ -264,11 +263,14 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     if not files: return None
     try:
         dest_base = Path(review_dir).expanduser()
-        if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
+        if not dest_base.exists():
+            dest_base.mkdir(parents=True, exist_ok=True)
         dest_res = dest_base.resolve()
         if is_protected_path(dest_res): return None
         ensure_safe_to_modify(dest_res)
-    except (OSError, RuntimeError, PermissionError): return None
+    except (OSError, RuntimeError, PermissionError) as e:
+        logger.error(f"Fallo en inicialización de carpeta de revisión: {e}")
+        return None
     
     for junk_file in files:
         if not junk_file or not isinstance(junk_file.path, Path) or not junk_file.path.exists(): continue
@@ -297,7 +299,8 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     """Ejecuta la eliminación permanente de archivos en el directorio de revisión."""
     try:
         dest = Path(review_dir).expanduser().resolve()
-        if not dest.is_dir() or is_protected_path(dest) or not is_safe_to_modify(dest): return 0
+        if not dest.exists() or not dest.is_dir() or is_protected_path(dest) or not is_safe_to_modify(dest):
+            return 0
         count = 0
         for item in dest.iterdir():
             if item.is_file():
@@ -306,6 +309,10 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                         ensure_safe_to_modify(item)
                         item.unlink()
                         count += 1
-                except (OSError, PermissionError): continue
+                except (OSError, PermissionError) as e:
+                    logger.warning(f"No se pudo eliminar {item}: {e}")
+                    continue
         return count
-    except (OSError, PermissionError, RuntimeError): return 0
+    except (OSError, PermissionError, RuntimeError) as e:
+        logger.error(f"Error accediendo a directorio de revisión: {e}")
+        return 0
