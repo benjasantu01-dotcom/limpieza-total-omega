@@ -436,7 +436,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if ruta.exists():
             if not is_safe_to_modify(str(bak_path)): 
                 raise PermissionError("Ruta de respaldo insegura")
-            os.replace(ruta, bak_path)
+            try:
+                os.replace(ruta, bak_path)
+            except OSError:
+                pass
             
         os.replace(temp_path, ruta)
         _MANAGER.clear()

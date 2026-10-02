@@ -494,8 +494,12 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
     except (PermissionError, FileNotFoundError):
         raise UnsafePathError(f"Acceso denegado o archivo inexistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     except OSError as e:
-        if getattr(e, 'winerror', 0) == 32:
+        # 32: ERROR_SHARING_VIOLATION, 5: ERROR_ACCESS_DENIED
+        win_err = getattr(e, 'winerror', 0)
+        if win_err == 32:
              raise UnsafePathError(f"Archivo bloqueado por otro proceso: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
+        if win_err == 5:
+             raise UnsafePathError(f"Acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
         raise UnsafePathError(f"Acceso fallido: {path.name}", SafetyValidationErrorCode.IO_ERROR)
     except (ValueError, TypeError) as e:
         raise UnsafePathError(f"Error al leer metadatos de {path.name}: {e}", SafetyValidationErrorCode.IO_ERROR)
@@ -810,6 +814,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             _check_file_integrity(p, initial_stat)
         except UnsafePathError:
             raise
+        except (PermissionError, OSError) as e:
+            raise UnsafePathError(f"Error de acceso: {e}", SafetyValidationErrorCode.IO_ERROR)
         except Exception as e:
             raise UnsafePathError(f"Error de acceso inesperado: {e}", SafetyValidationErrorCode.IO_ERROR)
     else:
@@ -878,3 +884,4 @@ def describe_protection(path: PathLike) -> str:
     except (OSError, FileNotFoundError, AttributeError): pass
     if is_sensitive_file(p): return f"'{p.name}' extensión sensible."
     return f"'{p}' es candidata a modificación."
+

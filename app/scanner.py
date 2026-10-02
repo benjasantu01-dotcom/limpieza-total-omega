@@ -218,25 +218,29 @@ class Scanner:
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta todas las heurísticas registradas."""
+        """Ejecuta todas las heurísticas registradas capturando excepciones individuales."""
         for check_fn in ALL_CHECKS:
             try:
                 finding = check_fn(path, entry, self.now_ts)
                 if finding is not None:
                     self.results.append(finding)
             except (OSError, PermissionError) as e:
-                logger.debug(f"Acceso denegado: {path}: {e}")
+                logger.debug(f"Acceso denegado a metadatos en {path}: {e}")
             except Exception as e:
-                logger.warning(f"Error en heurística {check_fn.__name__}: {e}")
+                logger.error(f"Error inesperado en {check_fn.__name__} para {path}: {e}")
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> List[Suspicion]:
-    """Análisis estático de un archivo individual."""
-    if not isinstance(path, Path): return []
+    """Análisis estático de un archivo individual con validaciones robustas."""
+    if not isinstance(path, Path): 
+        return []
     try:
-        resolved = path.resolve()
-        if not resolved.is_file() or not os.access(resolved, os.R_OK): return []
-        if is_protected_path(resolved): return []
-    except (OSError, PermissionError): return []
+        if not path.is_file() or not os.access(path, os.R_OK): 
+            return []
+        if is_protected_path(path): 
+            return []
+    except (OSError, PermissionError): 
+        return []
+    
     findings: List[Suspicion] = []
     for check_fn in ALL_CHECKS:
         try:

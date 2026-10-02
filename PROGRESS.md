@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
-- Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 42
+- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Rechazadas por tests: 11
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-01 | 69 | 4 | 12 | 6 | 69 |
-| 2026-10-02 | 137 | 8 | 30 | 16 | 153 |
+| 2026-10-01 | 67 | 3 | 12 | 6 | 68 |
+| 2026-10-02 | 140 | 8 | 31 | 16 | 153 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
-- manejo de errores y validación de entradas: **46**
+- manejo de errores y validación de entradas: **49**
 - legibilidad y documentación: **39**
 - robustez ante casos límite: **38**
-- rendimiento: **34**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
+- `settings.py`: **20**
 - `quarantine.py`: **19**
-- `settings.py`: **19**
-- `safety.py`: **18**
+- `safety.py`: **19**
+- `diskreport.py`: **18**
 - `healthscore.py`: **18**
 - `memory.py`: **16**
+- `scanner.py`: **16**
 - `assistant.py`: **16**
 - `organizer.py`: **16**
-- `duplicates.py`: **15**
-- `scanner.py`: **15**
 - `browser.py`: **14**
+- `duplicates.py`: **14**
 - `branding.py`: **12**
 - `startup.py`: **7**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-02T14:44:05` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `_load_impl()` capturando excepciones de sistema (como `OSError` o `PermissionError`) de forma más granular durante las operaciones de I/O, asegurando que cualquier fallo parcial en la persistencia atómica no deje el sistema en un estado inconsistente ni bloquee la ejecución.
+- `2026-10-02T14:43:47` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas centralizando la validación de archivos mediante la función `_safe_stat` y añadiendo bloques de control explícitos para capturar posibles fallos en la obtención de metadatos, evitando así que errores aislados en un archivo detengan el escaneo completo.
+- `2026-10-02T14:43:15` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_path_stat_robust` y `ensure_safe_to_modify` implementando capturas de excepciones más específicas (como `PermissionError` y `OSError` con códigos de error de sistema) para evitar que fallos inesperados de E/S pasen desapercibidos o generen una `UnsafePathError` genérica, mejorando la trazabilidad del error.
 - `2026-10-02T14:36:47` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine.py` implementando una validación temprana de tipos y estados en `_get_sha256` y `_safe_unlink`, reduciendo el riesgo de propagación de excepciones inesperadas mediante el uso de filtros explícitos (check-before-act) en lugar de depender únicamente de bloques try-except.
 - `2026-10-02T14:36:19` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones explícitas antes de las operaciones de sistema, reemplazando chequeos implícitos por un control preventivo que asegura que los objetos `Path` sean válidos, no nulos y estén dentro de los límites de seguridad, evitando excepciones innecesarias en tiempo de ejecución.
 - `2026-10-02T14:24:07` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del cálculo de puntaje envolviendo la ejecución de las funciones `scorer` en un bloque `try-except` específico dentro del pipeline, evitando que una falla en una métrica individual invalide el cálculo global.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-02T12:49:13` **safety.py** (seguridad defensiva): Se ha añadido `FILE_ATTRIBUTE_REPARSE_POINT` (0x400) a la lógica de detección de `is_protected_system` en `_get_security_descriptor_cached`, consolidando la seguridad defensiva al tratar cualquier punto de reparse como una entidad protegida desde el nivel de metadatos, evitando así posibles desbordamientos de sandbox por enlaces.
 - `2026-10-02T12:40:25` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` implementando un chequeo estricto de los nombres de archivo almacenados en el sandbox mediante `_validate_quarantine_path` antes de cualquier operación de I/O, previniendo ataques de *path traversal* o manipulación de rutas relativas dentro de la carpeta de cuarentena.
 - `2026-10-02T12:39:41` **organizer.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_safe_for_disk_op` mediante la validación explícita de que la ruta de origen y el directorio destino no son la misma entidad (usando `pathlib.Path.samefile`), fortaleciendo la prevención de movimientos corruptos o cíclicos antes de cualquier operación de escritura.
-- `2026-10-02T12:39:11` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_get_process_path` validando que la ruta resuelta no solo exista, sino que esté dentro de un volumen local y no sea un reparse point (junction o symlink) antes de permitir cualquier operación, evitando posibles manipulaciones de rutas fuera del alcance esperado del sistema.
-- `2026-10-02T12:29:23` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_evaluate_rules` validando la integridad del mensaje generado antes de su procesamiento, asegurando que las reglas de recomendación no puedan inyectar contenido inesperado o malicioso en el reporte final.
-- `2026-10-02T12:28:54` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` asegurando que el chequeo de seguridad (`_safe_path_check`) se aplique explícitamente antes de procesar cualquier entrada del escaneo, evitando procesar accesos a archivos o directorios fuera del ámbito permitido.
