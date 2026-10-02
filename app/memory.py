@@ -203,9 +203,10 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     if total <= 0: return _EMPTY_SNAPSHOT
     
     avail_raw = metrics.get("MemAvailable", metrics.get("MemFree", BytesValue(0)))
-    available = BytesValue(min(total, avail_raw))
+    available = BytesValue(max(0, min(total, avail_raw)))
+    cached = BytesValue(max(0, metrics.get("Cached", BytesValue(0))))
     
-    return MemorySnapshot(total=total, available=available, cached=metrics.get("Cached", BytesValue(0)))
+    return MemorySnapshot(total=total, available=available, cached=cached)
 
 def _extract_process_info(line: str) -> Optional[Tuple[str, int, BytesValue]]:
     """Extrae y valida datos de una línea de CSV de proceso."""

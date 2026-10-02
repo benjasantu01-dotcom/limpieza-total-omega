@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
-- Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 42
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 220
+- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Rechazadas por tests: 12
+- Rechazadas por guardia de seguridad: 43
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-01 | 118 | 5 | 21 | 9 | 115 |
-| 2026-10-02 | 95 | 6 | 21 | 9 | 105 |
+| 2026-10-01 | 115 | 5 | 21 | 8 | 115 |
+| 2026-10-02 | 96 | 7 | 22 | 9 | 106 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **49**
+- manejo de errores y validación de entradas: **50**
 - seguridad defensiva: **47**
 - robustez ante casos límite: **43**
-- legibilidad y documentación: **39**
-- rendimiento: **35**
+- legibilidad y documentación: **37**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `settings.py`: **20**
 - `quarantine.py`: **20**
+- `settings.py`: **19**
 - `healthscore.py`: **18**
 - `safety.py`: **18**
 - `assistant.py`: **17**
 - `duplicates.py`: **16**
 - `scanner.py`: **16**
+- `memory.py`: **16**
 - `organizer.py`: **15**
-- `memory.py`: **15**
-- `branding.py`: **14**
+- `branding.py`: **13**
 - `browser.py`: **13**
-- `startup.py`: **8**
+- `startup.py`: **7**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-02T10:05:45` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_linux_meminfo` mediante la adición de una validación explícita para asegurar que los valores parseados no sean negativos, previniendo errores de lógica en el cálculo de memoria disponible y caché.
 - `2026-10-02T09:56:30` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_evaluate_rules` mediante la captura explícita de excepciones al invocar `message_factory`, evitando que un error en la generación de un mensaje de recomendación interrumpa el cálculo completo del puntaje de salud.
 - `2026-10-02T09:55:58` **duplicates.py** (manejo de errores y validación de entradas): Mejora la robustez de `suggest_keeper` y `format_group` mediante la adición de validaciones de tipo explícitas y manejo de estados vacíos para evitar errores en tiempo de ejecución al procesar grupos de duplicados inconsistentes.
 - `2026-10-02T09:55:26` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` implementando una gestión de errores más granular y validaciones defensivas que previenen que el bucle de recorrido se detenga o devuelva resultados parciales corruptos ante permisos denegados o inconsistencias en el sistema de archivos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-02T08:03:13` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de `_collect_candidates` al sustituir `entry.path` (que puede contener rutas relativas o inconsistentes dependiendo del sistema de archivos) por `Path(entry.path).resolve()` para asegurar que las verificaciones de seguridad se realicen siempre sobre rutas absolutas y normalizadas, evitando ambigüedades en la validación de `is_safe_to_modify`.
 - `2026-10-02T07:58:28` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` implementando una validación explícita mediante `is_protected_path` sobre `entry.path` antes de cualquier procesamiento, asegurando que el filtrado de seguridad sea consistente con la arquitectura de `safety.py` incluso ante cambios en el sistema de archivos durante la iteración.
 - `2026-10-02T07:54:00` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `branding.py` mediante la validación explícita de rutas utilizando `ensure_safe_to_modify` en lugar de una verificación meramente informativa, evitando posibles ataques de recorrido de directorio (Path Traversal) antes de realizar operaciones de escritura en disco.
-- `2026-10-02T07:53:24` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación explícita de `finishReason` para asegurar que el contenido procesado sea una respuesta completa y legítima del modelo, evitando procesar estados de error o truncamiento parcial que podrían inyectar comportamientos inesperados.
