@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **212** (42.1% de aceptación)
+- Mejoras aceptadas: **214** (42.5% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-01 | 93 | 4 | 14 | 7 | 98 |
-| 2026-10-02 | 119 | 8 | 29 | 15 | 117 |
+| 2026-10-01 | 93 | 4 | 14 | 7 | 94 |
+| 2026-10-02 | 121 | 8 | 29 | 15 | 119 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **49**
+- seguridad defensiva: **40**
 - robustez ante casos límite: **38**
-- seguridad defensiva: **38**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
@@ -33,11 +33,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **19**
 - `quarantine.py`: **19**
 - `safety.py`: **19**
+- `assistant.py`: **18**
 - `healthscore.py`: **18**
-- `assistant.py`: **17**
 - `memory.py`: **17**
+- `browser.py`: **16**
 - `scanner.py`: **16**
-- `browser.py`: **15**
 - `duplicates.py`: **15**
 - `organizer.py`: **15**
 - `branding.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-02T12:19:40` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_process_file_entry` añadiendo una comprobación explícita mediante `is_protected_path` al iterar, asegurando que cualquier subdirectorio accedido sea validado recursivamente contra las listas de bloqueo antes de procesar su contenido.
+- `2026-10-02T12:18:51` **assistant.py** (seguridad defensiva): Reforcé la integridad del sistema al añadir una validación de `finishReason` y `index` en `_extract_text_from_gemini_json`, asegurando que no se procesen respuestas truncadas o malformadas que pudieran evadir los filtros de seguridad, y actualicé la lógica de `_build_payload` para rechazar explícitamente cualquier payload que contenga estructuras recursivas que infrinjan `_MAX_NESTING_DEPTH`.
 - `2026-10-02T12:09:14` **settings.py** (robustez ante casos límite): Mejoré la robustez ante fallos de disco y condiciones de carrera en `save()` mediante la verificación de la integridad del directorio padre y del archivo existente antes de la escritura, asegurando que no se intente persistir sobre una ruta bloqueada o inexistente debido a cambios externos.
 - `2026-10-02T12:08:32` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera (TOCTOU) y archivos inaccesibles al asegurar que la verificación de integridad se realice tras la normalización, evitando errores de permisos al intentar acceder a rutas que no existen pero que el sistema operativo podría haber bloqueado.
 - `2026-10-02T11:47:34` **browser.py** (robustez ante casos límite): Se ha robustecido el manejo de rutas en `_resolve_browser_path` y `detect_profiles` añadiendo validaciones específicas para detectar rutas inexistentes o inaccesibles antes de intentar operaciones de resolución, evitando excepciones innecesarias en sistemas con instalaciones de navegadores parciales.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-02T10:57:12` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `settings.py` mediante la adición de docstrings detallados en funciones clave y la clarificación de tipos, facilitando la comprensión del flujo de validación y persistencia sin alterar el comportamiento lógico.
 - `2026-10-02T10:56:38` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints en las funciones de heurística y una revisión de la estructura del módulo para clarificar la separación entre las responsabilidades de escaneo y las reglas de detección, manteniendo intacta la lógica funcional.
 - `2026-10-02T10:47:23` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings estructurados (con secciones Args/Returns) en las funciones críticas de transferencia y validación, y se han añadido comentarios explicativos en los bloques de lógica compleja para clarificar el "porqué" de las salvaguardas de seguridad.
-- `2026-10-02T10:46:34` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `organizer.py` añadiendo docstrings detallados en las funciones de validación de bajo nivel, explicando explícitamente el "porqué" de las restricciones de seguridad (como los riesgos de recursión en directorios o la manipulación de enlaces simbólicos) para facilitar el mantenimiento futuro por parte del equipo.
-- `2026-10-02T10:38:33` **memory.py** (legibilidad y documentación): Mejoré la documentación interna incluyendo type hints faltantes en funciones críticas y extendí los docstrings para explicar la lógica de los chequeos de seguridad, facilitando el mantenimiento y la auditoría del código.

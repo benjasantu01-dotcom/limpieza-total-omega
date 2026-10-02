@@ -741,3 +741,10 @@ FAILED evolve/tests/test_modules.py::test_min_size_filters_out_tiny_files - Attr
 - `2026-10-02T12:09:14` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez ante fallos de disco y condiciones de carrera en `save()` mediante la verificación de la integridad del directorio padre y del archivo existente antes de la escritura, asegurando que no se intente persistir sobre una ruta bloqueada o inexistente debido a cambios externos.
 - `2026-10-02T12:09:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T12:09:14` Corrida terminada. Total usado hoy: 288.
+- `2026-10-02T12:17:37` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-10-02T12:18:06` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-10-02T12:18:51` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la integridad del sistema al añadir una validación de `finishReason` y `index` en `_extract_text_from_gemini_json`, asegurando que no se procesen respuestas truncadas o malformadas que pudieran evadir los filtros de seguridad, y actualicé la lógica de `_build_payload` para rechazar explícitamente cualquier payload que contenga estructuras recursivas que infrinjan `_MAX_NESTING_DEPTH`.
+- `2026-10-02T12:19:28` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-10-02T12:19:40` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_process_file_entry` añadiendo una comprobación explícita mediante `is_protected_path` al iterar, asegurando que cualquier subdirectorio accedido sea validado recursivamente contra las listas de bloqueo antes de procesar su contenido.
+- `2026-10-02T12:19:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T12:19:40` Corrida terminada. Total usado hoy: 292.

@@ -671,7 +671,8 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     if not _ensure_safe_text(SYSTEM_PROMPT): return None
     
     full_prompt = f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"
-    if len(full_prompt) > _MAX_PROMPT_LIMIT or not _ensure_safe_text(full_prompt): 
+    # Validar profundidad del prompt tras concatenar
+    if len(full_prompt) > _MAX_PROMPT_LIMIT or _is_input_too_deep_or_complex(full_prompt) or not _ensure_safe_text(full_prompt): 
         return None
         
     try:

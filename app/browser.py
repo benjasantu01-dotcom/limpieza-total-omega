@@ -209,7 +209,8 @@ def _process_file_entry(
             return ScanResult(0, True)
 
         p_entry = Path(entry.path)
-        if not _ensure_within_base(str(p_entry), root_abs_norm) or not is_safe_to_modify(p_entry) or is_protected_path(p_entry):
+        # Verificación explícita de seguridad antes de procesar el archivo o subir al directorio
+        if not _ensure_within_base(str(p_entry), root_abs_norm) or is_protected_path(p_entry) or not is_safe_to_modify(p_entry):
             return ScanResult(0, True)
         
         st: os.stat_result = entry.stat(follow_symlinks=False)
