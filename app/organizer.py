@@ -100,7 +100,11 @@ def is_valid_junk_extension(filename: str) -> bool:
     return any(filename.lower().endswith(ext) for ext in JUNK_EXTENSIONS)
 
 def _get_win_attributes(entry: os.DirEntry) -> int:
-    """Extrae atributos de archivo (Windows API) sin lanzar excepciones."""
+    """
+    Extrae los atributos de archivo de Windows utilizando la API de bajo nivel.
+    Se utiliza para identificar archivos ocultos o de sistema que deben excluirse
+    de cualquier operación de limpieza para evitar inestabilidad del SO.
+    """
     try:
         if hasattr(os, 'stat_result') and hasattr(os.stat_result, 'st_file_attributes'):
             return entry.stat(follow_symlinks=False).st_file_attributes
@@ -109,11 +113,19 @@ def _get_win_attributes(entry: os.DirEntry) -> int:
         return 0
 
 def _is_junction(entry: os.DirEntry) -> bool:
-    """Detecta enlaces simbólicos o junctions para prevenir recursión infinita."""
+    """
+    Determina si una entrada es un punto de reparse (Junction) o enlace simbólico.
+    Bloquear esto es crítico para evitar el rastreo recursivo infinito y la
+    modificación accidental de archivos fuera de los límites definidos.
+    """
     return entry.is_symlink() or bool(_get_win_attributes(entry) & WIN_ATTR_JUNCTION)
 
 def _is_unc_path(path: Path) -> bool:
-    """Valida si la ruta es una ruta de red (UNC), desaconsejada para operaciones locales."""
+    """
+    Detecta si la ruta corresponde a un recurso de red (Universal Naming Convention).
+    Operar sobre redes es impredecible y propenso a latencias, por lo que estas
+    rutas se marcan como inseguras para la automatización de limpieza.
+    """
     if path is None: return True
     try:
         return str(path.absolute()).startswith(("\\\\", "//"))
@@ -123,6 +135,7 @@ def _is_unc_path(path: Path) -> bool:
 def _generate_unique_target(target: Path) -> Path:
     """
     Resuelve colisiones de nombres añadiendo sufijos numéricos (1-999).
+    Asegura que el movimiento a cuarentena sea atómico y no sobrescriba archivos previos.
     """
     base_target = target
     counter = 1
@@ -137,7 +150,10 @@ def _is_allowed_directory(name: str) -> bool:
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _is_file_locked(path: Path) -> bool:
-    """Determina si un archivo está bloqueado intentando abrirlo en solo lectura."""
+    """
+    Determina si un archivo está en uso intentando abrirlo en modo lectura exclusiva.
+    Si falla el acceso, se infiere que el archivo está bloqueado por otro proceso del SO.
+    """
     if path is None or not path.is_file():
         return True
     try:
@@ -149,8 +165,9 @@ def _is_file_locked(path: Path) -> bool:
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """
-    Previene movimientos cíclicos verificando si el origen es un padre del destino.
-    Utiliza os.commonpath para asegurar que la jerarquía de directorios no se contamine.
+    Previene movimientos cíclicos verificando si el origen contiene al destino.
+    La detección de rutas padre-hijo es fundamental para evitar la corrupción de 
+    la estructura de directorios durante el proceso de mover archivos.
     """
     if src is None or dest is None: return True
     try:
@@ -180,8 +197,8 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Auditoría exhaustiva previa a cualquier operación de escritura o movimiento.
-    Verifica que el origen no sea un enlace simbólico, que existan permisos de escritura 
-    en el destino, espacio en disco suficiente, y que la operación no cause recursión.
+    Valida la integridad de la ruta y la disponibilidad de recursos físicos, 
+    asegurando que solo se procesen archivos ordinarios (st_nlink == 1).
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     try:

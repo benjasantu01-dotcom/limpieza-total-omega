@@ -522,7 +522,15 @@ def _create_temp_file(source: Path, destination: Path) -> Path:
 
 
 def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> None:
-    """Realiza copia byte a byte verificando integridad final."""
+    """
+    Realiza copia byte a byte verificando integridad final.
+    Args:
+        source: Ruta origen.
+        temp_dest: Ruta temporal destino.
+        source_hash: Hash SHA-256 esperado.
+    Raises:
+        OSError: Si el archivo no es regular o fallan comprobaciones de integridad.
+    """
     try:
         fd_src = os.open(str(source), os.O_RDONLY | os.O_NOFOLLOW)
     except OSError as e:
@@ -681,7 +689,15 @@ def quarantine_file(
     reason: str = "Marcado como sospechoso",
     base: PathLike = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
-    """Aísla un archivo de forma segura, respetando todas las garantías de integridad."""
+    """
+    Aísla un archivo de forma segura, respetando todas las garantías de integridad.
+    Args:
+        source: Ruta del archivo origen.
+        reason: Motivo de la cuarentena.
+        base: Directorio de base (usualmente DEFAULT_QUARANTINE_DIR).
+    Returns:
+        QuarantineItem: Registro del archivo aislado.
+    """
     p_source = _validate_input_path(source)
     source_path = _validate_source_for_quarantine(p_source)
     
