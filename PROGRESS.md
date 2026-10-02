@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Mejoras aceptadas: **214** (42.5% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 43
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 215
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-01 | 105 | 4 | 16 | 8 | 107 |
-| 2026-10-02 | 111 | 7 | 27 | 11 | 108 |
+| 2026-10-01 | 102 | 4 | 16 | 8 | 106 |
+| 2026-10-02 | 112 | 7 | 27 | 12 | 110 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **49**
 - seguridad defensiva: **47**
-- robustez ante casos límite: **38**
-- rendimiento: **30**
+- robustez ante casos límite: **35**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **20**
 - `diskreport.py`: **20**
 - `quarantine.py`: **19**
-- `safety.py`: **18**
+- `settings.py`: **19**
 - `assistant.py`: **18**
+- `memory.py`: **18**
 - `healthscore.py`: **18**
-- `scanner.py`: **17**
-- `memory.py`: **17**
+- `safety.py`: **17**
 - `duplicates.py`: **16**
+- `scanner.py`: **16**
 - `organizer.py`: **15**
 - `browser.py`: **14**
 - `branding.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-02T11:21:59` **memory.py** (rendimiento): Se optimizó `parse_windows_process_csv` para evitar la creación de una lista intermedia con todas las líneas procesadas y se eliminó la conversión redundante a lista `sorted` dentro del bucle de parseo, delegando la ordenación al final solo sobre los N elementos del heap para reducir la complejidad temporal y el uso de memoria.
 - `2026-10-02T11:08:33` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` para evitar llamadas redundantes a `stat()` y `exists()`, y reemplacé el `path.resolve()` repetitivo por una validación de ruta optimizada, reduciendo significativamente las llamadas al sistema operativo durante la recursión.
 - `2026-10-02T10:57:42` **startup.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo añadiendo docstrings detallados en los métodos de la clase `StartupEntry` que explican el *porqué* de las restricciones de seguridad implementadas, además de clarificar la intención de los filtros de entrada en funciones auxiliares.
 - `2026-10-02T10:57:12` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `settings.py` mediante la adición de docstrings detallados en funciones clave y la clarificación de tipos, facilitando la comprensión del flujo de validación y persistencia sin alterar el comportamiento lógico.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-02T10:26:55` **branding.py** (legibilidad y documentación): Documenté con docstrings detallados las funciones de lógica visual (`draw_shield_stripes`, `draw_shield_icon_decorations` y `draw_logo`) para clarificar el flujo de renderizado y el uso de las coordenadas normalizadas.
 - `2026-10-02T10:26:16` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` extrayendo la lógica de validación de métricas de `SystemContext.ingest` hacia métodos privados dedicados, y añadiendo docstrings técnicos que clarifican el contrato de seguridad de los métodos de procesamiento.
 - `2026-10-02T10:17:36` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que el `DictReader` haya procesado correctamente el CSV antes de iterar, evitando excepciones silenciosas o procesamientos sobre encabezados nulos o malformados que podrían ocurrir si la salida de PowerShell es inesperada.
-- `2026-10-02T10:16:10` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de acceso al archivo mediante un bloque `try-except` más específico en `ensure_safe_to_modify`, asegurando que cualquier error durante la lectura de metadatos o permisos sea atrapado y traducido a un `UnsafePathError` con su código correspondiente, evitando que excepciones de nivel bajo interrumpan el bucle de control.

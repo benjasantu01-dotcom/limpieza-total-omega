@@ -214,7 +214,6 @@ def _extract_process_info(line: str) -> Optional[Tuple[str, int, BytesValue]]:
     if len(parts) < 3: return None
     
     name, pid_str, ws_str = parts
-    # Optimizamos extracción de PID: buscar solo dígitos
     clean_pid = "".join(filter(str.isdigit, pid_str))
     if not clean_pid: return None
     
@@ -241,15 +240,16 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     if not raw_csv_text: return []
     top_heap: List[ProcessMemory] = []
     
+    # Iteramos directamente sobre las líneas evitando crear una lista extra
     lines = raw_csv_text.splitlines()
-    for line in lines[1:]: # Omitimos el header
-        if not line or "," not in line: continue
+    for line in (l for l in lines[1:] if l and "," in l):
         data = _extract_process_info(line)
         if data:
             name, pid, ws = data
-            if not name: continue 
-            _update_top_processes_heap(top_heap, ProcessMemory(name, pid, ws), limit)
+            if name: 
+                _update_top_processes_heap(top_heap, ProcessMemory(name, pid, ws), limit)
             
+    # Solo ordenamos el heap final que contiene máximo 'limit' elementos
     return sorted(top_heap, key=lambda p: p.working_set, reverse=True)
 
 def _read_windows_snapshot() -> MemorySnapshot:
@@ -285,7 +285,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     global _proc_cache_time, _proc_cache_data
     if not _is_windows: return []
     now = time.time()
-    # Cacheamos por 60 segundos para evitar llamadas costosas a PowerShell
     if (now - _proc_cache_time) > 60:
         ps_query = (
             "Get-Process | Sort-Object WorkingSet -Descending | "

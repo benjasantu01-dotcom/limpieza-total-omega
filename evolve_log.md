@@ -670,3 +670,13 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-02T11:08:33` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` para evitar llamadas redundantes a `stat()` y `exists()`, y reemplacé el `path.resolve()` repetitivo por una validación de ruta optimizada, reduciendo significativamente las llamadas al sistema operativo durante la recursión.
 - `2026-10-02T11:08:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T11:08:33` Corrida terminada. Total usado hoy: 264.
+- `2026-10-02T11:16:27` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-10-02T11:16:54` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-10-02T11:17:54` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-02T11:18:57` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-02T11:20:03` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-02T11:21:16` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-02T11:21:59` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó `parse_windows_process_csv` para evitar la creación de una lista intermedia con todas las líneas procesadas y se eliminó la conversión redundante a lista `sorted` dentro del bucle de parseo, delegando la ordenación al final solo sobre los N elementos del heap para reducir la complejidad temporal y el uso de memoria.
+- `2026-10-02T11:22:15` ➖ Sin cambios en organizer.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `_process_directory` eliminando la llamada repetitiva a `.resolve()` dentro del bucle de archivos, utilizando directamente la ruta de `scandir` para evitar sobrecarga de E/S y verificaciones de sistema redundantes, manteniendo la seguridad intacta.
+- `2026-10-02T11:22:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T11:22:15` Corrida terminada. Total usado hoy: 268.
