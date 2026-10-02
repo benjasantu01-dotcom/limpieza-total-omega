@@ -317,7 +317,7 @@ def _get_security_descriptor_cached(path_str: str, mtime: float) -> SecurityDesc
         in_use = True
     return SecurityDescriptor(
         attrs=attrs,
-        is_protected_system=bool(attrs & (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | Win32Attr.TEMPORARY)),
+        is_protected_system=bool(attrs & (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | Win32Attr.TEMPORARY | Win32Attr.REPARSE_POINT)),
         is_in_use=in_use,
         is_readonly=bool(attrs & Win32Attr.READONLY)
     )

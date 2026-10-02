@@ -313,6 +313,8 @@ def validate(raw_values: Any) -> AppSettings:
 def _is_file_secure_to_read(file_obj: Any) -> bool:
     """Garantiza que el archivo sea regular, sin enlaces y con permisos restringidos de lectura usando descriptor."""
     try:
+        path = os.path.abspath(file_obj.name)
+        if os.path.islink(path): return False
         st = os.fstat(file_obj.fileno())
         if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
         if not stat.S_ISREG(st.st_mode): return False

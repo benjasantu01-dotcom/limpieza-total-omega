@@ -765,3 +765,11 @@ FAILED evolve/tests/test_modules.py::test_min_size_filters_out_tiny_files - Attr
 - `2026-10-02T12:40:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-02T12:40:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T12:40:31` Corrida terminada. Total usado hoy: 300.
+- `2026-10-02T12:48:18` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-02T12:49:13` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido `FILE_ATTRIBUTE_REPARSE_POINT` (0x400) a la lógica de detección de `is_protected_system` en `_get_security_descriptor_cached`, consolidando la seguridad defensiva al tratar cualquier punto de reparse como una entidad protegida desde el nivel de metadatos, evitando así posibles desbordamientos de sandbox por enlaces.
+- `2026-10-02T12:49:44` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-10-02T12:50:16` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_is_file_secure_to_read` añadiendo una comprobación explícita para asegurar que el archivo no sea un enlace simbólico (`os.path.islink`), previniendo ataques de tipo "Time-of-Check to Time-of-Use" (TOCTOU) donde un atacante podría reemplazar el archivo de configuración por un enlace a un archivo sensible del sistema.
+- `2026-10-02T12:50:17` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-02T12:50:34` ✅ Mejora aceptada en startup.py (enfoque: seguridad defensiva). Se introdujo una validación explícita para detectar puntos de reparse (junctions y symlinks) en el escaneo del registro, evitando que el escáner siga rutas que podrían llevar a bucles de recursión o accesos a volúmenes montados fuera de la jerarquía esperada.
+- `2026-10-02T12:50:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T12:50:34` Corrida terminada. Total usado hoy: 304.

@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **223** (44.2% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-01 | 93 | 4 | 14 | 7 | 86 |
-| 2026-10-02 | 127 | 8 | 30 | 15 | 120 |
+| 2026-10-01 | 93 | 4 | 14 | 7 | 82 |
+| 2026-10-02 | 130 | 8 | 30 | 15 | 121 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **49**
-- seguridad defensiva: **46**
+- seguridad defensiva: **49**
 - robustez ante casos límite: **38**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
+- `settings.py`: **21**
 - `diskreport.py`: **20**
 - `quarantine.py`: **20**
-- `settings.py`: **20**
+- `safety.py`: **20**
 - `healthscore.py`: **19**
-- `safety.py`: **19**
 - `assistant.py`: **18**
 - `memory.py`: **18**
 - `browser.py`: **16**
@@ -41,11 +41,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `organizer.py`: **16**
 - `scanner.py`: **16**
 - `branding.py`: **12**
-- `startup.py`: **8**
+- `startup.py`: **9**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-02T12:50:34` **startup.py** (seguridad defensiva): Se introdujo una validación explícita para detectar puntos de reparse (junctions y symlinks) en el escaneo del registro, evitando que el escáner siga rutas que podrían llevar a bucles de recursión o accesos a volúmenes montados fuera de la jerarquía esperada.
+- `2026-10-02T12:50:16` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_file_secure_to_read` añadiendo una comprobación explícita para asegurar que el archivo no sea un enlace simbólico (`os.path.islink`), previniendo ataques de tipo "Time-of-Check to Time-of-Use" (TOCTOU) donde un atacante podría reemplazar el archivo de configuración por un enlace a un archivo sensible del sistema.
+- `2026-10-02T12:49:13` **safety.py** (seguridad defensiva): Se ha añadido `FILE_ATTRIBUTE_REPARSE_POINT` (0x400) a la lógica de detección de `is_protected_system` en `_get_security_descriptor_cached`, consolidando la seguridad defensiva al tratar cualquier punto de reparse como una entidad protegida desde el nivel de metadatos, evitando así posibles desbordamientos de sandbox por enlaces.
 - `2026-10-02T12:40:25` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` implementando un chequeo estricto de los nombres de archivo almacenados en el sandbox mediante `_validate_quarantine_path` antes de cualquier operación de I/O, previniendo ataques de *path traversal* o manipulación de rutas relativas dentro de la carpeta de cuarentena.
 - `2026-10-02T12:39:41` **organizer.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_safe_for_disk_op` mediante la validación explícita de que la ruta de origen y el directorio destino no son la misma entidad (usando `pathlib.Path.samefile`), fortaleciendo la prevención de movimientos corruptos o cíclicos antes de cualquier operación de escritura.
 - `2026-10-02T12:39:11` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_get_process_path` validando que la ruta resuelta no solo exista, sino que esté dentro de un volumen local y no sea un reparse point (junction o symlink) antes de permitir cualquier operación, evitando posibles manipulaciones de rutas fuera del alcance esperado del sistema.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-02T12:08:32` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera (TOCTOU) y archivos inaccesibles al asegurar que la verificación de integridad se realice tras la normalización, evitando errores de permisos al intentar acceder a rutas que no existen pero que el sistema operativo podría haber bloqueado.
 - `2026-10-02T11:47:34` **browser.py** (robustez ante casos límite): Se ha robustecido el manejo de rutas en `_resolve_browser_path` y `detect_profiles` añadiendo validaciones específicas para detectar rutas inexistentes o inaccesibles antes de intentar operaciones de resolución, evitando excepciones innecesarias en sistemas con instalaciones de navegadores parciales.
 - `2026-10-02T11:37:25` **settings.py** (rendimiento): Se implementó un cacheado en memoria (`_MANAGER.settings_cache`) dentro de `_SettingsManager` con validación de `mtime` para evitar lecturas de disco y deserializaciones de JSON redundantes al acceder múltiples veces a la configuración durante un mismo ciclo de ejecución.
-- `2026-10-02T11:29:45` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner reemplazando la llamada repetitiva a `any()` con una búsqueda eficiente en un `frozenset` mediante el método `endswith` indirecto, y eliminé redundancias en el flujo de heurísticas evitando llamadas innecesarias a `exists()` dentro del bucle de procesado de archivos.
-- `2026-10-02T11:29:34` **safety.py** (rendimiento): Se ha optimizado `_is_system_path_raw` reemplazando la lógica de validación de subdirectorios mediante división de cadenas (`split`) por un chequeo booleano directo utilizando `any()` con la ruta ya normalizada, eliminando la creación de listas intermedias y reduciendo la complejidad de las comparaciones en cada iteración.
-- `2026-10-02T11:28:25` **quarantine.py** (rendimiento): Se optimizó `load_manifest` para evitar el parseo y filtrado recursivo de registros mediante la implementación de una caché de sesión y la validación anticipada de tipos, reduciendo significativamente la carga de I/O en llamadas repetitivas.

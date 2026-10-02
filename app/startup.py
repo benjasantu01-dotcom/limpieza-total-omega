@@ -164,16 +164,15 @@ class StartupEntry:
 
     def _validate_file_access(self, p: Path) -> bool:
         """
-        Verifica que el archivo exista y sea un archivo normal.
-        El uso de `is_protected_path` garantiza que no reportemos archivos
-        del sistema operativo que el usuario nunca debería mover.
+        Verifica que el archivo exista y sea un archivo normal, detectando puntos de reparse.
         """
         try:
             if is_protected_path(p):
                 return False
-            if not p.exists():
+            # Lstat detecta el symlink en el path mismo, is_symlink verifica el nodo
+            if p.is_symlink() or p.is_junction() if hasattr(p, 'is_junction') else False:
                 return False
-            if not p.is_file() or p.is_symlink():
+            if not p.exists() or not p.is_file():
                 return False
             return True
         except (OSError, PermissionError, FileNotFoundError, AttributeError):
@@ -280,6 +279,7 @@ def startup_folders() -> List[Path]:
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
     """Crea una instancia de StartupEntry para un archivo en disco."""
     try:
+        # Evitar seguir symlinks o puntos de reparse en el escaneo de carpetas
         if not entry.is_file(follow_symlinks=False):
             return None
         _, ext = os.path.splitext(entry.name)
