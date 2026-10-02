@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
-- Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 46
+- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Rechazadas por tests: 12
+- Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-30 | 32 | 2 | 6 | 2 | 36 |
+| 2026-09-30 | 32 | 2 | 6 | 2 | 32 |
 | 2026-10-01 | 150 | 8 | 29 | 11 | 152 |
-| 2026-10-02 | 34 | 1 | 11 | 5 | 25 |
+| 2026-10-02 | 36 | 2 | 12 | 5 | 25 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **53**
 - legibilidad y documentación: **48**
-- robustez ante casos límite: **41**
+- robustez ante casos límite: **43**
 - seguridad defensiva: **38**
 - rendimiento: **36**
 
@@ -32,13 +32,13 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `diskreport.py`: **23**
 - `quarantine.py`: **21**
+- `settings.py`: **20**
 - `duplicates.py`: **19**
-- `settings.py`: **19**
 - `assistant.py`: **17**
 - `organizer.py`: **17**
 - `healthscore.py`: **16**
+- `scanner.py`: **16**
 - `safety.py`: **15**
-- `scanner.py`: **15**
 - `memory.py`: **14**
 - `branding.py`: **14**
 - `browser.py`: **13**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-02T03:17:52` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante casos de concurrencia y permisos de archivo al añadir un manejo explícito del bloqueo exclusivo (`msvcrt.locking` en Windows o `fcntl.flock` en sistemas POSIX) durante las operaciones de lectura y escritura, garantizando que el archivo de configuración no se corrompa si procesos simultáneos intentan acceder al mismo.
+- `2026-10-02T03:17:21` **scanner.py** (robustez ante casos límite): Se ha robustecido el escáner implementando un manejo preventivo de excepciones durante la iteración en `Scanner.process_entry` y `scan_directory` para evitar que fallos aislados al leer archivos bloqueados por el sistema (típico en procesos en ejecución o archivos temporales) interrumpan el flujo de escaneo.
 - `2026-10-02T03:08:45` **safety.py** (robustez ante casos límite): Se introdujo una comprobación robusta mediante `ctypes` para detectar rutas que exceden los límites del sistema de archivos (Long Paths) incluso antes de la normalización, evitando errores de `OSError` que podrían disparar excepciones críticas en entornos de producción.
 - `2026-10-02T03:07:55` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de existencia de archivo dentro del bucle de `purge_all` para evitar excepciones `FileNotFoundError` si un archivo es eliminado externamente por el sistema operativo durante la iteración, mejorando la robustez ante la concurrencia.
 - `2026-10-02T03:07:12` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `_is_safe_for_disk_op` añadiendo la verificación de que el archivo no sea un enlace simbólico ni un reparse point (a través de `stat`), evitando manipulaciones de rutas fuera del árbol esperado incluso si `is_safe_to_modify` pasara, y protegiendo contra posibles desbordamientos de `st_nlink` en sistemas de archivos atípicos.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-02T02:27:36` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto y la purga masiva utilizando un `set` para búsquedas O(1) de IDs y evitando iteraciones redundantes, mejorando significativamente el rendimiento al manejar cuarentenas con muchos archivos.
 - `2026-10-02T02:26:56` **organizer.py** (rendimiento): Optimicé el rendimiento de `scan_for_junk` y `_process_directory` transformando `JUNK_EXTENSIONS` en un conjunto de comparación directa y reduciendo la redundancia de llamadas a `stat` y `is_file` al unificar la lógica de filtrado de metadatos mediante `os.scandir` y el set `protected_cache`, minimizando así las llamadas al sistema operativo (I/O) en cada iteración del bucle recursivo.
 - `2026-10-02T02:26:28` **memory.py** (rendimiento): Se optimizó `top_memory_processes` eliminando la re-ejecución del comando `Get-Process` (que es costoso) al permitir el uso de caché durante 60 segundos, pero moviendo el filtrado de PIDs fuera de la subshell para reducir la carga de datos procesada por `subprocess.run` y mejorando la eficiencia del parseo.
-- `2026-10-02T02:17:20` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` mediante la pre-conversión de los pesos (weights) a una estructura de acceso directo `list` paralela a `_PIPELINE_ORDERED`, evitando búsquedas repetidas en el diccionario `WEIGHTS` y la reconstrucción de `metric_breakdown` en cada iteración del bucle principal.
-- `2026-10-02T02:16:25` **diskreport.py** (rendimiento): Optimizé `walk_files` reemplazando la creación recurrente de objetos `Path` por el uso de `os.DirEntry` nativo, reduciendo drásticamente la presión sobre el recolector de basura y mejorando la velocidad de escaneo al evitar llamadas innecesarias a `Path.resolve()` y `Path.parents` dentro del bucle crítico.

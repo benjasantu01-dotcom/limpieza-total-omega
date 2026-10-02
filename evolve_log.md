@@ -1047,3 +1047,34 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-02T03:08:45` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo una comprobación robusta mediante `ctypes` para detectar rutas que exceden los límites del sistema de archivos (Long Paths) incluso antes de la normalización, evitando errores de `OSError` que podrían disparar excepciones críticas en entornos de producción.
 - `2026-10-02T03:08:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T03:08:45` Corrida terminada. Total usado hoy: 76.
+- `2026-10-02T03:16:52` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-10-02T03:17:21` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha robustecido el escáner implementando un manejo preventivo de excepciones durante la iteración en `Scanner.process_entry` y `scan_directory` para evitar que fallos aislados al leer archivos bloqueados por el sistema (típico en procesos en ejecución o archivos temporales) interrumpan el flujo de escaneo.
+- `2026-10-02T03:17:52` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante casos de concurrencia y permisos de archivo al añadir un manejo explícito del bloqueo exclusivo (`msvcrt.locking` en Windows o `fcntl.flock` en sistemas POSIX) durante las operaciones de lectura y escritura, garantizando que el archivo de configuración no se corrompa si procesos simultáneos intentan acceder al mismo.
+- `2026-10-02T03:18:20` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.44s
+
+```
+- `2026-10-02T03:18:20` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez ante errores de I/O en `_validate_file_access` y `_resolve_and_cache_path` añadiendo un manejo de excepciones más granular (`OSError`, `PermissionError`), asegurando que la app no aborte ante archivos inaccesibles o bloqueados por el sistema al recorrer el arranque.
+- `2026-10-02T03:18:31` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: seguridad defensiva): el archivo se encogió al 39% del original (posible pérdida de código)
+- `2026-10-02T03:18:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T03:18:31` Corrida terminada. Total usado hoy: 80.

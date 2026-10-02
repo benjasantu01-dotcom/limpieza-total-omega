@@ -238,10 +238,6 @@ class Scanner:
             if not self._is_safe_entry(entry):
                 return
             
-            # Chequeo de acceso de lectura antes de proceder
-            if not os.access(entry.path, os.R_OK):
-                return
-            
             # Chequeo tipo antes de evaluar heurísticas o recurrir
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, directory_stack)
@@ -305,8 +301,11 @@ def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    if entry is not None:
-                        scanner.process_entry(entry, directory_stack)
+                    try:
+                        if entry is not None:
+                            scanner.process_entry(entry, directory_stack)
+                    except (PermissionError, OSError):
+                        continue
         except (PermissionError, OSError):
             continue
     return scanner.results

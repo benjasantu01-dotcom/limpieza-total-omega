@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 import os
 import stat
+import fcntl
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
@@ -327,7 +328,11 @@ def _load_impl(ruta: Path) -> AppSettings:
     if not ruta.exists(): return dict(DEFAULTS)
     try:
         with open(ruta, "r", encoding="utf-8") as f:
-            data = json.load(f)
+            try:
+                fcntl.flock(f.fileno(), fcntl.LOCK_SH)
+                data = json.load(f)
+            finally:
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
         if _is_dict(data) and _is_file_secure_to_read(ruta):
             return _coerce_and_verify(validate(data))
     except (OSError, PermissionError, IOError, json.JSONDecodeError, UnicodeDecodeError, EOFError):
@@ -397,7 +402,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
-        # Verificación de seguridad de escritura usando booleanos para no interrumpir el flujo
         if _Validators._is_reparse_point(parent) or not os.access(parent, os.W_OK): return None
         if not is_safe_to_modify(str(ruta)): return None
         if not _Validators._is_safe_path(str(parent)): return None
@@ -407,12 +411,13 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     bak_path = ruta.with_suffix(".bak")
     try:
         with open(temp_path, "w", encoding="utf-8") as f:
+            fcntl.flock(f.fileno(), fcntl.LOCK_EX)
             f.write(serialized)
             f.flush()
             os.fsync(f.fileno())
+            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
         if not _is_file_secure_to_read(temp_path): raise PermissionError("Temp file invalid")
         if ruta.exists():
-            # Validación defensiva extra: asegurar seguridad de la ruta de backup
             if not is_safe_to_modify(str(bak_path)): raise PermissionError("Backup path insecure")
             os.replace(ruta, bak_path)
         os.replace(temp_path, ruta)
