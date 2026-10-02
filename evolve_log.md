@@ -1374,3 +1374,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-02T05:42:02` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_get_security_descriptor_cached` añadiendo manejo explícito de excepciones y validación de tipos, evitando que errores intermitentes en la consulta de atributos o bloqueos de archivos degraden la fiabilidad de las verificaciones de seguridad.
 - `2026-10-02T05:42:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T05:42:02` Corrida terminada. Total usado hoy: 136.
+- `2026-10-02T05:49:56` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-10-02T05:50:27` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_safe_stat` y `_run_file_heuristics` añadiendo validaciones de tipo y capturas de excepciones más granulares, evitando que el escaneo colapse ante metadatos corruptos o archivos bloqueados por el SO.
+- `2026-10-02T05:51:00` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado `save` para ser explícitamente defensiva capturando errores al intentar realizar el reemplazo atómico, evitando que una falla en el borrado o renombrado de archivos deje el proceso en un estado inconsistente o silenciosamente fallido.
+- `2026-10-02T05:51:28` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-02T05:51:29` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-02T05:52:02` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejora la documentación técnica de `assistant.py` mediante la adición de docstrings estructuradas en clases críticas (`AssistantConfig`, `MetricSpec`, `ProblemCriterion`), aclarando el propósito y las restricciones de los componentes fundamentales del motor del asistente.
+- `2026-10-02T05:52:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T05:52:02` Corrida terminada. Total usado hoy: 140.

@@ -388,7 +388,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     ruta = settings_path(custom_base)
     cleaned_settings = _coerce_and_verify(validate(values))
     
-    # Rendimiento: evitar E/S si los datos no han cambiado según el timestamp actual
     if ruta.exists():
         try:
             st = ruta.stat()
@@ -416,14 +415,20 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             f.flush()
             os.fsync(f.fileno())
             fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-        if not _is_file_secure_to_read(temp_path): raise PermissionError("Temp file invalid")
+        
+        if not _is_file_secure_to_read(temp_path): 
+            raise PermissionError("Archivo temporal con permisos inválidos")
+            
         if ruta.exists():
-            if not is_safe_to_modify(str(bak_path)): raise PermissionError("Backup path insecure")
+            if not is_safe_to_modify(str(bak_path)): 
+                raise PermissionError("Ruta de respaldo insegura")
             os.replace(ruta, bak_path)
+            
         os.replace(temp_path, ruta)
-        _MANAGER.clear() # Invalidar caché tras escritura exitosa
+        _MANAGER.clear()
         return ruta
-    except (OSError, IOError, PermissionError, json.JSONDecodeError): return None
+    except (OSError, IOError, PermissionError, json.JSONDecodeError):
+        return None
     finally:
         if temp_path.exists():
             try: os.remove(temp_path)

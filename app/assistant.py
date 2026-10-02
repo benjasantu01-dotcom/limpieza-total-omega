@@ -91,11 +91,10 @@ def _check_metric_integrity(val: float) -> bool:
 
 def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
     """
-    Decorador que protege los manejadores de consulta del asistente.
+    Decorador para proteger los manejadores de consulta contra excepciones.
     
-    Asegura que el contexto esté inicializado antes de operar y captura cualquier
-    excepción interna, garantizando que el hilo de la UI nunca reciba una 
-    excepción inesperada y siempre retorne una respuesta de fallback.
+    Asegura la disponibilidad del contexto y captura errores de ejecución
+    para evitar que el hilo principal de la UI falle, retornando un fallback.
     """
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
@@ -114,11 +113,11 @@ def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Calla
 class AssistantConfig(NamedTuple):
     """
     Configuración estructurada para el cliente de IA (Gemini).
-    
+
     Attributes:
-        api_key: Credencial para la API de Google, preferiblemente desde env.
-        model: Identificador del modelo (ej. gemini-3.1-flash-lite).
-        allow_metrics: Booleano que autoriza la exportación de métricas anonimizadas.
+        api_key (str): Credencial para la API, idealmente desde variables de entorno.
+        model (str): Identificador del modelo remoto (ej. gemini-3.1-flash-lite).
+        allow_metrics (bool): Flag de privacidad para autorizar el envío de métricas.
     """
     api_key: str
     model: str
@@ -127,10 +126,12 @@ class AssistantConfig(NamedTuple):
 @dataclass(frozen=True)
 class MetricSpec:
     """
-    Define el contrato de validación para métricas numéricas.
-    
-    Especifica la función de conversión, los límites permitidos (min/max) y 
-    valida que el tipo de entrada sea numérico (evitando booleanos o strings).
+    Especificación de validación para métricas numéricas del sistema.
+
+    Attributes:
+        cast_func (Callable): Función para normalizar el tipo de dato.
+        min_val (float): Límite inferior permitido para el valor.
+        max_val (float): Límite superior permitido para el valor.
     """
     cast_func: Callable[[Any], Any]
     min_val: float
@@ -142,16 +143,18 @@ class MetricSpec:
 
 class ProblemCriterion(NamedTuple):
     """
-    Representa una regla declarativa de detección de problemas de sistema.
-    
-    Utiliza métricas clave para evaluar si el sistema está bajo riesgo mediante 
-    comparaciones numéricas contra umbrales predefinidos, facilitando la 
-    generación automática de alertas educativas.
+    Regla declarativa de detección de problemas basada en umbrales.
+
+    Attributes:
+        metric_key (str): Nombre de la métrica a evaluar en SystemContext.
+        threshold (float): Valor límite para disparar el criterio.
+        operator (str): Operador lógico ('<' o '>') de comparación.
+        message_format (str): Template de mensaje educativo para el usuario.
     """
     metric_key: str
     threshold: float
-    operator: str # "<" (menor que), ">" (mayor que)
-    message_format: str # Template de texto para el usuario (ej: "{:.0f}% de RAM")
+    operator: str
+    message_format: str
 
     def _evaluate_metric(self, val: float) -> bool:
         """Ejecuta la comparación lógica según el operador del criterio."""
@@ -164,15 +167,12 @@ class ProblemCriterion(NamedTuple):
         return False
 
     def is_triggered_by(self, ctx: SystemContext) -> bool:
-        """Verifica si la condición de riesgo actual se cumple para un contexto dado."""
+        """Verifica si el criterio de riesgo actual se cumple."""
         val = ctx.get_metric(self.metric_key, DEFAULT_METRIC_VAL)
         return val >= 0 and self._evaluate_metric(val)
 
     def format_if_triggered(self, ctx: SystemContext) -> Optional[str]:
-        """
-        Retorna un mensaje formateado si el criterio de riesgo es superado.
-        Aplica validaciones de seguridad sobre el resultado antes de retornar.
-        """
+        """Formatea un mensaje de advertencia si el criterio se dispara."""
         val: float = ctx.get_metric(self.metric_key, DEFAULT_METRIC_VAL)
         
         if not _check_metric_integrity(val) or val < 0 or not self._evaluate_metric(val):
@@ -316,9 +316,9 @@ class SystemContext:
     """
     Contenedor de estado consolidado que representa la salud del sistema.
     
-    Esta clase ingesta datos de diagnóstico, aplicando validaciones de tipo y 
-    seguridad mediante `MetricSpec`. Actúa como la única fuente de verdad 
-    para el motor del asistente, anonimizando la información antes de cualquier uso.
+    Ingesta datos de diagnóstico, aplicando validaciones de tipo y seguridad
+    mediante `MetricSpec`. Actúa como la única fuente de verdad para el motor
+    del asistente, anonimizando la información antes de cualquier uso.
     """
     score: Optional[int] = None
     grade: str = ""
@@ -381,12 +381,10 @@ class SystemContext:
 
     def ingest(self, source: Any) -> bool:
         """
-        Normaliza e importa datos externos (dict o instancia) al contexto local.
+        Normaliza e importa datos externos al contexto local.
         
-        Realiza una validación de seguridad de múltiples capas:
-        1. Verifica integridad de estructura (evita objetos recursivos o maliciosos).
-        2. Itera sobre `_VALIDATORS` aplicando `MetricSpec` para forzar tipado y límites.
-        3. Limpia campos string de forma atómica antes de actualizar la instancia.
+        Realiza validaciones de estructura, aplica tipos y límites vía `_VALIDATORS`,
+        y desinfecta campos de texto para prevenir inyecciones.
         """
         if source is None: return False
         if isinstance(source, dict) and (len(source) > 50 or _is_input_too_deep_or_complex(source)):

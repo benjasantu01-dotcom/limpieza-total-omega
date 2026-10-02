@@ -82,13 +82,19 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     if not isinstance(entry, os.DirEntry):
         return None
     try:
-        if not entry.is_symlink() and not (_get_file_attributes(entry) & LIMITS.reparse_point_attr_mask):
-            stats = entry.stat(follow_symlinks=False)
-            # Defensa contra hard link spoofing: archivos del sistema suelen tener enlaces múltiples
-            if getattr(stats, "st_nlink", 1) > 1:
-                return None
-            return stats
-        return None
+        # Verificación explícita de tipos de archivo antes de estatizar
+        if entry.is_symlink():
+            return None
+            
+        attr = _get_file_attributes(entry)
+        if attr & LIMITS.reparse_point_attr_mask:
+            return None
+            
+        stats = entry.stat(follow_symlinks=False)
+        # Defensa contra hard link spoofing: archivos del sistema suelen tener enlaces múltiples
+        if getattr(stats, "st_nlink", 1) > 1:
+            return None
+        return stats
     except (OSError, PermissionError):
         return None
 
@@ -257,11 +263,16 @@ class Scanner:
             return
         for check_fn in ALL_CHECKS:
             try:
+                # Validar existencia de la entrada previo a la heurística
+                if not entry.exists():
+                    continue
                 finding = check_fn(path, entry, self.now_ts)
                 if finding is not None:
                     self.results.append(finding)
+            except (OSError, PermissionError) as e:
+                logger.debug(f"Acceso denegado al procesar {path}: {e}")
             except Exception as e:
-                logger.warning(f"Error en heurística {check_fn.__name__} para {path}: {e}")
+                logger.warning(f"Error inesperado en heurística {check_fn.__name__} para {path}: {e}")
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> List[Suspicion]:
     """Realiza un análisis estático de un archivo puntual sin recursión."""
