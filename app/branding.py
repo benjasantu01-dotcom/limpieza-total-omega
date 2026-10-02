@@ -285,7 +285,11 @@ def bar(percent: Union[float, int, None], width: int = 24,
 
 @lru_cache(maxsize=256)
 def _hex_to_rgb(value: ColorHex) -> RGBTuple:
-    """Convierte hex '#RRGGBB' a tupla (R, G, B)."""
+    """
+    Decodifica una cadena HEX en un triplete RGB (0-255).
+    
+    Se utiliza para normalizar colores de marca a espacios de trabajo calculables.
+    """
     if isinstance(value, str) and len(value) == 7 and value.startswith('#'):
         try:
             val = int(value[1:], 16)
@@ -296,7 +300,7 @@ def _hex_to_rgb(value: ColorHex) -> RGBTuple:
 
 @lru_cache(maxsize=256)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
-    """Convierte tupla (R, G, B) a string hex '#RRGGBB'."""
+    """Codifica un triplete RGB en una cadena HEX estándar de 7 caracteres."""
     def _clamp(c: int) -> int: return max(0, min(255, c))
     return "#{:02x}{:02x}{:02x}".format(_clamp(rgb[0]), _clamp(rgb[1]), _clamp(rgb[2]))
 
@@ -305,11 +309,9 @@ def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
     """
     Realiza interpolación lineal (lerp) entre dos colores HEX.
     
-    Args:
-        start: Color de origen en formato hexadecimal.
-        end: Color de destino en formato hexadecimal.
-        ratio: Factor de mezcla (0.0 a 1.0).
-        
+    La operación descompone los colores a RGB, aplica el ratio y re-codifica,
+    lo que permite transiciones de color suaves entre estados (ej. hover o salud).
+    
     Returns:
         Hexadecimal resultante de la mezcla.
     """
@@ -327,7 +329,7 @@ def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
     except (TypeError, ValueError): return start
 
 def _interpolate_rgb(s1: RGBTuple, s2: RGBTuple, delta: float) -> RGBTuple:
-    """Calcula un punto intermedio entre dos colores RGB base."""
+    """Calcula un punto intermedio entre dos colores RGB base mediante un factor delta."""
     return (
         int(s1[0] + (s2[0] - s1[0]) * delta),
         int(s1[1] + (s2[1] - s1[1]) * delta),
@@ -337,7 +339,9 @@ def _interpolate_rgb(s1: RGBTuple, s2: RGBTuple, delta: float) -> RGBTuple:
 @lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
     """
-    Genera una secuencia de colores interpolados mediante una progresión de nodos.
+    Genera una secuencia de colores interpolados mediante una progresión de nodos (stops).
+    
+    Utiliza segmentación lineal para suavizar la transición entre colores de marca.
     """
     n = max(1, int(steps))
     if not stops or len(stops) < 2: 
@@ -356,7 +360,11 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
 
 @lru_cache(maxsize=128)
 def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, ...]:
-    """Optimiza el dibujo agrupando píxeles consecutivos que comparten color."""
+    """
+    Optimiza el renderizado agrupando píxeles consecutivos con color idéntico.
+    
+    Esto reduce drásticamente el número de llamadas a las APIs de dibujo del Canvas.
+    """
     if not colors: return ()
     segments = []
     current_color, start = colors[0], 0

@@ -199,11 +199,16 @@ def _process_file_entry(
     depth: int
 ) -> ScanResult:
     """
-    Evalúa una entrada individual del sistema de archivos, aplicando filtros de seguridad
-    y disparando recursión si la entrada es un directorio.
+    Evalúa una entrada individual, aplicando filtros de seguridad y delegando la recursión.
+    
+    Args:
+        entry: Entrada del sistema de archivos a evaluar.
+        root_abs_norm: Ruta base normalizada para verificar confinamiento.
+        kernel32: Instancia de la DLL de Windows para chequeo de atributos.
+        visited_inodes: Set para prevenir ciclos en enlaces.
+        depth: Profundidad actual para evitar desbordamiento de pila.
     """
     try:
-        # Seguridad defensiva: verificar estado del enlace antes de cualquier acceso
         if entry.is_symlink():
             return ScanResult(0, True)
 
@@ -233,7 +238,14 @@ def _sum_directory_recursive(
     visited_inodes: Set[int],
     depth: int = 0
 ) -> ScanResult:
-    """Realiza un recorrido recursivo controlado del sistema de archivos para totalizar bytes."""
+    """
+    Realiza el recorrido recursivo del disco bajo restricciones de seguridad.
+    
+    Limitaciones aplicadas:
+    - Profundidad máxima (MAX_SCAN_DEPTH).
+    - Prevención de ciclos vía inodos visitados.
+    - Omitido de rutas protegidas o fuera del árbol base.
+    """
     if not isinstance(root_path, Path) or depth > MAX_SCAN_DEPTH:
         return ScanResult(0, False)
     
