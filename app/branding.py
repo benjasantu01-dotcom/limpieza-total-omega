@@ -246,12 +246,6 @@ def grade_color(grade: Optional[str]) -> ColorHex:
 def score_color(score: Union[float, int, None]) -> ColorHex:
     """
     Determina el color según el puntaje (0-100) y los umbrales configurados.
-    
-    Args:
-        score: Puntaje numérico a evaluar (0-100).
-        
-    Returns:
-        Hexadecimal de color correspondiente al rango del puntaje.
     """
     if score is None: 
         return C_TEXT_MUTED
@@ -268,13 +262,7 @@ def score_color(score: Union[float, int, None]) -> ColorHex:
 @lru_cache(maxsize=64)
 def bar(percent: Union[float, int, None], width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
-    """
-    Genera una barra de progreso visual (formato texto para consola).
-    
-    Args:
-        percent: Valor porcentual (0-100).
-        width: Número total de caracteres de la barra.
-    """
+    """Genera una barra de progreso visual (formato texto para consola)."""
     try:
         valor = float(percent) if percent is not None else 0.0
         if not math.isfinite(valor): valor = 0.0
@@ -286,11 +274,7 @@ def bar(percent: Union[float, int, None], width: int = 24,
 
 @lru_cache(maxsize=256)
 def _hex_to_rgb(value: ColorHex) -> RGBTuple:
-    """
-    Decodifica una cadena HEX en un triplete RGB (0-255).
-    
-    Se utiliza para normalizar colores de marca a espacios de trabajo calculables.
-    """
+    """Decodifica una cadena HEX en un triplete RGB (0-255)."""
     if isinstance(value, str) and len(value) == 7 and value.startswith('#'):
         try:
             val = int(value[1:], 16)
@@ -307,15 +291,7 @@ def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
 
 @lru_cache(maxsize=128)
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
-    """
-    Realiza interpolación lineal (lerp) entre dos colores HEX.
-    
-    La operación descompone los colores a RGB, aplica el ratio y re-codifica,
-    lo que permite transiciones de color suaves entre estados (ej. hover o salud).
-    
-    Returns:
-        Hexadecimal resultante de la mezcla.
-    """
+    """Realiza interpolación lineal (lerp) entre dos colores HEX."""
     try:
         r1, g1, b1 = _hex_to_rgb(start)
         r2, g2, b2 = _hex_to_rgb(end)
@@ -339,11 +315,7 @@ def _interpolate_rgb(s1: RGBTuple, s2: RGBTuple, delta: float) -> RGBTuple:
 
 @lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
-    """
-    Genera una secuencia de colores interpolados mediante una progresión de nodos (stops).
-    
-    Utiliza segmentación lineal para suavizar la transición entre colores de marca.
-    """
+    """Genera una secuencia de colores interpolados mediante una progresión de nodos (stops)."""
     n = max(1, int(steps))
     if not stops or len(stops) < 2: 
         return (stops[0] if stops else C_TEXT_MUTED,) * n
@@ -361,11 +333,7 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
 
 @lru_cache(maxsize=128)
 def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, ...]:
-    """
-    Optimiza el renderizado agrupando píxeles consecutivos con color idéntico.
-    
-    Esto reduce drásticamente el número de llamadas a las APIs de dibujo del Canvas.
-    """
+    """Optimiza el renderizado agrupando píxeles consecutivos con color idéntico."""
     if not colors: return ()
     segments = []
     current_color, start = colors[0], 0
@@ -412,7 +380,6 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         return None
     try:
         path = Path(destination).resolve()
-        # Seguridad: Validar que la ruta sea segura antes de cualquier operación
         ensure_safe_to_modify(path)
         
         if not path.parent.exists():
@@ -440,12 +407,7 @@ def _get_cached_stripe_data(scale: float, franjas_count: int) -> Tuple[Tuple[Tup
     return _get_stripe_params(scale, franjas_count), gradient_colors(franjas_count)
 
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """
-    Renderiza las franjas decorativas con gradiente dentro del escudo.
-    
-    Aplica una transformación geométrica basada en 'scale' para posicionar y dimensionar
-    cada franja en relación al centro del escudo en el lienzo.
-    """
+    """Renderiza las franjas decorativas con gradiente dentro del escudo."""
     try:
         if not math.isfinite(scale) or scale <= 0: return
         franjas_count = max(6, int(28 * scale))
@@ -461,12 +423,7 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
     except (TypeError, ValueError, ZeroDivisionError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """
-    Renderiza los detalles ornamentales superiores: línea de impacto y glifo Omega.
-    
-    Dibuja los trazos de contraste que definen la marca visual, normalizando el grosor
-    de línea y el tamaño de fuente según el escalado del lienzo.
-    """
+    """Renderiza los detalles ornamentales superiores: línea de impacto y glifo Omega."""
     try:
         if not math.isfinite(scale) or scale <= 0: return
         canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, 
@@ -481,22 +438,11 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """
-    Renderiza el logo corporativo completo sobre un objeto Canvas (o similar).
-    
-    Calcula el factor de escala en relación a 128 unidades base, componiendo 
-    la forma geométrica principal, las franjas y los elementos decorativos 
-    de forma centralizada.
-    
-    Args:
-        canvas: Objeto destino que implementa el protocolo CanvasElement.
-        size: Diámetro total objetivo en píxeles.
-        canvas_x, canvas_y: Desplazamiento de origen en el lienzo.
-    """
+    """Renderiza el logo corporativo completo."""
     try:
         s = float(size)
         cx, cy = float(canvas_x), float(canvas_y)
-        if not math.isfinite(s) or s <= 0: return
+        if not math.isfinite(s) or s <= 0 or not math.isfinite(cx) or not math.isfinite(cy): return
         scale = max(0.1, min(10.0, s / 128.0))
         
         canvas.create_oval(
@@ -510,16 +456,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """
-    Dibuja una barra horizontal con degradado interpolado utilizando segmentación por color.
-    
-    Args:
-        canvas: Objeto canvas (Protocol) destino.
-        width: Ancho de la barra en píxeles.
-        height: Grosor de la línea.
-        canvas_x, canvas_y: Coordenadas de origen.
-        stops: Colores para el gradiente.
-    """
+    """Dibuja una barra horizontal con degradado interpolado."""
     try:
         if canvas is None or stops is None: return
         w_val = max(1, min(4096, int(width)))
@@ -536,38 +473,22 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, 
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, 
               track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """
-    Renderiza un gráfico circular indicativo de salud (arco de progreso 0-100%).
-    
-    Calcula el arco basándose en 360 grados y aplica validaciones geométricas para
-    garantizar que el trazo no desborde las dimensiones del contenedor.
-    
-    Args:
-        percent: Valor numérico 0-100.
-        size: Diámetro del anillo.
-        thickness: Grosor del trazo.
-        track: Color de fondo (opcional).
-        fill: Color activo del arco (opcional).
-    """
+    """Renderiza un gráfico circular indicativo de salud."""
     try:
         if canvas is None: return
-        # Normalización robusta de entrada
         val = float(percent) if percent is not None else 0.0
         if not math.isfinite(val): val = 0.0
         val = max(0.0, min(100.0, val))
         
-        # Geometría segura
         diam = max(20, min(2048, int(size)))
         max_thick = (diam // 2) - 1
         thick = max(2, min(int(thickness), max_thick))
         
-        # Coordenadas relativas
         cx, cy = float(canvas_x), float(canvas_y)
         if not math.isfinite(cx) or not math.isfinite(cy): return
         borde: float = float(thick) / 2.0
         caja = (cx + borde, cy + borde, cx + diam - borde, cy + diam - borde)
         
-        # Renderizado de track y arco activo
         canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=thick)
         if val > 0: 
             fill_color = fill or score_color(val)

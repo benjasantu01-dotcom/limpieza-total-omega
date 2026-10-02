@@ -402,23 +402,23 @@ class SystemContext:
             return False
         
         updates = {}
-        for key, spec in _VALIDATORS.items():
-            res = self._apply_field(source, key, spec)
-            if res is not None:
-                updates[key] = res
-        
-        grade_val = self._clean_grade(_get_source_value(source, "grade"))
-        if grade_val:
-            updates['grade'] = grade_val
-        
-        if updates:
-            try:
+        try:
+            for key, spec in _VALIDATORS.items():
+                res = self._apply_field(source, key, spec)
+                if res is not None:
+                    updates[key] = res
+            
+            grade_val = self._clean_grade(_get_source_value(source, "grade"))
+            if grade_val:
+                updates['grade'] = grade_val
+            
+            if updates:
                 for k, v in updates.items():
                     object.__setattr__(self, k, v)
                 object.__setattr__(self, 'analyzed', True)
                 return True
-            except Exception:
-                return False
+        except Exception:
+            logging.error("Falla crítica durante la ingestión de contexto")
         return False
 
 @dataclass

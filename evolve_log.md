@@ -962,3 +962,21 @@ FAILED evolve/tests/test_modules.py::test_min_size_filters_out_tiny_files - Attr
 - `2026-10-02T14:04:04` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-10-02T14:04:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T14:04:04` Corrida terminada. Total usado hoy: 332.
+- `2026-10-02T14:10:08` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-02T14:10:10` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-02T14:10:10` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-02T14:10:30` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-02T14:10:30` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-02T14:11:00` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-02T14:11:00` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-02T14:11:15` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-02T14:11:15` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-02T14:11:35` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-02T14:11:35` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-02T14:12:05` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-02T14:12:05` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-02T14:13:20` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-02T14:14:07` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la ingestión de datos en `SystemContext.ingest` y la validación de respuestas de Gemini, asegurando que ante fallas inesperadas en la estructura de los datos (como tipos inesperados o valores fuera de rango) el sistema no se corrompa ni aborte, manteniendo el estado seguro anterior mediante la captura de excepciones específicas.
+- `2026-10-02T14:14:29` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `branding.py` mediante una validación estricta y temprana de los parámetros numéricos de entrada en las funciones de dibujo, previniendo errores de cálculo geométrico y garantizando un comportamiento consistente incluso ante valores atípicos o maliciosos.
+- `2026-10-02T14:14:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T14:14:29` Corrida terminada. Total usado hoy: 336.
