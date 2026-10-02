@@ -1506,3 +1506,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-02T07:13:36` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
 - `2026-10-02T07:13:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T07:13:36` Corrida terminada. Total usado hoy: 172.
+- `2026-10-02T07:21:55` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-10-02T07:22:25` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de `OSError` específico dentro del bucle de `walk_files` para manejar casos donde el acceso a los atributos de un archivo (como su tamaño) falla durante la iteración, evitando que el escaneo se interrumpa prematuramente ante archivos bloqueados o con metadatos inaccesibles.
+- `2026-10-02T07:22:54` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se introdujo una verificación de integridad en `_group_paths_by_hash` para manejar archivos que podrían desaparecer entre el escaneo inicial y el cálculo de hash, evitando errores de ejecución y mejorando la robustez del bucle frente a cambios en el sistema de archivos durante la operación.
+- `2026-10-02T07:23:23` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha robustecido el motor de `healthscore.py` ante datos corruptos o inesperados en `SystemMetrics` mediante la adición de un chequeo de tipos estricto y la prevención de fallos silenciosos durante la ejecución del pipeline, asegurando que cualquier entrada externa no provoque un cálculo inconsistente.
+- `2026-10-02T07:24:23` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-02T07:25:26` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-02T07:26:32` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-02T07:27:44` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-02T07:27:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T07:27:44` Corrida terminada. Total usado hoy: 176.

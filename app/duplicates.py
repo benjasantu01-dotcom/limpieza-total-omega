@@ -255,7 +255,8 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Agrupa rutas que comparten un mismo valor de digest (hash)."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if path.exists() and (digest := hash_func(path)):
+        # Verificar existencia actual antes de intentar calcular el hash
+        if path.is_file() and (digest := hash_func(path)):
             groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 

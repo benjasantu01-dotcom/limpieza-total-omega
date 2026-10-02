@@ -165,11 +165,8 @@ class SystemMetrics:
     def validate(self) -> None:
         """Limpia y valida las métricas, forzando tipos numéricos y rangos positivos."""
         def _to_finite_float(val: Any, default: float = 0.0) -> float:
-            try:
-                num = float(val)
-                return num if math.isfinite(num) else default
-            except (TypeError, ValueError):
-                return default
+            if not isinstance(val, (int, float)): return default
+            return float(val) if math.isfinite(val) else default
         
         self.junk_mb = max(0.0, _to_finite_float(self.junk_mb))
         self.duplicate_mb = max(0.0, _to_finite_float(self.duplicate_mb))
@@ -204,7 +201,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
         try:
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
-                # Sanitización defensiva eficiente
                 clean_msg = "".join(filter(str.isprintable, msg)).strip()
                 if clean_msg: 
                     findings.append(clean_msg[:200])
