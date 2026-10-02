@@ -198,7 +198,10 @@ def _process_file_entry(
     visited_inodes: Set[int],
     depth: int
 ) -> ScanResult:
-    """Gestiona la lógica de recursión o conteo para archivos y directorios."""
+    """
+    Evalúa una entrada individual del sistema de archivos, aplicando filtros de seguridad
+    y disparando recursión si la entrada es un directorio.
+    """
     try:
         p_entry = Path(entry.path)
         if not _ensure_within_base(str(p_entry), root_abs_norm) or not is_safe_to_modify(p_entry) or is_protected_path(p_entry):
@@ -226,7 +229,7 @@ def _sum_directory_recursive(
     visited_inodes: Set[int],
     depth: int = 0
 ) -> ScanResult:
-    """Escaneo recursivo del FS limitado por profundidad para evitar stack overflow."""
+    """Realiza un recorrido recursivo controlado del sistema de archivos para totalizar bytes."""
     if not isinstance(root_path, Path) or depth > MAX_SCAN_DEPTH:
         return ScanResult(0, False)
     

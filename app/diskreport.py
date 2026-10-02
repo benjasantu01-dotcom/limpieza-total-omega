@@ -237,7 +237,12 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """Generador recursivo de archivos usando `os.scandir`."""
+    """
+    Generador recursivo que recorre el árbol de archivos.
+    
+    Implementa un mecanismo de prevención de bucles infinitos mediante inodos
+    y respeta las restricciones de `safety.is_protected_path`.
+    """
     root_path = _validate_root(directory)
     if root_path is None: return
     visited_inodes: set[Inode] = set()
@@ -317,7 +322,12 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """Recorre el sistema de archivos y consolida métricas globales."""
+    """
+    Recorre el sistema de archivos mediante `walk_files` y consolida métricas.
+    
+    Usa un heap (min-heap de tamaño fijo) para mantener eficiente el rastreo 
+    de los archivos más pesados sin cargar toda la estructura en memoria.
+    """
     total_bytes: int = 0
     total_files: int = 0
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)

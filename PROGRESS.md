@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **217** (43.1% de aceptación)
+- Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 43
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 219
+- Rechazadas por guardia de seguridad: 42
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-30 | 54 | 3 | 12 | 2 | 47 |
+| 2026-09-30 | 53 | 3 | 11 | 2 | 45 |
 | 2026-10-01 | 150 | 8 | 29 | 11 | 152 |
-| 2026-10-02 | 13 | 0 | 2 | 1 | 20 |
+| 2026-10-02 | 15 | 0 | 2 | 2 | 21 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **53**
 - seguridad defensiva: **50**
+- legibilidad y documentación: **44**
 - robustez ante casos límite: **42**
-- legibilidad y documentación: **42**
-- rendimiento: **30**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **23**
 - `duplicates.py`: **20**
 - `quarantine.py`: **20**
 - `settings.py`: **20**
 - `scanner.py`: **17**
 - `assistant.py`: **17**
-- `organizer.py`: **16**
+- `browser.py`: **15**
+- `organizer.py`: **15**
 - `safety.py`: **15**
 - `healthscore.py`: **15**
-- `browser.py`: **14**
 - `memory.py`: **14**
 - `branding.py`: **14**
 - `startup.py`: **10**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-02T01:35:59` **diskreport.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación (docstrings) de `walk_files` y `_collect_summary_data`, clarificando las restricciones de flujo y las salvaguardas de seguridad para facilitar el mantenimiento del código.
+- `2026-10-02T01:35:32` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de escaneo y la clarificación del propósito de las funciones internas, facilitando la comprensión del flujo de datos en las operaciones recursivas sobre el sistema de archivos.
 - `2026-10-02T01:28:16` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y descriptivos en las funciones de renderizado, explicando no solo qué hacen, sino el propósito de las transformaciones geométricas y el manejo de excepciones, facilitando el mantenimiento del código.
 - `2026-10-02T01:27:24` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que `DictReader` haya procesado al menos una fila y que el acceso a los índices de las columnas no lance `IndexError` en casos de entradas del registro inesperadamente vacías o con formato no estándar.
 - `2026-10-02T01:25:21` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` reemplazando el uso de `ensure_safe_to_modify` (que lanza excepciones) dentro de un bloque condicional por chequeos booleanos (`is_safe_to_modify`), evitando así que la operación falle de forma abrupta e innecesaria ante rutas protegidas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-02T00:55:40` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `_collect_summary_data` ante entradas de sistema de archivos malformadas, reemplazando el acceso directo a `entry.stat` dentro del bucle principal por una captura de errores más granular y validando explícitamente el tipo de archivo antes de procesarlo, evitando excepciones `OSError` inesperadas en rutas bloqueadas por el SO.
 - `2026-10-02T00:55:11` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_in_use` capturando excepciones críticas de manera más precisa y validando explícitamente el tipo de objeto para evitar errores de ejecución en flujos donde `os.open` podría fallar de forma inesperada.
 - `2026-10-02T00:47:47` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_text_from_gemini_json` implementando una validación explícita de `finishReason` y `index` en la respuesta de la API, evitando errores silenciosos al procesar respuestas truncadas o incompletas del motor remoto.
-- `2026-10-01T14:21:47` **settings.py** (seguridad defensiva): Mejoré la seguridad de la función `save` al implementar una comprobación previa mediante `is_safe_to_modify` sobre el archivo `.bak` antes de cualquier intento de reemplazo atómico, garantizando que el sistema de respaldo no sea utilizado como vector para sobreescribir rutas protegidas accidentalmente.
-- `2026-10-01T14:20:49` **scanner.py** (seguridad defensiva): Se ha añadido una validación de `st_nlink` (contador de enlaces físicos) en `_safe_stat` para prevenir ataques de redirección mediante enlaces duros ("hard links") hacia archivos del sistema, garantizando que el escáner solo analice archivos con un único enlace, mitigando riesgos de manipulación de punteros en disco.
