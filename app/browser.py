@@ -202,6 +202,7 @@ def _process_file_entry(
 ) -> ScanResult:
     """
     Evalúa una entrada individual, aplicando filtros de seguridad y delegando la recursión.
+    Limpia el estado y verifica que la entrada no escape del árbol base autorizado.
     """
     try:
         if entry.is_symlink():
@@ -236,6 +237,7 @@ def _sum_directory_recursive(
 ) -> ScanResult:
     """
     Realiza el recorrido recursivo del disco bajo restricciones de seguridad.
+    Utiliza memoización de inodes y rutas visitadas para evitar ciclos.
     """
     if not isinstance(root_path, Path) or depth > MAX_SCAN_DEPTH:
         return ScanResult(0, False)
@@ -273,7 +275,7 @@ def directory_size(path: Optional[OSPath]) -> int:
         return 0
 
 def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
-    """Valida si una ruta de caché es segura para ser escaneada."""
+    """Valida si una ruta de caché es segura para ser escaneada mediante filtros de integridad."""
     if not isinstance(candidate, Path):
         return False
     try:
@@ -290,7 +292,7 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
         return False
 
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
-    """Une la base de perfil con la ruta relativa conocida de caché."""
+    """Une la base de perfil con la ruta relativa conocida de caché y valida su pertenencia."""
     if not isinstance(rel_str, str) or not rel_str or not isinstance(real_base, Path):
         return Path()
     try:

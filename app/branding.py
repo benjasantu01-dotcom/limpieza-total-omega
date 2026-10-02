@@ -440,7 +440,12 @@ def _get_cached_stripe_data(scale: float, franjas_count: int) -> Tuple[Tuple[Tup
     return _get_stripe_params(scale, franjas_count), gradient_colors(franjas_count)
 
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Renderiza las franjas con gradiente dentro del escudo, escalando posiciones según el factor provisto."""
+    """
+    Renderiza las franjas decorativas con gradiente dentro del escudo.
+    
+    Aplica una transformación geométrica basada en 'scale' para posicionar y dimensionar
+    cada franja en relación al centro del escudo en el lienzo.
+    """
     try:
         if not math.isfinite(scale) or scale <= 0: return
         franjas_count = max(6, int(28 * scale))
@@ -456,7 +461,12 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
     except (TypeError, ValueError, ZeroDivisionError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Renderiza los detalles ornamentales superiores del escudo (trazo de impacto y símbolo Omega)."""
+    """
+    Renderiza los detalles ornamentales superiores: línea de impacto y glifo Omega.
+    
+    Dibuja los trazos de contraste que definen la marca visual, normalizando el grosor
+    de línea y el tamaño de fuente según el escalado del lienzo.
+    """
     try:
         if not math.isfinite(scale) or scale <= 0: return
         canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, 
@@ -472,12 +482,16 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """
-    Renderiza el logo corporativo sobre un lienzo canvas, aplicando escalado de componentes.
+    Renderiza el logo corporativo completo sobre un objeto Canvas (o similar).
+    
+    Calcula el factor de escala en relación a 128 unidades base, componiendo 
+    la forma geométrica principal, las franjas y los elementos decorativos 
+    de forma centralizada.
     
     Args:
-        canvas: Objeto canvas (Protocol) destino.
-        size: Diámetro total del logo (escala base 128 units).
-        canvas_x, canvas_y: Coordenadas de origen superior-izquierda.
+        canvas: Objeto destino que implementa el protocolo CanvasElement.
+        size: Diámetro total objetivo en píxeles.
+        canvas_x, canvas_y: Desplazamiento de origen en el lienzo.
     """
     try:
         s = float(size)

@@ -60,6 +60,12 @@ class ExtStats:
         self.count: int = 0
 
 
+class FolderMetrics(NamedTuple):
+    """Acumulador para métricas de subcarpetas."""
+    size: int
+    file_count: int
+
+
 class SummaryData(NamedTuple):
     """
     Estructura consolidada de un escaneo completo de archivos.
@@ -314,18 +320,18 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     root = _validate_root(directory)
     if not root: return []
     
-    stats: Dict[Path, List[int]] = defaultdict(lambda: [0, 0])
+    stats: Dict[Path, FolderMetrics] = defaultdict(lambda: FolderMetrics(0, 0))
     
     for path, size in walk_files(root, skip_protected):
         try:
             relative = path.relative_to(root)
             if relative.parts:
                 top_folder = root / relative.parts[0]
-                stats[top_folder][0] += size
-                stats[top_folder][1] += 1
+                curr = stats[top_folder]
+                stats[top_folder] = FolderMetrics(curr.size + size, curr.file_count + 1)
         except (ValueError, OSError): continue
 
-    results = [FolderUsage(p, s[0], s[1]) for p, s in stats.items()]
+    results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items()]
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)
 
 

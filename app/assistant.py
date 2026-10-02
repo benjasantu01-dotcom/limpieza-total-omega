@@ -363,7 +363,11 @@ class SystemContext:
         return _ensure_safe_text(self.grade) if self.grade else True
 
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
-        """Aplica validaciones sobre un campo individual de la fuente de datos."""
+        """
+        Valida y normaliza un campo individual de la fuente de datos.
+        
+        Aplica restricciones de tipo, rango lógico y seguridad definidas en `MetricSpec`.
+        """
         val = _get_source_value(source, key)
         if val is None or not spec.is_valid_type(val): return None
         try:
@@ -379,6 +383,14 @@ class SystemContext:
         clean = _REGEX_CONTROL.sub(" ", val)[:10].strip()
         return clean if _ensure_safe_text(clean) and not is_protected_path(clean) else ""
 
+    def _validate_ingestion_source(self, source: Any) -> bool:
+        """Realiza comprobaciones de seguridad sobre el objeto fuente antes de ingestarlo."""
+        if source is None: return False
+        if not isinstance(source, dict) and not hasattr(source, "__dict__"): return False
+        if isinstance(source, dict) and (len(source) > 50 or _is_input_too_deep_or_complex(source)):
+            return False
+        return True
+
     def ingest(self, source: Any) -> bool:
         """
         Normaliza e importa datos externos al contexto local.
@@ -386,14 +398,7 @@ class SystemContext:
         Realiza validaciones de estructura, aplica tipos y límites vía `_VALIDATORS`,
         y desinfecta campos de texto para prevenir inyecciones.
         """
-        if source is None: return False
-        
-        # Validar tipo de fuente: solo dicts o instancias con __dict__ (evitar tipos primitivos o funciones)
-        if not isinstance(source, dict) and not hasattr(source, "__dict__"):
-            return False
-            
-        # Verificación explícita de seguridad: prevenir inyecciones de datos masivos o profundos
-        if isinstance(source, dict) and (len(source) > 50 or _is_input_too_deep_or_complex(source)):
+        if not self._validate_ingestion_source(source):
             return False
         
         updates = {}
