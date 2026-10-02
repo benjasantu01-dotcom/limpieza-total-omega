@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **226** (44.8% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 48
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 198
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-30 | 32 | 2 | 6 | 2 | 24 |
+| 2026-09-30 | 32 | 2 | 6 | 2 | 20 |
 | 2026-10-01 | 150 | 8 | 29 | 11 | 152 |
-| 2026-10-02 | 41 | 3 | 13 | 5 | 26 |
+| 2026-10-02 | 44 | 3 | 14 | 5 | 26 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **53**
 - legibilidad y documentación: **48**
+- seguridad defensiva: **46**
 - robustez ante casos límite: **43**
-- seguridad defensiva: **43**
 - rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **24**
-- `quarantine.py`: **21**
+- `quarantine.py`: **22**
 - `settings.py`: **20**
 - `duplicates.py`: **19**
 - `assistant.py`: **17**
 - `healthscore.py`: **17**
+- `scanner.py`: **17**
 - `organizer.py`: **17**
-- `scanner.py`: **16**
-- `safety.py`: **15**
+- `safety.py`: **16**
 - `memory.py`: **15**
 - `branding.py`: **15**
 - `browser.py`: **14**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-02T03:49:30` **scanner.py** (seguridad defensiva): Se ha añadido una validación de profundidad máxima y un control de bucle infinito (ciclos) en el `Scanner` para garantizar que la recursión sea finita y robusta ante estructuras de archivos artificialmente complejas o maliciosas.
+- `2026-10-02T03:49:16` **safety.py** (seguridad defensiva): Se introdujo la verificación `_is_reparse_point_recursive` en `ensure_safe_to_modify` para detectar de forma profunda si el árbol de directorios que contiene al archivo objetivo contiene alguna unión de directorios (Junction) o punto de reparse, previniendo así posibles ataques de "escapar" del sandbox de la aplicación mediante estructuras maliciosas anidadas.
+- `2026-10-02T03:48:13` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de `purge_all` aplicando `ensure_safe_to_modify` antes de proceder al borrado de cualquier archivo dentro del bucle, garantizando que incluso en el caso de una purga masiva, cada archivo pase por el filtro de seguridad centralizado del proyecto para evitar manipular rutas fuera de la cuarentena.
 - `2026-10-02T03:41:07` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `trim_working_set` implementando un chequeo de identidad del proceso (`_is_system_process`) antes de abrir su handle, asegurando que solo procesos no críticos puedan ser seleccionados para una operación de modificación de memoria, mitigando riesgos de interferencia con el kernel o procesos de sistema vitales.
 - `2026-10-02T03:38:16` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del motor de puntuación mediante un esquema de validación defensiva en `_evaluate_rules` y `compute_score`, garantizando que ante fallos inesperados en reglas individuales o métricas el proceso no se interrumpa ni propague estados inconsistentes, manteniendo la integridad del pipeline.
 - `2026-10-02T03:28:40` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `_get_local_windows_drives` implementando el uso de `os.path.realpath` para prevenir la resolución de enlaces simbólicos o puntos de reparse que podrían escapar del directorio base, alineándose con las reglas de seguridad.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-02T03:07:12` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `_is_safe_for_disk_op` añadiendo la verificación de que el archivo no sea un enlace simbólico ni un reparse point (a través de `stat`), evitando manipulaciones de rutas fuera del árbol esperado incluso si `is_safe_to_modify` pasara, y protegiendo contra posibles desbordamientos de `st_nlink` en sistemas de archivos atípicos.
 - `2026-10-02T02:57:27` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del cálculo de `compute_score` ante valores atípicos y fallos inesperados de los escáneres, asegurando que si `area_ratio` no es un número finito, el pipeline asigne 0 puntos en lugar de ignorar la entrada o permitir errores de cálculo de punto flotante.
 - `2026-10-02T02:57:01` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y accesibilidad de archivos dentro de `_process_large_file_subset` y `_group_paths_by_hash` para manejar escenarios de archivos eliminados o bloqueados por procesos externos durante el análisis, evitando así fallos en la iteración y garantizando que solo los archivos válidos participen en el cálculo final de hashes.
-- `2026-10-02T02:48:19` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` frente a errores de acceso y condiciones de carrera (archivos eliminados durante el escaneo) envolviendo la iteración de `os.scandir` y la obtención de atributos (`stat`) en bloques `try-except` más granulares, asegurando que el proceso de recolección de datos no se aborte inesperadamente ante fallos de I/O específicos de sistemas operativos.
-- `2026-10-02T02:47:41` **branding.py** (robustez ante casos límite): He mejorado la robustez de `draw_ring` ante entradas numéricas extremas o inválidas y optimizado la validación de los parámetros geométricos para asegurar que el cálculo del radio del arco siempre sea positivo y no cause errores de renderizado en el `Canvas`.
-- `2026-10-02T02:47:04` **assistant.py** (robustez ante casos límite): Se introdujo `_check_metric_integrity` para validar que las métricas obtenidas sean finitas y coherentes antes de su uso, mitigando riesgos de errores de cálculo o desbordamientos en las respuestas del asistente, y se reforzó `_safe_float` para manejar explícitamente valores `NaN` (Not a Number) que podrían evadir chequeos de tipo pero corromper cálculos posteriores.

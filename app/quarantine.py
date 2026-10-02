@@ -806,6 +806,10 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) ->
     if hasattr(file_path, 'is_junction') and file_path.is_junction():
         return False
     
+    # Adición de seguridad defensiva: verificar que la ruta sigue siendo segura
+    if not is_safe_to_modify(file_path):
+        return False
+    
     return (
         item.verify_integrity(file_path) and
         _safe_unlink(file_path, expected_hash=item.sha256, expected_inode=item.file_inode)
@@ -828,6 +832,10 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             if f.name == MANIFEST_NAME or not f.exists() or not f.is_file():
                 continue
             
+            # Verificación extra de seguridad defensiva antes de purgar
+            if not is_safe_to_modify(f):
+                continue
+
             item = item_map.get(f.name)
             if item and _is_item_purgable(f, item, quarantine_root):
                 purged_ids.add(item.item_id)

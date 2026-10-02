@@ -715,12 +715,21 @@ def _get_final_path_normalized(path: Path) -> Optional[Path]:
         return None
     return None
 
+def _is_reparse_point_recursive(path: Path) -> bool:
+    """Verifica si alguno de los directorios padre en la jerarquía es un punto de reparse."""
+    try:
+        for parent in path.parents:
+            if _is_directory_junction(str(parent)):
+                return True
+    except (OSError, PermissionError):
+        pass
+    return False
+
 def _validate_ntfs_reparse_redirection(path: Path) -> None:
     """Verifica que las redirecciones NTFS (Junctions) no apunten fuera de la jerarquía permitida."""
     if not path.exists(): return
-    for parent in path.parents:
-        if _is_directory_junction(str(parent)):
-            raise UnsafePathError("Segmento de ruta contiene punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+    if _is_reparse_point_recursive(path):
+        raise UnsafePathError("Segmento de ruta contiene punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
             
     final_path = _get_final_path_normalized(path)
     if final_path:
@@ -778,9 +787,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
                     raise UnsafePathError("Creación en directorio restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
                 if os.name == 'nt' and _is_file_locked_by_other_process(str(parent)):
                     raise UnsafePathError("Directorio contenedor bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE)
-                for p_seg in parent.parents:
-                    if _is_directory_junction(str(p_seg)):
-                        raise UnsafePathError("Ruta base contiene punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+                if _is_reparse_point_recursive(p):
+                    raise UnsafePathError("Ruta base contiene punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         except (OSError, RuntimeError):
             pass
     return p

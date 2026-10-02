@@ -30,10 +30,12 @@ class ScannerLimits(NamedTuple):
     max_path: Límite de longitud de ruta según estándar Windows MAX_PATH.
     recent_hours: Ventana temporal para considerar un archivo como 'reciente'.
     reparse_point_attr_mask: Máscara binaria para detectar puntos de reanálisis.
+    max_depth: Profundidad máxima de recursión permitida.
     """
     max_path: int = 260
     recent_hours: int = 24
     reparse_point_attr_mask: int = 0x400
+    max_depth: int = 50
 
 LIMITS: Final = ScannerLimits()
 
@@ -221,18 +223,20 @@ class Scanner:
         except (OSError, RuntimeError):
             return False
 
-    def _handle_directory(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
+    def _handle_directory(self, entry: os.DirEntry, directory_stack: List[tuple[str, int]], current_depth: int) -> None:
         """Añade directorio validado a la pila de exploración para recorrerlo."""
+        if current_depth >= LIMITS.max_depth:
+            return
         if entry.path and entry.path.lower() not in self.seen:
             self.seen.add(entry.path.lower())
-            directory_stack.append(entry.path)
+            directory_stack.append((entry.path, current_depth + 1))
 
     def _is_relevant_extension(self, name: str) -> bool:
         """Filtra extensiones que no tienen interés para el motor de heurísticas."""
         _, ext = os.path.splitext(name)
         return ext.lower() in SUSPICIOUS_ALL_EXTS
 
-    def process_entry(self, entry: os.DirEntry, directory_stack: List[str]) -> None:
+    def process_entry(self, entry: os.DirEntry, directory_stack: List[tuple[str, int]], current_depth: int) -> None:
         """Despacha la entrada según su tipo para aplicar heurísticas o seguir recursión."""
         try:
             if not self._is_safe_entry(entry):
@@ -240,7 +244,7 @@ class Scanner:
             
             # Chequeo tipo antes de evaluar heurísticas o recurrir
             if entry.is_dir(follow_symlinks=False):
-                self._handle_directory(entry, directory_stack)
+                self._handle_directory(entry, directory_stack, current_depth)
             elif entry.is_file(follow_symlinks=False):
                 if self._is_relevant_extension(entry.name):
                     self._run_file_heuristics(Path(entry.path), entry)
@@ -293,17 +297,18 @@ def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
         return []
     
     scanner = Scanner(base_root=base_path)
-    directory_stack: List[str] = [str(base_path)]
+    # Stack guarda tuplas (ruta, profundidad_actual)
+    directory_stack: List[tuple[str, int]] = [(str(base_path), 0)]
     scanner.seen.add(str(base_path).lower())
     
     while directory_stack:
-        current_dir = directory_stack.pop()
+        current_dir, depth = directory_stack.pop()
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
                         if entry is not None:
-                            scanner.process_entry(entry, directory_stack)
+                            scanner.process_entry(entry, directory_stack, depth)
                     except (PermissionError, OSError):
                         continue
         except (PermissionError, OSError):
