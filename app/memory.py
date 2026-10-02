@@ -207,42 +207,41 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     
     return MemorySnapshot(total=total, available=available, cached=metrics.get("Cached", BytesValue(0)))
 
+def _extract_process_info(line: str) -> Optional[Tuple[str, int, BytesValue]]:
+    """Extrae y valida datos de una línea de CSV de proceso."""
+    parts = line.split(",", 2)
+    if len(parts) < 3: return None
+    
+    name, pid_str, ws_str = parts
+    pid_digits = "".join(filter(str.isdigit, pid_str))
+    if not pid_digits: return None
+    
+    pid = int(pid_digits)
+    ws = _safe_int_conversion(ws_str)
+    
+    if pid > 0 and 0 < ws < MAX_VALID_PROCESS_MEM:
+        return (name.strip("'\" "), pid, ws)
+    return None
+
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """
     Parsea la salida CSV de PowerShell y extrae los top consumidores.
-
-    Args:
-        raw_csv_text: Salida de 'ConvertTo-Csv' de PowerShell.
-        limit: Cantidad máxima de procesos a retornar.
-
-    Returns:
-        Lista ordenada de procesos con mayor consumo.
     """
     if not raw_csv_text: return []
     top_heap: List[ProcessMemory] = []
     seen_pids: Set[int] = set()
 
     for line in (l for l in raw_csv_text.splitlines() if l and "," in l):
-        try:
-            parts = line.split(",", 2)
-            if len(parts) < 3: continue
-            
-            name, pid_str, ws_str = parts
-            pid_digits = "".join(filter(str.isdigit, pid_str))
-            if not pid_digits: continue
-            
-            pid = int(pid_digits)
-            ws = _safe_int_conversion(ws_str)
-            
-            if pid > 0 and pid not in seen_pids and 0 < ws < MAX_VALID_PROCESS_MEM:
+        data = _extract_process_info(line)
+        if data:
+            name, pid, ws = data
+            if pid not in seen_pids:
                 seen_pids.add(pid)
-                process_data = ProcessMemory(name.strip("'\" "), pid, ws)
+                process_data = ProcessMemory(name, pid, ws)
                 if len(top_heap) < limit:
                     heapq.heappush(top_heap, process_data)
                 elif ws > top_heap[0].working_set:
                     heapq.heapreplace(top_heap, process_data)
-        except (ValueError, TypeError):
-            continue
             
     return sorted(top_heap, key=lambda p: p.working_set, reverse=True)
 

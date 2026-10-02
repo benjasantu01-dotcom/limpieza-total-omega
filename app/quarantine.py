@@ -188,27 +188,26 @@ def _is_file_in_use_by_system(path: Path) -> bool:
     """Verifica si el archivo está bloqueado por el sistema (Windows) o concurrentes."""
     if not path.exists():
         return False
-    if os.name == 'nt':
-        try:
-            attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-            if attrs != -1 and (attrs & 0x02 or attrs & 0x04): return True
-        except (OSError, AttributeError, ValueError):
-            return True
+    if os.name != 'nt':
+        return False
+        
+    try:
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+        if attrs != -1 and (attrs & 0x02 or attrs & 0x04): return True
+    except (OSError, AttributeError, ValueError):
+        return True
             
+    try:
+        import msvcrt
+        fd = os.open(path, os.O_RDONLY | os.O_BINARY)
         try:
-            import msvcrt
-            fd = os.open(path, os.O_RDONLY | os.O_BINARY)
-            try:
-                msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
-                msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
-            except (OSError, IOError):
-                return True 
-            finally:
-                os.close(fd)
-            return False
-        except (OSError, IOError, ImportError, AttributeError):
-            return True
-    return False
+            msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+            msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
+        finally:
+            os.close(fd)
+        return False
+    except (OSError, IOError, ImportError, AttributeError):
+        return True
 
 def _is_file_locked(path: Path) -> bool:
     """Wrapper para chequeo de bloqueos de archivos en el sistema operativo."""
@@ -216,20 +215,18 @@ def _is_file_locked(path: Path) -> bool:
 
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: int = 0) -> bool:
     """Eliminación controlada tras validación de metadatos y hash."""
+    if not path.is_absolute() or not path.exists():
+        return False
+    if is_protected_path(path):
+        return False
+    if path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction()):
+        return False
+    
     try:
-        if not path.is_absolute() or not path.exists():
-            return False
-        
-        # Seguridad defensiva: chequeo explícito antes de cualquier operación
-        if is_protected_path(path):
-            return False
-            
         st = path.stat()
         if expected_inode != 0 and st.st_ino != expected_inode:
             return False
-        if path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction()):
-            return False
-        
+            
         resolved = path.resolve()
         if not is_safe_to_modify(resolved) or is_protected_path(resolved):
             return False
@@ -237,10 +234,11 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
             return False
         if expected_hash and _get_sha256(resolved) != expected_hash:
             return False
-        if not _is_file_locked(resolved):
-            _check_io_error_context(resolved.unlink)
-            return True
-        return False
+        if _is_file_locked(resolved):
+            return False
+            
+        _check_io_error_context(resolved.unlink)
+        return True
     except (OSError, PermissionError, UnsafePathError):
         return False
 

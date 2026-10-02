@@ -166,14 +166,20 @@ def _has_forbidden_chars(path: Path) -> bool:
     return any(c in path_str for c in ["<", ">", "|", "\0"])
 
 def _validate_path_security(src: Path, dest: Path) -> bool:
-    """Valida requisitos técnicos de seguridad sobre rutas antes de operar."""
+    """
+    Realiza validaciones técnicas de seguridad sobre las rutas de origen y destino.
+    Comprueba rutas UNC, caracteres ilegales, límites de longitud y protección del sistema.
+    """
     if src is None or dest is None: return False
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     if len(str(src)) > MAX_PATH_LENGTH or len(str(dest)) > MAX_PATH_LENGTH: return False
     return not (is_protected_path(src) or is_protected_path(dest))
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
-    """Auditoría exhaustiva previa a cualquier operación de escritura o movimiento."""
+    """
+    Auditoría exhaustiva previa a cualquier operación de escritura o movimiento.
+    Verifica permisos, integridad, disponibilidad de espacio y exclusión de directorios protegidos.
+    """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     try:
         if not src.is_file() or src.is_symlink(): return False
