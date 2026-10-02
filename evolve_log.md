@@ -1442,3 +1442,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-02T06:35:48` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-10-02T06:35:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T06:35:48` Corrida terminada. Total usado hoy: 156.
+- `2026-10-02T06:40:57` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-10-02T06:41:26` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se implementó un cacheo local (memoization) en `directory_size` utilizando un diccionario de `visited_dirs` para evitar re-escanear subdirectorios compartidos entre distintas configuraciones de navegador, reduciendo drásticamente la redundancia en I/O.
+- `2026-10-02T06:41:52` ➖ Sin cambios en diskreport.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `_collect_summary_data` eliminando el acceso repetido al diccionario `ext_stats` mediante una variable de referencia local en cada iteración del bucle, reduciendo el costo de resolución de nombres y búsqueda en el dict.
+- `2026-10-02T06:42:18` ➖ Sin cambios en duplicates.py (enfoque: rendimiento). Motivo: Optimicé el método `_collect_candidates` utilizando `os.scandir` para obtener directamente el tamaño de archivo (`stat().st_size`) sin llamadas redundantes adicionales a `path.stat()`, reduciendo drásticamente las syscalls durante el recorrido del disco.
+- `2026-10-02T06:42:28` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el bucle de cálculo en `compute_score` pre-calculando el desglose de métricas y evitando la serialización redundante de reglas mediante el uso de un generador y la eliminación de chequeos de tipos innecesarios dentro de los bucles críticos.
+- `2026-10-02T06:42:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T06:42:28` Corrida terminada. Total usado hoy: 160.

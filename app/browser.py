@@ -196,17 +196,11 @@ def _process_file_entry(
     root_abs_norm: str,
     kernel32: Optional[ctypes.WinDLL],
     visited_inodes: Set[int],
+    visited_dirs: Dict[str, int],
     depth: int
 ) -> ScanResult:
     """
     Evalúa una entrada individual, aplicando filtros de seguridad y delegando la recursión.
-    
-    Args:
-        entry: Entrada del sistema de archivos a evaluar.
-        root_abs_norm: Ruta base normalizada para verificar confinamiento.
-        kernel32: Instancia de la DLL de Windows para chequeo de atributos.
-        visited_inodes: Set para prevenir ciclos en enlaces.
-        depth: Profundidad actual para evitar desbordamiento de pila.
     """
     try:
         if entry.is_symlink():
@@ -222,7 +216,7 @@ def _process_file_entry(
         visited_inodes.add(st.st_ino)
         
         if entry.is_dir(follow_symlinks=False):
-            return _sum_directory_recursive(p_entry, root_abs_norm, kernel32, visited_inodes, depth + 1)
+            return _sum_directory_recursive(p_entry, root_abs_norm, kernel32, visited_inodes, visited_dirs, depth + 1)
         
         if _is_file_in_use(p_entry):
             return ScanResult(0, True)
@@ -236,30 +230,31 @@ def _sum_directory_recursive(
     root_abs_norm: str,
     kernel32: Optional[ctypes.WinDLL],
     visited_inodes: Set[int],
+    visited_dirs: Dict[str, int],
     depth: int = 0
 ) -> ScanResult:
     """
     Realiza el recorrido recursivo del disco bajo restricciones de seguridad.
-    
-    Limitaciones aplicadas:
-    - Profundidad máxima (MAX_SCAN_DEPTH).
-    - Prevención de ciclos vía inodos visitados.
-    - Omitido de rutas protegidas o fuera del árbol base.
     """
     if not isinstance(root_path, Path) or depth > MAX_SCAN_DEPTH:
         return ScanResult(0, False)
     
+    path_str = str(root_path)
+    if path_str in visited_dirs:
+        return ScanResult(visited_dirs[path_str], True)
+
     total_bytes: int = 0
     try:
         with os.scandir(root_path) as it:
             for entry in it:
                 if _should_skip_entry(entry, kernel32, _IS_JUNCTION_FN):
                     continue
-                result = _process_file_entry(entry, root_abs_norm, kernel32, visited_inodes, depth)
+                result = _process_file_entry(entry, root_abs_norm, kernel32, visited_inodes, visited_dirs, depth)
                 total_bytes += result.bytes_found
     except (OSError, PermissionError):
         return ScanResult(total_bytes, False)
         
+    visited_dirs[path_str] = total_bytes
     return ScanResult(total_bytes, True)
 
 def directory_size(path: Optional[OSPath]) -> int:
@@ -272,7 +267,7 @@ def directory_size(path: Optional[OSPath]) -> int:
         if not resolved_p.is_dir() or not is_safe_to_modify(resolved_p) or is_protected_path(resolved_p):
             return 0
         norm_root: str = os.path.normcase(str(resolved_p))
-        return _sum_directory_recursive(resolved_p, norm_root, _get_kernel32(), set(), 0).bytes_found
+        return _sum_directory_recursive(resolved_p, norm_root, _get_kernel32(), set(), {}, 0).bytes_found
     except (OSError, RuntimeError, PermissionError):
         return 0
 
@@ -315,6 +310,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     k32: Optional[ctypes.WinDLL] = _get_kernel32()
     found: List[BrowserCache] = []
     global_visited_inodes: Set[int] = set()
+    global_visited_dirs: Dict[str, int] = {}
     
     for base in raw_bases:
         if not isinstance(base, Path): continue
@@ -324,7 +320,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             for browser_name, rel_str in browser_map.items():
                 candidate: Path = _resolve_browser_path(real_base, rel_str)
                 if candidate and candidate != Path() and _is_valid_cache_path(candidate, real_base_str):
-                    scan_res: ScanResult = _sum_directory_recursive(candidate, os.path.normcase(str(candidate)), k32, global_visited_inodes)
+                    scan_res: ScanResult = _sum_directory_recursive(candidate, os.path.normcase(str(candidate)), k32, global_visited_inodes, global_visited_dirs)
                     if scan_res.bytes_found > 0:
                         found.append(BrowserCache(str(browser_name), candidate, scan_res.bytes_found))
         except (OSError, RuntimeError):
