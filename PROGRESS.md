@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **214** (42.5% de aceptación)
+- Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 45
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 20
 - Sin respuesta de la IA (error o límite): 214
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-01 | 146 | 6 | 28 | 11 | 149 |
-| 2026-10-02 | 68 | 5 | 17 | 9 | 65 |
+| 2026-10-01 | 142 | 6 | 28 | 11 | 149 |
+| 2026-10-02 | 71 | 5 | 18 | 9 | 65 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **49**
-- seguridad defensiva: **47**
+- seguridad defensiva: **43**
+- rendimiento: **35**
 - robustez ante casos límite: **34**
-- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
 - `quarantine.py`: **21**
-- `settings.py`: **19**
+- `settings.py`: **20**
+- `diskreport.py`: **20**
 - `organizer.py`: **18**
+- `scanner.py`: **18**
 - `healthscore.py`: **17**
-- `scanner.py`: **17**
-- `duplicates.py`: **16**
 - `memory.py`: **16**
+- `safety.py`: **16**
+- `duplicates.py`: **15**
 - `assistant.py`: **15**
-- `safety.py`: **15**
-- `branding.py`: **14**
-- `browser.py`: **14**
+- `branding.py`: **13**
+- `browser.py`: **13**
 - `startup.py`: **8**
 - `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-02T07:03:10` **settings.py** (rendimiento): Optimicé el rendimiento de la persistencia agregando una verificación de igualdad previa a la serialización JSON en la función `save`, evitando escrituras redundantes en disco si los ajustes no han cambiado, lo cual reduce la E/S innecesaria de forma significativa.
+- `2026-10-02T07:02:53` **scanner.py** (rendimiento): Optimicé el método `_is_relevant_extension` reemplazando la creación de un nuevo objeto de ruta y la llamada a `os.path.splitext` dentro de cada iteración por una verificación de sufijos sobre el nombre en minúsculas, lo cual es significativamente más rápido y reduce la carga del recolector de basura durante escaneos profundos.
+- `2026-10-02T07:02:26` **safety.py** (rendimiento): Se ha optimizado la validación de rutas mediante la implementación de una caché LRU en `_is_system_path_raw` y `is_protected_path`, evitando el re-procesamiento innecesario de directorios del sistema en cada iteración del bucle, y se ha reemplazado la verificación de existencia de elementos en la lista de nombres protegidos mediante una búsqueda directa más eficiente que no requiere un `split` de la ruta completa.
 - `2026-10-02T07:00:36` **quarantine.py** (rendimiento): Se optimizó `load_manifest` reemplazando la lógica de lectura y carga secuencial mediante la implementación de un diccionario de búsqueda temporal (`item_map`) en `purge_all` y `restore_item`, evitando múltiples recorridos lineales sobre la lista de ítems para mejorar la eficiencia en escenarios con gran cantidad de archivos.
 - `2026-10-02T06:57:04` **organizer.py** (rendimiento): Optimizé el rendimiento de `scan_for_junk` y `_process_directory` eliminando la conversión repetitiva de `item.path` a objetos `Path`, accediendo directamente al atributo `name` y utilizando el `entry` del `scandir` para evitar llamadas innecesarias a `stat()` y `exists()`, reduciendo drásticamente las syscalls por iteración.
 - `2026-10-02T06:56:18` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` evitando la ejecución redundante de PowerShell mediante el uso de un caché temporal más inteligente y refinando el parsing del CSV para reducir las llamadas innecesarias a `split()` y `join()` en bucle.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-02T06:12:08` **main.py** (legibilidad y documentación): He refactorizado la jerarquía de construcción de pestañas en `main.py` extrayendo el método `_tab_factory` a una estructura más limpia y robusta, y consolidando los constructores de cada pestaña bajo un diccionario de mapeo interno para eliminar la necesidad de `getattr` dinámico, mejorando la legibilidad, la seguridad y la mantenibilidad del código.
 - `2026-10-02T06:10:51` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo documentando los puntos de entrada y salida de las funciones principales, y añadiendo type hints faltantes para asegurar que la lógica de transformación de datos sea explícita.
 - `2026-10-02T06:01:46` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` mediante la adición de docstrings estructurados (estándar Google/NumPy) en funciones clave y la clarificación de tipos complejos, facilitando la comprensión de las métricas recolectadas durante el análisis.
-- `2026-10-02T06:01:16` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de recorrido de archivos mediante la adición de docstrings estructuradas que clarifican las responsabilidades de los parámetros, el propósito de los filtros de seguridad y la lógica de recursión.
-- `2026-10-02T06:00:48` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings estructurados y la clarificación de tipos en las funciones de manipulación de color, garantizando que el "porqué" de las transformaciones de espacio de color sea transparente para futuros colaboradores.
-- `2026-10-02T05:52:02` **assistant.py** (legibilidad y documentación): Mejora la documentación técnica de `assistant.py` mediante la adición de docstrings estructuradas en clases críticas (`AssistantConfig`, `MetricSpec`, `ProblemCriterion`), aclarando el propósito y las restricciones de los componentes fundamentales del motor del asistente.

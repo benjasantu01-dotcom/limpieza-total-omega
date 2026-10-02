@@ -388,10 +388,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     ruta = settings_path(custom_base)
     cleaned_settings = _coerce_and_verify(validate(values))
     
+    # Pre-chequeo: Evitar escritura si el contenido en disco es idéntico al actual
     if ruta.exists():
         try:
-            st = ruta.stat()
-            if _load_cached(str(ruta), st.st_mtime) == cleaned_settings:
+            if _load_impl(ruta) == cleaned_settings:
                 return ruta
         except (OSError, PermissionError):
             pass

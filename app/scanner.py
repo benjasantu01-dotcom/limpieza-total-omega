@@ -246,8 +246,8 @@ class Scanner:
 
     def _is_relevant_extension(self, name: str) -> bool:
         """Filtra extensiones que no tienen interés para el motor de heurísticas."""
-        _, ext = os.path.splitext(name)
-        return ext.lower() in SUSPICIOUS_ALL_EXTS
+        name_lower = name.lower()
+        return any(name_lower.endswith(ext) for ext in SUSPICIOUS_ALL_EXTS)
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[tuple[str, int]], current_depth: int) -> None:
         """
