@@ -695,3 +695,32 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-02T11:38:54` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-10-02T11:38:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T11:38:54` Corrida terminada. Total usado hoy: 276.
+- `2026-10-02T11:47:04` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-10-02T11:47:34` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se ha robustecido el manejo de rutas en `_resolve_browser_path` y `detect_profiles` añadiendo validaciones específicas para detectar rutas inexistentes o inaccesibles antes de intentar operaciones de resolución, evitando excepciones innecesarias en sistemas con instalaciones de navegadores parciales.
+- `2026-10-02T11:48:01` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-10-02T11:48:28` Tests FALLARON:
+```
+==========================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:152: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_identical_files - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_ignores_files_with_different_content - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_min_size_filters_out_tiny_files - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+4 failed, 295 passed, 7 warnings in 1.63s
+
+```
+- `2026-10-02T11:48:28` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la resiliencia de `_collect_candidates` ante cambios en el sistema de archivos durante el escaneo, integrando un chequeo `exists()` dentro del bucle de procesamiento de archivos para evitar excepciones `FileNotFoundError` si un archivo desaparece entre el `os.scandir` y la lectura de `stat()`.
+- `2026-10-02T11:48:38` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-10-02T11:48:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T11:48:39` Corrida terminada. Total usado hoy: 280.

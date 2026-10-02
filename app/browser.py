@@ -298,10 +298,10 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     try:
         target: Path = real_base.joinpath(*rel_str.split("\\"))
         if target.exists():
-            target = target.resolve(strict=True)
-            if _ensure_within_base(str(target), os.path.normcase(str(real_base))) and \
-               is_safe_to_modify(target) and not is_protected_path(target):
-                return target
+            target_res = target.resolve(strict=True)
+            if _ensure_within_base(str(target_res), os.path.normcase(str(real_base))) and \
+               is_safe_to_modify(target_res) and not is_protected_path(target_res):
+                return target_res
     except (OSError, RuntimeError):
         pass
     return Path()
@@ -316,7 +316,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     global_visited_dirs: Dict[str, int] = {}
     
     for base in raw_bases:
-        if not isinstance(base, Path): continue
+        if not isinstance(base, Path) or not base.exists(): continue
         try:
             real_base: Path = base.resolve(strict=True)
             real_base_str: str = str(real_base)

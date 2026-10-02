@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **213** (42.3% de aceptación)
-- Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por tests: 12
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 20
 - Sin respuesta de la IA (error o límite): 217
 
@@ -16,36 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-01 | 97 | 4 | 15 | 7 | 105 |
-| 2026-10-02 | 116 | 7 | 28 | 13 | 112 |
+| 2026-10-01 | 96 | 4 | 14 | 7 | 103 |
+| 2026-10-02 | 117 | 8 | 28 | 13 | 114 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **49**
-- seguridad defensiva: **42**
+- seguridad defensiva: **41**
+- robustez ante casos límite: **36**
 - rendimiento: **35**
-- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
 - `settings.py`: **20**
 - `diskreport.py`: **19**
+- `quarantine.py`: **19**
 - `healthscore.py`: **18**
 - `safety.py`: **18**
 - `scanner.py`: **17**
 - `assistant.py`: **17**
 - `memory.py`: **17**
+- `browser.py`: **15**
 - `duplicates.py`: **15**
 - `organizer.py`: **15**
-- `browser.py`: **14**
 - `branding.py`: **12**
 - `startup.py`: **9**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-02T11:47:34` **browser.py** (robustez ante casos límite): Se ha robustecido el manejo de rutas en `_resolve_browser_path` y `detect_profiles` añadiendo validaciones específicas para detectar rutas inexistentes o inaccesibles antes de intentar operaciones de resolución, evitando excepciones innecesarias en sistemas con instalaciones de navegadores parciales.
 - `2026-10-02T11:37:25` **settings.py** (rendimiento): Se implementó un cacheado en memoria (`_MANAGER.settings_cache`) dentro de `_SettingsManager` con validación de `mtime` para evitar lecturas de disco y deserializaciones de JSON redundantes al acceder múltiples veces a la configuración durante un mismo ciclo de ejecución.
 - `2026-10-02T11:29:45` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner reemplazando la llamada repetitiva a `any()` con una búsqueda eficiente en un `frozenset` mediante el método `endswith` indirecto, y eliminé redundancias en el flujo de heurísticas evitando llamadas innecesarias a `exists()` dentro del bucle de procesado de archivos.
 - `2026-10-02T11:29:34` **safety.py** (rendimiento): Se ha optimizado `_is_system_path_raw` reemplazando la lógica de validación de subdirectorios mediante división de cadenas (`split`) por un chequeo booleano directo utilizando `any()` con la ruta ya normalizada, eliminando la creación de listas intermedias y reduciendo la complejidad de las comparaciones en cada iteración.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-02T10:38:33` **memory.py** (legibilidad y documentación): Mejoré la documentación interna incluyendo type hints faltantes en funciones críticas y extendí los docstrings para explicar la lógica de los chequeos de seguridad, facilitando el mantenimiento y la auditoría del código.
 - `2026-10-02T10:36:43` **healthscore.py** (legibilidad y documentación): He mejorado la documentación y la robustez del código mediante la implementación de `Docstrings` completos en todas las funciones y clases, clarificando el propósito, argumentos y valores de retorno, además de añadir `type hints` adicionales en `summarize` para mejorar la mantenibilidad.
 - `2026-10-02T10:36:15` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación y robustez del código añadiendo docstrings descriptivos, especificando tipos en variables complejas y descomponiendo lógicas de validación en funciones con nombres más claros, facilitando así la auditoría de seguridad y el mantenimiento a largo plazo.
-- `2026-10-02T10:29:05` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `_collect_summary_data` y `walk_files` mediante la sustitución de índices numéricos mágicos (`[0]`, `[1]`) por `NamedTuple` o variables descriptivas, facilitando la comprensión de la lógica de agregación.
