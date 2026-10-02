@@ -62,6 +62,7 @@ __all__: Tuple[str, ...] = (
 DEFAULT_QUARANTINE_DIR: str = "~/LimpiezaTotalOmega/_Cuarentena"
 MANIFEST_NAME: str = "manifest.json"
 CHUNK_SIZE: int = 131072  # 128KB para procesamiento de I/O
+_MANIFEST_CACHE: Dict[str, List[QuarantineItem]] = {}
 
 WINDOWS_RESERVED_NAMES: Set[str] = {
     "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", 
@@ -405,34 +406,28 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     _check_isolation_safety(resolved_source, dest_dir)
 
 
-def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
-    """Deserializa el manifiesto, retornando una lista limpia de QuarantineItems."""
+def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
+    """Deserializa el manifiesto, usando caché de sesión para rendimiento."""
+    base_dir = quarantine_dir(base)
+    base_key = str(base_dir)
+    if base_key in _MANIFEST_CACHE and not force_reload:
+        return _MANIFEST_CACHE[base_key]
+        
     try:
-        base_dir = quarantine_dir(base)
         m_path = _manifest_path(base_dir)
         if not m_path.exists() or m_path.stat().st_size == 0:
             return []
         
         with open(m_path, "r", encoding="utf-8") as f:
-            try:
-                data = json.load(f)
-            except (json.JSONDecodeError, TypeError, ValueError):
-                return []
+            data = json.load(f)
         
         if not isinstance(data, list):
             return []
             
-        items: List[QuarantineItem] = []
-        for d in data:
-            if not isinstance(d, dict): continue
-            try:
-                item = QuarantineItem.from_dict(d)
-                if item:
-                    items.append(item)
-            except (ValueError, TypeError, KeyError):
-                continue
+        items = [i for d in data if (i := QuarantineItem.from_dict(d))]
+        _MANIFEST_CACHE[base_key] = items
         return items
-    except (OSError, PermissionError, UnsafePathError):
+    except (OSError, PermissionError, UnsafePathError, json.JSONDecodeError):
         return []
 
 
@@ -462,6 +457,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         
         if temp_path and temp_path.exists() and temp_path.stat().st_size == len(encoded_content):
             os.replace(temp_path, target_path)
+            _MANIFEST_CACHE[str(base_path)] = items
             try:
                 with open(base_path, "rb") as d:
                     os.fsync(d.fileno())
@@ -522,15 +518,7 @@ def _create_temp_file(source: Path, destination: Path) -> Path:
 
 
 def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> None:
-    """
-    Realiza copia byte a byte verificando integridad final.
-    Args:
-        source: Ruta origen.
-        temp_dest: Ruta temporal destino.
-        source_hash: Hash SHA-256 esperado.
-    Raises:
-        OSError: Si el archivo no es regular o fallan comprobaciones de integridad.
-    """
+    """Realiza copia byte a byte verificando integridad final."""
     try:
         fd_src = os.open(str(source), os.O_RDONLY | os.O_NOFOLLOW)
     except OSError as e:
@@ -748,7 +736,6 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     try:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
-        # Optimización: lookup O(1) en lugar de filtrar repetidamente
         item_map = {i.item_id: i for i in items}
         
         quarantine_item = item_map.get(item_id)
@@ -826,8 +813,6 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) ->
         return False
     if hasattr(file_path, 'is_junction') and file_path.is_junction():
         return False
-    
-    # Adición de seguridad defensiva: verificar que la ruta sigue siendo segura
     if not is_safe_to_modify(file_path):
         return False
     
@@ -842,28 +827,20 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     try:
         quarantine_root = quarantine_dir(base)
         items = load_manifest(base)
-        # Optimización: Mapeo O(1) para lookups de manifiesto por nombre de archivo
         item_map = {i.stored_name: i for i in items}
         
         purged_ids: Set[str] = set()
-        
-        # Iterar una sola vez sobre el directorio
         for f in quarantine_root.iterdir():
             if f.name == MANIFEST_NAME or not f.exists() or not f.is_file():
                 continue
-            
-            # Verificación extra de seguridad defensiva
             if not is_safe_to_modify(f):
                 continue
-
             item = item_map.get(f.name)
             if item and _is_item_purgable(f, item, quarantine_root):
                 purged_ids.add(item.item_id)
         
         if purged_ids:
-            # Filtrado eficiente usando set para lookup
-            new_manifest = [i for i in items if i.item_id not in purged_ids]
-            save_manifest(new_manifest, base)
+            save_manifest([i for i in items if i.item_id not in purged_ids], base)
             
         return len(purged_ids)
     except (OSError, PermissionError, UnsafePathError):

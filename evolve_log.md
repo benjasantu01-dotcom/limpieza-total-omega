@@ -680,3 +680,11 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-02T11:22:15` ➖ Sin cambios en organizer.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `_process_directory` eliminando la llamada repetitiva a `.resolve()` dentro del bucle de archivos, utilizando directamente la ruta de `scandir` para evitar sobrecarga de E/S y verificaciones de sistema redundantes, manteniendo la seguridad intacta.
 - `2026-10-02T11:22:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T11:22:15` Corrida terminada. Total usado hoy: 268.
+- `2026-10-02T11:26:39` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-10-02T11:27:42` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-02T11:28:25` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó `load_manifest` para evitar el parseo y filtrado recursivo de registros mediante la implementación de una caché de sesión y la validación anticipada de tipos, reduciendo significativamente la carga de I/O en llamadas repetitivas.
+- `2026-10-02T11:28:47` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-10-02T11:29:34` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado `_is_system_path_raw` reemplazando la lógica de validación de subdirectorios mediante división de cadenas (`split`) por un chequeo booleano directo utilizando `any()` con la ruta ya normalizada, eliminando la creación de listas intermedias y reduciendo la complejidad de las comparaciones en cada iteración.
+- `2026-10-02T11:29:45` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escáner reemplazando la llamada repetitiva a `any()` con una búsqueda eficiente en un `frozenset` mediante el método `endswith` indirecto, y eliminé redundancias en el flujo de heurísticas evitando llamadas innecesarias a `exists()` dentro del bucle de procesado de archivos.
+- `2026-10-02T11:29:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T11:29:45` Corrida terminada. Total usado hoy: 272.

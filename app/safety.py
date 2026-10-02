@@ -609,10 +609,7 @@ def _is_system_path_raw(path_str: str) -> bool:
     path_lower = path_str.lower()
     if any(path_lower.startswith(root) for root in _SYSTEM_ROOT_PATHS_TUPLE):
         return True
-    
-    # Verificación eficiente: iteración sobre componentes de la ruta solo si es necesario
-    parts = path_lower.split(os.sep)
-    return any(p in PROTECTED_DIR_NAMES for p in parts)
+    return any(p in PROTECTED_DIR_NAMES for p in path_lower.split(os.sep))
 
 @lru_cache(maxsize=4096)
 def is_protected_path(path: PathLike) -> bool:

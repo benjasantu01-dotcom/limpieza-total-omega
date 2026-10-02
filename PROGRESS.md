@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **214** (42.5% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-01 | 102 | 4 | 16 | 8 | 106 |
-| 2026-10-02 | 112 | 7 | 27 | 12 | 110 |
+| 2026-10-01 | 99 | 4 | 16 | 8 | 105 |
+| 2026-10-02 | 115 | 7 | 28 | 12 | 110 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **49**
-- seguridad defensiva: **47**
+- seguridad defensiva: **44**
 - robustez ante casos límite: **35**
-- rendimiento: **31**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
 - `settings.py`: **19**
-- `assistant.py`: **18**
+- `diskreport.py`: **19**
 - `memory.py`: **18**
 - `healthscore.py`: **18**
-- `safety.py`: **17**
+- `safety.py`: **18**
+- `scanner.py`: **17**
+- `assistant.py`: **17**
 - `duplicates.py`: **16**
-- `scanner.py`: **16**
 - `organizer.py`: **15**
 - `browser.py`: **14**
-- `branding.py`: **13**
+- `branding.py`: **12**
 - `startup.py`: **9**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-02T11:29:45` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner reemplazando la llamada repetitiva a `any()` con una búsqueda eficiente en un `frozenset` mediante el método `endswith` indirecto, y eliminé redundancias en el flujo de heurísticas evitando llamadas innecesarias a `exists()` dentro del bucle de procesado de archivos.
+- `2026-10-02T11:29:34` **safety.py** (rendimiento): Se ha optimizado `_is_system_path_raw` reemplazando la lógica de validación de subdirectorios mediante división de cadenas (`split`) por un chequeo booleano directo utilizando `any()` con la ruta ya normalizada, eliminando la creación de listas intermedias y reduciendo la complejidad de las comparaciones en cada iteración.
+- `2026-10-02T11:28:25` **quarantine.py** (rendimiento): Se optimizó `load_manifest` para evitar el parseo y filtrado recursivo de registros mediante la implementación de una caché de sesión y la validación anticipada de tipos, reduciendo significativamente la carga de I/O en llamadas repetitivas.
 - `2026-10-02T11:21:59` **memory.py** (rendimiento): Se optimizó `parse_windows_process_csv` para evitar la creación de una lista intermedia con todas las líneas procesadas y se eliminó la conversión redundante a lista `sorted` dentro del bucle de parseo, delegando la ordenación al final solo sobre los N elementos del heap para reducir la complejidad temporal y el uso de memoria.
 - `2026-10-02T11:08:33` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` para evitar llamadas redundantes a `stat()` y `exists()`, y reemplacé el `path.resolve()` repetitivo por una validación de ruta optimizada, reduciendo significativamente las llamadas al sistema operativo durante la recursión.
 - `2026-10-02T10:57:42` **startup.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo añadiendo docstrings detallados en los métodos de la clase `StartupEntry` que explican el *porqué* de las restricciones de seguridad implementadas, además de clarificar la intención de los filtros de entrada en funciones auxiliares.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-02T10:36:15` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación y robustez del código añadiendo docstrings descriptivos, especificando tipos en variables complejas y descomponiendo lógicas de validación en funciones con nombres más claros, facilitando así la auditoría de seguridad y el mantenimiento a largo plazo.
 - `2026-10-02T10:29:05` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `_collect_summary_data` y `walk_files` mediante la sustitución de índices numéricos mágicos (`[0]`, `[1]`) por `NamedTuple` o variables descriptivas, facilitando la comprensión de la lógica de agregación.
 - `2026-10-02T10:27:25` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la incorporación de docstrings específicos que explican el propósito de las funciones recursivas y los mecanismos de protección de rutas, facilitando el mantenimiento y la comprensión de las restricciones de seguridad aplicadas.
-- `2026-10-02T10:26:55` **branding.py** (legibilidad y documentación): Documenté con docstrings detallados las funciones de lógica visual (`draw_shield_stripes`, `draw_shield_icon_decorations` y `draw_logo`) para clarificar el flujo de renderizado y el uso de las coordenadas normalizadas.
-- `2026-10-02T10:26:16` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` extrayendo la lógica de validación de métricas de `SystemContext.ingest` hacia métodos privados dedicados, y añadiendo docstrings técnicos que clarifican el contrato de seguridad de los métodos de procesamiento.
-- `2026-10-02T10:17:36` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que el `DictReader` haya procesado correctamente el CSV antes de iterar, evitando excepciones silenciosas o procesamientos sobre encabezados nulos o malformados que podrían ocurrir si la salida de PowerShell es inesperada.

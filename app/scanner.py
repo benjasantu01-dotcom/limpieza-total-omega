@@ -200,9 +200,9 @@ class Scanner:
             directory_stack.append((entry.path, current_depth + 1))
 
     def _is_relevant_extension(self, name: str) -> bool:
-        """Filtra extensiones a analizar."""
-        name_lower = name.lower()
-        return any(name_lower.endswith(ext) for ext in SUSPICIOUS_ALL_EXTS)
+        """Filtra extensiones a analizar eficientemente."""
+        _, ext = os.path.splitext(name)
+        return ext.lower() in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[tuple[str, int]], current_depth: int) -> None:
         """Despacha entrada según su tipo."""
@@ -219,12 +219,8 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta todas las heurísticas registradas."""
-        if not path or not entry:
-            return
         for check_fn in ALL_CHECKS:
             try:
-                if not entry.exists():
-                    continue
                 finding = check_fn(path, entry, self.now_ts)
                 if finding is not None:
                     self.results.append(finding)
