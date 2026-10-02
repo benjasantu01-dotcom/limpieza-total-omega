@@ -29,15 +29,15 @@ class ScannerLimits(NamedTuple):
     
     max_path: Límite de longitud de ruta según estándar Windows MAX_PATH.
     recent_hours: Ventana temporal para considerar un archivo como 'reciente'.
-    reparse_point_attr_mask: Máscara binaria para detectar puntos de reanálisis.
-    max_depth: Profundidad máxima de recursión permitida.
+    reparse_point_attr_mask: Máscara binaria (FILE_ATTRIBUTE_REPARSE_POINT) para detectar puntos de reanálisis.
+    max_depth: Profundidad máxima de recursión permitida para evitar desbordamiento de pila.
     """
     max_path: int = 260
     recent_hours: int = 24
     reparse_point_attr_mask: int = 0x400
     max_depth: int = 50
 
-LIMITS: Final = ScannerLimits()
+SCAN_LIMITS: Final = ScannerLimits()
 
 @dataclass
 class Suspicion:
@@ -70,7 +70,7 @@ SUSPICIOUS_EXECUTABLE_EXT: Final[frozenset[str]] = frozenset({".exe", ".scr", ".
 SUSPICIOUS_CONTENT_EXT: Final[frozenset[str]] = frozenset({".pdf"})
 SUSPICIOUS_ALL_EXTS: Final[frozenset[str]] = SUSPICIOUS_EXECUTABLE_EXT.union(SUSPICIOUS_CONTENT_EXT)
 SYSTEM_LOOKALIKES: Final[frozenset[str]] = frozenset({"svchost.exe", "explorer.exe", "csrss.exe", "winlogon.exe", "lsass.exe"})
-WATCHED_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp", "desktop"})
+TARGETED_DOWNLOAD_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp", "desktop"})
 
 SYSTEM32_LOWER: Final[str] = "system32"
 
@@ -87,7 +87,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
             return None
             
         attr = _get_file_attributes(entry)
-        if attr & LIMITS.reparse_point_attr_mask:
+        if attr & SCAN_LIMITS.reparse_point_attr_mask:
             return None
             
         stats = entry.stat(follow_symlinks=False)
@@ -108,7 +108,7 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     """Valida que la ruta sea conforme a las restricciones del sistema de archivos local."""
-    if not path_str or len(path_str) > LIMITS.max_path:
+    if not path_str or len(path_str) > SCAN_LIMITS.max_path:
         return False
     # Evitar rutas de red (UNC) y ofuscación por caracteres invisibles RTL
     if UNC_PATH_RE.match(path_str) or RTL_CHAR_RE.search(path_str):
@@ -126,17 +126,17 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Heurística: Identifica ejecutables nuevos en carpetas temporales.
-    Analiza mtime contra now_ts para determinar si es reciente según LIMITS.recent_hours.
+    Heurística: Identifica ejecutables nuevos en carpetas temporales definidas en TARGETED_DOWNLOAD_FOLDERS.
+    Analiza mtime contra now_ts para determinar si es reciente según SCAN_LIMITS.recent_hours.
     """
-    if not path or not path.parent or path.parent.name.lower() not in WATCHED_FOLDERS:
+    if not path or not path.parent or path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
         return None
     stats = _safe_stat(entry) if entry else None
     if stats:
         mtime = getattr(stats, "st_mtime", None)
         if isinstance(mtime, (int, float)) and mtime > 0:
-            if (now_ts - float(mtime)) < (LIMITS.recent_hours * 3600):
-                return Suspicion(path, f"Ejecutable reciente detectado (<{LIMITS.recent_hours}h)", "info")
+            if (now_ts - float(mtime)) < (SCAN_LIMITS.recent_hours * 3600):
+                return Suspicion(path, f"Ejecutable reciente detectado (<{SCAN_LIMITS.recent_hours}h)", "info")
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
@@ -170,7 +170,11 @@ ALL_CHECKS: Final[List[SuspicionCheck]] = [
 ]
 
 class Scanner:
-    """Motor recursivo de escaneo para recorrer el sistema de archivos de forma segura."""
+    """
+    Motor recursivo de escaneo para recorrer el sistema de archivos de forma segura.
+    Implementa una estrategia de caja de arena (sandbox) basada en `base_root` para 
+    evitar el escape del directorio raíz durante la iteración.
+    """
     
     def __init__(self, base_root: Path) -> None:
         self.results: List[Suspicion] = []
@@ -183,7 +187,7 @@ class Scanner:
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Verifica que la ruta visitada no escape del directorio raíz definido (sandbox)."""
+        """Verifica que la ruta visitada no escape del directorio raíz definido."""
         if entry_path in self._root_cache:
             return self._root_cache[entry_path]
         try:
@@ -196,15 +200,18 @@ class Scanner:
             return False
 
     def _has_invalid_name(self, name: str) -> bool:
-        """Valida que el archivo no utilice nombres reservados de sistema (ej. CON, NUL)."""
+        """Valida que el archivo no utilice nombres reservados de sistema (ej. CON, NUL) o trailing invalido."""
         return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Determina mediante bits de atributo si la entrada apunta fuera del árbol actual."""
-        return bool(_get_file_attributes(entry) & LIMITS.reparse_point_attr_mask)
+        """Determina mediante bits de atributo si la entrada es un punto de reanálisis."""
+        return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Realiza chequeo de seguridad completo antes de procesar un nodo."""
+        """
+        Realiza chequeo de seguridad completo antes de procesar un nodo.
+        Valida estructura, límites de profundidad, pertenencia a base_root y listas de protección.
+        """
         if not entry or not entry.path or not entry.name:
             return False
         if not _is_valid_path_structure(entry.path) or self._has_invalid_name(entry.name):
@@ -230,8 +237,8 @@ class Scanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[tuple[str, int]], current_depth: int) -> None:
-        """Añade directorio validado a la pila de exploración para recorrerlo."""
-        if current_depth >= LIMITS.max_depth:
+        """Añade directorio validado a la pila de exploración para recorrerlo, respetando max_depth."""
+        if current_depth >= SCAN_LIMITS.max_depth:
             return
         if entry.path and entry.path.lower() not in self.seen:
             self.seen.add(entry.path.lower())
@@ -243,12 +250,14 @@ class Scanner:
         return ext.lower() in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[tuple[str, int]], current_depth: int) -> None:
-        """Despacha la entrada según su tipo para aplicar heurísticas o seguir recursión."""
+        """
+        Despacha la entrada según su tipo (directorio o archivo) para aplicar heurísticas 
+        o continuar la exploración recursiva.
+        """
         try:
             if not self._is_safe_entry(entry):
                 return
             
-            # Chequeo tipo antes de evaluar heurísticas o recurrir
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, directory_stack, current_depth)
             elif entry.is_file(follow_symlinks=False):
@@ -258,7 +267,7 @@ class Scanner:
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta todas las funciones heurísticas registradas sobre el archivo actual."""
+        """Ejecuta todas las funciones registradas en ALL_CHECKS sobre el archivo actual."""
         if not path or not entry:
             return
         for check_fn in ALL_CHECKS:
@@ -294,7 +303,10 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
-    """Escanea el árbol de directorios de forma iterativa, gestionando el stack manualmente."""
+    """
+    Escanea el árbol de directorios de forma iterativa, gestionando el stack manualmente.
+    Este método actúa como punto de entrada público para la inspección de carpetas.
+    """
     if directory is None: return []
     path_str = str(directory).strip()
     if not path_str or not _is_valid_path_structure(path_str): return []

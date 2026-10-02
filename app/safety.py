@@ -336,7 +336,10 @@ def _is_file_in_use_by_system(path_str: str) -> bool:
 
 @lru_cache(maxsize=128)
 def _is_volume_readonly(path_str: Optional[str]) -> bool:
-    """Consulta los atributos del volumen para verificar si el archivo reside en un medio de solo lectura."""
+    """
+    Consulta los atributos de volumen mediante GetVolumeInformationW.
+    Valida el flag FILE_READ_ONLY_VOLUME (0x80000) para evitar escrituras en soportes protegidos.
+    """
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
     try:
         drive_path = os.path.splitdrive(path_str)[0]
@@ -351,7 +354,10 @@ def _is_volume_readonly(path_str: Optional[str]) -> bool:
 
 @lru_cache(maxsize=128)
 def _is_volume_removable_media(path_str: Optional[str]) -> bool:
-    """Verifica si el volumen es extraíble (USB, SD, etc.) para evitar riesgos de desconexión."""
+    """
+    Verifica si el volumen es extraíble usando GetDriveTypeW.
+    Denegar modificaciones en dispositivos removibles previene errores de I/O por extracción súbita.
+    """
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
     try:
         drive_path = os.path.splitdrive(path_str)[0]
@@ -364,7 +370,10 @@ def _is_volume_removable_media(path_str: Optional[str]) -> bool:
 
 @lru_cache(maxsize=128)
 def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
-    """Verifica si el volumen está comprimido o cifrado (BitLocker), restringiendo modificaciones."""
+    """
+    Verifica mediante GetVolumeInformationW si el volumen posee flags de compresión o cifrado.
+    La manipulación de archivos en volúmenes cifrados (BitLocker) puede ser inestable o restringida por políticas.
+    """
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
     try:
         drive_path = os.path.splitdrive(path_str)[0]

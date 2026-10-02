@@ -1396,3 +1396,39 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-02T06:12:50` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y docstrings explicativos en las funciones de validación de seguridad (`_is_safe_for_disk_op` y `_is_recursive_violation`) para clarificar el flujo de control y las condiciones de exclusión, facilitando el mantenimiento y auditoría del módulo.
 - `2026-10-02T06:12:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T06:12:50` Corrida terminada. Total usado hoy: 148.
+- `2026-10-02T06:20:33` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-10-02T06:21:14` Tests FALLARON:
+```
+ apuntar afuera de la cuarentena.
+        items = quarantine.load_manifest(cuarentena)
+        items[0].stored_name = "../no-tocar.txt"
+        quarantine.save_manifest(items, cuarentena)
+    
+>       with pytest.raises(safety.UnsafePathError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE UnsafePathError
+
+evolve/tests/test_safety.py:255: Failed
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:146: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+1 failed, 298 passed, 7 warnings in 0.88s
+
+```
+- `2026-10-02T06:21:14` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: He mejorado la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_safe_unlink` para unificar la lógica de validación de integridad, permitiendo que la función sea más clara, menos redundante y más fácil de testear.
+- `2026-10-02T06:21:33` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-10-02T06:22:17` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Documenté con docstrings detallados las funciones de bajo nivel de validación de volúmenes y dispositivos en `safety.py`, aclarando los flags de Win32 y los riesgos específicos de seguridad que cada una intenta mitigar.
+- `2026-10-02T06:22:30` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujo documentación técnica detallada en los docstrings de los métodos del motor `Scanner` y se clarificaron los nombres de constantes críticas (`LIMITS`, `WATCHED_FOLDERS`) para mejorar la mantenibilidad, siguiendo el enfoque de legibilidad sin alterar la lógica de ejecución.
+- `2026-10-02T06:22:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T06:22:30` Corrida terminada. Total usado hoy: 152.
