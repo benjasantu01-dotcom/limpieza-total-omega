@@ -939,11 +939,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             # Sanitizar eliminando caracteres no imprimibles y de control
             clean_raw = "".join(c for c in raw if c.isprintable())
             if numeric:
-                try:
-                    val = int(clean_raw)
-                    return val if val >= 0 else default
-                except ValueError:
-                    return default
+                return self._validate_numeric_setting(clean_raw, default)
             return clean_raw
         except (ValueError, TypeError, tk.TclError, AttributeError):
             return default
@@ -1947,14 +1943,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         
         try:
             if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists():
-                valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
-                    self._safe_get_entry_value(self.min_dup_entry, None, numeric=True), 64
-                )
+                valores["duplicados_tamano_minimo_kb"] = self._safe_get_entry_value(self.min_dup_entry, 64, numeric=True)
                 
             if hasattr(self, 'top_files_entry') and self.top_files_entry.winfo_exists():
-                valores["top_archivos"] = self._validate_numeric_setting(
-                    self._safe_get_entry_value(self.top_files_entry, None, numeric=True), 15
-                )
+                valores["top_archivos"] = self._safe_get_entry_value(self.top_files_entry, 15, numeric=True)
                 
             if hasattr(self, 'api_key_entry') and self.api_key_entry.winfo_exists():
                 clave_raw = self._safe_get_entry_value(self.api_key_entry, "")

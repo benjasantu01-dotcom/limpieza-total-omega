@@ -205,7 +205,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
                 if isinstance(msg, str) and msg:
-                    # Filtrado defensivo: solo caracteres imprimibles y límite estricto
                     clean_msg = "".join(c for c in msg if c.isprintable()).strip()
                     if clean_msg: 
                         findings.append(clean_msg[:200])
@@ -232,7 +231,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             metric_breakdown[entry.area] = 0
             continue
             
-    if m.quarantined_count > 0:
+    if getattr(m, 'quarantined_count', 0) > 0:
         recommendations.append(f"Tenés {m.quarantined_count} archivo(s) en cuarentena.")
     
     final_score: int = int(round(_clamp(accumulated_score, 0.0, 100.0)))
@@ -246,10 +245,14 @@ def _render_bar(points: int, max_val: int) -> str:
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera un reporte legible del resultado de salud para mostrar en la UI."""
-    if not result: return ["Error: Informe de salud no disponible."]
+    if not isinstance(result, HealthResult): 
+        return ["Error: Informe de salud no disponible."]
+        
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, maximo in WEIGHTS.items():
         points = result.breakdown.get(area, 0)
         lines.append(f"  {area.capitalize():<12} {points:>2}/{maximo:<2} [{_render_bar(points, maximo)}]")
-    lines.extend(("", "Recomendaciones:", *(f"  - {r}" for r in (result.recommendations or ["Sin recomendaciones."]))))
+    
+    recs = result.recommendations if result.recommendations else ["Sin recomendaciones."]
+    lines.extend(("", "Recomendaciones:", *(f"  - {r}" for r in recs)))
     return lines

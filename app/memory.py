@@ -222,14 +222,16 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     top_heap: List[ProcessMemory] = []
     seen_pids: Set[int] = set()
 
-    # Cada línea tiene el formato: "Nombre,ID,WorkingSet"
     for line in (l for l in raw_csv_text.splitlines() if l and "," in l):
         try:
             parts = line.split(",", 2)
             if len(parts) < 3: continue
             
             name, pid_str, ws_str = parts
-            pid = int("".join(filter(str.isdigit, pid_str)))
+            pid_digits = "".join(filter(str.isdigit, pid_str))
+            if not pid_digits: continue
+            
+            pid = int(pid_digits)
             ws = _safe_int_conversion(ws_str)
             
             if pid > 0 and pid not in seen_pids and 0 < ws < MAX_VALID_PROCESS_MEM:
@@ -278,7 +280,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if not _is_windows: return []
     now = time.time()
     if (now - _proc_cache_time) > 60:
-        # Consulta PowerShell filtrando procesos del sistema e identificando el uso de RAM.
         ps_query = (
             "Get-Process | Where-Object { $_.Id -ne 0 -and $_.Id -ne 4 } | "
             "Sort-Object WorkingSet -Descending | Select-Object -First 50 | "
