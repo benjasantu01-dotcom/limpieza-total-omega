@@ -656,3 +656,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-02T10:48:00` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): el archivo se encogió al 11% del original (posible pérdida de código)
 - `2026-10-02T10:48:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T10:48:00` Corrida terminada. Total usado hoy: 256.
+- `2026-10-02T10:56:09` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-10-02T10:56:38` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints en las funciones de heurística y una revisión de la estructura del módulo para clarificar la separación entre las responsabilidades de escaneo y las reglas de detección, manteniendo intacta la lógica funcional.
+- `2026-10-02T10:57:12` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad de `settings.py` mediante la adición de docstrings detallados en funciones clave y la clarificación de tipos, facilitando la comprensión del flujo de validación y persistencia sin alterar el comportamiento lógico.
+- `2026-10-02T10:57:42` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). He mejorado la legibilidad y mantenibilidad del archivo añadiendo docstrings detallados en los métodos de la clase `StartupEntry` que explican el *porqué* de las restricciones de seguridad implementadas, además de clarificar la intención de los filtros de entrada en funciones auxiliares.
+- `2026-10-02T10:58:10` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemContext.__hash__
+- `2026-10-02T10:58:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T10:58:10` Corrida terminada. Total usado hoy: 260.

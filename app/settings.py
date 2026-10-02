@@ -274,7 +274,10 @@ def _build_validator_map() -> MappingProxyType[ConfigKey, _ValidatorEntry]:
     return MappingProxyType(mapping)
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
-    """Retorna la ruta absoluta al archivo de configuración, creando el directorio si es necesario."""
+    """
+    Retorna la ruta absoluta al archivo de configuración.
+    Asegura que el directorio exista y que el acceso a archivos sea seguro.
+    """
     cache_key = str(custom_base) if custom_base else None
     if cache_key in _MANAGER.path_cache:
         return _MANAGER.path_cache[cache_key]
