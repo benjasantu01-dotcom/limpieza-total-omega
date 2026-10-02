@@ -382,7 +382,15 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
     cleaned_settings = _coerce_and_verify(validate(values))
-    if ruta.exists() and load(custom_base) == cleaned_settings: return ruta
+    
+    # Rendimiento: evitar E/S si los datos no han cambiado según el timestamp actual
+    if ruta.exists():
+        try:
+            st = ruta.stat()
+            if _load_cached(str(ruta), st.st_mtime) == cleaned_settings:
+                return ruta
+        except (OSError, PermissionError):
+            pass
     
     parent = ruta.parent
     try:
@@ -408,6 +416,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             if not is_safe_to_modify(str(bak_path)): raise PermissionError("Backup path insecure")
             os.replace(ruta, bak_path)
         os.replace(temp_path, ruta)
+        _MANAGER.clear() # Invalidar caché tras escritura exitosa
         return ruta
     except (OSError, IOError, PermissionError, json.JSONDecodeError): return None
     finally:
@@ -428,13 +437,12 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
                 modified = True
     if modified: 
         save(current, custom_base)
-        _load_cached.cache_clear()
     return current
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
     """Restaura los valores predeterminados y limpia la caché."""
     save(DEFAULTS, custom_base)
-    _load_cached.cache_clear()
+    _MANAGER.clear()
     return dict(DEFAULTS)
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:

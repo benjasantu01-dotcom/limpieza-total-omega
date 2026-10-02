@@ -1019,3 +1019,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-02T02:27:39` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
 - `2026-10-02T02:27:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T02:27:39` Corrida terminada. Total usado hoy: 60.
+- `2026-10-02T02:36:07` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-10-02T02:36:56` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimizamos `_is_system_path_raw` reemplazando la creación de un `set` de partes por cada llamada (operación costosa en loops) por una verificación de prefijo más simple y directa, manteniendo la cache activa para mejorar el rendimiento en escaneos masivos.
+- `2026-10-02T02:37:22` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-10-02T02:37:53` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de la persistencia agregando un chequeo de 'mtime' (tiempo de última modificación) en `save` antes de realizar operaciones de E/S, evitando escrituras innecesarias en disco cuando los datos no han cambiado.
+- `2026-10-02T02:38:08` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-02T02:38:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T02:38:08` Corrida terminada. Total usado hoy: 64.
