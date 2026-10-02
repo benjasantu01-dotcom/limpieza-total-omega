@@ -724,3 +724,13 @@ FAILED evolve/tests/test_modules.py::test_min_size_filters_out_tiny_files - Attr
 - `2026-10-02T11:48:38` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
 - `2026-10-02T11:48:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T11:48:39` Corrida terminada. Total usado hoy: 280.
+- `2026-10-02T11:57:16` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-10-02T11:58:18` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-02T11:59:21` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-02T12:00:27` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-02T12:01:52` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `on_trim_process` y `on_restore_quarantine` añadiendo validaciones de seguridad explícitas antes de cualquier operación de sistema, y asegurando que el estado del widget se verifique (`winfo_exists`) antes de intentar cualquier actualización post-async, evitando cierres inesperados al interactuar con procesos o rutas inexistentes.
+- `2026-10-02T12:02:21` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-02T12:02:47` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-02T12:03:19` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez ante condiciones de carrera (Race Conditions) y errores de sistema de archivos en `purge_all` al añadir un chequeo explícito de la existencia del archivo antes de intentar purgarlo, evitando excepciones al iterar sobre directorios que cambian dinámicamente.
+- `2026-10-02T12:03:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T12:03:19` Corrida terminada. Total usado hoy: 284.
