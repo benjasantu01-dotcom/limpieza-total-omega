@@ -688,3 +688,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-02T11:29:45` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escáner reemplazando la llamada repetitiva a `any()` con una búsqueda eficiente en un `frozenset` mediante el método `endswith` indirecto, y eliminé redundancias en el flujo de heurísticas evitando llamadas innecesarias a `exists()` dentro del bucle de procesado de archivos.
 - `2026-10-02T11:29:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T11:29:45` Corrida terminada. Total usado hoy: 272.
+- `2026-10-02T11:36:50` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-10-02T11:37:25` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se implementó un cacheado en memoria (`_MANAGER.settings_cache`) dentro de `_SettingsManager` con validación de `mtime` para evitar lecturas de disco y deserializaciones de JSON redundantes al acceder múltiples veces a la configuración durante un mismo ciclo de ejecución.
+- `2026-10-02T11:37:53` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-10-02T11:38:34` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `_extract_text_from_gemini_json` implementando una validación explícita de `finishReason` y tipos de datos, asegurando que ante una respuesta inesperada (ej. interrupción del modelo o formato cambiado) la función retorne un valor seguro (`None`) en lugar de levantar excepciones que comprometan el flujo de la aplicación.
+- `2026-10-02T11:38:54` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-10-02T11:38:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T11:38:54` Corrida terminada. Total usado hoy: 276.

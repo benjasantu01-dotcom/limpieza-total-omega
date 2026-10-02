@@ -148,11 +148,11 @@ _ENUM_VALS: Final[MappingProxyType[ConfigKey, frozenset[str]]] = MappingProxyTyp
 class _SettingsManager:
     """Clase singleton para gestionar el estado en memoria y la persistencia de settings."""
     def __init__(self) -> None:
-        self.cache: dict[str, tuple[float, AppSettings]] = {}
+        self.settings_cache: dict[str, tuple[float, AppSettings]] = {}
         self.path_cache: dict[Optional[str], Path] = {}
 
     def clear(self) -> None:
-        self.cache.clear()
+        self.settings_cache.clear()
 
 _MANAGER = _SettingsManager()
 
@@ -340,20 +340,25 @@ def _load_impl(ruta: Path) -> AppSettings:
         pass
     return dict(DEFAULTS)
 
-@lru_cache(maxsize=8)
-def _load_cached(ruta_str: str, mtime: float) -> AppSettings:
-    """Carga interna cacheada usando el mtime para evitar E/S innecesaria."""
-    return _load_impl(Path(ruta_str))
-
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga los ajustes desde el disco, utilizando caché por mtime."""
     ruta = settings_path(custom_base)
     bak = ruta.with_suffix(".bak")
+    
+    # Intentar cargar desde el archivo principal o el respaldo
     for r in [ruta, bak]:
         try:
             if r.exists():
                 st = r.stat()
-                return _load_cached(str(r), st.st_mtime).copy()
+                cache_key = str(r)
+                if cache_key in _MANAGER.settings_cache:
+                    mtime, cached_val = _MANAGER.settings_cache[cache_key]
+                    if mtime == st.st_mtime:
+                        return cached_val.copy()
+                
+                settings = _load_impl(r)
+                _MANAGER.settings_cache[cache_key] = (st.st_mtime, settings)
+                return settings.copy()
         except (OSError, PermissionError):
             continue
     return dict(DEFAULTS)
