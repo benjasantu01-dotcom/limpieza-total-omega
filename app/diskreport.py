@@ -266,7 +266,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         entry = next(iterator, None)
                         if entry is None: break
                         
-                        if skip_protected and _is_excluded_path(entry, root_str):
+                        # Doble verificación defensiva contra rutas protegidas
+                        if skip_protected and (is_protected_path(Path(entry.path)) or _is_excluded_path(entry, root_str)):
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):

@@ -14,7 +14,8 @@ NOTA DE SEGURIDAD:
   Las funciones de dibujo (Canvas) y generación de archivos (SVG) operan 
   bajo principios de diseño defensivo, capturando excepciones de renderizado 
   para evitar que una paleta mal configurada o una entrada inválida 
-  detengan el hilo principal de la aplicación.
+  detengan el hilo principal de la aplicación. Las operaciones de disco 
+  utilizan validadores estrictos para prevenir Path Traversal.
 """
 
 from __future__ import annotations
@@ -411,9 +412,8 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         return None
     try:
         path = Path(destination).resolve()
-        # Seguridad: Solo guardar si es una ruta segura y permitida
-        if not is_safe_to_modify(path):
-            return None
+        # Seguridad: Validar que la ruta sea segura antes de cualquier operación
+        ensure_safe_to_modify(path)
         
         if not path.parent.exists():
             path.parent.mkdir(parents=True, exist_ok=True)

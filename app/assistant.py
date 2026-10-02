@@ -692,7 +692,7 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
         first = candidates[0]
         if not isinstance(first, dict): return None
         
-        # Validar si el modelo terminó la generación correctamente
+        # Validar si el modelo terminó la generación correctamente (seguridad defensiva)
         if first.get("finishReason") != "STOP": return None
         
         content = first.get("content")
