@@ -1432,3 +1432,13 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-02T06:22:30` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujo documentación técnica detallada en los docstrings de los métodos del motor `Scanner` y se clarificaron los nombres de constantes críticas (`LIMITS`, `WATCHED_FOLDERS`) para mejorar la mantenibilidad, siguiendo el enfoque de legibilidad sin alterar la lógica de ejecución.
 - `2026-10-02T06:22:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T06:22:30` Corrida terminada. Total usado hoy: 152.
+- `2026-10-02T06:30:44` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-10-02T06:31:34` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-02T06:32:00` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: legibilidad y documentación).
+- `2026-10-02T06:32:24` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-02T06:33:05` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-02T06:34:11` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-02T06:35:09` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-02T06:35:48` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-10-02T06:35:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T06:35:48` Corrida terminada. Total usado hoy: 156.
