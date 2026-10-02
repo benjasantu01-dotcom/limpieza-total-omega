@@ -207,17 +207,17 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> bool:
     """Filtra directorios aptos para escaneo recursivo."""
     if entry is None or not _is_allowed_directory(entry.name) or _is_junction(entry): return False
-    if entry.path in protected_cache: return False
-    if is_protected_path(Path(entry.path)):
-        protected_cache.add(entry.path)
+    path_str = entry.path
+    if path_str in protected_cache: return False
+    if is_protected_path(Path(path_str)):
+        protected_cache.add(path_str)
         return False
     return True
 
 def _is_valid_junk_entry(entry: os.DirEntry, stats: os.stat_result, now_ts: float) -> bool:
     """Valida si un archivo cumple criterios."""
     if entry is None or stats is None: return False
-    name = entry.name
-    _, ext = os.path.splitext(name)
+    _, ext = os.path.splitext(entry.name)
     return (0 <= stats.st_size < MAX_FILE_SIZE_BYTES and 
             stats.st_mtime <= now_ts + 3600 and
             not (_get_win_attributes(entry) & WIN_ATTR_MASK) and
@@ -225,7 +225,7 @@ def _is_valid_junk_entry(entry: os.DirEntry, stats: os.stat_result, now_ts: floa
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
     """Recorrido recursivo limitado para encontrar archivos basura."""
-    if depth > 50 or current_dir is None or not current_dir.exists(): return
+    if depth > 50: return
     try:
         resolved_dir = current_dir.resolve()
         if resolved_dir in visited: return
@@ -252,12 +252,10 @@ def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[Ju
     visited: set[Path] = set()
     scan_list: Sequence[str | Path] = directories or DEFAULT_SCAN_DIRS
     for d in scan_list:
-        try:
-            if not d: continue
-            p = Path(d).expanduser()
-            if p.exists() and p.is_dir() and not _is_unc_path(p) and is_safe_to_modify(p):
-                _process_directory(p, found, 0, protected_cache, visited)
-        except (OSError, RuntimeError, ValueError): continue
+        if not d: continue
+        p = Path(d).expanduser()
+        if p.exists() and p.is_dir() and not _is_unc_path(p) and is_safe_to_modify(p):
+            _process_directory(p, found, 0, protected_cache, visited)
     return found
 
 def sort_junk(files: Sequence[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:

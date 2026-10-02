@@ -728,6 +728,7 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     try:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
+        # Optimización: lookup O(1) en lugar de filtrar repetidamente
         item_map = {i.item_id: i for i in items}
         
         quarantine_item = item_map.get(item_id)
@@ -828,11 +829,10 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         
         # Iterar una sola vez sobre el directorio
         for f in quarantine_root.iterdir():
-            # Si el archivo fue eliminado externamente entre iteraciones, saltar.
             if f.name == MANIFEST_NAME or not f.exists() or not f.is_file():
                 continue
             
-            # Verificación extra de seguridad defensiva antes de purgar
+            # Verificación extra de seguridad defensiva
             if not is_safe_to_modify(f):
                 continue
 

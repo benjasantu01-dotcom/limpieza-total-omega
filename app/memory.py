@@ -171,7 +171,7 @@ def _safe_int_conversion(value: Optional[str], multiplier: int = 1) -> BytesValu
         multiplier: Multiplicador escalar para la conversión (ej. 1024 para KB).
     """
     if not value: return BytesValue(0)
-    clean_val = "".join(c for c in value if c.isdigit())
+    clean_val = "".join(filter(str.isdigit, value))
     return BytesValue(max(0, int(clean_val)) * multiplier) if clean_val else BytesValue(0)
 
 _is_windows: bool = os.name == "nt"
@@ -213,11 +213,11 @@ def _extract_process_info(line: str) -> Optional[Tuple[str, int, BytesValue]]:
     if len(parts) < 3: return None
     
     name, pid_str, ws_str = parts
-    pid_digits = "".join(filter(str.isdigit, pid_str))
-    if not pid_digits: return None
+    # Optimizamos extracción de PID: buscar solo dígitos
+    clean_pid = "".join(filter(str.isdigit, pid_str))
+    if not clean_pid: return None
     
-    pid = int(pid_digits)
-    # Filtro rápido de procesos críticos en la salida CSV
+    pid = int(clean_pid)
     if pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid(): return None
     
     ws = _safe_int_conversion(ws_str)
@@ -239,9 +239,10 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     """
     if not raw_csv_text: return []
     top_heap: List[ProcessMemory] = []
-
-    # Procesamos las líneas omitiendo el header del CSV (Name,Id,WorkingSet)
-    for line in (l for l in raw_csv_text.splitlines()[1:] if l and "," in l):
+    
+    lines = raw_csv_text.splitlines()
+    for line in lines[1:]: # Omitimos el header
+        if not line or "," not in line: continue
         data = _extract_process_info(line)
         if data:
             name, pid, ws = data
@@ -283,6 +284,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     global _proc_cache_time, _proc_cache_data
     if not _is_windows: return []
     now = time.time()
+    # Cacheamos por 60 segundos para evitar llamadas costosas a PowerShell
     if (now - _proc_cache_time) > 60:
         ps_query = (
             "Get-Process | Sort-Object WorkingSet -Descending | "
