@@ -203,6 +203,10 @@ def _process_file_entry(
     y disparando recursión si la entrada es un directorio.
     """
     try:
+        # Seguridad defensiva: verificar estado del enlace antes de cualquier acceso
+        if entry.is_symlink():
+            return ScanResult(0, True)
+
         p_entry = Path(entry.path)
         if not _ensure_within_base(str(p_entry), root_abs_norm) or not is_safe_to_modify(p_entry) or is_protected_path(p_entry):
             return ScanResult(0, True)

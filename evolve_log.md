@@ -1078,3 +1078,27 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-02T03:18:31` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: seguridad defensiva): el archivo se encogió al 39% del original (posible pérdida de código)
 - `2026-10-02T03:18:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T03:18:31` Corrida terminada. Total usado hoy: 80.
+- `2026-10-02T03:27:03` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-10-02T03:27:44` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` aplicando una validación más estricta sobre la ruta de destino mediante `filter_safe_paths`, asegurando que cualquier intento de escritura sea verificado contra la lista de bloqueos antes de procesar el archivo.
+- `2026-10-02T03:28:14` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha endurecido el escaneo en `_process_file_entry` mediante la validación estricta de que el archivo no sea un enlace simbólico ni un punto de reparse antes de realizar cualquier operación sobre él, evitando riesgos de escape de directorio y mejorando la seguridad defensiva frente a manipulaciones del sistema de archivos.
+- `2026-10-02T03:28:40` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_validate_root` y `_get_local_windows_drives` implementando el uso de `os.path.realpath` para prevenir la resolución de enlaces simbólicos o puntos de reparse que podrían escapar del directorio base, alineándose con las reglas de seguridad.
+- `2026-10-02T03:28:51` Tests FALLARON:
+```
+-     1,
+  -     2,
+  - ]
+FAILED evolve/tests/test_modules.py::test_partial_hash_only_reads_the_beginning - AssertionError: assert None != None
+ +  where None = <function hash_file at 0x7f3f2d662b60>(PosixPath('/tmp/pytest-of-runner/pytest-4/test_partial_hash_only_reads_t0/a'))
+ +    where <function hash_file at 0x7f3f2d662b60> = duplicates.hash_file
+ +  and   None = <function hash_file at 0x7f3f2d662b60>(PosixPath('/tmp/pytest-of-runner/pytest-4/test_partial_hash_only_reads_t0/b'))
+ +    where <function hash_file at 0x7f3f2d662b60> = duplicates.hash_file
+FAILED evolve/tests/test_modules.py::test_suggest_keeper_prefers_the_oldest_copy - AssertionError: assert None == PosixPath('/tmp/pytest-of-runner/pytest-4/test_suggest_keeper_prefers_th0/viejo.txt')
+ +  where None = <function suggest_keeper at 0x7f3f2d6632e0>(DuplicateGroup(digest='x', size_bytes=5, paths=[PosixPath('/tmp/pytest-of-runner/pytest-4/test_suggest_keeper_prefers_th0/nuevo.txt'), PosixPath('/tmp/pytest-of-runner/pytest-4/test_suggest_keeper_prefers_th0/viejo.txt')]))
+ +    where <function suggest_keeper at 0x7f3f2d6632e0> = duplicates.suggest_keeper
+FAILED evolve/tests/test_modules.py::test_format_group_marks_which_copy_to_keep - AssertionError: assert ('conservar' in '2 copias de 0.0 MB (recuperable: 0.0 MB)\n   [inaccesible] /tmp/pytest-of-runner/pytest-4/test_format_group_marks_which_0/a.txt\n   [inaccesible] /tmp/pytest-of-runner/pytest-4/test_format_group_marks_which_0/b.txt')
+6 failed, 293 passed in 1.53s
+
+```
+- `2026-10-02T03:28:51` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la seguridad defensiva del módulo al prevenir la recursión infinita mediante la detección explícita de puntos de reparse en `_collect_candidates`, complementando la lógica existente y asegurando que las rutas de sistema no sean seguidas accidentalmente durante la búsqueda de duplicados.
+- `2026-10-02T03:28:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T03:28:51` Corrida terminada. Total usado hoy: 84.

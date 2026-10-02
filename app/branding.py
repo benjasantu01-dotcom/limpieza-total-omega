@@ -24,7 +24,7 @@ from typing import Any, Final, TypeAlias, Literal, Mapping, Tuple, List, Optiona
 from enum import Enum, auto
 from types import MappingProxyType
 from functools import lru_cache
-from safety import ensure_safe_to_modify, is_safe_to_modify, is_protected_path
+from safety import ensure_safe_to_modify, is_safe_to_modify, is_protected_path, filter_safe_paths
 import math
 
 # Definición de tipos para mejorar la semántica del código
@@ -403,7 +403,10 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         return None
     try:
         path = Path(destination).resolve()
-        # Chequeo de seguridad pre-operación
+        # Validación de seguridad: debe ser una ruta permitida por el módulo safety
+        if not filter_safe_paths([path]):
+            return None
+            
         ensure_safe_to_modify(path)
         
         if not path.parent.exists():

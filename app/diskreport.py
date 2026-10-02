@@ -104,7 +104,8 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     if directory is None:
         return None
     try:
-        raw_path = Path(str(directory).split('\0')[0]).resolve()
+        # Usar realpath para resolver enlaces y evitar escapes fuera del árbol lógico
+        raw_path = Path(os.path.realpath(str(directory).split('\0')[0]))
         if not raw_path.exists() or not raw_path.is_dir():
             return None
         if is_protected_path(raw_path) or not os.access(raw_path, os.R_OK):
@@ -144,7 +145,7 @@ def _get_local_windows_drives() -> List[str]:
     for letter in string.ascii_uppercase:
         drive = f"{letter}:\\"
         try:
-            p = Path(drive)
+            p = Path(os.path.realpath(drive))
             if p.exists() and not is_protected_path(p):
                 drives.append(drive)
         except (OSError, PermissionError, RuntimeError):
@@ -220,7 +221,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if mount is None:
         return None
     try:
-        p = Path(mount).resolve()
+        p = Path(os.path.realpath(str(mount)))
         if p.exists() and not is_protected_path(p):
             usage = shutil.disk_usage(p)
             return DriveUsage(str(p), usage.total, usage.used, usage.free)
