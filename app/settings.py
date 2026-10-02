@@ -318,7 +318,7 @@ def _is_file_secure_to_read(ruta: Path) -> bool:
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if st.st_nlink != 1: return False
         real_path = Path(os.path.realpath(ruta))
-        if real_path != ruta.resolve() or not is_safe_to_modify(str(ruta)): return False
+        if real_path != ruta.resolve() or is_protected_path(str(ruta)) or not is_safe_to_modify(str(ruta)): return False
         return os.access(ruta, os.R_OK)
     except (OSError, PermissionError):
         return False

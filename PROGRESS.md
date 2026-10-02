@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
-- Rechazadas por tests: 13
+- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 198
+- Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-30 | 32 | 2 | 6 | 2 | 20 |
+| 2026-09-30 | 32 | 2 | 6 | 2 | 16 |
 | 2026-10-01 | 150 | 8 | 29 | 11 | 152 |
-| 2026-10-02 | 44 | 3 | 14 | 5 | 26 |
+| 2026-10-02 | 45 | 4 | 14 | 5 | 28 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **53**
 - legibilidad y documentación: **48**
-- seguridad defensiva: **46**
+- seguridad defensiva: **47**
 - robustez ante casos límite: **43**
 - rendimiento: **36**
 
@@ -32,7 +32,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `diskreport.py`: **24**
 - `quarantine.py`: **22**
-- `settings.py`: **20**
+- `settings.py`: **21**
 - `duplicates.py`: **19**
 - `assistant.py`: **17**
 - `healthscore.py`: **17**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-02T03:58:19` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_file_secure_to_read` al añadir una validación explícita mediante `is_protected_path` antes de procesar el archivo de configuración, asegurando que incluso un archivo que cumpla con los permisos básicos del sistema no sea procesado si reside en una ubicación protegida.
 - `2026-10-02T03:49:30` **scanner.py** (seguridad defensiva): Se ha añadido una validación de profundidad máxima y un control de bucle infinito (ciclos) en el `Scanner` para garantizar que la recursión sea finita y robusta ante estructuras de archivos artificialmente complejas o maliciosas.
 - `2026-10-02T03:49:16` **safety.py** (seguridad defensiva): Se introdujo la verificación `_is_reparse_point_recursive` en `ensure_safe_to_modify` para detectar de forma profunda si el árbol de directorios que contiene al archivo objetivo contiene alguna unión de directorios (Junction) o punto de reparse, previniendo así posibles ataques de "escapar" del sandbox de la aplicación mediante estructuras maliciosas anidadas.
 - `2026-10-02T03:48:13` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de `purge_all` aplicando `ensure_safe_to_modify` antes de proceder al borrado de cualquier archivo dentro del bucle, garantizando que incluso en el caso de una purga masiva, cada archivo pase por el filtro de seguridad centralizado del proyecto para evitar manipular rutas fuera de la cuarentena.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-02T03:07:55` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de existencia de archivo dentro del bucle de `purge_all` para evitar excepciones `FileNotFoundError` si un archivo es eliminado externamente por el sistema operativo durante la iteración, mejorando la robustez ante la concurrencia.
 - `2026-10-02T03:07:12` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `_is_safe_for_disk_op` añadiendo la verificación de que el archivo no sea un enlace simbólico ni un reparse point (a través de `stat`), evitando manipulaciones de rutas fuera del árbol esperado incluso si `is_safe_to_modify` pasara, y protegiendo contra posibles desbordamientos de `st_nlink` en sistemas de archivos atípicos.
 - `2026-10-02T02:57:27` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del cálculo de `compute_score` ante valores atípicos y fallos inesperados de los escáneres, asegurando que si `area_ratio` no es un número finito, el pipeline asigne 0 puntos en lugar de ignorar la entrada o permitir errores de cálculo de punto flotante.
-- `2026-10-02T02:57:01` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y accesibilidad de archivos dentro de `_process_large_file_subset` y `_group_paths_by_hash` para manejar escenarios de archivos eliminados o bloqueados por procesos externos durante el análisis, evitando así fallos en la iteración y garantizando que solo los archivos válidos participen en el cálculo final de hashes.
