@@ -578,7 +578,7 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     """Aislamiento atómico de un archivo sospechoso validando TOCTOU."""
     if not source.exists():
         raise FileNotFoundError("Archivo origen no existe.")
-    stat_orig = source.stat()
+    stat_orig = _check_io_error_context(source.stat)
     if stat_orig.st_size != original_size:
         raise RuntimeError("El archivo cambió durante la validación inicial (TOCTOU).")
     

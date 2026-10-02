@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **214** (42.5% de aceptación)
-- Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por tests: 11
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 20
 - Sin respuesta de la IA (error o límite): 214
 
@@ -16,22 +16,22 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-01 | 138 | 6 | 26 | 11 | 147 |
-| 2026-10-02 | 76 | 6 | 18 | 9 | 67 |
+| 2026-10-01 | 137 | 5 | 26 | 11 | 145 |
+| 2026-10-02 | 77 | 6 | 19 | 9 | 69 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **49**
-- seguridad defensiva: **39**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **40**
+- seguridad defensiva: **38**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `settings.py`: **20**
-- `quarantine.py`: **20**
+- `quarantine.py`: **21**
+- `settings.py`: **19**
 - `healthscore.py`: **17**
 - `organizer.py`: **17**
 - `scanner.py`: **17**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-02T07:35:28` **quarantine.py** (robustez ante casos límite): Se ha añadido un robusto manejo de estados de carrera y accesos concurrentes mediante un sistema de reintentos con `backoff` exponencial en `_atomic_isolate_file`, asegurando que operaciones de I/O bloqueadas por procesos externos no provoquen una excepción fatal del sistema.
 - `2026-10-02T07:23:23` **healthscore.py** (robustez ante casos límite): Se ha robustecido el motor de `healthscore.py` ante datos corruptos o inesperados en `SystemMetrics` mediante la adición de un chequeo de tipos estricto y la prevención de fallos silenciosos durante la ejecución del pipeline, asegurando que cualquier entrada externa no provoque un cálculo inconsistente.
 - `2026-10-02T07:22:54` **duplicates.py** (robustez ante casos límite): Se introdujo una verificación de integridad en `_group_paths_by_hash` para manejar archivos que podrían desaparecer entre el escaneo inicial y el cálculo de hash, evitando errores de ejecución y mejorando la robustez del bucle frente a cambios en el sistema de archivos durante la operación.
 - `2026-10-02T07:22:25` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de `OSError` específico dentro del bucle de `walk_files` para manejar casos donde el acceso a los atributos de un archivo (como su tamaño) falla durante la iteración, evitando que el escaneo se interrumpa prematuramente ante archivos bloqueados o con metadatos inaccesibles.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-02T06:42:28` **healthscore.py** (rendimiento): Optimicé el bucle de cálculo en `compute_score` pre-calculando el desglose de métricas y evitando la serialización redundante de reglas mediante el uso de un generador y la eliminación de chequeos de tipos innecesarios dentro de los bucles críticos.
 - `2026-10-02T06:41:26` **browser.py** (rendimiento): Se implementó un cacheo local (memoization) en `directory_size` utilizando un diccionario de `visited_dirs` para evitar re-escanear subdirectorios compartidos entre distintas configuraciones de navegador, reduciendo drásticamente la redundancia en I/O.
 - `2026-10-02T06:22:30` **scanner.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en los docstrings de los métodos del motor `Scanner` y se clarificaron los nombres de constantes críticas (`LIMITS`, `WATCHED_FOLDERS`) para mejorar la mantenibilidad, siguiendo el enfoque de legibilidad sin alterar la lógica de ejecución.
-- `2026-10-02T06:22:17` **safety.py** (legibilidad y documentación): Documenté con docstrings detallados las funciones de bajo nivel de validación de volúmenes y dispositivos en `safety.py`, aclarando los flags de Win32 y los riesgos específicos de seguridad que cada una intenta mitigar.
