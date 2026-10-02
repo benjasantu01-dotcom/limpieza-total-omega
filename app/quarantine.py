@@ -324,9 +324,11 @@ def _is_within_quarantine_sandbox(path: Path, root: Path) -> bool:
 
 def _validate_quarantine_path(path: Path, base: Path) -> Path:
     """Asegura que el acceso al archivo no rompa el confinamiento del sandbox."""
-    if not is_within_directory(path.resolve(), base.resolve()):
+    resolved_path = path.resolve()
+    resolved_base = base.resolve()
+    if not is_within_directory(resolved_path, resolved_base):
         raise UnsafePathError("Acceso fuera del sandbox detectado.")
-    return path.resolve()
+    return resolved_path
 
 def _check_windows_file_attributes(path_str: str) -> None:
     """Filtra archivos con atributos especiales de sistema en Windows."""
@@ -793,7 +795,7 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
     if quarantine_item is None:
         return False
         
-    stored_file = base_path / quarantine_item.stored_name
+    stored_file = _validate_quarantine_path(base_path / quarantine_item.stored_name, base_path)
     if not stored_file.exists():
         save_manifest([i for i in items if i.item_id != item_id], base)
         return True

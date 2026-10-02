@@ -55,6 +55,7 @@ MAX_VALID_PROCESS_MEM: Final[int] = 128 * 1024 * BYTES_IN_MB
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x0400
 PROCESS_QUERY_INFORMATION: Final[int] = 0x0400
+FILE_ATTRIBUTE_REPARSE_POINT: Final[int] = 0x0400
 
 # TRIM_ACCESS_MASK combina Query para validar estado y SetQuota para ejecutar EmptyWorkingSet.
 TRIM_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
@@ -347,7 +348,7 @@ def _is_system_process(pid: int) -> bool:
 def _get_process_path(pid: int) -> Optional[Path]:
     """
     Obtiene la ruta absoluta del ejecutable para un PID dado usando APIs Win32.
-    Aplica filtros de `safety.py` para asegurar que no se auditen rutas prohibidas.
+    Aplica filtros de `safety.py` y valida integridad contra reparse points.
     """
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
@@ -357,10 +358,17 @@ def _get_process_path(pid: int) -> Optional[Path]:
         buffer_size = 1024
         buf = ctypes.create_unicode_buffer(buffer_size)
         if psapi.GetModuleFileNameExW(handle, None, buf, buffer_size) > 0:
-            path_obj = Path(buf.value).resolve()
+            path_obj = Path(buf.value)
+            
+            # Verificar si el archivo es un punto de reparse (Junction/Symlink) para evitar bucles
+            attr = kernel32.GetFileAttributesW(str(path_obj))
+            if attr != -1 and (attr & FILE_ATTRIBUTE_REPARSE_POINT):
+                return None
+                
+            path_resolved = path_obj.resolve()
             # Validación de seguridad: debe ser archivo existente y no estar en lista negra
-            if path_obj.exists() and path_obj.is_file() and not is_protected_path(str(path_obj)):
-                return path_obj
+            if path_resolved.exists() and path_resolved.is_file() and not is_protected_path(str(path_resolved)):
+                return path_resolved
     except (ctypes.ArgumentError, OSError, ValueError):
         return None
     finally:

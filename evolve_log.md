@@ -758,3 +758,10 @@ FAILED evolve/tests/test_modules.py::test_min_size_filters_out_tiny_files - Attr
 - `2026-10-02T12:32:49` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-10-02T12:32:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T12:32:49` Corrida terminada. Total usado hoy: 296.
+- `2026-10-02T12:38:06` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-10-02T12:39:11` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_get_process_path` validando que la ruta resuelta no solo exista, sino que esté dentro de un volumen local y no sea un reparse point (junction o symlink) antes de permitir cualquier operación, evitando posibles manipulaciones de rutas fuera del alcance esperado del sistema.
+- `2026-10-02T12:39:41` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_is_safe_for_disk_op` mediante la validación explícita de que la ruta de origen y el directorio destino no son la misma entidad (usando `pathlib.Path.samefile`), fortaleciendo la prevención de movimientos corruptos o cíclicos antes de cualquier operación de escritura.
+- `2026-10-02T12:40:25` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad del módulo `quarantine.py` implementando un chequeo estricto de los nombres de archivo almacenados en el sandbox mediante `_validate_quarantine_path` antes de cualquier operación de I/O, previniendo ataques de *path traversal* o manipulación de rutas relativas dentro de la carpeta de cuarentena.
+- `2026-10-02T12:40:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-02T12:40:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T12:40:31` Corrida terminada. Total usado hoy: 300.
