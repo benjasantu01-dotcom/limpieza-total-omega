@@ -1541,3 +1541,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-02T07:58:28` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `walk_files` implementando una validación explícita mediante `is_protected_path` sobre `entry.path` antes de cualquier procesamiento, asegurando que el filtrado de seguridad sea consistente con la arquitectura de `safety.py` incluso ante cambios en el sistema de archivos durante la iteración.
 - `2026-10-02T07:58:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T07:58:28` Corrida terminada. Total usado hoy: 188.
+- `2026-10-02T08:02:44` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-10-02T08:03:13` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_collect_candidates` al sustituir `entry.path` (que puede contener rutas relativas o inconsistentes dependiendo del sistema de archivos) por `Path(entry.path).resolve()` para asegurar que las verificaciones de seguridad se realicen siempre sobre rutas absolutas y normalizadas, evitando ambigüedades en la validación de `is_safe_to_modify`.
+- `2026-10-02T08:03:40` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva de `_evaluate_rules` reemplazando la captura de excepciones genérica `except Exception:` por un manejo de errores robusto, y agregué un límite de seguridad en la longitud de las recomendaciones para prevenir posibles desbordamientos o problemas de inyección de texto en la interfaz.
+- `2026-10-02T08:04:46` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 1503): expression cannot contain assignment, perhaps you meant "=="?
+- `2026-10-02T08:05:01` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-10-02T08:05:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T08:05:01` Corrida terminada. Total usado hoy: 192.

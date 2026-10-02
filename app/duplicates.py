@@ -124,7 +124,7 @@ def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
     if not path:
         return None
     try:
-        p: Path = Path(path).absolute()
+        p: Path = Path(path).resolve()
         if _safe_path_check(p) and p.is_file() and not _is_file_locked(p):
             if p.stat().st_size > 0:
                 return p
@@ -189,7 +189,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     for p in paths:
         if not p: continue
         try:
-            path_obj = Path(p).absolute()
+            path_obj = Path(p).resolve()
             if not path_obj.exists(): continue
             st_size = path_obj.stat().st_size
             if _is_valid_candidate(path_obj, st_size):
@@ -203,7 +203,7 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
     """Valida la raíz de búsqueda para asegurar que es un directorio accesible."""
     if not item: return None
     try:
-        root = Path(item).absolute()
+        root = Path(item).resolve()
         if root.is_dir() and _safe_path_check(root):
             return root
     except (OSError, ValueError, RuntimeError, TypeError):
@@ -233,14 +233,13 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        p_entry = Path(entry.path).resolve()
                         if entry.is_dir(follow_symlinks=False):
-                            p_entry = Path(entry.path)
                             if _safe_path_check(p_entry) and not is_junction(p_entry):
                                 stack.append((p_entry, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
                             stat = entry.stat()
                             if stat.st_size >= min_size:
-                                p_entry = Path(entry.path)
                                 if not (skip_protected and is_protected_path(p_entry)) and _is_valid_candidate(p_entry, stat.st_size):
                                     size_to_paths_map[stat.st_size].append(p_entry)
                     except OSError:
