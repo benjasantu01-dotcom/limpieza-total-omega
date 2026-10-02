@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **215** (42.7% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-30 | 8 | 0 | 0 | 0 | 2 |
+| 2026-09-30 | 5 | 0 | 0 | 0 | 1 |
 | 2026-10-01 | 150 | 8 | 29 | 11 | 152 |
-| 2026-10-02 | 57 | 4 | 15 | 7 | 61 |
+| 2026-10-02 | 61 | 4 | 15 | 7 | 61 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - seguridad defensiva: **47**
+- legibilidad y documentación: **47**
 - robustez ante casos límite: **43**
-- legibilidad y documentación: **43**
-- rendimiento: **30**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
-- `settings.py`: **21**
 - `quarantine.py`: **21**
-- `scanner.py`: **17**
+- `settings.py`: **20**
+- `organizer.py`: **18**
 - `duplicates.py`: **17**
-- `organizer.py`: **17**
-- `safety.py`: **16**
+- `healthscore.py`: **17**
 - `assistant.py`: **16**
-- `healthscore.py`: **16**
+- `scanner.py`: **16**
 - `branding.py`: **15**
-- `memory.py`: **14**
+- `safety.py`: **15**
+- `memory.py`: **15**
 - `browser.py`: **13**
 - `startup.py`: **8**
-- `main.py`: **2**
+- `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-02T06:12:50` **organizer.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones de validación de seguridad (`_is_safe_for_disk_op` y `_is_recursive_violation`) para clarificar el flujo de control y las condiciones de exclusión, facilitando el mantenimiento y auditoría del módulo.
+- `2026-10-02T06:12:37` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `parse_windows_process_csv`, extrayendo la lógica compleja de gestión del heap (cola de prioridad) a una función dedicada, lo que simplifica el flujo principal y aclara la intención del código.
+- `2026-10-02T06:12:08` **main.py** (legibilidad y documentación): He refactorizado la jerarquía de construcción de pestañas en `main.py` extrayendo el método `_tab_factory` a una estructura más limpia y robusta, y consolidando los constructores de cada pestaña bajo un diccionario de mapeo interno para eliminar la necesidad de `getattr` dinámico, mejorando la legibilidad, la seguridad y la mantenibilidad del código.
+- `2026-10-02T06:10:51` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo documentando los puntos de entrada y salida de las funciones principales, y añadiendo type hints faltantes para asegurar que la lógica de transformación de datos sea explícita.
 - `2026-10-02T06:01:46` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` mediante la adición de docstrings estructurados (estándar Google/NumPy) en funciones clave y la clarificación de tipos complejos, facilitando la comprensión de las métricas recolectadas durante el análisis.
 - `2026-10-02T06:01:16` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de recorrido de archivos mediante la adición de docstrings estructuradas que clarifican las responsabilidades de los parámetros, el propósito de los filtros de seguridad y la lógica de recursión.
 - `2026-10-02T06:00:48` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings estructurados y la clarificación de tipos en las funciones de manipulación de color, garantizando que el "porqué" de las transformaciones de espacio de color sea transparente para futuros colaboradores.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-02T05:40:27` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` al reemplazar verificaciones implícitas por validaciones explícitas de estados de error, asegurando que cualquier fallo en la resolución de rutas o acceso al sistema de archivos sea capturado sin detener el flujo de la aplicación.
 - `2026-10-02T05:33:27` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` añadiendo validación explícita para evitar errores de tipo al procesar datos crudos, asegurando que cada campo requerido esté presente y sea válido antes de crear el objeto `ProcessMemory`.
 - `2026-10-02T05:30:33` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` reemplazando la captura genérica `except (Exception,)` por una captura específica de errores durante el cálculo del pipeline, garantizando que un fallo en una métrica no detenga el cómputo total pero sí loguee o ignore errores esperados (como errores de división o acceso a datos) de forma predecible.
-- `2026-10-02T05:30:04` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_file_locked` y `_safe_path_check` añadiendo validaciones de tipo y capturas de excepciones más específicas para evitar errores inesperados durante el acceso a archivos, asegurando que las funciones de chequeo nunca fallen silenciosamente al interactuar con el sistema de archivos.
-- `2026-10-02T03:58:19` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_file_secure_to_read` al añadir una validación explícita mediante `is_protected_path` antes de procesar el archivo de configuración, asegurando que incluso un archivo que cumpla con los permisos básicos del sistema no sea procesado si reside en una ubicación protegida.
-- `2026-10-02T03:49:30` **scanner.py** (seguridad defensiva): Se ha añadido una validación de profundidad máxima y un control de bucle infinito (ciclos) en el `Scanner` para garantizar que la recursión sea finita y robusta ante estructuras de archivos artificialmente complejas o maliciosas.
-- `2026-10-02T03:49:16` **safety.py** (seguridad defensiva): Se introdujo la verificación `_is_reparse_point_recursive` en `ensure_safe_to_modify` para detectar de forma profunda si el árbol de directorios que contiene al archivo objetivo contiene alguna unión de directorios (Junction) o punto de reparse, previniendo así posibles ataques de "escapar" del sandbox de la aplicación mediante estructuras maliciosas anidadas.

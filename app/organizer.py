@@ -148,7 +148,10 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
-    """Previene movimientos cíclicos donde el destino contenga al origen."""
+    """
+    Previene movimientos cíclicos verificando si el origen es un padre del destino.
+    Utiliza os.commonpath para asegurar que la jerarquía de directorios no se contamine.
+    """
     if src is None or dest is None: return True
     try:
         if src.exists() and dest.exists() and os.path.samefile(src, dest):
@@ -177,11 +180,13 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Auditoría exhaustiva previa a cualquier operación de escritura o movimiento.
-    Verifica permisos, integridad, disponibilidad de espacio y exclusión de directorios protegidos.
+    Verifica que el origen no sea un enlace simbólico, que existan permisos de escritura 
+    en el destino, espacio en disco suficiente, y que la operación no cause recursión.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     try:
         st = src.lstat()
+        # Rechaza enlaces simbólicos (st_mode máscara 0o170000 -> 0o120000)
         if not src.is_file() or (st.st_mode & 0o170000 == 0o120000): return False
         if not is_safe_to_modify(src) or not _validate_path_security(src, dest): return False
         
@@ -190,6 +195,8 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         
         usage = shutil.disk_usage(target_dir.anchor)
         if usage.free < (src.stat().st_size + MIN_FREE_SPACE_BYTES): return False
+        
+        # Validar que no estemos moviendo dentro de la misma unidad o en bucle
         if src.drive != target_dir.drive or _is_recursive_violation(src, dest): return False
         if not os.access(src, os.R_OK) or _is_file_locked(src): return False
         

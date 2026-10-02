@@ -226,6 +226,13 @@ def _extract_process_info(line: str) -> Optional[Tuple[str, int, BytesValue]]:
         return (name.strip("'\" "), pid, ws)
     return None
 
+def _update_top_processes_heap(heap: List[ProcessMemory], process: ProcessMemory, limit: int) -> None:
+    """Mantiene un min-heap de tamaño fijo con los procesos de mayor consumo."""
+    if len(heap) < limit:
+        heapq.heappush(heap, process)
+    elif process.working_set > heap[0].working_set:
+        heapq.heapreplace(heap, process)
+
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """
     Parsea la salida CSV de PowerShell y extrae los top consumidores.
@@ -238,12 +245,8 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         data = _extract_process_info(line)
         if data:
             name, pid, ws = data
-            if not name: continue # Validación extra: asegurar nombre presente
-            process_data = ProcessMemory(name, pid, ws)
-            if len(top_heap) < limit:
-                heapq.heappush(top_heap, process_data)
-            elif ws > top_heap[0].working_set:
-                heapq.heapreplace(top_heap, process_data)
+            if not name: continue 
+            _update_top_processes_heap(top_heap, ProcessMemory(name, pid, ws), limit)
             
     return sorted(top_heap, key=lambda p: p.working_set, reverse=True)
 
