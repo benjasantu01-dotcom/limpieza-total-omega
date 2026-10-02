@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Mejoras aceptadas: **210** (41.7% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 221
 
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-01 | 115 | 5 | 21 | 8 | 115 |
-| 2026-10-02 | 96 | 7 | 22 | 9 | 106 |
+| 2026-10-01 | 112 | 5 | 21 | 8 | 114 |
+| 2026-10-02 | 98 | 7 | 23 | 9 | 107 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **50**
+- manejo de errores y validación de entradas: **52**
 - seguridad defensiva: **47**
 - robustez ante casos límite: **43**
 - legibilidad y documentación: **37**
-- rendimiento: **34**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
 - `quarantine.py`: **20**
+- `diskreport.py`: **20**
+- `safety.py`: **19**
 - `settings.py`: **19**
-- `healthscore.py`: **18**
-- `safety.py`: **18**
 - `assistant.py`: **17**
-- `duplicates.py`: **16**
+- `healthscore.py`: **17**
 - `scanner.py`: **16**
 - `memory.py`: **16**
+- `duplicates.py`: **15**
 - `organizer.py`: **15**
 - `branding.py`: **13**
 - `browser.py`: **13**
-- `startup.py`: **7**
+- `startup.py`: **8**
 - `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-02T10:17:36` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que el `DictReader` haya procesado correctamente el CSV antes de iterar, evitando excepciones silenciosas o procesamientos sobre encabezados nulos o malformados que podrían ocurrir si la salida de PowerShell es inesperada.
+- `2026-10-02T10:16:10` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de acceso al archivo mediante un bloque `try-except` más específico en `ensure_safe_to_modify`, asegurando que cualquier error durante la lectura de metadatos o permisos sea atrapado y traducido a un `UnsafePathError` con su código correspondiente, evitando que excepciones de nivel bajo interrumpan el bucle de control.
 - `2026-10-02T10:05:45` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_linux_meminfo` mediante la adición de una validación explícita para asegurar que los valores parseados no sean negativos, previniendo errores de lógica en el cálculo de memoria disponible y caché.
 - `2026-10-02T09:56:30` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_evaluate_rules` mediante la captura explícita de excepciones al invocar `message_factory`, evitando que un error en la generación de un mensaje de recomendación interrumpa el cálculo completo del puntaje de salud.
 - `2026-10-02T09:55:58` **duplicates.py** (manejo de errores y validación de entradas): Mejora la robustez de `suggest_keeper` y `format_group` mediante la adición de validaciones de tipo explícitas y manejo de estados vacíos para evitar errores en tiempo de ejecución al procesar grupos de duplicados inconsistentes.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-02T08:14:09` **quarantine.py** (seguridad defensiva): Se reforzó `quarantine_file` añadiendo una validación explícita para evitar que se procesen rutas que contengan nombres reservados de Windows, previniendo errores de sistema al intentar mover archivos a la cuarentena.
 - `2026-10-02T08:03:40` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva de `_evaluate_rules` reemplazando la captura de excepciones genérica `except Exception:` por un manejo de errores robusto, y agregué un límite de seguridad en la longitud de las recomendaciones para prevenir posibles desbordamientos o problemas de inyección de texto en la interfaz.
 - `2026-10-02T08:03:13` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de `_collect_candidates` al sustituir `entry.path` (que puede contener rutas relativas o inconsistentes dependiendo del sistema de archivos) por `Path(entry.path).resolve()` para asegurar que las verificaciones de seguridad se realicen siempre sobre rutas absolutas y normalizadas, evitando ambigüedades en la validación de `is_safe_to_modify`.
-- `2026-10-02T07:58:28` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` implementando una validación explícita mediante `is_protected_path` sobre `entry.path` antes de cualquier procesamiento, asegurando que el filtrado de seguridad sea consistente con la arquitectura de `safety.py` incluso ante cambios en el sistema de archivos durante la iteración.
-- `2026-10-02T07:54:00` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `branding.py` mediante la validación explícita de rutas utilizando `ensure_safe_to_modify` en lugar de una verificación meramente informativa, evitando posibles ataques de recorrido de directorio (Path Traversal) antes de realizar operaciones de escritura en disco.

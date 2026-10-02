@@ -342,6 +342,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
         f: io.StringIO = io.StringIO(csv_text.strip())
         reader: csv.DictReader = csv.DictReader(f)
         
+        # Validar estructura mínima necesaria para procesar el CSV.
         if not reader or not reader.fieldnames or len(reader.fieldnames) < 2:
             return []
             

@@ -797,20 +797,25 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     
     # Verificación preventiva: si existe, validamos integridad; si no, validamos el directorio contenedor
     if p.exists():
-        _validate_access_permissions(p)
-        if _is_file_in_use_by_system(str(p)):
-             raise UnsafePathError(f"Archivo en uso por el sistema: {p.name}", SafetyValidationErrorCode.FILE_IN_USE)
-        initial_stat = _get_path_stat_robust(p)
-        
-        # Validar consistencia antes de proceder
-        if os.name == 'nt': 
-            _validate_ntfs_reparse_redirection(p)
-            try:
-                if not os.access(p.parent, os.W_OK):
-                     raise UnsafePathError("Directorio contenedor marcado como solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY)
-            except OSError:
-                pass
-        _check_file_integrity(p, initial_stat)
+        try:
+            _validate_access_permissions(p)
+            if _is_file_in_use_by_system(str(p)):
+                 raise UnsafePathError(f"Archivo en uso por el sistema: {p.name}", SafetyValidationErrorCode.FILE_IN_USE)
+            initial_stat = _get_path_stat_robust(p)
+            
+            # Validar consistencia antes de proceder
+            if os.name == 'nt': 
+                _validate_ntfs_reparse_redirection(p)
+                try:
+                    if not os.access(p.parent, os.W_OK):
+                         raise UnsafePathError("Directorio contenedor marcado como solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY)
+                except OSError:
+                    pass
+            _check_file_integrity(p, initial_stat)
+        except UnsafePathError:
+            raise
+        except Exception as e:
+            raise UnsafePathError(f"Error de acceso inesperado: {e}", SafetyValidationErrorCode.IO_ERROR)
     else:
         try:
             parent = p.parent

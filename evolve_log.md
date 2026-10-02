@@ -624,3 +624,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-02T10:08:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
 - `2026-10-02T10:08:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T10:08:15` Corrida terminada. Total usado hoy: 240.
+- `2026-10-02T10:15:18` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-10-02T10:16:10` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las validaciones de acceso al archivo mediante un bloque `try-except` más específico en `ensure_safe_to_modify`, asegurando que cualquier error durante la lectura de metadatos o permisos sea atrapado y traducido a un `UnsafePathError` con su código correspondiente, evitando que excepciones de nivel bajo interrumpan el bucle de control.
+- `2026-10-02T10:16:40` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: Scanner._is_reparse_point
+- `2026-10-02T10:17:16` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-02T10:17:36` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que el `DictReader` haya procesado correctamente el CSV antes de iterar, evitando excepciones silenciosas o procesamientos sobre encabezados nulos o malformados que podrían ocurrir si la salida de PowerShell es inesperada.
+- `2026-10-02T10:17:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T10:17:36` Corrida terminada. Total usado hoy: 244.
