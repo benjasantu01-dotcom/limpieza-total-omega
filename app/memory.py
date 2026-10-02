@@ -238,6 +238,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         data = _extract_process_info(line)
         if data:
             name, pid, ws = data
+            if not name: continue # Validación extra: asegurar nombre presente
             process_data = ProcessMemory(name, pid, ws)
             if len(top_heap) < limit:
                 heapq.heappush(top_heap, process_data)

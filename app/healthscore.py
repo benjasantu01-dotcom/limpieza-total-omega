@@ -230,7 +230,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             points: float = area_ratio * entry.weight
             metric_breakdown[entry.area] = int(round(points))
             accumulated_score += points
-        except (Exception,):
+        except (ValueError, TypeError, ArithmeticError, AttributeError):
             metric_breakdown[entry.area] = 0
             continue
             

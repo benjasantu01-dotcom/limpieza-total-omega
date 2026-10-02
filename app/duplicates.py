@@ -61,7 +61,7 @@ def is_junction(path: Path) -> bool:
 
 def is_system_or_hidden(path: Path) -> bool:
     """Valida si el archivo posee atributos de sistema u oculto de Windows."""
-    if not is_safe_to_modify(path):
+    if not isinstance(path, Path) or not is_safe_to_modify(path):
         return True
     try:
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
@@ -94,21 +94,29 @@ class DuplicateGroup:
 
 def _is_file_locked(path: Path) -> bool:
     """Intenta abrir un archivo en modo lectura para verificar si el SO lo tiene bloqueado."""
-    if not isinstance(path, Path) or not is_safe_to_modify(path) or not path.exists():
+    if not isinstance(path, Path) or not is_safe_to_modify(path):
         return True
     try:
+        if not path.exists():
+            return True
         fd = os.open(path, os.O_RDONLY)
         os.close(fd)
         return False
-    except (PermissionError, OSError, ValueError, FileNotFoundError):
+    except (PermissionError, OSError, ValueError):
         return True
 
 
 def _safe_path_check(path: Path) -> bool:
     """Valida que la ruta pase los filtros de seguridad y no sea un enlace simbólico/junction."""
-    return (isinstance(path, Path) and is_safe_to_modify(path) and 
-            not is_protected_path(path) and not is_junction(path) and 
-            not path.is_symlink())
+    if not isinstance(path, Path):
+        return False
+    try:
+        return (is_safe_to_modify(path) and 
+                not is_protected_path(path) and 
+                not is_junction(path) and 
+                not path.is_symlink())
+    except (OSError, RuntimeError):
+        return False
 
 
 def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:

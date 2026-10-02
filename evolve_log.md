@@ -1355,3 +1355,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-02T05:21:35` ➖ Sin cambios en diskreport.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o inaccesibles capturando excepciones específicas (`PermissionError`, `OSError`) de forma centralizada y protegiendo la integridad de las operaciones de `Path` mediante validaciones adicionales.
 - `2026-10-02T05:21:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T05:21:35` Corrida terminada. Total usado hoy: 128.
+- `2026-10-02T05:29:34` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-10-02T05:30:04` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_is_file_locked` y `_safe_path_check` añadiendo validaciones de tipo y capturas de excepciones más específicas para evitar errores inesperados durante el acceso a archivos, asegurando que las funciones de chequeo nunca fallen silenciosamente al interactuar con el sistema de archivos.
+- `2026-10-02T05:30:33` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` reemplazando la captura genérica `except (Exception,)` por una captura específica de errores durante el cálculo del pipeline, garantizando que un fallo en una métrica no detenga el cómputo total pero sí loguee o ignore errores esperados (como errores de división o acceso a datos) de forma predecible.
+- `2026-10-02T05:30:35` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-02T05:31:38` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-02T05:31:45` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-02T05:32:57` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-02T05:33:27` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_windows_process_csv` añadiendo validación explícita para evitar errores de tipo al procesar datos crudos, asegurando que cada campo requerido esté presente y sea válido antes de crear el objeto `ProcessMemory`.
+- `2026-10-02T05:33:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T05:33:27` Corrida terminada. Total usado hoy: 132.
