@@ -1548,3 +1548,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-02T08:05:01` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
 - `2026-10-02T08:05:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T08:05:01` Corrida terminada. Total usado hoy: 192.
+- `2026-10-02T08:12:57` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-10-02T08:13:24` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-10-02T08:14:09` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó `quarantine_file` añadiendo una validación explícita para evitar que se procesen rutas que contengan nombres reservados de Windows, previniendo errores de sistema al intentar mover archivos a la cuarentena.
+- `2026-10-02T08:14:37` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-10-02T08:15:14` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha implementado `_is_directory_junction_strict` usando `GetFileInformationByHandle` para una detección robusta de puntos de reparse, eliminando la dependencia exclusiva de atributos de archivo (`FILE_ATTRIBUTE_REPARSE_POINT`), lo cual mejora la seguridad defensiva contra redirecciones NTFS sofisticadas.
+- `2026-10-02T08:15:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T08:15:14` Corrida terminada. Total usado hoy: 196.

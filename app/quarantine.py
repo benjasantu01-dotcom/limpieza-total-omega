@@ -251,6 +251,10 @@ def _check_path_syntax_integrity(path: Path) -> None:
         raise UnsafePathError("Profundidad de ruta excesiva.")
     if ":" in path.name:
         raise UnsafePathError("Ruta con flujos de datos alternos (ADS) prohibidos.")
+    
+    if path.name.upper() in WINDOWS_RESERVED_NAMES:
+        raise UnsafePathError("Nombre de archivo reservado por el sistema.")
+
     try:
         resolved = path.resolve(strict=True)
         if resolved.is_symlink():
