@@ -163,14 +163,15 @@ class QuarantineItem:
         if not self._validate_integrity(stored_path):
             return False
         try:
-            return bool(self.sha256 and _get_sha256(stored_path) == self.sha256)
+            current_hash = _get_sha256(stored_path)
+            return bool(self.sha256 and current_hash == self.sha256)
         except (OSError, PermissionError):
             return False
 
 
 def _get_sha256(path: Path) -> str:
     """Calcula hash SHA-256 usando búferes para evitar saturación de memoria."""
-    if not path.is_file():
+    if not path.exists() or not path.is_file():
         return ""
     sha256_hash = hashlib.sha256()
     try:
@@ -216,11 +217,9 @@ def _is_file_locked(path: Path) -> bool:
 
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: int = 0) -> bool:
     """Eliminación controlada tras validación de metadatos y hash."""
-    if not path.is_absolute() or not path.exists():
+    if not path.is_absolute() or not path.exists() or not path.is_file():
         return False
-    if is_protected_path(path):
-        return False
-    if path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction()):
+    if is_protected_path(path) or path.is_symlink():
         return False
     
     try:
@@ -231,8 +230,7 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
         resolved = path.resolve()
         if not is_safe_to_modify(resolved) or is_protected_path(resolved):
             return False
-        if not resolved.is_file():
-            return False
+        
         if expected_hash and _get_sha256(resolved) != expected_hash:
             return False
         if _is_file_locked(resolved):

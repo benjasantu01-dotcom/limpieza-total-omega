@@ -989,3 +989,13 @@ FAILED evolve/tests/test_modules.py::test_min_size_filters_out_tiny_files - Attr
 - `2026-10-02T14:24:07` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del cálculo de puntaje envolviendo la ejecución de las funciones `scorer` en un bloque `try-except` específico dentro del pipeline, evitando que una falla en una métrica individual invalide el cálculo global.
 - `2026-10-02T14:24:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T14:24:07` Corrida terminada. Total usado hoy: 340.
+- `2026-10-02T14:30:39` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-02T14:31:42` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-02T14:32:45` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-02T14:33:51` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-02T14:35:03` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-02T14:35:47` ➖ Sin cambios en memory.py (enfoque: manejo de errores y validación de entradas). Motivo: Se ha mejorado la robustez de `trim_working_set` y sus funciones de soporte, reemplazando chequeos implícitos por validaciones explícitas de estado y manejo de excepciones de API, asegurando que `EmptyWorkingSet` solo se ejecute tras verificar la integridad total del proceso y el entorno.
+- `2026-10-02T14:36:19` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones explícitas antes de las operaciones de sistema, reemplazando chequeos implícitos por un control preventivo que asegura que los objetos `Path` sean válidos, no nulos y estén dentro de los límites de seguridad, evitando excepciones innecesarias en tiempo de ejecución.
+- `2026-10-02T14:36:47` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine.py` implementando una validación temprana de tipos y estados en `_get_sha256` y `_safe_unlink`, reduciendo el riesgo de propagación de excepciones inesperadas mediante el uso de filtros explícitos (check-before-act) en lugar de depender únicamente de bloques try-except.
+- `2026-10-02T14:36:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T14:36:47` Corrida terminada. Total usado hoy: 344.

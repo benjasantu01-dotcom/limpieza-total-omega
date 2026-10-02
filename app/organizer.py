@@ -296,8 +296,10 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         return None
     
     for junk_file in files:
-        if not junk_file or not isinstance(junk_file.path, Path) or not junk_file.path.exists(): continue
-        if not is_safe_to_modify(junk_file.path) or not _is_safe_for_disk_op(junk_file.path, dest_res): continue
+        if junk_file is None or not isinstance(junk_file.path, Path): continue
+        if not junk_file.path.exists() or not is_safe_to_modify(junk_file.path): continue
+        if not _is_safe_for_disk_op(junk_file.path, dest_res): continue
+        
         target_path = _can_move_file(junk_file, dest_res)
         if target_path:
             try:
@@ -322,8 +324,9 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     """Ejecuta la eliminación permanente de archivos en el directorio de revisión."""
     try:
         dest = Path(review_dir).expanduser().resolve()
-        if not dest.exists() or not dest.is_dir() or is_protected_path(dest) or not is_safe_to_modify(dest):
-            return 0
+        if not dest.exists() or not dest.is_dir(): return 0
+        if is_protected_path(dest) or not is_safe_to_modify(dest): return 0
+        
         count = 0
         for item in dest.iterdir():
             if item.is_file():
