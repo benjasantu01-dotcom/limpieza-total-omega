@@ -372,7 +372,12 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     """Genera un reporte de texto legible con un resumen del escaneo."""
     root = _validate_root(directory)
     if root is None: return ["Error: Ruta no válida o inaccesible."]
-    data = _collect_summary_data(root, skip_protected, limit=20)
+    
+    try:
+        data = _collect_summary_data(root, skip_protected, limit=20)
+    except Exception:
+        return ["Error: Falló la recolección de datos durante el escaneo."]
+        
     if data.total_files == 0: return ["Aviso: No hay archivos accesibles."]
     
     lines = [f"Carpeta: {root}", f"Total: {format_size(data.total_bytes)} en {data.total_files} archivos", "", "Por tipo:"]

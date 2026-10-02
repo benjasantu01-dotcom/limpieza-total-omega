@@ -254,8 +254,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Agrupa rutas que comparten un mismo valor de digest (hash)."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        # Verificar existencia actual antes de intentar calcular el hash
-        if path.is_file() and (digest := hash_func(path)):
+        if isinstance(path, Path) and path.is_file() and (digest := hash_func(path)):
             groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
@@ -317,7 +316,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     
     candidates: List[Tuple[Tuple[float, int], Path]] = []
     for p in group.paths:
-        if p.exists() and (score := _calculate_keeper_heuristic(p)):
+        if isinstance(p, Path) and p.exists() and (score := _calculate_keeper_heuristic(p)):
             candidates.append((score, p))
             
     return min(candidates, key=lambda x: x[0])[1] if candidates else None
@@ -334,6 +333,9 @@ def format_group(group: DuplicateGroup) -> List[str]:
     lines = [f"{group.count} copias de {mb_t} MB (recuperable: {mb_w} MB)"]
     
     for path in group.paths:
+        if not isinstance(path, Path):
+            lines.append(f"   [error] ruta inválida")
+            continue
         try:
             if not path.exists():
                 lines.append(f"   [desaparecido] {path}")

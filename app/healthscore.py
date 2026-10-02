@@ -205,7 +205,8 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
                 clean_msg = "".join(filter(str.isprintable, str(msg))).strip()
                 if clean_msg: 
                     findings.append(clean_msg[:200])
-        except (ValueError, TypeError, ZeroDivisionError, ArithmeticError):
+        except Exception:
+            # Captura cualquier error en la evaluación de la regla para no interrumpir el pipeline.
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:

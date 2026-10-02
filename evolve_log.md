@@ -576,3 +576,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-02T09:47:42` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_in_use` capturando excepciones críticas de bajo nivel (`OSError`, `PermissionError`, etc.) y validando explícitamente el tipo de retorno de `os.open` para evitar que una manipulación de descriptores de archivo corrupta o inválida propague un error fuera del módulo.
 - `2026-10-02T09:47:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T09:47:42` Corrida terminada. Total usado hoy: 232.
+- `2026-10-02T09:54:52` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-10-02T09:55:26` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` implementando una gestión de errores más granular y validaciones defensivas que previenen que el bucle de recorrido se detenga o devuelva resultados parciales corruptos ante permisos denegados o inconsistencias en el sistema de archivos.
+- `2026-10-02T09:55:58` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `suggest_keeper` y `format_group` mediante la adición de validaciones de tipo explícitas y manejo de estados vacíos para evitar errores en tiempo de ejecución al procesar grupos de duplicados inconsistentes.
+- `2026-10-02T09:56:30` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_evaluate_rules` mediante la captura explícita de excepciones al invocar `message_factory`, evitando que un error en la generación de un mensaje de recomendación interrumpa el cálculo completo del puntaje de salud.
+- `2026-10-02T09:56:30` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-02T09:57:33` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-02T09:58:39` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-02T09:59:52` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-02T09:59:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T09:59:52` Corrida terminada. Total usado hoy: 236.

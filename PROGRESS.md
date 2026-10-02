@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **212** (42.1% de aceptación)
+- Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-01 | 120 | 5 | 23 | 9 | 115 |
-| 2026-10-02 | 92 | 6 | 21 | 9 | 104 |
+| 2026-10-01 | 118 | 5 | 21 | 9 | 115 |
+| 2026-10-02 | 95 | 6 | 21 | 9 | 105 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **47**
-- manejo de errores y validación de entradas: **46**
 - robustez ante casos límite: **43**
-- legibilidad y documentación: **41**
+- legibilidad y documentación: **39**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
+- `diskreport.py`: **21**
 - `settings.py`: **20**
-- `diskreport.py`: **20**
+- `quarantine.py`: **20**
+- `healthscore.py`: **18**
 - `safety.py`: **18**
-- `scanner.py`: **17**
-- `healthscore.py`: **17**
 - `assistant.py`: **17**
-- `duplicates.py`: **15**
+- `duplicates.py`: **16**
+- `scanner.py`: **16**
 - `organizer.py`: **15**
 - `memory.py`: **15**
 - `branding.py`: **14**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-02T09:56:30` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_evaluate_rules` mediante la captura explícita de excepciones al invocar `message_factory`, evitando que un error en la generación de un mensaje de recomendación interrumpa el cálculo completo del puntaje de salud.
+- `2026-10-02T09:55:58` **duplicates.py** (manejo de errores y validación de entradas): Mejora la robustez de `suggest_keeper` y `format_group` mediante la adición de validaciones de tipo explícitas y manejo de estados vacíos para evitar errores en tiempo de ejecución al procesar grupos de duplicados inconsistentes.
+- `2026-10-02T09:55:26` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` implementando una gestión de errores más granular y validaciones defensivas que previenen que el bucle de recorrido se detenga o devuelva resultados parciales corruptos ante permisos denegados o inconsistencias en el sistema de archivos.
 - `2026-10-02T09:47:42` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_in_use` capturando excepciones críticas de bajo nivel (`OSError`, `PermissionError`, etc.) y validando explícitamente el tipo de retorno de `os.open` para evitar que una manipulación de descriptores de archivo corrupta o inválida propague un error fuera del módulo.
 - `2026-10-02T09:47:22` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `draw_ring` mediante la validación explícita del parámetro `canvas` y el manejo preventivo de excepciones aritméticas y de desbordamiento, asegurando que el renderizado de la interfaz no se interrumpa ante datos de entrada mal formados o contextos de dibujo inválidos.
 - `2026-10-02T09:46:38` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemContext.ingest` al implementar una validación explícita de tipos que evita errores de `AttributeError` o corrupción del estado cuando se reciben objetos mal formados o tipos inesperados durante la ingesta de datos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-02T07:58:28` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` implementando una validación explícita mediante `is_protected_path` sobre `entry.path` antes de cualquier procesamiento, asegurando que el filtrado de seguridad sea consistente con la arquitectura de `safety.py` incluso ante cambios en el sistema de archivos durante la iteración.
 - `2026-10-02T07:54:00` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `branding.py` mediante la validación explícita de rutas utilizando `ensure_safe_to_modify` en lugar de una verificación meramente informativa, evitando posibles ataques de recorrido de directorio (Path Traversal) antes de realizar operaciones de escritura en disco.
 - `2026-10-02T07:53:24` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación explícita de `finishReason` para asegurar que el contenido procesado sea una respuesta completa y legítima del modelo, evitando procesar estados de error o truncamiento parcial que podrían inyectar comportamientos inesperados.
-- `2026-10-02T07:44:29` **startup.py** (robustez ante casos límite): Mejoré la robustez de `StartupEntry._resolve_path_from_command` añadiendo un manejo de excepciones más granular y un chequeo preventivo de rutas vacías o inválidas para evitar procesar cadenas malformadas que resultan de comandos de registro truncados o corruptos.
-- `2026-10-02T07:44:12` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de persistencia en `save()` y `_load_impl()` ante condiciones de carrera y sistemas de archivos con bloqueos estrictos, introduciendo un manejo más resiliente ante el error `OSError` durante la sincronización de metadatos (`os.fsync`) y verificaciones de integridad post-escritura.
-- `2026-10-02T07:43:12` **safety.py** (robustez ante casos límite): Se añadió una validación crítica en `_check_file_integrity` para detectar el cambio de tipo de archivo (de archivo a directorio o viceversa) durante la ejecución, lo cual previene ataques de reemplazo de objetos (`TOCTOU`) que podrían eludir las verificaciones de seguridad iniciales al cambiar la naturaleza del destino.
