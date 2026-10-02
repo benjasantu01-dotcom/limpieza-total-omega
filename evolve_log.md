@@ -1014,3 +1014,4 @@ FAILED evolve/tests/test_modules.py::test_min_size_filters_out_tiny_files - Attr
 - `2026-10-02T14:52:25` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T14:52:25` Corrida terminada. Total usado hoy: 350.
 - `2026-10-02T15:01:20` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-10-02T15:11:31` Presupuesto diario agotado (350 usados). Corte hasta mañana.
