@@ -223,6 +223,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     for entry in _PIPELINE_ORDERED:
         try:
             area_ratio: NormalizedRatio = entry.scorer(m)
+            if not math.isfinite(area_ratio):
+                area_ratio = 0.0
             _evaluate_rules(m, entry.rules, area_ratio, recommendations)
             points: float = area_ratio * entry.weight
             metric_breakdown[entry.area] = int(round(points))

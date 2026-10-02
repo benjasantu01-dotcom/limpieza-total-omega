@@ -182,6 +182,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
         if not p: continue
         try:
             path_obj = Path(p).absolute()
+            if not path_obj.exists(): continue
             st_size = path_obj.stat().st_size
             if _is_valid_candidate(path_obj, st_size):
                 groups[st_size].append(path_obj)
@@ -246,7 +247,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Agrupa rutas que comparten un mismo valor de digest (hash)."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if (digest := hash_func(path)):
+        if path.exists() and (digest := hash_func(path)):
             groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
@@ -308,7 +309,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     
     candidates: List[Tuple[Tuple[float, int], Path]] = []
     for p in group.paths:
-        if score := _calculate_keeper_heuristic(p):
+        if p.exists() and (score := _calculate_keeper_heuristic(p)):
             candidates.append((score, p))
             
     return min(candidates, key=lambda x: x[0])[1] if candidates else None
