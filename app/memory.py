@@ -217,6 +217,9 @@ def _extract_process_info(line: str) -> Optional[Tuple[str, int, BytesValue]]:
     if not pid_digits: return None
     
     pid = int(pid_digits)
+    # Filtro rápido de procesos críticos en la salida CSV
+    if pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid(): return None
+    
     ws = _safe_int_conversion(ws_str)
     
     if pid > 0 and 0 < ws < MAX_VALID_PROCESS_MEM:
@@ -229,19 +232,17 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     """
     if not raw_csv_text: return []
     top_heap: List[ProcessMemory] = []
-    seen_pids: Set[int] = set()
 
-    for line in (l for l in raw_csv_text.splitlines() if l and "," in l):
+    # Procesamos las líneas omitiendo el header del CSV (Name,Id,WorkingSet)
+    for line in (l for l in raw_csv_text.splitlines()[1:] if l and "," in l):
         data = _extract_process_info(line)
         if data:
             name, pid, ws = data
-            if pid not in seen_pids:
-                seen_pids.add(pid)
-                process_data = ProcessMemory(name, pid, ws)
-                if len(top_heap) < limit:
-                    heapq.heappush(top_heap, process_data)
-                elif ws > top_heap[0].working_set:
-                    heapq.heapreplace(top_heap, process_data)
+            process_data = ProcessMemory(name, pid, ws)
+            if len(top_heap) < limit:
+                heapq.heappush(top_heap, process_data)
+            elif ws > top_heap[0].working_set:
+                heapq.heapreplace(top_heap, process_data)
             
     return sorted(top_heap, key=lambda p: p.working_set, reverse=True)
 
@@ -280,9 +281,9 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     now = time.time()
     if (now - _proc_cache_time) > 60:
         ps_query = (
-            "Get-Process | Where-Object { $_.Id -ne 0 -and $_.Id -ne 4 } | "
-            "Sort-Object WorkingSet -Descending | Select-Object -First 50 | "
-            "Select-Object Name,Id,WorkingSet | ConvertTo-Csv -NoTypeInformation"
+            "Get-Process | Sort-Object WorkingSet -Descending | "
+            "Select-Object -First 100 | Select-Object Name,Id,WorkingSet | "
+            "ConvertTo-Csv -NoTypeInformation"
         )
         cmd = ['powershell', '-NoProfile', '-NonInteractive', '-Command', ps_query]
         try:

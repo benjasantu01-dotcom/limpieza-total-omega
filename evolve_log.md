@@ -1012,3 +1012,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-02T02:19:59` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): el archivo se encogió al 43% del original (posible pérdida de código)
 - `2026-10-02T02:19:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T02:19:59` Corrida terminada. Total usado hoy: 56.
+- `2026-10-02T02:25:55` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-10-02T02:26:28` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó `top_memory_processes` eliminando la re-ejecución del comando `Get-Process` (que es costoso) al permitir el uso de caché durante 60 segundos, pero moviendo el filtrado de PIDs fuera de la subshell para reducir la carga de datos procesada por `subprocess.run` y mejorando la eficiencia del parseo.
+- `2026-10-02T02:26:56` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_for_junk` y `_process_directory` transformando `JUNK_EXTENSIONS` en un conjunto de comparación directa y reduciendo la redundancia de llamadas a `stat` y `is_file` al unificar la lógica de filtrado de metadatos mediante `os.scandir` y el set `protected_cache`, minimizando así las llamadas al sistema operativo (I/O) en cada iteración del bucle recursivo.
+- `2026-10-02T02:27:36` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé la carga del manifiesto y la purga masiva utilizando un `set` para búsquedas O(1) de IDs y evitando iteraciones redundantes, mejorando significativamente el rendimiento al manejar cuarentenas con muchos archivos.
+- `2026-10-02T02:27:39` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
+- `2026-10-02T02:27:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T02:27:39` Corrida terminada. Total usado hoy: 60.

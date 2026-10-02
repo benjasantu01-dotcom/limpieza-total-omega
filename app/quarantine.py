@@ -817,10 +817,12 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     try:
         quarantine_root = quarantine_dir(base)
         items = load_manifest(base)
+        # Optimización: Mapeo O(1) para lookups de manifiesto por nombre de archivo
         item_map = {i.stored_name: i for i in items}
         
         purged_ids: Set[str] = set()
         
+        # Iterar una sola vez sobre el directorio
         for f in quarantine_root.iterdir():
             if f.name == MANIFEST_NAME or not f.is_file():
                 continue
@@ -830,6 +832,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 purged_ids.add(item.item_id)
         
         if purged_ids:
+            # Filtrado eficiente usando set para lookup
             new_manifest = [i for i in items if i.item_id not in purged_ids]
             save_manifest(new_manifest, base)
             

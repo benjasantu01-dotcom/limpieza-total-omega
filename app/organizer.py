@@ -97,8 +97,7 @@ class JunkFile:
 def is_valid_junk_extension(filename: str) -> bool:
     """Valida si el sufijo del archivo pertenece a JUNK_EXTENSIONS."""
     if not filename: return False
-    name_lower = filename.lower()
-    return any(name_lower.endswith(ext) for ext in JUNK_EXTENSIONS)
+    return any(filename.lower().endswith(ext) for ext in JUNK_EXTENSIONS)
 
 def _get_win_attributes(entry: os.DirEntry) -> int:
     """Extrae atributos de archivo (Windows API) sin lanzar excepciones."""
@@ -209,11 +208,13 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> boo
 def _is_valid_junk_entry(entry: os.DirEntry, stats: os.stat_result, now_ts: float) -> bool:
     """Valida si un archivo cumple criterios."""
     if entry is None or stats is None: return False
-    name_lower = entry.name.lower()
+    name = entry.name
+    # Optimización: buscar extensión usando split una sola vez
+    _, ext = os.path.splitext(name)
     return (0 <= stats.st_size < MAX_FILE_SIZE_BYTES and 
             stats.st_mtime <= now_ts + 3600 and
             not (_get_win_attributes(entry) & WIN_ATTR_MASK) and
-            any(name_lower.endswith(ext) for ext in JUNK_EXTENSIONS))
+            ext.lower() in JUNK_EXTENSIONS)
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
     """Recorrido recursivo limitado para encontrar archivos basura."""
@@ -232,7 +233,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                             _process_directory(Path(item.path), found, depth + 1, protected_cache, visited)
                     elif item.is_file(follow_symlinks=False):
                         stats = item.stat(follow_symlinks=False)
-                        if _is_valid_junk_entry(item, stats, now_ts) and os.access(item.path, os.R_OK):
+                        if _is_valid_junk_entry(item, stats, now_ts):
                             found.append(JunkFile(Path(item.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
                 except (PermissionError, OSError): continue
     except (PermissionError, OSError, RuntimeError): pass
@@ -247,7 +248,7 @@ def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[Ju
         try:
             if not d: continue
             p = Path(d).expanduser()
-            if p.exists() and p.is_dir() and not _is_unc_path(p) and is_safe_to_modify(p) and os.access(p, os.R_OK):
+            if p.exists() and p.is_dir() and not _is_unc_path(p) and is_safe_to_modify(p):
                 _process_directory(p, found, 0, protected_cache, visited)
         except (OSError, RuntimeError, ValueError): continue
     return found
