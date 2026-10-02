@@ -301,7 +301,7 @@ def _get_security_descriptor(path: Path) -> SecurityDescriptor:
     """
     try:
         mtime = path.stat().st_mtime
-    except OSError:
+    except (OSError, FileNotFoundError):
         mtime = 0.0
     return _get_security_descriptor_cached(str(path), mtime)
 
@@ -356,7 +356,8 @@ def _is_volume_removable_media(path_str: Optional[str]) -> bool:
         root = drive_path + "\\"
         return ctypes.windll.kernel32.GetDriveTypeW(root) == DRIVE_REMOVABLE
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
-        return False
+        pass
+    return False
 
 @lru_cache(maxsize=128)
 def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
@@ -458,12 +459,12 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
         raise UnsafePathError(f"Punto de reparse detectado durante acceso estático: {path.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
     try:
         return path.stat()
-    except PermissionError:
-        raise UnsafePathError(f"Acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+    except (PermissionError, FileNotFoundError):
+        raise UnsafePathError(f"Acceso denegado o archivo inexistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     except OSError as e:
         if getattr(e, 'winerror', 0) == 32:
              raise UnsafePathError(f"Archivo bloqueado por otro proceso: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
-        raise UnsafePathError(f"Acceso fallido: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+        raise UnsafePathError(f"Acceso fallido: {path.name}", SafetyValidationErrorCode.IO_ERROR)
     except (ValueError, TypeError) as e:
         raise UnsafePathError(f"Error al leer metadatos de {path.name}: {e}", SafetyValidationErrorCode.IO_ERROR)
 
@@ -746,6 +747,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     _validate_structural_safety(p, str(p))
     _validate_boundary_conditions(p, base_dir)
     
+    # Verificación preventiva: si existe, validamos integridad; si no, validamos el directorio contenedor
     if p.exists():
         _validate_access_permissions(p)
         if _is_file_in_use_by_system(str(p)):
