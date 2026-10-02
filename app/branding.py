@@ -411,11 +411,9 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         return None
     try:
         path = Path(destination).resolve()
-        # Validación de seguridad: debe ser una ruta permitida por el módulo safety
-        if not filter_safe_paths([path]):
+        # Seguridad: Solo guardar si es una ruta segura y permitida
+        if not is_safe_to_modify(path):
             return None
-            
-        ensure_safe_to_modify(path)
         
         if not path.parent.exists():
             path.parent.mkdir(parents=True, exist_ok=True)

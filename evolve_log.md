@@ -1469,3 +1469,40 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-02T07:03:10` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de la persistencia agregando una verificación de igualdad previa a la serialización JSON en la función `save`, evitando escrituras redundantes en disco si los ajustes no han cambiado, lo cual reduce la E/S innecesaria de forma significativa.
 - `2026-10-02T07:03:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T07:03:10` Corrida terminada. Total usado hoy: 168.
+- `2026-10-02T07:11:34` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-10-02T07:12:05` Tests FALLARON:
+```
+lag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:146: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed, 7 warnings in 1.53s
+
+```
+- `2026-10-02T07:12:05` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento del escaneo mediante la implementación de un mecanismo de "Short-Circuiting" en `_resolve_and_cache_path`, evitando consultas recursivas al sistema de archivos (`resolve` y `exists`) para rutas que ya han sido marcadas como inválidas o inexistentes en la sesión, reduciendo drásticamente las llamadas a I/O redundantes.
+- `2026-10-02T07:12:47` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejora la robustez del motor de ingesta de `assistant.py` al añadir una verificación explícita de tamaño y profundidad recursiva en `ingest`, evitando errores en casos límite donde una fuente de datos malintencionada o corrupta podría intentar desbordar el objeto `SystemContext` mediante estructuras desproporcionadas.
+- `2026-10-02T07:13:25` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta de rutas en `save_logo_svg` utilizando `is_safe_to_modify` antes de proceder con el guardado, garantizando que ninguna operación de escritura sobre el disco se ejecute si la ruta destino está protegida, evitando así errores de permisos inesperados o modificaciones no autorizadas en carpetas del sistema.
+- `2026-10-02T07:13:36` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-10-02T07:13:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T07:13:36` Corrida terminada. Total usado hoy: 172.

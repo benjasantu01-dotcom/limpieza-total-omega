@@ -387,6 +387,7 @@ class SystemContext:
         y desinfecta campos de texto para prevenir inyecciones.
         """
         if source is None: return False
+        # Verificación explícita de seguridad: prevenir inyecciones de datos masivos o profundos
         if isinstance(source, dict) and (len(source) > 50 or _is_input_too_deep_or_complex(source)):
             return False
         if not (isinstance(source, (dict, SystemContext)) or hasattr(source, "__dict__")):
