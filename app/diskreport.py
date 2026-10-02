@@ -132,7 +132,7 @@ def _is_excluded_path(entry: os.DirEntry, root_str: str) -> bool:
         if any(c in entry.name for c in SUSPICIOUS_CHARS) or '\0' in entry.name:
             return True
         
-        if not entry.path.startswith(root_str):
+        if not os.path.abspath(entry.path).startswith(root_str):
             return True
             
         try:
@@ -259,7 +259,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """
     root_path = _validate_root(directory)
     if root_path is None: return
-    root_str = str(root_path)
+    root_str = os.path.abspath(str(root_path))
     visited_inodes: set[Inode] = set()
     stack: List[str] = [root_str]
     
@@ -278,18 +278,20 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         
                         if entry.is_dir(follow_symlinks=False):
                             try:
-                                st = entry.stat(follow_symlinks=False)
-                                inode = (st.st_dev, st.st_ino)
-                                if inode not in visited_inodes:
-                                    visited_inodes.add(inode)
-                                    stack.append(entry.path)
+                                if os.path.exists(entry.path):
+                                    st = entry.stat(follow_symlinks=False)
+                                    inode = (st.st_dev, st.st_ino)
+                                    if inode not in visited_inodes:
+                                        visited_inodes.add(inode)
+                                        stack.append(entry.path)
                             except OSError:
                                 continue
                         elif entry.is_file(follow_symlinks=False):
                             try:
-                                st = entry.stat(follow_symlinks=False)
-                                sz = int(st.st_size)
-                                if sz >= 0: yield Path(entry.path), sz
+                                if os.path.exists(entry.path):
+                                    st = entry.stat(follow_symlinks=False)
+                                    sz = int(st.st_size)
+                                    if sz >= 0: yield Path(entry.path), sz
                             except OSError:
                                 continue
                     except (StopIteration, OSError, PermissionError, AttributeError):

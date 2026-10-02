@@ -209,12 +209,12 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
         try:
             if rule.check(metrics, ratio):
                 msg = rule.message_factory(metrics)
+                if not isinstance(msg, str): continue
                 # Sanitización estricta: solo caracteres imprimibles, sin saltos, límite 200.
-                clean_msg = "".join(filter(str.isprintable, str(msg))).strip()
+                clean_msg = "".join(filter(str.isprintable, msg)).strip()
                 if clean_msg: 
                     findings.append(clean_msg[:200])
         except Exception:
-            # Captura cualquier error en la evaluación de la regla para no interrumpir el pipeline.
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:

@@ -748,3 +748,13 @@ FAILED evolve/tests/test_modules.py::test_min_size_filters_out_tiny_files - Attr
 - `2026-10-02T12:19:40` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_process_file_entry` añadiendo una comprobación explícita mediante `is_protected_path` al iterar, asegurando que cualquier subdirectorio accedido sea validado recursivamente contra las listas de bloqueo antes de procesar su contenido.
 - `2026-10-02T12:19:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T12:19:40` Corrida terminada. Total usado hoy: 292.
+- `2026-10-02T12:27:52` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-10-02T12:28:25` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `walk_files` implementando un chequeo explícito de existencia antes de realizar operaciones de estadísticas (`os.scandir` ya garantiza que la entrada existía al momento del listado, pero el sistema puede cambiar mientras se procesa) y añadiendo una validación adicional para asegurar que `entry.path` sea una ruta absoluta, evitando posibles comportamientos ambiguos si el directorio de trabajo cambia durante la ejecución.
+- `2026-10-02T12:28:54` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` asegurando que el chequeo de seguridad (`_safe_path_check`) se aplique explícitamente antes de procesar cualquier entrada del escaneo, evitando procesar accesos a archivos o directorios fuera del ámbito permitido.
+- `2026-10-02T12:29:23` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_evaluate_rules` validando la integridad del mensaje generado antes de su procesamiento, asegurando que las reglas de recomendación no puedan inyectar contenido inesperado o malicioso en el reporte final.
+- `2026-10-02T12:30:23` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-02T12:31:26` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-02T12:31:37` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-02T12:32:49` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-02T12:32:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T12:32:49` Corrida terminada. Total usado hoy: 296.
