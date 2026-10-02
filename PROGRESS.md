@@ -8,23 +8,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **212** (42.1% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 45
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-01 | 123 | 5 | 24 | 9 | 115 |
-| 2026-10-02 | 89 | 6 | 21 | 9 | 103 |
+| 2026-10-01 | 120 | 5 | 23 | 9 | 115 |
+| 2026-10-02 | 92 | 6 | 21 | 9 | 104 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **47**
-- legibilidad y documentación: **44**
+- manejo de errores y validación de entradas: **46**
 - robustez ante casos límite: **43**
-- manejo de errores y validación de entradas: **43**
+- legibilidad y documentación: **41**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
@@ -35,17 +35,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **18**
 - `scanner.py`: **17**
 - `healthscore.py`: **17**
-- `memory.py`: **16**
-- `organizer.py`: **16**
-- `assistant.py`: **16**
+- `assistant.py`: **17**
 - `duplicates.py`: **15**
-- `branding.py`: **13**
-- `browser.py`: **12**
+- `organizer.py`: **15**
+- `memory.py`: **15**
+- `branding.py`: **14**
+- `browser.py`: **13**
 - `startup.py`: **8**
-- `main.py`: **3**
+- `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-02T09:47:42` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_in_use` capturando excepciones críticas de bajo nivel (`OSError`, `PermissionError`, etc.) y validando explícitamente el tipo de retorno de `os.open` para evitar que una manipulación de descriptores de archivo corrupta o inválida propague un error fuera del módulo.
+- `2026-10-02T09:47:22` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `draw_ring` mediante la validación explícita del parámetro `canvas` y el manejo preventivo de excepciones aritméticas y de desbordamiento, asegurando que el renderizado de la interfaz no se interrumpa ante datos de entrada mal formados o contextos de dibujo inválidos.
+- `2026-10-02T09:46:38` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemContext.ingest` al implementar una validación explícita de tipos que evita errores de `AttributeError` o corrupción del estado cuando se reciben objetos mal formados o tipos inesperados durante la ingesta de datos.
 - `2026-10-02T08:24:13` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de TOCTOU (Time-of-Check to Time-of-Use) mediante el uso de `os.fstat` sobre el descriptor de archivo abierto en lugar de la ruta, asegurando que las validaciones de metadatos (tipo de archivo, inodos, permisos) se ejecuten sobre el mismo objeto que se va a leer.
 - `2026-10-02T08:23:40` **scanner.py** (seguridad defensiva): Se ha implementado una validación de ruta absoluta canónica y atómica dentro de `Scanner._is_inside_base_root` y `Scanner._is_safe_entry` para prevenir ataques de trayectoria (path traversal) mediante el uso de `.resolve()` previo a cualquier comparación, asegurando que el scanner nunca abandone el contexto restringido del usuario incluso ante manipulaciones de enlaces simbólicos o rutas relativas complejas.
 - `2026-10-02T08:15:14` **safety.py** (seguridad defensiva): Se ha implementado `_is_directory_junction_strict` usando `GetFileInformationByHandle` para una detección robusta de puntos de reparse, eliminando la dependencia exclusiva de atributos de archivo (`FILE_ATTRIBUTE_REPARSE_POINT`), lo cual mejora la seguridad defensiva contra redirecciones NTFS sofisticadas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-02T07:44:29` **startup.py** (robustez ante casos límite): Mejoré la robustez de `StartupEntry._resolve_path_from_command` añadiendo un manejo de excepciones más granular y un chequeo preventivo de rutas vacías o inválidas para evitar procesar cadenas malformadas que resultan de comandos de registro truncados o corruptos.
 - `2026-10-02T07:44:12` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de persistencia en `save()` y `_load_impl()` ante condiciones de carrera y sistemas de archivos con bloqueos estrictos, introduciendo un manejo más resiliente ante el error `OSError` durante la sincronización de metadatos (`os.fsync`) y verificaciones de integridad post-escritura.
 - `2026-10-02T07:43:12` **safety.py** (robustez ante casos límite): Se añadió una validación crítica en `_check_file_integrity` para detectar el cambio de tipo de archivo (de archivo a directorio o viceversa) durante la ejecución, lo cual previene ataques de reemplazo de objetos (`TOCTOU`) que podrían eludir las verificaciones de seguridad iniciales al cambiar la naturaleza del destino.
-- `2026-10-02T07:35:28` **quarantine.py** (robustez ante casos límite): Se ha añadido un robusto manejo de estados de carrera y accesos concurrentes mediante un sistema de reintentos con `backoff` exponencial en `_atomic_isolate_file`, asegurando que operaciones de I/O bloqueadas por procesos externos no provoquen una excepción fatal del sistema.
-- `2026-10-02T07:23:23` **healthscore.py** (robustez ante casos límite): Se ha robustecido el motor de `healthscore.py` ante datos corruptos o inesperados en `SystemMetrics` mediante la adición de un chequeo de tipos estricto y la prevención de fallos silenciosos durante la ejecución del pipeline, asegurando que cualquier entrada externa no provoque un cálculo inconsistente.
-- `2026-10-02T07:22:54` **duplicates.py** (robustez ante casos límite): Se introdujo una verificación de integridad en `_group_paths_by_hash` para manejar archivos que podrían desaparecer entre el escaneo inicial y el cálculo de hash, evitando errores de ejecución y mejorando la robustez del bucle frente a cambios en el sistema de archivos durante la operación.

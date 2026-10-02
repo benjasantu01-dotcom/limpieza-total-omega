@@ -564,3 +564,15 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-02T09:38:39` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-10-02T09:38:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T09:38:39` Corrida terminada. Total usado hoy: 228.
+- `2026-10-02T09:44:42` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-10-02T09:44:44` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-02T09:44:44` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-02T09:45:04` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-02T09:45:04` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-02T09:45:35` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-02T09:45:35` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-02T09:46:38` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `SystemContext.ingest` al implementar una validación explícita de tipos que evita errores de `AttributeError` o corrupción del estado cuando se reciben objetos mal formados o tipos inesperados durante la ingesta de datos.
+- `2026-10-02T09:47:22` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `draw_ring` mediante la validación explícita del parámetro `canvas` y el manejo preventivo de excepciones aritméticas y de desbordamiento, asegurando que el renderizado de la interfaz no se interrumpa ante datos de entrada mal formados o contextos de dibujo inválidos.
+- `2026-10-02T09:47:42` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_in_use` capturando excepciones críticas de bajo nivel (`OSError`, `PermissionError`, etc.) y validando explícitamente el tipo de retorno de `os.open` para evitar que una manipulación de descriptores de archivo corrupta o inválida propague un error fuera del módulo.
+- `2026-10-02T09:47:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T09:47:42` Corrida terminada. Total usado hoy: 232.

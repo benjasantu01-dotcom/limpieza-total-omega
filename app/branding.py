@@ -549,6 +549,7 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         
         # Coordenadas relativas
         cx, cy = float(canvas_x), float(canvas_y)
+        if not math.isfinite(cx) or not math.isfinite(cy): return
         borde: float = float(thick) / 2.0
         caja = (cx + borde, cy + borde, cx + diam - borde, cy + diam - borde)
         

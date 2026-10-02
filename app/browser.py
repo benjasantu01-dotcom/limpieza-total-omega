@@ -184,10 +184,11 @@ def _is_file_in_use(path_obj: Path) -> bool:
     if not isinstance(path_obj, Path) or not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
         return True
     try:
-        # Usamos flags O_RDONLY | O_EXCL para intentar obtener acceso exclusivo
         fd: int = os.open(str(path_obj), os.O_RDONLY | os.O_EXCL)
-        os.close(fd)
-        return False
+        if fd >= 0:
+            os.close(fd)
+            return False
+        return True
     except (OSError, PermissionError, FileNotFoundError, InterruptedError, TypeError, ValueError):
         return True
 
