@@ -431,7 +431,7 @@ def _get_cached_stripe_data(scale: float, franjas_count: int) -> Tuple[Tuple[Tup
     return _get_stripe_params(scale, franjas_count), gradient_colors(franjas_count)
 
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Renderiza las franjas con gradiente en el interior del escudo escalado."""
+    """Renderiza las franjas con gradiente dentro del escudo, escalando posiciones según el factor provisto."""
     try:
         if not math.isfinite(scale) or scale <= 0: return
         franjas_count = max(6, int(28 * scale))
@@ -447,7 +447,7 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
     except (TypeError, ValueError, ZeroDivisionError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Renderiza los detalles estéticos superiores (trazo y símbolo Omega) del escudo."""
+    """Renderiza los detalles ornamentales superiores del escudo (trazo de impacto y símbolo Omega)."""
     try:
         if not math.isfinite(scale) or scale <= 0: return
         canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, 
@@ -463,13 +463,12 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """
-    Renderiza el logo corporativo sobre un lienzo canvas provisto.
+    Renderiza el logo corporativo sobre un lienzo canvas, aplicando escalado de componentes.
     
     Args:
-        canvas: Objeto canvas (Protocol) para renderizar.
+        canvas: Objeto canvas (Protocol) destino.
         size: Diámetro total del logo (escala base 128 units).
-        canvas_x: Coordenada X de origen superior-izquierda.
-        canvas_y: Coordenada Y de origen superior-izquierda.
+        canvas_x, canvas_y: Coordenadas de origen superior-izquierda.
     """
     try:
         s = float(size)
@@ -489,14 +488,13 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
     """
-    Dibuja una barra horizontal de ancho dado utilizando interpolación de colores segmentada.
+    Dibuja una barra horizontal con degradado interpolado utilizando segmentación por color.
     
     Args:
-        canvas: Objeto canvas (Protocol) para renderizar.
-        width: Ancho total de la barra en píxeles.
+        canvas: Objeto canvas (Protocol) destino.
+        width: Ancho de la barra en píxeles.
         height: Grosor de la línea.
-        canvas_x: Origen horizontal.
-        canvas_y: Origen vertical.
+        canvas_x, canvas_y: Coordenadas de origen.
         stops: Colores para el gradiente.
     """
     try:
@@ -516,17 +514,17 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, 
               track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
     """
-    Renderiza un gráfico circular indicativo de salud (0-100%).
+    Renderiza un gráfico circular indicativo de salud (arco de progreso 0-100%).
     
-    Calcula el arco de progreso basándose en una escala de 360 grados y 
-    aplica validaciones de seguridad para evitar desbordamientos de geometría.
+    Calcula el arco basándose en 360 grados y aplica validaciones geométricas para
+    garantizar que el trazo no desborde las dimensiones del contenedor.
     
     Args:
-        percent: Valor numérico 0-100 para el arco de progreso.
-        size: Diámetro total del anillo en píxeles.
-        thickness: Grosor del trazado del anillo.
-        track: Color opcional para el anillo de fondo.
-        fill: Color opcional para el arco de progreso activo.
+        percent: Valor numérico 0-100.
+        size: Diámetro del anillo.
+        thickness: Grosor del trazo.
+        track: Color de fondo (opcional).
+        fill: Color activo del arco (opcional).
     """
     try:
         if percent is None or canvas is None: return

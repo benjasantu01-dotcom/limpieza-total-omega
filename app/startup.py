@@ -368,7 +368,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
                 seen_commands.add(clean_cmd)
                 parsed_entries.append(StartupEntry(name=clean_name, command=clean_cmd, source=source))
             
-    except (csv.Error, OSError, ValueError, TypeError):
+    except (csv.Error, OSError, ValueError, TypeError, IndexError):
         return []
     return parsed_entries
 
