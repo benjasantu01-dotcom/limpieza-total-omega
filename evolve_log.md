@@ -1026,3 +1026,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-02T02:38:08` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
 - `2026-10-02T02:38:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-02T02:38:08` Corrida terminada. Total usado hoy: 64.
+- `2026-10-02T02:46:20` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-10-02T02:47:04` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se introdujo `_check_metric_integrity` para validar que las métricas obtenidas sean finitas y coherentes antes de su uso, mitigando riesgos de errores de cálculo o desbordamientos en las respuestas del asistente, y se reforzó `_safe_float` para manejar explícitamente valores `NaN` (Not a Number) que podrían evadir chequeos de tipo pero corromper cálculos posteriores.
+- `2026-10-02T02:47:41` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). He mejorado la robustez de `draw_ring` ante entradas numéricas extremas o inválidas y optimizado la validación de los parámetros geométricos para asegurar que el cálculo del radio del arco siempre sea positivo y no cause errores de renderizado en el `Canvas`.
+- `2026-10-02T02:48:07` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-10-02T02:48:19` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` frente a errores de acceso y condiciones de carrera (archivos eliminados durante el escaneo) envolviendo la iteración de `os.scandir` y la obtención de atributos (`stat`) en bloques `try-except` más granulares, asegurando que el proceso de recolección de datos no se aborte inesperadamente ante fallos de I/O específicos de sistemas operativos.
+- `2026-10-02T02:48:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-02T02:48:19` Corrida terminada. Total usado hoy: 68.

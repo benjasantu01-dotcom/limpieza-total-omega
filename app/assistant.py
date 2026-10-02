@@ -85,6 +85,10 @@ def _is_safe_key(key: str) -> bool:
     """Valida que una clave de diccionario o atributo no sea privada o interna."""
     return isinstance(key, str) and not (key.startswith("__") or key.startswith("_") or key == "ingest")
 
+def _check_metric_integrity(val: float) -> bool:
+    """Verifica que un valor numérico sea seguro, finito y coherente para el asistente."""
+    return isinstance(val, (int, float)) and math.isfinite(val) and not math.isnan(val)
+
 def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
     """
     Decorador que protege los manejadores de consulta del asistente.
@@ -151,7 +155,7 @@ class ProblemCriterion(NamedTuple):
 
     def _evaluate_metric(self, val: float) -> bool:
         """Ejecuta la comparación lógica según el operador del criterio."""
-        if not math.isfinite(val):
+        if not _check_metric_integrity(val):
             return False
         if self.operator == "<":
             return val < self.threshold
@@ -171,7 +175,7 @@ class ProblemCriterion(NamedTuple):
         """
         val: float = ctx.get_metric(self.metric_key, DEFAULT_METRIC_VAL)
         
-        if val < 0 or not math.isfinite(val) or not self._evaluate_metric(val):
+        if not _check_metric_integrity(val) or val < 0 or not self._evaluate_metric(val):
             return None
             
         try:
@@ -281,12 +285,12 @@ _VALIDATORS: Final[dict[str, MetricSpec]] = {
 }
 
 def _safe_float(val: Any, default: float = 0.0) -> float:
-    """Convierte cualquier valor a float asegurando que el resultado sea finito y no negativo."""
+    """Convierte cualquier valor a float asegurando que el resultado sea finito, real y no negativo."""
     try:
         if val is None or isinstance(val, bool) or not isinstance(val, (int, float, str)):
             return default
         f = float(val)
-        return f if (math.isfinite(f) and f >= 0) else default
+        return f if _check_metric_integrity(f) and f >= 0 else default
     except (TypeError, ValueError):
         return default
 
@@ -305,7 +309,7 @@ def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
 
 def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
     """Verifica si un valor numérico está dentro del rango lógico definido por su especificación."""
-    return math.isfinite(val) and spec.min_val <= val <= spec.max_val
+    return _check_metric_integrity(val) and spec.min_val <= val <= spec.max_val
 
 @dataclass
 class SystemContext:
@@ -333,7 +337,7 @@ class SystemContext:
     def get_metric(self, key: str, default: float) -> float:
         """Retorna una métrica numérica validada o el valor por defecto si falla."""
         val = getattr(self, key, None)
-        if val is None or not isinstance(val, (int, float)) or not math.isfinite(val):
+        if not _check_metric_integrity(val if isinstance(val, (int, float)) else -1.0):
             return default
         return float(val)
 
@@ -364,7 +368,7 @@ class SystemContext:
         if val is None or not spec.is_valid_type(val): return None
         try:
             float_val = float(val)
-            if not math.isfinite(float_val) or not _is_metric_within_bounds(float_val, spec): return None
+            if not _is_metric_within_bounds(float_val, spec): return None
             return spec.cast_func(float_val)
         except (TypeError, ValueError):
             return None

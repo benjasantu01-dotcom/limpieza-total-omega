@@ -527,20 +527,23 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         fill: Color activo del arco (opcional).
     """
     try:
-        if percent is None or canvas is None: return
-        val = float(percent)
-        cx, cy = float(canvas_x), float(canvas_y)
-        if not math.isfinite(val) or not math.isfinite(cx) or not math.isfinite(cy): val = 0.0
+        if canvas is None: return
+        # Normalización robusta de entrada
+        val = float(percent) if percent is not None else 0.0
+        if not math.isfinite(val): val = 0.0
         val = max(0.0, min(100.0, val))
         
-        # Validar tamaño y grosor para evitar inconsistencias geométricas
+        # Geometría segura
         diam = max(20, min(2048, int(size)))
         max_thick = (diam // 2) - 1
         thick = max(2, min(int(thickness), max_thick))
         
+        # Coordenadas relativas
+        cx, cy = float(canvas_x), float(canvas_y)
         borde: float = float(thick) / 2.0
         caja = (cx + borde, cy + borde, cx + diam - borde, cy + diam - borde)
         
+        # Renderizado de track y arco activo
         canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=thick)
         if val > 0: 
             fill_color = fill or score_color(val)
