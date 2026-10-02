@@ -35,6 +35,7 @@ class Grade(Enum):
 
     @classmethod
     def from_score(cls, score: float | int) -> str:
+        """Determina la calificación alfabética según el puntaje numérico recibido."""
         s = float(score)
         if s >= 90: return cls.A.value
         if s >= 80: return cls.B.value
@@ -150,6 +151,7 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
 
 @dataclass
 class SystemMetrics:
+    """Contenedor de datos con todas las métricas de sistema necesarias para el cálculo de salud."""
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -160,6 +162,7 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def __post_init__(self) -> None:
+        """Auto-ejecuta la validación tras la inicialización del objeto."""
         self.validate()
 
     def validate(self) -> None:
@@ -185,18 +188,23 @@ class SystemMetrics:
 
 @dataclass
 class HealthResult:
+    """Resultado consolidado del cálculo de salud que incluye puntaje y recomendaciones."""
     score: int
     grade: str
     breakdown: Dict[MetricKey, int] = field(default_factory=dict)
     recommendations: List[str] = field(default_factory=list)
 
     @property
-    def is_healthy(self) -> bool: return 80 <= self.score <= 100
+    def is_healthy(self) -> bool: 
+        """Retorna True si el sistema está en un estado óptimo según el puntaje."""
+        return 80 <= self.score <= 100
 
-def grade_for_score(score: float | int) -> str: return Grade.from_score(score)
+def grade_for_score(score: float | int) -> str: 
+    """Wrapper para acceder a la lógica de calificación basada en puntaje."""
+    return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], ratio: NormalizedRatio, findings: List[str]) -> None:
-    """Evalúa reglas de recomendación y sanitiza los mensajes de salida."""
+    """Evalúa reglas de recomendación, filtra mensajes inseguros y los agrega a la lista de hallazgos."""
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
@@ -239,17 +247,17 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."])
 
 def _render_bar(points: int, max_val: int) -> str:
-    """Crea una representación visual (ASCII) de barra de progreso."""
+    """Genera una cadena ASCII representando una barra de progreso basada en puntos obtenidos."""
     limit = max(1, max_val)
     p = max(0, min(points, limit))
     return "#" * p + "." * (limit - p)
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """Genera una lista de strings legibles representando el reporte de salud."""
+    """Genera una lista de strings legibles representando el reporte de salud para la UI."""
     if not isinstance(result, HealthResult): 
         return ["Error: Informe de salud no disponible."]
         
-    lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
+    lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, maximo in WEIGHTS.items():
         points = result.breakdown.get(area, 0)
         lines.append(f"  {area.capitalize():<12} {points:>2}/{maximo:<2} [{_render_bar(points, maximo)}]")

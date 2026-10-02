@@ -346,7 +346,10 @@ def _is_system_process(pid: int) -> bool:
     return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
 
 def _get_process_path(pid: int) -> Optional[Path]:
-    """Obtiene la ruta absoluta del ejecutable para un PID dado usando APIs Win32."""
+    """
+    Obtiene la ruta absoluta del ejecutable para un PID dado usando APIs Win32.
+    Aplica filtros de `safety.py` para asegurar que no se auditen rutas prohibidas.
+    """
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
     if not handle: return None
@@ -366,7 +369,10 @@ def _get_process_path(pid: int) -> Optional[Path]:
     return None
 
 def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
-    """Verifica si un proceso es candidato seguro para una operación de trimming."""
+    """
+    Verifica si un proceso es candidato seguro para una operación de trimming.
+    Valida que no sea crítico y que su ejecutable no resida en directorios protegidos.
+    """
     if _is_system_process(pid):
         return False, "Proceso crítico del sistema protegido."
     if _get_process_path(pid) is None:
@@ -378,7 +384,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     Intenta liberar el working set de un proceso (solo Windows).
     
     Args:
-        pid: ID del proceso objetivo.
+        pid: ID del proceso objetivo (numérico o cadena numérica).
 
     Returns:
         Tuple indicando éxito (bool) y mensaje de estado (str).
@@ -397,7 +403,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     psapi = ctypes.windll.psapi
     if not hasattr(psapi, "EmptyWorkingSet"): return False, "API no disponible en este sistema."
 
-    # Verificar seguridad profunda del entorno del proceso
+    # Verificar seguridad profunda del entorno del proceso antes de intentar el TRIM
     is_safe, error_msg = _is_safe_to_trim(target_pid)
     if not is_safe: return False, error_msg or "Verificación de seguridad fallida."
 
