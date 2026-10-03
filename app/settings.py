@@ -387,11 +387,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     ruta = settings_path(custom_base)
     cleaned_settings = _coerce_and_verify(validate(values))
     
-    if ruta.exists():
-        try:
-            if _load_impl(ruta) == cleaned_settings: return ruta
-        except (OSError, PermissionError): pass
-    
     parent = ruta.parent
     try:
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
@@ -400,7 +395,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
         
-        # Validación extra usando ensure_safe_to_modify (lanza excepciones si inseguro)
         ensure_safe_to_modify(str(parent))
         if ruta.exists(): ensure_safe_to_modify(str(ruta))
     except (TypeError, ValueError, OSError, PermissionError): return None
