@@ -432,7 +432,10 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
 
 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Persiste el manifiesto usando escritura atómica para evitar corrupción."""
+    """
+    Persiste el manifiesto usando escritura atómica.
+    Contrato: Valida tipos antes de escribir y asegura integridad mediante fsync.
+    """
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista.")
     if not all(isinstance(i, QuarantineItem) for i in items):
