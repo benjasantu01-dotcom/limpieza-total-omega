@@ -305,6 +305,7 @@ def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
         ))
     except (TypeError, ValueError): return start
 
+@lru_cache(maxsize=128)
 def _interpolate_rgb(s1: RGBTuple, s2: RGBTuple, delta: float) -> RGBTuple:
     """Calcula un punto intermedio entre dos colores RGB base mediante un factor delta."""
     return (

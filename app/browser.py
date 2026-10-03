@@ -233,9 +233,9 @@ def _sum_directory_recursive(
     if not isinstance(root_path, Path) or depth > MAX_SCAN_DEPTH:
         return ScanResult(0, False)
     
-    path_str = str(root_path)
-    if path_str in visited_dirs:
-        return ScanResult(visited_dirs[path_str], True)
+    path_norm = os.path.normcase(str(root_path))
+    if path_norm in visited_dirs:
+        return ScanResult(visited_dirs[path_norm], True)
 
     total_bytes: int = 0
     try:
@@ -248,7 +248,7 @@ def _sum_directory_recursive(
     except (OSError, PermissionError):
         return ScanResult(total_bytes, False)
         
-    visited_dirs[path_str] = total_bytes
+    visited_dirs[path_norm] = total_bytes
     return ScanResult(total_bytes, True)
 
 def directory_size(path: Optional[OSPath]) -> int:

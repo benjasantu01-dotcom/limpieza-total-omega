@@ -458,3 +458,11 @@ assert not {'replace'}
 - `2026-10-03T05:00:55` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo incorporando tipos explícitos en docstrings y aclarando el flujo de resolución de rutas y validación de seguridad dentro de `StartupEntry`, facilitando el mantenimiento a futuro.
 - `2026-10-03T05:00:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T05:00:55` Corrida terminada. Total usado hoy: 119.
+- `2026-10-03T05:08:32` Arrancando corrida. Quedan hoy ~181 peticiones objetivo.
+- `2026-10-03T05:09:35` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-03T05:10:26` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el cálculo del resumen de contexto en `assistant.py` reemplazando la lógica de construcción de strings en `_generate_safe_context` (que se ejecutaba íntegramente en cada llamada) por una versión que aprovecha la pre-compilación de la lista de métricas y evita cálculos redundantes durante la serialización del contexto.
+- `2026-10-03T05:11:03` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el rendimiento del renderizado de barras decorativas en `draw_gradient_bar` y del sistema de dibujo de escudos utilizando `lru_cache` para evitar el re-cálculo costoso de segmentos y geometría en cada frame de UI, alineándose con el enfoque de rendimiento.
+- `2026-10-03T05:11:34` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `detect_profiles` y `_sum_directory_recursive` implementando la persistencia de `visited_dirs` y `visited_inodes` a través de toda la operación de escaneo, evitando procesar redundante o re-calcular tamaños de subdirectorios ya visitados durante una misma corrida.
+- `2026-10-03T05:11:46` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-10-03T05:11:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T05:11:46` Corrida terminada. Total usado hoy: 123.

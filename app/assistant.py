@@ -81,6 +81,13 @@ _MAX_MSG_CHUNK: Final[int] = 200
 _MAX_PROMPT_LIMIT: Final[int] = 4000
 _MAX_NESTING_DEPTH: Final[int] = 2
 
+# Estructura fija para resumen de contexto para evitar recalcular iterables
+_CONTEXT_SCHEMA: Final = (
+    ("score", "", 0), ("junk_mb", " MB", 0), ("suspicious_count", "", 0), 
+    ("memory_available_percent", "%", 0), ("disk_free_percent", "%", 0),
+    ("duplicate_mb", " MB", 0), ("startup_count", "", 0)
+)
+
 def _is_safe_key(key: str) -> bool:
     """Valida que una clave de diccionario o atributo no sea privada o interna."""
     return isinstance(key, str) and not (key.startswith("__") or key.startswith("_") or key == "ingest")
@@ -491,11 +498,7 @@ def _generate_safe_context(ctx: SystemContext) -> str:
     """Genera un resumen textual del contexto validando cada métrica estrictamente."""
     metrics_list = []
     
-    to_include = [("score", "", 0), ("junk_mb", " MB", 0), ("suspicious_count", "", 0), 
-                  ("memory_available_percent", "%", 0), ("disk_free_percent", "%", 0),
-                  ("duplicate_mb", " MB", 0), ("startup_count", "", 0)]
-    
-    for key, unit, precision in to_include:
+    for key, unit, precision in _CONTEXT_SCHEMA:
         val = ctx.get_metric(key, -1.0)
         if val >= 0 and val < 1e12: 
             metrics_list.append(f"{key}: {_fmt_metric(val, unit, precision)}")
