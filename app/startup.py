@@ -174,7 +174,14 @@ class StartupEntry:
             if is_protected_path(p):
                 return False
             # Lstat detecta el symlink en el path mismo, is_symlink verifica el nodo
-            if p.is_symlink() or p.is_junction() if hasattr(p, 'is_junction') else False:
+            is_junction = False
+            if hasattr(p, 'is_junction'):
+                try:
+                    is_junction = p.is_junction()
+                except OSError:
+                    is_junction = True
+            
+            if p.is_symlink() or is_junction:
                 return False
             if not p.exists() or not p.is_file():
                 return False

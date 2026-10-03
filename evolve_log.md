@@ -1154,3 +1154,71 @@ FAILED evolve/tests/test_modules.py::test_min_size_filters_out_tiny_files - Attr
 - `2026-10-03T01:52:40` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` implementando una validación de `disk_usage` y estado de permisos antes de realizar operaciones de escritura, evitando fallos silenciosos cuando el disco está lleno o el sistema de archivos marca el volumen como solo lectura.
 - `2026-10-03T01:52:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T01:52:40` Corrida terminada. Total usado hoy: 43.
+- `2026-10-03T01:54:59` Arrancando corrida. Quedan hoy ~257 peticiones objetivo.
+- `2026-10-03T01:55:31` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se mejora la robustez de `StartupEntry._validate_file_access` al manejar explícitamente `OSError` durante la llamada a `is_junction()`, protegiendo la ejecución ante sistemas de archivos donde la verificación de puntos de reparse pueda fallar por permisos insuficientes o inconsistencias del sistema.
+- `2026-10-03T01:56:15` Tests FALLARON:
+```
+l_gemini",
+                            lambda *a, **k: "Respuesta del modelo")
+    
+        respuesta = assistant.ask("¿qué hago?", _contexto_lleno(), tmp_path)
+>       assert respuesta.source == "gemini"
+E       AssertionError: assert 'local' == 'gemini'
+E         
+E         - gemini
+E         + local
+
+evolve/tests/test_assistant.py:387: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:157: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - AssertionError: assert 'local' == 'gemini'
+  
+  - gemini
+  + local
+1 failed, 298 passed, 7 warnings in 1.50s
+
+```
+- `2026-10-03T01:56:15` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Reforcé la seguridad de la entrada en `ask` asegurando que, incluso si el motor local falla o retorna un objeto inesperado, la aplicación no procese datos no validados, y añadí una validación explícita en `_build_payload` para evitar que el motor de IA reciba cadenas que contengan patrones de inyección, garantizando que el `gatekeeper` de seguridad sea el último filtro antes del envío de datos.
+- `2026-10-03T01:56:50` Tests FALLARON:
+```
+/tmp/pytest-of-runner/pytest-3/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:157: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+1 failed, 298 passed, 7 warnings in 1.52s
+
+```
+- `2026-10-03T01:56:50` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se ha mejorado `save_logo_svg` reemplazando la creación de directorios directa por una validación estricta, asegurando que solo se operen rutas permitidas y manejando la atomicidad de la escritura mediante un archivo temporal, evitando dejar basura en caso de error.
+- `2026-10-03T01:57:03` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_is_file_in_use` eliminando el uso de `os.open` con `O_EXCL` (que no bloquea el archivo para lectura, sino que falla si ya existe) y reemplazándolo por una verificación de acceso más robusta mediante atributos de sistema, además de encapsular la apertura de archivos en un contexto de lectura que no intente modificar el estado del sistema de archivos.
+- `2026-10-03T01:57:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T01:57:03` Corrida terminada. Total usado hoy: 47.

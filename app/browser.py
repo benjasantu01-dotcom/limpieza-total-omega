@@ -180,16 +180,13 @@ def _should_skip_entry(
     return False
 
 def _is_file_in_use(path_obj: Path) -> bool:
-    """Verifica si un archivo está bloqueado abriéndolo en modo exclusivo."""
+    """Verifica si un archivo está bloqueado intentando abrirlo en solo lectura sin bloquear."""
     if not isinstance(path_obj, Path) or not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
         return True
     try:
-        fd: int = os.open(str(path_obj), os.O_RDONLY | os.O_EXCL)
-        if fd >= 0:
-            os.close(fd)
+        with open(path_obj, 'rb'):
             return False
-        return True
-    except (OSError, PermissionError, FileNotFoundError, InterruptedError, TypeError, ValueError):
+    except (OSError, PermissionError):
         return True
 
 def _process_file_entry(
