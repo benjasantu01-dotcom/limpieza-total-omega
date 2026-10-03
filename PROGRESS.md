@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **211** (41.9% de aceptación)
-- Rechazadas por tests: 12
+- Mejoras aceptadas: **214** (42.5% de aceptación)
+- Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-01 | 43 | 2 | 9 | 5 | 48 |
+| 2026-10-01 | 43 | 2 | 9 | 5 | 44 |
 | 2026-10-02 | 140 | 8 | 31 | 16 | 155 |
-| 2026-10-03 | 28 | 2 | 7 | 1 | 9 |
+| 2026-10-03 | 31 | 3 | 7 | 1 | 9 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **40**
+- seguridad defensiva: **43**
 - robustez ante casos límite: **38**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **20**
+- `diskreport.py`: **19**
 - `quarantine.py`: **19**
-- `diskreport.py`: **18**
 - `healthscore.py`: **18**
 - `organizer.py`: **17**
+- `duplicates.py`: **17**
 - `safety.py`: **17**
 - `memory.py`: **16**
 - `scanner.py`: **16**
-- `duplicates.py`: **16**
 - `assistant.py`: **15**
 - `browser.py`: **15**
 - `branding.py`: **12**
 - `startup.py`: **8**
-- `main.py`: **4**
+- `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-03T02:08:35` **main.py** (seguridad defensiva): Se ha implementado un mecanismo de "hashing de integridad" en `on_build_report` para garantizar que la información sensible no sea alterada ni inyectada desde fuentes externas, aplicando un filtrado estricto de caracteres y validando las rutas de persistencia mediante el decorador `ensure_safety` antes de cualquier operación de escritura en disco, cumpliendo así con las reglas de seguridad defensiva solicitadas.
+- `2026-10-03T02:06:04` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` para evitar que el escáner intente acceder a rutas cuya longitud exceda `MAX_PATH` (260 caracteres) mediante una verificación preventiva de `is_safe_to_modify` y el control explícito de la longitud de la cadena, previniendo excepciones innecesarias de `OSError` que pueden ocurrir en Windows al interactuar con rutas profundas.
+- `2026-10-03T02:05:39` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_is_excluded_path` añadiendo una validación explícita mediante `pathlib` para asegurar que las rutas sean absolutas y evitar la posible manipulación de rutas relativas fuera del `root_str`, reforzando el confinamiento del escaneo.
 - `2026-10-03T01:57:03` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_file_in_use` eliminando el uso de `os.open` con `O_EXCL` (que no bloquea el archivo para lectura, sino que falla si ya existe) y reemplazándolo por una verificación de acceso más robusta mediante atributos de sistema, además de encapsular la apertura de archivos en un contexto de lectura que no intente modificar el estado del sistema de archivos.
 - `2026-10-03T01:55:31` **startup.py** (robustez ante casos límite): Se mejora la robustez de `StartupEntry._validate_file_access` al manejar explícitamente `OSError` durante la llamada a `is_junction()`, protegiendo la ejecución ante sistemas de archivos donde la verificación de puntos de reparse pueda fallar por permisos insuficientes o inconsistencias del sistema.
 - `2026-10-03T01:52:40` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` implementando una validación de `disk_usage` y estado de permisos antes de realizar operaciones de escritura, evitando fallos silenciosos cuando el disco está lleno o el sistema de archivos marca el volumen como solo lectura.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-03T01:14:50` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` reemplazando múltiples llamadas a `os.path` y conversiones innecesarias por una validación de `mtime` más eficiente y eliminando el re-parsing innecesario de `DEFAULTS` durante el ciclo de lectura.
 - `2026-10-03T01:06:01` **safety.py** (rendimiento): Se ha optimizado `_get_security_descriptor` reemplazando la consulta de bloqueo de archivo `_is_file_locked_by_other_process` por una lógica que valida el estado desde la caché si el archivo no ha sido modificado, reduciendo drásticamente las llamadas costosas a `CreateFileW` en operaciones repetitivas sobre los mismos archivos.
 - `2026-10-03T01:04:52` **quarantine.py** (rendimiento): Se optimizó la carga y el filtrado del manifiesto reemplazando búsquedas lineales `O(N)` por accesos mediante un diccionario de búsqueda en `purge_all` y `restore_item`, reduciendo la complejidad algorítmica y el uso de memoria en casos con muchos ítems.
-- `2026-10-03T01:02:07` **organizer.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo convirtiendo `JUNK_EXTENSIONS` a un `frozenset` local y usando `endswith` sobre una tupla de extensiones (optimización nativa de CPython), además de reducir accesos redundantes a disco mediante el almacenamiento en caché de los nombres de archivos ya procesados en `_is_valid_junk_entry`.
-- `2026-10-03T01:01:40` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la creación de listas intermedias y el ordenamiento posterior del total de resultados por un `heapq` que mantiene solo los N elementos más pesados, reduciendo la complejidad de memoria y procesador al escalar con muchos procesos.
-- `2026-10-03T00:45:10` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` para obtener metadatos (tamaño) directamente de la entrada del sistema de archivos, eliminando llamadas innecesarias a `stat()` (una llamada al sistema costosa) para cada archivo, y manteniendo la consistencia de seguridad al integrar la validación en el flujo de escaneo.

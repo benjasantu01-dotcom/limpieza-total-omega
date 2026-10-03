@@ -137,7 +137,9 @@ def _is_excluded_path(entry: os.DirEntry, root_str: str) -> bool:
         if any(c in entry.name for c in SUSPICIOUS_CHARS) or '\0' in entry.name:
             return True
         
-        if not os.path.abspath(entry.path).startswith(root_str):
+        # Validación de confinamiento estricto
+        entry_path = Path(entry.path).resolve()
+        if not str(entry_path).startswith(root_str):
             return True
             
         try:
@@ -264,7 +266,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """
     root_path = _validate_root(directory)
     if root_path is None: return
-    root_str = os.path.abspath(str(root_path))
+    root_str = str(root_path.resolve())
     visited_inodes: set[Inode] = set()
     stack: List[str] = [root_str]
     

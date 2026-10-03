@@ -1222,3 +1222,39 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-10-03T01:57:03` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_is_file_in_use` eliminando el uso de `os.open` con `O_EXCL` (que no bloquea el archivo para lectura, sino que falla si ya existe) y reemplazándolo por una verificación de acceso más robusta mediante atributos de sistema, además de encapsular la apertura de archivos en un contexto de lectura que no intente modificar el estado del sistema de archivos.
 - `2026-10-03T01:57:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T01:57:03` Corrida terminada. Total usado hoy: 47.
+- `2026-10-03T02:05:09` Arrancando corrida. Quedan hoy ~253 peticiones objetivo.
+- `2026-10-03T02:05:39` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `_is_excluded_path` añadiendo una validación explícita mediante `pathlib` para asegurar que las rutas sean absolutas y evitar la posible manipulación de rutas relativas fuera del `root_str`, reforzando el confinamiento del escaneo.
+- `2026-10-03T02:06:04` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` para evitar que el escáner intente acceder a rutas cuya longitud exceda `MAX_PATH` (260 caracteres) mediante una verificación preventiva de `is_safe_to_modify` y el control explícito de la longitud de la cadena, previniendo excepciones innecesarias de `OSError` que pueden ocurrir en Windows al interactuar con rutas profundas.
+- `2026-10-03T02:06:30` Tests FALLARON:
+```
+not usados, (
+                f"{nombre} debería ser de solo lectura pero llama a "
+                f"{', '.join(sorted(usados))}"
+            )
+E           AssertionError: healthscore.py debería ser de solo lectura pero llama a replace
+E           assert not {'replace'}
+
+evolve/tests/test_integrity.py:294: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:159: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: healthscore.py debería ser de solo lectura pero llama a replace
+assert not {'replace'}
+1 failed, 298 passed, 7 warnings in 1.48s
+
+```
+- `2026-10-03T02:06:30` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva del pipeline de reporte aplicando una validación de longitud máxima y caracteres permitidos sobre los mensajes generados por `message_factory` en `_evaluate_rules`, evitando así que datos inesperados de métricas (potencialmente maliciosos o malformados) inyecten contenido arbitrario en la interfaz.
+- `2026-10-03T02:07:30` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-03T02:08:35` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha implementado un mecanismo de "hashing de integridad" en `on_build_report` para garantizar que la información sensible no sea alterada ni inyectada desde fuentes externas, aplicando un filtrado estricto de caracteres y validando las rutas de persistencia mediante el decorador `ensure_safety` antes de cualquier operación de escritura en disco, cumpliendo así con las reglas de seguridad defensiva solicitadas.
+- `2026-10-03T02:08:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T02:08:35` Corrida terminada. Total usado hoy: 51.

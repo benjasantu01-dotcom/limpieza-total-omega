@@ -1839,7 +1839,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self.log_lines(["Todavía no corriste ningún análisis. "
                                 "Empezá por la pestaña Salud."], "Informe")
                 return
-            texto = reporting.build_report(self.report_data)
+            
+            # Validación de integridad: sanitizar datos de entrada
+            sanitized_data = {k: [str(line).replace('\x00', '') for line in v] for k, v in self.report_data.items()}
+            texto = reporting.build_report(sanitized_data)
+            
             self.clear("Informe")
             for linea in texto.splitlines():
                 self.log(linea, "Informe")
@@ -1847,6 +1851,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task)
 
     @validated_ui_operation
+    @ensure_safety
     def on_save_report(self, as_markdown: bool) -> None:
         """Callback: Guardar informe en disco."""
         if not self.report_data:
@@ -1864,12 +1869,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def task() -> None:
             try:
+                # Validar seguridad de la ruta final de persistencia
+                self._ensure_path_writable_and_clean(destino)
                 ruta = reporting.save_report(self.report_data, destino, as_markdown=as_markdown)
                 self.log(f"Informe guardado en: {ruta}", "Informe")
             except Exception as e:
                 self.log(f"Error al guardar reporte: {e}", "Informe")
 
-        self.run_async(task)
+        self.run_async(task, target=str(Path(destino).parent))
 
     @validated_ui_operation
     def on_ask_assistant(self, question: Optional[str] = None) -> None:
@@ -1933,6 +1940,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return valores
 
     @validated_ui_operation
+    @ensure_safety
     def on_save_settings(self) -> None:
         """Callback: Guardar configuración."""
         try:
@@ -1973,6 +1981,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task)
 
     @validated_ui_operation
+    @ensure_safety
     def on_reset_settings(self) -> None:
         """Callback: Reset de fábrica."""
         if not self._confirm(

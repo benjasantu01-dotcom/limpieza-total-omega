@@ -46,6 +46,7 @@ FILE_ATTRIBUTE_REPARSE_POINT: int = 0x400
 FILE_ATTRIBUTE_HIDDEN: int = 0x2
 FILE_ATTRIBUTE_SYSTEM: int = 0x4
 MAX_RECURSION_DEPTH: int = 100
+MAX_PATH_LIMIT: int = 260
 
 
 def is_junction(path: Path) -> bool:
@@ -225,7 +226,8 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             continue
             
         real_path_str = str(current_dir)
-        if real_path_str in visited: continue
+        if real_path_str in visited or len(real_path_str) >= MAX_PATH_LIMIT:
+            continue
         visited.add(real_path_str)
             
         try:
