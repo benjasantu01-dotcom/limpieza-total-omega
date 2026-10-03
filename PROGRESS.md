@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Mejoras aceptadas: **206** (40.9% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 226
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-02 | 77 | 3 | 14 | 9 | 94 |
-| 2026-10-03 | 127 | 6 | 29 | 13 | 132 |
+| 2026-10-02 | 76 | 3 | 14 | 9 | 91 |
+| 2026-10-03 | 130 | 6 | 30 | 13 | 132 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
-- manejo de errores y validación de entradas: **40**
+- manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **40**
-- rendimiento: **39**
+- rendimiento: **38**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
-- `safety.py`: **18**
+- `quarantine.py`: **20**
+- `safety.py`: **19**
 - `healthscore.py`: **17**
+- `organizer.py`: **17**
 - `scanner.py`: **17**
 - `settings.py`: **17**
 - `duplicates.py`: **17**
-- `organizer.py`: **16**
 - `diskreport.py`: **16**
 - `assistant.py`: **15**
-- `browser.py`: **14**
 - `memory.py`: **14**
+- `browser.py`: **13**
 - `branding.py`: **11**
 - `startup.py`: **10**
 - `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-03T13:09:52` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `ensure_safe_to_modify` para realizar una validación de tipo temprana sobre el parámetro `path`, evitando errores de tiempo de ejecución (AttributeError/TypeError) en llamadas mal formadas antes de que la función intente procesar la ruta o normalizarla.
+- `2026-10-03T13:08:54` **quarantine.py** (manejo de errores y validación de entradas): Se mejora la robustez de `save_manifest` mediante un bloque `try...finally` que garantiza el cierre de descriptores de archivo y la limpieza de recursos temporales incluso ante errores de serialización o disco, evitando fugas de descriptores.
+- `2026-10-03T13:08:09` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_file_locked` y `_is_safe_for_disk_op` validando explícitamente tipos de entrada y capturando errores de resolución de rutas para evitar excepciones no controladas durante la inspección de archivos.
 - `2026-10-03T12:58:47` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_process_path` validando explícitamente el tamaño del buffer y capturando excepciones de acceso de manera más granular, y se añadió validación de existencia para `psapi` antes de su uso para evitar fallos en entornos con APIs restringidas.
 - `2026-10-03T12:58:12` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `compute_score` ante valores nulos o métricas mal formadas, añadiendo una validación explícita de `metrics` y utilizando un valor por defecto seguro, además de sanitizar la entrada en `_evaluate_rules` para evitar errores de ejecución durante la generación de recomendaciones.
 - `2026-10-03T12:49:42` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `_collect_summary_data` ante entradas de sistema de archivos corruptas o permisos denegados durante la iteración, capturando excepciones de forma específica en los puntos críticos donde un fallo de `os.scandir` o `path.stat` podría interrumpir el análisis completo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-03T10:58:06` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `_is_excluded_path` añadiendo validación de ruta absoluta y evitando la resolución (`resolve`) dentro del bucle principal, lo que previene ataques de tipo Time-of-Check Time-of-Use (TOCTOU) y mejora la resiliencia contra enlaces simbólicos manipulados durante el escaneo.
 - `2026-10-03T10:57:35` **browser.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_file_in_use` sustituyendo el manejo de excepciones genérico por uno que valida explícitamente la seguridad de la ruta antes de intentar cualquier apertura, alineándose con las reglas de seguridad vigentes.
 - `2026-10-03T10:57:01` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la validación implícita por una comprobación booleana (`is_safe_to_modify`) antes de intentar la creación de directorios, evitando que excepciones de validación de ruta interrumpan el flujo de trabajo innecesariamente.
-- `2026-10-03T10:47:30` **assistant.py** (seguridad defensiva): Reforcé la seguridad en `_call_gemini` añadiendo una validación estricta de la URL mediante un prefijo estático y un filtrado de caracteres sospechosos, asegurando que ninguna manipulación de los parámetros de configuración pueda redirigir la petición a un endpoint malicioso o malformado.
-- `2026-10-03T10:46:54` **startup.py** (robustez ante casos límite): Se ha añadido un chequeo de `PermissionError` y `FileNotFoundError` robusto en `_extract_quoted_path` y `_resolve_and_cache_path` para evitar que la app crashee o ignore silenciosamente rutas de registro que contienen caracteres Unicode inesperados o bloqueos de acceso durante la normalización de rutas.
-- `2026-10-03T10:46:21` **settings.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_load_impl` para verificar que el archivo de configuración no sea un enlace simbólico o un archivo especial antes de abrirlo, fortaleciendo la robustez ante ataques de tipo TOCTOU (Time-of-Check to Time-of-Use) y asegurando que solo se procesen archivos regulares.

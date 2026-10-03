@@ -99,7 +99,6 @@ def is_valid_junk_extension(filename: str) -> bool:
 def _get_win_attributes(entry: os.DirEntry) -> int:
     """Extrae atributos de archivo (bitmask) usando syscall de bajo nivel para Windows."""
     try:
-        # Usar lstat cacheado en DirEntry si está disponible para evitar I/O redundante
         return entry.stat(follow_symlinks=False).st_file_attributes
     except (OSError, AttributeError, ValueError):
         return 0
@@ -137,10 +136,9 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """Verifica si el sistema permite acceso de lectura y escritura al archivo."""
-    if path is None or not path.is_file():
+    if not isinstance(path, Path) or not path.is_file():
         return True
     try:
-        # Intenta abrir el archivo en modo append para verificar bloqueo exclusivo
         with open(path, "ab"):
             return False
     except (PermissionError, OSError):
@@ -172,8 +170,9 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """Auditoría de pre-condiciones necesaria antes de ejecutar cualquier escritura en disco."""
-    if not isinstance(src, Path) or not isinstance(dest, Path) or not src.exists(): return False
+    if not isinstance(src, Path) or not isinstance(dest, Path): return False
     try:
+        if not src.exists(): return False
         st = src.lstat()
         # Verificar que sea un archivo regular, que no sea symlink (S_IFLNK) y no tenga hardlinks
         if not src.is_file() or (st.st_mode & 0o170000 == 0o120000) or st.st_nlink > 1: return False
@@ -224,7 +223,6 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(item, protected_cache):
                             _process_directory(Path(item.path), found, depth + 1, protected_cache, visited)
                     elif item.is_file(follow_symlinks=False):
-                        # Se usa el stat obtenido por el iterator (sin llamada adicional)
                         stats = item.stat(follow_symlinks=False)
                         if _is_valid_junk_entry(item.name, stats, now_ts):
                             if not (getattr(stats, 'st_file_attributes', 0) & WIN_ATTR_MASK):

@@ -759,6 +759,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     if path is None:
         raise UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC)
     
+    # Validar el tipo de entrada para prevenir errores en tiempo de ejecución
+    if not isinstance(path, (str, Path, os.PathLike)):
+        raise UnsafePathError(f"Tipo de ruta no soportado: {type(path).__name__}", SafetyValidationErrorCode.GENERIC)
+    
     p = normalize(path)
     
     # Pre-check de archivos críticos de kernel antes de cualquier operación

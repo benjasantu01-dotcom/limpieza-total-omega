@@ -470,9 +470,12 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
             
         with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as temporary_file:
             temp_path = Path(temporary_file.name)
-            temporary_file.write(encoded_content)
-            temporary_file.flush()
-            os.fsync(temporary_file.fileno())
+            try:
+                temporary_file.write(encoded_content)
+                temporary_file.flush()
+                os.fsync(temporary_file.fileno())
+            finally:
+                temporary_file.close()
         
         if temp_path and temp_path.exists() and temp_path.stat().st_size == len(encoded_content):
             os.replace(temp_path, target_path)
