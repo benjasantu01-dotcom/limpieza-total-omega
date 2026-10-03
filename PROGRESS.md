@@ -8,24 +8,24 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-01 | 58 | 3 | 11 | 6 | 64 |
+| 2026-10-01 | 57 | 3 | 11 | 6 | 61 |
 | 2026-10-02 | 140 | 8 | 31 | 16 | 155 |
-| 2026-10-03 | 10 | 0 | 2 | 0 | 0 |
+| 2026-10-03 | 11 | 0 | 4 | 0 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **50**
 - seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **49**
-- legibilidad y documentación: **49**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **34**
 - rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
@@ -36,17 +36,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **18**
 - `diskreport.py`: **18**
 - `organizer.py`: **17**
-- `memory.py`: **16**
 - `scanner.py`: **16**
 - `assistant.py`: **15**
 - `duplicates.py`: **15**
+- `memory.py`: **15**
 - `browser.py`: **14**
 - `branding.py`: **13**
-- `startup.py`: **6**
+- `startup.py`: **7**
 - `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-03T00:34:38` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la implementación de `TypeAlias` (para mejorar la claridad en firmas de funciones complejas) y la adición de docstrings estructurados con secciones "Args" y "Returns", facilitando la mantenibilidad a largo plazo sin alterar el comportamiento.
 - `2026-10-03T00:25:04` **scanner.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del módulo documentando exhaustivamente el propósito y las precondiciones de las funciones de heurística y los métodos de la clase `Scanner`, utilizando docstrings estructurados que facilitan la auditoría del código conforme a los requisitos de seguridad.
 - `2026-10-03T00:24:06` **quarantine.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `quarantine.py` documentando explícitamente los contratos de las funciones críticas de validación y transformando las funciones de guardado en métodos de la clase `QuarantineItem` para encapsular mejor la lógica de persistencia.
 - `2026-10-03T00:15:35` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de bajo nivel en `organizer.py` mediante type hints específicos y docstrings que detallan los requisitos de seguridad y las restricciones técnicas, facilitando la auditoría de los chequeos de seguridad implementados.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-02T14:43:47` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas centralizando la validación de archivos mediante la función `_safe_stat` y añadiendo bloques de control explícitos para capturar posibles fallos en la obtención de metadatos, evitando así que errores aislados en un archivo detengan el escaneo completo.
 - `2026-10-02T14:43:15` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_path_stat_robust` y `ensure_safe_to_modify` implementando capturas de excepciones más específicas (como `PermissionError` y `OSError` con códigos de error de sistema) para evitar que fallos inesperados de E/S pasen desapercibidos o generen una `UnsafePathError` genérica, mejorando la trazabilidad del error.
 - `2026-10-02T14:36:47` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine.py` implementando una validación temprana de tipos y estados en `_get_sha256` y `_safe_unlink`, reduciendo el riesgo de propagación de excepciones inesperadas mediante el uso de filtros explícitos (check-before-act) en lugar de depender únicamente de bloques try-except.
-- `2026-10-02T14:36:19` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones explícitas antes de las operaciones de sistema, reemplazando chequeos implícitos por un control preventivo que asegura que los objetos `Path` sean válidos, no nulos y estén dentro de los límites de seguridad, evitando excepciones innecesarias en tiempo de ejecución.

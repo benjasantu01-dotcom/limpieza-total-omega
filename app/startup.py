@@ -24,9 +24,13 @@ import itertools
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import (
-    Iterable, Optional, Iterator, List, Tuple, Dict, Sequence, Set, Union
+    Iterable, Optional, Iterator, List, Tuple, Dict, Sequence, Set, Union, TypeAlias
 )
 from safety import is_protected_path, is_safe_to_modify
+
+# Type aliases para mejorar la legibilidad de las firmas de funciones
+StartupEntries: TypeAlias = List["StartupEntry"]
+RegistryKeySet: TypeAlias = Iterable[str]
 
 __all__ = [
     "StartupEntry",
@@ -58,7 +62,7 @@ SUSPICIOUS_CHARS: str = '<>|?*\0&;%^$'
 # Caché global para evitar operaciones de I/O redundantes durante la sesión.
 _EXISTS_CACHE: Dict[str, bool] = {}
 _COMMAND_CACHE: Dict[str, str] = {}
-_FULL_SCAN_CACHE: Optional[List[StartupEntry]] = None
+_FULL_SCAN_CACHE: Optional[StartupEntries] = None
 
 # Mensaje estandarizado para deshabilitar programas sin tocar el registro.
 HOW_TO_DISABLE: str = (
@@ -294,9 +298,17 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
         return None
 
 
-def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[StartupEntry]:
-    """Recorre carpetas de inicio detectando ejecutables candidatos."""
-    found_entries: List[StartupEntry] = []
+def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> StartupEntries:
+    """
+    Recorre carpetas de inicio detectando ejecutables candidatos.
+    
+    Args:
+        folders: Secuencia opcional de rutas a escanear.
+        
+    Returns:
+        Lista de objetos StartupEntry encontrados.
+    """
+    found_entries: StartupEntries = []
     scan_folders = folders if folders is not None else startup_folders()
     
     for folder in scan_folders:
@@ -331,12 +343,21 @@ def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
         return False
 
 
-def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupEntry]:
-    """Transforma la salida cruda de PowerShell en objetos estructurados."""
+def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
+    """
+    Transforma la salida cruda de PowerShell en objetos estructurados.
+    
+    Args:
+        csv_text: Salida en formato CSV proveniente de PowerShell.
+        source: Identificador de la fuente de datos.
+        
+    Returns:
+        Lista procesada de StartupEntry.
+    """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
         
-    parsed_entries: List[StartupEntry] = []
+    parsed_entries: StartupEntries = []
     seen_commands: Set[str] = set()
     
     try:
@@ -371,8 +392,16 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
     return parsed_entries
 
 
-def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
-    """Invoca PowerShell para leer claves Run de forma segura."""
+def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEntries:
+    """
+    Invoca PowerShell para leer claves Run de forma segura.
+    
+    Args:
+        keys: Claves de registro a consultar.
+        
+    Returns:
+        Lista de entradas encontradas en el registro.
+    """
     if os.name != "nt":
         return []
     
@@ -401,14 +430,14 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
     return []
 
 
-def list_startup_entries() -> List[StartupEntry]:
-    """Retorna la lista consolidada de programas detectados."""
+def list_startup_entries() -> StartupEntries:
+    """Retorna la lista consolidada de programas detectados con cacheo local."""
     global _FULL_SCAN_CACHE
     if _FULL_SCAN_CACHE is not None:
         return _FULL_SCAN_CACHE
 
     seen_items: Set[Tuple[str, str]] = set()
-    unique_entries: List[StartupEntry] = []
+    unique_entries: StartupEntries = []
     
     for entry in itertools.chain(entries_from_folders(), entries_from_registry()):
         key = (entry.name.lower(), entry.command.lower())
@@ -421,7 +450,7 @@ def list_startup_entries() -> List[StartupEntry]:
 
 
 def estimate_impact(entries: Sequence[StartupEntry]) -> str:
-    """Clasifica el impacto en rendimiento."""
+    """Clasifica el impacto en rendimiento basado en la cantidad de entradas."""
     count: int = len(entries)
     thresholds: List[Tuple[int, str]] = [(5, "ok"), (10, "info"), (18, "warning")]
     for limit, label in thresholds:
@@ -431,7 +460,7 @@ def estimate_impact(entries: Sequence[StartupEntry]) -> str:
 
 
 def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
-    """Genera reporte de texto legible."""
+    """Genera reporte de texto legible unificado."""
     entries_list: Sequence[StartupEntry] = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)
         
