@@ -454,9 +454,9 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
         raise UnsafePathError("Tipo de objeto de ruta inválido", SafetyValidationErrorCode.GENERIC)
     if _is_device_file(path):
         raise UnsafePathError(f"Acceso a dispositivo bloqueado: {path.name}", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
-    if _is_system_directory_junction(str(path)):
-        raise UnsafePathError(f"Punto de reparse detectado durante acceso estático: {path.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
     try:
+        if _is_system_directory_junction(str(path)):
+            raise UnsafePathError(f"Punto de reparse detectado durante acceso estático: {path.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         return path.stat()
     except (PermissionError, FileNotFoundError):
         raise UnsafePathError(f"Acceso denegado o archivo inexistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
@@ -683,9 +683,9 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
 
     if os.name == 'nt':
         try:
-            root = target_path.anchor
-            if root:
-                drive_type = ctypes.windll.kernel32.GetDriveTypeW(root)
+            anchor = target_path.anchor
+            if anchor:
+                drive_type = ctypes.windll.kernel32.GetDriveTypeW(anchor)
                 if drive_type == DRIVE_NO_ROOT_DIR:
                      raise UnsafePathError("Unidad inaccesible.", SafetyValidationErrorCode.IO_ERROR)
                 if drive_type == DRIVE_REMOTE:

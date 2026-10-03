@@ -71,7 +71,6 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     if not isinstance(entry, os.DirEntry):
         return None
     try:
-        # La bandera follow_symlinks=False es crítica para prevenir saltos a otras unidades o subdirectorios fuera de contexto
         if entry.is_symlink():
             return None
         attr = _get_file_attributes(entry)
@@ -183,7 +182,7 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Filtro de seguridad central. Valida estructura, permisos y exclusión de rutas protegidas."""
-        if not entry or not entry.path or not entry.name:
+        if not isinstance(entry, os.DirEntry) or not entry.path:
             return False
         # Prevenir Null-byte injection
         if "\0" in entry.path:
@@ -191,7 +190,6 @@ class Scanner:
         if not _is_valid_path_structure(entry.path) or self._has_invalid_name(entry.name):
             return False
         try:
-            # Se explícitamente rechazan enlaces simbólicos para no salir del árbol de directorios confinado
             if self._is_reparse_point(entry) or entry.is_symlink():
                 return False
             if not self._is_inside_base_root(entry.path):
@@ -284,14 +282,10 @@ def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
     while directory_stack:
         current_dir, depth = directory_stack.pop()
         try:
-            # os.scandir puede fallar si el directorio fue eliminado o bloqueado durante el escaneo
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    try:
-                        if entry is not None:
-                            scanner.process_entry(entry, directory_stack, depth)
-                    except (PermissionError, OSError):
-                        continue
+                    if entry is not None:
+                        scanner.process_entry(entry, directory_stack, depth)
         except (PermissionError, OSError):
             continue
     return scanner.results
