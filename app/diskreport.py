@@ -356,9 +356,16 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     
     for path, size_bytes in walk_files(directory, skip_protected):
         try:
-            if not isinstance(size_bytes, int) or size_bytes < 0: continue
+            # Validación robusta de parámetros antes de procesar
+            if not isinstance(size_bytes, int) or size_bytes < 0:
+                continue
+            
             total_bytes += size_bytes
             total_files += 1
+            
+            # Asegurar que path y suffix existan
+            if not isinstance(path, Path):
+                continue
             
             ext = path.suffix.lower() or "(sin extensión)"
             stats = ext_stats[ext]
@@ -370,7 +377,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
                     heapq.heappush(top_heap, (size_bytes, path))
                 elif size_bytes > top_heap[0][0]: 
                     heapq.heapreplace(top_heap, (size_bytes, path))
-        except (KeyError, TypeError, ValueError, OSError):
+        except (AttributeError, KeyError, TypeError, ValueError, OSError):
             continue
                 
     return SummaryData(total_bytes, total_files, dict(ext_stats), top_heap)

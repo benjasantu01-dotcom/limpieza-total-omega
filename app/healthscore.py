@@ -240,15 +240,21 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             points = area_ratio * entry.weight
             metric_breakdown[entry.area] = int(round(points))
             accumulated_score += points
-        except Exception:
-            # Si una métrica falla, asumimos puntaje 0 en esa categoría para no romper el reporte
+        except (ValueError, TypeError, ZeroDivisionError):
             metric_breakdown[entry.area] = 0
             
     if m.quarantined_count > 0:
         recommendations.append(f"Tenés {m.quarantined_count} archivo(s) en cuarentena.")
     
     final_score = int(round(_clamp(accumulated_score, 0.0, 100.0)))
-    return HealthResult(final_score, grade_for_score(final_score), metric_breakdown, recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."])
+    final_grade = grade_for_score(final_score)
+    
+    return HealthResult(
+        score=final_score,
+        grade=final_grade,
+        breakdown=metric_breakdown,
+        recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
+    )
 
 def _render_bar(points: int, max_val: int) -> str:
     """Genera una cadena ASCII representando una barra de progreso basada en puntos obtenidos."""

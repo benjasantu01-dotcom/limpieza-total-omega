@@ -125,7 +125,7 @@ def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
         return None
     try:
         p: Path = Path(path).resolve()
-        if p.exists() and _safe_path_check(p) and p.is_file() and not _is_file_locked(p):
+        if p.exists() and p.is_file() and _safe_path_check(p) and not _is_file_locked(p):
             if p.stat().st_size > 0:
                 return p
     except (OSError, RuntimeError, ValueError):
@@ -190,7 +190,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
         if not p: continue
         try:
             path_obj = Path(p).resolve()
-            if not path_obj.exists(): continue
+            if not path_obj.exists() or not path_obj.is_file(): continue
             st_size = path_obj.stat().st_size
             if _is_valid_candidate(path_obj, st_size):
                 groups[st_size].append(path_obj)
@@ -256,8 +256,9 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Helper genérico para agrupar candidatos aplicando una función de hash específica."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        # Verificamos existencia antes de procesar el hash para manejar archivos volátiles
-        if isinstance(path, Path) and path.exists() and path.is_file() and (digest := hash_func(path)):
+        if not isinstance(path, Path): continue
+        digest = hash_func(path)
+        if digest:
             groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
