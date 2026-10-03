@@ -119,18 +119,14 @@ def _validate_limit(limit: Any) -> int:
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     """
     Verifica que la ruta sea un directorio existente y seguro para escanear.
-    
-    Args:
-        directory: Ruta a validar.
-        
-    Returns:
-        Instancia de `Path` si la ruta es válida y segura, `None` en caso contrario.
     """
     if directory is None:
         return None
     try:
-        raw_path = Path(os.path.realpath(str(directory).split('\0')[0]))
-        if not raw_path.exists() or not raw_path.is_dir():
+        # Prevenir inyección de NUL bytes y normalizar ruta
+        raw_str = str(directory).split('\0')[0]
+        raw_path = Path(raw_str).resolve(strict=True)
+        if not raw_path.is_dir():
             return None
         if is_protected_path(raw_path) or not os.access(raw_path, os.R_OK):
             return None
@@ -142,7 +138,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 def _is_excluded_path(entry: os.DirEntry, root_str: str) -> bool:
     """
     Determina si un `os.DirEntry` debe ser ignorado basándose en:
-    - Caracteres sospechosos (RTL).
+    - Caracteres sospechosos (RTL/NUL).
     - Salida del límite de la ruta raíz (confinamiento).
     - Puntos de reparse / symlinks.
     - Listas de bloqueo de sistema (`safety.py`).
@@ -274,18 +270,17 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre recursivamente el sistema de archivos de forma eficiente.
-    
-    Genera tuplas (ruta, tamaño_en_bytes) ignorando carpetas protegidas,
-    puntos de reparse y archivos con caracteres inválidos.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
-    root_str = str(root_path.resolve())
+    root_str = str(root_path)
     visited_inodes: set[Inode] = set()
     stack: List[str] = [root_str]
     
     while stack:
         current_dir = stack.pop()
+        # Seguridad: protección contra rutas extremadamente largas
+        if len(current_dir) > 32767: continue 
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
@@ -358,14 +353,6 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Recorre el sistema de archivos y consolida datos estadísticos.
-    
-    Args:
-        directory: Directorio raíz a escanear.
-        skip_protected: Flag para omitir rutas de sistema.
-        limit: Límite de archivos top a rastrear en un heap.
-    
-    Returns:
-        Objeto `SummaryData` con la agregación completa.
     """
     total_bytes: int = 0
     total_files: int = 0
@@ -374,14 +361,12 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     
     for path, size_bytes in walk_files(directory, skip_protected):
         try:
-            # Validación robusta de parámetros antes de procesar
             if not isinstance(size_bytes, int) or size_bytes < 0:
                 continue
             
             total_bytes += size_bytes
             total_files += 1
             
-            # Asegurar que path y suffix existan
             if not isinstance(path, Path):
                 continue
             

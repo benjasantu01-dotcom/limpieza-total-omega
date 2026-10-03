@@ -170,10 +170,11 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Normaliza tipos y asegura que todos los valores numéricos estén en rangos válidos."""
-        def _to_clean(val: Any, default: float, min_v: float = 0.0) -> float:
+        def _to_clean(val: Any, default: float, min_v: float = 0.0, max_v: float = float('inf')) -> float:
             try:
                 f = float(val)
-                return f if math.isfinite(f) and f >= min_v else default
+                if not math.isfinite(f): return default
+                return max(min_v, min(f, max_v))
             except (ValueError, TypeError):
                 return default
         
@@ -183,8 +184,8 @@ class SystemMetrics:
         self.suspicious_warnings = int(_to_clean(self.suspicious_warnings, 0.0))
         self.startup_count = int(_to_clean(self.startup_count, 0.0))
         self.quarantined_count = int(_to_clean(self.quarantined_count, 0.0))
-        self.memory_available_percent = _clamp(_to_clean(self.memory_available_percent, 100.0, 0.0), 0.0, 100.0)
-        self.disk_free_percent = _clamp(_to_clean(self.disk_free_percent, 100.0, 0.0), 0.0, 100.0)
+        self.memory_available_percent = _to_clean(self.memory_available_percent, 100.0, 0.0, 100.0)
+        self.disk_free_percent = _to_clean(self.disk_free_percent, 100.0, 0.0, 100.0)
 
     @property
     def is_finite(self) -> bool:

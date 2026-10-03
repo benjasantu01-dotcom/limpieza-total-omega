@@ -172,6 +172,10 @@ def _should_skip_entry(
         return True
     
     try:
+        # Validación defensiva adicional: asegurar que la ruta no esté protegida antes de procesar
+        path_p = Path(entry.path)
+        if is_protected_path(path_p):
+            return True
         if entry.is_symlink() or is_junction_fn(entry.path) or _is_system_hidden(entry.path, kernel32):
             return True
     except (OSError, AttributeError, TypeError):
@@ -203,6 +207,7 @@ def _process_file_entry(
             return ScanResult(0, True)
             
         p_entry = Path(entry.path)
+        # Validación de integridad reforzada
         if not _ensure_within_base(str(p_entry), root_abs_norm) or is_protected_path(p_entry) or not is_safe_to_modify(p_entry):
             return ScanResult(0, True)
         
