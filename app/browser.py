@@ -184,7 +184,7 @@ def _should_skip_entry(
 
 def _is_file_in_use(path_obj: Path) -> bool:
     """Verifica si un archivo está bloqueado intentando abrirlo en solo lectura sin bloquear."""
-    if not isinstance(path_obj, Path) or not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
+    if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
         return True
     try:
         with open(path_obj, 'rb'):

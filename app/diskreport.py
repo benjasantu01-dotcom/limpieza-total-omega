@@ -123,7 +123,6 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     if directory is None:
         return None
     try:
-        # Prevenir inyección de NUL bytes y normalizar ruta
         raw_str = str(directory).split('\0')[0]
         raw_path = Path(raw_str).resolve(strict=True)
         if not raw_path.is_dir():
@@ -135,21 +134,17 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
 
 
-def _is_excluded_path(entry: os.DirEntry, root_str: str) -> bool:
+def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     """
-    Determina si un `os.DirEntry` debe ser ignorado basándose en:
-    - Caracteres sospechosos (RTL/NUL).
-    - Salida del límite de la ruta raíz (confinamiento).
-    - Puntos de reparse / symlinks.
-    - Listas de bloqueo de sistema (`safety.py`).
+    Determina si un `os.DirEntry` debe ser ignorado mediante validación de ruta estricta.
     """
     try:
         if any(c in entry.name for c in SUSPICIOUS_CHARS) or '\0' in entry.name:
             return True
         
-        # Validación de confinamiento estricto
-        entry_path = Path(entry.path).resolve()
-        if not str(entry_path).startswith(root_str):
+        # Validar confinamiento sin resolver symlinks dinámicamente durante el escaneo
+        entry_abs = Path(entry.path).absolute()
+        if not str(entry_abs).startswith(str(root_path)):
             return True
             
         try:
@@ -275,20 +270,17 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """
     root_path = _validate_root(directory)
     if root_path is None: return
-    root_str = str(root_path)
     
-    # visited_inodes evita procesar la misma carpeta dos veces (ciclos o aliases)
     visited_inodes: set[Inode] = set()
-    stack: List[str] = [root_str]
+    stack: List[str] = [str(root_path)]
     
     while stack:
         current_dir = stack.pop()
-        # Límite de Windows MAX_PATH (aprox) para evitar errores de API
         if len(current_dir) > 32767: continue 
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    if skip_protected and _is_excluded_path(entry, root_str):
+                    if skip_protected and _is_excluded_path(entry, root_path):
                         continue
                     
                     try:
@@ -364,7 +356,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        # Validación defensiva de tipos tras la generación
         if not isinstance(size_bytes, int) or size_bytes < 0:
             continue
         if not isinstance(path, Path):

@@ -934,3 +934,13 @@ FAILED evolve/tests/test_modules.py::test_individual_scores_stay_between_zero_an
 - `2026-10-03T10:47:30` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad en `_call_gemini` añadiendo una validación estricta de la URL mediante un prefijo estático y un filtrado de caracteres sospechosos, asegurando que ninguna manipulación de los parámetros de configuración pueda redirigir la petición a un endpoint malicioso o malformado.
 - `2026-10-03T10:47:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T10:47:30` Corrida terminada. Total usado hoy: 255.
+- `2026-10-03T10:55:17` Arrancando corrida. Quedan hoy ~45 peticiones objetivo.
+- `2026-10-03T10:56:19` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-03T10:57:01` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la validación implícita por una comprobación booleana (`is_safe_to_modify`) antes de intentar la creación de directorios, evitando que excepciones de validación de ruta interrumpan el flujo de trabajo innecesariamente.
+- `2026-10-03T10:57:35` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_is_file_in_use` sustituyendo el manejo de excepciones genérico por uno que valida explícitamente la seguridad de la ruta antes de intentar cualquier apertura, alineándose con las reglas de seguridad vigentes.
+- `2026-10-03T10:58:06` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `walk_files` y `_is_excluded_path` añadiendo validación de ruta absoluta y evitando la resolución (`resolve`) dentro del bucle principal, lo que previene ataques de tipo Time-of-Check Time-of-Use (TOCTOU) y mejora la resiliencia contra enlaces simbólicos manipulados durante el escaneo.
+- `2026-10-03T10:58:40` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-03T10:59:29` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-03T10:59:47` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-10-03T10:59:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T10:59:47` Corrida terminada. Total usado hoy: 259.
