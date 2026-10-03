@@ -875,3 +875,13 @@ FAILED evolve/tests/test_modules.py::test_individual_scores_stay_between_zero_an
 - `2026-10-03T09:36:32` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
 - `2026-10-03T09:36:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T09:36:32` Corrida terminada. Total usado hoy: 227.
+- `2026-10-03T09:44:01` Arrancando corrida. Quedan hoy ~73 peticiones objetivo.
+- `2026-10-03T09:44:47` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-10-03T09:45:22` ➖ Sin cambios en duplicates.py (enfoque: rendimiento). Motivo: Se optimizó el proceso de recolección de archivos `_collect_candidates` utilizando un cache local de estado (`stat`) durante la iteración de los directorios, evitando así llamadas redundantes y costosas a `entry.stat()` y `path.is_file()` en el sistema de archivos.
+- `2026-10-03T09:46:03` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje transformando `_PIPELINE` de un `Dict` a una `List` de tuplas para evitar la sobrecarga de hashing en iteraciones repetidas, y eliminé la validación redundante `m.validate()` dentro de `compute_score` ya que `SystemMetrics` ya la ejecuta en su `__post_init__`.
+- `2026-10-03T09:47:03` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-03T09:47:35` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-03T09:48:41` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-03T09:49:53` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-03T09:49:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T09:49:53` Corrida terminada. Total usado hoy: 231.
