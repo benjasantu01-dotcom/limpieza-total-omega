@@ -861,3 +861,10 @@ FAILED evolve/tests/test_modules.py::test_individual_scores_stay_between_zero_an
 - `2026-10-03T09:16:08` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y se reemplazó el uso de nombres de variables crípticos (como `fd_src` o `tf`) por nombres semánticos que explican su rol en el ciclo de vida del archivo, mejorando la legibilidad técnica del flujo de aislamiento.
 - `2026-10-03T09:16:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T09:16:08` Corrida terminada. Total usado hoy: 219.
+- `2026-10-03T09:23:40` Arrancando corrida. Quedan hoy ~81 peticiones objetivo.
+- `2026-10-03T09:24:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-03T09:24:41` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ValidationContext, _CheckResult
+- `2026-10-03T09:25:09` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `scanner.py` mediante la refactorización de `_safe_stat` y sus dependencias, eliminando redundancias y centralizando la lógica de extracción de atributos de archivo para clarificar el flujo de seguridad.
+- `2026-10-03T09:25:25` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators._check_path_safety, _Validators._is_safe_path
+- `2026-10-03T09:25:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T09:25:25` Corrida terminada. Total usado hoy: 223.

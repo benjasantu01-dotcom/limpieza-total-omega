@@ -63,33 +63,37 @@ TARGETED_DOWNLOAD_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp
 
 SYSTEM32_LOWER: Final[str] = "system32"
 
+def _get_file_attributes(entry: os.DirEntry) -> int:
+    """Consulta la máscara de bits de atributos Win32 del archivo."""
+    try:
+        # Se usa follow_symlinks=False para evitar seguir enlaces y errores innecesarios
+        stat_res = entry.stat(follow_symlinks=False)
+        return int(getattr(stat_res, "st_file_attributes", 0))
+    except (AttributeError, OSError, PermissionError):
+        return 0
+
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """
-    Obtiene metadatos asegurando que no se sigan enlaces simbólicos.
-    Retorna None si la entrada es un enlace, punto de reanálisis o falla el acceso.
+    Obtiene metadatos asegurando que no se sigan enlaces simbólicos o puntos de reanálisis.
     """
     if not isinstance(entry, os.DirEntry):
         return None
     try:
         if entry.is_symlink():
             return None
-        attr = _get_file_attributes(entry)
-        if attr & SCAN_LIMITS.reparse_point_attr_mask:
+        
+        # Validación de bits de atributos para detectar reparse points
+        if _get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask:
             return None
+            
         stats = entry.stat(follow_symlinks=False)
+        
+        # Hard links (st_nlink > 1) pueden indicar estructuras complejas no deseadas en el escaneo
         if getattr(stats, "st_nlink", 1) > 1:
             return None
         return stats
     except (OSError, PermissionError):
         return None
-
-def _get_file_attributes(entry: os.DirEntry) -> int:
-    """Consulta la máscara de bits de atributos Win32 de forma pasiva mediante stat."""
-    try:
-        stat_res = entry.stat(follow_symlinks=False)
-        return int(getattr(stat_res, "st_file_attributes", 0))
-    except (AttributeError, OSError, PermissionError):
-        return 0
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     """Valida la integridad de la cadena de la ruta antes de intentar cualquier operación de I/O."""
@@ -175,10 +179,7 @@ class Scanner:
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Verifica la existencia de atributos de puntos de reanálisis en el sistema de archivos."""
-        try:
-            return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask)
-        except (OSError, PermissionError):
-            return True 
+        return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Filtro de seguridad central. Valida estructura, permisos y exclusión de rutas protegidas."""
