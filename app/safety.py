@@ -331,16 +331,16 @@ def _is_file_in_use_by_system(path_str: str) -> bool:
 def _is_volume_readonly(path_str: Optional[str]) -> bool:
     """
     Consulta los atributos de volumen mediante GetVolumeInformationW.
-    Valida el flag FILE_READ_ONLY_VOLUME (0x80000) para evitar escrituras en soportes protegidos.
+    Valida el flag FILE_READ_ONLY_VOLUME (0x80000) y verifica si la ruta es un punto de montaje.
     """
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
     try:
-        drive_path = os.path.splitdrive(path_str)[0]
-        if not drive_path: return False
-        root = drive_path + "\\"
-        flags = ctypes.c_ulong()
-        if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
-            return bool(flags.value & 0x80000)
+        buf = ctypes.create_unicode_buffer(260)
+        if ctypes.windll.kernel32.GetVolumePathNameW(path_str, buf, 260) != 0:
+            root = buf.value
+            flags = ctypes.c_ulong()
+            if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
+                return bool(flags.value & 0x80000)
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
         pass
     return False

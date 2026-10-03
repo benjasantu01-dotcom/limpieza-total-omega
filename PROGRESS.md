@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **215** (42.7% de aceptación)
+- Mejoras aceptadas: **217** (43.1% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-02 | 95 | 4 | 17 | 11 | 114 |
-| 2026-10-03 | 120 | 5 | 27 | 12 | 99 |
+| 2026-10-02 | 95 | 4 | 17 | 11 | 110 |
+| 2026-10-03 | 122 | 5 | 28 | 12 | 100 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
-- seguridad defensiva: **47**
+- seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **43**
 - rendimiento: **39**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
-- `safety.py`: **19**
+- `quarantine.py`: **20**
+- `safety.py`: **20**
 - `scanner.py`: **19**
 - `duplicates.py`: **18**
 - `healthscore.py`: **18**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-03T11:17:32` **safety.py** (seguridad defensiva): He mejorado `safety.py` añadiendo la detección de "Mount Points" mediante `GetVolumePathNameW` en `_is_volume_readonly`, asegurando que si una ruta es un punto de montaje (no solo la raíz de la unidad), se evalúe correctamente su estado de solo lectura, previniendo errores de escritura en volúmenes montados dinámicamente que podrían no estar cubiertos por la lógica anterior basada solo en `splitdrive`.
+- `2026-10-03T11:16:23` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_copy_with_verification` y `_atomic_isolate_file` añadiendo una comprobación explícita de `is_safe_to_modify` justo antes de realizar operaciones críticas de escritura, previniendo condiciones de carrera (TOCTOU) adicionales y asegurando que no se escriba en rutas que hayan podido cambiar su estado de seguridad tras la validación inicial.
 - `2026-10-03T11:11:21` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` añadiendo un chequeo explícito de integridad para verificar que el archivo de origen no haya sido reemplazado por un enlace simbólico entre el escaneo inicial y la operación de movimiento (ataque TOCTOU), utilizando `os.lstat` para validar el tipo de archivo real.
 - `2026-10-03T11:11:10` **memory.py** (seguridad defensiva): Se introdujo una validación defensiva en `_get_process_path` para descartar rutas que no sean absolutas o presenten estructuras inusuales antes de pasar por `is_protected_path`, previniendo inyecciones de rutas maliciosas en el chequeo de seguridad.
 - `2026-10-03T10:58:06` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `_is_excluded_path` añadiendo validación de ruta absoluta y evitando la resolución (`resolve`) dentro del bucle principal, lo que previene ataques de tipo Time-of-Check Time-of-Use (TOCTOU) y mejora la resiliencia contra enlaces simbólicos manipulados durante el escaneo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-03T10:36:19` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `purge_all` para prevenir condiciones de carrera y fallos silenciosos al iterar sobre archivos, integrando una validación explícita de `UnsafePathError` y garantizando que el manifiesto solo se actualice tras la confirmación efectiva del borrado de cada archivo.
 - `2026-10-03T10:27:32` **healthscore.py** (robustez ante casos límite): Se ha robustecido el `SystemMetrics` y la función `_evaluate_rules` para manejar con seguridad valores inesperados (como `None` o datos corruptos) evitando excepciones silenciosas y asegurando que las métricas tengan valores válidos antes de su procesamiento.
 - `2026-10-03T10:15:21` **assistant.py** (robustez ante casos límite): Se reforzó `_is_input_too_deep_or_complex` para validar recursivamente la integridad de objetos complejos, mitigando riesgos de desbordamiento de pila o agotamiento de recursos al procesar fuentes de datos externas malformadas antes de la ingestión en el contexto.
-- `2026-10-03T10:05:45` **scanner.py** (rendimiento): Implementé una caché de resultados para `_is_relevant_extension` usando `functools.lru_cache` (importada de forma plana como estándar) para evitar cálculos repetitivos de `splitext` y comparaciones de cadenas dentro del bucle principal de escaneo, optimizando el rendimiento de CPU al procesar miles de archivos.
-- `2026-10-03T09:56:44` **quarantine.py** (rendimiento): Optimicé el acceso al manifiesto implementando una carga perezosa (`lazy loading`) y caché persistente en `load_manifest`, evitando lecturas innecesarias de disco en cada llamada a funciones auxiliares de reporte y purga.

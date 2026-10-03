@@ -548,6 +548,8 @@ def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> 
             stat_src = os.fstat(source_handle.fileno())
             if not (stat_src.st_mode & 0o100000):
                 raise OSError("El archivo origen no es un archivo regular.")
+            
+            # Seguridad adicional: verificar destino antes de operar
             if not is_safe_to_modify(temp_dest.parent):
                 raise UnsafePathError("Directorio de destino no seguro.")
             
@@ -615,6 +617,11 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     _validate_quarantine_path(destination, destination.parent)
     if len(str(destination)) >= 250:
         raise OSError("Ruta destino demasiado larga.")
+        
+    # Doble chequeo de seguridad antes de proceder a la escritura
+    if not is_safe_to_modify(destination.parent):
+        raise UnsafePathError("El sandbox destino ha sido invalidado.")
+
     try:
         return _write_temp_to_final(source, destination)
     except Exception as e:
