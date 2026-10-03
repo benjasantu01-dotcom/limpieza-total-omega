@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **211** (41.9% de aceptación)
-- Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por tests: 12
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 20
 - Sin respuesta de la IA (error o límite): 218
 
@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-02 | 118 | 7 | 23 | 12 | 133 |
-| 2026-10-03 | 93 | 4 | 21 | 8 | 85 |
+| 2026-10-02 | 115 | 7 | 22 | 12 | 133 |
+| 2026-10-03 | 96 | 5 | 21 | 8 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **50**
+- legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **43**
-- legibilidad y documentación: **42**
 - robustez ante casos límite: **39**
-- rendimiento: **37**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **21**
 - `settings.py`: **20**
-- `quarantine.py`: **19**
-- `duplicates.py`: **18**
+- `safety.py`: **20**
+- `duplicates.py`: **19**
 - `healthscore.py`: **18**
+- `quarantine.py`: **18**
 - `scanner.py`: **18**
-- `organizer.py`: **17**
-- `diskreport.py`: **16**
-- `browser.py`: **14**
+- `diskreport.py`: **17**
+- `organizer.py`: **16**
+- `browser.py`: **15**
 - `assistant.py`: **13**
 - `memory.py`: **13**
 - `branding.py`: **12**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-03T09:04:39` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints más precisos (especialmente en `_is_valid_candidate` y `hash_file`), documentando los parámetros de las funciones auxiliares clave y clarificando las excepciones que se capturan, facilitando la comprensión del flujo de seguridad para futuros desarrolladores.
+- `2026-10-03T09:04:12` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `walk_files` para clarificar la lógica de exclusión de inodos y el manejo del stack, facilitando el mantenimiento y la comprensión de este motor de escaneo central.
+- `2026-10-03T09:03:45` **browser.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con las secciones "Argumentos" y "Retorno" en las funciones críticas de recorrido y detección, y se unificó la lógica de normalización de rutas para eliminar redundancias, mejorando la mantenibilidad sin alterar la funcionalidad.
 - `2026-10-03T08:54:40` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_build_payload` y `_extract_text_from_gemini_json` para usar constantes descriptivas y reducir la complejidad ciclomática de las validaciones de JSON.
 - `2026-10-03T08:53:34` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` al reemplazar `os.remove(temp_path)` por un manejo de excepciones explícito que utiliza `ensure_safe_to_modify` para cumplir con las reglas de seguridad antes de cualquier eliminación, evitando condiciones de carrera o fallos silenciosos ante permisos restringidos.
 - `2026-10-03T08:44:52` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_directory` y `_safe_stat` implementando una validación explícita de `os.DirEntry` y manejando la posibilidad de que `entry.path` sea `None` (posible en estados de carrera con el sistema de archivos), evitando así errores de tipo en las comparaciones de rutas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-03T06:52:02` **scanner.py** (seguridad defensiva): Se ha añadido una validación estricta en `_is_safe_entry` para asegurar que el path absoluto del archivo no contenga caracteres nulos (`\0`), previniendo ataques de inyección de rutas (null-byte injection) en entornos de bajo nivel.
 - `2026-10-03T06:51:21` **safety.py** (seguridad defensiva): Se implementó una verificación de "reparse points" (junctions y symlinks) más estricta en `is_protected_path`, forzando que cualquier ruta que sea un punto de reparse sea considerada protegida, independientemente de su ubicación en el árbol, evitando así ataques de evasión de sandbox mediante redirecciones NTFS.
 - `2026-10-03T06:42:52` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la validación estricta de la propiedad y permisos del archivo antes de cualquier operación destructiva (`_safe_unlink`) y se añadió un chequeo de coherencia entre el manifiesto y el estado real del disco para evitar race conditions.
-- `2026-10-03T06:42:25` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` para prevenir el movimiento de archivos que se encuentren en uso o bloqueados por el sistema, integrando una verificación de acceso de escritura más robusta antes de proceder con cualquier operación de E/S.
-- `2026-10-03T06:41:56` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_get_process_path` reemplazando la resolución de ruta `path_obj.resolve()` (que puede disparar accesos a disco innecesarios o seguir enlaces simbólicos fuera de control) por una verificación de existencia basada en atributos de archivo, manteniendo el chequeo de seguridad mediante `is_protected_path` sobre la ruta normalizada.
-- `2026-10-03T06:32:37` **healthscore.py** (seguridad defensiva): Se endureció la validación de `SystemMetrics` mediante la adición de un chequeo de límites estrictos (`range` check) antes de cualquier cálculo, evitando que valores anómalos o fuera de rango (como porcentajes negativos o superiores a 100) degraden la integridad del pipeline de puntuación.

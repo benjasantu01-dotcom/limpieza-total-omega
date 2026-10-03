@@ -123,7 +123,7 @@ def _is_unc_path(path_str: Optional[str]) -> TypeGuard[str]:
     return isinstance(path_str, str) and (path_str.startswith(r"\\") or path_str.startswith("//"))
 
 def _ensure_within_base(target: str, base_norm: str) -> bool:
-    """Defensa: valida que la ruta normalizada esté contenida estrictamente en la base permitida."""
+    """Valida que la ruta absoluta normalizada esté contenida estrictamente en la base permitida."""
     try:
         target_norm: str = os.path.normcase(os.path.abspath(target))
         return target_norm.startswith(base_norm)
@@ -200,7 +200,18 @@ def _process_file_entry(
     visited_dirs: Dict[str, int],
     depth: int
 ) -> ScanResult:
-    """Evalúa una entrada individual, verificando integridad y delegando recursión."""
+    """
+    Evalúa una entrada individual para su inclusión en el conteo de caché.
+    Args:
+        entry: Entrada de directorio a procesar.
+        root_abs_norm: Ruta base absoluta normalizada del escaneo.
+        kernel32: Handle a kernel32.dll para validación de atributos.
+        visited_inodes: Set de inodos procesados para evitar ciclos.
+        visited_dirs: Diccionario de caché de tamaños de directorios.
+        depth: Profundidad actual del recorrido.
+    Returns:
+        ScanResult con los bytes detectados y estado de éxito.
+    """
     try:
         if depth > MAX_SCAN_DEPTH:
             return ScanResult(0, True)
@@ -232,7 +243,18 @@ def _sum_directory_recursive(
     visited_dirs: Dict[str, int],
     depth: int = 0
 ) -> ScanResult:
-    """Realiza el recorrido recursivo del disco utilizando memoización de estados."""
+    """
+    Realiza el recorrido recursivo del disco utilizando memoización de estados.
+    Args:
+        root_path: Path de la carpeta a sumar.
+        root_abs_norm: Base raíz del escaneo.
+        kernel32: Handle opcional para validaciones.
+        visited_inodes: Set de inodos globales.
+        visited_dirs: Diccionario de resultados de carpetas ya sumadas.
+        depth: Profundidad actual de recursión.
+    Returns:
+        ScanResult con el total de bytes y éxito del escaneo.
+    """
     if not isinstance(root_path, Path) or depth > MAX_SCAN_DEPTH:
         return ScanResult(0, False)
     
@@ -270,25 +292,20 @@ def directory_size(path: Optional[OSPath]) -> int:
 
 def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
     """Valida que la ruta sea un directorio local, no protegido y bajo la jerarquía permitida."""
-    if not isinstance(candidate, Path):
-        return False
     try:
         if not candidate.exists():
             return False
         real: Path = candidate.resolve(strict=True)
-        real_str: str = str(real)
-        if not real.is_dir() or not _ensure_within_base(real_str, os.path.normcase(base_abs_str)):
+        if not real.is_dir() or not _ensure_within_base(str(real), os.path.normcase(base_abs_str)):
             return False
         if not is_safe_to_modify(real) or is_protected_path(real):
             return False
-        return not (real.is_symlink() or _IS_JUNCTION_FN(real_str) or _is_excluded_file(real.name))
+        return not (real.is_symlink() or _IS_JUNCTION_FN(str(real)) or _is_excluded_file(real.name))
     except (OSError, RuntimeError):
         return False
 
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Resuelve la ruta absoluta del caché basándose en la estructura del navegador."""
-    if not isinstance(rel_str, str) or not rel_str or not isinstance(real_base, Path):
-        return Path()
     try:
         target: Path = real_base.joinpath(*rel_str.split("\\"))
         if target.exists():
@@ -301,7 +318,14 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     return Path()
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
-    """Identifica navegadores, valida rutas y calcula peso total de cachés por cada uno, memoizando estados."""
+    """
+    Identifica navegadores, valida rutas y calcula peso total de cachés por cada uno.
+    Args:
+        bases: Lista opcional de directorios base.
+        cache_paths: Mapa de navegadores y rutas relativas.
+    Returns:
+        Lista de objetos BrowserCache encontrados y validados.
+    """
     raw_bases = bases if (bases is not None and isinstance(bases, (list, tuple))) else base_directories()
     browser_map: BrowserMap = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     k32: Optional[ctypes.WinDLL] = _get_kernel32()
@@ -316,7 +340,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             real_base_str: str = str(real_base)
             for browser_name, rel_str in browser_map.items():
                 candidate: Path = _resolve_browser_path(real_base, rel_str)
-                if candidate and candidate != Path() and _is_valid_cache_path(candidate, real_base_str):
+                if candidate != Path() and _is_valid_cache_path(candidate, real_base_str):
                     scan_res: ScanResult = _sum_directory_recursive(
                         candidate, os.path.normcase(str(candidate)), k32, global_visited_inodes, global_visited_dirs
                     )

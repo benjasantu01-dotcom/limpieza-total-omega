@@ -269,16 +269,21 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre recursivamente el sistema de archivos de forma eficiente.
+    Recorre recursivamente el sistema de archivos usando una pila (stack) para
+    evitar la recursión profunda y optimizar la memoria. Detecta ciclos mediante
+    inodos para prevenir bucles infinitos en enlaces simbólicos o junctions.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
     root_str = str(root_path)
+    
+    # visited_inodes evita procesar la misma carpeta dos veces (ciclos o aliases)
     visited_inodes: set[Inode] = set()
     stack: List[str] = [root_str]
     
     while stack:
         current_dir = stack.pop()
+        # Límite de Windows MAX_PATH (aprox) para evitar errores de API
         if len(current_dir) > 32767: continue 
         try:
             with os.scandir(current_dir) as iterator:
