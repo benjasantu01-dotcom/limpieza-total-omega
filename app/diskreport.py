@@ -272,34 +272,22 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         current_dir = stack.pop()
         try:
             with os.scandir(current_dir) as iterator:
-                while True:
+                for entry in iterator:
+                    if skip_protected and _is_excluded_path(entry, root_str):
+                        continue
+                    
                     try:
-                        entry = next(iterator, None)
-                        if entry is None: break
-                        
-                        # Doble verificación defensiva contra rutas protegidas
-                        if skip_protected and (is_protected_path(Path(entry.path)) or _is_excluded_path(entry, root_str)):
-                            continue
-                        
                         if entry.is_dir(follow_symlinks=False):
-                            try:
-                                if os.path.exists(entry.path):
-                                    st = entry.stat(follow_symlinks=False)
-                                    inode = (st.st_dev, st.st_ino)
-                                    if inode not in visited_inodes:
-                                        visited_inodes.add(inode)
-                                        stack.append(entry.path)
-                            except OSError:
-                                continue
+                            st = entry.stat(follow_symlinks=False)
+                            inode = (st.st_dev, st.st_ino)
+                            if inode not in visited_inodes:
+                                visited_inodes.add(inode)
+                                stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            try:
-                                if os.path.exists(entry.path):
-                                    st = entry.stat(follow_symlinks=False)
-                                    sz = int(st.st_size)
-                                    if sz >= 0: yield Path(entry.path), sz
-                            except OSError:
-                                continue
-                    except (StopIteration, OSError, PermissionError, AttributeError):
+                            st = entry.stat(follow_symlinks=False)
+                            sz = int(st.st_size)
+                            if sz >= 0: yield Path(entry.path), sz
+                    except (OSError, PermissionError, AttributeError):
                         continue
         except (PermissionError, OSError): 
             continue

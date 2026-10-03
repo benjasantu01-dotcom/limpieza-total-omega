@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-01 | 57 | 3 | 11 | 6 | 61 |
+| 2026-10-01 | 54 | 3 | 10 | 6 | 61 |
 | 2026-10-02 | 140 | 8 | 31 | 16 | 155 |
-| 2026-10-03 | 11 | 0 | 4 | 0 | 1 |
+| 2026-10-03 | 14 | 0 | 5 | 0 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **49**
-- robustez ante casos límite: **34**
-- rendimiento: **26**
+- robustez ante casos límite: **31**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
 - `settings.py`: **19**
+- `diskreport.py`: **19**
 - `healthscore.py`: **19**
-- `safety.py`: **18**
-- `diskreport.py`: **18**
-- `organizer.py`: **17**
+- `quarantine.py`: **18**
+- `safety.py`: **17**
+- `duplicates.py`: **16**
+- `organizer.py`: **16**
 - `scanner.py`: **16**
 - `assistant.py`: **15**
-- `duplicates.py`: **15**
+- `browser.py`: **15**
 - `memory.py`: **15**
-- `browser.py`: **14**
 - `branding.py`: **13**
 - `startup.py`: **7**
 - `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-03T00:45:10` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` para obtener metadatos (tamaño) directamente de la entrada del sistema de archivos, eliminando llamadas innecesarias a `stat()` (una llamada al sistema costosa) para cada archivo, y manteniendo la consistencia de seguridad al integrar la validación en el flujo de escaneo.
+- `2026-10-03T00:44:44` **diskreport.py** (rendimiento): Optimizamos la función `walk_files` eliminando llamadas redundantes a `os.path.exists` (ya validadas por `os.scandir`) y reduciendo la frecuencia de conversión a `Path` y `abspath`, lo cual reduce significativamente el overhead por archivo en el escaneo de directorios grandes.
+- `2026-10-03T00:44:13` **browser.py** (rendimiento): Optimicé el rendimiento de `detect_profiles` y `directory_size` implementando una caché de resultados (`memoization`) global durante el ciclo de escaneo, evitando la recalculación de subdirectorios ya procesados (comunes al compartir estructuras de perfil entre navegadores).
 - `2026-10-03T00:34:38` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la implementación de `TypeAlias` (para mejorar la claridad en firmas de funciones complejas) y la adición de docstrings estructurados con secciones "Args" y "Returns", facilitando la mantenibilidad a largo plazo sin alterar el comportamiento.
 - `2026-10-03T00:25:04` **scanner.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del módulo documentando exhaustivamente el propósito y las precondiciones de las funciones de heurística y los métodos de la clase `Scanner`, utilizando docstrings estructurados que facilitan la auditoría del código conforme a los requisitos de seguridad.
 - `2026-10-03T00:24:06` **quarantine.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `quarantine.py` documentando explícitamente los contratos de las funciones críticas de validación y transformando las funciones de guardado en métodos de la clase `QuarantineItem` para encapsular mejor la lógica de persistencia.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-03T00:04:08` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `browser.py` añadiendo docstrings descriptivos a las funciones internas clave y estandarizando los tipos, lo cual clarifica la lógica de escaneo seguro sin modificar la funcionalidad.
 - `2026-10-03T00:03:40` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en las funciones de renderizado de alto nivel para clarificar el propósito de las coordenadas y parámetros, mejorando la legibilidad técnica del motor de diseño.
 - `2026-10-02T14:44:05` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `_load_impl()` capturando excepciones de sistema (como `OSError` o `PermissionError`) de forma más granular durante las operaciones de I/O, asegurando que cualquier fallo parcial en la persistencia atómica no deje el sistema en un estado inconsistente ni bloquee la ejecución.
-- `2026-10-02T14:43:47` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas centralizando la validación de archivos mediante la función `_safe_stat` y añadiendo bloques de control explícitos para capturar posibles fallos en la obtención de metadatos, evitando así que errores aislados en un archivo detengan el escaneo completo.
-- `2026-10-02T14:43:15` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_path_stat_robust` y `ensure_safe_to_modify` implementando capturas de excepciones más específicas (como `PermissionError` y `OSError` con códigos de error de sistema) para evitar que fallos inesperados de E/S pasen desapercibidos o generen una `UnsafePathError` genérica, mejorando la trazabilidad del error.
-- `2026-10-02T14:36:47` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine.py` implementando una validación temprana de tipos y estados en `_get_sha256` y `_safe_unlink`, reduciendo el riesgo de propagación de excepciones inesperadas mediante el uso de filtros explícitos (check-before-act) en lugar de depender únicamente de bloques try-except.

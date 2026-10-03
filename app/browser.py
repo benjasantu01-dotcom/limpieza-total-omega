@@ -200,10 +200,7 @@ def _process_file_entry(
     visited_dirs: Dict[str, int],
     depth: int
 ) -> ScanResult:
-    """
-    Evalúa una entrada individual, verificando integridad y delegando recursión.
-    Asegura que el archivo o subdirectorio no sea un vínculo inseguro o punto de reparse.
-    """
+    """Evalúa una entrada individual, verificando integridad y delegando recursión."""
     try:
         if entry.is_symlink():
             return ScanResult(0, True)
@@ -235,10 +232,7 @@ def _sum_directory_recursive(
     visited_dirs: Dict[str, int],
     depth: int = 0
 ) -> ScanResult:
-    """
-    Realiza el recorrido recursivo del disco utilizando memoización de estados.
-    Limita la profundidad para evitar el desbordamiento de pila en estructuras cíclicas.
-    """
+    """Realiza el recorrido recursivo del disco utilizando memoización de estados."""
     if not isinstance(root_path, Path) or depth > MAX_SCAN_DEPTH:
         return ScanResult(0, False)
     
@@ -307,7 +301,7 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     return Path()
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
-    """Identifica navegadores, valida rutas y calcula peso total de cachés por cada uno."""
+    """Identifica navegadores, valida rutas y calcula peso total de cachés por cada uno, memoizando estados."""
     raw_bases: Sequence[Path] = bases if bases is not None else base_directories()
     browser_map: BrowserMap = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     k32: Optional[ctypes.WinDLL] = _get_kernel32()
@@ -323,7 +317,9 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             for browser_name, rel_str in browser_map.items():
                 candidate: Path = _resolve_browser_path(real_base, rel_str)
                 if candidate and candidate != Path() and _is_valid_cache_path(candidate, real_base_str):
-                    scan_res: ScanResult = _sum_directory_recursive(candidate, os.path.normcase(str(candidate)), k32, global_visited_inodes, global_visited_dirs)
+                    scan_res: ScanResult = _sum_directory_recursive(
+                        candidate, os.path.normcase(str(candidate)), k32, global_visited_inodes, global_visited_dirs
+                    )
                     if scan_res.bytes_found > 0:
                         found.append(BrowserCache(str(browser_name), candidate, scan_res.bytes_found))
         except (OSError, RuntimeError):

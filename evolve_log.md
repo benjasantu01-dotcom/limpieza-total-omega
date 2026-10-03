@@ -1094,3 +1094,10 @@ FAILED evolve/tests/test_modules.py::test_min_size_filters_out_tiny_files - Attr
 - `2026-10-03T00:35:33` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-10-03T00:35:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T00:35:33` Corrida terminada. Total usado hoy: 16.
+- `2026-10-03T00:43:43` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-10-03T00:44:13` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `detect_profiles` y `directory_size` implementando una caché de resultados (`memoization`) global durante el ciclo de escaneo, evitando la recalculación de subdirectorios ya procesados (comunes al compartir estructuras de perfil entre navegadores).
+- `2026-10-03T00:44:44` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizamos la función `walk_files` eliminando llamadas redundantes a `os.path.exists` (ya validadas por `os.scandir`) y reduciendo la frecuencia de conversión a `Path` y `abspath`, lo cual reduce significativamente el overhead por archivo en el escaneo de directorios grandes.
+- `2026-10-03T00:45:10` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` para obtener metadatos (tamaño) directamente de la entrada del sistema de archivos, eliminando llamadas innecesarias a `stat()` (una llamada al sistema costosa) para cada archivo, y manteniendo la consistencia de seguridad al integrar la validación en el flujo de escaneo.
+- `2026-10-03T00:45:16` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: HealthResult.is_healthy, SystemMetrics.is_finite
+- `2026-10-03T00:45:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T00:45:16` Corrida terminada. Total usado hoy: 20.
