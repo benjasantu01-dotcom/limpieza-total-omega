@@ -944,3 +944,13 @@ FAILED evolve/tests/test_modules.py::test_individual_scores_stay_between_zero_an
 - `2026-10-03T10:59:47` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
 - `2026-10-03T10:59:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T10:59:47` Corrida terminada. Total usado hoy: 259.
+- `2026-10-03T11:05:29` Arrancando corrida. Quedan hoy ~41 peticiones objetivo.
+- `2026-10-03T11:06:01` ➖ Sin cambios en healthscore.py (enfoque: seguridad defensiva). Motivo: Se reforzó la robustez del motor de inferencia encapsulando la ejecución de los factories de mensajes dentro de un bloque `try-except` adicional para evitar que un mensaje malformado o una métrica inesperada interrumpan la generación del reporte, cumpliendo con el enfoque de seguridad defensiva.
+- `2026-10-03T11:07:01` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-03T11:08:04` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-03T11:09:10` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-03T11:10:22` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-03T11:11:10` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se introdujo una validación defensiva en `_get_process_path` para descartar rutas que no sean absolutas o presenten estructuras inusuales antes de pasar por `is_protected_path`, previniendo inyecciones de rutas maliciosas en el chequeo de seguridad.
+- `2026-10-03T11:11:21` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` añadiendo un chequeo explícito de integridad para verificar que el archivo de origen no haya sido reemplazado por un enlace simbólico entre el escaneo inicial y la operación de movimiento (ataque TOCTOU), utilizando `os.lstat` para validar el tipo de archivo real.
+- `2026-10-03T11:11:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T11:11:21` Corrida terminada. Total usado hoy: 263.

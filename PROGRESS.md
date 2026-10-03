@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Mejoras aceptadas: **215** (42.7% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 44
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 216
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-02 | 95 | 4 | 17 | 11 | 118 |
-| 2026-10-03 | 118 | 5 | 27 | 11 | 98 |
+| 2026-10-02 | 95 | 4 | 17 | 11 | 114 |
+| 2026-10-03 | 120 | 5 | 27 | 12 | 99 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
-- seguridad defensiva: **45**
+- seguridad defensiva: **47**
 - manejo de errores y validación de entradas: **43**
 - rendimiento: **39**
 - robustez ante casos límite: **36**
@@ -34,18 +34,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **19**
 - `duplicates.py`: **18**
 - `healthscore.py`: **18**
+- `organizer.py`: **18**
 - `settings.py`: **18**
-- `organizer.py`: **17**
 - `diskreport.py`: **16**
+- `memory.py`: **15**
 - `assistant.py`: **15**
 - `browser.py`: **15**
-- `memory.py`: **14**
 - `branding.py`: **11**
 - `startup.py`: **10**
 - `main.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-03T11:11:21` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` añadiendo un chequeo explícito de integridad para verificar que el archivo de origen no haya sido reemplazado por un enlace simbólico entre el escaneo inicial y la operación de movimiento (ataque TOCTOU), utilizando `os.lstat` para validar el tipo de archivo real.
+- `2026-10-03T11:11:10` **memory.py** (seguridad defensiva): Se introdujo una validación defensiva en `_get_process_path` para descartar rutas que no sean absolutas o presenten estructuras inusuales antes de pasar por `is_protected_path`, previniendo inyecciones de rutas maliciosas en el chequeo de seguridad.
 - `2026-10-03T10:58:06` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `_is_excluded_path` añadiendo validación de ruta absoluta y evitando la resolución (`resolve`) dentro del bucle principal, lo que previene ataques de tipo Time-of-Check Time-of-Use (TOCTOU) y mejora la resiliencia contra enlaces simbólicos manipulados durante el escaneo.
 - `2026-10-03T10:57:35` **browser.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_file_in_use` sustituyendo el manejo de excepciones genérico por uno que valida explícitamente la seguridad de la ruta antes de intentar cualquier apertura, alineándose con las reglas de seguridad vigentes.
 - `2026-10-03T10:57:01` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la validación implícita por una comprobación booleana (`is_safe_to_modify`) antes de intentar la creación de directorios, evitando que excepciones de validación de ruta interrumpan el flujo de trabajo innecesariamente.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-03T10:15:21` **assistant.py** (robustez ante casos límite): Se reforzó `_is_input_too_deep_or_complex` para validar recursivamente la integridad de objetos complejos, mitigando riesgos de desbordamiento de pila o agotamiento de recursos al procesar fuentes de datos externas malformadas antes de la ingestión en el contexto.
 - `2026-10-03T10:05:45` **scanner.py** (rendimiento): Implementé una caché de resultados para `_is_relevant_extension` usando `functools.lru_cache` (importada de forma plana como estándar) para evitar cálculos repetitivos de `splitext` y comparaciones de cadenas dentro del bucle principal de escaneo, optimizando el rendimiento de CPU al procesar miles de archivos.
 - `2026-10-03T09:56:44` **quarantine.py** (rendimiento): Optimicé el acceso al manifiesto implementando una carga perezosa (`lazy loading`) y caché persistente en `load_manifest`, evitando lecturas innecesarias de disco en cada llamada a funciones auxiliares de reporte y purga.
-- `2026-10-03T09:55:54` **organizer.py** (rendimiento): Optimicé el proceso de escaneo de archivos reemplazando las llamadas repetitivas a `os.path.exists()` y `os.stat()` por una consulta única mediante `os.scandir()`, aprovechando que el objeto `DirEntry` ya contiene los datos de metadatos del sistema de archivos, reduciendo drásticamente las llamadas al kernel durante la recursión.
-- `2026-10-03T09:55:22` **memory.py** (rendimiento): Se optimizó la lógica de ordenamiento y filtrado en `parse_windows_process_csv` para evitar la creación de listas intermedias innecesarias y se ajustó `top_memory_processes` para utilizar una estructura de heap local, evitando procesar el 100% de los procesos si el límite es bajo, mejorando así el rendimiento y uso de memoria.

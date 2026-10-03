@@ -175,6 +175,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     if not isinstance(src, Path) or not isinstance(dest, Path) or not src.exists(): return False
     try:
         st = src.lstat()
+        # Verificar que sea un archivo regular, que no sea symlink (S_IFLNK) y no tenga hardlinks
         if not src.is_file() or (st.st_mode & 0o170000 == 0o120000) or st.st_nlink > 1: return False
         if not is_safe_to_modify(src) or not _validate_path_security(src, dest): return False
         

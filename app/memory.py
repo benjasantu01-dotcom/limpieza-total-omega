@@ -360,7 +360,10 @@ def _get_process_path(pid: int) -> Optional[Path]:
         buffer_size = 1024
         buf = ctypes.create_unicode_buffer(buffer_size)
         if psapi.GetModuleFileNameExW(handle, None, buf, buffer_size) > 0:
-            path_obj = Path(buf.value)
+            raw_path = buf.value
+            # Validación defensiva: asegurar que sea una ruta absoluta válida
+            if not raw_path or ":" not in raw_path: return None
+            path_obj = Path(raw_path).resolve()
             
             # Verificar si el archivo es un punto de reparse (Junction/Symlink) para evitar bucles
             attr = kernel32.GetFileAttributesW(str(path_obj))
