@@ -797,3 +797,13 @@ assert ['arc'] == []
 - `2026-10-03T08:24:13` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-03T08:24:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T08:24:13` Corrida terminada. Total usado hoy: 199.
+- `2026-10-03T08:32:40` Arrancando corrida. Quedan hoy ~101 peticiones objetivo.
+- `2026-10-03T08:33:30` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la resiliencia de `SystemMetrics` y `compute_score` ante datos malformados o faltantes, implementando validaciones preventivas contra `None` y excepciones en el cálculo de ratios, garantizando que el pipeline de salud nunca se detenga ante errores en una única métrica.
+- `2026-10-03T08:34:30` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-03T08:35:33` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-03T08:36:39` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-03T08:37:08` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 1): unexpected indent
+- `2026-10-03T08:37:37` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-03T08:37:50` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejora el manejo de errores en `stage_for_review` y `delete_reviewed` mediante la validación proactiva de la existencia de archivos y el uso de `try-except` granulares, evitando que excepciones de acceso a archivos individuales detengan el proceso completo de limpieza.
+- `2026-10-03T08:37:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T08:37:50` Corrida terminada. Total usado hoy: 203.

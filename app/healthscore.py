@@ -124,9 +124,12 @@ _PIPELINE: Final[Dict[MetricKey, PipelineEntry]] = {
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     """Limita un valor numérico al rango [min_val, max_val]."""
-    val = float(value)
-    if not math.isfinite(val): return min_val
-    return max(min_val, min(val, max_val))
+    try:
+        val = float(value)
+        if not math.isfinite(val): return min_val
+        return max(min_val, min(val, max_val))
+    except (ValueError, TypeError):
+        return min_val
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
     """Calcula el puntaje de basura normalizado [0.0, 1.0] basado en el límite _LIMIT_JUNK_MB."""
@@ -241,6 +244,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for area, entry in _PIPELINE.items():
         try:
+            # Captura de errores individual por área para no detener el pipeline global
             area_ratio = _clamp(entry.scorer(m))
             _evaluate_rules(m, entry.rules, area_ratio, recommendations)
             

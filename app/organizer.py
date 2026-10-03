@@ -267,16 +267,17 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     
     for junk_file in files:
         if junk_file is None or not isinstance(junk_file.path, Path): continue
-        if not junk_file.path.exists() or not is_safe_to_modify(junk_file.path): continue
-        if not _is_safe_for_disk_op(junk_file.path, dest_res): continue
-        
-        target_path = _can_move_file(junk_file, dest_res)
-        if target_path:
-            try:
+        try:
+            if not junk_file.path.exists() or not is_safe_to_modify(junk_file.path): continue
+            if not _is_safe_for_disk_op(junk_file.path, dest_res): continue
+            
+            target_path = _can_move_file(junk_file, dest_res)
+            if target_path:
                 ensure_safe_to_modify(junk_file.path)
                 shutil.move(str(junk_file.path), str(target_path))
-            except (OSError, shutil.Error, PermissionError) as e:
-                logger.error(f"Error moviendo {junk_file.path}: {e}")
+        except (OSError, shutil.Error, PermissionError) as e:
+            logger.error(f"Error moviendo {junk_file.path}: {e}")
+            continue
     return dest_res
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
@@ -298,15 +299,14 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         
         count = 0
         for item in dest.iterdir():
-            if item.is_file():
-                try:
-                    if is_safe_to_modify(item) and not is_protected_path(item):
-                        ensure_safe_to_modify(item)
-                        item.unlink()
-                        count += 1
-                except (OSError, PermissionError) as e:
-                    logger.warning(f"No se pudo eliminar {item}: {e}")
-                    continue
+            try:
+                if item.is_file() and is_safe_to_modify(item) and not is_protected_path(item):
+                    ensure_safe_to_modify(item)
+                    item.unlink()
+                    count += 1
+            except (OSError, PermissionError) as e:
+                logger.warning(f"No se pudo eliminar {item}: {e}")
+                continue
         return count
     except (OSError, PermissionError, RuntimeError) as e:
         logger.error(f"Error accediendo a directorio de revisión: {e}")
