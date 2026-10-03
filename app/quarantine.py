@@ -138,19 +138,27 @@ class QuarantineItem:
             return None
 
     def _validate_integrity(self, stored_path: Path) -> bool:
-        """Verifica existencia, inodo, tamaño y tipo del archivo en el sandbox."""
+        """
+        Realiza validaciones estructurales de seguridad en el sandbox.
+        Verifica: existencia, tipos no permitidos (enlaces/junctions), 
+        propiedad del archivo, invariabilidad del inodo y tamaño esperado.
+        """
         if not stored_path.exists(): return False
         try:
+            # Detectar enlaces simbólicos o puntos de reparse (amenaza de salto de directorio)
             if stored_path.is_symlink() or (hasattr(stored_path, 'is_junction') and stored_path.is_junction()):
                 return False
             
             st = stored_path.stat()
-            # Verificación de propiedad (proactiva)
+            # Validación de propiedad (previene ataques de suplantación de archivos)
             if hasattr(os, 'getuid') and st.st_uid != os.getuid():
                 return False
 
+            # Validación contra TOCTOU: compara el inodo registrado con el actual
             if self.file_inode != 0 and st.st_ino != self.file_inode:
                 return False
+            
+            # Un archivo en cuarentena nunca debe tener enlaces físicos (nlink > 1)
             if st.st_nlink > 1:
                 return False
             
@@ -163,10 +171,11 @@ class QuarantineItem:
             return False
 
     def verify_integrity(self, stored_path: Path) -> bool:
-        """Realiza comprobación de hash SHA-256 contra el registro original."""
+        """Realiza comprobación completa: validación de estructura + verificación de contenido (hash)."""
         if not self._validate_integrity(stored_path):
             return False
         try:
+            # Compara el estado actual del archivo en disco con la huella registrada (SHA256)
             current_hash = _get_sha256(stored_path)
             return bool(self.sha256 and current_hash == self.sha256)
         except (OSError, PermissionError):

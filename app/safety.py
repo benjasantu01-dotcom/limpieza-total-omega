@@ -438,7 +438,10 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
 def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
     """
     Ejecuta el conjunto de reglas de integridad sobre un archivo dado.
-    Si cualquier regla falla, se aborta la operación con una excepción.
+    
+    Itera sobre la lista `_VALIDATORS`. Si cualquier predicado devuelve `True`,
+    se mapea el motivo de protección a un código de error y se aborta la 
+    operación lanzando `UnsafePathError`.
     """
     sd = _get_security_descriptor(path)
     for rule in _VALIDATORS:
@@ -478,8 +481,12 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
 def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     """
     Previene ataques Time-of-Check to Time-of-Use (TOCTOU).
-    Verifica que el archivo no haya sido reemplazado y pertenezca a un volumen local permitido
-    comparando los identificadores de dispositivo e inodo contra el estado inicial.
+
+    Realiza una validación de dos pasos:
+    1. Confirma que el dispositivo de almacenamiento sea local y seguro.
+    2. Compara los identificadores de dispositivo (st_dev) e inodo (st_ino) 
+       obtenidos en `initial_stat` con el estado actual para detectar 
+       si el archivo fue reemplazado entre operaciones.
     """
     if not os.access(path, os.F_OK):
         raise UnsafePathError("El archivo ya no existe (TOCTOU).", SafetyValidationErrorCode.IO_ERROR)
