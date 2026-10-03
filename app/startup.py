@@ -161,7 +161,7 @@ class StartupEntry:
             if not p.parts or is_protected_path(p):
                 return ""
             return str(p)
-        except (OSError, ValueError, RuntimeError, TypeError):
+        except (OSError, ValueError, RuntimeError, TypeError, PermissionError):
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
@@ -220,7 +220,7 @@ class StartupEntry:
             p_str: str = str(p)
             _EXISTS_CACHE[p_str] = True
             return p_str
-        except (OSError, ValueError, RuntimeError, TypeError, PermissionError):
+        except (OSError, ValueError, RuntimeError, TypeError, PermissionError, FileNotFoundError):
             _EXISTS_CACHE[path_string] = False
             return ""
 

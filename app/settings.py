@@ -328,7 +328,7 @@ def _is_file_secure_to_read(file_obj: Any) -> bool:
 
 def _load_impl(ruta: Path) -> AppSettings:
     """Lógica interna de carga: lectura atómica y validación de integridad post-apertura."""
-    if not ruta.exists(): return DEFAULTS.copy()
+    if not ruta.exists() or ruta.is_symlink(): return DEFAULTS.copy()
     try:
         ensure_safe_to_modify(str(ruta))
         with open(ruta, "r", encoding="utf-8") as f:

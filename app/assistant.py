@@ -735,8 +735,12 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     payload = _build_payload(question, context_text)
     if not payload: return None
     
-    url = _ENDPOINT_BASE.format(model=model) + f"?key={api_key}"
-    if not url.startswith(_API_HOST_ROOT): return None
+    # Construcción vigilada de la URL
+    target_url = _ENDPOINT_BASE.format(model=model)
+    if not target_url.startswith(_API_HOST_ROOT) or re.search(r"[<>\s]", target_url):
+        return None
+        
+    url = f"{target_url}?key={api_key}"
     
     try:
         req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"}, method="POST")

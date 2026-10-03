@@ -171,7 +171,7 @@ class Scanner:
             if len(self._root_cache) < 1000:
                 self._root_cache[entry_path] = result
             return result
-        except (OSError, RuntimeError):
+        except (OSError, RuntimeError, ValueError):
             return False
 
     def _has_invalid_name(self, name: str) -> bool:
@@ -186,7 +186,6 @@ class Scanner:
         """Filtro de seguridad central. Valida estructura, permisos y exclusión de rutas protegidas."""
         if not isinstance(entry, os.DirEntry) or not entry.path:
             return False
-        # Prevenir Null-byte injection
         if "\0" in entry.path:
             return False
         if not _is_valid_path_structure(entry.path) or self._has_invalid_name(entry.name):
@@ -202,16 +201,19 @@ class Scanner:
                 return False
             self.safe_cache.add(entry.path)
             return True
-        except (OSError, RuntimeError):
+        except (OSError, RuntimeError, ValueError):
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: List[Tuple[str, int]], current_depth: int) -> None:
         """Gestiona el stack de exploración de directorios aplicando límites de profundidad."""
         if current_depth >= SCAN_LIMITS.max_depth:
             return
-        if entry.path and entry.path.lower() not in self.seen:
-            self.seen.add(entry.path.lower())
-            directory_stack.append((entry.path, current_depth + 1))
+        try:
+            if entry.path and entry.path.lower() not in self.seen:
+                self.seen.add(entry.path.lower())
+                directory_stack.append((entry.path, current_depth + 1))
+        except OSError:
+            pass
 
     @staticmethod
     @lru_cache(maxsize=1024)
@@ -241,7 +243,7 @@ class Scanner:
                 if finding is not None:
                     self.results.append(finding)
             except (OSError, PermissionError, AttributeError, ValueError) as e:
-                logger.debug(f"Error de acceso/dato en {check_fn.__name__} para {path}: {e}")
+                logger.debug(f"Error en {check_fn.__name__} para {path}: {e}")
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> List[Suspicion]:
     """Análisis estático de un archivo puntual con pre-validación de acceso seguro."""
@@ -252,7 +254,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
             return []
         if is_protected_path(path): 
             return []
-    except (OSError, PermissionError): 
+    except (OSError, PermissionError, ValueError): 
         return []
     
     findings: List[Suspicion] = []
@@ -278,9 +280,10 @@ def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
         if not base_path.exists() or not base_path.is_dir() or base_path.is_symlink() or not os.access(base_path, os.R_OK):
             return []
         if is_protected_path(base_path): return []
-    except (OSError, RuntimeError): 
+        scanner = Scanner(base_root=base_path)
+    except (OSError, RuntimeError, ValueError): 
         return []
-    scanner = Scanner(base_root=base_path)
+    
     directory_stack: List[Tuple[str, int]] = [(str(base_path), 0)]
     scanner.seen.add(str(base_path).lower())
     while directory_stack:

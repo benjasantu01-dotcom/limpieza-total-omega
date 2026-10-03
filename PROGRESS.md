@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Mejoras aceptadas: **210** (41.7% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-02 | 95 | 4 | 17 | 11 | 126 |
-| 2026-10-03 | 111 | 5 | 27 | 11 | 97 |
+| 2026-10-02 | 95 | 4 | 17 | 11 | 122 |
+| 2026-10-03 | 115 | 5 | 27 | 11 | 97 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **41**
+- seguridad defensiva: **42**
 - rendimiento: **39**
-- robustez ante casos límite: **33**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **19**
 - `safety.py`: **19**
+- `scanner.py`: **19**
 - `duplicates.py`: **18**
 - `healthscore.py`: **18**
-- `scanner.py`: **18**
+- `settings.py`: **18**
 - `organizer.py`: **17**
-- `settings.py`: **17**
+- `assistant.py`: **15**
 - `diskreport.py`: **15**
 - `memory.py`: **14**
-- `assistant.py`: **14**
 - `browser.py`: **14**
 - `branding.py`: **10**
-- `startup.py`: **9**
+- `startup.py`: **10**
 - `main.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-03T10:47:30` **assistant.py** (seguridad defensiva): Reforcé la seguridad en `_call_gemini` añadiendo una validación estricta de la URL mediante un prefijo estático y un filtrado de caracteres sospechosos, asegurando que ninguna manipulación de los parámetros de configuración pueda redirigir la petición a un endpoint malicioso o malformado.
+- `2026-10-03T10:46:54` **startup.py** (robustez ante casos límite): Se ha añadido un chequeo de `PermissionError` y `FileNotFoundError` robusto en `_extract_quoted_path` y `_resolve_and_cache_path` para evitar que la app crashee o ignore silenciosamente rutas de registro que contienen caracteres Unicode inesperados o bloqueos de acceso durante la normalización de rutas.
+- `2026-10-03T10:46:21` **settings.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_load_impl` para verificar que el archivo de configuración no sea un enlace simbólico o un archivo especial antes de abrirlo, fortaleciendo la robustez ante ataques de tipo TOCTOU (Time-of-Check to Time-of-Use) y asegurando que solo se procesen archivos regulares.
+- `2026-10-03T10:45:48` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `scanner.py` ante errores de resolución de rutas en el sistema de archivos (como paths inexistentes o inaccesibles) envolviendo las llamadas críticas en bloques `try-except` más granulares y asegurando que `_is_inside_base_root` maneje correctamente las excepciones de resolución sin interrumpir el flujo.
 - `2026-10-03T10:37:24` **safety.py** (robustez ante casos límite): Se introdujo una validación robusta de existencia y acceso mediante `os.access` con `os.F_OK` antes de proceder con `Path.stat()`, evitando excepciones innecesarias en `_get_path_stat_robust` y mejorando la resiliencia ante archivos que desaparecen entre la detección y la inspección.
 - `2026-10-03T10:36:19` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `purge_all` para prevenir condiciones de carrera y fallos silenciosos al iterar sobre archivos, integrando una validación explícita de `UnsafePathError` y garantizando que el manifiesto solo se actualice tras la confirmación efectiva del borrado de cada archivo.
 - `2026-10-03T10:27:32` **healthscore.py** (robustez ante casos límite): Se ha robustecido el `SystemMetrics` y la función `_evaluate_rules` para manejar con seguridad valores inesperados (como `None` o datos corruptos) evitando excepciones silenciosas y asegurando que las métricas tengan valores válidos antes de su procesamiento.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-03T09:46:03` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje transformando `_PIPELINE` de un `Dict` a una `List` de tuplas para evitar la sobrecarga de hashing en iteraciones repetidas, y eliminé la validación redundante `m.validate()` dentro de `compute_score` ya que `SystemMetrics` ya la ejecuta en su `__post_init__`.
 - `2026-10-03T09:35:13` **assistant.py** (rendimiento): Se implementó un `lru_cache` en `handle_score` para evitar el re-procesamiento redundante de métricas y la generación de strings de salud cada vez que se consulta el estado global, optimizando la CPU en la interfaz.
 - `2026-10-03T09:34:23` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `StartupEntry` añadiendo docstrings detallados a sus métodos privados y propiedades, eliminando ambigüedades sobre el propósito de las validaciones de seguridad y los mecanismos de caché.
-- `2026-10-03T09:25:09` **scanner.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `scanner.py` mediante la refactorización de `_safe_stat` y sus dependencias, eliminando redundancias y centralizando la lógica de extracción de atributos de archivo para clarificar el flujo de seguridad.
-- `2026-10-03T09:16:08` **quarantine.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y se reemplazó el uso de nombres de variables crípticos (como `fd_src` o `tf`) por nombres semánticos que explican su rol en el ciclo de vida del archivo, mejorando la legibilidad técnica del flujo de aislamiento.
-- `2026-10-03T09:15:42` **organizer.py** (legibilidad y documentación): Se introdujeron type hints en funciones críticas y se actualizaron los docstrings para clarificar el propósito de las validaciones de seguridad, mejorando la mantenibilidad sin alterar la lógica de ejecución.
-- `2026-10-03T09:15:15` **memory.py** (legibilidad y documentación): He mejorado la documentación técnica del módulo mediante la adición de docstrings estructuradas (siguiendo Google Style) en las funciones que carecían de ellas, clarificando los parámetros, comportamientos esperados y excepciones en las operaciones de bajo nivel (Win32 API) para facilitar el mantenimiento futuro.
