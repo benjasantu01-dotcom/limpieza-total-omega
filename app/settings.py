@@ -298,9 +298,9 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
 def validate(raw_values: Any) -> AppSettings:
     """Valida y limpia una estructura de datos externa contra el esquema oficial."""
     if not _is_dict(raw_values): 
-        return dict(DEFAULTS)
+        return DEFAULTS.copy()
     
-    config = dict(DEFAULTS)
+    config = DEFAULTS.copy()
     validators = _build_validator_map()
     
     for key_str, raw_val in raw_values.items():
@@ -327,10 +327,10 @@ def _is_file_secure_to_read(file_obj: Any) -> bool:
 
 def _load_impl(ruta: Path) -> AppSettings:
     """Lógica interna de carga: lectura atómica y validación de integridad post-apertura."""
-    if not ruta.exists(): return dict(DEFAULTS)
+    if not ruta.exists(): return DEFAULTS.copy()
     try:
         with open(ruta, "r", encoding="utf-8") as f:
-            if not _is_file_secure_to_read(f): return dict(DEFAULTS)
+            if not _is_file_secure_to_read(f): return DEFAULTS.copy()
             fcntl.flock(f.fileno(), fcntl.LOCK_SH)
             try:
                 data = json.load(f)
@@ -340,17 +340,16 @@ def _load_impl(ruta: Path) -> AppSettings:
             return _coerce_and_verify(validate(data))
     except (OSError, PermissionError, IOError, json.JSONDecodeError, UnicodeDecodeError, EOFError):
         pass
-    return dict(DEFAULTS)
+    return DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga los ajustes desde el disco, utilizando caché por mtime."""
     ruta = settings_path(custom_base)
     bak = ruta.with_suffix(".bak")
     
-    # Intentar cargar desde el archivo principal o el respaldo
     for r in [ruta, bak]:
-        try:
-            if r.exists():
+        if r.exists():
+            try:
                 st = r.stat()
                 cache_key = str(r)
                 if cache_key in _MANAGER.settings_cache:
@@ -361,29 +360,25 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
                 settings = _load_impl(r)
                 _MANAGER.settings_cache[cache_key] = (st.st_mtime, settings)
                 return settings.copy()
-        except (OSError, PermissionError):
-            continue
-    return dict(DEFAULTS)
+            except (OSError, PermissionError):
+                continue
+    return DEFAULTS.copy()
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """Asegura consistencia de tipos y reglas de negocio, revirtiendo a defaults ante inconsistencias."""
-    final = dict(DEFAULTS)
+    final = DEFAULTS.copy()
     try:
         for key, expected_val in DEFAULTS.items():
             val = settings.get(key)
             if val is not None and isinstance(val, type(expected_val)):
                 final[key] = val
         
-        # Integridad de campos críticos: forzar consistencia de tipos post-parsing
-        if not isinstance(final["ultima_carpeta"], str): final["ultima_carpeta"] = ""
-        if not isinstance(final["asistente_clave_api"], str): final["asistente_clave_api"] = ""
-        
         # Validar lógica de negocio: el asistente requiere clave para estar habilitado
         if final["asistente_activado"] and not (final["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
             final["asistente_activado"] = False
         return final # type: ignore
     except (ValueError, TypeError, AttributeError):
-        return dict(DEFAULTS)
+        return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     """
@@ -470,7 +465,7 @@ def reset(custom_base: PathLike | None = None) -> AppSettings:
     """Restaura los valores predeterminados y limpia la caché."""
     save(DEFAULTS, custom_base)
     _MANAGER.clear()
-    return dict(DEFAULTS)
+    return DEFAULTS.copy()
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
     """Acceso rápido a una configuración individual."""
