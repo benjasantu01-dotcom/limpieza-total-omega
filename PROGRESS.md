@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Mejoras aceptadas: **204** (40.5% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-02 | 98 | 5 | 18 | 11 | 129 |
-| 2026-10-03 | 108 | 5 | 26 | 11 | 93 |
+| 2026-10-02 | 95 | 5 | 17 | 11 | 129 |
+| 2026-10-03 | 109 | 5 | 26 | 11 | 96 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
-- seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **43**
+- seguridad defensiva: **41**
 - rendimiento: **39**
-- robustez ante casos límite: **30**
+- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **19**
-- `scanner.py`: **19**
-- `settings.py`: **18**
 - `duplicates.py`: **18**
+- `healthscore.py`: **18**
 - `quarantine.py`: **18**
-- `healthscore.py`: **17**
+- `safety.py`: **18**
+- `scanner.py`: **18**
 - `organizer.py`: **17**
+- `settings.py`: **17**
 - `diskreport.py`: **15**
 - `memory.py`: **14**
 - `assistant.py`: **14**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-03T10:27:32` **healthscore.py** (robustez ante casos límite): Se ha robustecido el `SystemMetrics` y la función `_evaluate_rules` para manejar con seguridad valores inesperados (como `None` o datos corruptos) evitando excepciones silenciosas y asegurando que las métricas tengan valores válidos antes de su procesamiento.
 - `2026-10-03T10:15:21` **assistant.py** (robustez ante casos límite): Se reforzó `_is_input_too_deep_or_complex` para validar recursivamente la integridad de objetos complejos, mitigando riesgos de desbordamiento de pila o agotamiento de recursos al procesar fuentes de datos externas malformadas antes de la ingestión en el contexto.
 - `2026-10-03T10:05:45` **scanner.py** (rendimiento): Implementé una caché de resultados para `_is_relevant_extension` usando `functools.lru_cache` (importada de forma plana como estándar) para evitar cálculos repetitivos de `splitext` y comparaciones de cadenas dentro del bucle principal de escaneo, optimizando el rendimiento de CPU al procesar miles de archivos.
 - `2026-10-03T09:56:44` **quarantine.py** (rendimiento): Optimicé el acceso al manifiesto implementando una carga perezosa (`lazy loading`) y caché persistente en `load_manifest`, evitando lecturas innecesarias de disco en cada llamada a funciones auxiliares de reporte y purga.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-03T09:15:15` **memory.py** (legibilidad y documentación): He mejorado la documentación técnica del módulo mediante la adición de docstrings estructuradas (siguiendo Google Style) en las funciones que carecían de ellas, clarificando los parámetros, comportamientos esperados y excepciones en las operaciones de bajo nivel (Win32 API) para facilitar el mantenimiento futuro.
 - `2026-10-03T09:04:39` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints más precisos (especialmente en `_is_valid_candidate` y `hash_file`), documentando los parámetros de las funciones auxiliares clave y clarificando las excepciones que se capturan, facilitando la comprensión del flujo de seguridad para futuros desarrolladores.
 - `2026-10-03T09:04:12` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `walk_files` para clarificar la lógica de exclusión de inodos y el manejo del stack, facilitando el mantenimiento y la comprensión de este motor de escaneo central.
-- `2026-10-03T09:03:45` **browser.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con las secciones "Argumentos" y "Retorno" en las funciones críticas de recorrido y detección, y se unificó la lógica de normalización de rutas para eliminar redundancias, mejorando la mantenibilidad sin alterar la funcionalidad.

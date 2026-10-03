@@ -175,7 +175,7 @@ class SystemMetrics:
         """Normaliza tipos y asegura que todos los valores numéricos estén en rangos válidos."""
         def _to_clean(val: Any, default: float, min_v: float = 0.0, max_v: float = float('inf')) -> float:
             try:
-                f = float(val)
+                f = float(val) if val is not None else default
                 if not math.isfinite(f): return default
                 return max(min_v, min(f, max_v))
             except (ValueError, TypeError):
