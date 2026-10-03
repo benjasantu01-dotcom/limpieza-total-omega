@@ -17,6 +17,7 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime
+from functools import lru_cache
 from typing import List, Optional, Union, Final, Callable, TypeAlias, NamedTuple, Dict, Sequence, Tuple
 from safety import is_protected_path
 
@@ -212,7 +213,9 @@ class Scanner:
             self.seen.add(entry.path.lower())
             directory_stack.append((entry.path, current_depth + 1))
 
-    def _is_relevant_extension(self, name: str) -> bool:
+    @staticmethod
+    @lru_cache(maxsize=1024)
+    def _is_relevant_extension(name: str) -> bool:
         """Optimización: solo analiza archivos con extensiones consideradas potencialmente riesgosas."""
         _, ext = os.path.splitext(name)
         return ext.lower() in SUSPICIOUS_ALL_EXTS

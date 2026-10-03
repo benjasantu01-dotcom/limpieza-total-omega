@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **209** (41.5% de aceptación)
-- Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 44
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 219
+- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Rechazadas por tests: 10
+- Rechazadas por guardia de seguridad: 45
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-02 | 103 | 6 | 19 | 11 | 130 |
-| 2026-10-03 | 106 | 5 | 25 | 10 | 89 |
+| 2026-10-02 | 100 | 5 | 19 | 11 | 130 |
+| 2026-10-03 | 107 | 5 | 26 | 11 | 90 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
-- seguridad defensiva: **49**
+- seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **43**
-- rendimiento: **38**
+- rendimiento: **39**
 - robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **19**
 - `safety.py`: **19**
-- `healthscore.py`: **18**
-- `scanner.py`: **18**
+- `scanner.py`: **19**
 - `settings.py`: **18**
 - `duplicates.py`: **18**
+- `healthscore.py`: **17**
 - `organizer.py`: **17**
-- `diskreport.py`: **16**
-- `browser.py`: **15**
 - `memory.py`: **15**
+- `diskreport.py`: **15**
+- `browser.py`: **14**
 - `assistant.py`: **13**
 - `branding.py`: **10**
 - `startup.py`: **9**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-03T10:05:45` **scanner.py** (rendimiento): Implementé una caché de resultados para `_is_relevant_extension` usando `functools.lru_cache` (importada de forma plana como estándar) para evitar cálculos repetitivos de `splitext` y comparaciones de cadenas dentro del bucle principal de escaneo, optimizando el rendimiento de CPU al procesar miles de archivos.
 - `2026-10-03T09:56:44` **quarantine.py** (rendimiento): Optimicé el acceso al manifiesto implementando una carga perezosa (`lazy loading`) y caché persistente en `load_manifest`, evitando lecturas innecesarias de disco en cada llamada a funciones auxiliares de reporte y purga.
 - `2026-10-03T09:55:54` **organizer.py** (rendimiento): Optimicé el proceso de escaneo de archivos reemplazando las llamadas repetitivas a `os.path.exists()` y `os.stat()` por una consulta única mediante `os.scandir()`, aprovechando que el objeto `DirEntry` ya contiene los datos de metadatos del sistema de archivos, reduciendo drásticamente las llamadas al kernel durante la recursión.
 - `2026-10-03T09:55:22` **memory.py** (rendimiento): Se optimizó la lógica de ordenamiento y filtrado en `parse_windows_process_csv` para evitar la creación de listas intermedias innecesarias y se ajustó `top_memory_processes` para utilizar una estructura de heap local, evitando procesar el 100% de los procesos si el límite es bajo, mejorando así el rendimiento y uso de memoria.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-03T09:04:12` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `walk_files` para clarificar la lógica de exclusión de inodos y el manejo del stack, facilitando el mantenimiento y la comprensión de este motor de escaneo central.
 - `2026-10-03T09:03:45` **browser.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con las secciones "Argumentos" y "Retorno" en las funciones críticas de recorrido y detección, y se unificó la lógica de normalización de rutas para eliminar redundancias, mejorando la mantenibilidad sin alterar la funcionalidad.
 - `2026-10-03T08:54:40` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_build_payload` y `_extract_text_from_gemini_json` para usar constantes descriptivas y reducir la complejidad ciclomática de las validaciones de JSON.
-- `2026-10-03T08:53:34` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` al reemplazar `os.remove(temp_path)` por un manejo de excepciones explícito que utiliza `ensure_safe_to_modify` para cumplir con las reglas de seguridad antes de cualquier eliminación, evitando condiciones de carrera o fallos silenciosos ante permisos restringidos.
