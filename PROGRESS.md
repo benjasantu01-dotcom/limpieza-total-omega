@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 222
 
@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-02 | 75 | 3 | 14 | 7 | 90 |
-| 2026-10-03 | 132 | 6 | 30 | 15 | 132 |
+| 2026-10-02 | 72 | 3 | 13 | 7 | 90 |
+| 2026-10-03 | 136 | 6 | 30 | 15 | 132 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
+- legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **44**
-- legibilidad y documentación: **41**
-- rendimiento: **37**
 - robustez ante casos límite: **36**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
 - `safety.py`: **19**
+- `quarantine.py`: **19**
 - `scanner.py`: **18**
-- `organizer.py`: **17**
+- `duplicates.py`: **18**
 - `settings.py`: **17**
-- `duplicates.py`: **17**
+- `diskreport.py`: **17**
 - `assistant.py`: **16**
-- `diskreport.py`: **16**
 - `healthscore.py`: **16**
-- `memory.py`: **14**
-- `browser.py`: **13**
-- `branding.py`: **11**
+- `organizer.py`: **16**
+- `browser.py`: **14**
+- `memory.py`: **13**
+- `branding.py`: **12**
 - `startup.py`: **10**
 - `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-03T13:30:06` **duplicates.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en las funciones clave de orquestación y hashing, y se estandarizó la nomenclatura de los argumentos internos para aclarar el flujo de trabajo de la estrategia de detección.
+- `2026-10-03T13:29:51` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de `walk_files` y `_collect_summary_data` para clarificar la lógica de filtrado de rutas y manejo de errores, además de incluir `type hints` más precisos en el uso de `heapq` para mejorar la mantenibilidad del código.
+- `2026-10-03T13:29:20` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones auxiliares de bajo nivel, clarificando las responsabilidades de validación y los mecanismos de seguridad implementados para evitar la salida del ámbito de usuario.
+- `2026-10-03T13:28:46` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica añadiendo type hints faltantes en funciones clave y enriqueciendo los docstrings para explicar la lógica de los cálculos de renderizado y el manejo de seguridad, facilitando la comprensión del código para otros colaboradores.
 - `2026-10-03T13:19:45` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `assistant.py` mediante la refactorización de `_ensure_safe_text` (dividiendo su lógica compleja en una función de validación de rutas y otra de limpieza de contenido) y añadiendo `docstrings` explicativos en las constantes de seguridad para clarificar el propósito de cada patrón regex.
 - `2026-10-03T13:18:17` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_directory` y `Scanner._is_inside_base_root` añadiendo validaciones de tipo y capturas de excepciones específicas ante entradas de archivo nulas o malformadas, evitando que errores inesperados en el sistema de archivos interrumpan el bucle de escaneo.
 - `2026-10-03T13:09:52` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `ensure_safe_to_modify` para realizar una validación de tipo temprana sobre el parámetro `path`, evitando errores de tiempo de ejecución (AttributeError/TypeError) en llamadas mal formadas antes de que la función intente procesar la ruta o normalizarla.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-03T12:48:46` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de acceso a datos mediante la validación proactiva de tipos y valores, evitando excepciones de `AttributeError` o `TypeError` en métodos como `icon`, `tab_label` y `severity_label` al procesar entradas inesperadas.
 - `2026-10-03T12:48:01` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_source_value` añadiendo un chequeo explícito de recursión profunda en objetos arbitrarios y validando que los atributos accedidos no sean accesos peligrosos a nivel de clase o módulo (`__class__`, `__init__`, etc.), reforzando la seguridad frente a objetos maliciosos pasados a `ingest`.
 - `2026-10-03T11:17:32` **safety.py** (seguridad defensiva): He mejorado `safety.py` añadiendo la detección de "Mount Points" mediante `GetVolumePathNameW` en `_is_volume_readonly`, asegurando que si una ruta es un punto de montaje (no solo la raíz de la unidad), se evalúe correctamente su estado de solo lectura, previniendo errores de escritura en volúmenes montados dinámicamente que podrían no estar cubiertos por la lógica anterior basada solo en `splitdrive`.
-- `2026-10-03T11:16:23` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_copy_with_verification` y `_atomic_isolate_file` añadiendo una comprobación explícita de `is_safe_to_modify` justo antes de realizar operaciones críticas de escritura, previniendo condiciones de carrera (TOCTOU) adicionales y asegurando que no se escriba en rutas que hayan podido cambiar su estado de seguridad tras la validación inicial.
-- `2026-10-03T11:11:21` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` añadiendo un chequeo explícito de integridad para verificar que el archivo de origen no haya sido reemplazado por un enlace simbólico entre el escaneo inicial y la operación de movimiento (ataque TOCTOU), utilizando `os.lstat` para validar el tipo de archivo real.
-- `2026-10-03T11:11:10` **memory.py** (seguridad defensiva): Se introdujo una validación defensiva en `_get_process_path` para descartar rutas que no sean absolutas o presenten estructuras inusuales antes de pasar por `is_protected_path`, previniendo inyecciones de rutas maliciosas en el chequeo de seguridad.
-- `2026-10-03T10:58:06` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `_is_excluded_path` añadiendo validación de ruta absoluta y evitando la resolución (`resolve`) dentro del bucle principal, lo que previene ataques de tipo Time-of-Check Time-of-Use (TOCTOU) y mejora la resiliencia contra enlaces simbólicos manipulados durante el escaneo.

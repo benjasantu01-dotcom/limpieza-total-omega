@@ -251,6 +251,7 @@ def grade_color(grade: Optional[str]) -> ColorHex:
 def score_color(score: Union[float, int, None]) -> ColorHex:
     """
     Determina el color según el puntaje (0-100) y los umbrales configurados.
+    Si el puntaje está fuera de rango o es inválido, devuelve color de texto tenue.
     """
     if score is None: 
         return C_TEXT_MUTED
@@ -381,7 +382,10 @@ def logo_svg(size: int = 128) -> str:
 </svg>"""
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optional[Path]:
-    """Guarda el logo SVG tras validar la seguridad del destino de forma atómica."""
+    """
+    Guarda el logo SVG tras validar la seguridad del destino de forma atómica.
+    Verifica permisos y existencia del directorio mediante el módulo safety.
+    """
     if destination is None:
         return None
     try:

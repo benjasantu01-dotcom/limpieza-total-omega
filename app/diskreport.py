@@ -264,9 +264,12 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre recursivamente el sistema de archivos usando una pila (stack) para
-    evitar la recursión profunda y optimizar la memoria. Detecta ciclos mediante
-    inodos para prevenir bucles infinitos en enlaces simbólicos o junctions.
+    Recorre el sistema de archivos iterativamente usando una pila (stack) para
+    evitar problemas de recursión profunda. 
+    
+    Implementa detección de ciclos mediante inodos para evitar el seguimiento infinito 
+    de enlaces simbólicos o junctions. Saltea automáticamente las rutas marcadas
+    como protegidas por `safety.is_protected_path`.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -349,11 +352,14 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Recorre el sistema de archivos y consolida datos estadísticos.
+    
+    Utiliza un heap de tamaño fijo (min-heap) para rastrear de forma eficiente los
+    archivos más grandes sin cargar toda la lista de archivos en memoria.
     """
     total_bytes: int = 0
     total_files: int = 0
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
-    top_heap: List[Tuple[int, Path]] = []
+    top_heap: List[Tuple[int, Path]] = [] # Elementos: (tamaño_bytes, ruta_path)
     
     for path, size_bytes in walk_files(directory, skip_protected):
         if not isinstance(size_bytes, int) or size_bytes < 0:

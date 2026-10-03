@@ -109,7 +109,11 @@ class BrowserCache:
 
 
 def _get_kernel32() -> Optional[ctypes.WinDLL]:
-    """Obtiene acceso a la API de Windows necesaria para validar atributos de archivo."""
+    """
+    Instancia el módulo kernel32 de Windows.
+    Retorna None si no es Windows o si la API no está disponible,
+    evitando bloqueos en entornos Linux/CI.
+    """
     if os.name != 'nt':
         return None
     try:
@@ -119,11 +123,14 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
         return None
 
 def _is_unc_path(path_str: Optional[str]) -> TypeGuard[str]:
-    """Verifica si la ruta corresponde a un recurso de red (UNC)."""
+    """Verifica si la ruta corresponde a un recurso de red (UNC) no local."""
     return isinstance(path_str, str) and (path_str.startswith(r"\\") or path_str.startswith("//"))
 
 def _ensure_within_base(target: str, base_norm: str) -> bool:
-    """Valida que la ruta absoluta normalizada esté contenida estrictamente en la base permitida."""
+    """
+    Validación de contención: comprueba que 'target' pertenezca a la jerarquía 
+    'base_norm'. Previene saltos fuera del perfil de usuario mediante normalización.
+    """
     try:
         target_norm: str = os.path.normcase(os.path.abspath(target))
         return target_norm.startswith(base_norm)
@@ -131,7 +138,7 @@ def _ensure_within_base(target: str, base_norm: str) -> bool:
         return False
 
 def base_directories() -> List[Path]:
-    """Identifica y valida la ruta base del directorio LOCALAPPDATA, garantizando acceso seguro."""
+    """Identifica la ruta de LOCALAPPDATA y valida su integridad y seguridad."""
     local_env: Optional[str] = os.environ.get("LOCALAPPDATA")
     if not isinstance(local_env, str) or not local_env or _is_unc_path(local_env):
         return []
@@ -147,11 +154,14 @@ def base_directories() -> List[Path]:
     return []
 
 def _is_excluded_file(name: Optional[str]) -> TypeGuard[str]:
-    """Verifica si el nombre de archivo coincide con archivos de usuario sensibles."""
+    """Filtro de listas negras para archivos críticos del navegador (ej. cookies)."""
     return name is not None and name.lower() in NEVER_TOUCH
 
 def _is_system_hidden(entry_path: Optional[str], kernel32: Optional[ctypes.WinDLL]) -> bool:
-    """Usa Win32 API para detectar si un archivo es un punto de reparse o sistema."""
+    """
+    Consulta atributos Win32 para identificar archivos marcados como ocultos, 
+    de sistema o puntos de reparse (Junctions).
+    """
     if kernel32 is None or not entry_path: return False
     try:
         attrs: int = kernel32.GetFileAttributesW(entry_path)
@@ -164,7 +174,7 @@ def _should_skip_entry(
     kernel32: Optional[ctypes.WinDLL], 
     is_junction_fn: JunctionChecker
 ) -> bool:
-    """Determina si la entrada debe ignorarse por reglas de seguridad o archivos sensibles."""
+    """Determina si un archivo debe omitirse por seguridad o por ser crítico."""
     if entry.name is None or _is_excluded_file(entry.name):
         return True
     
@@ -183,7 +193,10 @@ def _should_skip_entry(
     return False
 
 def _is_file_in_use(path_obj: Path) -> bool:
-    """Verifica si un archivo está bloqueado intentando abrirlo en solo lectura sin bloquear."""
+    """
+    Verifica si un archivo está bloqueado por el navegador (ej. archivo de caché abierto).
+    Intenta abrir en modo lectura exclusiva.
+    """
     if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
         return True
     try:
@@ -201,16 +214,8 @@ def _process_file_entry(
     depth: int
 ) -> ScanResult:
     """
-    Evalúa una entrada individual para su inclusión en el conteo de caché.
-    Args:
-        entry: Entrada de directorio a procesar.
-        root_abs_norm: Ruta base absoluta normalizada del escaneo.
-        kernel32: Handle a kernel32.dll para validación de atributos.
-        visited_inodes: Set de inodos procesados para evitar ciclos.
-        visited_dirs: Diccionario de caché de tamaños de directorios.
-        depth: Profundidad actual del recorrido.
-    Returns:
-        ScanResult con los bytes detectados y estado de éxito.
+    Analiza una entrada individual. Valida profundidad, contención en base, 
+    detección de ciclos de inodos y estado de bloqueo.
     """
     try:
         if depth > MAX_SCAN_DEPTH:
@@ -244,16 +249,8 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> ScanResult:
     """
-    Realiza el recorrido recursivo del disco utilizando memoización de estados.
-    Args:
-        root_path: Path de la carpeta a sumar.
-        root_abs_norm: Base raíz del escaneo.
-        kernel32: Handle opcional para validaciones.
-        visited_inodes: Set de inodos globales.
-        visited_dirs: Diccionario de resultados de carpetas ya sumadas.
-        depth: Profundidad actual de recursión.
-    Returns:
-        ScanResult con el total de bytes y éxito del escaneo.
+    Recorrido recursivo protegido para calcular tamaño de carpeta.
+    Usa memoización en 'visited_dirs' para evitar re-cálculos redundantes.
     """
     if not isinstance(root_path, Path) or depth > MAX_SCAN_DEPTH:
         return ScanResult(0, False)
@@ -277,7 +274,7 @@ def _sum_directory_recursive(
     return ScanResult(total_bytes, True)
 
 def directory_size(path: Optional[OSPath]) -> int:
-    """Calcula el peso total en bytes de un directorio, aplicando filtros de seguridad."""
+    """Interfaz pública para calcular el tamaño total de un directorio de caché."""
     if path is None: return 0
     try:
         path_obj: Path = Path(path)
@@ -291,7 +288,7 @@ def directory_size(path: Optional[OSPath]) -> int:
         return 0
 
 def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
-    """Valida que la ruta sea un directorio local, no protegido y bajo la jerarquía permitida."""
+    """Valida la integridad de la ruta candidata antes de iniciar el escaneo profundo."""
     try:
         if not candidate.exists():
             return False
@@ -305,7 +302,7 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
         return False
 
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
-    """Resuelve la ruta absoluta del caché basándose en la estructura del navegador."""
+    """Resuelve rutas absolutas a partir de la estructura predefinida de cada navegador."""
     try:
         target: Path = real_base.joinpath(*rel_str.split("\\"))
         if target.exists():
@@ -319,12 +316,8 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
     """
-    Identifica navegadores, valida rutas y calcula peso total de cachés por cada uno.
-    Args:
-        bases: Lista opcional de directorios base.
-        cache_paths: Mapa de navegadores y rutas relativas.
-    Returns:
-        Lista de objetos BrowserCache encontrados y validados.
+    Pipeline principal de detección: mapea navegadores, resuelve rutas y
+    ejecuta el escaneo del tamaño de caché.
     """
     raw_bases = bases if (bases is not None and isinstance(bases, (list, tuple))) else base_directories()
     browser_map: BrowserMap = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
@@ -353,11 +346,11 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     return found
 
 def total_cache_bytes(caches: Optional[Iterable[BrowserCache]] = None) -> int:
-    """Retorna la suma total de bytes de una colección de cachés."""
+    """Suma acumulada de bytes de una lista de objetos BrowserCache."""
     return sum(c.size_bytes for c in caches) if caches else 0
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
-    """Genera un reporte legible de las cachés encontradas para la UI."""
+    """Genera un reporte textual formateado para la interfaz de usuario."""
     current_caches = caches if isinstance(caches, list) else detect_profiles()
     if not current_caches:
         return ["No se detectaron cachés de navegador en este sistema."]
