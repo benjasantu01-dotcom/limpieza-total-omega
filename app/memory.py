@@ -366,10 +366,10 @@ def _get_process_path(pid: int) -> Optional[Path]:
             if attr != -1 and (attr & FILE_ATTRIBUTE_REPARSE_POINT):
                 return None
                 
-            path_resolved = path_obj.resolve()
             # Validación de seguridad: debe ser archivo existente y no estar en lista negra
-            if path_resolved.exists() and path_resolved.is_file() and not is_protected_path(str(path_resolved)):
-                return path_resolved
+            # Usamos existencias directas para evitar accesos innecesarios al sistema de archivos
+            if path_obj.exists() and path_obj.is_file() and not is_protected_path(str(path_obj)):
+                return path_obj
     except (ctypes.ArgumentError, OSError, ValueError):
         return None
     finally:

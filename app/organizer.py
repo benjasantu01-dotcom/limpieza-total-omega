@@ -141,9 +141,9 @@ def _is_file_locked(path: Path) -> bool:
     if path is None or not path.is_file():
         return True
     try:
-        if not os.access(path, os.R_OK | os.W_OK):
-            return True
-        return False
+        # Intenta abrir el archivo en modo append para verificar bloqueo exclusivo
+        with open(path, "ab"):
+            return False
     except (PermissionError, OSError):
         return True
 
@@ -183,7 +183,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if not target_dir.is_dir() or not os.access(target_dir, os.W_OK): return False
         
         if src.drive != target_dir.drive or _is_recursive_violation(src, dest): return False
-        if not os.access(src, os.R_OK) or _is_file_locked(src): return False
+        if _is_file_locked(src): return False
         
         return True
     except (OSError, RuntimeError, AttributeError, ValueError):

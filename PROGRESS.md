@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 48
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-02 | 140 | 8 | 31 | 16 | 154 |
-| 2026-10-03 | 79 | 3 | 17 | 6 | 50 |
+| 2026-10-02 | 140 | 8 | 31 | 16 | 150 |
+| 2026-10-03 | 82 | 3 | 18 | 6 | 50 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **48**
 - legibilidad y documentación: **48**
-- seguridad defensiva: **44**
+- seguridad defensiva: **47**
 - rendimiento: **40**
 - robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `safety.py`: **20**
+- `quarantine.py`: **20**
 - `duplicates.py`: **19**
 - `healthscore.py`: **19**
 - `settings.py`: **19**
-- `quarantine.py`: **19**
 - `diskreport.py`: **18**
-- `organizer.py`: **17**
+- `organizer.py`: **18**
 - `scanner.py`: **17**
+- `memory.py`: **16**
 - `browser.py`: **15**
-- `memory.py`: **15**
 - `assistant.py`: **13**
 - `branding.py`: **13**
 - `startup.py`: **10**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-03T06:42:52` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la validación estricta de la propiedad y permisos del archivo antes de cualquier operación destructiva (`_safe_unlink`) y se añadió un chequeo de coherencia entre el manifiesto y el estado real del disco para evitar race conditions.
+- `2026-10-03T06:42:25` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` para prevenir el movimiento de archivos que se encuentren en uso o bloqueados por el sistema, integrando una verificación de acceso de escritura más robusta antes de proceder con cualquier operación de E/S.
+- `2026-10-03T06:41:56` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_get_process_path` reemplazando la resolución de ruta `path_obj.resolve()` (que puede disparar accesos a disco innecesarios o seguir enlaces simbólicos fuera de control) por una verificación de existencia basada en atributos de archivo, manteniendo el chequeo de seguridad mediante `is_protected_path` sobre la ruta normalizada.
 - `2026-10-03T06:32:37` **healthscore.py** (seguridad defensiva): Se endureció la validación de `SystemMetrics` mediante la adición de un chequeo de límites estrictos (`range` check) antes de cualquier cálculo, evitando que valores anómalos o fuera de rango (como porcentajes negativos o superiores a 100) degraden la integridad del pipeline de puntuación.
 - `2026-10-03T06:32:25` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `_group_paths_by_hash` mediante la validación explícita de `is_safe_to_modify` y `is_protected_path` sobre cada archivo antes de intentar cualquier operación de acceso a metadatos, evitando que procesos de escaneo interactúen con rutas bloqueadas.
 - `2026-10-03T06:31:57` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `_is_excluded_path` añadiendo validaciones estrictas contra rutas que contienen caracteres NUL o son excesivamente largas (posibles vectores de bypass en APIs de Windows), además de asegurar que `_validate_root` resuelva la ruta antes de comprobar su existencia para prevenir vulnerabilidades de TOCTOU (Time-of-check to time-of-use).
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-03T06:06:50` **organizer.py** (robustez ante casos límite): Se ha robustecido la lógica de escaneo y procesamiento añadiendo validaciones de integridad de rutas mediante `resolve()` y `is_absolute()` para prevenir ataques de *path traversal* o referencias circulares, asegurando que `_is_recursive_violation` maneje comparaciones de rutas normalizadas de forma estricta.
 - `2026-10-03T06:06:31` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_get_process_path` y `trim_working_set` ante procesos que finalizan abruptamente durante la consulta de sus metadatos (race conditions), evitando errores de handle o logs inconsistentes mediante un manejo de excepciones más granular.
 - `2026-10-03T05:59:55` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics.validate` y `compute_score` ante valores atípicos mediante el uso de una lógica de validación defensiva más estricta, asegurando que `math.isfinite` se aplique correctamente a todos los campos críticos antes de cualquier operación aritmética.
-- `2026-10-03T05:50:59` **duplicates.py** (robustez ante casos límite): Se introdujo una gestión robusta de errores en `_collect_candidates` para prevenir que la iteración se detenga ante archivos que cambian de estado o se eliminan durante el escaneo (Race Condition), verificando explícitamente `entry.is_file()` después de obtener el estado inicial para evitar excepciones `FileNotFoundError` o `PermissionError` recurrentes en sistemas de archivos dinámicos.
-- `2026-10-03T05:50:22` **browser.py** (robustez ante casos límite): Se introdujo una validación de profundidad y ciclos en `_process_file_entry` y `_sum_directory_recursive` para garantizar la robustez ante la estructura de directorios del sistema de archivos, asegurando que `_is_file_in_use` sea invocado solo sobre rutas validadas, evitando la propagación de excepciones en casos de permisos denegados durante el escaneo.
-- `2026-10-03T05:41:14` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `_is_input_too_deep_or_complex` y `_validate_ingestion_source` para manejar correctamente objetos con `__dict__` que podrían disparar excepciones o recursión infinita, evitando que errores de estructura en fuentes externas comprometan la estabilidad de la app.

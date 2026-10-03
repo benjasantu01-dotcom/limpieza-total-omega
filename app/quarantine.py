@@ -145,6 +145,10 @@ class QuarantineItem:
                 return False
             
             st = stored_path.stat()
+            # Verificación de propiedad (proactiva)
+            if hasattr(os, 'getuid') and st.st_uid != os.getuid():
+                return False
+
             if self.file_inode != 0 and st.st_ino != self.file_inode:
                 return False
             if st.st_nlink > 1:
@@ -231,6 +235,10 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
     
     try:
         st = path.stat()
+        # Seguridad defensiva: verificar propiedad (POSIX)
+        if hasattr(os, 'getuid') and st.st_uid != os.getuid():
+            return False
+        
         if expected_inode != 0 and st.st_ino != expected_inode:
             return False
             
@@ -809,8 +817,11 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
     if not stored_file.exists():
         save_manifest([i for i in items if i.item_id != item_id], base)
         return True
+    
+    # Verificación de coherencia: ¿El archivo en disco pertenece a este ítem?
     if not quarantine_item.verify_integrity(stored_file):
         raise UnsafePathError(f"Integridad fallida para {item_id}.")
+        
     if _safe_unlink(stored_file, expected_hash=quarantine_item.sha256, expected_inode=quarantine_item.file_inode):
         save_manifest([i for i in items if i.item_id != item_id], base)
         return True
