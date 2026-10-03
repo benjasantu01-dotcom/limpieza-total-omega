@@ -116,7 +116,8 @@ def _is_unc_path(path: Path) -> bool:
     """Detecta rutas de red (Universal Naming Convention) que requieren manejo especial."""
     if path is None: return True
     try:
-        return str(path.absolute()).startswith(("\\\\", "//"))
+        p_str = str(path.absolute())
+        return p_str.startswith(("\\\\", "//"))
     except (OSError, RuntimeError):
         return True
 
@@ -150,10 +151,10 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """Previene que una operación de movimiento resulte en un bucle lógico o recursivo."""
     if src is None or dest is None: return True
     try:
-        if src.exists() and dest.exists() and os.path.samefile(src, dest):
-            return True
-        s, d = str(src.resolve()), str(dest.resolve())
-        return os.path.commonpath([s, d]) == s
+        s = src.resolve(strict=False)
+        d = dest.resolve(strict=False)
+        if s == d: return True
+        return os.path.commonpath([str(s), str(d)]) == str(s)
     except (OSError, ValueError):
         return True
 

@@ -420,8 +420,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     kernel32 = ctypes.windll.kernel32
     proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
-        error_code = ctypes.get_last_error()
-        return False, f"No se pudo abrir el proceso para trimming (Código: {error_code})."
+        return False, "No se pudo acceder al proceso (posible cierre reciente)."
     
     try:
         # Ejecución del comando de limpieza de working set vía Win32
@@ -431,5 +430,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
                 return False, "Acceso denegado: requiere privilegios de administrador."
             return False, f"El sistema rechazó la solicitud (código {error_code})."
         return True, f"Working set liberado. {TRIM_WARNING}"
+    except Exception:
+        return False, "Error inesperado durante la operación de trimming."
     finally: 
         kernel32.CloseHandle(proc_handle)

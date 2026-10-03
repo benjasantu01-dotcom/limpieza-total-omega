@@ -497,3 +497,14 @@ assert not {'replace'}
 - `2026-10-03T05:50:59` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se introdujo una gestión robusta de errores en `_collect_candidates` para prevenir que la iteración se detenga ante archivos que cambian de estado o se eliminan durante el escaneo (Race Condition), verificando explícitamente `entry.is_file()` después de obtener el estado inicial para evitar excepciones `FileNotFoundError` o `PermissionError` recurrentes en sistemas de archivos dinámicos.
 - `2026-10-03T05:50:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T05:50:59` Corrida terminada. Total usado hoy: 139.
+- `2026-10-03T05:59:26` Arrancando corrida. Quedan hoy ~161 peticiones objetivo.
+- `2026-10-03T05:59:55` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemMetrics.validate` y `compute_score` ante valores atípicos mediante el uso de una lógica de validación defensiva más estricta, asegurando que `math.isfinite` se aplique correctamente a todos los campos críticos antes de cualquier operación aritmética.
+- `2026-10-03T06:00:55` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-03T06:01:58` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-03T06:03:04` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-03T06:04:16` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-03T06:05:31` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-03T06:06:31` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_get_process_path` y `trim_working_set` ante procesos que finalizan abruptamente durante la consulta de sus metadatos (race conditions), evitando errores de handle o logs inconsistentes mediante un manejo de excepciones más granular.
+- `2026-10-03T06:06:50` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha robustecido la lógica de escaneo y procesamiento añadiendo validaciones de integridad de rutas mediante `resolve()` y `is_absolute()` para prevenir ataques de *path traversal* o referencias circulares, asegurando que `_is_recursive_violation` maneje comparaciones de rutas normalizadas de forma estricta.
+- `2026-10-03T06:06:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T06:06:50` Corrida terminada. Total usado hoy: 143.

@@ -170,24 +170,26 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Normaliza tipos y asegura que todos los valores numéricos estén en rangos válidos."""
-        def _to_finite_float(val: Any, default: float = 0.0) -> float:
-            if not isinstance(val, (int, float)): return default
-            return float(val) if math.isfinite(val) else default
+        def _to_clean(val: Any, default: float, min_v: float = 0.0) -> float:
+            try:
+                f = float(val)
+                return f if math.isfinite(f) and f >= min_v else default
+            except (ValueError, TypeError):
+                return default
         
-        self.junk_mb = max(0.0, _to_finite_float(self.junk_mb))
-        self.duplicate_mb = max(0.0, _to_finite_float(self.duplicate_mb))
-        self.suspicious_count = int(max(0, _to_finite_float(self.suspicious_count)))
-        self.suspicious_warnings = int(max(0, _to_finite_float(self.suspicious_warnings)))
-        self.startup_count = int(max(0, _to_finite_float(self.startup_count)))
-        self.quarantined_count = int(max(0, _to_finite_float(self.quarantined_count)))
-        self.memory_available_percent = _clamp(_to_finite_float(self.memory_available_percent, 100.0), 0.0, 100.0)
-        self.disk_free_percent = _clamp(_to_finite_float(self.disk_free_percent, 100.0), 0.0, 100.0)
+        self.junk_mb = _to_clean(self.junk_mb, 0.0)
+        self.duplicate_mb = _to_clean(self.duplicate_mb, 0.0)
+        self.suspicious_count = int(_to_clean(self.suspicious_count, 0.0))
+        self.suspicious_warnings = int(_to_clean(self.suspicious_warnings, 0.0))
+        self.startup_count = int(_to_clean(self.startup_count, 0.0))
+        self.quarantined_count = int(_to_clean(self.quarantined_count, 0.0))
+        self.memory_available_percent = _clamp(_to_clean(self.memory_available_percent, 100.0, 0.0), 0.0, 100.0)
+        self.disk_free_percent = _clamp(_to_clean(self.disk_free_percent, 100.0, 0.0), 0.0, 100.0)
 
     @property
     def is_finite(self) -> bool:
         """Verifica que las métricas clave sean numéricamente utilizables."""
-        return all(isinstance(v, (int, float)) and math.isfinite(float(v)) 
-                   for v in [self.junk_mb, self.suspicious_count, self.memory_available_percent, self.disk_free_percent])
+        return all(math.isfinite(float(v)) for v in [self.junk_mb, self.suspicious_count, self.memory_available_percent, self.disk_free_percent])
 
 @dataclass
 class HealthResult:
@@ -244,7 +246,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             points = area_ratio * entry.weight
             metric_breakdown[area] = int(round(points))
             accumulated_score += points
-        except (ValueError, TypeError, ZeroDivisionError):
+        except Exception:
             metric_breakdown[area] = 0
             
     if m.quarantined_count > 0:
