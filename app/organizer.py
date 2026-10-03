@@ -99,9 +99,8 @@ def is_valid_junk_extension(filename: str) -> bool:
 def _get_win_attributes(entry: os.DirEntry) -> int:
     """Extrae atributos de archivo (bitmask) usando syscall de bajo nivel para Windows."""
     try:
-        if hasattr(os, 'stat_result') and hasattr(os.stat_result, 'st_file_attributes'):
-            return entry.stat(follow_symlinks=False).st_file_attributes
-        return 0
+        # Usar lstat cacheado en DirEntry si está disponible para evitar I/O redundante
+        return entry.stat(follow_symlinks=False).st_file_attributes
     except (OSError, AttributeError, ValueError):
         return 0
 
@@ -209,7 +208,7 @@ def _is_valid_junk_entry(name: str, stats: os.stat_result, now_ts: float) -> boo
             name.lower().endswith(JUNK_EXT_TUPLE))
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
-    """Recorrido recursivo limitado para encontrar archivos basura (máx. 50 niveles)."""
+    """Recorrido recursivo optimizado utilizando DirEntry para evitar llamadas extra al sistema."""
     if depth > 50: return
     try:
         resolved_dir = current_dir.resolve()
@@ -224,9 +223,10 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(item, protected_cache):
                             _process_directory(Path(item.path), found, depth + 1, protected_cache, visited)
                     elif item.is_file(follow_symlinks=False):
+                        # Se usa el stat obtenido por el iterator (sin llamada adicional)
                         stats = item.stat(follow_symlinks=False)
                         if _is_valid_junk_entry(item.name, stats, now_ts):
-                            if not (_get_win_attributes(item) & WIN_ATTR_MASK):
+                            if not (getattr(stats, 'st_file_attributes', 0) & WIN_ATTR_MASK):
                                 found.append(JunkFile(Path(item.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
                 except (PermissionError, OSError): continue
     except (PermissionError, OSError, RuntimeError): pass

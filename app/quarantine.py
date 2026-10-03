@@ -425,12 +425,13 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
     """Deserializa el manifiesto, usando caché de sesión para rendimiento."""
     base_dir = quarantine_dir(base)
     base_key = str(base_dir)
-    if base_key in _MANIFEST_CACHE and not force_reload:
+    if not force_reload and base_key in _MANIFEST_CACHE:
         return _MANIFEST_CACHE[base_key]
         
     try:
         m_path = _manifest_path(base_dir)
         if not m_path.exists() or m_path.stat().st_size == 0:
+            _MANIFEST_CACHE[base_key] = []
             return []
         
         with open(m_path, "r", encoding="utf-8") as f:

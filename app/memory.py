@@ -209,7 +209,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     
     return MemorySnapshot(total=total, available=available, cached=cached)
 
-def _extract_process_info(line: str) -> Optional[Tuple[str, int, BytesValue]]:
+def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     """Extrae y valida datos de una línea de CSV de proceso."""
     parts = line.split(",", 2)
     if len(parts) < 3: return None
@@ -224,7 +224,7 @@ def _extract_process_info(line: str) -> Optional[Tuple[str, int, BytesValue]]:
     ws = _safe_int_conversion(ws_str)
     
     if pid > 0 and 0 < ws < MAX_VALID_PROCESS_MEM:
-        return (name.strip("'\" "), pid, ws)
+        return ProcessMemory(name.strip("'\" "), pid, ws)
     return None
 
 def _update_top_processes_heap(heap: List[ProcessMemory], process: ProcessMemory, limit: int) -> None:
@@ -241,14 +241,11 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     if not raw_csv_text: return []
     top_heap: List[ProcessMemory] = []
     
-    # Procesar líneas evitando duplicación de estructuras mediante evaluación perezosa
     lines = raw_csv_text.splitlines()
     for line in (l for l in lines[1:] if l and "," in l):
-        data = _extract_process_info(line)
-        if data:
-            name, pid, ws = data
-            if name: 
-                _update_top_processes_heap(top_heap, ProcessMemory(name, pid, ws), limit)
+        proc = _extract_process_info(line)
+        if proc:
+            _update_top_processes_heap(top_heap, proc, limit)
             
     return sorted(top_heap, key=lambda p: p.working_set, reverse=True)
 
@@ -288,7 +285,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if (now - _proc_cache_time) > 60:
         ps_query = (
             "Get-Process | Sort-Object WorkingSet -Descending | "
-            "Select-Object -First 100 | Select-Object Name,Id,WorkingSet | "
+            "Select-Object -First 50 | Select-Object Name,Id,WorkingSet | "
             "ConvertTo-Csv -NoTypeInformation"
         )
         cmd = ['powershell', '-NoProfile', '-NonInteractive', '-Command', ps_query]
