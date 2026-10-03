@@ -72,12 +72,14 @@ __all__ = [
     "summarize",
 ]
 
+# Límites críticos para la normalización de métricas
 _LIMIT_JUNK_MB: Final[float] = 5000.0
 _LIMIT_DUPLICATE_MB: Final[float] = 2000.0
 _LIMIT_STARTUP_COUNT: Final[int] = 20
 _LIMIT_RAM_PERCENT: Final[float] = 35.0
 _LIMIT_DISK_PERCENT: Final[float] = 25.0
 
+# Inversos precalculados para optimizar el cálculo de ratios
 def _safe_inv(val: float, fallback: float = 1.0) -> float:
     """Calcula el inverso multiplicativo de forma segura para evitar divisiones por cero."""
     return 1.0 / val if (math.isfinite(val) and val != 0) else fallback
@@ -88,6 +90,7 @@ _INV_STARTUP: Final[float] = _safe_inv(float(_LIMIT_STARTUP_COUNT))
 _INV_RAM: Final[float] = _safe_inv(_LIMIT_RAM_PERCENT, 0.01)
 _INV_DISK: Final[float] = _safe_inv(_LIMIT_DISK_PERCENT, 0.01)
 
+# Umbrales para disparar recomendaciones
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6

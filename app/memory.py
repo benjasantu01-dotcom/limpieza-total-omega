@@ -347,8 +347,10 @@ def _is_system_process(pid: int) -> bool:
 
 def _get_process_path(pid: int) -> Optional[Path]:
     """
-    Obtiene la ruta absoluta del ejecutable para un PID dado usando APIs Win32.
-    Aplica filtros de `safety.py` y valida integridad contra reparse points.
+    Obtiene la ruta absoluta del ejecutable para un PID usando APIs Win32.
+    
+    Verifica que el ejecutable sea un archivo válido y no una unión o punto de 
+    reparse, además de cumplir las restricciones definidas en `safety.py`.
     """
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
@@ -378,7 +380,9 @@ def _get_process_path(pid: int) -> Optional[Path]:
 def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
     """
     Verifica si un proceso es candidato seguro para una operación de trimming.
-    Valida que no sea crítico y que su ejecutable no resida en directorios protegidos.
+    
+    Valida: 1) Que el PID no sea del sistema. 2) Que la ruta sea accesible 
+    y no se encuentre en directorios protegidos.
     """
     if _is_system_process(pid):
         return False, "Proceso crítico del sistema protegido."

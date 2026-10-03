@@ -101,9 +101,12 @@ def is_valid_junk_extension(filename: str) -> bool:
 
 def _get_win_attributes(entry: os.DirEntry) -> int:
     """
-    Extrae los atributos de archivo de Windows utilizando la API de bajo nivel.
-    Se utiliza para identificar archivos ocultos o de sistema que deben excluirse
-    de cualquier operación de limpieza para evitar inestabilidad del SO.
+    Extrae atributos de archivo (bitmask) usando stat de bajo nivel.
+    
+    Args:
+        entry: Objeto DirEntry del cual extraer atributos (sin seguir enlaces).
+    Returns:
+        Entero representando la máscara de bits de atributos (Windows).
     """
     try:
         if hasattr(os, 'stat_result') and hasattr(os.stat_result, 'st_file_attributes'):
@@ -115,16 +118,17 @@ def _get_win_attributes(entry: os.DirEntry) -> int:
 def _is_junction(entry: os.DirEntry) -> bool:
     """
     Determina si una entrada es un punto de reparse (Junction) o enlace simbólico.
-    Bloquear esto es crítico para evitar el rastreo recursivo infinito y la
-    modificación accidental de archivos fuera de los límites definidos.
+    
+    Uso: Previene la recursión infinita y la salida del ámbito de escaneo seguro.
     """
     return entry.is_symlink() or bool(_get_win_attributes(entry) & WIN_ATTR_JUNCTION)
 
 def _is_unc_path(path: Path) -> bool:
     """
-    Detecta si la ruta corresponde a un recurso de red (Universal Naming Convention).
-    Operar sobre redes es impredecible y propenso a latencias, por lo que estas
-    rutas se marcan como inseguras para la automatización de limpieza.
+    Detecta rutas de red (Universal Naming Convention).
+    
+    Uso: Las rutas UNC son inestables para operaciones de archivo masivas;
+    siempre se marcan como inseguras para evitar latencias o fallos de red.
     """
     if path is None: return True
     try:
@@ -135,7 +139,9 @@ def _is_unc_path(path: Path) -> bool:
 def _generate_unique_target(target: Path) -> Path:
     """
     Resuelve colisiones de nombres añadiendo sufijos numéricos (1-999).
-    Asegura que el movimiento a cuarentena sea atómico y no sobrescriba archivos previos.
+    
+    Garantiza atomicidad: evita sobrescribir archivos existentes en el 
+    directorio de cuarentena.
     """
     base_target = target
     counter = 1
@@ -151,8 +157,9 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Determina si un archivo está en uso intentando abrirlo en modo lectura exclusiva.
-    Si falla el acceso, se infiere que el archivo está bloqueado por otro proceso del SO.
+    Intenta abrir un archivo en modo lectura exclusiva para verificar uso.
+    
+    Retorna True si el archivo está bloqueado (en uso), False si es accesible.
     """
     if path is None or not path.is_file():
         return True
@@ -165,9 +172,10 @@ def _is_file_locked(path: Path) -> bool:
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """
-    Previene movimientos cíclicos verificando si el origen contiene al destino.
-    La detección de rutas padre-hijo es fundamental para evitar la corrupción de 
-    la estructura de directorios durante el proceso de mover archivos.
+    Verifica que el destino no sea un subdirectorio del origen (bucle cíclico).
+    
+    Previene errores catastróficos donde el origen podría quedar dentro de su 
+    propio destino, corrompiendo el sistema de archivos.
     """
     if src is None or dest is None: return True
     try:
@@ -179,15 +187,16 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
         return True
 
 def _has_forbidden_chars(path: Path) -> bool:
-    """Verifica la ausencia de caracteres reservados en el sistema de archivos Windows."""
+    """Valida la ausencia de caracteres reservados que invalidarían la ruta en NTFS."""
     if path is None: return True
     path_str = str(path).lower()
     return any(c in path_str for c in ["<", ">", "|", "\0"])
 
 def _validate_path_security(src: Path, dest: Path) -> bool:
     """
-    Realiza validaciones técnicas de seguridad sobre las rutas de origen y destino.
-    Comprueba rutas UNC, caracteres ilegales, límites de longitud y protección del sistema.
+    Validación de seguridad compuesta sobre rutas de origen y destino.
+    
+    Comprueba: UNC, caracteres prohibidos, límites de longitud (260) y bloqueo de sistema.
     """
     if src is None or dest is None: return False
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
@@ -196,9 +205,10 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
-    Auditoría exhaustiva previa a cualquier operación de escritura o movimiento.
-    Valida la integridad de la ruta y la disponibilidad de recursos físicos, 
-    asegurando que solo se procesen archivos ordinarios (st_nlink == 1).
+    Auditoría exhaustiva previa a escritura/movimiento.
+    
+    Verifica: Permisos de escritura, espacio disponible, unicidad de enlaces (st_nlink==1) 
+    y bloqueo de archivo para evitar corrupción de datos durante el movimiento.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     try:
@@ -223,7 +233,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         return False
 
 def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> bool:
-    """Filtra directorios aptos para escaneo recursivo."""
+    """Filtra directorios aptos para escaneo (excluye junctions y rutas protegidas)."""
     if entry is None or not _is_allowed_directory(entry.name) or _is_junction(entry): return False
     path_str = entry.path
     if path_str in protected_cache: return False
@@ -233,7 +243,7 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> boo
     return True
 
 def _is_valid_junk_entry(entry: os.DirEntry, stats: os.stat_result, now_ts: float) -> bool:
-    """Valida si un archivo cumple criterios."""
+    """Valida si un archivo cumple criterios temporales, tamaño y extensión."""
     if entry is None or stats is None: return False
     _, ext = os.path.splitext(entry.name)
     return (0 <= stats.st_size < MAX_FILE_SIZE_BYTES and 
