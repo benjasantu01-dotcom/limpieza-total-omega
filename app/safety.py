@@ -461,7 +461,6 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
     except (PermissionError, FileNotFoundError):
         raise UnsafePathError(f"Acceso denegado o archivo inexistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     except OSError as e:
-        # Detectar errores específicos de Windows (32: bloqueo, 5: acceso)
         win_err = getattr(e, 'winerror', None)
         if win_err == 32 or (e.errno == 13):
              raise UnsafePathError(f"Archivo bloqueado por otro proceso: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
@@ -793,14 +792,15 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     else:
         # Validar permisos en el padre si el archivo no existe aún
         try:
+            if not p.parent.exists():
+                return p
             parent = p.parent
-            if parent.exists():
-                if not os.access(parent, os.W_OK):
-                     raise UnsafePathError("Directorio contenedor no tiene permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
-                if is_protected_path(str(parent)):
-                    raise UnsafePathError("Creación en directorio restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
-                if os.name == 'nt' and _is_file_locked_by_other_process(str(parent)):
-                    raise UnsafePathError("Directorio contenedor bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE)
+            if not os.access(parent, os.W_OK):
+                raise UnsafePathError("Directorio contenedor no tiene permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
+            if is_protected_path(str(parent)):
+                raise UnsafePathError("Creación en directorio restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
+            if os.name == 'nt' and _is_file_locked_by_other_process(str(parent)):
+                raise UnsafePathError("Directorio contenedor bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE)
         except (OSError, RuntimeError):
             pass
     return p

@@ -281,6 +281,7 @@ def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
     while directory_stack:
         current_dir, depth = directory_stack.pop()
         try:
+            # os.scandir puede fallar si el directorio fue eliminado o bloqueado durante el escaneo
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:

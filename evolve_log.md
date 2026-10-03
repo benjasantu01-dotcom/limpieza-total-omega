@@ -508,3 +508,10 @@ assert not {'replace'}
 - `2026-10-03T06:06:50` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha robustecido la lógica de escaneo y procesamiento añadiendo validaciones de integridad de rutas mediante `resolve()` y `is_absolute()` para prevenir ataques de *path traversal* o referencias circulares, asegurando que `_is_recursive_violation` maneje comparaciones de rutas normalizadas de forma estricta.
 - `2026-10-03T06:06:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T06:06:50` Corrida terminada. Total usado hoy: 143.
+- `2026-10-03T06:09:37` Arrancando corrida. Quedan hoy ~157 peticiones objetivo.
+- `2026-10-03T06:10:09` 🛑 Propuesta bloqueada por la guardia en quarantine.py (enfoque: robustez ante casos límite): el archivo se encogió al 50% del original (posible pérdida de código)
+- `2026-10-03T06:10:29` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-03T06:11:19` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera y denegaciones de acceso al agregar un chequeo explícito de la existencia del archivo en el contexto de bloques `try-except` más granulares, evitando que excepciones de I/O mal manejadas terminen en un `UnsafePathError` genérico o en una caída de la aplicación.
+- `2026-10-03T06:11:31` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha robustecido el escaneo frente a archivos inaccesibles o bloqueados introduciendo un bloque `try-except` más granular en el bucle principal de `scan_directory` y mejorando la gestión de rutas inexistentes mediante una validación de `os.scandir` más defensiva.
+- `2026-10-03T06:11:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T06:11:31` Corrida terminada. Total usado hoy: 147.
