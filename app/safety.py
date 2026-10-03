@@ -625,8 +625,9 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     """
-    Realiza validaciones sobre la estructura de la cadena de texto para prevenir inyecciones
-    o bypasses mediante rutas mal formadas, nombres reservados o caracteres inválidos.
+    Verifica que la estructura de la ruta no contenga patrones maliciosos,
+    caracteres prohibidos, nombres de dispositivos reservados o bypasses 
+    de codificación, asegurando la integridad semántica del path.
     """
     if not isinstance(path_string, str):
         raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC)
@@ -670,7 +671,11 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         raise UnsafePathError("Estructura de ruta inválida.", SafetyValidationErrorCode.GENERIC)
 
 def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
-    """Verifica límites del Sandbox y tipo de medio, denegando acceso a unidades extraíbles o remotas."""
+    """
+    Valida el alcance de la operación dentro de un sandbox permitido y restringe
+    el acceso a hardware sensible (unidades remotas/extraíbles) y volúmenes 
+    con políticas de cifrado/bloqueo de escritura (BitLocker, solo lectura).
+    """
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
         

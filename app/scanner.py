@@ -17,7 +17,7 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime
-from typing import List, Optional, Union, Final, Callable, TypeAlias, NamedTuple, Dict
+from typing import List, Optional, Union, Final, Callable, TypeAlias, NamedTuple, Dict, Sequence, Tuple
 from safety import is_protected_path
 
 # Configuración de logger para el módulo
@@ -71,6 +71,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     if not isinstance(entry, os.DirEntry):
         return None
     try:
+        # La bandera follow_symlinks=False es crítica para prevenir saltos a otras unidades o subdirectorios fuera de contexto
         if entry.is_symlink():
             return None
         attr = _get_file_attributes(entry)
@@ -134,7 +135,7 @@ def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: fl
             return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
     return None
 
-ALL_CHECKS: Final[List[SuspicionCheck]] = [
+ALL_CHECKS: Final[Sequence[SuspicionCheck]] = [
     check_double_extension,
     check_system_lookalike,
     check_recent_executable_in_downloads,
@@ -187,6 +188,7 @@ class Scanner:
         if not _is_valid_path_structure(entry.path) or self._has_invalid_name(entry.name):
             return False
         try:
+            # Se explícitamente rechazan enlaces simbólicos para no salir del árbol de directorios confinado
             if self._is_reparse_point(entry) or entry.is_symlink():
                 return False
             if not self._is_inside_base_root(entry.path):
@@ -200,7 +202,7 @@ class Scanner:
         except (OSError, RuntimeError):
             return False
 
-    def _handle_directory(self, entry: os.DirEntry, directory_stack: List[tuple[str, int]], current_depth: int) -> None:
+    def _handle_directory(self, entry: os.DirEntry, directory_stack: List[Tuple[str, int]], current_depth: int) -> None:
         """Gestiona el stack de exploración de directorios aplicando límites de profundidad."""
         if current_depth >= SCAN_LIMITS.max_depth:
             return
@@ -213,7 +215,7 @@ class Scanner:
         _, ext = os.path.splitext(name)
         return ext.lower() in SUSPICIOUS_ALL_EXTS
 
-    def process_entry(self, entry: os.DirEntry, directory_stack: List[tuple[str, int]], current_depth: int) -> None:
+    def process_entry(self, entry: os.DirEntry, directory_stack: List[Tuple[str, int]], current_depth: int) -> None:
         """Analiza la entrada y despacha a la acción correspondiente según su tipo (Directorio vs Archivo)."""
         try:
             if not self._is_safe_entry(entry):
@@ -276,7 +278,7 @@ def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
     except (OSError, RuntimeError): 
         return []
     scanner = Scanner(base_root=base_path)
-    directory_stack: List[tuple[str, int]] = [(str(base_path), 0)]
+    directory_stack: List[Tuple[str, int]] = [(str(base_path), 0)]
     scanner.seen.add(str(base_path).lower())
     while directory_stack:
         current_dir, depth = directory_stack.pop()

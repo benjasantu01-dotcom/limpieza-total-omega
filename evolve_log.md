@@ -451,3 +451,10 @@ assert not {'replace'}
 - `2026-10-03T04:49:56` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-03T04:49:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T04:49:56` Corrida terminada. Total usado hoy: 115.
+- `2026-10-03T04:58:19` Arrancando corrida. Quedan hoy ~185 peticiones objetivo.
+- `2026-10-03T04:59:10` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se añadió documentación tipo Docstring en las funciones `_validate_structural_safety` y `_validate_boundary_conditions` para clarificar la intención de seguridad de cada bloque lógico y facilitar el mantenimiento futuro de las reglas críticas.
+- `2026-10-03T04:59:38` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos (usando `Sequence` y `Iterator`) y se documentaron los comportamientos de exclusión de enlaces simbólicos mediante comentarios de intención, mejorando la legibilidad técnica del flujo de procesamiento de directorios.
+- `2026-10-03T05:00:07` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-03T05:00:55` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo incorporando tipos explícitos en docstrings y aclarando el flujo de resolución de rutas y validación de seguridad dentro de `StartupEntry`, facilitando el mantenimiento a futuro.
+- `2026-10-03T05:00:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T05:00:55` Corrida terminada. Total usado hoy: 119.
