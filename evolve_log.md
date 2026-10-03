@@ -1313,3 +1313,12 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-03T14:22:51` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: rendimiento).
 - `2026-10-03T14:22:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T14:22:51` Corrida terminada. Total usado hoy: 339.
+- `2026-10-03T14:29:50` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-03T14:29:52` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-03T14:30:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-03T14:30:16` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-03T14:31:05` ➖ Sin cambios en safety.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de caché local dentro de `_is_system_path_raw` y `is_protected_path` para evitar recalcular recursivamente rutas de sistema en cada llamada de los bucles de filtrado, optimizando drásticamente la performance de `filter_safe_paths`.
+- `2026-10-03T14:31:33` ➖ Sin cambios en scanner.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento del escaneo reemplazando las verificaciones de extensiones múltiples mediante una cadena de `in` por un chequeo directo de pertenencia a `frozenset` en el hot-path del loop de `os.scandir`.
+- `2026-10-03T14:31:46` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._check_path_safety, _Validators._validate_enum_str
+- `2026-10-03T14:31:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T14:31:46` Corrida terminada. Total usado hoy: 343.
