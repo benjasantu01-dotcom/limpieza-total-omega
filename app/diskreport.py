@@ -55,8 +55,9 @@ class ExtStats:
     """
     Contenedor mutable de métricas para agrupar estadísticas por extensión.
     
-    Usado internamente durante el escaneo para sumarizar el peso y la 
-    frecuencia de ocurrencia de extensiones específicas.
+    Attributes:
+        total_bytes: Sumatoria de bytes ocupados por archivos con esta extensión.
+        count: Cantidad total de archivos encontrados con esta extensión.
     """
     __slots__ = ('total_bytes', 'count')
     
@@ -90,7 +91,12 @@ class SummaryData(NamedTuple):
 def _bytes_to_mb(size_bytes: int | float | None) -> float:
     """
     Convierte bytes a MB con precisión de dos decimales.
-    Si el valor es inválido o negativo, retorna 0.0.
+    
+    Args:
+        size_bytes: Cantidad de bytes. Retorna 0.0 si es inválido.
+        
+    Returns:
+        Tamaño convertido en megabytes.
     """
     try:
         if size_bytes is None or not isinstance(size_bytes, (int, float)) or size_bytes < 0:
@@ -111,7 +117,15 @@ def _validate_limit(limit: Any) -> int:
 
 
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
-    """Verifica que la ruta sea un directorio existente y seguro para escanear."""
+    """
+    Verifica que la ruta sea un directorio existente y seguro para escanear.
+    
+    Args:
+        directory: Ruta a validar.
+        
+    Returns:
+        Instancia de `Path` si la ruta es válida y segura, `None` en caso contrario.
+    """
     if directory is None:
         return None
     try:
@@ -345,9 +359,13 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     """
     Recorre el sistema de archivos y consolida datos estadísticos.
     
-    Implementa una lógica de agregación que simultáneamente calcula el total
-    de archivos/bytes, el uso por extensión y mantiene un heap de tamaño 'limit'
-    para identificar los archivos más pesados de forma eficiente en una sola pasada.
+    Args:
+        directory: Directorio raíz a escanear.
+        skip_protected: Flag para omitir rutas de sistema.
+        limit: Límite de archivos top a rastrear en un heap.
+    
+    Returns:
+        Objeto `SummaryData` con la agregación completa.
     """
     total_bytes: int = 0
     total_files: int = 0
