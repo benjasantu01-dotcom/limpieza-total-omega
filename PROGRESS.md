@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Mejoras aceptadas: **204** (40.5% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 46
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 217
+- Rechazadas por guardia de seguridad: 45
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-01 | 30 | 2 | 7 | 3 | 25 |
+| 2026-10-01 | 27 | 2 | 6 | 3 | 25 |
 | 2026-10-02 | 140 | 8 | 31 | 16 | 155 |
-| 2026-10-03 | 36 | 3 | 8 | 3 | 37 |
+| 2026-10-03 | 37 | 3 | 8 | 4 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **48**
-- legibilidad y documentación: **47**
-- manejo de errores y validación de entradas: **39**
+- legibilidad y documentación: **44**
+- manejo de errores y validación de entradas: **40**
 - robustez ante casos límite: **38**
 - rendimiento: **34**
 
@@ -33,20 +33,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **20**
 - `quarantine.py`: **19**
 - `safety.py`: **18**
-- `duplicates.py`: **17**
-- `healthscore.py`: **17**
 - `organizer.py`: **17**
 - `diskreport.py`: **17**
 - `scanner.py`: **16**
-- `memory.py`: **15**
+- `duplicates.py`: **16**
+- `healthscore.py`: **16**
+- `memory.py`: **14**
 - `assistant.py`: **13**
 - `browser.py`: **13**
-- `branding.py`: **11**
+- `branding.py`: **12**
 - `startup.py`: **8**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-03T03:50:11` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `draw_ring` validando explícitamente sus argumentos de entrada (`size`, `thickness`, `percent`) contra valores no finitos o negativos antes de cualquier operación, aplicando el enfoque de manejo de errores defensivo para evitar comportamientos inesperados en la UI.
 - `2026-10-03T02:27:24` **settings.py** (seguridad defensiva): Se reforzó la integridad del archivo de configuración protegiéndolo contra la sustitución arbitraria mediante enlaces simbólicos o puntos de reparse durante la operación de guardado, asegurando que `os.replace` siempre opere sobre rutas validadas.
 - `2026-10-03T02:26:50` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez ante condiciones de carrera (Race Conditions) y la consistencia del estado del escaneo en `_run_file_heuristics`, garantizando que el archivo exista antes y durante la inspección sin confiar exclusivamente en comprobaciones previas que podrían quedar obsoletas.
 - `2026-10-03T02:26:22` **safety.py** (seguridad defensiva): Se ha añadido `_is_system_directory_junction` utilizando `GetFileAttributesW` y `FILE_ATTRIBUTE_REPARSE_POINT` para prevenir que `ensure_safe_to_modify` siga o manipule puntos de reparse (como `Documents and Settings` o `Users/All Users`) que actúan como "trampas" de recursión o accesos prohibidos a carpetas del sistema en versiones modernas de Windows.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-03T01:52:24` **scanner.py** (robustez ante casos límite): Se mejora la robustez ante casos límite en la navegación del sistema de archivos, asegurando que `_safe_stat` y `_is_safe_entry` manejen explícitamente rutas inexistentes o inaccesibles que ocurran durante la iteración (ej. archivos que desaparecen entre la detección y la inspección).
 - `2026-10-03T01:37:11` **quarantine.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `st_nlink` (Hard Links) en `_is_file_locked` y validaciones de integridad, además de proteger la operación `os.replace` ante fallos de persistencia en el sistema de archivos, mejorando la robustez ante estados inconsistentes del SO.
 - `2026-10-03T01:36:46` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_locked` para que no dependa de `os.open` (que falla en ciertos sistemas o condiciones de acceso a metadatos) mediante una validación de `os.access` que confirma si el archivo está efectivamente bloqueado para escritura por otro proceso, previniendo errores de `PermissionError` al intentar mover archivos en uso.
-- `2026-10-03T01:35:51` **main.py** (robustez ante casos límite): Mejoré la robustez de la aplicación ante casos límite mediante la validación proactiva de rutas y estados de widgets en el método `_validate_disk_access` y en la inicialización, asegurando que `Path.resolve(strict=True)` no bloquee el inicio si un componente de la ruta ha cambiado o es inaccesible durante el chequeo, y reforzando la protección contra caracteres no imprimibles.

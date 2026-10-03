@@ -385,7 +385,8 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         if not path.parent.exists():
             path.parent.mkdir(parents=True, exist_ok=True)
             
-        path.write_text(logo_svg(size), encoding="utf-8")
+        validated_size = max(16, min(1024, int(size)))
+        path.write_text(logo_svg(validated_size), encoding="utf-8")
         return path if path.is_file() else None
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError, AttributeError):
         return None
