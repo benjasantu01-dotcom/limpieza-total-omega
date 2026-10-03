@@ -52,6 +52,8 @@ BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 MAX_VALID_PROCESS_MEM: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
 # Máscaras de acceso Win32 (Permisos requeridos para consultar o modificar procesos).
+# QUERY_LIMITED: Acceso mínimo para obtener nombre y ruta.
+# SET_QUOTA: Necesario para aplicar EmptyWorkingSet sobre el proceso objetivo.
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x0400
 PROCESS_QUERY_INFORMATION: Final[int] = 0x0400
@@ -395,6 +397,12 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Intenta liberar el working set de un proceso (solo Windows).
+    
+    Args:
+        pid: ID del proceso o cadena convertible a entero.
+
+    Returns:
+        Tuple (éxito, mensaje explicativo).
     """
     if not _is_windows: return False, "Solo soportado en Windows."
     

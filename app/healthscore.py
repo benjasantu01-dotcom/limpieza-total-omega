@@ -132,32 +132,35 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
         return min_val
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
-    """Calcula el puntaje de basura normalizado [0.0, 1.0] basado en el límite _LIMIT_JUNK_MB."""
+    """Calcula el ratio de basura: 1.0 es limpio, 0.0 es el límite crítico (_LIMIT_JUNK_MB)."""
     return _clamp(1.0 - (float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
-    """Calcula el puntaje de seguridad basado en conteo de amenazas y advertencias."""
+    """Calcula el ratio de seguridad penalizando amenazas detectadas y advertencias."""
     return _clamp(1.0 - _clamp((float(suspicious_count) * 0.05) + (float(warnings) * 0.25), 0.0, 1.0))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
-    """Calcula el puntaje de memoria basado en el porcentaje de RAM libre."""
+    """Calcula el ratio de memoria, donde valores altos de RAM disponible puntúan mejor."""
     return _clamp(float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
-    """Calcula el puntaje de disco basado en el porcentaje de espacio libre."""
+    """Calcula el ratio de disco basándose en el espacio libre porcentual."""
     return _clamp(float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
-    """Calcula el puntaje de duplicados según el tamaño en MB encontrado."""
+    """Calcula el ratio de duplicados según el tamaño en MB encontrado respecto al límite."""
     return _clamp(1.0 - (float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
-    """Calcula el puntaje de arranque inversamente proporcional a la cantidad de programas."""
+    """Calcula el ratio de arranque: menor cantidad de programas implica mayor salud."""
     return _clamp(1.0 - (float(startup_count) * _INV_STARTUP))
 
 @dataclass
 class SystemMetrics:
-    """Contenedor de datos con todas las métricas de sistema necesarias para el cálculo de salud."""
+    """
+    Contenedor de datos estructurado que agrupa las métricas recolectadas del sistema.
+    Realiza una validación y limpieza automática tras la inicialización.
+    """
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -168,11 +171,11 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def __post_init__(self) -> None:
-        """Valida automáticamente las métricas tras la instanciación."""
+        """Invoca la validación de integridad al instanciar el objeto."""
         self.validate()
 
     def validate(self) -> None:
-        """Normaliza tipos y asegura que todos los valores numéricos estén en rangos válidos."""
+        """Asegura que todos los campos tengan tipos y rangos aceptables para el motor de score."""
         def _to_clean(val: Any, default: float, min_v: float = 0.0, max_v: float = float('inf')) -> float:
             try:
                 f = float(val) if val is not None else default
@@ -192,7 +195,7 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
-        """Verifica que las métricas clave sean numéricamente utilizables."""
+        """Valida que los parámetros numéricos críticos no sean infinitos o NaN."""
         return all(math.isfinite(float(v)) for v in [self.junk_mb, self.suspicious_count, self.memory_available_percent, self.disk_free_percent])
 
 @dataclass

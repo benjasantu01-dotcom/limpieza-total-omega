@@ -1901,6 +1901,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         self.run_async(task)
 
+    def _get_numeric_setting_from_widget(self, widget: ctk.CTkEntry, key: str, default: int) -> int:
+        """Helper privado para extraer y validar configuraciones numéricas de la UI."""
+        try:
+            return self._safe_get_entry_value(widget, default, numeric=True)
+        except Exception:
+            return default
+
     def _validate_numeric_setting(self, value: Any, default: int) -> int:
         """Helper: Valida que setting numérico sea positivo."""
         try:
@@ -1923,19 +1930,16 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except (tk.TclError, Exception):
                 continue
         
-        try:
-            if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists():
-                valores["duplicados_tamano_minimo_kb"] = self._safe_get_entry_value(self.min_dup_entry, 64, numeric=True)
-                
-            if hasattr(self, 'top_files_entry') and self.top_files_entry.winfo_exists():
-                valores["top_archivos"] = self._safe_get_entry_value(self.top_files_entry, 15, numeric=True)
-                
-            if hasattr(self, 'api_key_entry') and self.api_key_entry.winfo_exists():
-                clave_raw = self._safe_get_entry_value(self.api_key_entry, "")
-                if clave_raw:
-                    valores["asistente_clave_api"] = "".join(c for c in clave_raw if c.isprintable())
-        except Exception:
-            pass
+        if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists():
+            valores["duplicados_tamano_minimo_kb"] = self._get_numeric_setting_from_widget(self.min_dup_entry, "duplicados_tamano_minimo_kb", 64)
+            
+        if hasattr(self, 'top_files_entry') and self.top_files_entry.winfo_exists():
+            valores["top_archivos"] = self._get_numeric_setting_from_widget(self.top_files_entry, "top_archivos", 15)
+            
+        if hasattr(self, 'api_key_entry') and self.api_key_entry.winfo_exists():
+            clave_raw = self._safe_get_entry_value(self.api_key_entry, "")
+            if clave_raw:
+                valores["asistente_clave_api"] = "".join(c for c in clave_raw if c.isprintable())
             
         return valores
 
