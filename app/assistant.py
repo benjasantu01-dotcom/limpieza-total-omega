@@ -307,7 +307,7 @@ def _validate_response_length(text: Any) -> str:
     return text[:_MAX_TEXT_LENGTH]
 
 def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
-    """Recursivamente detecta estructuras de datos excesivamente anidadas para evitar ataques DoS."""
+    """Recursivamente detecta estructuras de datos excesivamente anidadas o grandes."""
     if depth > _MAX_NESTING_DEPTH: return True
     try:
         if isinstance(val, (list, tuple, set)):
@@ -315,7 +315,7 @@ def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
             return any(_is_input_too_deep_or_complex(item, depth + 1) for item in val)
         elif isinstance(val, dict):
             if len(val) > 50: return True
-            return any(_is_input_too_deep_or_complex(v, depth + 1) for v in val.values())
+            return any(_is_input_too_deep_or_complex(k, depth + 1) or _is_input_too_deep_or_complex(v, depth + 1) for k, v in val.items())
     except Exception:
         return True
     return False

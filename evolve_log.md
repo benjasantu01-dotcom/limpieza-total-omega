@@ -899,3 +899,10 @@ FAILED evolve/tests/test_modules.py::test_individual_scores_stay_between_zero_an
 - `2026-10-03T10:06:43` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
 - `2026-10-03T10:06:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T10:06:43` Corrida terminada. Total usado hoy: 239.
+- `2026-10-03T10:14:35` Arrancando corrida. Quedan hoy ~61 peticiones objetivo.
+- `2026-10-03T10:15:21` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó `_is_input_too_deep_or_complex` para validar recursivamente la integridad de objetos complejos, mitigando riesgos de desbordamiento de pila o agotamiento de recursos al procesar fuentes de datos externas malformadas antes de la ingestión en el contexto.
+- `2026-10-03T10:15:57` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-10-03T10:16:26` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-10-03T10:16:44` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-10-03T10:16:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T10:16:44` Corrida terminada. Total usado hoy: 243.
