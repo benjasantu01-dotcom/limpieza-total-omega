@@ -107,20 +107,20 @@ WEIGHTS: Final[Dict[MetricKey, int]] = {
 if sum(WEIGHTS.values()) != 100:
     raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
 
-_PIPELINE_ORDERED: Final[Tuple[PipelineEntry, ...]] = (
-    PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), 
+_PIPELINE: Final[Dict[MetricKey, PipelineEntry]] = {
+    "seguridad": PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), 
                   (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, lambda m: f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad.", lambda m, r: r < WARN_THRESHOLD_HIGH),)),
-    PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), 
+    "disco": PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), 
                   (RecommendationRule("disco", WARN_THRESHOLD_LOW, lambda m: f"Queda {m.disk_free_percent:.1f}% de disco libre.", lambda m, r: r < WARN_THRESHOLD_LOW),)),
-    PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), 
+    "memoria": PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), 
                   (RecommendationRule("memoria", WARN_THRESHOLD_LOW, lambda m: "Memoria disponible baja: cerrá procesos innecesarios.", lambda m, r: r < WARN_THRESHOLD_LOW),)),
-    PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), 
+    "basura": PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), 
                   (RecommendationRule("basura", WARN_THRESHOLD_MED, lambda m: f"Hay {m.junk_mb:.0f} MB de archivos temporales.", lambda m, r: r < WARN_THRESHOLD_MED),)),
-    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), 
+    "duplicados": PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), 
                   (RecommendationRule("duplicados", WARN_THRESHOLD_MED, lambda m: f"Podrías recuperar {m.duplicate_mb:.0f} MB eliminando duplicados.", lambda m, r: r < WARN_THRESHOLD_MED),)),
-    PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), 
+    "arranque": PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), 
                   (RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),)),
-)
+}
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     """Limita un valor numérico al rango [min_val, max_val]."""
@@ -236,16 +236,16 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     metric_breakdown: Dict[MetricKey, int] = {}
     accumulated_score: float = 0.0
     
-    for entry in _PIPELINE_ORDERED:
+    for area, entry in _PIPELINE.items():
         try:
             area_ratio = _clamp(entry.scorer(m))
             _evaluate_rules(m, entry.rules, area_ratio, recommendations)
             
             points = area_ratio * entry.weight
-            metric_breakdown[entry.area] = int(round(points))
+            metric_breakdown[area] = int(round(points))
             accumulated_score += points
         except (ValueError, TypeError, ZeroDivisionError):
-            metric_breakdown[entry.area] = 0
+            metric_breakdown[area] = 0
             
     if m.quarantined_count > 0:
         recommendations.append(f"Tenés {m.quarantined_count} archivo(s) en cuarentena.")

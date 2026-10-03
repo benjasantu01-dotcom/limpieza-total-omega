@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
+- Mejoras aceptadas: **209** (41.5% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 46
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 217
 
@@ -16,30 +16,30 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-01 | 12 | 1 | 2 | 0 | 16 |
+| 2026-10-01 | 10 | 1 | 1 | 0 | 15 |
 | 2026-10-02 | 140 | 8 | 31 | 16 | 155 |
-| 2026-10-03 | 56 | 3 | 13 | 5 | 46 |
+| 2026-10-03 | 59 | 3 | 13 | 5 | 47 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **48**
 - legibilidad y documentación: **48**
-- robustez ante casos límite: **32**
-- rendimiento: **32**
+- rendimiento: **35**
+- robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **20**
-- `settings.py`: **19**
 - `quarantine.py`: **19**
+- `safety.py`: **19**
 - `diskreport.py`: **18**
-- `healthscore.py`: **17**
+- `healthscore.py`: **18**
+- `settings.py`: **18**
+- `duplicates.py`: **17**
 - `scanner.py`: **16**
-- `duplicates.py`: **16**
 - `organizer.py`: **16**
+- `memory.py`: **15**
 - `browser.py`: **14**
-- `memory.py`: **14**
 - `branding.py`: **13**
 - `assistant.py`: **12**
 - `startup.py`: **9**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-03T05:24:48` **memory.py** (rendimiento): Se optimizó `top_memory_processes` reemplazando la lectura del CSV completo a memoria por un procesamiento iterativo eficiente y se añadió un filtro preventivo (`if ws < threshold`) antes de instanciar `ProcessMemory` o realizar operaciones de ordenamiento, reduciendo la presión sobre el recolector de basura y mejorando la performance en sistemas con muchos procesos activos.
+- `2026-10-03T05:19:36` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje transformando `_PIPELINE_ORDERED` de una tupla a una estructura procesable por `dict`, reduciendo la complejidad de búsqueda y pre-calculando el desglose de pesos para evitar iteraciones redundantes y validaciones repetidas en cada llamado a `compute_score`.
+- `2026-10-03T05:19:09` **duplicates.py** (rendimiento): Optimicé el proceso de recolección en `_collect_candidates` evitando llamadas redundantes a `is_valid_candidate` (que ejecuta `os.open` y `stat` adicionales) moviendo la verificación de `is_protected_path` al inicio y reutilizando el objeto `stat` obtenido durante el escaneo del directorio.
 - `2026-10-03T05:11:34` **browser.py** (rendimiento): Optimicé el rendimiento de `detect_profiles` y `_sum_directory_recursive` implementando la persistencia de `visited_dirs` y `visited_inodes` a través de toda la operación de escaneo, evitando procesar redundante o re-calcular tamaños de subdirectorios ya visitados durante una misma corrida.
 - `2026-10-03T05:11:03` **branding.py** (rendimiento): Se optimizó el rendimiento del renderizado de barras decorativas en `draw_gradient_bar` y del sistema de dibujo de escudos utilizando `lru_cache` para evitar el re-cálculo costoso de segmentos y geometría en cada frame de UI, alineándose con el enfoque de rendimiento.
 - `2026-10-03T05:10:26` **assistant.py** (rendimiento): Optimicé el cálculo del resumen de contexto en `assistant.py` reemplazando la lógica de construcción de strings en `_generate_safe_context` (que se ejecutaba íntegramente en cada llamada) por una versión que aprovecha la pre-compilación de la lista de métricas y evita cálculos redundantes durante la serialización del contexto.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-03T04:40:36` **duplicates.py** (legibilidad y documentación): Se ha mejorado significativamente la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints completos, docstrings con especificación de parámetros y retornos (siguiendo el estándar Google), y la clarificación de la lógica de decisión en el orquestador de hashes, facilitando la comprensión del flujo de trabajo a otros colaboradores.
 - `2026-10-03T04:39:41` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings estructurados (estilo Google/NumPy) y la inclusión de type hints precisos en funciones complejas, facilitando la comprensión del flujo de datos en el escaneo.
 - `2026-10-03T04:19:27` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `save` reemplazando los chequeos inseguros (que usaban `is_safe_to_modify` como booleano en `if`) por un enfoque de validación explícita mediante `ensure_safe_to_modify` antes de cualquier operación destructiva de reemplazo de archivos, cumpliendo estrictamente con las reglas de seguridad.
-- `2026-10-03T04:19:10` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez del motor de escaneo mediante la validación estricta de parámetros en `_run_file_heuristics` y `scan_file`, eliminando el uso de excepciones genéricas (`Exception`) para capturar errores de ejecución y reemplazándolas por una gestión de flujo más predecible.
-- `2026-10-03T04:18:43` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `_get_path_stat_robust` agregando manejo explícito para `OSError` con códigos de error de acceso (5) y bloqueo (32) mediante una introspección más limpia de los atributos de `OSError`, evitando la dependencia de `winerror` en plataformas no-Windows y mejorando la resiliencia ante fallos de I/O.
-- `2026-10-03T04:11:16` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita de `None` y tipos en `total_quarantined_bytes` para prevenir errores de ejecución en caso de que el manifiesto esté corrupto o `load_manifest` devuelva una lista inesperada, alineándose con el enfoque de manejo de errores y validación de entradas.

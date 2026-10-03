@@ -235,8 +235,10 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                             stat = entry.stat()
                             if stat.st_size >= min_size:
                                 p_entry = Path(entry.path)
-                                if not (skip_protected and is_protected_path(p_entry)) and _is_valid_candidate(p_entry, stat.st_size):
-                                    size_to_paths_map[stat.st_size].append(p_entry)
+                                # Check protected early to avoid expensive locked check
+                                if not (skip_protected and is_protected_path(p_entry)):
+                                    if _is_valid_candidate(p_entry, stat.st_size):
+                                        size_to_paths_map[stat.st_size].append(p_entry)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError, RuntimeError):

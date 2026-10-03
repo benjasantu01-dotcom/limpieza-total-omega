@@ -241,6 +241,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     if not raw_csv_text: return []
     top_heap: List[ProcessMemory] = []
     
+    # Procesar líneas evitando duplicación de estructuras mediante evaluación perezosa
     lines = raw_csv_text.splitlines()
     for line in (l for l in lines[1:] if l and "," in l):
         data = _extract_process_info(line)

@@ -466,3 +466,13 @@ assert not {'replace'}
 - `2026-10-03T05:11:46` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
 - `2026-10-03T05:11:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T05:11:46` Corrida terminada. Total usado hoy: 123.
+- `2026-10-03T05:18:41` Arrancando corrida. Quedan hoy ~177 peticiones objetivo.
+- `2026-10-03T05:19:09` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el proceso de recolección en `_collect_candidates` evitando llamadas redundantes a `is_valid_candidate` (que ejecuta `os.open` y `stat` adicionales) moviendo la verificación de `is_protected_path` al inicio y reutilizando el objeto `stat` obtenido durante el escaneo del directorio.
+- `2026-10-03T05:19:36` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje transformando `_PIPELINE_ORDERED` de una tupla a una estructura procesable por `dict`, reduciendo la complejidad de búsqueda y pre-calculando el desglose de pesos para evitar iteraciones redundantes y validaciones repetidas en cada llamado a `compute_score`.
+- `2026-10-03T05:20:36` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-03T05:21:39` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-03T05:22:45` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-03T05:23:57` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-03T05:24:48` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó `top_memory_processes` reemplazando la lectura del CSV completo a memoria por un procesamiento iterativo eficiente y se añadió un filtro preventivo (`if ws < threshold`) antes de instanciar `ProcessMemory` o realizar operaciones de ordenamiento, reduciendo la presión sobre el recolector de basura y mejorando la performance en sistemas con muchos procesos activos.
+- `2026-10-03T05:24:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T05:24:48` Corrida terminada. Total usado hoy: 127.
