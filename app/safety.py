@@ -454,6 +454,11 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
         raise UnsafePathError("Tipo de objeto de ruta inválido", SafetyValidationErrorCode.GENERIC)
     if _is_device_file(path):
         raise UnsafePathError(f"Acceso a dispositivo bloqueado: {path.name}", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
+    
+    # Pre-check de existencia robusto
+    if not os.access(path, os.F_OK):
+        raise UnsafePathError(f"Archivo inexistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+        
     try:
         if _is_system_directory_junction(str(path)):
             raise UnsafePathError(f"Punto de reparse detectado durante acceso estático: {path.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
@@ -476,7 +481,7 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     Verifica que el archivo no haya sido reemplazado y pertenezca a un volumen local permitido
     comparando los identificadores de dispositivo e inodo contra el estado inicial.
     """
-    if not path.exists():
+    if not os.access(path, os.F_OK):
         raise UnsafePathError("El archivo ya no existe (TOCTOU).", SafetyValidationErrorCode.IO_ERROR)
         
     if os.name == 'nt':
@@ -770,7 +775,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     _validate_boundary_conditions(p, base_dir)
     
     # Verificación preventiva tras asegurar la estructura
-    if p.exists():
+    if os.access(p, os.F_OK):
         try:
             _validate_access_permissions(p)
             if _is_file_in_use_by_system(str(p)):
@@ -794,9 +799,9 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     else:
         # Validar permisos en el padre si el archivo no existe aún
         try:
-            if not p.parent.exists():
-                return p
             parent = p.parent
+            if not os.access(parent, os.F_OK):
+                return p
             if not os.access(parent, os.W_OK):
                 raise UnsafePathError("Directorio contenedor no tiene permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
             if is_protected_path(str(parent)):

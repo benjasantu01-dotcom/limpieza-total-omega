@@ -852,12 +852,16 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         item_map = {i.stored_name: i for i in items}
         
         purged_ids: Set[str] = set()
+        # Capturamos excepciones individuales para no interrumpir el proceso global
         for f in quarantine_root.iterdir():
             if f.name == MANIFEST_NAME or not f.is_file():
                 continue
-            item = item_map.get(f.name)
-            if item and _is_item_purgable(f, item):
-                purged_ids.add(item.item_id)
+            try:
+                item = item_map.get(f.name)
+                if item and _is_item_purgable(f, item):
+                    purged_ids.add(item.item_id)
+            except UnsafePathError:
+                continue
         
         if purged_ids:
             save_manifest([i for i in items if i.item_id not in purged_ids], base)
