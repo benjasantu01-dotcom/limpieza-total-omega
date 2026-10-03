@@ -187,9 +187,16 @@ def _get_sha256(path: Path) -> str:
 
 
 def _is_file_in_use_by_system(path: Path) -> bool:
-    """Verifica si el archivo está bloqueado por el sistema (Windows) o concurrentes."""
+    """Verifica si el archivo está bloqueado por el sistema o tiene enlaces múltiples."""
     if not path.exists():
         return False
+    
+    try:
+        if path.stat().st_nlink > 1:
+            return True
+    except OSError:
+        return True
+
     if os.name != 'nt':
         return False
         
@@ -432,10 +439,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
 
 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
-    """
-    Persiste el manifiesto usando escritura atómica.
-    Contrato: Valida tipos antes de escribir y asegura integridad mediante fsync.
-    """
+    """Persiste el manifiesto usando escritura atómica y validación de integridad."""
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista.")
     if not all(isinstance(i, QuarantineItem) for i in items):
@@ -682,12 +686,6 @@ def quarantine_file(
 ) -> QuarantineItem:
     """
     Aísla un archivo de forma segura, respetando todas las garantías de integridad.
-    Args:
-        source: Ruta del archivo origen.
-        reason: Motivo de la cuarentena.
-        base: Directorio de base (usualmente DEFAULT_QUARANTINE_DIR).
-    Returns:
-        QuarantineItem: Registro del archivo aislado.
     """
     p_source = _validate_input_path(source)
     source_path = _validate_source_for_quarantine(p_source)

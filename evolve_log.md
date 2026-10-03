@@ -1134,3 +1134,10 @@ FAILED evolve/tests/test_modules.py::test_min_size_filters_out_tiny_files - Attr
 - `2026-10-03T01:25:55` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
 - `2026-10-03T01:25:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T01:25:55` Corrida terminada. Total usado hoy: 35.
+- `2026-10-03T01:34:37` Arrancando corrida. Quedan hoy ~265 peticiones objetivo.
+- `2026-10-03T01:35:51` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de la aplicación ante casos límite mediante la validación proactiva de rutas y estados de widgets en el método `_validate_disk_access` y en la inicialización, asegurando que `Path.resolve(strict=True)` no bloquee el inicio si un componente de la ruta ha cambiado o es inaccesible durante el chequeo, y reforzando la protección contra caracteres no imprimibles.
+- `2026-10-03T01:36:20` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-03T01:36:46` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_file_locked` para que no dependa de `os.open` (que falla en ciertos sistemas o condiciones de acceso a metadatos) mediante una validación de `os.access` que confirma si el archivo está efectivamente bloqueado para escritura por otro proceso, previniendo errores de `PermissionError` al intentar mover archivos en uso.
+- `2026-10-03T01:37:11` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita de `st_nlink` (Hard Links) en `_is_file_locked` y validaciones de integridad, además de proteger la operación `os.replace` ante fallos de persistencia en el sistema de archivos, mejorando la robustez ante estados inconsistentes del SO.
+- `2026-10-03T01:37:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T01:37:11` Corrida terminada. Total usado hoy: 39.

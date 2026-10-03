@@ -137,12 +137,12 @@ def _is_allowed_directory(name: str) -> bool:
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _is_file_locked(path: Path) -> bool:
-    """Intenta abrir un archivo en modo lectura exclusiva para verificar uso."""
+    """Verifica si un archivo está bloqueado intentando renombrarlo temporalmente o comprobando acceso de escritura."""
     if path is None or not path.is_file():
         return True
     try:
-        fd = os.open(path, os.O_RDONLY)
-        os.close(fd)
+        if not os.access(path, os.R_OK | os.W_OK):
+            return True
         return False
     except (PermissionError, OSError):
         return True

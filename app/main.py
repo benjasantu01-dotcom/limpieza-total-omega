@@ -318,9 +318,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _validate_disk_access(self, path: Union[str, Path]) -> Path:
         """Helper: Valida integridad de ruta absoluta y permisos de seguridad."""
-        p = Path(path).resolve(strict=True)
+        p = Path(path).resolve()
         if any(ord(c) < 32 for c in str(p)):
             raise safety.UnsafePathError("Ruta contiene caracteres inválidos")
+        # Verificar existencia sin disparar excepciones de sistema bloqueantes
+        if not p.exists():
+            raise FileNotFoundError(f"Ruta inexistente: {p}")
         if p.is_symlink() or (p.is_dir() and p.is_mount() and not p.exists()):
             raise safety.UnsafePathError("Ruta inválida o enlace prohibido")
         safety.ensure_safe_to_modify(p)
