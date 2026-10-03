@@ -235,7 +235,7 @@ SYSTEM_PROMPT: Final[str] = (
     "- Máximo 6 líneas."
 )
 
-# Regex de validación
+# Regex de validación y seguridad
 _ENDPOINT_BASE: Final[str] = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 _TIMEOUT_SECONDS: Final[int] = 30
 _API_HOST_ROOT: Final[str] = "https://generativelanguage.googleapis.com/"
@@ -248,10 +248,10 @@ SECURITY_PATTERNS: Final[list[re.Pattern]] = [
     _REGEX_INYECCION,
     _REGEX_CONTROL,
     _REGEX_PATH_TRAVERSAL,
-    re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])"),                       # ANSI
-    re.compile(r"(Get-|Remove-|Set-|Stop-|Start-)[a-zA-Z]+", re.IGNORECASE),   # Comandos PS
-    re.compile(r"(exec|eval|subprocess|system\s*\(|rm\s+|del\s+|cmd\.exe|powershell|reg\.exe)", re.IGNORECASE), # Contenido peligroso
-    re.compile(r"(\\\\|[a-z]:\\|/etc/|\\\\UNC|C:\\Windows|System32|/proc/|/dev/)", re.IGNORECASE) # Estructuras sistema
+    re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])"),                       # Secuencias escape ANSI
+    re.compile(r"(Get-|Remove-|Set-|Stop-|Start-)[a-zA-Z]+", re.IGNORECASE),   # Comandos Powershell sospechosos
+    re.compile(r"(exec|eval|subprocess|system\s*\(|rm\s+|del\s+|cmd\.exe|powershell|reg\.exe)", re.IGNORECASE), # Ejecución de código
+    re.compile(r"(\\\\|[a-z]:\\|/etc/|\\\\UNC|C:\\Windows|System32|/proc/|/dev/)", re.IGNORECASE) # Rutas sistema
 ]
 
 _TOKEN_REGEX: Final[re.Pattern] = re.compile(r"\w+")
@@ -451,36 +451,35 @@ class Answer:
     def is_online(self) -> bool:
         return self.source == "gemini"
 
+def _is_path_like_or_protected(text: str) -> bool:
+    """Verifica si el texto parece una ruta o es una ruta protegida del sistema."""
+    if is_protected_path(text): return True
+    if text.startswith(("\\\\", "//", "UNC")): return True
+    try:
+        p = Path(text)
+        if p.is_absolute() or text.startswith(("./", "../", "..\\")): return True
+    except (ValueError, TypeError, OSError):
+        return True
+    return any(token in text.lower() for token in ["c:\\", "d:\\", "system32", "/etc/"])
+
 def _ensure_safe_text(text: Any) -> bool:
     """
     Realiza una desinfección estricta y validación de seguridad sobre cadenas.
     
-    Verifica contra inyecciones, rutas prohibidas, caracteres no imprimibles y 
-    intentos de Directory Traversal. Esta función actúa como el gatekeeper 
-    de todo el texto antes de entrar a la lógica del asistente o ser enviado.
+    Verifica contra inyecciones, caracteres no imprimibles y patrones de peligro.
+    Divide la validación en una lógica de rutas y una de contenido.
     """
     if not isinstance(text, str) or not text or len(text) > _MAX_TEXT_LENGTH:
         return False
-    # Filtro estricto de caracteres invisibles Unicode y secuencias ANSI
-    if _REGEX_CONTROL.search(text):
-        return False
-    if any(c in text for c in "<>|&^"):
+    if _REGEX_CONTROL.search(text) or any(c in text for c in "<>|&^"):
         return False
     
-    sanitized = text.encode("utf-8", "ignore").decode("utf-8")
-    # Validación explícita de seguridad contra rutas protegidas o maliciosas
-    if is_protected_path(sanitized): return False
-    
-    try:
-        if sanitized.startswith(("\\\\", "//", "UNC")): return False
-        p = Path(sanitized)
-        if p.is_absolute() or sanitized.startswith(("./", "../", "..\\")):
-            return False
-        if any(token in sanitized.lower() for token in ["c:\\", "d:\\", "system32", "/etc/"]): return False
-    except (ValueError, TypeError, OSError):
+    # Validación de integridad de ruta y caracteres prohibidos
+    if _is_path_like_or_protected(text):
         return False
     
-    return not any(pattern.search(sanitized) for pattern in SECURITY_PATTERNS)
+    # Validación mediante patrones de ataque conocidos
+    return not any(pattern.search(text) for pattern in SECURITY_PATTERNS)
 
 def _get_source_value(source: Any, key: str) -> Any:
     """Acceso seguro a atributos evitando recursión, inyecciones de clase y acceso a métodos."""

@@ -163,6 +163,7 @@ class Scanner:
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica que la entrada se mantenga dentro del directorio raíz inicial (Prevención de escape)."""
+        if not entry_path: return False
         if entry_path in self._root_cache:
             return self._root_cache[entry_path]
         try:
@@ -171,7 +172,7 @@ class Scanner:
             if len(self._root_cache) < 1000:
                 self._root_cache[entry_path] = result
             return result
-        except (OSError, RuntimeError, ValueError):
+        except (OSError, RuntimeError, ValueError, TypeError):
             return False
 
     def _has_invalid_name(self, name: str) -> bool:
@@ -273,15 +274,15 @@ def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
     Inicializa el motor de escaneo y procesa el sistema de archivos de forma iterativa.
     """
     if directory is None: return []
-    path_str = str(directory).strip()
-    if not path_str or not _is_valid_path_structure(path_str): return []
     try:
+        path_str = str(directory).strip()
+        if not path_str or not _is_valid_path_structure(path_str): return []
         base_path = Path(path_str).resolve()
         if not base_path.exists() or not base_path.is_dir() or base_path.is_symlink() or not os.access(base_path, os.R_OK):
             return []
         if is_protected_path(base_path): return []
         scanner = Scanner(base_root=base_path)
-    except (OSError, RuntimeError, ValueError): 
+    except (OSError, RuntimeError, ValueError, TypeError): 
         return []
     
     directory_stack: List[Tuple[str, int]] = [(str(base_path), 0)]
@@ -291,7 +292,7 @@ def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    if entry is not None:
+                    if entry:
                         scanner.process_entry(entry, directory_stack, depth)
         except (PermissionError, OSError):
             continue
