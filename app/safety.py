@@ -278,30 +278,11 @@ def _has_alternate_data_stream(path_name: str) -> bool:
     """Detecta flujos de datos alternativos (ADS) NTFS, comúnmente utilizados para ocultar payloads."""
     return ":" in path_name and len(path_name.split(":")) > 2
 
-def _is_directory_junction_strict(path_str: str) -> bool:
-    """
-    Verifica si una ruta es un punto de reparse usando GetFileInformationByHandle.
-    Más robusto que solo checar el atributo REPARSE_POINT.
-    """
+def _is_system_directory_junction(path_str: str) -> bool:
+    """Verifica si la ruta apunta a un punto de reparse (junction o symlink) del sistema."""
     if os.name != 'nt': return False
-    kernel32 = ctypes.windll.kernel32
-    handle = kernel32.CreateFileW(
-        _to_long_path(path_str), 0, 0x00000003, None, 3, 0x02000000, None
-    )
-    if handle == -1: return False
-    try:
-        class BY_HANDLE_FILE_INFORMATION(ctypes.Structure):
-            _fields_ = [("dwAttrs", ctypes.c_ulong), ("ftCreationTime", ctypes.c_ulonglong),
-                        ("ftLastAccessTime", ctypes.c_ulonglong), ("ftLastWriteTime", ctypes.c_ulonglong),
-                        ("dwVolumeSerialNumber", ctypes.c_ulong), ("nFileSizeHigh", ctypes.c_ulong),
-                        ("nFileSizeLow", ctypes.c_ulong), ("nNumberOfLinks", ctypes.c_ulong),
-                        ("nFileIndexHigh", ctypes.c_ulong), ("nFileIndexLow", ctypes.c_ulong)]
-        info = BY_HANDLE_FILE_INFORMATION()
-        if kernel32.GetFileInformationByHandle(handle, ctypes.byref(info)):
-            return bool(info.dwAttrs & Win32Attr.REPARSE_POINT)
-    finally:
-        kernel32.CloseHandle(handle)
-    return False
+    attrs = _get_file_attrs(path_str)
+    return bool(attrs & Win32Attr.REPARSE_POINT)
 
 @lru_cache(maxsize=1024)
 def _is_file_locked_by_other_process(path_str: str) -> bool:
@@ -423,7 +404,7 @@ def _rule(reason: ProtectionReason, predicate: ViolationPredicate) -> _Integrity
 # Lista de validadores de integridad aplicada secuencialmente
 _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _rule(ProtectionReason.SYMLINK, lambda p, _, __: p.is_symlink()),
-    _rule(ProtectionReason.REPARSE_POINT, lambda p, _, __: _is_directory_junction_strict(str(p))),
+    _rule(ProtectionReason.REPARSE_POINT, lambda p, _, __: _is_system_directory_junction(str(p))),
     _rule(ProtectionReason.KERNEL_LOCKED, lambda p, _, __: _is_kernel_managed(p)),
     _rule(ProtectionReason.READ_ONLY, lambda _, st, sd: not bool(st.st_mode & stat.S_IWRITE) or sd.is_readonly),
     _rule(ProtectionReason.VOLUME_READ_ONLY, lambda p, _, __: _is_volume_readonly(str(p))),
@@ -482,7 +463,7 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
         raise UnsafePathError("Tipo de objeto de ruta inválido", SafetyValidationErrorCode.GENERIC)
     if _is_device_file(path):
         raise UnsafePathError(f"Acceso a dispositivo bloqueado: {path.name}", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
-    if _is_directory_junction_strict(str(path)):
+    if _is_system_directory_junction(str(path)):
         raise UnsafePathError(f"Punto de reparse detectado durante acceso estático: {path.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
     try:
         return path.stat()
@@ -530,7 +511,7 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     if current_stat.st_dev != initial_stat.st_dev or current_stat.st_ino != initial_stat.st_ino:
         raise UnsafePathError(f"Consistencia fallida (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
     
-    if _is_directory_junction_strict(str(path)):
+    if _is_system_directory_junction(str(path)):
         raise UnsafePathError(f"Junction detectada: {path.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         
     _evaluate_security_rules(path, current_stat)
@@ -578,7 +559,7 @@ def normalize(path: PathLike) -> Path:
         for part in p.parts:
             if part in (os.sep, os.altsep): continue
             current_subpath = current_subpath / part
-            if os.path.exists(str(current_subpath)) and _is_directory_junction_strict(str(current_subpath)):
+            if os.path.exists(str(current_subpath)) and _is_system_directory_junction(str(current_subpath)):
                 raise UnsafePathError("Segmento de ruta contiene punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         
         if _is_device_file(p): raise UnsafePathError("Acceso a dispositivo bloqueado.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
@@ -749,7 +730,7 @@ def _is_reparse_point_recursive(path: Path) -> bool:
     """Verifica si alguno de los directorios padre en la jerarquía es un punto de reparse."""
     try:
         for parent in path.parents:
-            if _is_directory_junction_strict(str(parent)):
+            if _is_system_directory_junction(str(parent)):
                 return True
     except (OSError, PermissionError):
         pass
@@ -859,7 +840,7 @@ def describe_protection(path: PathLike) -> str:
         if p.exists():
             sd = _get_security_descriptor(p)
             if p.is_symlink(): return f"'{p}' es un enlace simbólico."
-            if _is_directory_junction_strict(str(p)): return f"'{p}' es un punto de reparse (Junction/Symlink)."
+            if _is_system_directory_junction(str(p)): return f"'{p}' es un punto de reparse (Junction/Symlink)."
             if os.path.ismount(p): return f"'{p}' es un punto de montaje."
             if sd.is_readonly: return f"'{p}' tiene atributo de solo lectura activo."
             if _is_readonly(str(p)): return f"'{p}' es solo lectura (permisos)."

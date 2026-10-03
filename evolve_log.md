@@ -1265,3 +1265,10 @@ assert not {'replace'}
 - `2026-10-03T02:17:04` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-03T02:17:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T02:17:04` Corrida terminada. Total usado hoy: 55.
+- `2026-10-03T02:25:33` Arrancando corrida. Quedan hoy ~245 peticiones objetivo.
+- `2026-10-03T02:26:22` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido `_is_system_directory_junction` utilizando `GetFileAttributesW` y `FILE_ATTRIBUTE_REPARSE_POINT` para prevenir que `ensure_safe_to_modify` siga o manipule puntos de reparse (como `Documents and Settings` o `Users/All Users`) que actúan como "trampas" de recursión o accesos prohibidos a carpetas del sistema en versiones modernas de Windows.
+- `2026-10-03T02:26:50` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez ante condiciones de carrera (Race Conditions) y la consistencia del estado del escaneo en `_run_file_heuristics`, garantizando que el archivo exista antes y durante la inspección sin confiar exclusivamente en comprobaciones previas que podrían quedar obsoletas.
+- `2026-10-03T02:27:24` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la integridad del archivo de configuración protegiéndolo contra la sustitución arbitraria mediante enlaces simbólicos o puntos de reparse durante la operación de guardado, asegurando que `os.replace` siempre opere sobre rutas validadas.
+- `2026-10-03T02:27:39` ➖ Sin cambios en startup.py (enfoque: seguridad defensiva). Motivo: Se endureció la validación de `_extract_quoted_path` utilizando `is_protected_path` antes de retornar cualquier ruta extraída del registro, evitando que se procesen rutas que apunten a directorios del sistema incluso si parecen ser ejecutables legítimos.
+- `2026-10-03T02:27:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T02:27:39` Corrida terminada. Total usado hoy: 59.

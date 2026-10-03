@@ -410,7 +410,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         
         # Validación extra de seguridad antes de persistir
         if _Validators._is_reparse_point(parent) or not _Validators._is_safe_path(str(parent)): return None
-        if ruta.exists() and not is_safe_to_modify(str(ruta)): return None
+        if ruta.exists() and ( _Validators._is_reparse_point(ruta) or not is_safe_to_modify(str(ruta))): return None
     except (TypeError, ValueError, OSError, PermissionError): return None
     
     temp_path = ruta.with_suffix(".tmp")
@@ -432,7 +432,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             fcntl.flock(f.fileno(), fcntl.LOCK_UN)
         
         if ruta.exists():
-            if not is_safe_to_modify(str(bak_path)) and bak_path.exists(): 
+            if _Validators._is_reparse_point(bak_path) or (bak_path.exists() and not is_safe_to_modify(str(bak_path))): 
                 raise PermissionError("Ruta de respaldo insegura")
             try:
                 os.replace(ruta, bak_path)
