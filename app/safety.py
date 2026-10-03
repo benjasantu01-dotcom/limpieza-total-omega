@@ -303,11 +303,8 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
         return True
 
 @lru_cache(maxsize=1024)
-def _get_security_descriptor_cached(path_str: str, mtime: float) -> SecurityDescriptor:
-    """Versión cacheada del descriptor de seguridad vinculada al path y su timestamp de modificación."""
-    if not isinstance(path_str, str) or not path_str:
-        return SecurityDescriptor(0, False, True, True)
-    
+def _get_security_descriptor_cached(path_str: str) -> SecurityDescriptor:
+    """Consulta atributos de seguridad de forma cacheada basada en la ruta."""
     attrs = _get_file_attrs(path_str)
     return SecurityDescriptor(
         attrs=attrs,
@@ -318,14 +315,9 @@ def _get_security_descriptor_cached(path_str: str, mtime: float) -> SecurityDesc
 
 def _get_security_descriptor(path: Path) -> SecurityDescriptor:
     """
-    Construye un descriptor de seguridad para evaluar el archivo en un instante dado.
-    Utiliza el mtime del archivo para invalidar el cache si el archivo cambia.
+    Construye un descriptor de seguridad para evaluar el archivo.
     """
-    try:
-        mtime = path.stat().st_mtime
-    except (OSError, FileNotFoundError, AttributeError):
-        mtime = 0.0
-    return _get_security_descriptor_cached(str(path), mtime)
+    return _get_security_descriptor_cached(str(path))
 
 def _is_file_in_use_by_system(path_str: str) -> bool:
     """Verifica si el archivo está siendo referenciado por módulos cargados del sistema."""

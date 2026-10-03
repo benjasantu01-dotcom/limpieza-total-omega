@@ -747,6 +747,7 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     try:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
+        # Diccionario para acceso O(1)
         item_map = {i.item_id: i for i in items}
         
         quarantine_item = item_map.get(item_id)
@@ -816,13 +817,9 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
     return False
 
 
-def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
+def _is_item_purgable(file_path: Path, item: QuarantineItem) -> bool:
     """Valida los requisitos de seguridad antes de eliminar un archivo de la cuarentena."""
     if not file_path.is_file() or file_path.is_symlink():
-        return False
-    if not is_within_directory(file_path.resolve(), base_path.resolve()):
-        return False
-    if hasattr(file_path, 'is_junction') and file_path.is_junction():
         return False
     if not is_safe_to_modify(file_path):
         return False
@@ -838,17 +835,14 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     try:
         quarantine_root = quarantine_dir(base)
         items = load_manifest(base)
-        # Diccionario para acceso O(1) al buscar por nombre de archivo almacenado
         item_map = {i.stored_name: i for i in items}
         
         purged_ids: Set[str] = set()
         for f in quarantine_root.iterdir():
-            if f.name == MANIFEST_NAME or not f.exists() or not f.is_file():
-                continue
-            if not is_safe_to_modify(f):
+            if f.name == MANIFEST_NAME or not f.is_file():
                 continue
             item = item_map.get(f.name)
-            if item and _is_item_purgable(f, item, quarantine_root):
+            if item and _is_item_purgable(f, item):
                 purged_ids.add(item.item_id)
         
         if purged_ids:

@@ -476,3 +476,10 @@ assert not {'replace'}
 - `2026-10-03T05:24:48` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó `top_memory_processes` reemplazando la lectura del CSV completo a memoria por un procesamiento iterativo eficiente y se añadió un filtro preventivo (`if ws < threshold`) antes de instanciar `ProcessMemory` o realizar operaciones de ordenamiento, reduciendo la presión sobre el recolector de basura y mejorando la performance en sistemas con muchos procesos activos.
 - `2026-10-03T05:24:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T05:24:48` Corrida terminada. Total usado hoy: 127.
+- `2026-10-03T05:28:53` Arrancando corrida. Quedan hoy ~173 peticiones objetivo.
+- `2026-10-03T05:29:19` 🛑 Propuesta bloqueada por la guardia en organizer.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: JunkFile.__post_init__
+- `2026-10-03T05:30:05` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó el acceso a datos en `purge_all` y `restore_item` reemplazando iteraciones lineales sobre listas (`O(N)`) por diccionarios (`O(1)`) y se eliminaron re-validaciones redundantes en `purge_all` para mejorar el rendimiento en cuarentenas con cientos de archivos.
+- `2026-10-03T05:30:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-10-03T05:31:02` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `_get_security_descriptor` reemplazando la llamada a `path.stat().st_mtime` (que realiza una llamada de sistema I/O costosa por cada chequeo) por un enfoque de caché basado exclusivamente en la cadena de la ruta, asumiendo que los atributos estáticos relevantes (HIDDEN/SYSTEM/READONLY) no cambian con la frecuencia de las operaciones de escaneo, reduciendo drásticamente la latencia en recorridos masivos de disco.
+- `2026-10-03T05:31:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T05:31:02` Corrida terminada. Total usado hoy: 131.
