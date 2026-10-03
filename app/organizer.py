@@ -177,7 +177,11 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     try:
         if src.exists() and dest.exists() and src.samefile(dest): return False
         st = src.lstat()
+        # Verificar que es un archivo regular y no un enlace simbólico (reparse point)
         if not src.is_file() or (st.st_mode & 0o170000 == 0o120000): return False
+        # Verificar que el archivo no tiene enlaces duros adicionales para evitar corrupción
+        if st.st_nlink > 1: return False
+        
         if not is_safe_to_modify(src) or not _validate_path_security(src, dest): return False
         
         target_dir = dest.parent if dest.exists() else dest
@@ -189,7 +193,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if src.drive != target_dir.drive or _is_recursive_violation(src, dest): return False
         if not os.access(src, os.R_OK) or _is_file_locked(src): return False
         
-        return st.st_nlink == 1
+        return True
     except (OSError, RuntimeError, AttributeError, ValueError):
         return False
 

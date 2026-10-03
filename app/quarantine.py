@@ -456,6 +456,9 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
     
     temp_path: Optional[Path] = None
     try:
+        if not is_safe_to_modify(base_path):
+            raise UnsafePathError("Directorio destino no seguro para persistir.")
+            
         with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as tf:
             temp_path = Path(tf.name)
             tf.write(encoded_content)
@@ -485,8 +488,8 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
     """Verifica disponibilidad real de espacio en el destino."""
     if not dest_dir.exists():
         raise FileNotFoundError(f"Directorio inexistente: {dest_dir}")
-    if not os.access(dest_dir, os.W_OK):
-        raise PermissionError(f"Sin permisos de escritura: {dest_dir}")
+    if not is_safe_to_modify(dest_dir) or not os.access(dest_dir, os.W_OK):
+        raise PermissionError(f"Sin permisos de escritura seguros: {dest_dir}")
     test_file = dest_dir / f".test_{uuid.uuid4().hex}"
     try:
         test_file.touch()
@@ -503,7 +506,8 @@ def _validate_file_transfer_preconditions(source: Path, destination: Path) -> No
     """Verifica seguridad del destino antes de la transferencia."""
     if is_protected_path(destination):
         raise UnsafePathError("Destino en ruta protegida.")
-    ensure_safe_to_modify(destination.parent)
+    if not is_safe_to_modify(destination.parent):
+        raise UnsafePathError("Directorio destino no seguro.")
     _check_device_consistency(source, destination.parent.resolve())
     _check_windows_file_attributes(str(destination))
     if not source.is_file():
@@ -535,6 +539,8 @@ def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> 
             stat_src = os.fstat(f_src.fileno())
             if not (stat_src.st_mode & 0o100000):
                 raise OSError("El archivo origen no es un archivo regular.")
+            if not is_safe_to_modify(temp_dest.parent):
+                raise UnsafePathError("Directorio de destino no seguro.")
             dst_fd = os.open(str(temp_dest), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
             try:
                 with os.fdopen(dst_fd, "wb") as f_dst:
@@ -564,7 +570,8 @@ def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, int]:
         raise FileNotFoundError("Archivo origen no encontrado o no es un archivo.")
     if destination.exists():
         raise FileExistsError("Colisión de ruta: el archivo destino ya existe.")
-    ensure_safe_to_modify(destination.parent)
+    if not is_safe_to_modify(destination.parent):
+        raise UnsafePathError("Operación denegada en ruta no segura.")
     source_hash = _get_sha256(source)
     temp_dest = _create_temp_file(source, destination)
     try:

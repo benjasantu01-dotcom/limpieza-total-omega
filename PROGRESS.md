@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **214** (42.5% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 47
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 208
+- Rechazadas por guardia de seguridad: 48
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-01 | 43 | 2 | 9 | 5 | 44 |
+| 2026-10-01 | 43 | 2 | 9 | 5 | 40 |
 | 2026-10-02 | 140 | 8 | 31 | 16 | 155 |
-| 2026-10-03 | 31 | 3 | 7 | 1 | 9 |
+| 2026-10-03 | 33 | 3 | 8 | 2 | 9 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **43**
+- seguridad defensiva: **45**
 - robustez ante casos límite: **38**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **20**
 - `settings.py`: **20**
 - `diskreport.py`: **19**
-- `quarantine.py`: **19**
 - `healthscore.py`: **18**
-- `organizer.py`: **17**
+- `organizer.py`: **18**
 - `duplicates.py`: **17**
 - `safety.py`: **17**
 - `memory.py`: **16**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-03T02:17:00` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad en `quarantine.py` implementando una validación explícita mediante `is_safe_to_modify` antes de cualquier operación de escritura (creación de archivos o reemplazo atómico), asegurando que incluso en casos de error o fallos en el sistema de archivos, el módulo no intente interactuar con rutas fuera de las permitidas.
+- `2026-10-03T02:16:17` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_safe_for_disk_op` al añadir una validación estricta de "Hard Links" (`st_nlink == 1`), evitando el riesgo de borrar accidentalmente archivos que tienen múltiples referencias en el sistema de archivos (lo cual podría corromper otros programas que comparten el mismo contenido físico).
 - `2026-10-03T02:08:35` **main.py** (seguridad defensiva): Se ha implementado un mecanismo de "hashing de integridad" en `on_build_report` para garantizar que la información sensible no sea alterada ni inyectada desde fuentes externas, aplicando un filtrado estricto de caracteres y validando las rutas de persistencia mediante el decorador `ensure_safety` antes de cualquier operación de escritura en disco, cumpliendo así con las reglas de seguridad defensiva solicitadas.
 - `2026-10-03T02:06:04` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` para evitar que el escáner intente acceder a rutas cuya longitud exceda `MAX_PATH` (260 caracteres) mediante una verificación preventiva de `is_safe_to_modify` y el control explícito de la longitud de la cadena, previniendo excepciones innecesarias de `OSError` que pueden ocurrir en Windows al interactuar con rutas profundas.
 - `2026-10-03T02:05:39` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_is_excluded_path` añadiendo una validación explícita mediante `pathlib` para asegurar que las rutas sean absolutas y evitar la posible manipulación de rutas relativas fuera del `root_str`, reforzando el confinamiento del escaneo.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-03T01:25:45` **duplicates.py** (robustez ante casos límite): Se ha mejorado `_collect_candidates` para manejar la posibilidad de que archivos grandes se vuelvan inaccesibles o sean eliminados entre la fase de listado (`os.scandir`) y la fase de lectura (`hash_file`), evitando caídas del bucle mediante el uso de `path.exists()` y un manejo de excepciones más robusto durante el proceso de hash.
 - `2026-10-03T01:15:58` **assistant.py** (robustez ante casos límite): Mejora la robustez del manejo de configuración en `assistant.py` al añadir una validación estricta del tipo de dato `api_key` y asegurar que la carga de ajustes no falle silenciosamente ante estructuras de configuración inesperadamente anidadas o corruptas.
 - `2026-10-03T01:14:50` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` reemplazando múltiples llamadas a `os.path` y conversiones innecesarias por una validación de `mtime` más eficiente y eliminando el re-parsing innecesario de `DEFAULTS` durante el ciclo de lectura.
-- `2026-10-03T01:06:01` **safety.py** (rendimiento): Se ha optimizado `_get_security_descriptor` reemplazando la consulta de bloqueo de archivo `_is_file_locked_by_other_process` por una lógica que valida el estado desde la caché si el archivo no ha sido modificado, reduciendo drásticamente las llamadas costosas a `CreateFileW` en operaciones repetitivas sobre los mismos archivos.
-- `2026-10-03T01:04:52` **quarantine.py** (rendimiento): Se optimizó la carga y el filtrado del manifiesto reemplazando búsquedas lineales `O(N)` por accesos mediante un diccionario de búsqueda en `purge_all` y `restore_item`, reduciendo la complejidad algorítmica y el uso de memoria en casos con muchos ítems.
