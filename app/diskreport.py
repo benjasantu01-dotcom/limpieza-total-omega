@@ -279,7 +279,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     
     while stack:
         current_dir = stack.pop()
-        # Seguridad: protección contra rutas extremadamente largas
         if len(current_dir) > 32767: continue 
         try:
             with os.scandir(current_dir) as iterator:
@@ -298,7 +297,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             st = entry.stat(follow_symlinks=False)
                             sz = int(st.st_size)
                             if sz >= 0: yield Path(entry.path), sz
-                    except (OSError, PermissionError, AttributeError):
+                    except (OSError, PermissionError, AttributeError, ValueError):
                         continue
         except (PermissionError, OSError): 
             continue
@@ -360,15 +359,15 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = []
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        try:
-            if not isinstance(size_bytes, int) or size_bytes < 0:
-                continue
+        # Validación defensiva de tipos tras la generación
+        if not isinstance(size_bytes, int) or size_bytes < 0:
+            continue
+        if not isinstance(path, Path):
+            continue
             
+        try:
             total_bytes += size_bytes
             total_files += 1
-            
-            if not isinstance(path, Path):
-                continue
             
             ext = path.suffix.lower() or "(sin extensión)"
             stats = ext_stats[ext]

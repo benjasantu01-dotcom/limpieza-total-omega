@@ -172,7 +172,6 @@ def _should_skip_entry(
         return True
     
     try:
-        # Validación defensiva adicional: asegurar que la ruta no esté protegida antes de procesar
         path_p = Path(entry.path)
         if is_protected_path(path_p):
             return True
@@ -207,7 +206,6 @@ def _process_file_entry(
             return ScanResult(0, True)
             
         p_entry = Path(entry.path)
-        # Validación de integridad reforzada
         if not _ensure_within_base(str(p_entry), root_abs_norm) or is_protected_path(p_entry) or not is_safe_to_modify(p_entry):
             return ScanResult(0, True)
         
@@ -304,8 +302,8 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
     """Identifica navegadores, valida rutas y calcula peso total de cachés por cada uno, memoizando estados."""
-    raw_bases: Sequence[Path] = bases if bases is not None else base_directories()
-    browser_map: BrowserMap = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
+    raw_bases = bases if (bases is not None and isinstance(bases, (list, tuple))) else base_directories()
+    browser_map: BrowserMap = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     k32: Optional[ctypes.WinDLL] = _get_kernel32()
     found: List[BrowserCache] = []
     global_visited_inodes: Set[int] = set()
@@ -336,7 +334,7 @@ def total_cache_bytes(caches: Optional[Iterable[BrowserCache]] = None) -> int:
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
     """Genera un reporte legible de las cachés encontradas para la UI."""
-    current_caches: List[BrowserCache] = caches if caches is not None else detect_profiles()
+    current_caches = caches if isinstance(caches, list) else detect_profiles()
     if not current_caches:
         return ["No se detectaron cachés de navegador en este sistema."]
         

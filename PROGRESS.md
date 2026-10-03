@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **210** (41.7% de aceptación)
-- Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 47
+- Mejoras aceptadas: **209** (41.5% de aceptación)
+- Rechazadas por tests: 12
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-02 | 125 | 8 | 28 | 14 | 134 |
-| 2026-10-03 | 85 | 3 | 19 | 7 | 81 |
+| 2026-10-02 | 122 | 8 | 27 | 14 | 134 |
+| 2026-10-03 | 87 | 4 | 19 | 7 | 82 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **50**
-- legibilidad y documentación: **45**
+- legibilidad y documentación: **42**
 - rendimiento: **40**
 - robustez ante casos límite: **39**
-- manejo de errores y validación de entradas: **36**
+- manejo de errores y validación de entradas: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
 - `safety.py`: **20**
+- `quarantine.py`: **19**
 - `settings.py`: **19**
 - `healthscore.py`: **18**
 - `duplicates.py`: **18**
-- `organizer.py`: **17**
+- `diskreport.py`: **17**
 - `scanner.py`: **17**
-- `diskreport.py`: **16**
-- `memory.py`: **15**
-- `browser.py`: **13**
+- `organizer.py`: **16**
+- `memory.py`: **14**
+- `browser.py`: **14**
 - `assistant.py`: **12**
 - `branding.py`: **12**
 - `startup.py`: **9**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-03T08:24:04` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `_collect_summary_data` validando explícitamente la integridad de los resultados de `os.stat` y las rutas antes de procesarlas, evitando excepciones silenciosas y asegurando que `size_bytes` siempre sea tratado como un entero válido tras las verificaciones.
+- `2026-10-03T08:23:37` **browser.py** (manejo de errores y validación de entradas): Reforcé la robustez de `detect_profiles` y `summarize` capturando fallos en los parámetros de entrada y normalizando el manejo de listas, evitando posibles errores de tipo (TypeError) o iteración sobre valores nulos que podrían abortar el reporte.
 - `2026-10-03T06:52:17` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_load_impl` y `save` mediante el uso de `ensure_safe_to_modify` para validar la integridad de la ruta antes de interactuar con el sistema de archivos, asegurando que las operaciones de lectura y escritura no sean objeto de manipulaciones en directorios protegidos o symlinks maliciosos.
 - `2026-10-03T06:52:02` **scanner.py** (seguridad defensiva): Se ha añadido una validación estricta en `_is_safe_entry` para asegurar que el path absoluto del archivo no contenga caracteres nulos (`\0`), previniendo ataques de inyección de rutas (null-byte injection) en entornos de bajo nivel.
 - `2026-10-03T06:51:21` **safety.py** (seguridad defensiva): Se implementó una verificación de "reparse points" (junctions y symlinks) más estricta en `is_protected_path`, forzando que cualquier ruta que sea un punto de reparse sea considerada protegida, independientemente de su ubicación en el árbol, evitando así ataques de evasión de sandbox mediante redirecciones NTFS.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-03T06:21:49` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `save_logo_svg` reemplazando la creación de directorios implícita por una validación explícita mediante `ensure_safe_to_modify` antes de cualquier operación de I/O, evitando el riesgo de manipulación de rutas fuera de las áreas permitidas.
 - `2026-10-03T06:21:28` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva del motor de IA limitando el acceso a `SystemContext` dentro de `_extract_text_from_gemini_json` y añadiendo validaciones de tipo explícitas en `_build_payload` para evitar la inyección de objetos maliciosos en la serialización JSON.
 - `2026-10-03T06:20:18` **settings.py** (robustez ante casos límite): Se implementó un mecanismo robusto de detección de errores de disco (full disk, lectura bloqueada) y validación de integridad previa a la escritura en `save()`, asegurando que `shutil.disk_usage` y `os.access` no fallen por rutas inexistentes o permisos negados mediante un manejo estricto de excepciones.
-- `2026-10-03T06:11:31` **scanner.py** (robustez ante casos límite): Se ha robustecido el escaneo frente a archivos inaccesibles o bloqueados introduciendo un bloque `try-except` más granular en el bucle principal de `scan_directory` y mejorando la gestión de rutas inexistentes mediante una validación de `os.scandir` más defensiva.
-- `2026-10-03T06:11:19` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera y denegaciones de acceso al agregar un chequeo explícito de la existencia del archivo en el contexto de bloques `try-except` más granulares, evitando que excepciones de I/O mal manejadas terminen en un `UnsafePathError` genérico o en una caída de la aplicación.

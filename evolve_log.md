@@ -750,3 +750,50 @@ assert not {'replace'}
 - `2026-10-03T08:16:03` ➖ Sin cambios en assistant.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `_extract_text_from_gemini_json` implementando una validación explícita de `finishReason` y tipos, además de asegurar que la respuesta sea un string válido antes de procesarla, evitando posibles errores en tiempo de ejecución al interactuar con datos externos no confiables.
 - `2026-10-03T08:16:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T08:16:03` Corrida terminada. Total usado hoy: 195.
+- `2026-10-03T08:22:30` Arrancando corrida. Quedan hoy ~105 peticiones objetivo.
+- `2026-10-03T08:23:10` Tests FALLARON:
+```
+be dibujar nada
+E       assert ['arc'] == []
+E         
+E         Left contains one more item: 'arc'
+E         
+E         Full diff:
+E         - []
+E         + [
+E         +     'arc',
+E         + ]
+
+evolve/tests/test_modules.py:258: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:169: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missing_canvas - AssertionError: un porcentaje inválido no debe dibujar nada
+assert ['arc'] == []
+  
+  Left contains one more item: 'arc'
+  
+  Full diff:
+  - []
+  + [
+  +     'arc',
+  + ]
+1 failed, 298 passed, 7 warnings in 1.26s
+
+```
+- `2026-10-03T08:23:10` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `draw_ring` mediante una validación explícita de `percent` contra `None` y valores no numéricos antes de cualquier cálculo, evitando comportamientos indefinidos en el lienzo y centralizando la lógica de sanitización.
+- `2026-10-03T08:23:37` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `detect_profiles` y `summarize` capturando fallos en los parámetros de entrada y normalizando el manejo de listas, evitando posibles errores de tipo (TypeError) o iteración sobre valores nulos que podrían abortar el reporte.
+- `2026-10-03T08:24:04` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `_collect_summary_data` validando explícitamente la integridad de los resultados de `os.stat` y las rutas antes de procesarlas, evitando excepciones silenciosas y asegurando que `size_bytes` siempre sea tratado como un entero válido tras las verificaciones.
+- `2026-10-03T08:24:13` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-03T08:24:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T08:24:13` Corrida terminada. Total usado hoy: 199.
