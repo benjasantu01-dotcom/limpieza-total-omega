@@ -212,12 +212,12 @@ def _is_file_in_use_by_system(path: Path) -> bool:
             
     try:
         import msvcrt
-        fd = os.open(path, os.O_RDONLY | os.O_BINARY)
+        file_descriptor = os.open(path, os.O_RDONLY | os.O_BINARY)
         try:
-            msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
-            msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
+            msvcrt.locking(file_descriptor, msvcrt.LK_NBLCK, 1)
+            msvcrt.locking(file_descriptor, msvcrt.LK_UNLCK, 1)
         finally:
-            os.close(fd)
+            os.close(file_descriptor)
         return False
     except (OSError, IOError, ImportError, AttributeError):
         return True
@@ -467,18 +467,18 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         if not is_safe_to_modify(base_path):
             raise UnsafePathError("Directorio destino no seguro para persistir.")
             
-        with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as tf:
-            temp_path = Path(tf.name)
-            tf.write(encoded_content)
-            tf.flush()
-            os.fsync(tf.fileno())
+        with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as temporary_file:
+            temp_path = Path(temporary_file.name)
+            temporary_file.write(encoded_content)
+            temporary_file.flush()
+            os.fsync(temporary_file.fileno())
         
         if temp_path and temp_path.exists() and temp_path.stat().st_size == len(encoded_content):
             os.replace(temp_path, target_path)
             _MANIFEST_CACHE[str(base_path)] = items
             try:
-                with open(base_path, "rb") as d:
-                    os.fsync(d.fileno())
+                with open(base_path, "rb") as directory_handle:
+                    os.fsync(directory_handle.fileno())
             except (OSError, AttributeError):
                 pass
         else:
@@ -537,27 +537,29 @@ def _create_temp_file(source: Path, destination: Path) -> Path:
 
 
 def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> None:
-    """Realiza copia byte a byte verificando integridad final."""
+    """Realiza copia byte a byte verificando integridad final mediante descriptores de archivo."""
     try:
-        fd_src = os.open(str(source), os.O_RDONLY | os.O_NOFOLLOW)
+        source_fd = os.open(str(source), os.O_RDONLY | os.O_NOFOLLOW)
     except OSError as e:
         raise OSError(f"No se pudo abrir el origen de forma segura: {e}")
     try:
-        with os.fdopen(fd_src, "rb") as f_src:
-            stat_src = os.fstat(f_src.fileno())
+        with os.fdopen(source_fd, "rb") as source_handle:
+            stat_src = os.fstat(source_handle.fileno())
             if not (stat_src.st_mode & 0o100000):
                 raise OSError("El archivo origen no es un archivo regular.")
             if not is_safe_to_modify(temp_dest.parent):
                 raise UnsafePathError("Directorio de destino no seguro.")
-            dst_fd = os.open(str(temp_dest), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+            
+            dest_fd = os.open(str(temp_dest), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
             try:
-                with os.fdopen(dst_fd, "wb") as f_dst:
-                    shutil.copyfileobj(f_src, f_dst)
-                    f_dst.flush()
-                    os.fsync(dst_fd)
+                with os.fdopen(dest_fd, "wb") as dest_handle:
+                    shutil.copyfileobj(source_handle, dest_handle)
+                    dest_handle.flush()
+                    os.fsync(dest_fd)
             except Exception:
-                os.close(dst_fd)
+                os.close(dest_fd)
                 raise
+        
         if temp_dest.stat().st_size != stat_src.st_size:
             raise OSError("Falla de integridad: tamaño mismatch tras copia.")
         final_hash = _get_sha256(temp_dest)

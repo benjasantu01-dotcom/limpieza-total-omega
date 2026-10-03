@@ -165,7 +165,7 @@ def _has_forbidden_chars(path: Path) -> bool:
     return any(c in path_str for c in ["<", ">", "|", "\0"])
 
 def _validate_path_security(src: Path, dest: Path) -> bool:
-    """Realiza una validación compuesta de seguridad sobre rutas de origen y destino."""
+    """Realiza una validación de integridad sobre rutas para evitar colisiones de seguridad."""
     if src is None or dest is None: return False
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     if len(str(src)) > MAX_PATH_LENGTH or len(str(dest)) > MAX_PATH_LENGTH: return False

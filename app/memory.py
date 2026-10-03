@@ -346,10 +346,14 @@ def _is_system_process(pid: int) -> bool:
 
 def _get_process_path(pid: int) -> Optional[Path]:
     """
-    Obtiene la ruta absoluta del ejecutable para un PID usando APIs Win32.
-    
-    Verifica que el ejecutable sea un archivo válido y no una unión o punto de 
-    reparse, además de cumplir las restricciones definidas en `safety.py`.
+    Obtiene la ruta absoluta del ejecutable para un PID mediante API Win32.
+
+    Utiliza `GetModuleFileNameExW` para resolver la ruta del módulo principal.
+    Realiza validaciones de seguridad para evitar seguir puntos de reparse
+    (junctions) y verifica contra `is_protected_path`.
+
+    Returns:
+        Objeto `Path` del ejecutable si es accesible y seguro, `None` caso contrario.
     """
     kernel32 = ctypes.windll.kernel32
     handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
@@ -367,7 +371,6 @@ def _get_process_path(pid: int) -> Optional[Path]:
                 return None
                 
             # Validación de seguridad: debe ser archivo existente y no estar en lista negra
-            # Usamos existencias directas para evitar accesos innecesarios al sistema de archivos
             if path_obj.exists() and path_obj.is_file() and not is_protected_path(str(path_obj)):
                 return path_obj
     except (ctypes.ArgumentError, OSError, ValueError):
@@ -380,8 +383,11 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
     """
     Verifica si un proceso es candidato seguro para una operación de trimming.
     
-    Valida: 1) Que el PID no sea del sistema. 2) Que la ruta sea accesible 
-    y no se encuentre en directorios protegidos.
+    Args:
+        pid: ID del proceso a validar.
+
+    Returns:
+        Tuple (True, None) si es seguro, (False, motivo) en caso de riesgo.
     """
     if _is_system_process(pid):
         return False, "Proceso crítico del sistema protegido."
@@ -393,11 +399,16 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Intenta liberar el working set de un proceso (solo Windows).
     
+    La operación invoca `EmptyWorkingSet` de `psapi.dll`. Esta función reduce 
+    el consumo de RAM reportado enviando páginas del proceso a la lista de 
+    espera (standby list). Se considera una operación destructiva de rendimiento
+    a largo plazo.
+
     Args:
         pid: ID del proceso objetivo (numérico o cadena numérica).
 
     Returns:
-        Tuple indicando éxito (bool) y mensaje de estado (str).
+        Tuple con éxito (bool) y mensaje de estado (str).
     """
     if not _is_windows: return False, "Solo soportado en Windows."
     
