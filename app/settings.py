@@ -13,6 +13,7 @@ import json
 import os
 import stat
 import fcntl
+import shutil
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
@@ -382,10 +383,7 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     """
-    Persistencia atómica.
-    Utiliza un archivo temporal, luego un respaldo (.bak) y finalmente el reemplazo
-    atómico para asegurar que el archivo de configuración nunca quede corrupto
-    durante una interrupción.
+    Persistencia atómica con validación previa de espacio y permisos de sistema.
     """
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
@@ -401,13 +399,18 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     
     parent = ruta.parent
     try:
+        # Validación de entorno de escritura
+        if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
+        usage = shutil.disk_usage(parent)
+        if usage.free < MAX_SETTINGS_SIZE * 2: return None
+        if not os.access(parent, os.W_OK): return None
+        
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
-        if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
-        # Validación extra de seguridad y estado de sistema antes de persistir
-        if _Validators._is_reparse_point(parent) or not os.access(parent, os.W_OK): return None
-        if not is_safe_to_modify(str(ruta)) and ruta.exists(): return None
-        if not _Validators._is_safe_path(str(parent)): return None
+        
+        # Validación extra de seguridad antes de persistir
+        if _Validators._is_reparse_point(parent) or not _Validators._is_safe_path(str(parent)): return None
+        if ruta.exists() and not is_safe_to_modify(str(ruta)): return None
     except (TypeError, ValueError, OSError, PermissionError): return None
     
     temp_path = ruta.with_suffix(".tmp")
@@ -429,7 +432,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             fcntl.flock(f.fileno(), fcntl.LOCK_UN)
         
         if ruta.exists():
-            if not is_safe_to_modify(str(bak_path)): 
+            if not is_safe_to_modify(str(bak_path)) and bak_path.exists(): 
                 raise PermissionError("Ruta de respaldo insegura")
             try:
                 os.replace(ruta, bak_path)

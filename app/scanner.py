@@ -71,12 +71,15 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     if not isinstance(entry, os.DirEntry):
         return None
     try:
+        # Usamos follow_symlinks=False implícito en is_symlink y stat
         if entry.is_symlink():
             return None
+        # Validar atributos antes de intentar el acceso pesado
         attr = _get_file_attributes(entry)
         if attr & SCAN_LIMITS.reparse_point_attr_mask:
             return None
         stats = entry.stat(follow_symlinks=False)
+        # st_nlink > 1 puede indicar hardlinks o directorios, evitar ambigüedad
         if getattr(stats, "st_nlink", 1) > 1:
             return None
         return stats
@@ -175,7 +178,10 @@ class Scanner:
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Verifica la existencia de atributos de puntos de reanálisis en el sistema de archivos."""
-        return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask)
+        try:
+            return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask)
+        except (OSError, PermissionError):
+            return True # Asumir inseguro si no se puede consultar
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Filtro de seguridad central. Valida estructura, permisos y exclusión de rutas protegidas."""
@@ -227,6 +233,8 @@ class Scanner:
         """Ejecuta de forma aislada cada una de las heurísticas registradas."""
         for check_fn in ALL_CHECKS:
             try:
+                # Comprobar existencia antes de procesar heurísticas
+                if not path.exists(): return
                 finding = check_fn(path, entry, self.now_ts)
                 if finding is not None:
                     self.results.append(finding)
