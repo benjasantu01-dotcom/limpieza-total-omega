@@ -124,6 +124,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         raw_str = str(directory).split('\0')[0]
+        if len(raw_str) > 2048: return None
         raw_path = Path(raw_str).resolve(strict=True)
         if not raw_path.is_dir():
             return None
@@ -143,11 +144,13 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
             return True
         
         # Validar confinamiento sin resolver symlinks dinámicamente durante el escaneo
-        entry_abs = Path(entry.path).absolute()
-        if not str(entry_abs).startswith(str(root_path)):
+        if not entry.path.startswith(str(root_path)):
             return True
             
         try:
+            # Chequeo de existencia física antes de llamar a stat para evitar race conditions
+            if not entry.is_dir(follow_symlinks=False) and not entry.is_file(follow_symlinks=False):
+                return True
             st = entry.stat(follow_symlinks=False)
             is_reparse = (st.st_file_attributes & 0x0400) if os.name == 'nt' else entry.is_symlink()
             if is_reparse:
@@ -279,7 +282,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     
     while stack:
         current_dir = stack.pop()
-        if len(current_dir) > 32767: continue 
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:

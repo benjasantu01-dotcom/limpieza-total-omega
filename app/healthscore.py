@@ -226,7 +226,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
                 clean_msg = "".join(filter(str.isprintable, msg)).strip()
                 if clean_msg: 
                     findings.append(clean_msg[:200])
-        except (Exception, TypeError, ValueError):
+        except Exception:
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -253,7 +253,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             points = area_ratio * entry.weight
             metric_breakdown[entry.area] = int(round(points))
             accumulated_score += points
-        except (Exception, TypeError, ValueError):
+        except Exception:
             metric_breakdown[entry.area] = 0
             
     if m.quarantined_count > 0:

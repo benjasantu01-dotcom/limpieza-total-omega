@@ -1329,3 +1329,11 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-03T14:42:06` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para evitar ciclos en el árbol de archivos (cuando una carpeta se contiene a sí misma a través de enlaces simbólicos o junctions) mediante la validación de la jerarquía de rutas durante la recursión, aumentando la robustez ante estructuras de disco circulares.
 - `2026-10-03T14:42:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T14:42:06` Corrida terminada. Total usado hoy: 347.
+- `2026-10-03T14:50:10` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-03T14:50:45` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-03T14:51:17` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_excluded_path` añadiendo un chequeo explícito de existencia antes de realizar `entry.stat()`, previniendo errores en condiciones de carrera (archivos eliminados durante el escaneo) y validando la profundidad de la ruta para evitar desbordamientos en llamadas al sistema operativo.
+- `2026-10-03T14:51:44` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se introdujo una validación de existencia `path.exists()` dentro de `_is_file_locked` para evitar excepciones innecesarias ante condiciones de carrera (archivos eliminados o movidos por el sistema entre la recolección y el chequeo de acceso), mejorando la robustez ante concurrencia.
+- `2026-10-03T14:52:13` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `compute_score` ante datos de entrada nulos o malformados y encapsulé la lógica de fallback dentro de `SystemMetrics` para asegurar que el pipeline nunca falle por excepciones inesperadas durante la evaluación.
+- `2026-10-03T14:52:13` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-10-03T14:52:13` Rotación — metrics: 3 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T14:52:13` Corrida terminada. Total usado hoy: 350.

@@ -95,7 +95,7 @@ class DuplicateGroup:
 
 def _is_file_locked(path: Path) -> bool:
     """Comprueba si el archivo está bloqueado intentando abrirlo en modo lectura exclusiva."""
-    if not isinstance(path, Path) or not is_safe_to_modify(path):
+    if not isinstance(path, Path) or not is_safe_to_modify(path) or not path.exists():
         return True
     try:
         fd = os.open(path, os.O_RDONLY)
@@ -216,7 +216,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     while stack:
         current_dir, depth = stack.pop()
         
-        # Resolucion real para evitar ciclos de enlaces simbólicos o duplicados
         try:
             resolved_dir = current_dir.resolve()
         except OSError:
@@ -276,7 +275,6 @@ def _decide_hash_strategy_and_process(size_bytes: int, file_paths: List[Path]) -
     if not file_paths or size_bytes <= 0:
         return []
 
-    # Determinar si se usa hash completo directamente o el proceso de dos etapas
     if size_bytes <= PARTIAL_READ_BYTES:
         final_groups = _group_paths_by_hash(file_paths, hash_file)
     else:
