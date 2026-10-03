@@ -215,15 +215,11 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> boo
     Descarta rutas de sistema y puntos de reparse (junctions).
     """
     if entry is None or not _is_allowed_directory(entry.name) or _is_junction(entry): return False
-    try:
-        path_str = entry.path
-        if path_str in protected_cache: return False
-        if is_protected_path(Path(path_str)):
-            protected_cache.add(path_str)
-            return False
-        return True
-    except (OSError, AttributeError):
+    if entry.path in protected_cache: return False
+    if is_protected_path(Path(entry.path)):
+        protected_cache.add(entry.path)
         return False
+    return True
 
 def _is_valid_junk_entry(name: str, stats: os.stat_result, now_ts: float) -> bool:
     """Verifica si el archivo cumple con las heurísticas de tamaño, fecha y extensión."""

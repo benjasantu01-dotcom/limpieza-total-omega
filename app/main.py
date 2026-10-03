@@ -36,6 +36,7 @@ para evitar saturación del hilo principal durante el logueo masivo.
 Carga perezosa de pestañas implementada para alertar el inicio de la app.
 Se optimiza la recolección de basura mediante procesamiento por generadores.
 Se optimiza el volcado de reportes mediante inserción de bloques de texto únicos.
+Se implementa memoización de contexto para evitar re-cálculos en el asistente.
 
 Instalar dependencias:
     pip install customtkinter
@@ -1231,6 +1232,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Callback: Realiza análisis completo de salud (salud, ram, disco)."""
         self._lazy_init_health_ui()
 
+        # Generar llave de estado para evitar re-cálculos si los datos base no cambian
+        state_digest = (
+            len(self._get_cached("junk") or []),
+            len(self._get_cached("suspicions") or []),
+            len(self._get_cached("startup") or []),
+            len(quarantine.list_items())
+        )
+
         def task() -> None:
             self.set_status("Analizando el sistema...")
             self.clear("Salud")
@@ -1241,15 +1250,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             metrics, snapshot, _ = self._compile_metrics()
             score_result = healthscore.compute_score(metrics)
 
-            if not self.assistant_context:
-                self.assistant_context = assistant.SystemContext()
+            if not hasattr(self, '_last_compilation_digest') or self._last_compilation_digest != state_digest:
+                self.assistant_context = assistant.build_context(
+                    metrics=metrics, 
+                    health=score_result,
+                    memory_total_gb=snapshot.total / (1024 ** 3) if (snapshot and snapshot.total) else 0.0,
+                )
+                self._last_compilation_digest = state_digest
             
-            self.assistant_context = assistant.build_context(
-                metrics=metrics, 
-                health=score_result,
-                memory_total_gb=snapshot.total / (1024 ** 3) if (snapshot and snapshot.total) else 0.0,
-            )
-
             self._update_health_visuals(
                 score_result, metrics.junk_mb, metrics.suspicious_count,
                 metrics.memory_available_percent, metrics.disk_free_percent

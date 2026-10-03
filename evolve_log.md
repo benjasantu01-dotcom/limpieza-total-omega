@@ -1305,3 +1305,11 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-03T14:11:13` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
 - `2026-10-03T14:11:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T14:11:13` Corrida terminada. Total usado hoy: 335.
+- `2026-10-03T14:19:35` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-03T14:20:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-03T14:21:30` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un sistema de "caché de estado" en `on_full_analysis` para evitar la recalculación costosa de métricas y contextos de IA cuando no ha cambiado el estado base, reduciendo drásticamente la carga de CPU y I/O en ejecuciones repetidas.
+- `2026-10-03T14:21:57` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-10-03T14:22:25` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el proceso de escaneo reemplazando la creación innecesaria de objetos `Path` y llamadas a `.resolve()` dentro del bucle interno por el uso de las rutas crudas proporcionadas por `os.scandir`, reduciendo drásticamente la presión sobre el sistema de archivos y el uso de memoria en directorios con miles de elementos.
+- `2026-10-03T14:22:51` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: rendimiento).
+- `2026-10-03T14:22:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T14:22:51` Corrida terminada. Total usado hoy: 339.
