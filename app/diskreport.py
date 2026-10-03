@@ -52,7 +52,12 @@ SizeReport: TypeAlias = Tuple[int, int]
 
 
 class ExtStats:
-    """Acumulador de métricas para una extensión de archivo específica."""
+    """
+    Contenedor mutable de métricas para agrupar estadísticas por extensión.
+    
+    Usado internamente durante el escaneo para sumarizar el peso y la 
+    frecuencia de ocurrencia de extensiones específicas.
+    """
     __slots__ = ('total_bytes', 'count')
     
     def __init__(self) -> None:
@@ -61,7 +66,7 @@ class ExtStats:
 
 
 class FolderMetrics(NamedTuple):
-    """Acumulador para métricas de subcarpetas."""
+    """Acumulador inmutable para métricas de subcarpetas durante la agregación."""
     size: int
     file_count: int
 
@@ -348,8 +353,11 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Recorre el sistema de archivos y consolida datos en una estructura `SummaryData`.
-    Usa un heap para mantener los N archivos más pesados si `limit > 0`.
+    Recorre el sistema de archivos y consolida datos estadísticos.
+    
+    Implementa una lógica de agregación que simultáneamente calcula el total
+    de archivos/bytes, el uso por extensión y mantiene un heap de tamaño 'limit'
+    para identificar los archivos más pesados de forma eficiente en una sola pasada.
     """
     total_bytes: int = 0
     total_files: int = 0

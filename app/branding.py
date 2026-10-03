@@ -438,7 +438,12 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Renderiza el logo corporativo completo."""
+    """
+    Renderiza el logo corporativo completo en el lienzo proporcionado.
+    :param size: Dimension base para escalar el escudo.
+    :param canvas_x: Desplazamiento horizontal inicial.
+    :param canvas_y: Desplazamiento vertical inicial.
+    """
     try:
         s = float(size)
         cx, cy = float(canvas_x), float(canvas_y)
@@ -456,7 +461,11 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una barra horizontal con degradado interpolado."""
+    """
+    Dibuja una barra horizontal decorativa con gradiente interpolado.
+    :param width: Ancho total de la barra en píxeles.
+    :param height: Altura o grosor de la línea del degradado.
+    """
     try:
         if canvas is None or stops is None: return
         w_val = max(1, min(4096, int(width)))
@@ -473,7 +482,12 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, 
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, 
               track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """Renderiza un gráfico circular indicativo de salud."""
+    """
+    Renderiza un gráfico circular estilo anillo para indicar salud.
+    :param percent: Valor 0-100 a graficar.
+    :param size: Diámetro total del anillo.
+    :param thickness: Grosor del trazo circular.
+    """
     try:
         if canvas is None: return
         val = float(percent) if percent is not None else 0.0

@@ -201,15 +201,14 @@ def _process_file_entry(
     depth: int
 ) -> ScanResult:
     """
-    Evalúa una entrada individual, aplicando filtros de seguridad y delegando la recursión.
-    Limpia el estado y verifica que la entrada no escape del árbol base autorizado.
+    Evalúa una entrada individual, verificando integridad y delegando recursión.
+    Asegura que el archivo o subdirectorio no sea un vínculo inseguro o punto de reparse.
     """
     try:
         if entry.is_symlink():
             return ScanResult(0, True)
 
         p_entry = Path(entry.path)
-        # Verificación explícita de seguridad antes de procesar el archivo o subir al directorio
         if not _ensure_within_base(str(p_entry), root_abs_norm) or is_protected_path(p_entry) or not is_safe_to_modify(p_entry):
             return ScanResult(0, True)
         
@@ -237,8 +236,8 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> ScanResult:
     """
-    Realiza el recorrido recursivo del disco bajo restricciones de seguridad.
-    Utiliza memoización de inodes y rutas visitadas para evitar ciclos.
+    Realiza el recorrido recursivo del disco utilizando memoización de estados.
+    Limita la profundidad para evitar el desbordamiento de pila en estructuras cíclicas.
     """
     if not isinstance(root_path, Path) or depth > MAX_SCAN_DEPTH:
         return ScanResult(0, False)
@@ -262,7 +261,7 @@ def _sum_directory_recursive(
     return ScanResult(total_bytes, True)
 
 def directory_size(path: Optional[OSPath]) -> int:
-    """Calcula recursivamente el tamaño en bytes de un directorio validado."""
+    """Calcula el peso total en bytes de un directorio, aplicando filtros de seguridad."""
     if path is None: return 0
     try:
         path_obj: Path = Path(path)
@@ -276,7 +275,7 @@ def directory_size(path: Optional[OSPath]) -> int:
         return 0
 
 def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
-    """Valida si una ruta de caché es segura para ser escaneada mediante filtros de integridad."""
+    """Valida que la ruta sea un directorio local, no protegido y bajo la jerarquía permitida."""
     if not isinstance(candidate, Path):
         return False
     try:
@@ -293,7 +292,7 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
         return False
 
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
-    """Une la base de perfil con la ruta relativa conocida de caché y valida su pertenencia."""
+    """Resuelve la ruta absoluta del caché basándose en la estructura del navegador."""
     if not isinstance(rel_str, str) or not rel_str or not isinstance(real_base, Path):
         return Path()
     try:
