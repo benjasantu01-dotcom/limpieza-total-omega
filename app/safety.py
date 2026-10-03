@@ -457,7 +457,6 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
 def _get_path_stat_robust(path: Path) -> os.stat_result:
     """
     Obtiene los metadatos de un archivo de manera segura, bloqueando el acceso a archivos de dispositivo.
-    Valida que el archivo no sea un dispositivo o un punto de reparse antes de realizar la consulta stat().
     """
     if not isinstance(path, Path):
         raise UnsafePathError("Tipo de objeto de ruta inválido", SafetyValidationErrorCode.GENERIC)
@@ -470,11 +469,11 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
     except (PermissionError, FileNotFoundError):
         raise UnsafePathError(f"Acceso denegado o archivo inexistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     except OSError as e:
-        # 32: ERROR_SHARING_VIOLATION, 5: ERROR_ACCESS_DENIED
-        win_err = getattr(e, 'winerror', 0)
-        if win_err == 32:
+        # Detectar errores específicos de Windows (32: bloqueo, 5: acceso)
+        win_err = getattr(e, 'winerror', None)
+        if win_err == 32 or (e.errno == 13):
              raise UnsafePathError(f"Archivo bloqueado por otro proceso: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
-        if win_err == 5:
+        if win_err == 5 or (e.errno == 13):
              raise UnsafePathError(f"Acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
         raise UnsafePathError(f"Acceso fallido: {path.name}", SafetyValidationErrorCode.IO_ERROR)
     except (ValueError, TypeError) as e:

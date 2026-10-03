@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Mejoras aceptadas: **206** (40.9% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-01 | 22 | 2 | 3 | 3 | 25 |
+| 2026-10-01 | 21 | 2 | 3 | 3 | 22 |
 | 2026-10-02 | 140 | 8 | 31 | 16 | 155 |
-| 2026-10-03 | 42 | 3 | 9 | 4 | 41 |
+| 2026-10-03 | 45 | 3 | 10 | 4 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **48**
-- manejo de errores y validación de entradas: **45**
+- manejo de errores y validación de entradas: **48**
 - legibilidad y documentación: **40**
 - robustez ante casos límite: **38**
-- rendimiento: **33**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **19**
+- `settings.py`: **20**
 - `quarantine.py`: **19**
+- `safety.py`: **19**
 - `diskreport.py`: **18**
-- `safety.py`: **18**
-- `duplicates.py`: **17**
 - `organizer.py`: **17**
 - `healthscore.py`: **17**
-- `scanner.py`: **15**
+- `scanner.py`: **16**
+- `duplicates.py`: **16**
 - `memory.py`: **14**
 - `browser.py`: **13**
 - `assistant.py`: **12**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-03T04:19:27` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `save` reemplazando los chequeos inseguros (que usaban `is_safe_to_modify` como booleano en `if`) por un enfoque de validación explícita mediante `ensure_safe_to_modify` antes de cualquier operación destructiva de reemplazo de archivos, cumpliendo estrictamente con las reglas de seguridad.
+- `2026-10-03T04:19:10` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez del motor de escaneo mediante la validación estricta de parámetros en `_run_file_heuristics` y `scan_file`, eliminando el uso de excepciones genéricas (`Exception`) para capturar errores de ejecución y reemplazándolas por una gestión de flujo más predecible.
+- `2026-10-03T04:18:43` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado `_get_path_stat_robust` agregando manejo explícito para `OSError` con códigos de error de acceso (5) y bloqueo (32) mediante una introspección más limpia de los atributos de `OSError`, evitando la dependencia de `winerror` en plataformas no-Windows y mejorando la resiliencia ante fallos de I/O.
 - `2026-10-03T04:11:16` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita de `None` y tipos en `total_quarantined_bytes` para prevenir errores de ejecución en caso de que el manifiesto esté corrupto o `load_manifest` devuelva una lista inesperada, alineándose con el enfoque de manejo de errores y validación de entradas.
 - `2026-10-03T04:10:51` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `organizer.py` añadiendo validaciones de tipo y de estado (`None` o rutas inexistentes) en `_generate_unique_target` y `_should_scan_directory`, además de centralizar y refinar el manejo de excepciones en `_is_safe_for_disk_op` para evitar que el bucle de escaneo se interrumpa prematuramente ante archivos con permisos restringidos o metadatos inalcanzables.
 - `2026-10-03T03:59:00` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del cálculo del puntaje protegiendo `compute_score` contra excepciones inesperadas durante la evaluación de métricas y validando explícitamente la integridad de los resultados antes de su retorno para prevenir la propagación de datos corruptos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-03T02:17:00` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad en `quarantine.py` implementando una validación explícita mediante `is_safe_to_modify` antes de cualquier operación de escritura (creación de archivos o reemplazo atómico), asegurando que incluso en casos de error o fallos en el sistema de archivos, el módulo no intente interactuar con rutas fuera de las permitidas.
 - `2026-10-03T02:16:17` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_safe_for_disk_op` al añadir una validación estricta de "Hard Links" (`st_nlink == 1`), evitando el riesgo de borrar accidentalmente archivos que tienen múltiples referencias en el sistema de archivos (lo cual podría corromper otros programas que comparten el mismo contenido físico).
 - `2026-10-03T02:08:35` **main.py** (seguridad defensiva): Se ha implementado un mecanismo de "hashing de integridad" en `on_build_report` para garantizar que la información sensible no sea alterada ni inyectada desde fuentes externas, aplicando un filtrado estricto de caracteres y validando las rutas de persistencia mediante el decorador `ensure_safety` antes de cualquier operación de escritura en disco, cumpliendo así con las reglas de seguridad defensiva solicitadas.
-- `2026-10-03T02:06:04` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` para evitar que el escáner intente acceder a rutas cuya longitud exceda `MAX_PATH` (260 caracteres) mediante una verificación preventiva de `is_safe_to_modify` y el control explícito de la longitud de la cadena, previniendo excepciones innecesarias de `OSError` que pueden ocurrir en Windows al interactuar con rutas profundas.
-- `2026-10-03T02:05:39` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_is_excluded_path` añadiendo una validación explícita mediante `pathlib` para asegurar que las rutas sean absolutas y evitar la posible manipulación de rutas relativas fuera del `root_str`, reforzando el confinamiento del escaneo.
-- `2026-10-03T01:57:03` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_file_in_use` eliminando el uso de `os.open` con `O_EXCL` (que no bloquea el archivo para lectura, sino que falla si ya existe) y reemplazándolo por una verificación de acceso más robusta mediante atributos de sistema, además de encapsular la apertura de archivos en un contexto de lectura que no intente modificar el estado del sistema de archivos.

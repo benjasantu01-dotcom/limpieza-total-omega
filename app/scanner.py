@@ -71,15 +71,12 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     if not isinstance(entry, os.DirEntry):
         return None
     try:
-        # Usamos follow_symlinks=False implícito en is_symlink y stat
         if entry.is_symlink():
             return None
-        # Validar atributos antes de intentar el acceso pesado
         attr = _get_file_attributes(entry)
         if attr & SCAN_LIMITS.reparse_point_attr_mask:
             return None
         stats = entry.stat(follow_symlinks=False)
-        # st_nlink > 1 puede indicar hardlinks o directorios, evitar ambigüedad
         if getattr(stats, "st_nlink", 1) > 1:
             return None
         return stats
@@ -181,7 +178,7 @@ class Scanner:
         try:
             return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask)
         except (OSError, PermissionError):
-            return True # Asumir inseguro si no se puede consultar
+            return True 
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Filtro de seguridad central. Valida estructura, permisos y exclusión de rutas protegidas."""
@@ -233,16 +230,13 @@ class Scanner:
         """Ejecuta de forma aislada cada una de las heurísticas registradas tras verificar persistencia."""
         for check_fn in ALL_CHECKS:
             try:
-                # Verificación final de existencia en tiempo de ejecución para evitar Race Conditions
                 if not path.exists():
                     break
                 finding = check_fn(path, entry, self.now_ts)
                 if finding is not None:
                     self.results.append(finding)
-            except (OSError, PermissionError) as e:
-                logger.debug(f"Acceso denegado a metadatos en {path}: {e}")
-            except Exception as e:
-                logger.error(f"Error inesperado en {check_fn.__name__} para {path}: {e}")
+            except (OSError, PermissionError, AttributeError, ValueError) as e:
+                logger.debug(f"Error de acceso/dato en {check_fn.__name__} para {path}: {e}")
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> List[Suspicion]:
     """Análisis estático de un archivo puntual con pre-validación de acceso seguro."""
@@ -262,7 +256,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
             res = check_fn(path, entry, now_ts)
             if res is not None:
                 findings.append(res)
-        except Exception:
+        except (OSError, PermissionError, AttributeError, ValueError):
             continue
     return findings
 

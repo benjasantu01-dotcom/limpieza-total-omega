@@ -382,35 +382,27 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
         return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
-    """
-    Persistencia atómica con validación previa de espacio y permisos de sistema.
-    """
+    """Persistencia atómica con validación previa de espacio y permisos de sistema."""
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
     cleaned_settings = _coerce_and_verify(validate(values))
     
-    # Pre-chequeo: Evitar escritura si el contenido en disco es idéntico al actual
     if ruta.exists():
         try:
-            if _load_impl(ruta) == cleaned_settings:
-                return ruta
-        except (OSError, PermissionError):
-            pass
+            if _load_impl(ruta) == cleaned_settings: return ruta
+        except (OSError, PermissionError): pass
     
     parent = ruta.parent
     try:
-        # Validación de entorno de escritura
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         usage = shutil.disk_usage(parent)
-        if usage.free < MAX_SETTINGS_SIZE * 2: return None
-        if not os.access(parent, os.W_OK): return None
-        
+        if usage.free < MAX_SETTINGS_SIZE * 2 or not os.access(parent, os.W_OK): return None
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
         
-        # Validación extra de seguridad antes de persistir
-        if _Validators._is_reparse_point(parent) or not _Validators._is_safe_path(str(parent)): return None
-        if ruta.exists() and ( _Validators._is_reparse_point(ruta) or not is_safe_to_modify(str(ruta))): return None
+        # Validación extra usando ensure_safe_to_modify (lanza excepciones si inseguro)
+        ensure_safe_to_modify(str(parent))
+        if ruta.exists(): ensure_safe_to_modify(str(ruta))
     except (TypeError, ValueError, OSError, PermissionError): return None
     
     temp_path = ruta.with_suffix(".tmp")
@@ -420,30 +412,21 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             fcntl.flock(f.fileno(), fcntl.LOCK_EX)
             f.write(serialized)
             f.flush()
-            try:
-                os.fsync(f.fileno())
-            except OSError:
-                pass
-            
+            os.fsync(f.fileno())
             if not _is_file_secure_to_read(f):
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
                 raise PermissionError("Archivo temporal inseguro")
-            
             fcntl.flock(f.fileno(), fcntl.LOCK_UN)
         
         if ruta.exists():
-            if _Validators._is_reparse_point(bak_path) or (bak_path.exists() and not is_safe_to_modify(str(bak_path))): 
-                raise PermissionError("Ruta de respaldo insegura")
-            try:
-                os.replace(ruta, bak_path)
-            except OSError:
-                pass
+            ensure_safe_to_modify(str(bak_path))
+            try: os.replace(ruta, bak_path)
+            except OSError: pass
             
         os.replace(temp_path, ruta)
         _MANAGER.clear()
         return ruta
-    except (OSError, IOError, PermissionError, json.JSONDecodeError):
-        return None
+    except (OSError, IOError, PermissionError, json.JSONDecodeError): return None
     finally:
         if temp_path.exists():
             try: os.remove(temp_path)
