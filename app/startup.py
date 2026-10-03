@@ -104,8 +104,9 @@ class StartupEntry:
 
     def _is_reserved_device_name(self, path_str: str) -> bool:
         """
-        Verifica contra nombres de dispositivos legacy (NUL, COM1, etc.).
-        Acceder a estos nombres mediante `Path.exists()` puede bloquear el hilo.
+        Verifica si la cadena de ruta contiene nombres de dispositivos legacy 
+        (ej: NUL, COM1) que, de ser accedidos mediante `Path.exists()`, 
+        podrían causar bloqueos indefinidos en el hilo principal.
         """
         try:
             if "\0" in path_str:
@@ -116,13 +117,16 @@ class StartupEntry:
 
     def _is_path_suspicious(self, path_string: str) -> bool:
         """
-        Detecta caracteres peligrosos o rutas UNC (\\servidor) prohibidas.
+        Verifica la presencia de caracteres peligrosos para el shell o la 
+        existencia de rutas UNC (\\servidor), las cuales se excluyen para 
+        evitar latencia de red en escaneos locales.
         """
         return any(c in path_string for c in SUSPICIOUS_CHARS) or path_string.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
         """
-        Valida extensión y que no sea enlace simbólico para evitar recursión.
+        Valida que la extensión corresponda a un formato ejecutable conocido y 
+        garantiza que la ruta no sea un symlink para evitar recursión inesperada.
         """
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
@@ -130,15 +134,15 @@ class StartupEntry:
             return False
 
     def _sanitize_command(self, raw_command: str) -> str:
-        """Elimina caracteres de control para sanitizar cadenas provenientes del registro."""
+        """Limpia caracteres de control (ord < 32) provenientes del registro."""
         if not isinstance(raw_command, str):
             return ""
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae y valida una ruta entre comillas, común en registros de Windows.
-        Implementa validación de seguridad contra Directory Traversal.
+        Extrae la ruta contenida entre comillas. Implementa validación de seguridad
+        contra Directory Traversal (..) y rutas protegidas (System/ProtectedDirs).
         """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
@@ -162,8 +166,8 @@ class StartupEntry:
 
     def _validate_file_access(self, p: Path) -> bool:
         """
-        Verifica la existencia y tipo de archivo, excluyendo junctions o symlinks
-        que pudieran conducir fuera del escaneo permitido.
+        Verifica la existencia y accesibilidad de un archivo.
+        Excluye junctions, symlinks y rutas protegidas definidas en `safety.py`.
         """
         try:
             if is_protected_path(p):
@@ -185,8 +189,8 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
-        Normaliza, resuelve y valida una ruta de archivo.
-        Usa `_EXISTS_CACHE` para evitar llamadas redundantes a `resolve()` (syscall).
+        Normaliza, resuelve y valida rutas de archivo. Utiliza `_EXISTS_CACHE`
+        para minimizar el impacto de llamadas a sistema (syscalls) costosas.
         """
         if not isinstance(path_string, str) or not self.is_valid:
             return ""
@@ -222,8 +226,8 @@ class StartupEntry:
 
     def _resolve_path_from_command(self, command_line: str) -> str:
         """
-        Aísla el ejecutable de una línea de comandos potencialmente larga.
-        Si la línea contiene flags (ej: 'app.exe -silent'), extrae solo el ejecutable.
+        Aísla el ejecutable de una línea de comando que podría contener argumentos.
+        Utiliza `_COMMAND_CACHE` para evitar re-parseo de strings de registro.
         """
         if not command_line or not isinstance(command_line, str):
             return ""
@@ -248,8 +252,8 @@ class StartupEntry:
     @property
     def executable(self) -> str:
         """
-        Ruta absoluta validada del archivo ejecutable. 
-        Calculada bajo demanda y cacheada por instancia.
+        Ruta absoluta validada del archivo ejecutable.
+        Calculada bajo demanda y cacheada en la instancia para uso en reportes.
         """
         if self._checked_exists:
             return self._exec_cache or ""
@@ -279,7 +283,6 @@ def startup_folders() -> List[Path]:
     except (ValueError, TypeError, OSError):
         pass
     
-    # Pre-filtrado eficiente: procesar solo una vez mediante set para evitar repeticiones
     valid_folders: List[Path] = []
     seen_paths: Set[Path] = set()
     for c in candidates:

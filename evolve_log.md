@@ -868,3 +868,10 @@ FAILED evolve/tests/test_modules.py::test_individual_scores_stay_between_zero_an
 - `2026-10-03T09:25:25` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators._check_path_safety, _Validators._is_safe_path
 - `2026-10-03T09:25:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T09:25:25` Corrida terminada. Total usado hoy: 223.
+- `2026-10-03T09:33:50` Arrancando corrida. Quedan hoy ~77 peticiones objetivo.
+- `2026-10-03T09:34:23` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de la clase `StartupEntry` añadiendo docstrings detallados a sus métodos privados y propiedades, eliminando ambigüedades sobre el propósito de las validaciones de seguridad y los mecanismos de caché.
+- `2026-10-03T09:35:13` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se implementó un `lru_cache` en `handle_score` para evitar el re-procesamiento redundante de métricas y la generación de strings de salud cada vez que se consulta el estado global, optimizando la CPU en la interfaz.
+- `2026-10-03T09:36:07` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-10-03T09:36:32` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-10-03T09:36:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T09:36:32` Corrida terminada. Total usado hoy: 227.
