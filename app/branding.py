@@ -191,17 +191,22 @@ def color(name: str) -> ColorHex:
 @lru_cache(maxsize=16)
 def font_size(name: str) -> int:
     """Retorna el tamaño de fuente configurado para un identificador dado."""
+    if not isinstance(name, str):
+        return UI_FONT_BODY_SIZE
     return FONT_SIZES.get(name, UI_FONT_BODY_SIZE)
 
 @lru_cache(maxsize=32)
 def icon(section: Optional[str]) -> str:
     """Retorna el glifo Unicode asociado a una sección de la interfaz."""
-    return ICONS.get(section.strip(), "\u2022") if isinstance(section, str) else "\u2022"
+    if not isinstance(section, str):
+        return "\u2022"
+    return ICONS.get(section.strip(), "\u2022")
 
 @lru_cache(maxsize=32)
 def tab_label(section: Optional[str]) -> str:
     """Genera una etiqueta para pestañas combinando el icono y el nombre de la sección."""
-    if not isinstance(section, str): return f"\u2022  Desconocido"
+    if not isinstance(section, str): 
+        return f"\u2022  Desconocido"
     return f"{icon(section)}  {section}"
 
 def _parse_severity(severity: Optional[str]) -> Optional[SeverityType]:

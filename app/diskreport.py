@@ -280,10 +280,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    if skip_protected and _is_excluded_path(entry, root_path):
-                        continue
-                    
                     try:
+                        if skip_protected and _is_excluded_path(entry, root_path):
+                            continue
+                        
                         if entry.is_dir(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             inode = (st.st_dev, st.st_ino)
@@ -358,9 +358,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     for path, size_bytes in walk_files(directory, skip_protected):
         if not isinstance(size_bytes, int) or size_bytes < 0:
             continue
-        if not isinstance(path, Path):
-            continue
-            
+        
         try:
             total_bytes += size_bytes
             total_files += 1

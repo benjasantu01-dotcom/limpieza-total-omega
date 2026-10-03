@@ -483,15 +483,20 @@ def _ensure_safe_text(text: Any) -> bool:
     return not any(pattern.search(sanitized) for pattern in SECURITY_PATTERNS)
 
 def _get_source_value(source: Any, key: str) -> Any:
-    """Acceso seguro a atributos de un objeto evitando recursión o acceso a miembros internos."""
+    """Acceso seguro a atributos evitando recursión, inyecciones de clase y acceso a métodos."""
     if not _is_safe_key(key): return None
     try:
         if isinstance(source, dict):
             return source.get(key)
-        # Acceso a objetos generales
+        # Impedimos acceder a miembros de tipo ocultos o recursión sobre __dict__
+        if key in ("__dict__", "__class__", "__base__", "__mro__", "__subclasses__"):
+            return None
         val = getattr(source, key, None)
         # Impedimos acceder a métodos o atributos de clase/tipo
         if callable(val) or isinstance(val, type):
+            return None
+        # Evitamos leer estructuras excesivamente profundas
+        if _is_input_too_deep_or_complex(val):
             return None
         return val
     except Exception:
