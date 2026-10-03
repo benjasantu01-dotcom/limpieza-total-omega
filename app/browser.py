@@ -199,9 +199,9 @@ def _process_file_entry(
 ) -> ScanResult:
     """Evalúa una entrada individual, verificando integridad y delegando recursión."""
     try:
-        if entry.is_symlink():
+        if depth > MAX_SCAN_DEPTH:
             return ScanResult(0, True)
-
+            
         p_entry = Path(entry.path)
         if not _ensure_within_base(str(p_entry), root_abs_norm) or is_protected_path(p_entry) or not is_safe_to_modify(p_entry):
             return ScanResult(0, True)

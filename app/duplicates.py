@@ -235,7 +235,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                             stat = entry.stat()
                             if stat.st_size >= min_size:
                                 p_entry = Path(entry.path)
-                                # Check protected early to avoid expensive locked check
                                 if not (skip_protected and is_protected_path(p_entry)):
                                     if _is_valid_candidate(p_entry, stat.st_size):
                                         size_to_paths_map[stat.st_size].append(p_entry)
@@ -273,7 +272,6 @@ def _decide_hash_strategy_and_process(size: int, paths: List[Path]) -> List[Dupl
     if not paths or size <= 0:
         return []
 
-    # Si es pequeño, hash directo. Si es grande, usar proceso de dos etapas.
     if size <= PARTIAL_READ_BYTES:
         final_groups = _group_paths_by_hash(paths, hash_file)
     else:

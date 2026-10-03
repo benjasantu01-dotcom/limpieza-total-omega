@@ -8,38 +8,38 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **210** (41.7% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 47
-- Sin cambios (nada sustancial que mejorar): 21
+- Rechazadas por guardia de seguridad: 46
+- Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-01 | 5 | 0 | 1 | 0 | 13 |
+| 2026-10-01 | 3 | 0 | 0 | 0 | 12 |
 | 2026-10-02 | 140 | 8 | 31 | 16 | 155 |
-| 2026-10-03 | 65 | 3 | 15 | 5 | 47 |
+| 2026-10-03 | 67 | 3 | 15 | 6 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **48**
 - legibilidad y documentación: **48**
-- seguridad defensiva: **43**
+- seguridad defensiva: **41**
 - rendimiento: **40**
-- robustez ante casos límite: **31**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
 - `safety.py`: **20**
 - `settings.py`: **19**
+- `quarantine.py`: **19**
+- `duplicates.py`: **18**
 - `scanner.py`: **17**
 - `diskreport.py`: **17**
-- `duplicates.py`: **17**
 - `healthscore.py`: **17**
 - `organizer.py`: **16**
-- `memory.py`: **15**
-- `browser.py`: **13**
+- `browser.py`: **14**
+- `memory.py`: **14**
 - `assistant.py`: **12**
 - `branding.py`: **12**
 - `startup.py`: **10**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-03T05:50:59` **duplicates.py** (robustez ante casos límite): Se introdujo una gestión robusta de errores en `_collect_candidates` para prevenir que la iteración se detenga ante archivos que cambian de estado o se eliminan durante el escaneo (Race Condition), verificando explícitamente `entry.is_file()` después de obtener el estado inicial para evitar excepciones `FileNotFoundError` o `PermissionError` recurrentes en sistemas de archivos dinámicos.
+- `2026-10-03T05:50:22` **browser.py** (robustez ante casos límite): Se introdujo una validación de profundidad y ciclos en `_process_file_entry` y `_sum_directory_recursive` para garantizar la robustez ante la estructura de directorios del sistema de archivos, asegurando que `_is_file_in_use` sea invocado solo sobre rutas validadas, evitando la propagación de excepciones en casos de permisos denegados durante el escaneo.
 - `2026-10-03T05:41:14` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `_is_input_too_deep_or_complex` y `_validate_ingestion_source` para manejar correctamente objetos con `__dict__` que podrían disparar excepciones o recursión infinita, evitando que errores de estructura en fuentes externas comprometan la estabilidad de la app.
 - `2026-10-03T05:40:44` **startup.py** (rendimiento): Se implementó un mecanismo de pre-validación de rutas en `entries_from_folders` utilizando un set de `Path` normalizadas para evitar múltiples llamadas a `is_protected_path` y `is_symlink` sobre los mismos directorios, mejorando la eficiencia en el escaneo del sistema de archivos.
 - `2026-10-03T05:40:10` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuración eliminando llamadas redundantes a `Path.expanduser()` y `os.path.realpath()` en el bucle de validación, y sustituyendo las conversiones repetitivas de string a `ConfigKey` mediante el uso directo del diccionario `_KEY_TO_ENUM`.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-03T05:11:03` **branding.py** (rendimiento): Se optimizó el rendimiento del renderizado de barras decorativas en `draw_gradient_bar` y del sistema de dibujo de escudos utilizando `lru_cache` para evitar el re-cálculo costoso de segmentos y geometría en cada frame de UI, alineándose con el enfoque de rendimiento.
 - `2026-10-03T05:10:26` **assistant.py** (rendimiento): Optimicé el cálculo del resumen de contexto en `assistant.py` reemplazando la lógica de construcción de strings en `_generate_safe_context` (que se ejecutaba íntegramente en cada llamada) por una versión que aprovecha la pre-compilación de la lista de métricas y evita cálculos redundantes durante la serialización del contexto.
 - `2026-10-03T05:00:55` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando tipos explícitos en docstrings y aclarando el flujo de resolución de rutas y validación de seguridad dentro de `StartupEntry`, facilitando el mantenimiento a futuro.
-- `2026-10-03T04:59:38` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos (usando `Sequence` y `Iterator`) y se documentaron los comportamientos de exclusión de enlaces simbólicos mediante comentarios de intención, mejorando la legibilidad técnica del flujo de procesamiento de directorios.
-- `2026-10-03T04:59:10` **safety.py** (legibilidad y documentación): Se añadió documentación tipo Docstring en las funciones `_validate_structural_safety` y `_validate_boundary_conditions` para clarificar la intención de seguridad de cada bloque lógico y facilitar el mantenimiento futuro de las reglas críticas.
