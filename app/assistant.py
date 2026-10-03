@@ -678,62 +678,44 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     """Serializa la pregunta y el contexto en el formato JSON esperado por Gemini."""
-    if not isinstance(context_text, str) or not context_text or not _ensure_safe_text(context_text): return None
-    if not isinstance(question, str): return None
+    if not all([_ensure_safe_text(context_text), _ensure_safe_text(SYSTEM_PROMPT)]): 
+        return None
     
     q = _sanitize_query(question)
     if not q or not _ensure_safe_text(q): return None
     
-    if not _ensure_safe_text(SYSTEM_PROMPT): return None
-    
     full_prompt = f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"
-    # Validar profundidad del prompt tras concatenar
-    if len(full_prompt) > _MAX_PROMPT_LIMIT or _is_input_too_deep_or_complex(full_prompt) or not _ensure_safe_text(full_prompt): 
+    
+    if len(full_prompt) > _MAX_PROMPT_LIMIT or _is_input_too_deep_or_complex(full_prompt): 
         return None
         
     try:
         payload_data = {"contents": [{"parts": [{"text": full_prompt}]}]}
         payload = json.dumps(payload_data).encode("utf-8")
-        if not isinstance(payload, bytes) or len(payload) > (_MAX_RESPONSE_BYTES // 2):
-            return None
-        return payload
+        return payload if len(payload) <= (_MAX_RESPONSE_BYTES // 2) else None
     except (TypeError, ValueError, AttributeError):
         return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
-    """
-    Extrae de manera segura el contenido textual de la respuesta JSON del motor remoto.
-    
-    Realiza una navegación defensiva por la estructura dict/list de la respuesta
-    de la API, validando cada nivel de anidamiento antes de acceder al contenido.
-    """
-    if not isinstance(data, dict):
-        return None
+    """Extrae de manera segura el contenido textual de la respuesta JSON del motor remoto."""
+    if not isinstance(data, dict): return None
         
     try:
-        candidates = data.get("candidates")
+        candidates = data.get("candidates", [])
         if not isinstance(candidates, list) or not candidates: return None
         
-        first = candidates[0]
-        if not isinstance(first, dict): return None
+        first_candidate = candidates[0]
+        if not isinstance(first_candidate, dict) or first_candidate.get("finishReason") != "STOP": 
+            return None
         
-        # Validar si el modelo terminó la generación correctamente (seguridad defensiva)
-        if first.get("finishReason") != "STOP": return None
-        
-        content = first.get("content")
-        if not isinstance(content, dict): return None
-        
-        parts = content.get("parts")
-        if not isinstance(parts, list) or not parts: return None
-        
-        # Validar que el índice sea 0 para descartar respuestas múltiples inesperadas
-        if not isinstance(parts[0], dict) or parts[0].get("index", 0) != 0: return None
+        parts = first_candidate.get("content", {}).get("parts", [])
+        if not isinstance(parts, list) or not parts or not isinstance(parts[0], dict): 
+            return None
         
         text_val = parts[0].get("text")
         if isinstance(text_val, str):
-            sanitized: str = _validate_response_length(text_val)
-            if _ensure_safe_text(sanitized):
-                return sanitized
+            sanitized = _validate_response_length(text_val)
+            return sanitized if _ensure_safe_text(sanitized) else None
     except (AttributeError, TypeError, IndexError, KeyError): 
         pass
     return None

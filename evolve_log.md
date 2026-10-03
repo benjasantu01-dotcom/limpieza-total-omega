@@ -814,3 +814,10 @@ assert ['arc'] == []
 - `2026-10-03T08:44:52` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `scan_directory` y `_safe_stat` implementando una validación explícita de `os.DirEntry` y manejando la posibilidad de que `entry.path` sea `None` (posible en estados de carrera con el sistema de archivos), evitando así errores de tipo en las comparaciones de rutas.
 - `2026-10-03T08:44:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T08:44:52` Corrida terminada. Total usado hoy: 207.
+- `2026-10-03T08:53:03` Arrancando corrida. Quedan hoy ~93 peticiones objetivo.
+- `2026-10-03T08:53:34` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` al reemplazar `os.remove(temp_path)` por un manejo de excepciones explícito que utiliza `ensure_safe_to_modify` para cumplir con las reglas de seguridad antes de cualquier eliminación, evitando condiciones de carrera o fallos silenciosos ante permisos restringidos.
+- `2026-10-03T08:54:01` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-03T08:54:40` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_build_payload` y `_extract_text_from_gemini_json` para usar constantes descriptivas y reducir la complejidad ciclomática de las validaciones de JSON.
+- `2026-10-03T08:55:40` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-10-03T08:55:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T08:55:40` Corrida terminada. Total usado hoy: 211.
