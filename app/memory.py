@@ -348,29 +348,26 @@ def _get_process_path(pid: int) -> Optional[Path]:
     Utiliza `GetModuleFileNameExW` para resolver la ruta del módulo principal.
     Realiza validaciones de seguridad para evitar seguir puntos de reparse
     (junctions) y verifica contra `is_protected_path`.
-
-    Returns:
-        Objeto `Path` del ejecutable si es accesible y seguro, `None` caso contrario.
     """
     kernel32 = ctypes.windll.kernel32
+    psapi = getattr(ctypes.windll, "psapi", None)
+    if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
+    
     handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
     if not handle: return None
     try:
-        psapi = ctypes.windll.psapi
         buffer_size = 1024
         buf = ctypes.create_unicode_buffer(buffer_size)
-        if psapi.GetModuleFileNameExW(handle, None, buf, buffer_size) > 0:
+        length = psapi.GetModuleFileNameExW(handle, None, buf, buffer_size)
+        if length > 0 and length < buffer_size:
             raw_path = buf.value
-            # Validación defensiva: asegurar que sea una ruta absoluta válida
             if not raw_path or ":" not in raw_path: return None
             path_obj = Path(raw_path).resolve()
             
-            # Verificar si el archivo es un punto de reparse (Junction/Symlink) para evitar bucles
             attr = kernel32.GetFileAttributesW(str(path_obj))
             if attr != -1 and (attr & FILE_ATTRIBUTE_REPARSE_POINT):
                 return None
                 
-            # Validación de seguridad: debe ser archivo existente y no estar en lista negra
             if path_obj.exists() and path_obj.is_file() and not is_protected_path(str(path_obj)):
                 return path_obj
     except (ctypes.ArgumentError, OSError, ValueError):
@@ -398,17 +395,6 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Intenta liberar el working set de un proceso (solo Windows).
-    
-    La operación invoca `EmptyWorkingSet` de `psapi.dll`. Esta función reduce 
-    el consumo de RAM reportado enviando páginas del proceso a la lista de 
-    espera (standby list). Se considera una operación destructiva de rendimiento
-    a largo plazo.
-
-    Args:
-        pid: ID del proceso objetivo (numérico o cadena numérica).
-
-    Returns:
-        Tuple con éxito (bool) y mensaje de estado (str).
     """
     if not _is_windows: return False, "Solo soportado en Windows."
     
@@ -417,14 +403,13 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError): 
         return False, "PID proporcionado no es un número válido."
     
-    # Verificación de seguridad inmediata antes de cualquier operación
     if _is_system_process(target_pid):
         return False, "Operación no permitida en procesos críticos del sistema."
     
-    psapi = ctypes.windll.psapi
-    if not hasattr(psapi, "EmptyWorkingSet"): return False, "API no disponible en este sistema."
+    psapi = getattr(ctypes.windll, "psapi", None)
+    if not psapi or not hasattr(psapi, "EmptyWorkingSet"): 
+        return False, "API de gestión de memoria no disponible."
 
-    # Verificar seguridad profunda del entorno del proceso antes de intentar el TRIM
     is_safe, error_msg = _is_safe_to_trim(target_pid)
     if not is_safe: return False, error_msg or "Verificación de seguridad fallida."
 
@@ -434,7 +419,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "No se pudo acceder al proceso (posible cierre reciente)."
     
     try:
-        # Ejecución del comando de limpieza de working set vía Win32
         if psapi.EmptyWorkingSet(proc_handle) == 0:
             error_code = ctypes.get_last_error()
             if error_code == ERROR_ACCESS_DENIED:

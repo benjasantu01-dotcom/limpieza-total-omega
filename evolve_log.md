@@ -1214,3 +1214,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-03T12:49:42` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `_collect_summary_data` ante entradas de sistema de archivos corruptas o permisos denegados durante la iteración, capturando excepciones de forma específica en los puntos críticos donde un fallo de `os.scandir` o `path.stat` podría interrumpir el análisis completo.
 - `2026-10-03T12:49:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T12:49:42` Corrida terminada. Total usado hoy: 303.
+- `2026-10-03T12:57:21` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-03T12:57:47` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-03T12:58:12` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `compute_score` ante valores nulos o métricas mal formadas, añadiendo una validación explícita de `metrics` y utilizando un valor por defecto seguro, además de sanitizar la entrada en `_evaluate_rules` para evitar errores de ejecución durante la generación de recomendaciones.
+- `2026-10-03T12:58:30` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 1): unexpected indent
+- `2026-10-03T12:58:47` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_get_process_path` validando explícitamente el tamaño del buffer y capturando excepciones de acceso de manera más granular, y se añadió validación de existencia para `psapi` antes de su uso para evitar fallos en entornos con APIs restringidas.
+- `2026-10-03T12:58:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T12:58:47` Corrida terminada. Total usado hoy: 307.
