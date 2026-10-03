@@ -5,9 +5,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
-- Rechazadas por tests: 11
+- Iteraciones totales: **503**
+- Mejoras aceptadas: **208** (41.4% de aceptación)
+- Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 217
@@ -16,37 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-01 | 54 | 3 | 10 | 6 | 61 |
+| 2026-10-01 | 52 | 2 | 10 | 6 | 60 |
 | 2026-10-02 | 140 | 8 | 31 | 16 | 155 |
-| 2026-10-03 | 14 | 0 | 5 | 0 | 1 |
+| 2026-10-03 | 16 | 0 | 5 | 0 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
-- seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **49**
-- robustez ante casos límite: **31**
-- rendimiento: **29**
+- seguridad defensiva: **48**
+- rendimiento: **31**
+- robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **19**
 - `diskreport.py`: **19**
 - `healthscore.py`: **19**
 - `quarantine.py`: **18**
+- `settings.py`: **18**
+- `organizer.py`: **17**
 - `safety.py`: **17**
 - `duplicates.py`: **16**
-- `organizer.py`: **16**
 - `scanner.py`: **16**
-- `assistant.py`: **15**
+- `memory.py`: **16**
 - `browser.py`: **15**
-- `memory.py`: **15**
+- `assistant.py`: **14**
 - `branding.py`: **13**
 - `startup.py`: **7**
 - `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-03T01:02:07` **organizer.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo convirtiendo `JUNK_EXTENSIONS` a un `frozenset` local y usando `endswith` sobre una tupla de extensiones (optimización nativa de CPython), además de reducir accesos redundantes a disco mediante el almacenamiento en caché de los nombres de archivos ya procesados en `_is_valid_junk_entry`.
+- `2026-10-03T01:01:40` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la creación de listas intermedias y el ordenamiento posterior del total de resultados por un `heapq` que mantiene solo los N elementos más pesados, reduciendo la complejidad de memoria y procesador al escalar con muchos procesos.
 - `2026-10-03T00:45:10` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` para obtener metadatos (tamaño) directamente de la entrada del sistema de archivos, eliminando llamadas innecesarias a `stat()` (una llamada al sistema costosa) para cada archivo, y manteniendo la consistencia de seguridad al integrar la validación en el flujo de escaneo.
 - `2026-10-03T00:44:44` **diskreport.py** (rendimiento): Optimizamos la función `walk_files` eliminando llamadas redundantes a `os.path.exists` (ya validadas por `os.scandir`) y reduciendo la frecuencia de conversión a `Path` y `abspath`, lo cual reduce significativamente el overhead por archivo en el escaneo de directorios grandes.
 - `2026-10-03T00:44:13` **browser.py** (rendimiento): Optimicé el rendimiento de `detect_profiles` y `directory_size` implementando una caché de resultados (`memoization`) global durante el ciclo de escaneo, evitando la recalculación de subdirectorios ya procesados (comunes al compartir estructuras de perfil entre navegadores).
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-03T00:04:48` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el "porqué" de las estrategias de hashing y la heurística de selección de archivos, además de añadir type hints y clarificar nombres de funciones internas para facilitar el mantenimiento del código.
 - `2026-10-03T00:04:36` **diskreport.py** (legibilidad y documentación): Documenté el propósito de los tipos complejos e internos, y añadí docstrings explicativos en `_collect_summary_data` y las clases de acumulación para clarificar el flujo de datos sin alterar la lógica.
 - `2026-10-03T00:04:08` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `browser.py` añadiendo docstrings descriptivos a las funciones internas clave y estandarizando los tipos, lo cual clarifica la lógica de escaneo seguro sin modificar la funcionalidad.
-- `2026-10-03T00:03:40` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en las funciones de renderizado de alto nivel para clarificar el propósito de las coordenadas y parámetros, mejorando la legibilidad técnica del motor de diseño.
-- `2026-10-02T14:44:05` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `_load_impl()` capturando excepciones de sistema (como `OSError` o `PermissionError`) de forma más granular durante las operaciones de I/O, asegurando que cualquier fallo parcial en la persistencia atómica no deje el sistema en un estado inconsistente ni bloquee la ejecución.

@@ -35,6 +35,12 @@ MAX_PATH_LENGTH: Final[int] = 260
 MAX_FILE_SIZE_BYTES: Final[int] = 100_000_000_000  # 100 GB
 MIN_FREE_SPACE_BYTES: Final[int] = 52_428_800     # 50 MB
 
+# Optimización: Tupla de extensiones para validación más rápida con endswith
+JUNK_EXTENSIONS: Final[frozenset[str]] = frozenset({
+    ".tmp", ".temp", ".log", ".bak", ".old", ".dmp", ".chk", ".cache",
+})
+JUNK_EXT_TUPLE: Final[tuple[str, ...]] = tuple(JUNK_EXTENSIONS)
+
 class SortConfig(NamedTuple):
     """Configuración para criterios de ordenamiento de archivos."""
     field: str
@@ -44,10 +50,6 @@ SORT_REGISTRY: Final[Dict[str, SortConfig]] = {
     "size": SortConfig("size", lambda f: f.size_bytes),
     "date": SortConfig("date", lambda f: f.modified)
 }
-
-JUNK_EXTENSIONS: Final[frozenset[str]] = frozenset({
-    ".tmp", ".temp", ".log", ".bak", ".old", ".dmp", ".chk", ".cache",
-})
 
 DEFAULT_SCAN_DIRS: Final[List[Path]] = [
     Path(os.environ.get("TEMP", "C:\\Temp")),
@@ -95,19 +97,12 @@ class JunkFile:
         return is_valid_junk_extension(self.path.name)
 
 def is_valid_junk_extension(filename: str) -> bool:
-    """Valida si el sufijo del archivo pertenece a JUNK_EXTENSIONS."""
+    """Valida si el sufijo del archivo pertenece a JUNK_EXTENSIONS usando optimización de tupla."""
     if not filename: return False
-    return any(filename.lower().endswith(ext) for ext in JUNK_EXTENSIONS)
+    return filename.lower().endswith(JUNK_EXT_TUPLE)
 
 def _get_win_attributes(entry: os.DirEntry) -> int:
-    """
-    Extrae atributos de archivo (bitmask) usando stat de bajo nivel.
-    
-    Args:
-        entry: Objeto DirEntry del cual extraer atributos (sin seguir enlaces).
-    Returns:
-        Entero representando la máscara de bits de atributos (Windows).
-    """
+    """Extrae atributos de archivo (bitmask) usando stat de bajo nivel."""
     try:
         if hasattr(os, 'stat_result') and hasattr(os.stat_result, 'st_file_attributes'):
             return entry.stat(follow_symlinks=False).st_file_attributes
@@ -116,20 +111,11 @@ def _get_win_attributes(entry: os.DirEntry) -> int:
         return 0
 
 def _is_junction(entry: os.DirEntry) -> bool:
-    """
-    Determina si una entrada es un punto de reparse (Junction) o enlace simbólico.
-    
-    Uso: Previene la recursión infinita y la salida del ámbito de escaneo seguro.
-    """
+    """Determina si una entrada es un punto de reparse (Junction) o enlace simbólico."""
     return entry.is_symlink() or bool(_get_win_attributes(entry) & WIN_ATTR_JUNCTION)
 
 def _is_unc_path(path: Path) -> bool:
-    """
-    Detecta rutas de red (Universal Naming Convention).
-    
-    Uso: Las rutas UNC son inestables para operaciones de archivo masivas;
-    siempre se marcan como inseguras para evitar latencias o fallos de red.
-    """
+    """Detecta rutas de red (Universal Naming Convention)."""
     if path is None: return True
     try:
         return str(path.absolute()).startswith(("\\\\", "//"))
@@ -137,12 +123,7 @@ def _is_unc_path(path: Path) -> bool:
         return True
 
 def _generate_unique_target(target: Path) -> Path:
-    """
-    Resuelve colisiones de nombres añadiendo sufijos numéricos (1-999).
-    
-    Garantiza atomicidad: evita sobrescribir archivos existentes en el 
-    directorio de cuarentena.
-    """
+    """Resuelve colisiones de nombres añadiendo sufijos numéricos (1-999)."""
     base_target = target
     counter = 1
     while target.exists() and counter <= 999:
@@ -156,11 +137,7 @@ def _is_allowed_directory(name: str) -> bool:
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _is_file_locked(path: Path) -> bool:
-    """
-    Intenta abrir un archivo en modo lectura exclusiva para verificar uso.
-    
-    Retorna True si el archivo está bloqueado (en uso), False si es accesible.
-    """
+    """Intenta abrir un archivo en modo lectura exclusiva para verificar uso."""
     if path is None or not path.is_file():
         return True
     try:
@@ -171,12 +148,7 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
-    """
-    Verifica que el destino no sea un subdirectorio del origen (bucle cíclico).
-    
-    Previene errores catastróficos donde el origen podría quedar dentro de su 
-    propio destino, corrompiendo el sistema de archivos.
-    """
+    """Verifica que el destino no sea un subdirectorio del origen (bucle cíclico)."""
     if src is None or dest is None: return True
     try:
         if src.exists() and dest.exists() and os.path.samefile(src, dest):
@@ -193,28 +165,18 @@ def _has_forbidden_chars(path: Path) -> bool:
     return any(c in path_str for c in ["<", ">", "|", "\0"])
 
 def _validate_path_security(src: Path, dest: Path) -> bool:
-    """
-    Validación de seguridad compuesta sobre rutas de origen y destino.
-    
-    Comprueba: UNC, caracteres prohibidos, límites de longitud (260) y bloqueo de sistema.
-    """
+    """Validación de seguridad compuesta sobre rutas de origen y destino."""
     if src is None or dest is None: return False
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     if len(str(src)) > MAX_PATH_LENGTH or len(str(dest)) > MAX_PATH_LENGTH: return False
     return not (is_protected_path(src) or is_protected_path(dest))
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
-    """
-    Auditoría exhaustiva previa a escritura/movimiento.
-    
-    Verifica: Permisos de escritura, espacio disponible, unicidad de enlaces (st_nlink==1) 
-    y bloqueo de archivo para evitar corrupción de datos durante el movimiento.
-    """
+    """Auditoría exhaustiva previa a escritura/movimiento."""
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     try:
         if src.exists() and dest.exists() and src.samefile(dest): return False
         st = src.lstat()
-        # Rechaza enlaces simbólicos (st_mode máscara 0o170000 -> 0o120000)
         if not src.is_file() or (st.st_mode & 0o170000 == 0o120000): return False
         if not is_safe_to_modify(src) or not _validate_path_security(src, dest): return False
         
@@ -224,7 +186,6 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         usage = shutil.disk_usage(target_dir.anchor)
         if usage.free < (src.stat().st_size + MIN_FREE_SPACE_BYTES): return False
         
-        # Validar que no estemos moviendo dentro de la misma unidad o en bucle
         if src.drive != target_dir.drive or _is_recursive_violation(src, dest): return False
         if not os.access(src, os.R_OK) or _is_file_locked(src): return False
         
@@ -242,14 +203,11 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> boo
         return False
     return True
 
-def _is_valid_junk_entry(entry: os.DirEntry, stats: os.stat_result, now_ts: float) -> bool:
+def _is_valid_junk_entry(name: str, stats: os.stat_result, now_ts: float) -> bool:
     """Valida si un archivo cumple criterios temporales, tamaño y extensión."""
-    if entry is None or stats is None: return False
-    _, ext = os.path.splitext(entry.name)
     return (0 <= stats.st_size < MAX_FILE_SIZE_BYTES and 
             stats.st_mtime <= now_ts + 3600 and
-            not (_get_win_attributes(entry) & WIN_ATTR_MASK) and
-            ext.lower() in JUNK_EXTENSIONS)
+            name.lower().endswith(JUNK_EXT_TUPLE))
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
     """Recorrido recursivo limitado para encontrar archivos basura."""
@@ -268,8 +226,10 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                             _process_directory(Path(item.path), found, depth + 1, protected_cache, visited)
                     elif item.is_file(follow_symlinks=False):
                         stats = item.stat(follow_symlinks=False)
-                        if _is_valid_junk_entry(item, stats, now_ts):
-                            found.append(JunkFile(Path(item.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
+                        # Optimización: evitar chequear atributos de sistema si la extensión no es junk
+                        if _is_valid_junk_entry(item.name, stats, now_ts):
+                            if not (_get_win_attributes(item) & WIN_ATTR_MASK):
+                                found.append(JunkFile(Path(item.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
                 except (PermissionError, OSError): continue
     except (PermissionError, OSError, RuntimeError): pass
 

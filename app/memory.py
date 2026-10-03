@@ -241,7 +241,6 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     if not raw_csv_text: return []
     top_heap: List[ProcessMemory] = []
     
-    # Iteramos directamente sobre las líneas evitando crear una lista extra
     lines = raw_csv_text.splitlines()
     for line in (l for l in lines[1:] if l and "," in l):
         data = _extract_process_info(line)
@@ -250,7 +249,6 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
             if name: 
                 _update_top_processes_heap(top_heap, ProcessMemory(name, pid, ws), limit)
             
-    # Solo ordenamos el heap final que contiene máximo 'limit' elementos
     return sorted(top_heap, key=lambda p: p.working_set, reverse=True)
 
 def _read_windows_snapshot() -> MemorySnapshot:
