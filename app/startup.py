@@ -298,7 +298,10 @@ def startup_folders() -> List[Path]:
 
 
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
-    """Crea una instancia de StartupEntry para un archivo en disco."""
+    """
+    Crea una instancia de StartupEntry para un archivo en disco.
+    Valida extensión y protege contra rutas de sistema.
+    """
     try:
         if not entry.is_file(follow_symlinks=False):
             return None
@@ -334,7 +337,10 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> StartupEnt
 
 
 def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
-    """Filtro de seguridad para ignorar entradas sospechosas o redundantes del registro."""
+    """
+    Filtro de seguridad para ignorar entradas sospechosas o redundantes del registro.
+    Valida contra caracteres peligrosos y rutas prohibidas.
+    """
     if not name or not cmd or cmd.startswith(r"\\") or cmd in seen or name.upper().startswith("PS"):
         return False
     try:
@@ -355,7 +361,7 @@ def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
     """
-    Transforma la salida cruda de PowerShell en objetos estructurados.
+    Transforma la salida cruda de PowerShell (CSV) en objetos StartupEntry estructurados.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
@@ -398,6 +404,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
 def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEntries:
     """
     Invoca PowerShell para leer claves Run de forma segura.
+    Solo consulta claves permitidas y descarta propiedades temporales PS*.
     """
     if os.name != "nt":
         return []
@@ -457,7 +464,7 @@ def estimate_impact(entries: Sequence[StartupEntry]) -> str:
 
 
 def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
-    """Genera reporte de texto legible unificado."""
+    """Genera reporte de texto legible unificado para el usuario."""
     entries_list: Sequence[StartupEntry] = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)
         

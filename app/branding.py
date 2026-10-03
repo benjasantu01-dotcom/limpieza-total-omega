@@ -41,9 +41,25 @@ class SeverityType(Enum):
     WARNING = "warning"
     DANGER = "danger"
 
-# Pre-generación de fragmento SVG estático para mejorar performance
+# Pre-generación de fragmentos SVG estáticos para mejorar performance
 _SVG_GRADIENT_STOPS: Final[str] = "\n".join([f'      <stop offset="{o}" stop-color="{c}"/>' 
                        for o, c in zip(["0%", "55%", "100%"], ["#00f0c0", "#7c5cff", "#ff2d78"])])
+
+_SVG_TEMPLATE: Final[str] = """<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">{stops}</linearGradient>
+    <radialGradient id="omegaGlow" cx="0.5" cy="0.4" r="0.6">
+      <stop offset="0%" stop-color="{glow}" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="{glow}" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="128" height="128" rx="30" fill="{bg}"/>
+  <circle cx="64" cy="56" r="52" fill="url(#omegaGlow)"/>
+  <path d="M64 18 L100 31 V67 C100 90 83 104 64 110 C45 104 28 90 28 67 V31 Z" fill="url(#omegaShield)"/>
+  <path d="M41 75 L75 41" stroke="{bg}" stroke-width="8" stroke-linecap="round"/>
+  <path d="M75 41 L89 38 L92 52 Z" fill="{bg}"/>
+  <text x="64" y="98" font-family="{font}" font-size="26" font-weight="bold" fill="{bg}" text-anchor="middle">&#937;</text>
+</svg>"""
 
 class CanvasElement(Protocol):
     """
@@ -364,22 +380,7 @@ def _get_scaled_poly(scale: float, canvas_x: float, canvas_y: float) -> Tuple[fl
 def logo_svg(size: int = 128) -> str:
     """Genera el código XML del logo corporativo en formato SVG con parámetros validados."""
     s = max(16, min(1024, int(size)))
-    
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
-  <defs>
-    <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">{_SVG_GRADIENT_STOPS}    </linearGradient>
-    <radialGradient id="omegaGlow" cx="0.5" cy="0.4" r="0.6">
-      <stop offset="0%" stop-color="{C_GLOW}" stop-opacity="0.45"/>
-      <stop offset="100%" stop-color="{C_GLOW}" stop-opacity="0"/>
-    </radialGradient>
-  </defs>
-  <rect width="128" height="128" rx="30" fill="{C_SURFACE}"/>
-  <circle cx="64" cy="56" r="52" fill="url(#omegaGlow)"/>
-  <path d="M64 18 L100 31 V67 C100 90 83 104 64 110 C45 104 28 90 28 67 V31 Z" fill="url(#omegaShield)"/>
-  <path d="M41 75 L75 41" stroke="{C_BACKGROUND}" stroke-width="8" stroke-linecap="round"/>
-  <path d="M75 41 L89 38 L92 52 Z" fill="{C_BACKGROUND}"/>
-  <text x="64" y="98" font-family="{UI_FONT_FAMILY}" font-size="26" font-weight="{UI_FONT_BOLD}" fill="{C_BACKGROUND}" text-anchor="middle">&#937;</text>
-</svg>"""
+    return _SVG_TEMPLATE.format(s=s, stops=_SVG_GRADIENT_STOPS, glow=C_GLOW, bg=C_SURFACE, font=UI_FONT_FAMILY)
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optional[Path]:
     """

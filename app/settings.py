@@ -147,12 +147,16 @@ _ENUM_VALS: Final[MappingProxyType[ConfigKey, frozenset[str]]] = MappingProxyTyp
 })
 
 class _SettingsManager:
-    """Clase singleton para gestionar el estado en memoria y la persistencia de settings."""
+    """
+    Singleton que centraliza el acceso a la caché de settings en memoria
+    y rutas de configuración. Evita lecturas redundantes de disco.
+    """
     def __init__(self) -> None:
         self.settings_cache: dict[str, tuple[float, AppSettings]] = {}
         self.path_cache: dict[Optional[str], Path] = {}
 
     def clear(self) -> None:
+        """Invalidar caché tras modificaciones de persistencia."""
         self.settings_cache.clear()
 
 _MANAGER = _SettingsManager()
@@ -197,7 +201,10 @@ class _Validators:
 
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
-        """Verifica restricciones de longitud, caracteres prohibidos y seguridad de ruta para persistencia."""
+        """
+        Filtra rutas inseguras basándose en caracteres NUL/ANSI, longitud, 
+        orígenes UNC y validación estricta en safety.py.
+        """
         if not path_str or len(path_str) > 2048 or any(c in path_str for c in ("\0", "^", "\033")): return False
         if path_str.startswith(("\\\\", "//")): return False
         try:
@@ -327,7 +334,10 @@ def _is_file_secure_to_read(file_obj: Any) -> bool:
         return False
 
 def _load_impl(ruta: Path) -> AppSettings:
-    """Lógica interna de carga: lectura atómica y validación de integridad post-apertura."""
+    """
+    Lógica interna: abre el archivo solo si es seguro, bloquea mediante 
+    flock para concurrencia y valida el contenido JSON post-apertura.
+    """
     if not ruta.exists() or ruta.is_symlink(): return DEFAULTS.copy()
     try:
         ensure_safe_to_modify(str(ruta))
