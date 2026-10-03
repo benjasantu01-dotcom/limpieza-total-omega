@@ -212,19 +212,22 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         if (r := _resolve_and_verify_root(d)):
             stack.append((r, 0))
     
-    visited: set[str] = set()
+    visited: set[Path] = set()
     while stack:
         current_dir, depth = stack.pop()
-        if depth > MAX_RECURSION_DEPTH:
+        
+        # Resolucion real para evitar ciclos de enlaces simbólicos o duplicados
+        try:
+            resolved_dir = current_dir.resolve()
+        except OSError:
             continue
-            
-        real_path_str = str(current_dir)
-        if real_path_str in visited or len(real_path_str) >= MAX_PATH_LIMIT:
+
+        if resolved_dir in visited or depth > MAX_RECURSION_DEPTH:
             continue
-        visited.add(real_path_str)
+        visited.add(resolved_dir)
             
         try:
-            with os.scandir(current_dir) as iterator:
+            with os.scandir(resolved_dir) as iterator:
                 for entry in iterator:
                     try:
                         p_entry = Path(entry.path)

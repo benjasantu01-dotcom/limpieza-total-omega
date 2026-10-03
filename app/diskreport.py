@@ -361,6 +361,9 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
     top_heap: List[Tuple[int, Path]] = [] # Elementos: (tamaño_bytes, ruta_path)
     
+    # Pre-cached reference to speed up lookup in tight loop
+    get_stats = ext_stats.__getitem__
+    
     for path, size_bytes in walk_files(directory, skip_protected):
         if not isinstance(size_bytes, int) or size_bytes < 0:
             continue
@@ -370,7 +373,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             total_files += 1
             
             ext = path.suffix.lower() or "(sin extensión)"
-            stats = ext_stats[ext]
+            stats = get_stats(ext)
             stats.total_bytes += size_bytes
             stats.count += 1
             

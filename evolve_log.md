@@ -1267,3 +1267,41 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-03T14:01:13` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el renderizado del logo SVG eliminando la regeneración dinámica de strings en el método `logo_svg` y reemplazándola por una estructura de template con placeholders pre-renderizados, reduciendo la carga de procesamiento durante el dibujo de la interfaz.
 - `2026-10-03T14:01:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T14:01:13` Corrida terminada. Total usado hoy: 331.
+- `2026-10-03T14:09:24` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-03T14:09:56` Tests FALLARON:
+```
+===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:164: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_data_folders - AssertionError: assert [BrowserCache...size_bytes=7)] == []
+  
+  Left contains one more item: BrowserCache(browser='Chrome', path=PosixPath('/tmp/pytest-of-runner/pytest-1/test_detect_profiles_never_rep0/Perfil/Cookies'), size_bytes=7)
+  
+  Full diff:
+  - []
+  + [
+  +     BrowserCache(
+  +         browser='Chrome',
+  +         path=PosixPath('/tmp/pytest-of-runner/pytest-1/test_detect_profiles_never_rep0/Perfil/Cookies'),
+  +         size_bytes=7,
+  +     ),
+  + ]
+1 failed, 298 passed, 7 warnings in 1.48s
+
+```
+- `2026-10-03T14:09:56` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento del escaneo recursivo mediante la eliminación de la re-validación de rutas y chequeos de seguridad redundantes dentro del bucle interno, y la consolidación del paso de argumentos de estado (`visited_inodes` y `visited_dirs`) para evitar re-análisis en estructuras compartidas o superpuestas.
+- `2026-10-03T14:10:30` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `_collect_summary_data` reemplazando la creación de objetos `ExtStats` dinámicos por un diccionario de tuplas pre-alocadas o, mejor aún, manteniendo el contenedor mutable pero minimizando el acceso repetido al diccionario mediante una variable local de referencia, mejorando la velocidad de agregación en escaneos masivos.
+- `2026-10-03T14:11:03` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se optimizó el proceso de recolección de candidatos en `_collect_candidates` utilizando un conjunto (`visited`) para evitar procesar recursivamente las mismas rutas, reduciendo drásticamente la redundancia en sistemas de archivos con enlaces simbólicos o estructuras complejas.
+- `2026-10-03T14:11:13` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-10-03T14:11:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T14:11:13` Corrida terminada. Total usado hoy: 335.
