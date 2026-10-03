@@ -537,3 +537,10 @@ assert not {'replace'}
 - `2026-10-03T06:42:52` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la validación estricta de la propiedad y permisos del archivo antes de cualquier operación destructiva (`_safe_unlink`) y se añadió un chequeo de coherencia entre el manifiesto y el estado real del disco para evitar race conditions.
 - `2026-10-03T06:42:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T06:42:52` Corrida terminada. Total usado hoy: 159.
+- `2026-10-03T06:50:17` Arrancando corrida. Quedan hoy ~141 peticiones objetivo.
+- `2026-10-03T06:50:37` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-03T06:51:21` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se implementó una verificación de "reparse points" (junctions y symlinks) más estricta en `is_protected_path`, forzando que cualquier ruta que sea un punto de reparse sea considerada protegida, independientemente de su ubicación en el árbol, evitando así ataques de evasión de sandbox mediante redirecciones NTFS.
+- `2026-10-03T06:52:02` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha añadido una validación estricta en `_is_safe_entry` para asegurar que el path absoluto del archivo no contenga caracteres nulos (`\0`), previniendo ataques de inyección de rutas (null-byte injection) en entornos de bajo nivel.
+- `2026-10-03T06:52:17` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_load_impl` y `save` mediante el uso de `ensure_safe_to_modify` para validar la integridad de la ruta antes de interactuar con el sistema de archivos, asegurando que las operaciones de lectura y escritura no sean objeto de manipulaciones en directorios protegidos o symlinks maliciosos.
+- `2026-10-03T06:52:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T06:52:17` Corrida terminada. Total usado hoy: 163.

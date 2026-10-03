@@ -185,6 +185,9 @@ class Scanner:
         """Filtro de seguridad central. Valida estructura, permisos y exclusión de rutas protegidas."""
         if not entry or not entry.path or not entry.name:
             return False
+        # Prevenir Null-byte injection
+        if "\0" in entry.path:
+            return False
         if not _is_valid_path_structure(entry.path) or self._has_invalid_name(entry.name):
             return False
         try:

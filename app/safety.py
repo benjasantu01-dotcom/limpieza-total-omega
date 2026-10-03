@@ -588,6 +588,8 @@ def is_protected_path(path: PathLike) -> bool:
     try:
         p_str = str(path)
         p = normalize(p_str)
+        # Bloqueo total a puntos de reparse en cualquier parte del árbol
+        if _is_system_directory_junction(str(p)): return True
         if p == Path(p.anchor): return True
         return _is_system_path_raw(str(p))
     except (UnsafePathError, TypeError, OSError, RuntimeError, ValueError): return True

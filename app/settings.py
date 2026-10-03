@@ -330,6 +330,7 @@ def _load_impl(ruta: Path) -> AppSettings:
     """Lógica interna de carga: lectura atómica y validación de integridad post-apertura."""
     if not ruta.exists(): return DEFAULTS.copy()
     try:
+        ensure_safe_to_modify(str(ruta))
         with open(ruta, "r", encoding="utf-8") as f:
             if not _is_file_secure_to_read(f): return DEFAULTS.copy()
             fcntl.flock(f.fileno(), fcntl.LOCK_SH)
@@ -337,7 +338,7 @@ def _load_impl(ruta: Path) -> AppSettings:
                 data = json.load(f)
             finally:
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-        if _is_dict(data) and is_safe_to_modify(str(ruta)):
+        if _is_dict(data):
             return _coerce_and_verify(validate(data))
     except (OSError, PermissionError, IOError, json.JSONDecodeError, UnicodeDecodeError, EOFError):
         pass
