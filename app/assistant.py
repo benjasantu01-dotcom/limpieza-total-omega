@@ -309,9 +309,15 @@ def _validate_response_length(text: Any) -> str:
 def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
     """Recursivamente detecta estructuras de datos excesivamente anidadas para evitar ataques DoS."""
     if depth > _MAX_NESTING_DEPTH: return True
-    if isinstance(val, (list, tuple, set)):
-        if len(val) > 20: return True
-        return any(_is_input_too_deep_or_complex(item, depth + 1) for item in val)
+    try:
+        if isinstance(val, (list, tuple, set)):
+            if len(val) > 20: return True
+            return any(_is_input_too_deep_or_complex(item, depth + 1) for item in val)
+        elif isinstance(val, dict):
+            if len(val) > 50: return True
+            return any(_is_input_too_deep_or_complex(v, depth + 1) for v in val.values())
+    except Exception:
+        return True
     return False
 
 def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
@@ -393,8 +399,13 @@ class SystemContext:
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad sobre el objeto fuente antes de ingestarlo."""
         if source is None: return False
-        if not isinstance(source, dict) and not hasattr(source, "__dict__"): return False
-        if isinstance(source, dict) and (len(source) > 50 or _is_input_too_deep_or_complex(source)):
+        # Verificamos si es dict o si tiene __dict__ sin invocar propiedades que puedan fallar
+        if not isinstance(source, dict):
+            try:
+                if not hasattr(source, "__dict__"): return False
+            except Exception:
+                return False
+        if _is_input_too_deep_or_complex(source):
             return False
         return True
 

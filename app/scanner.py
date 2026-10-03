@@ -229,11 +229,9 @@ class Scanner:
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta de forma aislada cada una de las heurísticas registradas tras verificar persistencia."""
+        """Ejecuta de forma aislada cada una de las heurísticas registradas."""
         for check_fn in ALL_CHECKS:
             try:
-                if not path.exists():
-                    break
                 finding = check_fn(path, entry, self.now_ts)
                 if finding is not None:
                     self.results.append(finding)

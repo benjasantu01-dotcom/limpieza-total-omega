@@ -278,7 +278,20 @@ def startup_folders() -> List[Path]:
             candidates.append(Path(programdata) / r"Microsoft\Windows\Start Menu\Programs\Startup")
     except (ValueError, TypeError, OSError):
         pass
-    return [c for c in candidates if c and c.is_dir() and not c.is_symlink() and not is_protected_path(c)]
+    
+    # Pre-filtrado eficiente: procesar solo una vez mediante set para evitar repeticiones
+    valid_folders: List[Path] = []
+    seen_paths: Set[Path] = set()
+    for c in candidates:
+        if c and c.is_dir():
+            try:
+                resolved = c.resolve()
+                if resolved not in seen_paths and not c.is_symlink() and not is_protected_path(c):
+                    seen_paths.add(resolved)
+                    valid_folders.append(c)
+            except (OSError, RuntimeError):
+                continue
+    return valid_folders
 
 
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:

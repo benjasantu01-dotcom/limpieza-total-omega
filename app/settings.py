@@ -182,7 +182,7 @@ class _Validators:
     def _run_safety_checks(path_str: str) -> bool:
         """Valida que una ruta cumpla con los estándares de seguridad de `safety.py`."""
         try:
-            resolved = Path(os.path.realpath(os.path.expanduser(path_str)))
+            resolved = Path(path_str).resolve()
             for part in resolved.parts:
                 if _Validators._is_reparse_point(Path(part)):
                     return False
