@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Mejoras aceptadas: **205** (40.7% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 47
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 219
+- Rechazadas por guardia de seguridad: 46
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-01 | 47 | 2 | 10 | 5 | 59 |
+| 2026-10-01 | 44 | 2 | 9 | 5 | 59 |
 | 2026-10-02 | 140 | 8 | 31 | 16 | 155 |
-| 2026-10-03 | 20 | 0 | 6 | 0 | 5 |
+| 2026-10-03 | 21 | 0 | 6 | 1 | 7 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **43**
+- seguridad defensiva: **40**
 - rendimiento: **34**
-- robustez ante casos límite: **31**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
 - `settings.py`: **19**
-- `safety.py`: **18**
 - `diskreport.py`: **18**
 - `healthscore.py`: **18**
-- `organizer.py`: **17**
+- `quarantine.py`: **18**
+- `safety.py`: **17**
 - `scanner.py`: **16**
 - `memory.py`: **16**
+- `organizer.py`: **16**
+- `duplicates.py`: **16**
 - `assistant.py`: **15**
-- `duplicates.py`: **15**
 - `browser.py`: **14**
 - `branding.py`: **12**
 - `startup.py`: **7**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-03T01:25:45` **duplicates.py** (robustez ante casos límite): Se ha mejorado `_collect_candidates` para manejar la posibilidad de que archivos grandes se vuelvan inaccesibles o sean eliminados entre la fase de listado (`os.scandir`) y la fase de lectura (`hash_file`), evitando caídas del bucle mediante el uso de `path.exists()` y un manejo de excepciones más robusto durante el proceso de hash.
 - `2026-10-03T01:15:58` **assistant.py** (robustez ante casos límite): Mejora la robustez del manejo de configuración en `assistant.py` al añadir una validación estricta del tipo de dato `api_key` y asegurar que la carga de ajustes no falle silenciosamente ante estructuras de configuración inesperadamente anidadas o corruptas.
 - `2026-10-03T01:14:50` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` reemplazando múltiples llamadas a `os.path` y conversiones innecesarias por una validación de `mtime` más eficiente y eliminando el re-parsing innecesario de `DEFAULTS` durante el ciclo de lectura.
 - `2026-10-03T01:06:01` **safety.py** (rendimiento): Se ha optimizado `_get_security_descriptor` reemplazando la consulta de bloqueo de archivo `_is_file_locked_by_other_process` por una lógica que valida el estado desde la caché si el archivo no ha sido modificado, reduciendo drásticamente las llamadas costosas a `CreateFileW` en operaciones repetitivas sobre los mismos archivos.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-03T00:24:06` **quarantine.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `quarantine.py` documentando explícitamente los contratos de las funciones críticas de validación y transformando las funciones de guardado en métodos de la clase `QuarantineItem` para encapsular mejor la lógica de persistencia.
 - `2026-10-03T00:15:35` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de bajo nivel en `organizer.py` mediante type hints específicos y docstrings que detallan los requisitos de seguridad y las restricciones técnicas, facilitando la auditoría de los chequeos de seguridad implementados.
 - `2026-10-03T00:15:21` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (estándar Google) en funciones críticas, aclarando las precondiciones de seguridad, el manejo de errores de la API de Win32 y la justificación de las decisiones de diseño para facilitar el mantenimiento.
-- `2026-10-03T00:14:52` **main.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `main.py` mediante la documentación explícita de la arquitectura de la clase `LimpiezaTotalOmegaApp` y la estandarización de los docstrings en los métodos de la interfaz, asegurando que cada componente indique claramente si es un constructor, un callback de evento o un helper de estado.

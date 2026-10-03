@@ -1127,3 +1127,10 @@ FAILED evolve/tests/test_modules.py::test_min_size_filters_out_tiny_files - Attr
 - `2026-10-03T01:16:16` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-10-03T01:16:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T01:16:16` Corrida terminada. Total usado hoy: 31.
+- `2026-10-03T01:24:26` Arrancando corrida. Quedan hoy ~269 peticiones objetivo.
+- `2026-10-03T01:24:53` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-10-03T01:25:19` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Se introdujo una comprobación explícita para evitar errores en `walk_files` cuando los permisos son denegados o el archivo desaparece entre la detección y la lectura, asegurando que el generador sea robusto ante la volatilidad del sistema de archivos sin interrumpir el proceso de escaneo.
+- `2026-10-03T01:25:45` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado `_collect_candidates` para manejar la posibilidad de que archivos grandes se vuelvan inaccesibles o sean eliminados entre la fase de listado (`os.scandir`) y la fase de lectura (`hash_file`), evitando caídas del bucle mediante el uso de `path.exists()` y un manejo de excepciones más robusto durante el proceso de hash.
+- `2026-10-03T01:25:55` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-10-03T01:25:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T01:25:55` Corrida terminada. Total usado hoy: 35.
