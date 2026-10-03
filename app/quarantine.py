@@ -566,14 +566,17 @@ def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, int]:
     """Gestiona el flujo completo: validación, copia verificada y reemplazo."""
     _check_path_syntax_integrity(destination)
     _validate_file_transfer_preconditions(source, destination)
+    
     if not source.is_file():
         raise FileNotFoundError("Archivo origen no encontrado o no es un archivo.")
     if destination.exists():
         raise FileExistsError("Colisión de ruta: el archivo destino ya existe.")
     if not is_safe_to_modify(destination.parent):
         raise UnsafePathError("Operación denegada en ruta no segura.")
+        
     source_hash = _get_sha256(source)
     temp_dest = _create_temp_file(source, destination)
+    
     try:
         _copy_with_verification(source, temp_dest, source_hash)
         os.replace(temp_dest, destination)

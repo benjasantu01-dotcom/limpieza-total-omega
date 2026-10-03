@@ -69,9 +69,7 @@ def list_available_drives() -> List[str]:
 
 @dataclass
 class JunkFile:
-    """
-    Representa un archivo candidato a limpieza.
-    """
+    """Representa un archivo candidato a limpieza con sus metadatos básicos."""
     path: Path
     size_bytes: int
     modified: datetime
@@ -94,12 +92,12 @@ class JunkFile:
         return is_valid_junk_extension(self.path.name)
 
 def is_valid_junk_extension(filename: str) -> bool:
-    """Valida si el sufijo del archivo pertenece a JUNK_EXTENSIONS."""
+    """Valida si el sufijo del archivo pertenece a la lista definida en JUNK_EXTENSIONS."""
     if not filename: return False
     return filename.lower().endswith(JUNK_EXT_TUPLE)
 
 def _get_win_attributes(entry: os.DirEntry) -> int:
-    """Extrae atributos de archivo (bitmask) usando stat de bajo nivel."""
+    """Extrae atributos de archivo (bitmask) usando syscall de bajo nivel para Windows."""
     try:
         if hasattr(os, 'stat_result') and hasattr(os.stat_result, 'st_file_attributes'):
             return entry.stat(follow_symlinks=False).st_file_attributes
@@ -108,14 +106,14 @@ def _get_win_attributes(entry: os.DirEntry) -> int:
         return 0
 
 def _is_junction(entry: os.DirEntry) -> bool:
-    """Determina si una entrada es un punto de reparse (Junction) o enlace simbólico."""
+    """Determina si una entrada de directorio es un punto de reparse (Junction) o enlace simbólico."""
     try:
         return entry.is_symlink() or bool(_get_win_attributes(entry) & WIN_ATTR_JUNCTION)
     except (OSError, AttributeError):
         return True
 
 def _is_unc_path(path: Path) -> bool:
-    """Detecta rutas de red (Universal Naming Convention)."""
+    """Detecta rutas de red (Universal Naming Convention) que requieren manejo especial."""
     if path is None: return True
     try:
         return str(path.absolute()).startswith(("\\\\", "//"))
@@ -123,7 +121,7 @@ def _is_unc_path(path: Path) -> bool:
         return True
 
 def _generate_unique_target(target: Path) -> Path:
-    """Resuelve colisiones de nombres añadiendo sufijos numéricos (1-999)."""
+    """Resuelve colisiones en el destino añadiendo un contador numérico al nombre base."""
     if not isinstance(target, Path): return target
     base_target = target
     counter = 1
@@ -133,12 +131,12 @@ def _generate_unique_target(target: Path) -> Path:
     return target
 
 def _is_allowed_directory(name: str) -> bool:
-    """Verifica que el nombre de la carpeta no esté en el listado de exclusión del sistema."""
+    """Verifica que el nombre de la carpeta no figure en SYSTEM_FOLDER_BLOCKLIST."""
     if not name: return False
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _is_file_locked(path: Path) -> bool:
-    """Verifica si un archivo está bloqueado."""
+    """Verifica si el sistema permite acceso de lectura y escritura al archivo."""
     if path is None or not path.is_file():
         return True
     try:
@@ -149,7 +147,7 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
-    """Verifica que el destino no sea un subdirectorio del origen (bucle cíclico)."""
+    """Previene que una operación de movimiento resulte en un bucle lógico o recursivo."""
     if src is None or dest is None: return True
     try:
         if src.exists() and dest.exists() and os.path.samefile(src, dest):
@@ -160,20 +158,20 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
         return True
 
 def _has_forbidden_chars(path: Path) -> bool:
-    """Valida la ausencia de caracteres reservados que invalidarían la ruta en NTFS."""
+    """Valida la ausencia de caracteres reservados que corromperían la ruta en sistemas NTFS."""
     if path is None: return True
     path_str = str(path).lower()
     return any(c in path_str for c in ["<", ">", "|", "\0"])
 
 def _validate_path_security(src: Path, dest: Path) -> bool:
-    """Validación de seguridad compuesta sobre rutas de origen y destino."""
+    """Realiza una validación compuesta de seguridad sobre rutas de origen y destino."""
     if src is None or dest is None: return False
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     if len(str(src)) > MAX_PATH_LENGTH or len(str(dest)) > MAX_PATH_LENGTH: return False
     return not (is_protected_path(src) or is_protected_path(dest))
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
-    """Auditoría exhaustiva previa a escritura/movimiento."""
+    """Auditoría de pre-condiciones necesaria antes de ejecutar cualquier escritura en disco."""
     if not isinstance(src, Path) or not isinstance(dest, Path) or not src.exists(): return False
     try:
         st = src.lstat()
@@ -191,7 +189,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         return False
 
 def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> bool:
-    """Filtra directorios aptos para escaneo."""
+    """Filtra directorios aptos para escaneo, utilizando caché para evitar chequeos redundantes."""
     if entry is None or not _is_allowed_directory(entry.name) or _is_junction(entry): return False
     try:
         path_str = entry.path
@@ -204,13 +202,13 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> boo
         return False
 
 def _is_valid_junk_entry(name: str, stats: os.stat_result, now_ts: float) -> bool:
-    """Valida si un archivo cumple criterios temporales, tamaño y extensión."""
+    """Verifica si el archivo cumple con las heurísticas de tamaño, fecha y extensión."""
     return (0 <= stats.st_size < MAX_FILE_SIZE_BYTES and 
             stats.st_mtime <= now_ts + 3600 and
             name.lower().endswith(JUNK_EXT_TUPLE))
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
-    """Recorrido recursivo limitado para encontrar archivos basura."""
+    """Recorrido recursivo limitado para encontrar archivos basura (máx. 50 niveles)."""
     if depth > 50: return
     try:
         resolved_dir = current_dir.resolve()
@@ -233,7 +231,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
     except (PermissionError, OSError, RuntimeError): pass
 
 def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[JunkFile]:
-    """Inicia la detección de archivos basura en los directorios configurados."""
+    """Escanea los directorios especificados en busca de archivos basura."""
     found: List[JunkFile] = []
     protected_cache: set[str] = set()
     visited: set[Path] = set()
@@ -248,12 +246,12 @@ def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[Ju
     return found
 
 def sort_junk(files: Sequence[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
-    """Ordena el listado de archivos basura."""
+    """Ordena el listado de archivos basura basándose en el registro de configuración."""
     config = SORT_REGISTRY.get(by.lower(), SORT_REGISTRY["size"])
     return sorted(files, key=config.key_func, reverse=not bool(ascending))
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """Valida y mueve los archivos candidatos a un directorio de cuarentena."""
+    """Prepara y mueve los archivos candidatos a un directorio de cuarentena para revisión humana."""
     if not files: return None
     try:
         dest_base = Path(review_dir).expanduser()
@@ -281,7 +279,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     return dest_res
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
-    """Verifica disponibilidad de espacio y genera una ruta única."""
+    """Verifica disponibilidad de espacio en disco y genera una ruta única destino."""
     if junk_file is None or dest_base is None or not dest_base.exists(): return None
     try:
         usage = shutil.disk_usage(dest_base.anchor)
@@ -291,7 +289,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     except (OSError, AttributeError, ValueError): return None
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Ejecuta la eliminación permanente de archivos en el directorio de revisión."""
+    """Elimina permanentemente archivos contenidos en el directorio de revisión tras validación."""
     try:
         dest = Path(review_dir).expanduser().resolve()
         if not dest.exists() or not dest.is_dir(): return 0
