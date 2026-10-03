@@ -167,23 +167,15 @@ class StartupEntry:
     def _validate_file_access(self, p: Path) -> bool:
         """
         Verifica la existencia y accesibilidad de un archivo.
-        Excluye junctions, symlinks y rutas protegidas definidas en `safety.py`.
+        Optimizado para reducir syscalls mediante una única llamada a stat().
         """
         try:
             if is_protected_path(p):
                 return False
-            is_junction = False
-            if hasattr(p, 'is_junction'):
-                try:
-                    is_junction = p.is_junction()
-                except OSError:
-                    is_junction = True
-            
-            if p.is_symlink() or is_junction:
+            if p.is_symlink():
                 return False
-            if not p.exists() or not p.is_file():
-                return False
-            return True
+            # stat() realiza la verificación de existencia y tipo en una sola llamada
+            return p.stat().is_file()
         except (OSError, PermissionError, FileNotFoundError, AttributeError):
             return False
 

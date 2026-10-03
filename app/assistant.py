@@ -399,10 +399,10 @@ class SystemContext:
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad sobre el objeto fuente antes de ingestarlo."""
         if source is None: return False
-        # Verificamos si es dict o si tiene __dict__ sin invocar propiedades que puedan fallar
         if not isinstance(source, dict):
             try:
-                if not hasattr(source, "__dict__"): return False
+                # Comprobar si es instancia sin acceder a __dict__ directamente para evitar bloqueos
+                if not isinstance(source, object): return False
             except Exception:
                 return False
         if _is_input_too_deep_or_complex(source):
@@ -487,15 +487,12 @@ def _get_source_value(source: Any, key: str) -> Any:
     try:
         if isinstance(source, dict):
             return source.get(key)
-        # Impedimos acceder a miembros de tipo ocultos o recursión sobre __dict__
-        if key in ("__dict__", "__class__", "__base__", "__mro__", "__subclasses__"):
+        # Impedimos acceder a miembros de tipo ocultos o recursión sobre atributos especiales
+        if key in ("__dict__", "__class__", "__base__", "__mro__", "__subclasses__", "__init__"):
             return None
+        # Solo permitir acceso si no es un descriptor o método invocable
         val = getattr(source, key, None)
-        # Impedimos acceder a métodos o atributos de clase/tipo
         if callable(val) or isinstance(val, type):
-            return None
-        # Evitamos leer estructuras excesivamente profundas
-        if _is_input_too_deep_or_complex(val):
             return None
         return val
     except Exception:

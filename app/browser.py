@@ -211,7 +211,8 @@ def _process_file_entry(
     kernel32: Optional[ctypes.WinDLL],
     visited_inodes: Set[int],
     visited_dirs: Dict[str, int],
-    depth: int
+    depth: int,
+    path_stack: List[str]
 ) -> ScanResult:
     """
     Analiza una entrada individual. Valida profundidad, contención en base, 
@@ -231,7 +232,9 @@ def _process_file_entry(
         visited_inodes.add(st.st_ino)
         
         if entry.is_dir(follow_symlinks=False):
-            return _sum_directory_recursive(p_entry, root_abs_norm, kernel32, visited_inodes, visited_dirs, depth + 1)
+            if str(p_entry) in path_stack:
+                return ScanResult(0, True)
+            return _sum_directory_recursive(p_entry, root_abs_norm, kernel32, visited_inodes, visited_dirs, depth + 1, path_stack + [str(p_entry)])
         
         if _is_file_in_use(p_entry):
             return ScanResult(0, True)
@@ -246,7 +249,8 @@ def _sum_directory_recursive(
     kernel32: Optional[ctypes.WinDLL],
     visited_inodes: Set[int],
     visited_dirs: Dict[str, int],
-    depth: int = 0
+    depth: int = 0,
+    path_stack: Optional[List[str]] = None
 ) -> ScanResult:
     """
     Recorrido recursivo protegido para calcular tamaño de carpeta.
@@ -255,6 +259,9 @@ def _sum_directory_recursive(
     if not isinstance(root_path, Path) or depth > MAX_SCAN_DEPTH:
         return ScanResult(0, False)
     
+    if path_stack is None:
+        path_stack = [str(root_path)]
+
     path_norm = os.path.normcase(str(root_path))
     if path_norm in visited_dirs:
         return ScanResult(visited_dirs[path_norm], True)
@@ -265,7 +272,7 @@ def _sum_directory_recursive(
             for entry in it:
                 if _should_skip_entry(entry, kernel32, _IS_JUNCTION_FN):
                     continue
-                result = _process_file_entry(entry, root_abs_norm, kernel32, visited_inodes, visited_dirs, depth)
+                result = _process_file_entry(entry, root_abs_norm, kernel32, visited_inodes, visited_dirs, depth, path_stack)
                 total_bytes += result.bytes_found
     except (OSError, PermissionError):
         return ScanResult(total_bytes, False)
