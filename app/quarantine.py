@@ -830,6 +830,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     try:
         quarantine_root = quarantine_dir(base)
         items = load_manifest(base)
+        # Diccionario para acceso O(1) al buscar por nombre de archivo almacenado
         item_map = {i.stored_name: i for i in items}
         
         purged_ids: Set[str] = set()

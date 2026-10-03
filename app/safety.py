@@ -304,36 +304,6 @@ def _is_directory_junction_strict(path_str: str) -> bool:
     return False
 
 @lru_cache(maxsize=1024)
-def _get_security_descriptor_cached(path_str: str, mtime: float) -> SecurityDescriptor:
-    """Versión cacheada del descriptor de seguridad vinculada al path y su timestamp de modificación."""
-    if not isinstance(path_str, str) or not path_str:
-        return SecurityDescriptor(0, False, True, True)
-    
-    attrs = _get_file_attrs(path_str)
-    in_use = False
-    try:
-        in_use = _is_file_locked_by_other_process(path_str)
-    except (OSError, AttributeError, ctypes.ArgumentError, TypeError):
-        in_use = True
-    return SecurityDescriptor(
-        attrs=attrs,
-        is_protected_system=bool(attrs & (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | Win32Attr.TEMPORARY | Win32Attr.REPARSE_POINT)),
-        is_in_use=in_use,
-        is_readonly=bool(attrs & Win32Attr.READONLY)
-    )
-
-def _get_security_descriptor(path: Path) -> SecurityDescriptor:
-    """
-    Construye un descriptor de seguridad para evaluar el archivo en un instante dado.
-    Utiliza el mtime del archivo para invalidar el cache si el archivo cambia.
-    """
-    try:
-        mtime = path.stat().st_mtime
-    except (OSError, FileNotFoundError, AttributeError):
-        mtime = 0.0
-    return _get_security_descriptor_cached(str(path), mtime)
-
-@lru_cache(maxsize=1024)
 def _is_file_locked_by_other_process(path_str: str) -> bool:
     """
     Verifica si un archivo está en uso exclusivo mediante la API CreateFile.
@@ -350,6 +320,31 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
         return False
     except (OSError, ctypes.ArgumentError, AttributeError):
         return True
+
+@lru_cache(maxsize=1024)
+def _get_security_descriptor_cached(path_str: str, mtime: float) -> SecurityDescriptor:
+    """Versión cacheada del descriptor de seguridad vinculada al path y su timestamp de modificación."""
+    if not isinstance(path_str, str) or not path_str:
+        return SecurityDescriptor(0, False, True, True)
+    
+    attrs = _get_file_attrs(path_str)
+    return SecurityDescriptor(
+        attrs=attrs,
+        is_protected_system=bool(attrs & (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | Win32Attr.TEMPORARY | Win32Attr.REPARSE_POINT)),
+        is_in_use=_is_file_locked_by_other_process(path_str),
+        is_readonly=bool(attrs & Win32Attr.READONLY)
+    )
+
+def _get_security_descriptor(path: Path) -> SecurityDescriptor:
+    """
+    Construye un descriptor de seguridad para evaluar el archivo en un instante dado.
+    Utiliza el mtime del archivo para invalidar el cache si el archivo cambia.
+    """
+    try:
+        mtime = path.stat().st_mtime
+    except (OSError, FileNotFoundError, AttributeError):
+        mtime = 0.0
+    return _get_security_descriptor_cached(str(path), mtime)
 
 def _is_file_in_use_by_system(path_str: str) -> bool:
     """Verifica si el archivo está siendo referenciado por módulos cargados del sistema."""
@@ -871,7 +866,7 @@ def describe_protection(path: PathLike) -> str:
             if _is_volume_readonly(str(p)): return f"'{p}' pertenece a un volumen de solo lectura."
             if _is_volume_removable_media(str(p)): return f"'{p}' pertenece a un volumen extraíble."
             if _is_volume_compressed_or_encrypted(str(p)): return f"'{p}' pertenece a un volumen cifrado/comprimido."
-            if _is_file_locked_by_other_process(str(p)): return f"'{p}' en uso."
+            if sd.is_in_use: return f"'{p}' en uso."
             if sd.has_flag(Win32Attr.COMPRESSED) or sd.has_flag(Win32Attr.ENCRYPTED): return f"'{p}' archivo cifrado o comprimido."
             if sd.has_flag(Win32Attr.SPARSE_FILE): return f"'{p}' archivo disperso (sparse)."
             if sd.has_flag(Win32Attr.OFFLINE): return f"'{p}' archivo offline/nube."
@@ -884,4 +879,3 @@ def describe_protection(path: PathLike) -> str:
     except (OSError, FileNotFoundError, AttributeError): pass
     if is_sensitive_file(p): return f"'{p.name}' extensión sensible."
     return f"'{p}' es candidata a modificación."
-

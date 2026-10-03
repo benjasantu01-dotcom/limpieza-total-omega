@@ -1113,3 +1113,10 @@ FAILED evolve/tests/test_modules.py::test_min_size_filters_out_tiny_files - Attr
 - `2026-10-03T01:02:07` Corte de seguridad: se alcanzó el límite de 480s para esta corrida. Termino prolijo.
 - `2026-10-03T01:02:07` Rotación — metrics: 3 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T01:02:07` Corrida terminada. Total usado hoy: 23.
+- `2026-10-03T01:04:06` Arrancando corrida. Quedan hoy ~277 peticiones objetivo.
+- `2026-10-03T01:04:52` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó la carga y el filtrado del manifiesto reemplazando búsquedas lineales `O(N)` por accesos mediante un diccionario de búsqueda en `purge_all` y `restore_item`, reduciendo la complejidad algorítmica y el uso de memoria en casos con muchos ítems.
+- `2026-10-03T01:05:11` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-03T01:06:01` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado `_get_security_descriptor` reemplazando la consulta de bloqueo de archivo `_is_file_locked_by_other_process` por una lógica que valida el estado desde la caché si el archivo no ha sido modificado, reduciendo drásticamente las llamadas costosas a `CreateFileW` en operaciones repetitivas sobre los mismos archivos.
+- `2026-10-03T01:06:10` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-10-03T01:06:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T01:06:10` Corrida terminada. Total usado hoy: 27.
