@@ -860,7 +860,9 @@ def total_quarantined_bytes(base: PathLike = DEFAULT_QUARANTINE_DIR, items: Opti
     """Calcula el espacio total ocupado por los archivos en cuarentena."""
     if items is None:
         items = load_manifest(base)
-    return sum(item.size_bytes for item in items)
+    if not isinstance(items, list):
+        return 0
+    return sum(item.size_bytes for item in items if isinstance(item, QuarantineItem))
 
 
 def summarize(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[str]:

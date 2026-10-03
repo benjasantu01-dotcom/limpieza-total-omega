@@ -409,3 +409,12 @@ assert not {'replace'}
 - `2026-10-03T03:59:00` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del cálculo del puntaje protegiendo `compute_score` contra excepciones inesperadas durante la evaluación de métricas y validando explícitamente la integridad de los resultados antes de su retorno para prevenir la propagación de datos corruptos.
 - `2026-10-03T03:59:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-03T03:59:00` Corrida terminada. Total usado hoy: 95.
+- `2026-10-03T04:07:24` Arrancando corrida. Quedan hoy ~205 peticiones objetivo.
+- `2026-10-03T04:08:26` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-03T04:09:29` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-03T04:09:56` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 1): unexpected indent
+- `2026-10-03T04:10:24` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-03T04:10:51` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `organizer.py` añadiendo validaciones de tipo y de estado (`None` o rutas inexistentes) en `_generate_unique_target` y `_should_scan_directory`, además de centralizar y refinar el manejo de excepciones en `_is_safe_for_disk_op` para evitar que el bucle de escaneo se interrumpa prematuramente ante archivos con permisos restringidos o metadatos inalcanzables.
+- `2026-10-03T04:11:16` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación explícita de `None` y tipos en `total_quarantined_bytes` para prevenir errores de ejecución en caso de que el manifiesto esté corrupto o `load_manifest` devuelva una lista inesperada, alineándose con el enfoque de manejo de errores y validación de entradas.
+- `2026-10-03T04:11:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-03T04:11:16` Corrida terminada. Total usado hoy: 99.
