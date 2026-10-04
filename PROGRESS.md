@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **224** (44.4% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 48
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 196
+- Sin respuesta de la IA (error o límite): 194
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-02 | 10 | 0 | 1 | 1 | 18 |
+| 2026-10-02 | 10 | 0 | 1 | 1 | 14 |
 | 2026-10-03 | 157 | 7 | 33 | 18 | 135 |
-| 2026-10-04 | 56 | 10 | 14 | 1 | 43 |
+| 2026-10-04 | 57 | 10 | 15 | 1 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
+- seguridad defensiva: **46**
 - robustez ante casos límite: **45**
-- seguridad defensiva: **45**
 - manejo de errores y validación de entradas: **42**
 - rendimiento: **41**
 
@@ -38,7 +38,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **18**
 - `healthscore.py`: **17**
 - `assistant.py`: **16**
-- `settings.py`: **15**
+- `settings.py`: **16**
 - `browser.py`: **15**
 - `memory.py`: **15**
 - `branding.py`: **12**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-04T05:23:10` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_file_secure_to_read` añadiendo una validación explícita de `st.st_uid` contra el usuario actual para evitar ataques de enlace simbólico o lectura de archivos de otros usuarios en sistemas multi-usuario.
 - `2026-10-04T05:13:17` **quarantine.py** (seguridad defensiva): Se implementó un chequeo preventivo de `O_NOFOLLOW` en la validación de archivos para prevenir explícitamente ataques de sustitución mediante enlaces simbólicos antes de cualquier operación de lectura o copia, reforzando la seguridad defensiva del módulo.
 - `2026-10-04T05:12:53` **organizer.py** (seguridad defensiva): Se reforzó `_is_safe_for_disk_op` añadiendo una validación explícita para detectar si el archivo es un archivo de paginación o hibernación (frecuentemente presentes en carpetas temporales), evitando intentos de movimiento innecesarios o riesgosos sobre archivos críticos del sistema en uso.
 - `2026-10-04T05:12:25` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva de `trim_working_set` implementando una validación estricta que impide la manipulación de procesos cuyas rutas no son verificables o se encuentran en directorios protegidos, asegurando que solo procesos legítimos puedan ser sujetos a la operación de trimming.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-04T04:40:53` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de concurrencia y estado de archivo antes del borrado en `_safe_unlink` utilizando `os.open` con flags exclusivos (O_EXCL) para asegurar que el archivo no está siendo manipulado o bloqueado por otro proceso en el momento exacto de la eliminación, mitigando riesgos de condiciones de carrera (TOCTOU).
 - `2026-10-04T04:32:06` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_extract_process_info` para manejar correctamente errores de formato o valores `NaN/corruptos` en la salida de PowerShell, evitando que una línea mal formada interrumpa el diagnóstico de memoria.
 - `2026-10-04T04:31:39` **main.py** (robustez ante casos límite): Se reforzó la robustez del manejo de errores al iniciar la aplicación mediante la adición de un chequeo de integridad en `_validate_environment` que verifica específicamente que las rutas de trabajo y de la aplicación no sean rutas UNC (red), evitando errores de inicialización en entornos de red inaccesibles.
-- `2026-10-04T04:30:24` **healthscore.py** (robustez ante casos límite): Se reforzó la resiliencia del motor analítico ante fallos inesperados en los *callables* definidos en `_PIPELINE` mediante un manejo robusto de excepciones y validación de tipos, evitando que una falla en una sola regla o métrica degrade el puntaje total a cero.

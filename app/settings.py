@@ -323,10 +323,15 @@ def _is_file_secure_to_read(file_obj: Any) -> bool:
     try:
         st = os.fstat(file_obj.fileno())
         mode = st.st_mode
+        # Validar tipo de archivo y enlaces
         if not stat.S_ISREG(mode) or os.path.islink(file_obj.name): return False
+        # Validar límites de tamaño
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
+        # Validar permisos estrictos (nada de escritura global/grupo, nada de ejecución)
         if mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
+        # Validar propiedad del archivo: el UID debe coincidir con el usuario actual
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
+        # Validar que no haya hardlinks sospechosos
         if st.st_nlink != 1: return False
         return True
     except (OSError, PermissionError, AttributeError):

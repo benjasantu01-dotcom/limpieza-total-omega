@@ -879,3 +879,10 @@ assert not {'replace'}
 - `2026-10-04T05:13:17` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se implementó un chequeo preventivo de `O_NOFOLLOW` en la validación de archivos para prevenir explícitamente ataques de sustitución mediante enlaces simbólicos antes de cualquier operación de lectura o copia, reforzando la seguridad defensiva del módulo.
 - `2026-10-04T05:13:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T05:13:17` Corrida terminada. Total usado hoy: 124.
+- `2026-10-04T05:21:03` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-10-04T05:21:24` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-04T05:22:13` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-10-04T05:22:47` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-10-04T05:23:10` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_file_secure_to_read` añadiendo una validación explícita de `st.st_uid` contra el usuario actual para evitar ataques de enlace simbólico o lectura de archivos de otros usuarios en sistemas multi-usuario.
+- `2026-10-04T05:23:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T05:23:10` Corrida terminada. Total usado hoy: 128.
