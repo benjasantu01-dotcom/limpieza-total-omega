@@ -188,14 +188,14 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     
     try:
         pid = int(clean_pid)
+        ws = int("".join(filter(str.isdigit, ws_str))) if any(c.isdigit() for c in ws_str) else 0
     except ValueError:
         return None
         
     if pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid(): return None
     
-    ws = _safe_int_conversion(ws_str)
     if pid > 0 and 0 < ws < MAX_VALID_PROCESS_MEM:
-        return ProcessMemory(name.strip("'\" "), pid, ws)
+        return ProcessMemory(name.strip("'\" "), pid, BytesValue(ws))
     return None
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:

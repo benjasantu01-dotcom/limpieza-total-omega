@@ -1268,3 +1268,10 @@ FAILED evolve/tests/test_modules.py::test_pressure_level_without_data_is_informa
 - `2026-10-04T08:46:57` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` frente a la concurrencia y los cambios dinámicos en el sistema de archivos, envolviendo la obtención de atributos con un manejo de excepciones exhaustivo para evitar que un archivo bloqueado o eliminado durante el escaneo detenga el proceso completo.
 - `2026-10-04T08:46:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T08:46:57` Corrida terminada. Total usado hoy: 208.
+- `2026-10-04T08:55:13` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-10-04T08:55:40` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-04T08:56:06` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha robustecido el motor de cálculo `compute_score` frente a datos externos malformados, asegurando que `SystemMetrics` siempre sea una instancia válida incluso ante un `None` o entrada errónea, y envolviendo la evaluación de reglas en un bloque que garantiza que un fallo en un mensaje no invalide el puntaje total.
+- `2026-10-04T08:57:17` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de `on_memory_processes` añadiendo una verificación explícita de `p.is_running()` mediante `memory_mod`, evitando errores de acceso a atributos de procesos que terminaron durante la ejecución del escaneo.
+- `2026-10-04T08:57:28` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se añadió una validación robusta de tipos en `_extract_process_info` para manejar casos donde el CSV pueda contener valores malformados o no numéricos en la columna de WorkingSet, evitando que el escaneo de procesos falle silenciosamente o con errores inesperados.
+- `2026-10-04T08:57:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T08:57:28` Corrida terminada. Total usado hoy: 212.

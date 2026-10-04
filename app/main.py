@@ -1640,14 +1640,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         def task() -> None:
             try:
                 procesos = memory_mod.top_memory_processes(limit=15)
-                if not procesos:
-                    self.log_lines(["No se pudo obtener la lista de procesos en este sistema."],
-                                   "Memoria")
-                    return
+                # Filtramos procesos que hayan finalizado mientras se consultaban
+                procesos_validos = [p for p in procesos if memory_mod.process_exists(p.pid)]
                 
-                procesos_validos = [p for p in procesos if hasattr(p, 'working_set_mb')]
                 if not procesos_validos:
-                    self.log_lines(["Los procesos activos cambiaron. Reintentá el diagnóstico."], "Memoria")
+                    self.log_lines(["No se pudo obtener la lista de procesos activos."], "Memoria")
                     return
 
                 tope = max([p.working_set_mb for p in procesos_validos], default=1) or 1
