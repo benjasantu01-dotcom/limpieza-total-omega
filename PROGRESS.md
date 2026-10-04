@@ -8,45 +8,48 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **211** (41.9% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 48
+- Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-02 | 16 | 0 | 2 | 1 | 35 |
+| 2026-10-02 | 13 | 0 | 1 | 1 | 35 |
 | 2026-10-03 | 157 | 7 | 33 | 18 | 135 |
-| 2026-10-04 | 38 | 6 | 13 | 1 | 42 |
+| 2026-10-04 | 41 | 6 | 13 | 1 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
-- seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **42**
+- seguridad defensiva: **41**
 - rendimiento: **41**
-- robustez ante casos límite: **34**
+- robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `organizer.py`: **20**
-- `quarantine.py`: **20**
+- `organizer.py`: **19**
+- `quarantine.py`: **19**
 - `safety.py`: **18**
+- `diskreport.py`: **18**
 - `duplicates.py`: **18**
-- `diskreport.py`: **17**
 - `scanner.py`: **17**
 - `healthscore.py`: **16**
 - `settings.py`: **15**
 - `assistant.py`: **15**
-- `memory.py`: **14**
-- `browser.py`: **14**
+- `browser.py`: **15**
+- `memory.py`: **13**
 - `startup.py`: **11**
-- `branding.py`: **10**
+- `branding.py`: **11**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-04T04:21:14` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `_collect_summary_data` y las funciones que la consumen, añadiendo un manejo de excepciones más granular en el bucle de procesamiento para garantizar que archivos con metadatos corruptos (ej. errores al leer el sufijo o tamaños inválidos) no interrumpan el escaneo de todo un volumen, manteniendo la integridad del proceso.
+- `2026-10-04T04:20:47` **browser.py** (robustez ante casos límite): Mejoré la robustez ante casos de error en el acceso a archivos de sistema durante la recursión, implementando un chequeo preventivo de `PermissionError` y `OSError` en `_sum_directory_recursive` mediante el uso de un manejo más estricto de los iteradores `os.scandir`, asegurando que el bucle no aborte ante directorios bloqueados o inaccesibles que son comunes en perfiles de usuario.
+- `2026-10-04T04:20:20` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de sistema de archivos (como discos de solo lectura o falta de permisos) mediante un manejo de excepciones explícito en la creación del directorio y la escritura, manteniendo la integridad del contrato con `safety.py`.
 - `2026-10-04T04:10:15` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando las verificaciones repetitivas de `os.path.splitext` y `is_protected_path` por una lógica de filtrado más eficiente mediante el uso de una caché local de extensiones relevantes y la consolidación de las comprobaciones de seguridad al inicio del proceso de cada entrada.
 - `2026-10-04T04:01:38` **safety.py** (rendimiento): Optimizé la función `_is_protected_path` (llamada frecuentemente por `is_protected_path`) reemplazando la lógica de `str.split(os.sep)` por una comprobación de pertenencia directa en `PROTECTED_DIR_NAMES` sobre los componentes del path, evitando la creación de listas intermedias y reduciendo la complejidad de las validaciones de sistema en cada iteración.
 - `2026-10-04T04:00:36` **quarantine.py** (rendimiento): Se optimizó el acceso a los datos de los ítems en `restore_item` y `purge_item` reemplazando la creación repetitiva de diccionarios por una gestión más eficiente, reduciendo la complejidad temporal de las operaciones de búsqueda.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-04T03:30:43` **startup.py** (legibilidad y documentación): Mejoré la documentación interna agregando `docstrings` de estilo Google en las funciones de la API pública y aclarando los motivos de seguridad en los métodos de `StartupEntry` para facilitar el mantenimiento futuro.
 - `2026-10-04T03:29:32` **safety.py** (legibilidad y documentación): Documenté con docstrings detallados las funciones `ensure_safe_to_modify`, `is_safe_to_modify` y `filter_safe_paths` para aclarar su contrato de uso, específicamente distinguiendo cuándo lanzan excepciones y cuándo retornan valores booleanos, evitando así futuros errores de lógica en su implementación.
 - `2026-10-04T03:19:31` **organizer.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints explícitos, docstrings detallados en funciones críticas y la documentación del propósito de los atributos de Windows, facilitando la comprensión del flujo de seguridad para el dueño del proyecto.
-- `2026-10-04T03:19:03` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones Args/Returns) en las funciones críticas de manipulación de memoria y limpieza, asegurando que el propósito y las restricciones de seguridad queden explícitos para cualquier colaborador futuro.
-- `2026-10-04T03:08:48` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos (usando `Iterable` y `List` explícitos) y se añadieron docstrings explicativos en funciones críticas de la estrategia de hashing para clarificar el propósito de las transformaciones de datos, mejorando la mantenibilidad sin cambiar la lógica.
-- `2026-10-04T03:08:11` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y precisos en funciones clave, aclarando el propósito y los parámetros para facilitar el mantenimiento futuro conforme a las exigencias del proyecto.

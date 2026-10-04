@@ -402,6 +402,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         if not is_safe_to_modify(path):
             return None
         
+        # Crear directorio si no existe, validando seguridad
         if not path.parent.exists():
             if not is_safe_to_modify(path.parent):
                 return None

@@ -373,7 +373,10 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             total_bytes += size_bytes
             total_files += 1
             
-            ext = path.suffix.lower() or "(sin extensión)"
+            # Manejo defensivo: asegurar que el sufijo y la ruta sean procesables
+            ext_raw = path.suffix.lower() if path.suffix else None
+            ext = ext_raw or "(sin extensión)"
+            
             stats = get_stats(ext)
             stats.total_bytes += size_bytes
             stats.count += 1
@@ -384,6 +387,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
                 elif size_bytes > top_heap[0][0]: 
                     heapq.heapreplace(top_heap, (size_bytes, path))
         except (AttributeError, KeyError, TypeError, ValueError, OSError):
+            # Ignorar archivos con nombres corruptos o metadatos inaccesibles
             continue
                 
     return SummaryData(total_bytes, total_files, dict(ext_stats), top_heap)
