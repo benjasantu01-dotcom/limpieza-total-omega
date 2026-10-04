@@ -309,11 +309,13 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if not _is_windows: return False, "Solo soportado en Windows."
     try: target_pid = int(pid)
     except (ValueError, TypeError): return False, "PID proporcionado no es un número válido."
-    if _is_system_process(target_pid): return False, "Operación no permitida en procesos críticos del sistema."
-    psapi = getattr(ctypes.windll, "psapi", None)
-    if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "API de gestión de memoria no disponible."
+    
     is_safe, error_msg = _is_safe_to_trim(target_pid)
     if not is_safe: return False, error_msg or "Verificación de seguridad fallida."
+    
+    psapi = getattr(ctypes.windll, "psapi", None)
+    if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "API de gestión de memoria no disponible."
+    
     kernel32 = ctypes.windll.kernel32
     proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
     if not proc_handle: return False, "No se pudo acceder al proceso."

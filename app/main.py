@@ -136,6 +136,7 @@ def ensure_safety(func: Callable) -> Callable:
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         try:
+            # Validación de contexto global antes de operaciones destructivas o persistencia
             safety.ensure_safe_to_modify(Path.home().resolve())
             return func(*args, **kwargs)
         except Exception as e:

@@ -186,9 +186,15 @@ def _get_sha256(path: Path) -> str:
     """Calcula hash SHA-256 usando búferes para evitar saturación de memoria."""
     if not path.exists() or not path.is_file():
         return ""
-    sha256_hash = hashlib.sha256()
+    # Evitar seguir enlaces simbólicos al abrir para el hash
+    flags = os.O_RDONLY
+    if hasattr(os, 'O_NOFOLLOW'):
+        flags |= os.O_NOFOLLOW
+        
     try:
-        with open(path, "rb") as handle:
+        sha256_hash = hashlib.sha256()
+        fd = os.open(str(path), flags)
+        with os.fdopen(fd, "rb") as handle:
             while True:
                 chunk = handle.read(CHUNK_SIZE)
                 if not chunk:
@@ -562,8 +568,13 @@ def _create_temp_file(source: Path, destination: Path) -> Path:
 
 def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> None:
     """Realiza copia byte a byte verificando integridad final mediante descriptores de archivo."""
+    # Usar O_NOFOLLOW para prevenir ataques por enlaces simbólicos durante la apertura
+    flags = os.O_RDONLY
+    if hasattr(os, 'O_NOFOLLOW'):
+        flags |= os.O_NOFOLLOW
+        
     try:
-        source_fd = os.open(str(source), os.O_RDONLY | os.O_NOFOLLOW)
+        source_fd = os.open(str(source), flags)
     except OSError as e:
         raise OSError(f"No se pudo abrir el origen de forma segura: {e}")
     try:

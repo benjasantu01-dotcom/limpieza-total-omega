@@ -36,6 +36,7 @@ WIN_ATTR_MASK: Final[int] = WIN_ATTR_SYSTEM | WIN_ATTR_HIDDEN
 MAX_PATH_LENGTH: Final[int] = 260
 MAX_FILE_SIZE_BYTES: Final[int] = 100_000_000_000  # 100 GB
 MIN_FREE_SPACE_BYTES: Final[int] = 52_428_800     # 50 MB
+SYSTEM_CRITICAL_NAMES: Final[frozenset[str]] = frozenset({"pagefile.sys", "hiberfil.sys", "swapfile.sys"})
 
 # Optimización: Tupla de extensiones para validación más rápida con endswith
 JUNK_EXTENSIONS: Final[frozenset[str]] = frozenset({
@@ -195,7 +196,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     try:
-        if not src.exists(): return False
+        if not src.exists() or src.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         st = src.lstat()
         if not src.is_file() or (st.st_mode & 0o170000 == 0o120000) or st.st_nlink > 1: return False
         if not is_safe_to_modify(src) or not _validate_path_security(src, dest): return False
