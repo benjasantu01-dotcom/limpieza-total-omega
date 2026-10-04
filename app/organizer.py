@@ -26,7 +26,9 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 SortKey: TypeAlias = Union[int, datetime]
 
-# Constantes de control de límites y seguridad
+# Constantes de control de límites y seguridad:
+# WIN_ATTR_JUNCTION (0x400): Identifica puntos de reparse (reparse points).
+# WIN_ATTR_SYSTEM (0x04) / WIN_ATTR_HIDDEN (0x02): Flags de archivos de sistema/ocultos.
 WIN_ATTR_JUNCTION: Final[int] = 0x400
 WIN_ATTR_SYSTEM: Final[int] = 0x04
 WIN_ATTR_HIDDEN: Final[int] = 0x02

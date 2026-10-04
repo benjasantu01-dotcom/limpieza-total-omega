@@ -350,6 +350,12 @@ def _get_process_path(pid: int) -> Optional[Path]:
     Utiliza `GetModuleFileNameExW` para resolver la ruta del módulo principal.
     Realiza validaciones de seguridad para evitar seguir puntos de reparse
     (junctions) y verifica contra `is_protected_path`.
+
+    Args:
+        pid: El ID del proceso a investigar.
+
+    Returns:
+        La ruta absoluta (Path) del ejecutable o None si no es accesible.
     """
     kernel32 = ctypes.windll.kernel32
     psapi = getattr(ctypes.windll, "psapi", None)
@@ -364,10 +370,8 @@ def _get_process_path(pid: int) -> Optional[Path]:
         if length > 0 and length < buffer_size:
             raw_path = buf.value
             if not raw_path or ":" not in raw_path: return None
-            # Resolver ruta y normalizar para evitar escape de directorios
             path_obj = Path(raw_path).resolve()
             
-            # Verificación estricta de seguridad
             attr = kernel32.GetFileAttributesW(str(path_obj))
             if attr != -1 and (attr & FILE_ATTRIBUTE_REPARSE_POINT):
                 return None
@@ -401,10 +405,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     Intenta liberar el working set de un proceso (solo Windows).
     
     Args:
-        pid: ID del proceso o cadena convertible a entero.
+        pid: ID del proceso (entero o cadena).
 
     Returns:
-        Tuple (éxito, mensaje explicativo).
+        Tuple indicando éxito (bool) y mensaje de estado (str).
     """
     if not _is_windows: return False, "Solo soportado en Windows."
     

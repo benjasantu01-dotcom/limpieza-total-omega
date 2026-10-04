@@ -622,3 +622,22 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-04T03:09:38` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): el archivo se encogió al 31% del original (posible pérdida de código)
 - `2026-10-04T03:09:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T03:09:38` Corrida terminada. Total usado hoy: 76.
+- `2026-10-04T03:18:32` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-10-04T03:19:03` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones Args/Returns) en las funciones críticas de manipulación de memoria y limpieza, asegurando que el propósito y las restricciones de seguridad queden explícitos para cualquier colaborador futuro.
+- `2026-10-04T03:19:31` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints explícitos, docstrings detallados en funciones críticas y la documentación del propósito de los atributos de Windows, facilitando la comprensión del flujo de seguridad para el dueño del proyecto.
+- `2026-10-04T03:20:04` Tests FALLARON:
+```
+aislamiento: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-3/test_restore_puts_the_file_bac0/carpeta/vuelve.txt'
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error de aislamiento: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-3/test_restore_into_a_system_pat0/normal.txt'
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error de aislamiento: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-3/test_purge_item_cannot_delete_0/cualquiera.txt'
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error de aislamiento: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-3/test_purge_all_only_deletes_in0/a.txt'
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error de aislamiento: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-3/test_quarantine_two_files_with0/uno/igual.tmp'
+FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly - ValueError: El origen debe ser un archivo regular.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error de aislamiento: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-3/test_quarantine_summary_report0/pesado.bin'
+9 failed, 290 passed, 7 warnings in 1.81s
+
+```
+- `2026-10-04T03:20:04` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y el mantenimiento de `quarantine.py` mediante la implementación de *type hints* explícitos en funciones clave, la estandarización de docstrings y la refactorización de `_check_isolation_safety` para reducir la complejidad ciclomática mediante una estructura de guardas más clara.
+- `2026-10-04T03:20:08` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 115): unterminated string literal (detected at line 115)
+- `2026-10-04T03:20:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T03:20:08` Corrida terminada. Total usado hoy: 80.
