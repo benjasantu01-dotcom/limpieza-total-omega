@@ -697,3 +697,33 @@ FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - Attr
 - `2026-10-04T04:01:38` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimizé la función `_is_protected_path` (llamada frecuentemente por `is_protected_path`) reemplazando la lógica de `str.split(os.sep)` por una comprobación de pertenencia directa en `PROTECTED_DIR_NAMES` sobre los componentes del path, evitando la creación de listas intermedias y reduciendo la complejidad de las validaciones de sistema en cada iteración.
 - `2026-10-04T04:01:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T04:01:38` Corrida terminada. Total usado hoy: 96.
+- `2026-10-04T04:09:32` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-10-04T04:10:15` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo reemplazando las verificaciones repetitivas de `os.path.splitext` y `is_protected_path` por una lógica de filtrado más eficiente mediante el uso de una caché local de extensiones relevantes y la consolidación de las comprobaciones de seguridad al inicio del proceso de cada entrada.
+- `2026-10-04T04:10:44` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-04T04:11:05` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): el archivo se encogió al 46% del original (posible pérdida de código)
+- `2026-10-04T04:11:32` Tests FALLARON:
+```
+unt=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+
+evolve/tests/test_assistant.py:234: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:171: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_one - AssertionError: assert 0.0 == 100.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+1 failed, 298 passed, 7 warnings in 1.15s
+
+```
+- `2026-10-04T04:11:32` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez del método `ingest` para manejar el caso límite donde `source` sea un objeto con atributos arbitrarios, evitando el riesgo de fuga de información o errores fatales mediante una validación de tipo más estricta antes de intentar cualquier acceso a atributos.
+- `2026-10-04T04:11:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T04:11:32` Corrida terminada. Total usado hoy: 100.

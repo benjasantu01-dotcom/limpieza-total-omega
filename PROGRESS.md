@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
-- Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 46
+- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-02 | 19 | 0 | 2 | 1 | 36 |
+| 2026-10-02 | 16 | 0 | 2 | 1 | 35 |
 | 2026-10-03 | 157 | 7 | 33 | 18 | 135 |
-| 2026-10-04 | 37 | 5 | 11 | 1 | 42 |
+| 2026-10-04 | 38 | 6 | 13 | 1 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
-- seguridad defensiva: **47**
+- seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **42**
-- rendimiento: **40**
+- rendimiento: **41**
 - robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `organizer.py`: **20**
 - `quarantine.py`: **20**
-- `duplicates.py`: **19**
-- `diskreport.py`: **18**
 - `safety.py`: **18**
-- `healthscore.py`: **17**
-- `scanner.py`: **16**
+- `duplicates.py`: **18**
+- `diskreport.py`: **17**
+- `scanner.py`: **17**
+- `healthscore.py`: **16**
 - `settings.py`: **15**
 - `assistant.py`: **15**
 - `memory.py`: **14**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-04T04:10:15` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando las verificaciones repetitivas de `os.path.splitext` y `is_protected_path` por una lógica de filtrado más eficiente mediante el uso de una caché local de extensiones relevantes y la consolidación de las comprobaciones de seguridad al inicio del proceso de cada entrada.
 - `2026-10-04T04:01:38` **safety.py** (rendimiento): Optimizé la función `_is_protected_path` (llamada frecuentemente por `is_protected_path`) reemplazando la lógica de `str.split(os.sep)` por una comprobación de pertenencia directa en `PROTECTED_DIR_NAMES` sobre los componentes del path, evitando la creación de listas intermedias y reduciendo la complejidad de las validaciones de sistema en cada iteración.
 - `2026-10-04T04:00:36` **quarantine.py** (rendimiento): Se optimizó el acceso a los datos de los ítems en `restore_item` y `purge_item` reemplazando la creación repetitiva de diccionarios por una gestión más eficiente, reduciendo la complejidad temporal de las operaciones de búsqueda.
 - `2026-10-04T03:51:39` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` eliminando la llamada a `subprocess` (costosa y pesada) mediante la utilización de `wmi` a través de `win32com` si estuviera disponible, pero como tengo prohibidas dependencias externas, reemplacé la lógica de ordenamiento/filtrado global en el script por una estructura de datos más eficiente (un heap manejado directamente) y reduje la frecuencia de llamada a `Get-Process` mediante una lógica de cacheo más robusta y un pipeline de PowerShell más eficiente que delega el ordenamiento al sistema operativo, evitando procesar listas gigantes en Python.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-04T03:19:03` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones Args/Returns) en las funciones críticas de manipulación de memoria y limpieza, asegurando que el propósito y las restricciones de seguridad queden explícitos para cualquier colaborador futuro.
 - `2026-10-04T03:08:48` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos (usando `Iterable` y `List` explícitos) y se añadieron docstrings explicativos en funciones críticas de la estrategia de hashing para clarificar el propósito de las transformaciones de datos, mejorando la mantenibilidad sin cambiar la lógica.
 - `2026-10-04T03:08:11` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y precisos en funciones clave, aclarando el propósito y los parámetros para facilitar el mantenimiento futuro conforme a las exigencias del proyecto.
-- `2026-10-04T03:02:52` **browser.py** (legibilidad y documentación): Mejora la documentación técnica mediante la adición de docstrings detallados en las funciones de recorrido recursivo y validación de seguridad, clarificando el propósito, las restricciones de acceso y la lógica de prevención de riesgos (junctions, rutas UNC y contención de perfiles).

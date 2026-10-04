@@ -193,6 +193,8 @@ class Scanner:
             return False
         if "\0" in entry.path:
             return False
+        if entry.path in self.safe_cache:
+            return True
         if not _is_valid_path_structure(entry.path) or self._has_invalid_name(entry.name):
             return False
         try:
@@ -200,8 +202,6 @@ class Scanner:
                 return False
             if not self._is_inside_base_root(entry.path):
                 return False
-            if entry.path in self.safe_cache:
-                return True
             if is_protected_path(Path(entry.path)):
                 return False
             self.safe_cache.add(entry.path)
@@ -224,8 +224,7 @@ class Scanner:
     @lru_cache(maxsize=1024)
     def _is_relevant_extension(name: str) -> bool:
         """Filtra archivos que no requieren análisis heurístico."""
-        _, ext = os.path.splitext(name)
-        return ext.lower() in SUSPICIOUS_ALL_EXTS
+        return Path(name).suffix.lower() in SUSPICIOUS_ALL_EXTS
 
     def process_entry(self, entry: os.DirEntry, directory_stack: List[Tuple[str, int]], current_depth: int) -> None:
         """Orquestador de entrada: decide si explorar subdirectorio o analizar archivo."""
