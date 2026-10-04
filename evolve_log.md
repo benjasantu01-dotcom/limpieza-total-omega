@@ -1099,3 +1099,13 @@ assert not {'replace'}
 - `2026-10-04T06:54:30` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `_collect_candidates` añadiendo validaciones preventivas sobre `entry.path` y `stat()` para prevenir excepciones por estados de archivo volátiles o permisos restringidos en directorios de sistema, asegurando que el bucle de escaneo no se interrumpa ante fallos individuales.
 - `2026-10-04T06:54:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T06:54:30` Corrida terminada. Total usado hoy: 164.
+- `2026-10-04T07:02:52` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-10-04T07:03:23` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la resiliencia del pipeline de cálculo encapsulando la ejecución de los `scorers` en un bloque de control de errores específico y añadiendo una validación de `None` temprana en `compute_score` para evitar propagación de estados inválidos.
+- `2026-10-04T07:04:23` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-04T07:05:26` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-04T07:06:32` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-04T07:07:44` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-04T07:08:40` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-04T07:08:53` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). He robustecido el manejo de errores en `_process_directory` y `scan_for_junk` para capturar explícitamente `PermissionError` y `OSError` (evitando abortos silenciosos por rutas inválidas o inaccesibles) y mejorado la validación de parámetros de entrada en `stage_for_review` para prevenir ejecuciones con rutas malformadas.
+- `2026-10-04T07:08:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T07:08:53` Corrida terminada. Total usado hoy: 168.

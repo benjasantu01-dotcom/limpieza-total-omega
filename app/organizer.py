@@ -256,8 +256,11 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _is_valid_junk_entry(item.name, stats, now_ts):
                             if not (getattr(stats, 'st_file_attributes', 0) & WIN_ATTR_MASK):
                                 found.append(JunkFile(Path(item.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
-                except (PermissionError, OSError): continue
-    except (PermissionError, OSError, RuntimeError): pass
+                except (PermissionError, OSError) as e:
+                    logger.debug(f"Acceso denegado o error en {item.path}: {e}")
+                    continue
+    except (PermissionError, OSError, RuntimeError) as e:
+        logger.error(f"Error procesando directorio {current_dir}: {e}")
 
 def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[JunkFile]:
     """Escanea los directorios especificados en busca de archivos basura."""
@@ -271,7 +274,9 @@ def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[Ju
             p = Path(d).expanduser()
             if p.exists() and p.is_dir() and not _is_unc_path(p) and is_safe_to_modify(p):
                 _process_directory(p, found, 0, protected_cache, visited)
-        except (OSError, RuntimeError): continue
+        except (OSError, RuntimeError) as e:
+            logger.warning(f"Error inicializando escaneo en {d}: {e}")
+            continue
     return found
 
 def sort_junk(files: Sequence[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:

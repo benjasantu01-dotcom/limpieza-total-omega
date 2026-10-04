@@ -232,7 +232,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
     Ejecuta el pipeline de evaluación capturando errores para asegurar integridad del puntaje.
     """
-    m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
+    if metrics is None:
+        metrics = SystemMetrics()
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -240,16 +241,16 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for entry in _PIPELINE:
         try:
-            area_ratio = _clamp(entry.scorer(m))
-            _evaluate_rules(m, entry.rules, area_ratio, recommendations)
+            area_ratio = _clamp(entry.scorer(metrics))
+            _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             points = area_ratio * entry.weight
             metric_breakdown[entry.area] = int(round(points))
             accumulated_score += points
         except (Exception, TypeError, ValueError):
             metric_breakdown[entry.area] = 0
             
-    if m.quarantined_count > 0:
-        recommendations.append(f"Tenés {m.quarantined_count} archivo(s) en cuarentena.")
+    if metrics.quarantined_count > 0:
+        recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
     
     final_score = int(round(_clamp(accumulated_score, 0.0, 100.0)))
     final_grade = grade_for_score(final_score)
