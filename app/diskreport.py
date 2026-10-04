@@ -99,7 +99,7 @@ def _bytes_to_mb(size_bytes: int | float | None) -> float:
         Tamaño convertido en megabytes.
     """
     try:
-        if size_bytes is None or not isinstance(size_bytes, (int, float)) or size_bytes < 0:
+        if not isinstance(size_bytes, (int, float)) or size_bytes < 0:
             return 0.0
         return round(float(size_bytes) / MB_SIZE, 2)
     except (ValueError, TypeError, ZeroDivisionError):
@@ -108,11 +108,8 @@ def _bytes_to_mb(size_bytes: int | float | None) -> float:
 
 def _validate_limit(limit: Any) -> int:
     """Normaliza un límite de resultados asegurando un entero no negativo."""
-    try:
-        if isinstance(limit, int) and not isinstance(limit, bool):
-            return max(0, limit)
-    except (ValueError, TypeError):
-        pass
+    if isinstance(limit, int) and not isinstance(limit, bool):
+        return max(0, limit)
     return 0
 
 
@@ -123,7 +120,8 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     if directory is None:
         return None
     try:
-        raw_str = str(directory).split('\0')[0]
+        path_str = os.fspath(directory)
+        raw_str = path_str.split('\0')[0]
         if len(raw_str) > 2048: return None
         raw_path = Path(raw_str).resolve(strict=True)
         if not raw_path.is_dir():
@@ -170,9 +168,10 @@ def _get_local_windows_drives() -> List[str]:
     for letter in string.ascii_uppercase:
         drive = f"{letter}:\\"
         try:
-            p = Path(os.path.realpath(drive))
-            if p.exists() and not is_protected_path(p):
-                drives.append(drive)
+            if os.path.exists(drive):
+                p = Path(drive)
+                if not is_protected_path(p):
+                    drives.append(drive)
         except (OSError, PermissionError, RuntimeError):
             continue
     return drives
@@ -250,7 +249,8 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if mount is None:
         return None
     try:
-        p = Path(os.path.realpath(str(mount)))
+        path_str = os.fspath(mount)
+        p = Path(path_str).resolve()
         if p.exists() and not is_protected_path(p):
             usage = shutil.disk_usage(p)
             return DriveUsage(str(p), usage.total, usage.used, usage.free)
@@ -296,12 +296,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode)
                                 stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            # Validación adicional: confirmar ruta absoluta y existencia real
-                            target_path = Path(entry.path).resolve()
-                            if target_path.exists() and target_path.is_file():
-                                st = entry.stat(follow_symlinks=False)
-                                sz = int(st.st_size)
-                                if sz >= 0: yield target_path, sz
+                            st = entry.stat(follow_symlinks=False)
+                            sz = int(st.st_size)
+                            if sz >= 0: yield Path(entry.path), sz
                     except (OSError, PermissionError, AttributeError, ValueError):
                         continue
         except (PermissionError, OSError): 
@@ -334,7 +331,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
-            if size < 0: continue
             relative = path.relative_to(root)
             if relative.parts:
                 top_folder = root / relative.parts[0]
@@ -357,26 +353,15 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Recorre el sistema de archivos y consolida datos estadísticos.
-    
-    Utiliza un heap de tamaño fijo (min-heap) para rastrear de forma eficiente los
-    archivos más grandes sin cargar toda la lista de archivos en memoria.
     """
     total_bytes: int = 0
     total_files: int = 0
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
-    top_heap: List[Tuple[int, Path]] = [] # Elementos: (tamaño_bytes, ruta_path)
+    top_heap: List[Tuple[int, Path]] = [] 
     
-    # Pre-cached reference to speed up lookup in tight loop
     get_stats = ext_stats.__getitem__
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        if not isinstance(size_bytes, int) or size_bytes < 0:
-            continue
-        
-        # Validar nuevamente seguridad de caracteres y confinamiento al procesar
-        if any(c in path.name for c in SUSPICIOUS_CHARS) or '\0' in path.name:
-            continue
-        
         try:
             total_bytes += size_bytes
             total_files += 1

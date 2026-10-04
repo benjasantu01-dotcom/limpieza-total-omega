@@ -97,12 +97,15 @@ def _is_file_locked(path: Path) -> bool:
     """Comprueba si el archivo está bloqueado intentando abrirlo en modo lectura exclusiva."""
     if not isinstance(path, Path) or not is_safe_to_modify(path) or not path.exists():
         return True
+    fd = -1
     try:
         fd = os.open(path, os.O_RDONLY)
-        os.close(fd)
         return False
     except (PermissionError, OSError, ValueError):
         return True
+    finally:
+        if fd != -1:
+            os.close(fd)
 
 
 def _safe_path_check(path: Path) -> bool:

@@ -82,7 +82,9 @@ _LIMIT_DISK_PERCENT: Final[float] = 25.0
 # Inversos precalculados para optimizar el cálculo de ratios
 def _safe_inv(val: float, fallback: float = 1.0) -> float:
     """Calcula el inverso multiplicativo de forma segura para evitar divisiones por cero."""
-    return 1.0 / val if (math.isfinite(val) and val != 0) else fallback
+    if not math.isfinite(val) or val == 0:
+        return fallback
+    return 1.0 / val
 
 _INV_JUNK: Final[float] = _safe_inv(_LIMIT_JUNK_MB)
 _INV_DUP: Final[float] = _safe_inv(_LIMIT_DUPLICATE_MB)
@@ -225,7 +227,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
                 clean_msg = "".join(filter(str.isprintable, msg)).strip()
                 if clean_msg: 
                     findings.append(clean_msg[:200])
-        except (Exception, TypeError, ValueError):
+        except Exception:
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
@@ -252,7 +254,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             points = area_ratio * entry.weight
             metric_breakdown[entry.area] = int(round(points))
             accumulated_score += points
-        except (Exception, TypeError, ValueError):
+        except Exception:
             metric_breakdown[entry.area] = 0
             
     if m.quarantined_count > 0:

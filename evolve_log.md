@@ -581,3 +581,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-04T02:19:23` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-04T02:19:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T02:19:23` Corrida terminada. Total usado hoy: 56.
+- `2026-10-04T02:26:20` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-10-04T02:26:50` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-04T02:27:19` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones de entrada y el reporte final añadiendo validaciones específicas de tipo y capturando excepciones de sistema de forma más granular para evitar que operaciones fallidas en archivos individuales interrumpan el análisis completo.
+- `2026-10-04T02:27:46` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_is_file_locked` y `hash_file` capturando `OSError` de forma más específica y validando explícitamente el cierre del descriptor de archivo, evitando fugas de recursos (FDs) en caso de fallos durante la lectura.
+- `2026-10-04T02:27:58` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` asegurando que el pipeline no falle ante métricas nulas o inesperadas, y añadí una validación explícita para evitar divisiones por cero en el cálculo de `_safe_inv` ante configuraciones inválidas.
+- `2026-10-04T02:27:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T02:27:58` Corrida terminada. Total usado hoy: 60.
