@@ -588,3 +588,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-04T02:27:58` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` asegurando que el pipeline no falle ante métricas nulas o inesperadas, y añadí una validación explícita para evitar divisiones por cero en el cálculo de `_safe_inv` ante configuraciones inválidas.
 - `2026-10-04T02:27:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T02:27:58` Corrida terminada. Total usado hoy: 60.
+- `2026-10-04T02:37:06` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-10-04T02:38:08` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-04T02:39:11` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-04T02:40:17` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-04T02:40:47` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 1): unexpected indent
+- `2026-10-04T02:41:15` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-04T02:41:58` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-04T02:42:28` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `load_manifest` añadiendo un manejo de excepciones más granular y específico, asegurando que si el JSON está corrupto o es inaccesible, se registre el evento (fallo silencioso es riesgoso en seguridad) y se retorne una lista vacía de forma consistente, evitando que el estado del caché bloquee la app.
+- `2026-10-04T02:42:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T02:42:28` Corrida terminada. Total usado hoy: 64.

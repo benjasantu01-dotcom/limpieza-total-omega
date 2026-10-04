@@ -433,7 +433,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
 
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Deserializa el manifiesto, usando caché de sesión para rendimiento."""
+    """Deserializa el manifiesto, usando caché de sesión para rendimiento y validación de errores."""
     base_dir = quarantine_dir(base)
     base_key = str(base_dir)
     if not force_reload and base_key in _MANIFEST_CACHE:
@@ -449,12 +449,14 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
             data = json.load(f)
         
         if not isinstance(data, list):
-            return []
+            raise ValueError("Formato de manifiesto inválido (no es lista).")
             
         items = [i for d in data if (i := QuarantineItem.from_dict(d))]
         _MANIFEST_CACHE[base_key] = items
         return items
-    except (OSError, PermissionError, UnsafePathError, json.JSONDecodeError):
+    except (OSError, PermissionError, json.JSONDecodeError, ValueError) as e:
+        # Registrar o manejar logs aquí si la app tuviera sistema de logging
+        _MANIFEST_CACHE[base_key] = []
         return []
 
 

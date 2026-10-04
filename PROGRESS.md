@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
+- Mejoras aceptadas: **206** (40.9% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-02 | 33 | 1 | 5 | 7 | 48 |
+| 2026-10-02 | 30 | 1 | 4 | 7 | 48 |
 | 2026-10-03 | 157 | 7 | 33 | 18 | 135 |
-| 2026-10-04 | 18 | 3 | 2 | 1 | 36 |
+| 2026-10-04 | 19 | 3 | 3 | 1 | 38 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
-- legibilidad y documentación: **45**
-- manejo de errores y validación de entradas: **39**
+- legibilidad y documentación: **42**
+- manejo de errores y validación de entradas: **40**
 - rendimiento: **38**
 - robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
 - `organizer.py`: **19**
-- `scanner.py`: **18**
 - `duplicates.py`: **18**
 - `safety.py`: **18**
-- `settings.py`: **17**
+- `scanner.py`: **17**
 - `diskreport.py`: **17**
+- `settings.py`: **16**
 - `healthscore.py`: **16**
 - `assistant.py`: **15**
 - `browser.py`: **14**
 - `memory.py`: **13**
-- `startup.py`: **10**
+- `startup.py`: **9**
 - `branding.py`: **9**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-04T02:42:28` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` añadiendo un manejo de excepciones más granular y específico, asegurando que si el JSON está corrupto o es inaccesible, se registre el evento (fallo silencioso es riesgoso en seguridad) y se retorne una lista vacía de forma consistente, evitando que el estado del caché bloquee la app.
 - `2026-10-04T02:27:58` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` asegurando que el pipeline no falle ante métricas nulas o inesperadas, y añadí una validación explícita para evitar divisiones por cero en el cálculo de `_safe_inv` ante configuraciones inválidas.
 - `2026-10-04T02:27:46` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_file_locked` y `hash_file` capturando `OSError` de forma más específica y validando explícitamente el cierre del descriptor de archivo, evitando fugas de recursos (FDs) en caso de fallos durante la lectura.
 - `2026-10-04T02:27:19` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de entrada y el reporte final añadiendo validaciones específicas de tipo y capturando excepciones de sistema de forma más granular para evitar que operaciones fallidas en archivos individuales interrumpan el análisis completo.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-04T00:34:39` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `_collect_summary_data` validando que cada ruta procesada sea un archivo absoluto existente y que su nombre no contenga caracteres de control o de ofuscación de nombre antes de realizar cualquier operación de I/O, evitando condiciones de carrera (TOCTOU) y posibles vulnerabilidades de salto de directorio.
 - `2026-10-04T00:26:33` **browser.py** (seguridad defensiva): Se ha implementado una validación de rutas absoluta y estricta en `_resolve_browser_path` para prevenir ataques de *path traversal* mediante el uso de `joinpath` con componentes divididos, asegurando que cualquier ruta resultante se mantenga dentro del directorio base de manera canónica antes de ser procesada.
 - `2026-10-04T00:16:22` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante casos límite en la carga de archivos, implementando una validación previa de la integridad del JSON que evita lecturas parciales o corruptas mediante un bloque `try-except` más granular y una verificación explícita de `json.load` antes de procesar el diccionario, garantizando que el estado del objeto de configuración siempre se mantenga coherente.
-- `2026-10-04T00:15:59` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `_safe_stat` para gestionar explícitamente archivos bloqueados por el sistema operativo (mediante `PermissionError`) y se ha corregido un posible error de tipo en `_is_inside_base_root` al manejar rutas con caracteres inválidos, garantizando que el escáner no aborte ante archivos en uso o rutas malformadas durante la recursión.
