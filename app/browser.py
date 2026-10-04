@@ -215,8 +215,8 @@ def _process_file_entry(
     kernel32: Optional[ctypes.WinDLL],
     visited_inodes: Set[int],
     visited_dirs: Dict[str, int],
-    depth: int,
-    path_stack: List[str]
+    visited_paths: Set[str],
+    depth: int
 ) -> ScanResult:
     """
     Procesa un elemento individual durante el escaneo.
@@ -237,9 +237,11 @@ def _process_file_entry(
         visited_inodes.add(st.st_ino)
         
         if entry.is_dir(follow_symlinks=False):
-            if str(p_entry) in path_stack:
+            p_norm = os.path.normcase(str(p_entry))
+            if p_norm in visited_paths:
                 return ScanResult(0, True)
-            return _sum_directory_recursive(p_entry, root_abs_norm, kernel32, visited_inodes, visited_dirs, depth + 1, path_stack + [str(p_entry)])
+            visited_paths.add(p_norm)
+            return _sum_directory_recursive(p_entry, root_abs_norm, kernel32, visited_inodes, visited_dirs, visited_paths, depth + 1)
         
         if _is_file_in_use(p_entry):
             return ScanResult(0, True)
@@ -254,20 +256,16 @@ def _sum_directory_recursive(
     kernel32: Optional[ctypes.WinDLL],
     visited_inodes: Set[int],
     visited_dirs: Dict[str, int],
-    depth: int = 0,
-    path_stack: Optional[List[str]] = None
+    visited_paths: Set[str],
+    depth: int = 0
 ) -> ScanResult:
     """
     Ejecuta un recorrido recursivo para calcular el tamaño en bytes de un directorio.
-    Implementa memoización (`visited_dirs`) para optimizar el rendimiento y límites de
-    profundidad para prevenir stack overflow o recursión infinita en el FS.
+    Implementa memoización (`visited_dirs`) y detección de ciclos (`visited_paths`).
     """
     if not isinstance(root_path, Path) or depth > MAX_SCAN_DEPTH:
         return ScanResult(0, False)
     
-    if path_stack is None:
-        path_stack = [str(root_path)]
-
     path_norm = os.path.normcase(str(root_path))
     if path_norm in visited_dirs:
         return ScanResult(visited_dirs[path_norm], True)
@@ -279,7 +277,7 @@ def _sum_directory_recursive(
                 if _should_skip_entry(entry, kernel32, _IS_JUNCTION_FN):
                     continue
                 try:
-                    result = _process_file_entry(entry, root_abs_norm, kernel32, visited_inodes, visited_dirs, depth, path_stack)
+                    result = _process_file_entry(entry, root_abs_norm, kernel32, visited_inodes, visited_dirs, visited_paths, depth)
                     total_bytes += result.bytes_found
                 except (OSError, PermissionError):
                     continue
@@ -299,7 +297,7 @@ def directory_size(path: Optional[OSPath]) -> int:
         if not resolved_p.is_dir() or not is_safe_to_modify(resolved_p) or is_protected_path(resolved_p):
             return 0
         norm_root: str = os.path.normcase(str(resolved_p))
-        return _sum_directory_recursive(resolved_p, norm_root, _get_kernel32(), set(), {}, 0).bytes_found
+        return _sum_directory_recursive(resolved_p, norm_root, _get_kernel32(), set(), {}, {norm_root}, 0).bytes_found
     except (OSError, RuntimeError, PermissionError):
         return 0
 
@@ -352,7 +350,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
                 candidate: Path = _resolve_browser_path(real_base, rel_str)
                 if candidate != Path() and _is_valid_cache_path(candidate, real_base_str):
                     scan_res: ScanResult = _sum_directory_recursive(
-                        candidate, os.path.normcase(str(candidate)), k32, global_visited_inodes, global_visited_dirs
+                        candidate, os.path.normcase(str(candidate)), k32, global_visited_inodes, global_visited_dirs, set()
                     )
                     if scan_res.bytes_found > 0:
                         found.append(BrowserCache(str(browser_name), candidate, scan_res.bytes_found))

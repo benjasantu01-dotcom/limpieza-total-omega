@@ -381,11 +381,7 @@ class SystemContext:
         return _ensure_safe_text(self.grade) if self.grade else True
 
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
-        """
-        Valida y normaliza un campo individual de la fuente de datos.
-        
-        Aplica restricciones de tipo, rango lógico y seguridad definidas en `MetricSpec`.
-        """
+        """Valida y normaliza un campo individual de la fuente de datos."""
         val = _get_source_value(source, key)
         if val is None or not spec.is_valid_type(val): return None
         try:
@@ -404,36 +400,25 @@ class SystemContext:
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad sobre el objeto fuente antes de ingestarlo."""
         if source is None: return False
-        if not isinstance(source, dict):
-            try:
-                if not isinstance(source, object): return False
-            except Exception:
-                return False
-        if _is_input_too_deep_or_complex(source):
-            return False
-        return True
+        if not isinstance(source, (dict, object)): return False
+        return not _is_input_too_deep_or_complex(source)
 
     def ingest(self, source: Any) -> bool:
-        """
-        Normaliza e importa datos externos al contexto local de manera transaccional.
-        """
-        if not self._validate_ingestion_source(source):
-            return False
+        """Normaliza e importa datos externos al contexto local de manera transaccional."""
+        if not self._validate_ingestion_source(source): return False
         
-        updates = {}
+        has_updates = False
         try:
             for key, spec in _VALIDATORS.items():
-                res = self._apply_field(source, key, spec)
-                if res is not None:
-                    updates[key] = res
+                if (res := self._apply_field(source, key, spec)) is not None:
+                    object.__setattr__(self, key, res)
+                    has_updates = True
             
-            grade_val = self._clean_grade(_get_source_value(source, "grade"))
-            if grade_val:
-                updates['grade'] = grade_val
+            if (grade_val := self._clean_grade(_get_source_value(source, "grade"))):
+                object.__setattr__(self, 'grade', grade_val)
+                has_updates = True
             
-            if updates:
-                for k, v in updates.items():
-                    object.__setattr__(self, k, v)
+            if has_updates:
                 object.__setattr__(self, 'analyzed', True)
                 return True
         except Exception:
@@ -464,9 +449,7 @@ def _is_path_like_or_protected(text: str) -> bool:
     return any(token in text.lower() for token in ["c:\\", "d:\\", "system32", "/etc/"])
 
 def _ensure_safe_text(text: Any) -> bool:
-    """
-    Realiza una desinfección estricta y validación de seguridad sobre cadenas.
-    """
+    """Realiza una desinfección estricta y validación de seguridad sobre cadenas."""
     if not isinstance(text, str) or not text or len(text) > _MAX_TEXT_LENGTH:
         return False
     if _REGEX_CONTROL_CHARS.search(text) or any(c in text for c in "<>|&^"):
@@ -480,15 +463,9 @@ def _ensure_safe_text(text: Any) -> bool:
 def _get_source_value(source: Any, key: str) -> Any:
     """Acceso seguro a atributos evitando recursión, inyecciones de clase y acceso a métodos."""
     if not _is_safe_key(key): return None
-    # Lista blanca estricta de métricas permitidas
-    if key not in _VALIDATORS and key != "grade": return None
     try:
-        if isinstance(source, dict):
-            return source.get(key)
-        val = getattr(source, key, None)
-        if callable(val) or isinstance(val, type):
-            return None
-        return val
+        val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
+        return None if callable(val) or isinstance(val, type) else val
     except Exception:
         return None
 
@@ -663,7 +640,6 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
         return default
     
     try:
-        # Extracción y validación estricta de tipos
         api_key = raw_cfg.get("asistente_api_key")
         model = raw_cfg.get("asistente_modelo")
         metrics_val = raw_cfg.get("asistente_enviar_metricas")

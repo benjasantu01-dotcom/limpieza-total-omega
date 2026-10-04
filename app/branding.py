@@ -478,15 +478,19 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja barra decorativa con gradiente."""
+    """Dibuja barra decorativa con gradiente optimizado por cache y segmentación."""
     try:
         if canvas is None or stops is None: return
         w_val = max(1, min(4096, int(width)))
         h_val = max(1, min(1024, int(height)))
         cx, cy = float(canvas_x), float(canvas_y)
         if not math.isfinite(cx) or not math.isfinite(cy): return
-        colors = gradient_colors(w_val, stops)
-        for segment in _get_grouped_segments(colors):
+        
+        @lru_cache(maxsize=16)
+        def _get_segments(w: int, s: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, ...]:
+            return _get_grouped_segments(gradient_colors(w, s))
+            
+        for segment in _get_segments(w_val, stops):
             canvas.create_line(cx + segment.start_index, cy, 
                                cx + segment.end_index, cy, 
                                fill=segment.hex_color, width=h_val)
