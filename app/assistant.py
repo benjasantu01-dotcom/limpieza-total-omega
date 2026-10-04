@@ -475,11 +475,11 @@ def _ensure_safe_text(text: Any) -> bool:
 def _get_source_value(source: Any, key: str) -> Any:
     """Acceso seguro a atributos evitando recursión, inyecciones de clase y acceso a métodos."""
     if not _is_safe_key(key): return None
+    # Lista blanca estricta de métricas permitidas
+    if key not in _VALIDATORS and key != "grade": return None
     try:
         if isinstance(source, dict):
             return source.get(key)
-        if key in ("__dict__", "__class__", "__base__", "__mro__", "__subclasses__", "__init__"):
-            return None
         val = getattr(source, key, None)
         if callable(val) or isinstance(val, type):
             return None

@@ -322,9 +322,10 @@ def _is_file_secure_to_read(file_obj: Any) -> bool:
     """Garantiza mediante FSTAT que el archivo es regular, no un enlace, y posee permisos de solo usuario."""
     try:
         st = os.fstat(file_obj.fileno())
-        if not stat.S_ISREG(st.st_mode) or os.path.islink(file_obj.name): return False
-        if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
-        if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
+        mode = st.st_mode
+        if not stat.S_ISREG(mode) or os.path.islink(file_obj.name): return False
+        if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
+        if mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if st.st_nlink != 1: return False
         return True

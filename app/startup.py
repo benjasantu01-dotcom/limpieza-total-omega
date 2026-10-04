@@ -170,8 +170,11 @@ class StartupEntry:
             return ""
         
         try:
+            # Defensiva contra rutas excesivamente largas o caracteres inválidos en SO
+            if len(path_string) > 32767 or ":" in path_string[2:]:
+                return ""
             norm: str = os.path.normpath(path_string)
-            if len(norm) > 260 or norm.startswith(r"\\"):
+            if norm.startswith(r"\\"):
                 return ""
         except (ValueError, TypeError):
             return ""
