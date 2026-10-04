@@ -139,27 +139,27 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     return min_val if value < min_val else (max_val if value > max_val else value)
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
-    """Normaliza la cantidad de basura detectada. Escala 1.0 (0MB) a 0.0 (>= _LIMIT_JUNK_MB)."""
+    """Normaliza el exceso de archivos temporales: 1.0 (sin basura) a 0.0 (>= _LIMIT_JUNK_MB)."""
     return _clamp(1.0 - (float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
-    """Normaliza el estado de seguridad. Puntúa 1.0 (óptimo) restando peso por amenazas."""
+    """Normaliza riesgos detectados: 1.0 es el estado óptimo (sin amenazas)."""
     return _clamp(1.0 - ((suspicious_count * 0.05) + (warnings * 0.25)))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
-    """Normaliza la RAM disponible. Puntúa proporcional al porcentaje libre."""
+    """Normaliza la RAM libre: 1.0 representa capacidad suficiente, 0.0 saturación."""
     return _clamp(float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
-    """Normaliza el espacio en disco. Puntúa proporcional al porcentaje libre."""
+    """Normaliza espacio en disco: 1.0 es capacidad holgada, 0.0 espacio crítico."""
     return _clamp(float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
-    """Normaliza el volumen de duplicados. Escala 1.0 (0MB) a 0.0 (>= _LIMIT_DUPLICATE_MB)."""
+    """Normaliza archivos redundantes: 1.0 (sin duplicados) a 0.0 (límite alcanzado)."""
     return _clamp(1.0 - (float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
-    """Normaliza la cantidad de procesos de inicio. Escala 1.0 (0 programas) a 0.0."""
+    """Normaliza programas de inicio: 1.0 (limpio) a 0.0 (demasiados procesos activos)."""
     return _clamp(1.0 - (float(startup_count) * _INV_STARTUP))
 
 @dataclass
@@ -215,10 +215,11 @@ class HealthResult:
 def grade_for_score(score: float | int) -> str: 
     return Grade.from_score(score)
 
-def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], ratio: NormalizedRatio, findings: List[str]) -> None:
+def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio, findings: List[str]) -> None:
+    """Ejecuta un set de reglas de recomendación basándose en el ratio normalizado obtenido."""
     for rule in rules:
         try:
-            if rule.check(metrics, ratio):
+            if rule.check(metrics, normalized_ratio):
                 msg = str(rule.message_factory(metrics))
                 clean_msg = "".join(c for c in msg if c.isprintable() and c not in "\r\n\t").strip()
                 if clean_msg: findings.append(clean_msg[:200])
@@ -226,6 +227,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             logging.error(f"Error evaluando regla en área {rule.area}: {e}")
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
+    """Procesa el pipeline completo de salud y retorna un objeto HealthResult unificado."""
     if metrics is None:
         metrics = SystemMetrics()
     
@@ -261,6 +263,7 @@ def _render_bar(points: int, max_val: int) -> str:
     return "#" * p + "." * (limit - p)
 
 def summarize(result: HealthResult | None) -> List[str]:
+    """Genera una representación visual de texto del reporte de salud."""
     if not isinstance(result, HealthResult): 
         return ["Error: Informe de salud no disponible."]
         

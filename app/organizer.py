@@ -164,7 +164,10 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
-    """Previene que una operación de movimiento resulte en un bucle lógico o recursivo."""
+    """
+    Previene que una operación de movimiento resulte en un bucle lógico o recursivo.
+    Verifica si el destino es un subdirectorio del origen o viceversa mediante `commonpath`.
+    """
     if src is None or dest is None: return True
     try:
         s = src.resolve(strict=False)
@@ -175,15 +178,18 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
         return True
 
 def _has_forbidden_chars(path: Path) -> bool:
-    """Valida la ausencia de caracteres reservados que corromperían la ruta en sistemas NTFS."""
+    """
+    Valida la ausencia de caracteres reservados (NTFS/FAT) que corromperían la ruta.
+    Bloquea rutas que contengan caracteres nulos o delimitadores de consola.
+    """
     if path is None: return True
     path_str = str(path).lower()
     return any(c in path_str for c in ["<", ">", "|", "\0"])
 
 def _validate_path_security(src: Path, dest: Path) -> bool:
     """
-    Realiza una validación de integridad sobre rutas para evitar colisiones de seguridad.
-    Verifica restricciones de UNC, longitud máxima y bloqueo de rutas protegidas.
+    Realiza validación de integridad para evitar colisiones de seguridad.
+    Verifica restricciones de red (UNC), longitud de ruta absoluta y protección del sistema.
     """
     if src is None or dest is None: return False
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
@@ -192,13 +198,10 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
-    Auditoría de pre-condiciones necesaria antes de ejecutar cualquier escritura en disco.
-    Verifica:
-    1. Que el archivo no sea crítico del SO.
-    2. Que no sea un enlace simbólico o tenga múltiples hard links (st_nlink > 1),
-       ya que modificar enlaces duros puede alterar archivos fuera del escaneo.
-    3. Que la operación no cruce límites de sistemas de archivos (st_dev), 
-       garantizando que el movimiento sea atómico (renombrado) y no una copia destructiva.
+    Auditoría de pre-condiciones de seguridad antes de cualquier escritura en disco.
+    - No permite archivos críticos (pagefile.sys, etc).
+    - Evita enlaces simbólicos o hard links (st_nlink > 1) para prevenir modificaciones externas.
+    - Garantiza atomicidad verificando que src y dest residan en el mismo sistema de archivos.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     try:
@@ -224,7 +227,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> bool:
     """
     Filtra directorios aptos para escaneo, utilizando caché para evitar chequeos redundantes.
-    Descarta rutas de sistema y puntos de reparse (junctions).
+    Descarta rutas de sistema, puntos de reparse (junctions) y rutas protegidas por `safety.py`.
     """
     if entry is None or not _is_allowed_directory(entry.name) or _is_junction(entry): return False
     if bool(_get_win_attributes(entry) & WIN_ATTR_SYSTEM): return False
@@ -242,12 +245,11 @@ def _is_valid_junk_entry(name: str, stats: os.stat_result, now_ts: float) -> boo
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
     """
-    Recorrido recursivo optimizado utilizando os.scandir para minimizar syscalls.
-    Límite de profundidad (50) para evitar desbordamientos y excesos de procesamiento.
+    Recorrido recursivo optimizado utilizando os.scandir para minimizar llamadas al SO.
+    Implementa profundidad máxima de 50 niveles para prevenir desbordamientos de pila.
     """
     if depth > 50: return
     try:
-        # Usamos realpath interno para evitar resolución de red si no es necesario
         resolved_dir = current_dir.resolve()
         if resolved_dir in visited: return
         visited.add(resolved_dir)
@@ -293,8 +295,8 @@ def sort_junk(files: Sequence[JunkFile], by: str = "size", ascending: bool = Tru
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """
-    Prepara y mueve los archivos candidatos a un directorio de cuarentena.
-    Realiza validaciones previas de seguridad en cada archivo antes de proceder con shutil.move.
+    Prepara y mueve los archivos candidatos a un directorio de cuarentena tras validar
+    la seguridad de la ruta, la disponibilidad de espacio y la atomicidad de la operación.
     """
     if not files: return None
     try:
@@ -334,7 +336,10 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     except (OSError, AttributeError, ValueError): return None
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Elimina permanentemente archivos del directorio de revisión tras validación explícita de seguridad."""
+    """
+    Elimina permanentemente archivos del directorio de revisión tras validación explícita
+    de seguridad de la ruta mediante `ensure_safe_to_modify`.
+    """
     try:
         dest = Path(review_dir).expanduser().resolve()
         if not dest.exists() or not dest.is_dir(): return 0
