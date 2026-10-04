@@ -180,6 +180,7 @@ class SystemMetrics:
     def validate(self) -> None:
         """Asegura que todos los campos tengan tipos y rangos aceptables de forma eficiente."""
         def _clean(v: Any, d: float, min_v: float = 0.0, max_v: float = 1e9) -> float:
+            if v is None: return d
             try:
                 val = float(v)
                 return val if (math.isfinite(val) and min_v <= val <= max_v) else d

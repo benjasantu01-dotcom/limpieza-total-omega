@@ -177,6 +177,9 @@ def validated_ui_operation(func: Callable) -> Callable:
             return None
         try:
             return func(self, *args, **kwargs)
+        except (tk.TclError, RuntimeError) as e:
+            logging.warning("Error de UI recuperable en %s: %s", func.__name__, e)
+            return None
         except Exception as e:
             logging.error("Error no capturado en UI (%s): %s", func.__name__, e)
             return None
@@ -291,7 +294,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _safe_run_ui_callback(self, callback: AsyncCallback) -> None:
         """Helper: Ejecuta una función en el hilo principal de forma segura."""
         if self.winfo_exists():
-            self.after_idle(callback)
+            # Envoltura adicional para robustez ante interrupción de ciclo de eventos
+            def safe_wrapper():
+                try:
+                    callback()
+                except (tk.TclError, RuntimeError):
+                    pass
+            self.after_idle(safe_wrapper)
 
     def _validate_environment(self) -> None:
         """Verifica que el entorno de ejecución cumpla las reglas de seguridad."""

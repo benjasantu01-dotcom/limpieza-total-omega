@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **210** (41.7% de aceptación)
+- Mejoras aceptadas: **211** (41.9% de aceptación)
 - Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 210
 
@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 76 | 4 | 15 | 12 | 85 |
-| 2026-10-04 | 134 | 19 | 29 | 5 | 125 |
+| 2026-10-03 | 73 | 4 | 14 | 12 | 85 |
+| 2026-10-04 | 138 | 19 | 29 | 5 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
+- robustez ante casos límite: **44**
 - manejo de errores y validación de entradas: **41**
-- robustez ante casos límite: **40**
-- seguridad defensiva: **38**
 - rendimiento: **38**
+- seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
-- `diskreport.py`: **18**
-- `healthscore.py`: **18**
+- `diskreport.py`: **19**
+- `healthscore.py`: **19**
+- `quarantine.py`: **19**
 - `assistant.py`: **18**
-- `safety.py`: **17**
 - `organizer.py`: **17**
-- `scanner.py`: **15**
+- `safety.py`: **16**
+- `duplicates.py`: **16**
 - `browser.py`: **15**
-- `duplicates.py`: **15**
+- `scanner.py`: **14**
 - `settings.py`: **13**
 - `memory.py`: **13**
 - `branding.py`: **12**
 - `startup.py`: **11**
-- `main.py`: **8**
+- `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-04T13:23:03` **main.py** (robustez ante casos límite): Se implementó un control de robustez en el hilo principal (`after` del ciclo de eventos) para capturar excepciones de tipo `TclError` y `RuntimeError` durante la actualización de widgets, evitando que un widget destruido prematuramente detenga la cola de eventos de la aplicación.
+- `2026-10-04T13:22:02` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `SystemMetrics` ante entradas inesperadas eliminando la dependencia de `float(None)` y añadiendo validación explícita para evitar que valores `None` o nulos provoquen errores de cálculo en el pipeline.
+- `2026-10-04T13:21:37` **duplicates.py** (robustez ante casos límite): Se mejora la robustez de `_collect_candidates` ante rutas con errores de permisos o sistemas de archivos inaccesibles, añadiendo una captura explícita de `OSError` durante la creación del objeto `Path` y en el acceso a atributos de entrada, evitando que una sola carpeta bloqueada aborte el escaneo de todo el directorio.
+- `2026-10-04T13:21:10` **diskreport.py** (robustez ante casos límite): Se mejora la robustez de `walk_files` y `_collect_summary_data` ante archivos que desaparecen durante el escaneo (race conditions comunes en escaneos de disco) envolviendo las lecturas en bloques `try-except` más granulares y asegurando que `_collect_summary_data` maneje correctamente rutas inexistentes o inaccesibles devueltas durante la iteración.
 - `2026-10-04T13:12:18` **branding.py** (robustez ante casos límite): Se introdujo una validación defensiva en `_hex_to_rgb` y `_rgb_to_hex` para manejar casos de entrada malformada o desbordamiento numérico, fortaleciendo la robustez ante datos inesperados sin alterar la funcionalidad.
 - `2026-10-04T13:11:43` **assistant.py** (robustez ante casos límite): Reforcé la robustez del motor local ante contextos parcialmente poblados o con valores extremos, asegurando que el cálculo de `active_problems` y el `SystemContext` manejen correctamente la ausencia de métricas clave sin fallar.
 - `2026-10-04T13:02:00` **scanner.py** (rendimiento): Se implementó un filtrado preventivo en `process_entry` utilizando `entry.name` contra un conjunto de extensiones pre-filtradas antes de realizar cualquier operación de I/O o validación de rutas compleja, evitando así ciclos de CPU y accesos a disco innecesarios.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-04T12:32:15` **branding.py** (rendimiento): Se eliminó el uso de `lru_cache` decorando una función anidada (`_get_segments`) dentro de `draw_gradient_bar`, ya que esto regeneraba el caché en cada llamada a la función contenedora, anulando el propósito de la memoización y consumiendo memoria innecesariamente; en su lugar, se movió la lógica de segmentación a una llamada directa optimizada.
 - `2026-10-04T12:30:23` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints más precisos en `_coerce_and_verify` y `save` para clarificar la lógica de integridad de datos y las restricciones de seguridad que se aplican antes de persistir, mejorando la legibilidad técnica del flujo de datos.
 - `2026-10-04T12:21:46` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de heurística y métodos críticos, clarificando los parámetros, las precondiciones y el valor de retorno para facilitar el mantenimiento y la auditoría del motor de escaneo.
-- `2026-10-04T12:21:33` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de seguridad mediante la adición de docstrings estructuradas (siguiendo el estándar Google/NumPy) que clarifican las precondiciones, el comportamiento ante errores y los efectos colaterales de las verificaciones críticas.
-- `2026-10-04T12:20:20` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos detallados en funciones críticas (como `_copy_with_verification` y `_atomic_isolate_file`), clarificando las precondiciones de seguridad y el flujo de trabajo para facilitar el mantenimiento y auditoría por parte del equipo.
-- `2026-10-04T12:13:41` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `organizer.py` mediante la adición de docstrings estructuradas en las funciones de validación crítica y operaciones de disco, detallando los criterios de seguridad y las restricciones de los sistemas operativos (NTFS/UNC) para facilitar el mantenimiento y la auditoría.
-- `2026-10-04T12:13:26` **memory.py** (legibilidad y documentación): Documenté con docstrings detallados las funciones de bajo nivel y utilitarias del módulo `memory.py` para clarificar la lógica de interacción con la API de Windows y la interpretación de datos crudos.
