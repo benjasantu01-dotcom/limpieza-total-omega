@@ -435,6 +435,8 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
 
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     """Valida precondiciones completas antes de aislar."""
+    if not dest_dir.is_dir():
+        raise UnsafePathError("Destino de cuarentena debe ser un directorio.")
     _check_path_syntax_integrity(source_path)
     _check_windows_file_attributes(str(source_path))
     if source_path.is_symlink():
@@ -485,6 +487,9 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         serializable_items = [item.to_dict() for item in items]
         encoded_content = json.dumps(serializable_items, indent=2, ensure_ascii=False).encode('utf-8')
         
+        if target_path.exists() and not os.access(target_path, os.W_OK):
+            raise PermissionError("Manifiesto existente no es escribible.")
+
         with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as tf:
             tf.write(encoded_content)
             tf.flush()

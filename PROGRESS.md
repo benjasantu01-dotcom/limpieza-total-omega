@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **224** (44.4% de aceptación)
 - Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 198
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 72 | 4 | 14 | 12 | 70 |
-| 2026-10-04 | 150 | 19 | 30 | 5 | 128 |
+| 2026-10-03 | 72 | 4 | 14 | 12 | 66 |
+| 2026-10-04 | 152 | 19 | 31 | 5 | 129 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - robustez ante casos límite: **50**
+- seguridad defensiva: **42**
 - manejo de errores y validación de entradas: **41**
-- seguridad defensiva: **40**
 - rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **21**
 - `diskreport.py`: **20**
 - `healthscore.py`: **20**
-- `quarantine.py`: **20**
+- `organizer.py`: **19**
 - `assistant.py`: **19**
-- `organizer.py`: **18**
 - `safety.py`: **17**
 - `browser.py`: **16**
 - `duplicates.py`: **16**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-04T14:13:26` **quarantine.py** (seguridad defensiva): Mejoré la seguridad de `quarantine.py` integrando validaciones de tipo en `_validate_isolation_request` para asegurar que el directorio de destino sea explícitamente un directorio y no un archivo, y reforzando la exclusividad en la escritura del manifiesto mediante una comprobación de existencia y permisos antes de la apertura del archivo temporal.
+- `2026-10-04T14:12:34` **organizer.py** (seguridad defensiva): Se ha robustecido `_is_safe_for_disk_op` añadiendo una comprobación explícita de `st_dev` mediante `path.resolve()` antes de realizar operaciones de movimiento, asegurando que el origen y el destino pertenezcan al mismo sistema de archivos (evitando la corrupción de datos o el borrado incompleto entre particiones), y garantizando que el uso de `ensure_safe_to_modify` dentro de `stage_for_review` sea estrictamente preventivo tras las validaciones booleanas.
 - `2026-10-04T14:03:53` **main.py** (seguridad defensiva): Se introdujo una capa de validación defensiva en `on_save_settings` para garantizar que cualquier carpeta de configuración persistida pase por `safety.ensure_safe_to_modify`, previniendo inyecciones de rutas externas en el archivo `settings.json` incluso si el usuario intenta configurar una ruta restringida manualmente.
 - `2026-10-04T14:02:38` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del sistema contra entradas inesperadas al añadir una validación de `TypeGuard` en `_evaluate_rules` y `compute_score`, asegurando que las métricas y reglas procesadas no contengan datos que puedan comprometer la integridad de la lógica de negocio ni causar desbordamientos durante la generación de mensajes.
 - `2026-10-04T13:53:34` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `_is_excluded_path` mediante la validación explícita de `follow_symlinks=False` en las llamadas a `Path.resolve()` y `os.stat()`, evitando que un usuario malintencionado pueda utilizar enlaces simbólicos para escapar del directorio raíz (`root_path`) durante el escaneo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-04T13:32:11` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente archivos con permisos de solo lectura o bloqueados por el sistema operativo, utilizando `os.access` como una comprobación previa no intrusiva y añadiendo un manejo de excepciones más preciso para evitar falsos positivos en el escáner.
 - `2026-10-04T13:31:43` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_extract_process_info` para manejar casos límite donde el valor del `WorkingSet` en el CSV podría ser nulo, contener caracteres inesperados o exceder límites físicos, evitando errores de conversión que interrumpirían el análisis de procesos.
 - `2026-10-04T13:23:03` **main.py** (robustez ante casos límite): Se implementó un control de robustez en el hilo principal (`after` del ciclo de eventos) para capturar excepciones de tipo `TclError` y `RuntimeError` durante la actualización de widgets, evitando que un widget destruido prematuramente detenga la cola de eventos de la aplicación.
-- `2026-10-04T13:22:02` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `SystemMetrics` ante entradas inesperadas eliminando la dependencia de `float(None)` y añadiendo validación explícita para evitar que valores `None` o nulos provoquen errores de cálculo en el pipeline.
-- `2026-10-04T13:21:37` **duplicates.py** (robustez ante casos límite): Se mejora la robustez de `_collect_candidates` ante rutas con errores de permisos o sistemas de archivos inaccesibles, añadiendo una captura explícita de `OSError` durante la creación del objeto `Path` y en el acceso a atributos de entrada, evitando que una sola carpeta bloqueada aborte el escaneo de todo el directorio.

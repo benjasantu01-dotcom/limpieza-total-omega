@@ -222,7 +222,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if _is_recursive_violation(src, dest): return False
         if _is_file_locked(src): return False
         
-        # Validar mismo dispositivo para asegurar atomicidad
+        # Validar mismo dispositivo para asegurar atomicidad y prevenir errores de copia entre volúmenes
         if src.resolve().stat().st_dev != target_dir.resolve().stat().st_dev: return False
         
         return True
@@ -310,6 +310,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             dest_base.mkdir(parents=True, exist_ok=True)
         dest_res = dest_base.resolve()
         if is_protected_path(dest_res): return None
+        # Validación de seguridad previa a la creación de contenido en el destino
         ensure_safe_to_modify(dest_res)
     except (OSError, RuntimeError, PermissionError) as e:
         logger.error(f"Fallo en inicialización de carpeta de revisión: {e}")
@@ -318,11 +319,13 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     for junk_file in files:
         if junk_file is None or not isinstance(junk_file.path, Path): continue
         try:
+            # Validaciones lógicas booleanas previas a la acción destructiva
             if not junk_file.path.exists() or not is_safe_to_modify(junk_file.path): continue
             if not _is_safe_for_disk_op(junk_file.path, dest_res): continue
             
             target_path = _can_move_file(junk_file, dest_res)
             if target_path:
+                # El ensure_safe_to_modify aquí actúa como guardia final exigida por arquitectura
                 ensure_safe_to_modify(junk_file.path)
                 shutil.move(str(junk_file.path), str(target_path))
         except (OSError, shutil.Error, PermissionError) as e:
