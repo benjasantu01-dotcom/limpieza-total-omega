@@ -780,3 +780,95 @@ assert not True
 - `2026-10-04T04:52:29` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `branding.py` validando la existencia y seguridad de la ruta completa de destino antes de intentar escribir archivos, asegurando que `Path.resolve()` no sea engañado y que `is_safe_to_modify` verifique tanto el archivo como su directorio padre.
 - `2026-10-04T04:52:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T04:52:29` Corrida terminada. Total usado hoy: 116.
+- `2026-10-04T05:00:35` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-10-04T05:01:04` Tests FALLARON:
+```
+=========
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:171: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_data_folders - AssertionError: assert [BrowserCache...size_bytes=7)] == []
+  
+  Left contains one more item: BrowserCache(browser='Chrome', path=PosixPath('/tmp/pytest-of-runner/pytest-1/test_detect_profiles_never_rep0/Perfil/Cookies'), size_bytes=7)
+  
+  Full diff:
+  - []
+  + [
+  +     BrowserCache(
+  +         browser='Chrome',
+  +         path=PosixPath('/tmp/pytest-of-runner/pytest-1/test_detect_profiles_never_rep0/Perfil/Cookies'),
+  +         size_bytes=7,
+  +     ),
+  + ]
+1 failed, 298 passed, 7 warnings in 1.49s
+
+```
+- `2026-10-04T05:01:04` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de las verificaciones de seguridad al reemplazar comparaciones de cadenas propensas a errores por el uso estricto de `pathlib.Path.resolve()` y `is_relative_to` (simulado para compatibilidad), asegurando que el escaneo nunca escape del directorio base, incluso ante manipulaciones de rutas simbólicas.
+- `2026-10-04T05:01:31` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se endureció la seguridad defensiva de `_collect_summary_data` envolviendo el procesamiento de archivos en un bloque `try-except` más estricto y añadiendo una validación explícita de `path.is_file()` antes de procesar para prevenir la recolección de metadatos o tamaños de rutas que podrían haber cambiado o mutado a tipos no deseados (como pipes o sockets) entre la iteración y el acceso a los datos.
+- `2026-10-04T05:01:57` Tests FALLARON:
+```
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_identical_files - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size - assert [] == [1, 2]
+  
+  Right contains 2 more items, first extra item: 1
+  
+  Full diff:
+  + []
+  - [
+  -     1,
+  -     2,
+  - ]
+FAILED evolve/tests/test_modules.py::test_partial_hash_only_reads_the_beginning - AssertionError: assert None != None
+ +  where None = <function hash_file at 0x7feccec5f560>(PosixPath('/tmp/pytest-of-runner/pytest-3/test_partial_hash_only_reads_t0/a'))
+ +    where <function hash_file at 0x7feccec5f560> = duplicates.hash_file
+ +  and   None = <function hash_file at 0x7feccec5f560>(PosixPath('/tmp/pytest-of-runner/pytest-3/test_partial_hash_only_reads_t0/b'))
+ +    where <function hash_file at 0x7feccec5f560> = duplicates.hash_file
+FAILED evolve/tests/test_modules.py::test_format_group_marks_which_copy_to_keep - AssertionError: assert ('conservar' in '2 copias de 0.0 MB (recuperable: 0.0 MB)\n   [inaccesible] /tmp/pytest-of-runner/pytest-3/test_format_group_marks_which_0/a.txt\n   [inaccesible] /tmp/pytest-of-runner/pytest-3/test_format_group_marks_which_0/b.txt')
+5 failed, 294 passed, 7 warnings in 1.56s
+
+```
+- `2026-10-04T05:01:57` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva centralizando y endureciendo la validación de archivos mediante la adición de `is_protected_path` en `_is_valid_candidate` y `is_junction` en las comprobaciones de entrada de `os.scandir`, evitando que el escáner siga rutas fuera del alcance permitido incluso si `is_safe_to_modify` es técnicamente permisivo.
+- `2026-10-04T05:02:10` Tests FALLARON:
+```
+        f"{nombre} debería ser de solo lectura pero llama a "
+                f"{', '.join(sorted(usados))}"
+            )
+E           AssertionError: healthscore.py debería ser de solo lectura pero llama a replace
+E           assert not {'replace'}
+
+evolve/tests/test_integrity.py:294: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:171: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: healthscore.py debería ser de solo lectura pero llama a replace
+assert not {'replace'}
+1 failed, 298 passed, 7 warnings in 1.50s
+
+```
+- `2026-10-04T05:02:10` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez del motor ante datos inesperados en `SystemMetrics` limitando el valor de `quarantined_count` y asegurando que las reglas no inyecten contenido malicioso mediante una sanitización estricta de los mensajes antes de ser procesados.
+- `2026-10-04T05:02:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T05:02:10` Corrida terminada. Total usado hoy: 120.

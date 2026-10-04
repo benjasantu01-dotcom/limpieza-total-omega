@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
-- Rechazadas por tests: 14
+- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-02 | 10 | 0 | 1 | 1 | 26 |
+| 2026-10-02 | 10 | 0 | 1 | 1 | 22 |
 | 2026-10-03 | 157 | 7 | 33 | 18 | 135 |
-| 2026-10-04 | 51 | 7 | 14 | 1 | 43 |
+| 2026-10-04 | 52 | 10 | 14 | 1 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,13 +26,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - robustez ante casos límite: **45**
 - manejo de errores y validación de entradas: **42**
 - rendimiento: **41**
-- seguridad defensiva: **40**
+- seguridad defensiva: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
+- `diskreport.py`: **19**
 - `organizer.py`: **19**
-- `diskreport.py`: **18**
 - `duplicates.py`: **18**
 - `safety.py`: **18**
 - `scanner.py`: **18**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-04T05:01:31` **diskreport.py** (seguridad defensiva): Se endureció la seguridad defensiva de `_collect_summary_data` envolviendo el procesamiento de archivos en un bloque `try-except` más estricto y añadiendo una validación explícita de `path.is_file()` antes de procesar para prevenir la recolección de metadatos o tamaños de rutas que podrían haber cambiado o mutado a tipos no deseados (como pipes o sockets) entre la iteración y el acceso a los datos.
 - `2026-10-04T04:52:29` **branding.py** (seguridad defensiva): Mejoré la seguridad defensiva en `branding.py` validando la existencia y seguridad de la ruta completa de destino antes de intentar escribir archivos, asegurando que `Path.resolve()` no sea engañado y que `is_safe_to_modify` verifique tanto el archivo como su directorio padre.
 - `2026-10-04T04:52:07` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva al restringir el acceso a atributos y métodos del objeto `source` en `_get_source_value` mediante una lista blanca explícita de nombres permitidos, evitando que un diccionario manipulado pueda exponer atributos sensibles del intérprete o métodos peligrosos mediante inspección de objetos.
 - `2026-10-04T04:51:26` **startup.py** (robustez ante casos límite): Se reforzó la robustez de `startup.py` ante casos de rutas mal formadas, procesos con permisos denegados o archivos inexistentes mediante la adición de un chequeo defensivo en `_resolve_and_cache_path` que previene el acceso a rutas que no cumplen con los estándares mínimos de la plataforma Windows (longitud y formato), evitando excepciones innecesarias en `Path.resolve()`.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-04T04:20:47` **browser.py** (robustez ante casos límite): Mejoré la robustez ante casos de error en el acceso a archivos de sistema durante la recursión, implementando un chequeo preventivo de `PermissionError` y `OSError` en `_sum_directory_recursive` mediante el uso de un manejo más estricto de los iteradores `os.scandir`, asegurando que el bucle no aborte ante directorios bloqueados o inaccesibles que son comunes en perfiles de usuario.
 - `2026-10-04T04:20:20` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de sistema de archivos (como discos de solo lectura o falta de permisos) mediante un manejo de excepciones explícito en la creación del directorio y la escritura, manteniendo la integridad del contrato con `safety.py`.
 - `2026-10-04T04:10:15` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo reemplazando las verificaciones repetitivas de `os.path.splitext` y `is_protected_path` por una lógica de filtrado más eficiente mediante el uso de una caché local de extensiones relevantes y la consolidación de las comprobaciones de seguridad al inicio del proceso de cada entrada.
-- `2026-10-04T04:01:38` **safety.py** (rendimiento): Optimizé la función `_is_protected_path` (llamada frecuentemente por `is_protected_path`) reemplazando la lógica de `str.split(os.sep)` por una comprobación de pertenencia directa en `PROTECTED_DIR_NAMES` sobre los componentes del path, evitando la creación de listas intermedias y reduciendo la complejidad de las validaciones de sistema en cada iteración.

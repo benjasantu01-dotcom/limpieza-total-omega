@@ -370,6 +370,10 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     
     for path, size_bytes in walk_files(directory, skip_protected):
         try:
+            # Verificación defensiva adicional: asegurar que sea un archivo antes de procesar
+            if not path.is_file():
+                continue
+            
             total_bytes += size_bytes
             total_files += 1
             
@@ -387,7 +391,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
                 elif size_bytes > top_heap[0][0]: 
                     heapq.heapreplace(top_heap, (size_bytes, path))
         except (AttributeError, KeyError, TypeError, ValueError, OSError):
-            # Ignorar archivos con nombres corruptos o metadatos inaccesibles
             continue
                 
     return SummaryData(total_bytes, total_files, dict(ext_stats), top_heap)
