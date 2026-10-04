@@ -152,15 +152,20 @@ def _is_allowed_directory(name: str) -> bool:
 def _is_file_locked(path: Path) -> bool:
     """
     Verifica si el sistema permite acceso de lectura/escritura mediante intento de apertura.
-    Se utiliza modo 'rb+' para verificar disponibilidad sin modificar contenido.
+    Se utiliza os.access para una comprobación ligera y apertura exclusiva para validar candados.
     """
     if not isinstance(path, Path) or not path.is_file():
         return True
     
+    # Comprobar primero si tenemos permisos básicos de escritura antes de intentar abrir
+    if not os.access(path, os.R_OK | os.W_OK):
+        return True
+    
     try:
+        # Intento de apertura en modo lectura/escritura binaria
         with open(path, "rb+") as f:
             return False
-    except (PermissionError, OSError):
+    except (PermissionError, OSError, IOError):
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:

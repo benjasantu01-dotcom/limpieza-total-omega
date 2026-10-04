@@ -26,6 +26,7 @@ import hashlib
 import tempfile
 import ctypes
 import time
+import fcntl
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
@@ -80,6 +81,24 @@ def _check_io_error_context(func: Callable, *args, **kwargs) -> Any:
             if i == max_retries - 1:
                 raise e
             time.sleep(0.1 * (2 ** i))
+
+def _is_file_exclusive(path: Path) -> bool:
+    """Intenta obtener un lock exclusivo de sistema para verificar uso de archivo."""
+    try:
+        fd = os.open(path, os.O_RDWR)
+        try:
+            if os.name == 'nt':
+                import msvcrt
+                msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+                msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
+            else:
+                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                fcntl.flock(fd, fcntl.LOCK_UN)
+            return True
+        finally:
+            os.close(fd)
+    except (OSError, IOError, ImportError, AttributeError):
+        return False
 
 @dataclass
 class QuarantineItem:
@@ -216,26 +235,14 @@ def _is_file_in_use_by_system(path: Path) -> bool:
     except OSError:
         return True
 
-    if os.name != 'nt':
-        return False
-        
-    try:
-        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-        if attrs != -1 and (attrs & 0x02 or attrs & 0x04): return True
-    except (OSError, AttributeError, ValueError):
-        return True
-            
-    try:
-        import msvcrt
-        file_descriptor = os.open(path, os.O_RDONLY | os.O_BINARY)
+    if os.name == 'nt':
         try:
-            msvcrt.locking(file_descriptor, msvcrt.LK_NBLCK, 1)
-            msvcrt.locking(file_descriptor, msvcrt.LK_UNLCK, 1)
-        finally:
-            os.close(file_descriptor)
-        return False
-    except (OSError, IOError, ImportError, AttributeError):
-        return True
+            attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+            if attrs != -1 and (attrs & 0x02 or attrs & 0x04): return True
+        except (OSError, AttributeError, ValueError):
+            return True
+            
+    return not _is_file_exclusive(path)
 
 def _is_file_locked(path: Path) -> bool:
     """Wrapper para chequeo de bloqueos de archivos en el sistema operativo."""
@@ -269,10 +276,7 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
             return False
 
         # Verificación final de exclusividad para evitar race conditions antes de unlink
-        try:
-            fd = os.open(str(resolved), os.O_RDWR | os.O_EXCL)
-            os.close(fd)
-        except (OSError, IOError):
+        if not _is_file_exclusive(resolved):
             return False
             
         _check_io_error_context(resolved.unlink)
@@ -425,7 +429,7 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
         
     _validate_isolation_constraints(resolved_source, resolved_dest_dir)
     ensure_safe_to_modify(resolved_source, allow_sensitive=True)
-    if _is_file_locked(resolved_source):
+    if not _is_file_exclusive(resolved_source):
         raise IOError("Archivo en uso.")
 
 
@@ -699,7 +703,7 @@ def _validate_source_for_quarantine(source: Path) -> Path:
         raise UnsafePathError("Aislamiento de directorios no permitido.")
     if not source.is_file():
         raise FileNotFoundError("Archivo origen inexistente.")
-    if _is_file_locked(source):
+    if not _is_file_exclusive(source):
         raise IOError("Archivo origen bloqueado por el sistema.")
     return source
 

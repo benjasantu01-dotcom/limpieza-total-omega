@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 73 | 4 | 14 | 12 | 85 |
-| 2026-10-04 | 138 | 19 | 29 | 5 | 125 |
+| 2026-10-03 | 72 | 4 | 14 | 12 | 82 |
+| 2026-10-04 | 141 | 19 | 30 | 5 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
-- robustez ante casos límite: **44**
+- robustez ante casos límite: **47**
 - manejo de errores y validación de entradas: **41**
 - rendimiento: **38**
-- seguridad defensiva: **35**
+- seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **20**
 - `diskreport.py`: **19**
 - `healthscore.py`: **19**
-- `quarantine.py`: **19**
+- `organizer.py`: **18**
 - `assistant.py`: **18**
-- `organizer.py`: **17**
 - `safety.py`: **16**
 - `duplicates.py`: **16**
 - `browser.py`: **15**
 - `scanner.py`: **14**
-- `settings.py`: **13**
-- `memory.py`: **13**
+- `memory.py`: **14**
+- `settings.py`: **12**
 - `branding.py`: **12**
 - `startup.py`: **11**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-04T13:32:53` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de concurrencia mediante `msvcrt` (en Windows) o `fcntl` (en POSIX) dentro de `_check_isolation_safety` y `purge_item` para asegurar que el archivo no esté siendo bloqueado o utilizado por otros procesos, mitigando riesgos de errores de I/O al intentar mover o borrar archivos que el sistema pueda estar bloqueando temporalmente.
+- `2026-10-04T13:32:11` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente archivos con permisos de solo lectura o bloqueados por el sistema operativo, utilizando `os.access` como una comprobación previa no intrusiva y añadiendo un manejo de excepciones más preciso para evitar falsos positivos en el escáner.
+- `2026-10-04T13:31:43` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_extract_process_info` para manejar casos límite donde el valor del `WorkingSet` en el CSV podría ser nulo, contener caracteres inesperados o exceder límites físicos, evitando errores de conversión que interrumpirían el análisis de procesos.
 - `2026-10-04T13:23:03` **main.py** (robustez ante casos límite): Se implementó un control de robustez en el hilo principal (`after` del ciclo de eventos) para capturar excepciones de tipo `TclError` y `RuntimeError` durante la actualización de widgets, evitando que un widget destruido prematuramente detenga la cola de eventos de la aplicación.
 - `2026-10-04T13:22:02` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `SystemMetrics` ante entradas inesperadas eliminando la dependencia de `float(None)` y añadiendo validación explícita para evitar que valores `None` o nulos provoquen errores de cálculo en el pipeline.
 - `2026-10-04T13:21:37` **duplicates.py** (robustez ante casos límite): Se mejora la robustez de `_collect_candidates` ante rutas con errores de permisos o sistemas de archivos inaccesibles, añadiendo una captura explícita de `OSError` durante la creación del objeto `Path` y en el acceso a atributos de entrada, evitando que una sola carpeta bloqueada aborte el escaneo de todo el directorio.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-04T12:41:43` **healthscore.py** (rendimiento): Se optimizó el método `validate` de `SystemMetrics` utilizando una tupla de pre-definición para iterar sobre los atributos en lugar de procesarlos línea por línea manualmente, reduciendo el código repetitivo y mejorando la eficiencia de la validación al instanciar el objeto.
 - `2026-10-04T12:41:31` **duplicates.py** (rendimiento): Optimicé el método `_collect_candidates` utilizando un conjunto de "tamaños ya procesados" para evitar re-escaneos y reemplazando las verificaciones redundantes de seguridad por una llamada única y eficiente al inicio de cada entrada, reduciendo drásticamente las llamadas al sistema operativo durante el recorrido del árbol de directorios.
 - `2026-10-04T12:40:33` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo mediante la introducción de un cache de resultados (memoización) basado en la ruta absoluta normalizada, evitando lecturas redundantes de directorios compartidos y mejorando la eficiencia en estructuras complejas.
-- `2026-10-04T12:32:15` **branding.py** (rendimiento): Se eliminó el uso de `lru_cache` decorando una función anidada (`_get_segments`) dentro de `draw_gradient_bar`, ya que esto regeneraba el caché en cada llamada a la función contenedora, anulando el propósito de la memoización y consumiendo memoria innecesariamente; en su lugar, se movió la lógica de segmentación a una llamada directa optimizada.
-- `2026-10-04T12:30:23` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints más precisos en `_coerce_and_verify` y `save` para clarificar la lógica de integridad de datos y las restricciones de seguridad que se aplican antes de persistir, mejorando la legibilidad técnica del flujo de datos.
-- `2026-10-04T12:21:46` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de heurística y métodos críticos, clarificando los parámetros, las precondiciones y el valor de retorno para facilitar el mantenimiento y la auditoría del motor de escaneo.

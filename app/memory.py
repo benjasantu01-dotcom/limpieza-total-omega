@@ -194,7 +194,9 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     
     try:
         pid = int(clean_pid)
-        ws = int("".join(filter(str.isdigit, ws_str))) if any(c.isdigit() for c in ws_str) else 0
+        # Extraer solo dígitos para evitar basura en la conversión
+        raw_ws = "".join(filter(str.isdigit, ws_str))
+        ws = int(raw_ws) if raw_ws else 0
     except ValueError:
         return None
         
