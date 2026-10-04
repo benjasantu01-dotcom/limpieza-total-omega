@@ -195,7 +195,6 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     try:
         if not src.exists(): return False
         st = src.lstat()
-        # Verificar que sea un archivo regular, que no sea symlink y no tenga hardlinks
         if not src.is_file() or (st.st_mode & 0o170000 == 0o120000) or st.st_nlink > 1: return False
         if not is_safe_to_modify(src) or not _validate_path_security(src, dest): return False
         
@@ -204,6 +203,9 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         
         if src.drive != target_dir.drive or _is_recursive_violation(src, dest): return False
         if _is_file_locked(src): return False
+        
+        # Validación extra: asegurarse que ambos residen en el mismo volumen lógico
+        if src.resolve().drive.lower() != target_dir.resolve().drive.lower(): return False
         
         return True
     except (OSError, RuntimeError, AttributeError, ValueError):
@@ -215,6 +217,7 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> boo
     Descarta rutas de sistema y puntos de reparse (junctions).
     """
     if entry is None or not _is_allowed_directory(entry.name) or _is_junction(entry): return False
+    if bool(_get_win_attributes(entry) & WIN_ATTR_SYSTEM): return False
     if entry.path in protected_cache: return False
     if is_protected_path(Path(entry.path)):
         protected_cache.add(entry.path)

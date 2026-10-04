@@ -1390,3 +1390,13 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-03T23:33:03` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-03T23:43:14` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-03T23:53:25` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-10-04T00:03:36` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-10-04T00:03:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-04T00:04:41` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-04T00:05:48` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-04T00:07:00` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-04T00:07:48` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-04T00:08:28` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia ante errores de E/S y el manejo de archivos temporales mediante la adición de una comprobación de disponibilidad de volumen en `_is_safe_for_disk_op` (evitando errores al intentar mover archivos entre unidades de disco con distintas políticas de archivos) y el filtrado estricto de directorios con atributos de sistema en `_should_scan_directory` para prevenir colisiones con carpetas de SO protegidas.
+- `2026-10-04T00:09:01` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `quarantine_file` añadiendo una validación explícita mediante `path.stat()` antes de iniciar la operación, lo que permite detectar archivos que desaparecieron o cambiaron de tipo entre la validación inicial y el intento de aislamiento, evitando errores de I/O innecesarios y garantizando que solo archivos regulares sean procesados.
+- `2026-10-04T00:09:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T00:09:01` Corrida terminada. Total usado hoy: 4.

@@ -728,9 +728,16 @@ def quarantine_file(
     Aísla un archivo de forma segura, respetando todas las garantías de integridad.
     """
     p_source = _validate_input_path(source)
+    
+    # Validación estricta pre-operación
+    try:
+        st_info = p_source.stat()
+    except OSError as e:
+        raise RuntimeError(f"Falla al verificar estado del archivo origen: {e}")
+        
     source_path = _validate_source_for_quarantine(p_source)
     
-    original_size = source_path.stat().st_size
+    original_size = st_info.st_size
     dest_dir = quarantine_dir(base)
     
     if _is_within_quarantine_sandbox(source_path, dest_dir.resolve()):
