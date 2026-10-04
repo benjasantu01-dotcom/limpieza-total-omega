@@ -446,7 +446,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
 
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Deserializa el manifiesto, usando caché de sesión para rendimiento y validación de errores."""
+    """Deserializa el manifiesto, usando caché perezoso para rendimiento óptimo."""
     base_dir = quarantine_dir(base)
     base_key = str(base_dir)
     if not force_reload and base_key in _MANIFEST_CACHE:
@@ -462,64 +462,36 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
             data = json.load(f)
         
         if not isinstance(data, list):
-            raise ValueError("Formato de manifiesto inválido (no es lista).")
+            raise ValueError("Formato de manifiesto inválido.")
             
         items = [i for d in data if (i := QuarantineItem.from_dict(d))]
         _MANIFEST_CACHE[base_key] = items
         return items
-    except (OSError, PermissionError, json.JSONDecodeError, ValueError) as e:
-        # Registrar o manejar logs aquí si la app tuviera sistema de logging
+    except (OSError, PermissionError, json.JSONDecodeError, ValueError):
         _MANIFEST_CACHE[base_key] = []
         return []
 
 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Persiste el manifiesto usando escritura atómica y validación de integridad."""
-    if not isinstance(items, list):
-        raise ValueError("El manifiesto debe ser una lista.")
-    if not all(isinstance(i, QuarantineItem) for i in items):
-        raise TypeError("Ítems no compatibles.")
-    
+    """Persiste el manifiesto usando escritura atómica y actualiza el caché interno."""
     base_path = quarantine_dir(base)
     target_path = _manifest_path(base_path)
     
     try:
         serializable_items = [item.to_dict() for item in items]
         encoded_content = json.dumps(serializable_items, indent=2, ensure_ascii=False).encode('utf-8')
-    except (TypeError, ValueError) as e:
-        raise RuntimeError(f"Error serializando manifiesto: {e}")
-    
-    temp_path: Optional[Path] = None
-    try:
-        if not is_safe_to_modify(base_path):
-            raise UnsafePathError("Directorio destino no seguro para persistir.")
-            
-        with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as temporary_file:
-            temp_path = Path(temporary_file.name)
-            try:
-                temporary_file.write(encoded_content)
-                temporary_file.flush()
-                os.fsync(temporary_file.fileno())
-            finally:
-                temporary_file.close()
         
-        if temp_path and temp_path.exists() and temp_path.stat().st_size == len(encoded_content):
-            os.replace(temp_path, target_path)
-            _MANIFEST_CACHE[str(base_path)] = items
-            try:
-                with open(base_path, "rb") as directory_handle:
-                    os.fsync(directory_handle.fileno())
-            except (OSError, AttributeError):
-                pass
-        else:
-            raise OSError("Integridad del archivo temporal fallida.")
+        with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as tf:
+            tf.write(encoded_content)
+            tf.flush()
+            os.fsync(tf.fileno())
+            temp_name = tf.name
+            
+        os.replace(temp_name, target_path)
+        _MANIFEST_CACHE[str(base_path)] = items
         return target_path
     except (OSError, IOError) as e:
         raise RuntimeError(f"Error crítico al persistir manifiesto: {e}")
-    finally:
-        if temp_path and temp_path.exists():
-            try: _check_io_error_context(os.remove, temp_path)
-            except OSError: pass
 
 
 def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
@@ -568,7 +540,6 @@ def _create_temp_file(source: Path, destination: Path) -> Path:
 
 def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> None:
     """Realiza copia byte a byte verificando integridad final mediante descriptores de archivo."""
-    # Usar O_NOFOLLOW para prevenir ataques por enlaces simbólicos durante la apertura
     flags = os.O_RDONLY
     if hasattr(os, 'O_NOFOLLOW'):
         flags |= os.O_NOFOLLOW
@@ -583,7 +554,6 @@ def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> 
             if not (stat_src.st_mode & 0o100000):
                 raise OSError("El archivo origen no es un archivo regular.")
             
-            # Seguridad adicional: verificar destino antes de operar
             if not is_safe_to_modify(temp_dest.parent):
                 raise UnsafePathError("Directorio de destino no seguro.")
             
@@ -659,7 +629,6 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if len(str(destination)) >= 250:
         raise OSError("Ruta destino demasiado larga.")
         
-    # Doble chequeo de seguridad antes de proceder a la escritura
     if not is_safe_to_modify(destination.parent):
         raise UnsafePathError("El sandbox destino ha sido invalidado.")
 
@@ -813,7 +782,6 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     try:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
-        # Búsqueda eficiente usando un generador sin recrear el diccionario completo innecesariamente
         quarantine_item = next((i for i in items if i.item_id == item_id), None)
         
         if quarantine_item is None:
@@ -905,7 +873,6 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         item_map = {i.stored_name: i for i in items}
         
         purged_ids: Set[str] = set()
-        # Capturamos excepciones individuales para no interrumpir el proceso global
         for f in quarantine_root.iterdir():
             if f.name == MANIFEST_NAME or not f.is_file():
                 continue

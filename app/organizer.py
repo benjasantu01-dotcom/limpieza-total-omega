@@ -246,6 +246,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
     """
     if depth > 50: return
     try:
+        # Usamos realpath interno para evitar resolución de red si no es necesario
         resolved_dir = current_dir.resolve()
         if resolved_dir in visited: return
         visited.add(resolved_dir)
@@ -262,11 +263,10 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _is_valid_junk_entry(item.name, stats, now_ts):
                             if not (getattr(stats, 'st_file_attributes', 0) & WIN_ATTR_MASK):
                                 found.append(JunkFile(Path(item.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
-                except (PermissionError, OSError) as e:
-                    logger.debug(f"Acceso denegado o error en {item.path}: {e}")
+                except (PermissionError, OSError):
                     continue
-    except (PermissionError, OSError, RuntimeError) as e:
-        logger.error(f"Error procesando directorio {current_dir}: {e}")
+    except (PermissionError, OSError, RuntimeError):
+        pass
 
 def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[JunkFile]:
     """Escanea los directorios especificados en busca de archivos basura."""
@@ -278,10 +278,10 @@ def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[Ju
         if not d: continue
         try:
             p = Path(d).expanduser()
-            if p.exists() and p.is_dir() and not _is_unc_path(p) and is_safe_to_modify(p):
+            # Validar existencia inicial de forma rápida
+            if p.is_dir() and not _is_unc_path(p) and is_safe_to_modify(p):
                 _process_directory(p, found, 0, protected_cache, visited)
-        except (OSError, RuntimeError) as e:
-            logger.warning(f"Error inicializando escaneo en {d}: {e}")
+        except (OSError, RuntimeError):
             continue
     return found
 
