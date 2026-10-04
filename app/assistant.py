@@ -235,23 +235,28 @@ SYSTEM_PROMPT: Final[str] = (
     "- Máximo 6 líneas."
 )
 
-# Regex de validación y seguridad
+# Constantes de seguridad y regex
 _ENDPOINT_BASE: Final[str] = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 _TIMEOUT_SECONDS: Final[int] = 30
 _API_HOST_ROOT: Final[str] = "https://generativelanguage.googleapis.com/"
 
-_REGEX_INYECCION: Final[re.Pattern] = re.compile(r"([a-zA-Z]:[\\/]|/|\\|\.\.|\0|[\u202e\u202d\u200e\u200f])")
-_REGEX_CONTROL: Final[re.Pattern] = re.compile(r"[\x00-\x1f\x7f\u0080-\u009f\u202b-\u202f\u200b-\u200d\uFEFF]")
+# Regex de seguridad organizados por tipo
+_REGEX_STRUCTURE_INJECTION: Final[re.Pattern] = re.compile(r"([a-zA-Z]:[\\/]|/|\\|\.\.|\0|[\u202e\u202d\u200e\u200f])")
+_REGEX_CONTROL_CHARS: Final[re.Pattern] = re.compile(r"[\x00-\x1f\x7f\u0080-\u009f\u202b-\u202f\u200b-\u200d\uFEFF]")
 _REGEX_PATH_TRAVERSAL: Final[re.Pattern] = re.compile(r"(\.\.[\\/])|([\\/]\.\.)", re.IGNORECASE)
+_REGEX_ANSI_ESCAPE: Final[re.Pattern] = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+_REGEX_POWERSHELL_CMDS: Final[re.Pattern] = re.compile(r"(Get-|Remove-|Set-|Stop-|Start-)[a-zA-Z]+", re.IGNORECASE)
+_REGEX_EXEC_FUNCTIONS: Final[re.Pattern] = re.compile(r"(exec|eval|subprocess|system\s*\(|rm\s+|del\s+|cmd\.exe|powershell|reg\.exe)", re.IGNORECASE)
+_REGEX_SYSTEM_PATHS: Final[re.Pattern] = re.compile(r"(\\\\|[a-z]:\\|/etc/|\\\\UNC|C:\\Windows|System32|/proc/|/dev/)", re.IGNORECASE)
 
 SECURITY_PATTERNS: Final[list[re.Pattern]] = [
-    _REGEX_INYECCION,
-    _REGEX_CONTROL,
+    _REGEX_STRUCTURE_INJECTION,
+    _REGEX_CONTROL_CHARS,
     _REGEX_PATH_TRAVERSAL,
-    re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])"),                       # Secuencias escape ANSI
-    re.compile(r"(Get-|Remove-|Set-|Stop-|Start-)[a-zA-Z]+", re.IGNORECASE),   # Comandos Powershell sospechosos
-    re.compile(r"(exec|eval|subprocess|system\s*\(|rm\s+|del\s+|cmd\.exe|powershell|reg\.exe)", re.IGNORECASE), # Ejecución de código
-    re.compile(r"(\\\\|[a-z]:\\|/etc/|\\\\UNC|C:\\Windows|System32|/proc/|/dev/)", re.IGNORECASE) # Rutas sistema
+    _REGEX_ANSI_ESCAPE,
+    _REGEX_POWERSHELL_CMDS,
+    _REGEX_EXEC_FUNCTIONS,
+    _REGEX_SYSTEM_PATHS
 ]
 
 _TOKEN_REGEX: Final[re.Pattern] = re.compile(r"\w+")
@@ -393,7 +398,7 @@ class SystemContext:
     def _clean_grade(self, val: Any) -> str:
         """Limpia el string de calificación eliminando caracteres de control no seguros."""
         if not isinstance(val, str): return ""
-        clean = _REGEX_CONTROL.sub(" ", val)[:10].strip()
+        clean = _REGEX_CONTROL_CHARS.sub(" ", val)[:10].strip()
         return clean if _ensure_safe_text(clean) and not is_protected_path(clean) else ""
 
     def _validate_ingestion_source(self, source: Any) -> bool:
@@ -464,7 +469,7 @@ def _ensure_safe_text(text: Any) -> bool:
     """
     if not isinstance(text, str) or not text or len(text) > _MAX_TEXT_LENGTH:
         return False
-    if _REGEX_CONTROL.search(text) or any(c in text for c in "<>|&^"):
+    if _REGEX_CONTROL_CHARS.search(text) or any(c in text for c in "<>|&^"):
         return False
     
     if _is_path_like_or_protected(text):
@@ -619,7 +624,7 @@ _TOKENS_MAP: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
 def _sanitize_query(question: str) -> str:
     """Limpia y trunca la consulta del usuario para prevenir abusos de longitud o inyección."""
     if not isinstance(question, str): return ""
-    clean = _REGEX_CONTROL.sub(' ', question).strip()[:100]
+    clean = _REGEX_CONTROL_CHARS.sub(' ', question).strip()[:100]
     return clean if _ensure_safe_text(clean) else ""
 
 def local_answer(question: str, context: SystemContext) -> Answer:

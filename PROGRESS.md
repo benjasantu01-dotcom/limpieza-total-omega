@@ -7,45 +7,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **208** (41.3% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 45
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 213
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 44
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 144 | 7 | 29 | 18 | 134 |
-| 2026-10-04 | 64 | 11 | 16 | 2 | 79 |
+| 2026-10-03 | 142 | 7 | 28 | 18 | 133 |
+| 2026-10-04 | 66 | 12 | 16 | 3 | 79 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **46**
 - robustez ante casos límite: **45**
-- rendimiento: **39**
+- legibilidad y documentación: **41**
 - manejo de errores y validación de entradas: **39**
-- legibilidad y documentación: **39**
+- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `organizer.py`: **19**
 - `quarantine.py`: **19**
 - `safety.py`: **18**
-- `duplicates.py`: **17**
+- `assistant.py`: **17**
 - `diskreport.py`: **17**
-- `assistant.py`: **16**
+- `duplicates.py`: **16**
 - `scanner.py`: **16**
 - `healthscore.py`: **16**
 - `settings.py`: **15**
-- `memory.py`: **14**
 - `browser.py`: **14**
+- `memory.py`: **13**
+- `branding.py`: **11**
 - `startup.py`: **10**
-- `branding.py`: **10**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-04T07:25:15` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (usando el formato Google Style) que clarifican las dependencias, restricciones de seguridad y el propósito de las funciones, facilitando la auditoría del código sin alterar su lógica operativa.
+- `2026-10-04T07:24:54` **assistant.py** (legibilidad y documentación): He refactorizado la estructura de las reglas de seguridad (`SECURITY_PATTERNS`) y la lógica de `_ensure_safe_text` para mejorar la legibilidad y mantenibilidad, extrayendo las expresiones regulares complejas a constantes documentadas individualmente, facilitando así la auditoría de seguridad del código.
 - `2026-10-04T07:14:49` **safety.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita para el parámetro `root_directory` en `ensure_safe_to_modify` y `filter_safe_paths`, asegurando que, si se proporciona, sea una ruta absoluta y no nula, previniendo errores en cascada durante la validación de límites (sandbox).
 - `2026-10-04T07:08:53` **organizer.py** (manejo de errores y validación de entradas): He robustecido el manejo de errores en `_process_directory` y `scan_for_junk` para capturar explícitamente `PermissionError` y `OSError` (evitando abortos silenciosos por rutas inválidas o inaccesibles) y mejorado la validación de parámetros de entrada en `stage_for_review` para prevenir ejecuciones con rutas malformadas.
 - `2026-10-04T07:03:23` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la resiliencia del pipeline de cálculo encapsulando la ejecución de los `scorers` en un bloque de control de errores específico y añadiendo una validación de `None` temprana en `compute_score` para evitar propagación de estados inválidos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-04T05:12:25` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva de `trim_working_set` implementando una validación estricta que impide la manipulación de procesos cuyas rutas no son verificables o se encuentran en directorios protegidos, asegurando que solo procesos legítimos puedan ser sujetos a la operación de trimming.
 - `2026-10-04T05:11:59` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la implementación de `ensure_safe_to_modify` en todas las operaciones que involucran persistencia o manipulación directa de archivos fuera de la app (reportes y configuración), garantizando que incluso ante errores de lógica en la UI, el acceso al disco esté restringido a rutas seguras.
 - `2026-10-04T05:01:31` **diskreport.py** (seguridad defensiva): Se endureció la seguridad defensiva de `_collect_summary_data` envolviendo el procesamiento de archivos en un bloque `try-except` más estricto y añadiendo una validación explícita de `path.is_file()` antes de procesar para prevenir la recolección de metadatos o tamaños de rutas que podrían haber cambiado o mutado a tipos no deseados (como pipes o sockets) entre la iteración y el acceso a los datos.
-- `2026-10-04T04:52:29` **branding.py** (seguridad defensiva): Mejoré la seguridad defensiva en `branding.py` validando la existencia y seguridad de la ruta completa de destino antes de intentar escribir archivos, asegurando que `Path.resolve()` no sea engañado y que `is_safe_to_modify` verifique tanto el archivo como su directorio padre.
-- `2026-10-04T04:52:07` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva al restringir el acceso a atributos y métodos del objeto `source` en `_get_source_value` mediante una lista blanca explícita de nombres permitidos, evitando que un diccionario manipulado pueda exponer atributos sensibles del intérprete o métodos peligrosos mediante inspección de objetos.
