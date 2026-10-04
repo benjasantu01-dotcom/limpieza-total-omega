@@ -94,7 +94,7 @@ def _is_safe_key(key: str) -> bool:
 
 def _check_metric_integrity(val: float) -> bool:
     """Verifica que un valor numérico sea seguro, finito y coherente para el asistente."""
-    return isinstance(val, (int, float)) and math.isfinite(val) and not math.isnan(val)
+    return isinstance(val, (int, float)) and not isinstance(val, bool) and math.isfinite(val) and not math.isnan(val)
 
 def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
     """
@@ -401,7 +401,6 @@ class SystemContext:
         if source is None: return False
         if not isinstance(source, dict):
             try:
-                # Comprobar si es instancia sin acceder a __dict__ directamente para evitar bloqueos
                 if not isinstance(source, object): return False
             except Exception:
                 return False
@@ -412,9 +411,6 @@ class SystemContext:
     def ingest(self, source: Any) -> bool:
         """
         Normaliza e importa datos externos al contexto local.
-        
-        Realiza validaciones de estructura, aplica tipos y límites vía `_VALIDATORS`,
-        y desinfecta campos de texto para prevenir inyecciones.
         """
         if not self._validate_ingestion_source(source):
             return False
@@ -465,20 +461,15 @@ def _is_path_like_or_protected(text: str) -> bool:
 def _ensure_safe_text(text: Any) -> bool:
     """
     Realiza una desinfección estricta y validación de seguridad sobre cadenas.
-    
-    Verifica contra inyecciones, caracteres no imprimibles y patrones de peligro.
-    Divide la validación en una lógica de rutas y una de contenido.
     """
     if not isinstance(text, str) or not text or len(text) > _MAX_TEXT_LENGTH:
         return False
     if _REGEX_CONTROL.search(text) or any(c in text for c in "<>|&^"):
         return False
     
-    # Validación de integridad de ruta y caracteres prohibidos
     if _is_path_like_or_protected(text):
         return False
     
-    # Validación mediante patrones de ataque conocidos
     return not any(pattern.search(text) for pattern in SECURITY_PATTERNS)
 
 def _get_source_value(source: Any, key: str) -> Any:
@@ -487,10 +478,8 @@ def _get_source_value(source: Any, key: str) -> Any:
     try:
         if isinstance(source, dict):
             return source.get(key)
-        # Impedimos acceder a miembros de tipo ocultos o recursión sobre atributos especiales
         if key in ("__dict__", "__class__", "__base__", "__mro__", "__subclasses__", "__init__"):
             return None
-        # Solo permitir acceso si no es un descriptor o método invocable
         val = getattr(source, key, None)
         if callable(val) or isinstance(val, type):
             return None
@@ -649,7 +638,6 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     if not q_sanitized:
         return Answer("Entrada no válida.")
     
-    # Búsqueda O(1) inmediata sobre los tokens encontrados
     for token in _TOKEN_REGEX.findall(q_sanitized.lower()):
         if handler := _TOKENS_MAP.get(token):
             return handler(context, question)
@@ -672,13 +660,14 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
         return default
     
     try:
+        # Extracción y validación estricta de tipos
         api_key = raw_cfg.get("asistente_api_key")
         model = raw_cfg.get("asistente_modelo")
         metrics_val = raw_cfg.get("asistente_enviar_metricas")
         
         return AssistantConfig(
             api_key=str(api_key) if isinstance(api_key, str) else "",
-            model=str(model) if isinstance(model, str) else "gemini-3.1-flash-lite",
+            model=str(model) if isinstance(model, str) and len(str(model)) < 64 else "gemini-3.1-flash-lite",
             allow_metrics=bool(metrics_val) if isinstance(metrics_val, bool) else True
         )
     except Exception:
@@ -736,7 +725,6 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     payload = _build_payload(question, context_text)
     if not payload: return None
     
-    # Construcción vigilada de la URL
     target_url = _ENDPOINT_BASE.format(model=model)
     if not target_url.startswith(_API_HOST_ROOT) or re.search(r"[<>\s]", target_url):
         return None
@@ -763,7 +751,6 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
 def ask(question: str, context: SystemContext | None = None,
         base: str | Path | None = None) -> Answer:
     """Punto de acceso único que orquesta los motores local y remoto."""
-    # Validación temprana antes de cualquier procesamiento
     if not _ensure_safe_text(question):
         return Answer("Entrada no válida.")
         
