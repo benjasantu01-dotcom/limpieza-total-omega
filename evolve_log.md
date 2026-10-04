@@ -488,3 +488,68 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-10-04T13:02:16` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Se optimizó `load()` para utilizar un mecanismo de caché más eficiente basado en `os.stat().st_mtime` y la invalidación granular del Singleton, reduciendo drásticamente las lecturas innecesarias de disco y los parses JSON repetitivos en el bucle principal.
 - `2026-10-04T13:02:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T13:02:16` Corrida terminada. Total usado hoy: 308.
+- `2026-10-04T13:10:30` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-04T13:11:01` Tests FALLARON:
+```
+e == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:182: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed, 7 warnings in 1.48s
+
+```
+- `2026-10-04T13:11:01` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `startup.py` reemplazando la lógica de validación de archivos repetitiva por una caché persistente durante la ejecución, y aplicando una verificación previa sobre el sistema de archivos antes de invocar `Path.resolve()` en el bucle de escaneo.
+- `2026-10-04T13:11:43` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Reforcé la robustez del motor local ante contextos parcialmente poblados o con valores extremos, asegurando que el cálculo de `active_problems` y el `SystemContext` manejen correctamente la ausencia de métricas clave sin fallar.
+- `2026-10-04T13:12:18` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se introdujo una validación defensiva en `_hex_to_rgb` y `_rgb_to_hex` para manejar casos de entrada malformada o desbordamiento numérico, fortaleciendo la robustez ante datos inesperados sin alterar la funcionalidad.
+- `2026-10-04T13:12:30` Tests FALLARON:
+```
+rofiles()
+        if not current_caches:
+            return ["No se detectaron cachés de navegador en este sistema."]
+    
+>       total_mb: float = round(total_cache_bytes(current_Cfaches) / BYTES_TO_MB, 2)
+                                                  ^^^^^^^^^^^^^^^
+E       NameError: name 'current_Cfaches' is not defined
+
+app/browser.py:343: NameError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:182: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - NameError: name 'current_Cfaches' is not defined
+1 failed, 298 passed, 7 warnings in 1.49s
+
+```
+- `2026-10-04T13:12:30` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la resiliencia ante errores de sistema de archivos al reemplazar `os.scandir` por un iterador dentro de un bloque `try-except` más robusto, asegurando que si un directorio deniega el acceso durante la iteración (ej. debido a permisos o bloqueos en tiempo real), el proceso de escaneo capture la excepción y continúe con los demás elementos en lugar de abortar el cálculo para ese navegador.
+- `2026-10-04T13:12:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T13:12:30` Corrida terminada. Total usado hoy: 312.
