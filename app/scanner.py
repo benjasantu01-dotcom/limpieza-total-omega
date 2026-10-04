@@ -234,6 +234,8 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Aplica la lista completa de heurísticas sobre un archivo dado."""
+        if not os.access(path, os.R_OK):
+            return
         for check_fn in ALL_CHECKS:
             try:
                 finding = check_fn(path, entry, self.now_ts)

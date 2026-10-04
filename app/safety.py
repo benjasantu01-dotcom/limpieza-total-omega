@@ -34,11 +34,13 @@ class SecurityDescriptor(NamedTuple):
         is_protected_system: Indica si el archivo tiene atributos de sistema, oculto o temporal.
         is_in_use: Indica si el archivo posee un bloqueo de escritura por otro proceso.
         is_readonly: Indica si el bit de atributo de solo lectura está activo.
+        is_reparse: Indica si el archivo es un punto de reparse (symlink, junction).
     """
     attrs: int
     is_protected_system: bool
     is_in_use: bool
     is_readonly: bool
+    is_reparse: bool
     
     def has_flag(self, flag: Win32Attr) -> bool:
         """Verifica si un atributo específico está presente en el descriptor."""
@@ -313,7 +315,8 @@ def _get_security_descriptor_cached(path_str: str) -> SecurityDescriptor:
         attrs=attrs,
         is_protected_system=bool(attrs & (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | Win32Attr.TEMPORARY | Win32Attr.REPARSE_POINT)),
         is_in_use=_is_file_locked_by_other_process(path_str),
-        is_readonly=bool(attrs & Win32Attr.READONLY)
+        is_readonly=bool(attrs & Win32Attr.READONLY),
+        is_reparse=bool(attrs & Win32Attr.REPARSE_POINT)
     )
 
 def _get_security_descriptor(path: Path) -> SecurityDescriptor:
@@ -403,7 +406,7 @@ def _rule(reason: ProtectionReason, predicate: ViolationPredicate) -> _Integrity
 # Lista de validadores de integridad aplicada secuencialmente
 _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _rule(ProtectionReason.SYMLINK, lambda p, _, __: p.is_symlink()),
-    _rule(ProtectionReason.REPARSE_POINT, lambda p, _, __: _is_system_directory_junction(str(p))),
+    _rule(ProtectionReason.REPARSE_POINT, lambda p, _, sd: sd.is_reparse or _is_system_directory_junction(str(p))),
     _rule(ProtectionReason.KERNEL_LOCKED, lambda p, _, __: _is_kernel_managed(p)),
     _rule(ProtectionReason.READ_ONLY, lambda _, st, sd: not bool(st.st_mode & stat.S_IWRITE) or sd.is_readonly),
     _rule(ProtectionReason.VOLUME_READ_ONLY, lambda p, _, __: _is_volume_readonly(str(p))),

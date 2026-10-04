@@ -623,6 +623,10 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if stat_orig.st_size != original_size:
         raise RuntimeError("El archivo cambió durante la validación inicial (TOCTOU).")
     
+    # Prevenir aislamiento de hard links (potencial riesgo de seguridad)
+    if stat_orig.st_nlink > 1:
+        raise UnsafePathError("Aislamiento denegado: el archivo tiene enlaces físicos múltiples.")
+    
     if source.resolve() == destination.resolve():
         raise UnsafePathError("El origen ya reside en el directorio destino.")
     _validate_quarantine_path(destination, destination.parent)

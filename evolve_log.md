@@ -1330,3 +1330,10 @@ assert not ['browser.py']
 - `2026-10-04T09:41:53` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-10-04T09:41:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T09:41:53` Corrida terminada. Total usado hoy: 228.
+- `2026-10-04T09:46:21` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-10-04T09:47:23` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_atomic_isolate_file` añadiendo una validación explícita de `st_nlink` para impedir que archivos con enlaces físicos (hard links) —que podrían ser puntos de entrada a otras partes del sistema— sean procesados en el sandbox.
+- `2026-10-04T09:47:47` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-04T09:48:42` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). He refactorizado la validación de integridad del sistema para incluir una comprobación explícita de `FILE_ATTRIBUTE_REPARSE_POINT` durante el escaneo de atributos, garantizando que los puntos de reparse sean bloqueados activamente incluso si no son detectados como junctions de directorio, reforzando así la seguridad ante redirecciones inesperadas del sistema de archivos.
+- `2026-10-04T09:49:06` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha añadido una validación de acceso `os.access(path, os.R_OK)` dentro de `_run_file_heuristics` para asegurar que el archivo sea efectivamente legible antes de intentar procesar sus metadatos o contenido, reforzando la seguridad defensiva contra errores de permiso inesperados.
+- `2026-10-04T09:49:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T09:49:06` Corrida terminada. Total usado hoy: 232.
