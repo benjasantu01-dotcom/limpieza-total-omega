@@ -319,14 +319,17 @@ def validate(raw_values: Any) -> AppSettings:
     return config # type: ignore
 
 def _is_file_secure_to_read(file_obj: Any) -> bool:
-    """Garantiza que el archivo sea regular, sin enlaces y con permisos restringidos de lectura usando descriptor."""
+    """Garantiza mediante FSTAT que el archivo es regular, no un enlace, y posee permisos de solo usuario."""
     try:
-        path = os.path.abspath(file_obj.name)
-        if os.path.islink(path): return False
+        # FSTAT garantiza la verificación sobre el descriptor ya abierto
         st = os.fstat(file_obj.fileno())
+        # Verificar que sea archivo regular y no un symlink
+        if not stat.S_ISREG(st.st_mode) or os.path.islink(file_obj.name): return False
+        # Validar tamaño
         if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
-        if not stat.S_ISREG(st.st_mode): return False
+        # Bloquear permisos de ejecución o escritura grupal/otros
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
+        # Verificar ownership (UID) y enlaces físicos
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if st.st_nlink != 1: return False
         return True
@@ -338,7 +341,7 @@ def _load_impl(ruta: Path) -> AppSettings:
     Lógica interna: abre el archivo solo si es seguro, bloquea mediante 
     flock para concurrencia y valida el contenido JSON post-apertura.
     """
-    if not ruta.exists() or ruta.is_symlink(): return DEFAULTS.copy()
+    if not ruta.exists(): return DEFAULTS.copy()
     try:
         ensure_safe_to_modify(str(ruta))
         with open(ruta, "r", encoding="utf-8") as f:

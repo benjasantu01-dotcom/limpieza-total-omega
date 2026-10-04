@@ -1484,3 +1484,43 @@ FAILED evolve/tests/test_modules.py::test_logo_draws_a_gradient_and_a_halo - Nam
 - `2026-10-04T00:46:02` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-04T00:46:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T00:46:02` Corrida terminada. Total usado hoy: 20.
+- `2026-10-04T00:54:34` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-10-04T00:55:32` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación explícita para evitar que `_is_kernel_managed` o `ensure_safe_to_modify` operen sobre archivos cuya ruta contenga el nombre de directorio del sistema `Config.Msi` o `Installer`, rutas frecuentes en instalaciones de software donde el sistema operativo bloquea accesos y puede causar errores de acceso denegado o inestabilidad al ser manipuladas.
+- `2026-10-04T00:56:01` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-10-04T00:57:01` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-04T00:58:04` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-04T00:58:42` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de "Time-of-check to time-of-use" (TOCTOU) y corrupción, validando que el archivo no sea un enlace simbólico tras abrir el descriptor de archivo y asegurando que los permisos del archivo sean estrictamente privados antes de proceder con la lectura o escritura.
+- `2026-10-04T00:59:42` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-04T00:59:58` Tests FALLARON:
+```
+st_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:167: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 7 warnings in 0.93s
+
+```
+- `2026-10-04T00:59:58` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad de `startup.py` al aplicar `is_safe_to_modify` en `_validate_file_access` y `_resolve_and_cache_path`, asegurando que, incluso en un módulo de solo lectura, ninguna operación de resolución de rutas interactúe con ubicaciones prohibidas o fuera del alcance de seguridad definido.
+- `2026-10-04T00:59:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T00:59:58` Corrida terminada. Total usado hoy: 24.

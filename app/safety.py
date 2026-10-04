@@ -209,6 +209,7 @@ PROTECTED_DIR_NAMES: Final[frozenset[str]] = frozenset({
     ".ssh", ".gnupg", "microsoft\\crypto", "protect",
     "bin", "sbin", "usr", "etc", "var", "lib", "lib64", "proc", "sys",
     "dev", "root", "library", "applications",
+    "config.msi", "installer",
 })
 
 # Extensiones ejecutables y configuraciones de seguridad críticas
@@ -382,7 +383,10 @@ def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
 
 def _is_kernel_managed(path: Path) -> bool:
     """Identifica archivos del núcleo bloqueados permanentemente (ej. pagefile.sys), evitando su manipulación."""
-    return path.name.lower() in ("pagefile.sys", "hiberfil.sys", "swapfile.sys", "dumpstack.log.tmp")
+    p_str = str(path).lower()
+    if any(blocked in p_str for blocked in ("pagefile.sys", "hiberfil.sys", "swapfile.sys", "dumpstack.log.tmp")):
+        return True
+    return any(part.lower() in ("config.msi", "installer") for part in path.parts)
 
 @lru_cache(maxsize=1024)
 def _is_sensitive_extension(ext: str) -> bool:
