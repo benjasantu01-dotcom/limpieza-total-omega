@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
-- Rechazadas por tests: 17
+- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 121 | 4 | 25 | 15 | 119 |
-| 2026-10-04 | 95 | 13 | 22 | 3 | 87 |
+| 2026-10-03 | 121 | 4 | 25 | 15 | 115 |
+| 2026-10-04 | 97 | 14 | 22 | 3 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - robustez ante casos límite: **47**
 - rendimiento: **42**
+- seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **39**
-- seguridad defensiva: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
 - `healthscore.py`: **19**
 - `organizer.py`: **19**
 - `quarantine.py`: **19**
 - `assistant.py`: **18**
+- `duplicates.py`: **17**
 - `safety.py`: **17**
-- `duplicates.py`: **16**
 - `scanner.py`: **16**
 - `browser.py`: **15**
 - `memory.py`: **14**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-04T09:27:43` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_collect_candidates` implementando una validación estricta de rutas mediante `is_protected_path` antes de intentar operar sobre ellas, evitando el riesgo de seguir enlaces simbólicos o rutas críticas fuera de la jerarquía esperada.
+- `2026-10-04T09:27:26` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` verificando que la ruta del archivo esté efectivamente contenida dentro del directorio raíz antes de procesarla, evitando posibles ataques de recorrido de directorios o acceso a rutas fuera del scope mediante enlaces simbólicos manipulados.
 - `2026-10-04T09:17:34` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva de `assistant.py` mediante la implementación de `_is_safe_path_input` para centralizar la validación de rutas dentro de las consultas, evitando inyecciones de rutas en los campos de texto, e integré este filtro en `_sanitize_query` para que cualquier entrada del usuario sea filtrada antes de llegar a los motores.
 - `2026-10-04T09:17:07` **startup.py** (robustez ante casos límite): Mejoré `_resolve_and_cache_path` para manejar correctamente rutas que contienen caracteres no ASCII o representaciones de sistema de archivos malformadas, evitando errores `OSError` o `UnicodeEncodeError` que podrían colgar el escaneo.
 - `2026-10-04T09:16:04` **scanner.py** (robustez ante casos límite): Se introdujo `_get_file_size` usando `os.stat` directo con manejo de excepciones granular para prevenir fallos durante el escaneo cuando un archivo es bloqueado por el sistema o eliminado concurrentemente durante la iteración, reforzando la robustez ante casos de concurrencia y permisos denegados.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-04T08:46:18` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y estados inválidos mediante una validación más estricta de las rutas y parámetros, asegurando que la operación de I/O no se ejecute si existen condiciones de carrera o datos corruptos.
 - `2026-10-04T08:25:52` **quarantine.py** (rendimiento): Se optimizó la carga y persistencia del manifiesto implementando una carga perezosa (`lazy loading`) en `load_manifest` y evitando la serialización innecesaria del caché, reduciendo drásticamente el uso de CPU y I/O en operaciones repetitivas sobre el mismo directorio de cuarentena.
 - `2026-10-04T08:25:12` **organizer.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo eliminando llamadas redundantes a `Path.resolve()` y `Path.exists()` dentro del bucle principal, aprovechando que `os.scandir` ya provee la información necesaria (`is_dir`, `is_file`, `stat`), reduciendo drásticamente las llamadas al sistema.
-- `2026-10-04T08:16:24` **main.py** (rendimiento): He optimizado el sistema de caché y las consultas de métricas implementando un mecanismo de invalidación perezosa mediante estados (digests), evitando que el dashboard de Salud re-calcule datos costosos si no ha habido cambios en las fuentes (basura, sospechosos, inicio, cuarentena), lo cual reduce significativamente el overhead de procesamiento en cada refresco de UI.
-- `2026-10-04T08:15:26` **healthscore.py** (rendimiento): Optimicé el método `validate` de `SystemMetrics` y `_clamp` eliminando llamadas redundantes a `float()` y verificaciones iterativas, reduciendo la sobrecarga en cada iteración del bucle de score.

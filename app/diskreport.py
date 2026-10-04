@@ -153,8 +153,9 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         if any(c in entry.name for c in SUSPICIOUS_CHARS) or '\0' in entry.name:
             return True
         
-        # Validar confinamiento sin resolver symlinks dinámicamente durante el escaneo
-        if not entry.path.startswith(str(root_path)):
+        # Validación de confinamiento: asegurar que la ruta real está bajo el root_path
+        entry_path = Path(entry.path).resolve()
+        if root_path not in entry_path.parents and entry_path != root_path:
             return True
             
         try:

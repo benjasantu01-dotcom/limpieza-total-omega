@@ -1289,3 +1289,34 @@ FAILED evolve/tests/test_modules.py::test_pressure_level_without_data_is_informa
 - `2026-10-04T09:17:34` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva de `assistant.py` mediante la implementación de `_is_safe_path_input` para centralizar la validación de rutas dentro de las consultas, evitando inyecciones de rutas en los campos de texto, e integré este filtro en `_sanitize_query` para que cualquier entrada del usuario sea filtrada antes de llegar a los motores.
 - `2026-10-04T09:17:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T09:17:34` Corrida terminada. Total usado hoy: 220.
+- `2026-10-04T09:25:48` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-10-04T09:26:24` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-10-04T09:26:53` Tests FALLARON:
+```
+ de escritura: browser.py. Para saber si algo es de sistema sin bloquear la lectura, usá `is_protected_path`.
+E       assert not ['browser.py']
+
+evolve/tests/test_integrity.py:279: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:176: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check - AssertionError: Estos módulos son de solo lectura y usan el chequeo de escritura: browser.py. Para saber si algo es de sistema sin bloquear la lectura, usá `is_protected_path`.
+assert not ['browser.py']
+1 failed, 298 passed, 7 warnings in 1.13s
+
+```
+- `2026-10-04T09:26:53` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez defensiva en `_is_file_in_use` y `_process_file_entry` al integrar `ensure_safe_to_modify` como barrera de seguridad explícita (en lugar de confiar únicamente en `is_safe_to_modify`), garantizando que cualquier acceso a archivo esté validado contra la política de seguridad centralizada ante condiciones de carrera.
+- `2026-10-04T09:27:26` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_excluded_path` verificando que la ruta del archivo esté efectivamente contenida dentro del directorio raíz antes de procesarla, evitando posibles ataques de recorrido de directorios o acceso a rutas fuera del scope mediante enlaces simbólicos manipulados.
+- `2026-10-04T09:27:43` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_collect_candidates` implementando una validación estricta de rutas mediante `is_protected_path` antes de intentar operar sobre ellas, evitando el riesgo de seguir enlaces simbólicos o rutas críticas fuera de la jerarquía esperada.
+- `2026-10-04T09:27:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T09:27:43` Corrida terminada. Total usado hoy: 224.
