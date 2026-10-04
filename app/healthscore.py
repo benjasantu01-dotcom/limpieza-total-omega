@@ -16,6 +16,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Any, Final, NamedTuple, Annotated, Callable, TypeAlias, Protocol, Tuple
 from enum import Enum
 import math
+import logging
 
 ScoreMap: TypeAlias = Dict[str, float]
 NormalizedRatio: TypeAlias = Annotated[float, "Valor de salud normalizado entre 0.0 (crítico) y 1.0 (óptimo)"]
@@ -219,30 +220,32 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
         try:
             if rule.check(metrics, ratio):
                 msg = str(rule.message_factory(metrics))
-                # Filtro defensivo: solo caracteres imprimibles, sin saltos de línea ni control, límite de longitud
                 clean_msg = "".join(c for c in msg if c.isprintable() and c not in "\r\n\t").strip()
                 if clean_msg: findings.append(clean_msg[:200])
-        except Exception:
-            continue
+        except Exception as e:
+            logging.error(f"Error evaluando regla en área {rule.area}: {e}")
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
+    if metrics is None:
+        metrics = SystemMetrics()
+    
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
     accumulated_score: float = 0.0
     
     for entry in _PIPELINE:
         try:
-            area_ratio = entry.scorer(m)
-            _evaluate_rules(m, entry.rules, area_ratio, recommendations)
+            area_ratio = entry.scorer(metrics)
+            _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             points = area_ratio * entry.weight
             metric_breakdown[entry.area] = int(round(points))
             accumulated_score += points
-        except Exception:
+        except Exception as e:
+            logging.error(f"Error fatal procesando área {entry.area}: {e}")
             metric_breakdown[entry.area] = 0
             
-    if m.quarantined_count > 0:
-        recommendations.append(f"Tenés {m.quarantined_count} archivo(s) en cuarentena.")
+    if metrics.quarantined_count > 0:
+        recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
     
     final_score = int(round(_clamp(accumulated_score, 0.0, 100.0)))
     return HealthResult(

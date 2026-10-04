@@ -147,9 +147,9 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
     return mem_status
 
 def _safe_int_conversion(value: Optional[str], multiplier: int = 1) -> BytesValue:
-    if not value: return BytesValue(0)
+    if not isinstance(value, str): return BytesValue(0)
     clean_val = "".join(filter(str.isdigit, value))
-    return BytesValue(max(0, int(clean_val)) * multiplier) if clean_val else BytesValue(0)
+    return BytesValue(int(clean_val) * multiplier) if clean_val else BytesValue(0)
 
 _is_windows: bool = os.name == "nt"
 _linux_mem_path: Path = Path("/proc/meminfo")
@@ -165,7 +165,10 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     for line in meminfo_text.splitlines():
         if ":" not in line: continue
         key, _, value_part = line.partition(":")
-        metrics[key.strip()] = _safe_int_conversion(value_part, 1024)
+        try:
+            metrics[key.strip()] = _safe_int_conversion(value_part, 1024)
+        except (ValueError, TypeError):
+            continue
             
     total: BytesValue = metrics.get("MemTotal", BytesValue(0))
     if total <= 0: return _EMPTY_SNAPSHOT

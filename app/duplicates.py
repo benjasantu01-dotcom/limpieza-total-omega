@@ -96,12 +96,6 @@ class DuplicateGroup:
 def _is_file_locked(path: Path) -> bool:
     """
     Comprueba si el archivo está bloqueado intentando abrirlo en modo lectura exclusiva.
-    
-    Args:
-        path: Ruta del archivo a evaluar.
-        
-    Returns:
-        bool: True si el archivo está en uso o inaccesible, False en caso contrario.
     """
     if not isinstance(path, Path) or not is_safe_to_modify(path) or not path.exists():
         return True
@@ -272,8 +266,6 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
     """
     Refina grupos de archivos grandes aplicando hash parcial y luego completo.
-    La estrategia asegura que solo los archivos con colisiones parciales (64KB)
-    sean procesados con el costo computacional del hash completo (SHA256).
     """
     partial_groups: Dict[str, List[Path]] = _group_paths_by_hash(paths, partial_hash)
     final_results: Dict[str, List[Path]] = {}
@@ -312,7 +304,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 
 def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
-    """Calcula el puntaje para decidir qué archivo conservar (menor mtime, menor longitud)."""
+    """Calcula el puntaje para decidir qué archivo conservar."""
     try:
         stat = path.stat()
         return float(stat.st_mtime), len(str(path))

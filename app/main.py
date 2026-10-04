@@ -1875,9 +1875,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def task() -> None:
             try:
-                # Validar seguridad de la ruta final de persistencia
-                self._ensure_path_writable_and_clean(destino)
-                ruta = reporting.save_report(self.report_data, destino, as_markdown=as_markdown)
+                # Sanitizar ruta y validar integridad
+                ruta_destino = Path(destino).resolve()
+                self._ensure_path_writable_and_clean(ruta_destino.parent)
+                
+                ruta = reporting.save_report(self.report_data, str(ruta_destino), as_markdown=as_markdown)
                 self.log(f"Informe guardado en: {ruta}", "Informe")
             except Exception as e:
                 self.log(f"Error al guardar reporte: {e}", "Informe")
@@ -1969,10 +1971,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 try:
                     self.settings = settings_mod.update(propuestos)
                     ruta = settings_mod.settings_path()
-                    self._safe_run_ui_callback(lambda: self.log_lines(
-                        [f"Ajustes guardados en: {ruta}", ""] + settings_mod.describe(),
-                        "Ajustes",
-                    ))
+                    # Verificamos la ruta de settings antes de reportar el guardado
+                    if ruta:
+                        self._safe_run_ui_callback(lambda: self.log_lines(
+                            [f"Ajustes guardados en: {ruta}", ""] + settings_mod.describe(),
+                            "Ajustes",
+                        ))
                     self.set_status("Ajustes guardados.")
                 except Exception as e:
                     self.log(f"Error al escribir ajustes: {e}", "Ajustes")

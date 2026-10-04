@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **212** (42.1% de aceptación)
+- Mejoras aceptadas: **214** (42.5% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 45
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 212
 
@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 107 | 4 | 22 | 13 | 90 |
-| 2026-10-04 | 105 | 15 | 23 | 3 | 122 |
+| 2026-10-03 | 105 | 4 | 20 | 13 | 90 |
+| 2026-10-04 | 109 | 15 | 23 | 3 | 122 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **47**
 - seguridad defensiva: **46**
-- legibilidad y documentación: **45**
+- legibilidad y documentación: **43**
 - rendimiento: **42**
-- manejo de errores y validación de entradas: **32**
+- manejo de errores y validación de entradas: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **19**
-- `healthscore.py`: **18**
+- `healthscore.py`: **19**
 - `quarantine.py`: **18**
 - `diskreport.py`: **18**
-- `safety.py`: **17**
 - `organizer.py`: **17**
-- `scanner.py`: **16**
 - `browser.py`: **16**
-- `duplicates.py`: **15**
-- `memory.py`: **14**
+- `duplicates.py`: **16**
+- `safety.py`: **16**
+- `memory.py`: **15**
+- `scanner.py`: **15**
 - `settings.py`: **13**
 - `startup.py`: **12**
 - `branding.py`: **12**
-- `main.py`: **7**
+- `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-04T11:30:58` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_linux_meminfo` mediante la validación explícita de tipos y la captura de errores en la conversión de valores, evitando que una línea de texto inesperada en `/proc/meminfo` (como una entrada sin valor numérico) corrompa la lectura completa del estado de memoria.
+- `2026-10-04T11:30:33` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_save_report` y `on_save_settings` añadiendo validaciones de entrada (`Path.resolve()`) y manejo explícito de errores durante la serialización, previniendo así condiciones donde entradas corruptas o rutas inexistentes pudiesen dejar la aplicación en un estado inconsistente.
+- `2026-10-04T11:29:19` **healthscore.py** (manejo de errores y validación de entradas): Reforcé el manejo de errores en `compute_score` y `_evaluate_rules` reemplazando los `try-except` genéricos ("silenciosos") por capturas que loguean el error y garantizan la integridad del flujo de datos, además de añadir validación defensiva para evitar divisiones o accesos inválidos en casos límite.
+- `2026-10-04T11:28:52` **duplicates.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `hash_file` y `partial_hash` asegurando que el descriptor de archivo (file descriptor) siempre se cierre correctamente mediante un bloque `try/finally`, evitando fugas de recursos en caso de excepciones durante la lectura, y se ha añadido una validación explícita para evitar operaciones con rutas inválidas antes de abrir archivos.
 - `2026-10-04T11:19:55` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de las validaciones de entrada en `detect_profiles` y `directory_size` asegurando que los tipos sean validados antes de procesar rutas, evitando `TypeError` al iterar sobre elementos no iterables o nulos, cumpliendo estrictamente con el enfoque de manejo de errores y validación.
 - `2026-10-04T11:18:50` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingestión de datos en `SystemContext` añadiendo un manejo de excepciones específico y una validación de estado más estricta para evitar la corrupción del contexto ante entradas de datos mal formadas o tipos inesperados.
 - `2026-10-04T09:57:57` **startup.py** (seguridad defensiva): Se ha mejorado `startup.py` aplicando una validación estricta de "puntos de reparse" (junctions/symlinks) en las rutas extraídas del registro y carpetas, evitando que la lógica de análisis se desvíe a ubicaciones no deseadas fuera del árbol esperado, mediante el uso de `path.resolve()` antes de la validación final.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-04T09:27:43` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_collect_candidates` implementando una validación estricta de rutas mediante `is_protected_path` antes de intentar operar sobre ellas, evitando el riesgo de seguir enlaces simbólicos o rutas críticas fuera de la jerarquía esperada.
 - `2026-10-04T09:27:26` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` verificando que la ruta del archivo esté efectivamente contenida dentro del directorio raíz antes de procesarla, evitando posibles ataques de recorrido de directorios o acceso a rutas fuera del scope mediante enlaces simbólicos manipulados.
 - `2026-10-04T09:17:34` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva de `assistant.py` mediante la implementación de `_is_safe_path_input` para centralizar la validación de rutas dentro de las consultas, evitando inyecciones de rutas en los campos de texto, e integré este filtro en `_sanitize_query` para que cualquier entrada del usuario sea filtrada antes de llegar a los motores.
-- `2026-10-04T09:17:07` **startup.py** (robustez ante casos límite): Mejoré `_resolve_and_cache_path` para manejar correctamente rutas que contienen caracteres no ASCII o representaciones de sistema de archivos malformadas, evitando errores `OSError` o `UnicodeEncodeError` que podrían colgar el escaneo.
-- `2026-10-04T09:16:04` **scanner.py** (robustez ante casos límite): Se introdujo `_get_file_size` usando `os.stat` directo con manejo de excepciones granular para prevenir fallos durante el escaneo cuando un archivo es bloqueado por el sistema o eliminado concurrentemente durante la iteración, reforzando la robustez ante casos de concurrencia y permisos denegados.
-- `2026-10-04T09:07:27` **safety.py** (robustez ante casos límite): Se introdujo una comprobación robusta mediante `ctypes` para detectar si el sistema de archivos admite operaciones de escritura a nivel de volumen, específicamente evitando el error de acceso en volúmenes de solo lectura (como imágenes ISO montadas o soportes WORM), integrando `FILE_READ_ONLY_VOLUME` de manera más exhaustiva en el flujo de validación.
-- `2026-10-04T09:06:37` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de redundancia de inodos en `_atomic_isolate_file` para mitigar riesgos de colisión de archivos en el sandbox, reforzando la integridad frente a condiciones de carrera (Race Conditions) y asegurando que no se sobrescriban o reutilicen entradas de manifiesto de forma inconsistente.
