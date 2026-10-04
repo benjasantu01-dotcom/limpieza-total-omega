@@ -199,7 +199,7 @@ def _should_skip_entry(
 def _is_file_in_use(path_obj: Path) -> bool:
     """
     Verifica si un archivo está bloqueado por el sistema o una aplicación.
-    Intenta abrir en modo lectura exclusiva; si falla, asume uso activo.
+    Aplica validaciones de seguridad primero; luego intenta abrir en modo lectura.
     """
     if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
         return True

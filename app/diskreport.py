@@ -98,11 +98,11 @@ def _bytes_to_mb(size_bytes: int | float | None) -> float:
     Returns:
         Tamaño convertido en megabytes; retorna 0.0 ante valores no válidos o negativos.
     """
+    if not isinstance(size_bytes, (int, float)) or size_bytes < 0:
+        return 0.0
     try:
-        if not isinstance(size_bytes, (int, float)) or size_bytes < 0:
-            return 0.0
         return round(float(size_bytes) / MB_SIZE, 2)
-    except (ValueError, TypeError, ZeroDivisionError):
+    except (ZeroDivisionError, OverflowError):
         return 0.0
 
 
@@ -124,9 +124,9 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         path_str = os.fspath(directory)
-        raw_str = path_str.split('\0')[0]
-        if len(raw_str) > 2048: return None
-        raw_path = Path(raw_str).resolve(strict=True)
+        # Limitar longitud para evitar desbordamientos o rutas excesivas
+        if len(path_str) > 2048: return None
+        raw_path = Path(path_str).resolve(strict=True)
         if not raw_path.is_dir():
             return None
         if is_protected_path(raw_path) or not os.access(raw_path, os.R_OK):
@@ -369,29 +369,26 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     get_stats = ext_stats.__getitem__
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        try:
-            # Verificación defensiva adicional: asegurar que sea un archivo antes de procesar
-            if not path.is_file():
-                continue
-            
-            total_bytes += size_bytes
-            total_files += 1
-            
-            # Manejo defensivo: asegurar que el sufijo y la ruta sean procesables
-            ext_raw = path.suffix.lower() if path.suffix else None
-            ext = ext_raw or "(sin extensión)"
-            
-            stats = get_stats(ext)
-            stats.total_bytes += size_bytes
-            stats.count += 1
-            
-            if limit > 0:
-                if len(top_heap) < limit: 
-                    heapq.heappush(top_heap, (size_bytes, path))
-                elif size_bytes > top_heap[0][0]: 
-                    heapq.heapreplace(top_heap, (size_bytes, path))
-        except (AttributeError, KeyError, TypeError, ValueError, OSError):
+        # Validar tipo y existencia para evitar race conditions tras walk_files
+        if not path.is_file():
             continue
+            
+        total_bytes += size_bytes
+        total_files += 1
+        
+        # Determinar extensión de forma segura
+        ext_raw = path.suffix.lower() if path.suffix else None
+        ext = ext_raw or "(sin extensión)"
+        
+        stats = get_stats(ext)
+        stats.total_bytes += size_bytes
+        stats.count += 1
+        
+        if limit > 0:
+            if len(top_heap) < limit: 
+                heapq.heappush(top_heap, (size_bytes, path))
+            elif size_bytes > top_heap[0][0]: 
+                heapq.heapreplace(top_heap, (size_bytes, path))
                 
     return SummaryData(total_bytes, total_files, dict(ext_stats), top_heap)
 
@@ -401,10 +398,7 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     root = _validate_root(directory)
     if root is None: return ["Error: Ruta no válida o inaccesible."]
     
-    try:
-        data = _collect_summary_data(root, skip_protected, limit=20)
-    except Exception:
-        return ["Error: Falló la recolección de datos durante el escaneo."]
+    data = _collect_summary_data(root, skip_protected, limit=20)
         
     if data.total_files == 0: return ["Aviso: No hay archivos accesibles."]
     
