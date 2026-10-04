@@ -62,7 +62,7 @@ __all__: Tuple[str, ...] = (
 DEFAULT_QUARANTINE_DIR: str = "~/LimpiezaTotalOmega/_Cuarentena"
 MANIFEST_NAME: str = "manifest.json"
 CHUNK_SIZE: int = 131072  # 128KB para procesamiento de I/O
-_MANIFEST_CACHE: Dict[str, List[QuarantineItem]] = {}
+_MANIFEST_CACHE: Dict[str, Dict[str, QuarantineItem]] = {}
 
 WINDOWS_RESERVED_NAMES: Set[str] = {
     "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", 
@@ -446,16 +446,16 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
 
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Deserializa el manifiesto, usando caché perezoso para rendimiento óptimo."""
+    """Deserializa el manifiesto, usando caché perezoso indexado para rendimiento O(1)."""
     base_dir = quarantine_dir(base)
     base_key = str(base_dir)
     if not force_reload and base_key in _MANIFEST_CACHE:
-        return _MANIFEST_CACHE[base_key]
+        return list(_MANIFEST_CACHE[base_key].values())
         
     try:
         m_path = _manifest_path(base_dir)
         if not m_path.exists() or m_path.stat().st_size == 0:
-            _MANIFEST_CACHE[base_key] = []
+            _MANIFEST_CACHE[base_key] = {}
             return []
         
         with open(m_path, "r", encoding="utf-8") as f:
@@ -465,15 +465,15 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
             raise ValueError("Formato de manifiesto inválido.")
             
         items = [i for d in data if (i := QuarantineItem.from_dict(d))]
-        _MANIFEST_CACHE[base_key] = items
+        _MANIFEST_CACHE[base_key] = {item.item_id: item for item in items}
         return items
     except (OSError, PermissionError, json.JSONDecodeError, ValueError):
-        _MANIFEST_CACHE[base_key] = []
+        _MANIFEST_CACHE[base_key] = {}
         return []
 
 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Persiste el manifiesto usando escritura atómica y actualiza el caché interno."""
+    """Persiste el manifiesto usando escritura atómica y actualiza el caché indexado."""
     base_path = quarantine_dir(base)
     target_path = _manifest_path(base_path)
     
@@ -488,7 +488,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
             temp_name = tf.name
             
         os.replace(temp_name, target_path)
-        _MANIFEST_CACHE[str(base_path)] = items
+        _MANIFEST_CACHE[str(base_path)] = {item.item_id: item for item in items}
         return target_path
     except (OSError, IOError) as e:
         raise RuntimeError(f"Error crítico al persistir manifiesto: {e}")
@@ -795,15 +795,19 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         raise ValueError("ID de ítem vacío o inválido.")
     try:
         base_path = quarantine_dir(base)
-        items = load_manifest(base)
-        quarantine_item = next((i for i in items if i.item_id == item_id), None)
+        base_key = str(base_path)
+        # Acceso O(1) vía caché
+        if base_key not in _MANIFEST_CACHE:
+            load_manifest(base)
+        quarantine_item = _MANIFEST_CACHE[base_key].get(item_id)
         
-        if quarantine_item is None:
+        if not quarantine_item:
             raise KeyError(f"Ítem no encontrado: {item_id}")
         
         stored_file = _validate_quarantine_path(base_path / quarantine_item.stored_name, base_path)
         if not stored_file.exists() or not stored_file.is_file():
-            # Limpieza proactiva de manifiesto ante archivo perdido
+            # Limpieza proactiva de caché y manifiesto ante archivo perdido
+            items = load_manifest(base)
             save_manifest([i for i in items if i.item_id != item_id], base)
             raise RuntimeError("Archivo en cuarentena inexistente.")
             
@@ -833,6 +837,7 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
             raise UnsafePathError("Destino no seguro.")
             
         os.replace(str(stored_file), str(destination))
+        items = load_manifest(base)
         save_manifest([i for i in items if i.item_id != item_id], base)
         return destination
     except (OSError, PermissionError, IOError) as e:
@@ -844,22 +849,25 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
     if not isinstance(item_id, str) or not item_id.strip():
         raise ValueError("ID de ítem vacío o inválido.")
     base_path = quarantine_dir(base)
-    items = load_manifest(base)
-    quarantine_item = next((i for i in items if i.item_id == item_id), None)
-    
+    base_key = str(base_path)
+    if base_key not in _MANIFEST_CACHE:
+        load_manifest(base)
+        
+    quarantine_item = _MANIFEST_CACHE[base_key].get(item_id)
     if quarantine_item is None:
         return False
         
     stored_file = _validate_quarantine_path(base_path / quarantine_item.stored_name, base_path)
     if not stored_file.exists():
+        items = load_manifest(base)
         save_manifest([i for i in items if i.item_id != item_id], base)
         return True
     
-    # Verificación de coherencia: ¿El archivo en disco pertenece a este ítem?
     if not quarantine_item.verify_integrity(stored_file):
         raise UnsafePathError(f"Integridad fallida para {item_id}.")
         
     if _safe_unlink(stored_file, expected_hash=quarantine_item.sha256, expected_inode=quarantine_item.file_inode):
+        items = load_manifest(base)
         save_manifest([i for i in items if i.item_id != item_id], base)
         return True
     return False
