@@ -1967,6 +1967,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         try:
             propuestos = self._collect_settings()
             
+            # Validación defensiva de rutas en configuración
+            for key in ["carpeta_excluida"]:
+                if key in propuestos and propuestos[key] and not self._is_safe_disk_operation(propuestos[key]):
+                    self.log(f"Error: Ruta de configuración restringida: {propuestos[key]}", "Ajustes")
+                    return
+
             if propuestos.get("asistente_activado") and not self.settings.get("asistente_activado"):
                 if not self._confirm(
                     "Activar asistente en línea",

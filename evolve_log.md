@@ -581,3 +581,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - N
 - `2026-10-04T13:53:34` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_validate_root` y `_is_excluded_path` mediante la validación explícita de `follow_symlinks=False` en las llamadas a `Path.resolve()` y `os.stat()`, evitando que un usuario malintencionado pueda utilizar enlaces simbólicos para escapar del directorio raíz (`root_path`) durante el escaneo.
 - `2026-10-04T13:53:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T13:53:34` Corrida terminada. Total usado hoy: 328.
+- `2026-10-04T14:01:43` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-04T14:02:11` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-10-04T14:02:38` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la robustez del sistema contra entradas inesperadas al añadir una validación de `TypeGuard` en `_evaluate_rules` y `compute_score`, asegurando que las métricas y reglas procesadas no contengan datos que puedan comprometer la integridad de la lógica de negocio ni causar desbordamientos durante la generación de mensajes.
+- `2026-10-04T14:03:53` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se introdujo una capa de validación defensiva en `on_save_settings` para garantizar que cualquier carpeta de configuración persistida pase por `safety.ensure_safe_to_modify`, previniendo inyecciones de rutas externas en el archivo `settings.json` incluso si el usuario intenta configurar una ruta restringida manualmente.
+- `2026-10-04T14:04:05` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-10-04T14:04:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T14:04:05` Corrida terminada. Total usado hoy: 332.
