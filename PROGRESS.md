@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **214** (42.5% de aceptación)
+- Mejoras aceptadas: **215** (42.7% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 45
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 88 | 4 | 18 | 12 | 86 |
-| 2026-10-04 | 126 | 17 | 27 | 3 | 123 |
+| 2026-10-03 | 86 | 4 | 16 | 12 | 86 |
+| 2026-10-04 | 129 | 17 | 27 | 3 | 124 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - seguridad defensiva: **46**
-- robustez ante casos límite: **42**
 - manejo de errores y validación de entradas: **41**
-- rendimiento: **32**
+- robustez ante casos límite: **40**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `organizer.py`: **19**
 - `diskreport.py`: **19**
+- `healthscore.py`: **19**
 - `quarantine.py`: **19**
 - `assistant.py`: **18**
-- `healthscore.py`: **18**
-- `safety.py`: **17**
+- `organizer.py`: **18**
+- `browser.py`: **16**
+- `duplicates.py`: **16**
+- `safety.py`: **16**
 - `scanner.py`: **15**
-- `browser.py`: **15**
-- `duplicates.py`: **15**
 - `settings.py`: **14**
 - `memory.py`: **14**
 - `branding.py`: **12**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-04T12:41:43` **healthscore.py** (rendimiento): Se optimizó el método `validate` de `SystemMetrics` utilizando una tupla de pre-definición para iterar sobre los atributos en lugar de procesarlos línea por línea manualmente, reduciendo el código repetitivo y mejorando la eficiencia de la validación al instanciar el objeto.
+- `2026-10-04T12:41:31` **duplicates.py** (rendimiento): Optimicé el método `_collect_candidates` utilizando un conjunto de "tamaños ya procesados" para evitar re-escaneos y reemplazando las verificaciones redundantes de seguridad por una llamada única y eficiente al inicio de cada entrada, reduciendo drásticamente las llamadas al sistema operativo durante el recorrido del árbol de directorios.
+- `2026-10-04T12:40:33` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo mediante la introducción de un cache de resultados (memoización) basado en la ruta absoluta normalizada, evitando lecturas redundantes de directorios compartidos y mejorando la eficiencia en estructuras complejas.
 - `2026-10-04T12:32:15` **branding.py** (rendimiento): Se eliminó el uso de `lru_cache` decorando una función anidada (`_get_segments`) dentro de `draw_gradient_bar`, ya que esto regeneraba el caché en cada llamada a la función contenedora, anulando el propósito de la memoización y consumiendo memoria innecesariamente; en su lugar, se movió la lógica de segmentación a una llamada directa optimizada.
 - `2026-10-04T12:30:23` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints más precisos en `_coerce_and_verify` y `save` para clarificar la lógica de integridad de datos y las restricciones de seguridad que se aplican antes de persistir, mejorando la legibilidad técnica del flujo de datos.
 - `2026-10-04T12:21:46` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de heurística y métodos críticos, clarificando los parámetros, las precondiciones y el valor de retorno para facilitar el mantenimiento y la auditoría del motor de escaneo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-04T12:00:37` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de escaneo (`walk_files` y `_collect_summary_data`) y se ha añadido un docstring detallado a `ExtStats` y `FolderMetrics` para clarificar el flujo de datos y la mutabilidad, facilitando el mantenimiento a futuro.
 - `2026-10-04T12:00:06` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados en funciones críticas de escaneo y validación, clarificando el propósito, las precondiciones de seguridad y los tipos de retorno para facilitar el mantenimiento.
 - `2026-10-04T11:50:46` **assistant.py** (legibilidad y documentación): Mejora la documentación técnica mediante la adición de docstrings detallados en funciones críticas y la clarificación de constantes, asegurando que los parámetros de entrada y las restricciones de seguridad estén explícitamente definidos según el enfoque de legibilidad.
-- `2026-10-04T11:50:19` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validación explícita para las filas del CSV y el manejo de excepciones al leer columnas, evitando errores de ejecución ante salidas inesperadas de PowerShell.
-- `2026-10-04T11:49:50` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` reemplazando el uso de `os.remove()` (que podría fallar silenciosamente en sistemas bloqueados) por una estrategia que verifica explícitamente el estado del archivo temporal tras el cierre de su descriptor, además de refactorizar la lógica de `_coerce_and_verify` para que sea una operación de "sanitización profunda" que no dependa solo de `isinstance`, previniendo inyecciones de tipos inesperados desde el JSON.
-- `2026-10-04T11:40:42` **safety.py** (manejo de errores y validación de entradas): Se mejora la robustez de `_get_path_stat_robust` y `_check_file_integrity` mediante un manejo de excepciones más granular y defensivo, asegurando que los errores de sistema no propaguen estados ambiguos durante la validación.

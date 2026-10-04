@@ -186,14 +186,15 @@ class SystemMetrics:
             except (ValueError, TypeError):
                 return d
 
-        self.junk_mb = _clean(self.junk_mb, 0.0)
-        self.duplicate_mb = _clean(self.duplicate_mb, 0.0)
-        self.suspicious_count = int(_clean(self.suspicious_count, 0.0, 0, 1e6))
-        self.suspicious_warnings = int(_clean(self.suspicious_warnings, 0.0, 0, 1e6))
-        self.startup_count = int(_clean(self.startup_count, 0.0, 0, 1e4))
-        self.quarantined_count = int(_clean(self.quarantined_count, 0.0, 0, 1e4))
-        self.memory_available_percent = _clean(self.memory_available_percent, 100.0, 0.0, 100.0)
-        self.disk_free_percent = _clean(self.disk_free_percent, 100.0, 0.0, 100.0)
+        fields = (
+            ("junk_mb", 0.0, 0.0, 1e9), ("duplicate_mb", 0.0, 0.0, 1e9),
+            ("suspicious_count", 0.0, 0.0, 1e6), ("suspicious_warnings", 0.0, 0.0, 1e6),
+            ("startup_count", 0.0, 0.0, 1e4), ("quarantined_count", 0.0, 0.0, 1e4),
+            ("memory_available_percent", 100.0, 0.0, 100.0), ("disk_free_percent", 100.0, 0.0, 100.0)
+        )
+        for name, d, min_v, max_v in fields:
+            val = _clean(getattr(self, name), d, min_v, max_v)
+            setattr(self, name, int(val) if "count" in name else val)
 
     @property
     def is_finite(self) -> bool:

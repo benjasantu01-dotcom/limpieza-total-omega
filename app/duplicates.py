@@ -240,21 +240,17 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    try:
-                        p_entry = Path(entry.path)
-                        if is_protected_path(p_entry):
-                            continue
-                        if entry.is_dir(follow_symlinks=False):
-                            if _safe_path_check(p_entry):
-                                stack.append((p_entry, depth + 1))
-                        elif entry.is_file(follow_symlinks=False):
-                            stat = entry.stat()
-                            if stat.st_size >= min_size:
-                                if not (skip_protected and is_protected_path(p_entry)):
-                                    if _is_valid_candidate(p_entry, stat.st_size):
-                                        size_to_paths_map[stat.st_size].append(p_entry)
-                    except (OSError, PermissionError):
+                    p_entry = Path(entry.path)
+                    # Chequeo único consolidado de seguridad
+                    if not _safe_path_check(p_entry) or (skip_protected and is_protected_path(p_entry)):
                         continue
+                    
+                    if entry.is_dir(follow_symlinks=False):
+                        stack.append((p_entry, depth + 1))
+                    elif entry.is_file(follow_symlinks=False):
+                        stat = entry.stat()
+                        if stat.st_size >= min_size and not is_system_or_hidden(p_entry) and not _is_file_locked(p_entry):
+                            size_to_paths_map[stat.st_size].append(p_entry)
         except (OSError, PermissionError, RuntimeError):
             continue
             
