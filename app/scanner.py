@@ -236,7 +236,8 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
         """Orquestador: decide si explorar subdirectorio o analizar archivo basándose en el tipo."""
         try:
-            # Filtro temprano de extensiones para evitar I/O innecesario
+            # Normalizar ruta antes de cualquier validación
+            abs_path = Path(entry.path).resolve(strict=False)
             if not entry.is_dir(follow_symlinks=False):
                 if not self._is_relevant_extension(entry.name):
                     return
@@ -247,7 +248,7 @@ class Scanner:
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, directory_stack, current_depth)
             else:
-                self._run_file_heuristics(Path(entry.path), entry)
+                self._run_file_heuristics(abs_path, entry)
         except (OSError, PermissionError, AttributeError):
             return
 
