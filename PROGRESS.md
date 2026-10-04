@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
+- Mejoras aceptadas: **207** (41.1% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 23
 - Sin respuesta de la IA (error o límite): 220
 
@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-02 | 28 | 1 | 4 | 4 | 45 |
+| 2026-10-02 | 25 | 1 | 3 | 4 | 45 |
 | 2026-10-03 | 157 | 7 | 33 | 18 | 135 |
-| 2026-10-04 | 23 | 3 | 5 | 1 | 40 |
+| 2026-10-04 | 25 | 3 | 7 | 1 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
-- legibilidad y documentación: **44**
+- legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **37**
-- rendimiento: **36**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
 - `organizer.py`: **19**
-- `safety.py`: **18**
-- `scanner.py`: **17**
+- `quarantine.py`: **19**
+- `diskreport.py`: **18**
+- `duplicates.py`: **18**
 - `settings.py`: **17**
-- `diskreport.py`: **17**
-- `duplicates.py`: **17**
+- `safety.py`: **17**
 - `healthscore.py`: **16**
+- `scanner.py`: **16**
 - `browser.py`: **15**
 - `assistant.py`: **15**
 - `memory.py`: **12**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-04T03:08:48` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos (usando `Iterable` y `List` explícitos) y se añadieron docstrings explicativos en funciones críticas de la estrategia de hashing para clarificar el propósito de las transformaciones de datos, mejorando la mantenibilidad sin cambiar la lógica.
+- `2026-10-04T03:08:11` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y precisos en funciones clave, aclarando el propósito y los parámetros para facilitar el mantenimiento futuro conforme a las exigencias del proyecto.
 - `2026-10-04T03:02:52` **browser.py** (legibilidad y documentación): Mejora la documentación técnica mediante la adición de docstrings detallados en las funciones de recorrido recursivo y validación de seguridad, clarificando el propósito, las restricciones de acceso y la lógica de prevención de riesgos (junctions, rutas UNC y contención de perfiles).
 - `2026-10-04T03:02:38` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados, type hints detallados y explicaciones claras sobre la intención funcional en las funciones críticas de renderizado, facilitando el mantenimiento y la auditoría del código.
 - `2026-10-04T02:58:57` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_resolve_and_cache_path` añadiendo un chequeo explícito de `None` y valores vacíos en `path_string`, además de envolver la lógica en un manejo de errores más específico (capturando `PermissionError` y `FileNotFoundError` por separado) para evitar que una ruta inválida o bloqueada por el sistema genere una excepción que interrumpa el escaneo del resto de las entradas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-04T00:55:32` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para evitar que `_is_kernel_managed` o `ensure_safe_to_modify` operen sobre archivos cuya ruta contenga el nombre de directorio del sistema `Config.Msi` o `Installer`, rutas frecuentes en instalaciones de software donde el sistema operativo bloquea accesos y puede causar errores de acceso denegado o inestabilidad al ser manipuladas.
 - `2026-10-04T00:45:59` **quarantine.py** (seguridad defensiva): Se implementó un bloqueo defensivo en `_safe_unlink` para prevenir el borrado accidental de archivos que no coincidan estrictamente con los metadatos registrados (hash e inodo), reforzando la integridad frente a posibles manipulaciones del sistema de archivos o condiciones de carrera.
 - `2026-10-04T00:45:17` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` integrando una verificación de "sistema de archivos" (device ID) para asegurar que la operación sea un movimiento local (renombrado atómico) y no una copia entre volúmenes distintos, evitando comportamientos inconsistentes y riesgos de integridad.
-- `2026-10-04T00:44:50` **memory.py** (seguridad defensiva): Se reforzó la seguridad en `_get_process_path` validando que la ruta resuelta no solo sea segura según `is_protected_path`, sino que también esté estrictamente dentro de los directorios permitidos, evitando la resolución de rutas fuera del alcance esperado mediante un chequeo de normalización adicional.
-- `2026-10-04T00:35:42` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del motor de recomendaciones mediante una validación estricta de las entradas externas y la protección del pipeline contra excepciones inesperadas en las funciones lambda de las reglas, asegurando que los mensajes no contengan caracteres de control o inyecciones accidentales de formato antes de llegar a la interfaz.

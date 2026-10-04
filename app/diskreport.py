@@ -93,10 +93,10 @@ def _bytes_to_mb(size_bytes: int | float | None) -> float:
     Convierte bytes a MB con precisión de dos decimales.
     
     Args:
-        size_bytes: Cantidad de bytes. Retorna 0.0 si es inválido.
+        size_bytes: Cantidad de bytes a convertir.
         
     Returns:
-        Tamaño convertido en megabytes.
+        Tamaño convertido en megabytes; retorna 0.0 ante valores no válidos o negativos.
     """
     try:
         if not isinstance(size_bytes, (int, float)) or size_bytes < 0:
@@ -115,7 +115,10 @@ def _validate_limit(limit: Any) -> int:
 
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     """
-    Verifica que la ruta sea un directorio existente y seguro para escanear.
+    Valida que una ruta sea un directorio existente y seguro para ser escaneado.
+    
+    Comprueba existencia física, restricciones de seguridad mediante `is_protected_path`
+    y permisos de lectura efectivos.
     """
     if directory is None:
         return None
@@ -135,7 +138,10 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     """
-    Determina si un `os.DirEntry` debe ser ignorado mediante validación de ruta estricta.
+    Evalúa si un `os.DirEntry` debe ser omitido por criterios de seguridad o integridad.
+    
+    Verifica caracteres sospechosos, límites de confinamiento, reparse points (Junctions/Symlinks)
+    y políticas de protección definidas en `safety.py`.
     """
     try:
         if any(c in entry.name for c in SUSPICIOUS_CHARS) or '\0' in entry.name:
@@ -162,7 +168,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
 
 
 def _get_local_windows_drives() -> List[str]:
-    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows."""
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
     import string
     drives: List[str] = []
     for letter in string.ascii_uppercase:
@@ -352,7 +358,8 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Recorre el sistema de archivos y consolida datos estadísticos.
+    Recorre el sistema de archivos bajo el directorio dado y consolida los datos 
+    estadísticos (tamaño total, conteo, stats por extensión y top de archivos).
     """
     total_bytes: int = 0
     total_files: int = 0
@@ -383,7 +390,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
-    """Genera un reporte de texto legible con un resumen del escaneo."""
+    """Genera un reporte de texto legible con un resumen del escaneo del directorio."""
     root = _validate_root(directory)
     if root is None: return ["Error: Ruta no válida o inaccesible."]
     

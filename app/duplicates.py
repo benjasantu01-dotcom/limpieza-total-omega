@@ -252,7 +252,10 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Agrupa una lista de rutas basándose en el resultado de una función de hash."""
+    """
+    Agrupa una lista de rutas basándose en el resultado de una función de hash.
+    Retorna solo aquellos grupos donde existen múltiples archivos con el mismo hash.
+    """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if not isinstance(path, Path) or not _safe_path_check(path): 
@@ -264,8 +267,12 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
-    """Refina grupos de archivos grandes aplicando hash parcial y luego completo."""
-    partial_groups = _group_paths_by_hash(paths, partial_hash)
+    """
+    Refina grupos de archivos grandes aplicando hash parcial y luego completo.
+    La estrategia asegura que solo los archivos con colisiones parciales (64KB)
+    sean procesados con el costo computacional del hash completo (SHA256).
+    """
+    partial_groups: Dict[str, List[Path]] = _group_paths_by_hash(paths, partial_hash)
     final_results: Dict[str, List[Path]] = {}
     for candidate_subset in partial_groups.values():
         valid_subset = [p for p in candidate_subset if _safe_path_check(p)]
