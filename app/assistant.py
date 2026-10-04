@@ -421,8 +421,8 @@ class SystemContext:
             if has_updates:
                 object.__setattr__(self, 'analyzed', True)
                 return True
-        except Exception:
-            logging.error("Falla crítica durante la ingestión de contexto")
+        except (AttributeError, TypeError, ValueError) as e:
+            logging.error(f"Falla durante la ingestión de contexto: {str(e)[:50]}")
         return False
 
 @dataclass
