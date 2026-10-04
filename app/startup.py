@@ -184,7 +184,7 @@ class StartupEntry:
         Normaliza, resuelve y valida rutas de archivo. Utiliza `_EXISTS_CACHE`
         para minimizar el impacto de llamadas a sistema (syscalls) costosas.
         """
-        if not isinstance(path_string, str) or not self.is_valid:
+        if not path_string or not isinstance(path_string, str) or not self.is_valid:
             return ""
         
         try:
@@ -212,7 +212,10 @@ class StartupEntry:
             p_str: str = str(p)
             _EXISTS_CACHE[p_str] = True
             return p_str
-        except (OSError, ValueError, RuntimeError, TypeError, PermissionError, FileNotFoundError):
+        except (OSError, PermissionError, FileNotFoundError):
+            _EXISTS_CACHE[path_string] = False
+            return ""
+        except (ValueError, RuntimeError, TypeError):
             _EXISTS_CACHE[path_string] = False
             return ""
 

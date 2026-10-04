@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 41
-- Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 222
+- Rechazadas por guardia de seguridad: 42
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-02 | 29 | 1 | 4 | 5 | 47 |
+| 2026-10-02 | 28 | 1 | 4 | 4 | 45 |
 | 2026-10-03 | 157 | 7 | 33 | 18 | 135 |
-| 2026-10-04 | 20 | 3 | 4 | 1 | 40 |
+| 2026-10-04 | 23 | 3 | 5 | 1 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
-- legibilidad y documentación: **42**
-- manejo de errores y validación de entradas: **41**
-- rendimiento: **37**
+- legibilidad y documentación: **44**
+- manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **37**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
@@ -38,15 +38,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **17**
 - `duplicates.py`: **17**
 - `healthscore.py`: **16**
+- `browser.py`: **15**
 - `assistant.py`: **15**
-- `browser.py`: **14**
-- `memory.py`: **13**
-- `startup.py`: **9**
-- `branding.py`: **9**
+- `memory.py`: **12**
+- `startup.py`: **10**
+- `branding.py`: **10**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-04T03:02:52` **browser.py** (legibilidad y documentación): Mejora la documentación técnica mediante la adición de docstrings detallados en las funciones de recorrido recursivo y validación de seguridad, clarificando el propósito, las restricciones de acceso y la lógica de prevención de riesgos (junctions, rutas UNC y contención de perfiles).
+- `2026-10-04T03:02:38` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados, type hints detallados y explicaciones claras sobre la intención funcional en las funciones críticas de renderizado, facilitando el mantenimiento y la auditoría del código.
+- `2026-10-04T02:58:57` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_resolve_and_cache_path` añadiendo un chequeo explícito de `None` y valores vacíos en `path_string`, además de envolver la lógica en un manejo de errores más específico (capturando `PermissionError` y `FileNotFoundError` por separado) para evitar que una ruta inválida o bloqueada por el sistema genere una excepción que interrumpa el escaneo del resto de las entradas.
 - `2026-10-04T02:49:32` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save` y `_load_impl` al centralizar el chequeo de seguridad mediante `ensure_safe_to_modify` antes de cualquier operación de I/O, evitando el uso de bloques `try-except` excesivamente laxos y garantizando una salida limpia ante rutas bloqueadas.
 - `2026-10-04T02:42:28` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` añadiendo un manejo de excepciones más granular y específico, asegurando que si el JSON está corrupto o es inaccesible, se registre el evento (fallo silencioso es riesgoso en seguridad) y se retorne una lista vacía de forma consistente, evitando que el estado del caché bloquee la app.
 - `2026-10-04T02:27:58` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` asegurando que el pipeline no falle ante métricas nulas o inesperadas, y añadí una validación explícita para evitar divisiones por cero en el cálculo de `_safe_inv` ante configuraciones inválidas.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-04T00:45:17` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` integrando una verificación de "sistema de archivos" (device ID) para asegurar que la operación sea un movimiento local (renombrado atómico) y no una copia entre volúmenes distintos, evitando comportamientos inconsistentes y riesgos de integridad.
 - `2026-10-04T00:44:50` **memory.py** (seguridad defensiva): Se reforzó la seguridad en `_get_process_path` validando que la ruta resuelta no solo sea segura según `is_protected_path`, sino que también esté estrictamente dentro de los directorios permitidos, evitando la resolución de rutas fuera del alcance esperado mediante un chequeo de normalización adicional.
 - `2026-10-04T00:35:42` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del motor de recomendaciones mediante una validación estricta de las entradas externas y la protección del pipeline contra excepciones inesperadas en las funciones lambda de las reglas, asegurando que los mensajes no contengan caracteres de control o inyecciones accidentales de formato antes de llegar a la interfaz.
-- `2026-10-04T00:35:13` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `_process_large_file_subset` añadiendo validaciones explícitas de `is_safe_to_modify` antes de cualquier operación de I/O, garantizando que el escaneo no se desvíe si un archivo cambia de estado durante la iteración.
-- `2026-10-04T00:34:39` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `_collect_summary_data` validando que cada ruta procesada sea un archivo absoluto existente y que su nombre no contenga caracteres de control o de ofuscación de nombre antes de realizar cualquier operación de I/O, evitando condiciones de carrera (TOCTOU) y posibles vulnerabilidades de salto de directorio.
-- `2026-10-04T00:26:33` **browser.py** (seguridad defensiva): Se ha implementado una validación de rutas absoluta y estricta en `_resolve_browser_path` para prevenir ataques de *path traversal* mediante el uso de `joinpath` con componentes divididos, asegurando que cualquier ruta resultante se mantenga dentro del directorio base de manera canónica antes de ser procesada.

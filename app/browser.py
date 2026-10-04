@@ -174,7 +174,11 @@ def _should_skip_entry(
     kernel32: Optional[ctypes.WinDLL], 
     is_junction_fn: JunctionChecker
 ) -> bool:
-    """Determina si un archivo debe omitirse por seguridad o por ser crítico."""
+    """
+    Determina si un objeto del sistema de archivos debe omitirse.
+    Aplica filtros de seguridad: carpetas protegidas, rutas UNC, archivos críticos,
+    puntos de reparse (junctions) y atributos de sistema/ocultos.
+    """
     if entry.name is None or _is_excluded_file(entry.name):
         return True
     
@@ -194,8 +198,8 @@ def _should_skip_entry(
 
 def _is_file_in_use(path_obj: Path) -> bool:
     """
-    Verifica si un archivo está bloqueado por el navegador (ej. archivo de caché abierto).
-    Intenta abrir en modo lectura exclusiva.
+    Verifica si un archivo está bloqueado por el sistema o una aplicación.
+    Intenta abrir en modo lectura exclusiva; si falla, asume uso activo.
     """
     if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
         return True
@@ -215,8 +219,9 @@ def _process_file_entry(
     path_stack: List[str]
 ) -> ScanResult:
     """
-    Analiza una entrada individual. Valida profundidad, contención en base, 
-    detección de ciclos de inodos y estado de bloqueo.
+    Procesa un elemento individual durante el escaneo.
+    Realiza validaciones de seguridad: profundidad máxima, contención dentro del 
+    perfil base, detección de ciclos de inodos y verificación de bloqueo de archivos.
     """
     try:
         if depth > MAX_SCAN_DEPTH:
@@ -253,8 +258,9 @@ def _sum_directory_recursive(
     path_stack: Optional[List[str]] = None
 ) -> ScanResult:
     """
-    Recorrido recursivo protegido para calcular tamaño de carpeta.
-    Usa memoización en 'visited_dirs' para evitar re-cálculos redundantes.
+    Ejecuta un recorrido recursivo para calcular el tamaño en bytes de un directorio.
+    Implementa memoización (`visited_dirs`) para optimizar el rendimiento y límites de
+    profundidad para prevenir stack overflow o recursión infinita en el FS.
     """
     if not isinstance(root_path, Path) or depth > MAX_SCAN_DEPTH:
         return ScanResult(0, False)
