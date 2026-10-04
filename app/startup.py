@@ -166,8 +166,11 @@ class StartupEntry:
             return ""
         
         try:
+            # Validar longitud y formato de unidad
             if len(path_string) > 32767 or ":" in path_string[2:]:
                 return ""
+            
+            # Normalizar sin elevar excepciones de codificación
             norm: str = os.path.normpath(path_string)
             if norm.startswith(r"\\"):
                 return ""
@@ -183,6 +186,7 @@ class StartupEntry:
                 _EXISTS_CACHE[path_string] = False
                 return ""
             
+            # Resolve puede fallar si la ruta contiene caracteres inválidos en disco
             p = p.resolve(strict=False)
             
             if not self._validate_file_access(p):
@@ -192,10 +196,10 @@ class StartupEntry:
             p_str: str = str(p)
             _EXISTS_CACHE[p_str] = True
             return p_str
-        except (OSError, PermissionError, FileNotFoundError):
+        except (OSError, PermissionError, FileNotFoundError, RuntimeError):
             _EXISTS_CACHE[path_string] = False
             return ""
-        except (ValueError, RuntimeError, TypeError):
+        except (ValueError, TypeError):
             _EXISTS_CACHE[path_string] = False
             return ""
 
