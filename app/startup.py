@@ -351,18 +351,21 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             if not isinstance(row, dict):
                 continue
             
-            raw_val_name: Optional[str] = row.get(header_name)
-            raw_val_cmd: Optional[str] = row.get(header_cmd)
-            
-            if raw_val_name is None or raw_val_cmd is None:
+            try:
+                raw_val_name: Optional[str] = row.get(header_name)
+                raw_val_cmd: Optional[str] = row.get(header_cmd)
+                
+                if raw_val_name is None or raw_val_cmd is None:
+                    continue
+                
+                clean_name: str = "".join(c for c in str(raw_val_name) if ord(c) >= 32).strip()
+                clean_cmd: str = "".join(c for c in str(raw_val_cmd) if ord(c) >= 32).strip()
+                
+                if _is_valid_registry_entry(clean_name, clean_cmd, seen_commands):
+                    seen_commands.add(clean_cmd)
+                    parsed_entries.append(StartupEntry(name=clean_name, command=clean_cmd, source=source))
+            except Exception:
                 continue
-            
-            clean_name: str = "".join(c for c in str(raw_val_name) if ord(c) >= 32).strip()
-            clean_cmd: str = "".join(c for c in str(raw_val_cmd) if ord(c) >= 32).strip()
-            
-            if _is_valid_registry_entry(clean_name, clean_cmd, seen_commands):
-                seen_commands.add(clean_cmd)
-                parsed_entries.append(StartupEntry(name=clean_name, command=clean_cmd, source=source))
             
     except (csv.Error, OSError, ValueError, TypeError, IndexError):
         return []

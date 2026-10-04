@@ -74,14 +74,14 @@ __all__ = [
 DEFAULT_METRIC_VAL: Final[float] = -1.0
 DEFAULT_RAM_PCT: Final[float] = 50.0
 
-# Límites de seguridad y tamaño
+# Límites de seguridad y tamaño para evitar inyecciones o ataques de denegación de servicio (DoS)
 _MAX_TEXT_LENGTH: Final[int] = 1000
 _MAX_RESPONSE_BYTES: Final[int] = 32768
 _MAX_MSG_CHUNK: Final[int] = 200
 _MAX_PROMPT_LIMIT: Final[int] = 4000
 _MAX_NESTING_DEPTH: Final[int] = 2
 
-# Estructura fija para resumen de contexto para evitar recalcular iterables
+# Estructura fija para resumen de contexto: (clave_métrica, unidad_legible, precisión_decimal)
 _CONTEXT_SCHEMA: Final = (
     ("score", "", 0), ("junk_mb", " MB", 0), ("suspicious_count", "", 0), 
     ("memory_available_percent", "%", 0), ("disk_free_percent", "%", 0),
@@ -240,7 +240,7 @@ _ENDPOINT_BASE: Final[str] = "https://generativelanguage.googleapis.com/v1beta/m
 _TIMEOUT_SECONDS: Final[int] = 30
 _API_HOST_ROOT: Final[str] = "https://generativelanguage.googleapis.com/"
 
-# Regex de seguridad organizados por tipo
+# Regex de seguridad para prevenir inyecciones de código o rutas del sistema
 _REGEX_STRUCTURE_INJECTION: Final[re.Pattern] = re.compile(r"([a-zA-Z]:[\\/]|/|\\|\.\.|\0|[\u202e\u202d\u200e\u200f])")
 _REGEX_CONTROL_CHARS: Final[re.Pattern] = re.compile(r"[\x00-\x1f\x7f\u0080-\u009f\u202b-\u202f\u200b-\u200d\uFEFF]")
 _REGEX_PATH_TRAVERSAL: Final[re.Pattern] = re.compile(r"(\.\.[\\/])|([\\/]\.\.)", re.IGNORECASE)

@@ -323,15 +323,10 @@ def _is_file_secure_to_read(file_obj: Any) -> bool:
     try:
         st = os.fstat(file_obj.fileno())
         mode = st.st_mode
-        # Validar tipo de archivo y enlaces
         if not stat.S_ISREG(mode) or os.path.islink(file_obj.name): return False
-        # Validar límites de tamaño
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
-        # Validar permisos estrictos (nada de escritura global/grupo, nada de ejecución)
         if mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
-        # Validar propiedad del archivo: el UID debe coincidir con el usuario actual
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-        # Validar que no haya hardlinks sospechosos
         if st.st_nlink != 1: return False
         return True
     except (OSError, PermissionError, AttributeError):
@@ -383,17 +378,16 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     return DEFAULTS.copy()
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
-    """Asegura consistencia de tipos y reglas de negocio, revirtiendo a defaults ante inconsistencias."""
+    """Asegura consistencia de tipos y reglas de negocio, revertiendo a defaults ante inconsistencias."""
     final = DEFAULTS.copy()
     try:
         for key, expected_val in DEFAULTS.items():
-            val = settings.get(key)
-            if val is not None and isinstance(val, type(expected_val)):
-                final[key] = val
+            if key in settings and isinstance(settings[key], type(expected_val)):
+                final[key] = settings[key] # type: ignore
         
         if final["asistente_activado"] and not (final["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
             final["asistente_activado"] = False
-        return final # type: ignore
+        return final
     except (ValueError, TypeError, AttributeError):
         return DEFAULTS.copy()
 
@@ -428,7 +422,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
                 raise PermissionError("Archivo temporal inseguro")
             fcntl.flock(f.fileno(), fcntl.LOCK_UN)
         
-        # Validación extra post-escritura: verificar que no sean enlaces
         if os.path.islink(temp_path) or (ruta.exists() and os.path.islink(ruta)):
             raise PermissionError("Operación sobre enlace detectada")
             
@@ -444,9 +437,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     finally:
         if temp_path.exists():
             try:
-                ensure_safe_to_modify(str(temp_path))
-                os.remove(temp_path)
-            except (OSError, PermissionError): pass
+                if not os.path.islink(temp_path): os.remove(temp_path)
+            except OSError: pass
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
     """Actualiza campos específicos en la configuración y persiste solo si hay cambios."""

@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Mejoras aceptadas: **214** (42.5% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 101 | 4 | 20 | 13 | 90 |
-| 2026-10-04 | 112 | 15 | 24 | 3 | 122 |
+| 2026-10-03 | 99 | 4 | 20 | 13 | 88 |
+| 2026-10-04 | 115 | 15 | 24 | 3 | 123 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **47**
 - seguridad defensiva: **46**
-- legibilidad y documentación: **42**
-- rendimiento: **39**
-- manejo de errores y validación de entradas: **39**
+- legibilidad y documentación: **43**
+- manejo de errores y validación de entradas: **41**
+- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **19**
 - `quarantine.py`: **19**
-- `assistant.py`: **18**
+- `assistant.py`: **19**
+- `healthscore.py`: **18**
 - `organizer.py`: **18**
 - `diskreport.py`: **18**
 - `safety.py`: **17**
-- `duplicates.py`: **16**
 - `memory.py`: **15**
 - `scanner.py`: **15**
 - `browser.py`: **15**
-- `settings.py`: **13**
-- `startup.py`: **11**
+- `duplicates.py`: **15**
+- `settings.py`: **14**
+- `startup.py`: **12**
 - `branding.py`: **11**
 - `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-04T11:50:46` **assistant.py** (legibilidad y documentación): Mejora la documentación técnica mediante la adición de docstrings detallados en funciones críticas y la clarificación de constantes, asegurando que los parámetros de entrada y las restricciones de seguridad estén explícitamente definidos según el enfoque de legibilidad.
+- `2026-10-04T11:50:19` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validación explícita para las filas del CSV y el manejo de excepciones al leer columnas, evitando errores de ejecución ante salidas inesperadas de PowerShell.
+- `2026-10-04T11:49:50` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` reemplazando el uso de `os.remove()` (que podría fallar silenciosamente en sistemas bloqueados) por una estrategia que verifica explícitamente el estado del archivo temporal tras el cierre de su descriptor, además de refactorizar la lógica de `_coerce_and_verify` para que sea una operación de "sanitización profunda" que no dependa solo de `isinstance`, previniendo inyecciones de tipos inesperados desde el JSON.
 - `2026-10-04T11:40:42` **safety.py** (manejo de errores y validación de entradas): Se mejora la robustez de `_get_path_stat_robust` y `_check_file_integrity` mediante un manejo de excepciones más granular y defensivo, asegurando que los errores de sistema no propaguen estados ambiguos durante la validación.
 - `2026-10-04T11:39:47` **quarantine.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `purge_all` y `restore_item` mediante la validación explícita de tipos y la captura de estados inesperados, evitando que excepciones silenciadas o datos malformados interrumpan el flujo de trabajo crítico de la cuarentena.
 - `2026-10-04T11:39:05` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_locked` para evitar falsos positivos y posibles leaks de descriptores de archivos, asegurando que la validación de acceso sea estricta y que el recurso se libere correctamente mediante un manejador de contexto `try-finally`.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-04T09:57:57` **startup.py** (seguridad defensiva): Se ha mejorado `startup.py` aplicando una validación estricta de "puntos de reparse" (junctions/symlinks) en las rutas extraídas del registro y carpetas, evitando que la lógica de análisis se desvíe a ubicaciones no deseadas fuera del árbol esperado, mediante el uso de `path.resolve()` antes de la validación final.
 - `2026-10-04T09:57:11` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `settings.py` implementando una validación explícita para evitar que `os.replace` o `os.remove` operen sobre enlaces simbólicos o rutas maliciosas creadas mediante técnicas de *time-of-check to time-of-use* (TOCTOU) durante el proceso de guardado.
 - `2026-10-04T09:49:06` **scanner.py** (seguridad defensiva): Se ha añadido una validación de acceso `os.access(path, os.R_OK)` dentro de `_run_file_heuristics` para asegurar que el archivo sea efectivamente legible antes de intentar procesar sus metadatos o contenido, reforzando la seguridad defensiva contra errores de permiso inesperados.
-- `2026-10-04T09:48:42` **safety.py** (seguridad defensiva): He refactorizado la validación de integridad del sistema para incluir una comprobación explícita de `FILE_ATTRIBUTE_REPARSE_POINT` durante el escaneo de atributos, garantizando que los puntos de reparse sean bloqueados activamente incluso si no son detectados como junctions de directorio, reforzando así la seguridad ante redirecciones inesperadas del sistema de archivos.
-- `2026-10-04T09:47:23` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_atomic_isolate_file` añadiendo una validación explícita de `st_nlink` para impedir que archivos con enlaces físicos (hard links) —que podrían ser puntos de entrada a otras partes del sistema— sean procesados en el sandbox.
-- `2026-10-04T09:36:34` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del motor de puntuación mediante un esquema de validación defensiva en `_evaluate_rules` que garantiza que las recomendaciones generadas por las `message_factory` no contengan caracteres maliciosos o de control, evitando la inyección de datos inesperados en la interfaz.
