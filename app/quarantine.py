@@ -632,6 +632,11 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if not is_safe_to_modify(destination.parent):
         raise UnsafePathError("El sandbox destino ha sido invalidado.")
 
+    # Pre-verificación: asegurar que ningún inodo en uso coincida (integridad del sandbox)
+    existing_items = load_manifest(destination.parent.parent)
+    if any(i.file_inode == stat_orig.st_ino for i in existing_items):
+        raise RuntimeError("Colisión de inodo: el archivo parece estar ya registrado en el sandbox.")
+
     try:
         return _write_temp_to_final(source, destination)
     except Exception as e:

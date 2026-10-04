@@ -342,6 +342,7 @@ def _is_volume_readonly(path_str: Optional[str]) -> bool:
         if ctypes.windll.kernel32.GetVolumePathNameW(path_str, buf, 260) != 0:
             root = buf.value
             flags = ctypes.c_ulong()
+            # FILE_READ_ONLY_VOLUME = 0x80000
             if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
                 return bool(flags.value & 0x80000)
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError):

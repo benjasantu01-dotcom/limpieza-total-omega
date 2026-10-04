@@ -151,16 +151,21 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si el sistema permite acceso exclusivo de escritura abriendo el archivo.
-    Retorna True si el archivo está en uso por otro proceso o no es accesible.
+    Verifica si el sistema permite acceso de lectura/escritura abriendo el archivo.
+    Retorna True si el archivo está en uso exclusivo por otro proceso o no es accesible.
     """
-    if not isinstance(path, Path) or not path.is_file():
+    if not isinstance(path, Path) or not path.is_file() or not os.access(path, os.R_OK | os.W_OK):
         return True
+    
+    f = None
     try:
-        with open(path, "ab"):
-            return False
+        f = open(path, "ab")
+        return False
     except (PermissionError, OSError):
         return True
+    finally:
+        if f:
+            f.close()
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """Previene que una operación de movimiento resulte en un bucle lógico o recursivo."""
