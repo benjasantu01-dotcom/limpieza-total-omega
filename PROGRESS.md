@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **219** (43.5% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 121 | 4 | 25 | 15 | 115 |
-| 2026-10-04 | 97 | 14 | 22 | 3 | 88 |
+| 2026-10-03 | 121 | 4 | 25 | 15 | 111 |
+| 2026-10-04 | 98 | 14 | 22 | 3 | 91 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - robustez ante casos límite: **47**
 - rendimiento: **42**
-- seguridad defensiva: **40**
+- seguridad defensiva: **41**
 - manejo de errores y validación de entradas: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `healthscore.py`: **19**
+- `healthscore.py`: **20**
 - `organizer.py`: **19**
 - `quarantine.py`: **19**
 - `assistant.py`: **18**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-04T09:36:34` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del motor de puntuación mediante un esquema de validación defensiva en `_evaluate_rules` que garantiza que las recomendaciones generadas por las `message_factory` no contengan caracteres maliciosos o de control, evitando la inyección de datos inesperados en la interfaz.
 - `2026-10-04T09:27:43` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_collect_candidates` implementando una validación estricta de rutas mediante `is_protected_path` antes de intentar operar sobre ellas, evitando el riesgo de seguir enlaces simbólicos o rutas críticas fuera de la jerarquía esperada.
 - `2026-10-04T09:27:26` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` verificando que la ruta del archivo esté efectivamente contenida dentro del directorio raíz antes de procesarla, evitando posibles ataques de recorrido de directorios o acceso a rutas fuera del scope mediante enlaces simbólicos manipulados.
 - `2026-10-04T09:17:34` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva de `assistant.py` mediante la implementación de `_is_safe_path_input` para centralizar la validación de rutas dentro de las consultas, evitando inyecciones de rutas en los campos de texto, e integré este filtro en `_sanitize_query` para que cualquier entrada del usuario sea filtrada antes de llegar a los motores.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-04T08:46:57` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` frente a la concurrencia y los cambios dinámicos en el sistema de archivos, envolviendo la obtención de atributos con un manejo de excepciones exhaustivo para evitar que un archivo bloqueado o eliminado durante el escaneo detenga el proceso completo.
 - `2026-10-04T08:46:18` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y estados inválidos mediante una validación más estricta de las rutas y parámetros, asegurando que la operación de I/O no se ejecute si existen condiciones de carrera o datos corruptos.
 - `2026-10-04T08:25:52` **quarantine.py** (rendimiento): Se optimizó la carga y persistencia del manifiesto implementando una carga perezosa (`lazy loading`) en `load_manifest` y evitando la serialización innecesaria del caché, reduciendo drásticamente el uso de CPU y I/O en operaciones repetitivas sobre el mismo directorio de cuarentena.
-- `2026-10-04T08:25:12` **organizer.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo eliminando llamadas redundantes a `Path.resolve()` y `Path.exists()` dentro del bucle principal, aprovechando que `os.scandir` ya provee la información necesaria (`is_dir`, `is_file`, `stat`), reduciendo drásticamente las llamadas al sistema.

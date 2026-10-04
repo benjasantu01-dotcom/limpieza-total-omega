@@ -219,7 +219,8 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
         try:
             if rule.check(metrics, ratio):
                 msg = str(rule.message_factory(metrics))
-                clean_msg = "".join(filter(str.isprintable, msg)).strip()
+                # Filtro defensivo: solo caracteres imprimibles, sin saltos de línea ni control, límite de longitud
+                clean_msg = "".join(c for c in msg if c.isprintable() and c not in "\r\n\t").strip()
                 if clean_msg: findings.append(clean_msg[:200])
         except Exception:
             continue

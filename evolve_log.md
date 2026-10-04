@@ -1320,3 +1320,13 @@ assert not ['browser.py']
 - `2026-10-04T09:27:43` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_collect_candidates` implementando una validación estricta de rutas mediante `is_protected_path` antes de intentar operar sobre ellas, evitando el riesgo de seguir enlaces simbólicos o rutas críticas fuera de la jerarquía esperada.
 - `2026-10-04T09:27:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T09:27:43` Corrida terminada. Total usado hoy: 224.
+- `2026-10-04T09:35:59` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-10-04T09:36:34` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la robustez del motor de puntuación mediante un esquema de validación defensiva en `_evaluate_rules` que garantiza que las recomendaciones generadas por las `message_factory` no contengan caracteres maliciosos o de control, evitando la inyección de datos inesperados en la interfaz.
+- `2026-10-04T09:37:34` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-04T09:38:38` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-04T09:39:44` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-04T09:40:56` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-04T09:41:38` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-10-04T09:41:53` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-10-04T09:41:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T09:41:53` Corrida terminada. Total usado hoy: 228.
