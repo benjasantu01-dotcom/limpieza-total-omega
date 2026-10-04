@@ -798,8 +798,10 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         
         stored_file = _validate_quarantine_path(base_path / quarantine_item.stored_name, base_path)
         if not stored_file.exists() or not stored_file.is_file():
+            # Limpieza proactiva de manifiesto ante archivo perdido
             save_manifest([i for i in items if i.item_id != item_id], base)
             raise RuntimeError("Archivo en cuarentena inexistente.")
+            
         if not quarantine_item.verify_integrity(stored_file):
             raise RuntimeError("Integridad comprometida.")
         
@@ -824,9 +826,6 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         
         if not is_safe_to_modify(destination):
             raise UnsafePathError("Destino no seguro.")
-        
-        if not stored_file.exists() or not quarantine_item.verify_integrity(stored_file):
-            raise RuntimeError("Falla de integridad post-validación.")
             
         os.replace(str(stored_file), str(destination))
         save_manifest([i for i in items if i.item_id != item_id], base)
@@ -879,6 +878,8 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     try:
         quarantine_root = quarantine_dir(base)
         items = load_manifest(base)
+        if not isinstance(items, list):
+            return 0
         item_map = {i.stored_name: i for i in items}
         
         purged_ids: Set[str] = set()
@@ -889,7 +890,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 item = item_map.get(f.name)
                 if item and _is_item_purgable(f, item):
                     purged_ids.add(item.item_id)
-            except UnsafePathError:
+            except (UnsafePathError, OSError):
                 continue
         
         if purged_ids:

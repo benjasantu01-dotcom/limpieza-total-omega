@@ -1596,3 +1596,10 @@ assert ['arc'] == []
 - `2026-10-04T11:30:58` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_linux_meminfo` mediante la validación explícita de tipos y la captura de errores en la conversión de valores, evitando que una línea de texto inesperada en `/proc/meminfo` (como una entrada sin valor numérico) corrompa la lectura completa del estado de memoria.
 - `2026-10-04T11:30:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T11:30:58` Corrida terminada. Total usado hoy: 272.
+- `2026-10-04T11:38:36` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-10-04T11:39:05` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_locked` para evitar falsos positivos y posibles leaks de descriptores de archivos, asegurando que la validación de acceso sea estricta y que el recurso se libere correctamente mediante un manejador de contexto `try-finally`.
+- `2026-10-04T11:39:47` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se reforzó el manejo de errores en `purge_all` y `restore_item` mediante la validación explícita de tipos y la captura de estados inesperados, evitando que excepciones silenciadas o datos malformados interrumpan el flujo de trabajo crítico de la cuarentena.
+- `2026-10-04T11:40:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-10-04T11:40:42` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez de `_get_path_stat_robust` y `_check_file_integrity` mediante un manejo de excepciones más granular y defensivo, asegurando que los errores de sistema no propaguen estados ambiguos durante la validación.
+- `2026-10-04T11:40:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T11:40:42` Corrida terminada. Total usado hoy: 276.

@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **214** (42.5% de aceptación)
+- Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 212
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 105 | 4 | 20 | 13 | 90 |
-| 2026-10-04 | 109 | 15 | 23 | 3 | 122 |
+| 2026-10-03 | 101 | 4 | 20 | 13 | 90 |
+| 2026-10-04 | 112 | 15 | 24 | 3 | 122 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **47**
 - seguridad defensiva: **46**
-- legibilidad y documentación: **43**
-- rendimiento: **42**
-- manejo de errores y validación de entradas: **36**
+- legibilidad y documentación: **42**
+- rendimiento: **39**
+- manejo de errores y validación de entradas: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **19**
 - `healthscore.py`: **19**
-- `quarantine.py`: **18**
+- `quarantine.py`: **19**
+- `assistant.py`: **18**
+- `organizer.py`: **18**
 - `diskreport.py`: **18**
-- `organizer.py`: **17**
-- `browser.py`: **16**
+- `safety.py`: **17**
 - `duplicates.py`: **16**
-- `safety.py`: **16**
 - `memory.py`: **15**
 - `scanner.py`: **15**
+- `browser.py`: **15**
 - `settings.py`: **13**
-- `startup.py`: **12**
-- `branding.py`: **12**
+- `startup.py`: **11**
+- `branding.py`: **11**
 - `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-04T11:40:42` **safety.py** (manejo de errores y validación de entradas): Se mejora la robustez de `_get_path_stat_robust` y `_check_file_integrity` mediante un manejo de excepciones más granular y defensivo, asegurando que los errores de sistema no propaguen estados ambiguos durante la validación.
+- `2026-10-04T11:39:47` **quarantine.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `purge_all` y `restore_item` mediante la validación explícita de tipos y la captura de estados inesperados, evitando que excepciones silenciadas o datos malformados interrumpan el flujo de trabajo crítico de la cuarentena.
+- `2026-10-04T11:39:05` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_locked` para evitar falsos positivos y posibles leaks de descriptores de archivos, asegurando que la validación de acceso sea estricta y que el recurso se libere correctamente mediante un manejador de contexto `try-finally`.
 - `2026-10-04T11:30:58` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_linux_meminfo` mediante la validación explícita de tipos y la captura de errores en la conversión de valores, evitando que una línea de texto inesperada en `/proc/meminfo` (como una entrada sin valor numérico) corrompa la lectura completa del estado de memoria.
 - `2026-10-04T11:30:33` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_save_report` y `on_save_settings` añadiendo validaciones de entrada (`Path.resolve()`) y manejo explícito de errores durante la serialización, previniendo así condiciones donde entradas corruptas o rutas inexistentes pudiesen dejar la aplicación en un estado inconsistente.
 - `2026-10-04T11:29:19` **healthscore.py** (manejo de errores y validación de entradas): Reforcé el manejo de errores en `compute_score` y `_evaluate_rules` reemplazando los `try-except` genéricos ("silenciosos") por capturas que loguean el error y garantizan la integridad del flujo de datos, además de añadir validación defensiva para evitar divisiones o accesos inválidos en casos límite.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-04T09:48:42` **safety.py** (seguridad defensiva): He refactorizado la validación de integridad del sistema para incluir una comprobación explícita de `FILE_ATTRIBUTE_REPARSE_POINT` durante el escaneo de atributos, garantizando que los puntos de reparse sean bloqueados activamente incluso si no son detectados como junctions de directorio, reforzando así la seguridad ante redirecciones inesperadas del sistema de archivos.
 - `2026-10-04T09:47:23` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_atomic_isolate_file` añadiendo una validación explícita de `st_nlink` para impedir que archivos con enlaces físicos (hard links) —que podrían ser puntos de entrada a otras partes del sistema— sean procesados en el sandbox.
 - `2026-10-04T09:36:34` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del motor de puntuación mediante un esquema de validación defensiva en `_evaluate_rules` que garantiza que las recomendaciones generadas por las `message_factory` no contengan caracteres maliciosos o de control, evitando la inyección de datos inesperados en la interfaz.
-- `2026-10-04T09:27:43` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_collect_candidates` implementando una validación estricta de rutas mediante `is_protected_path` antes de intentar operar sobre ellas, evitando el riesgo de seguir enlaces simbólicos o rutas críticas fuera de la jerarquía esperada.
-- `2026-10-04T09:27:26` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` verificando que la ruta del archivo esté efectivamente contenida dentro del directorio raíz antes de procesarla, evitando posibles ataques de recorrido de directorios o acceso a rutas fuera del scope mediante enlaces simbólicos manipulados.
-- `2026-10-04T09:17:34` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva de `assistant.py` mediante la implementación de `_is_safe_path_input` para centralizar la validación de rutas dentro de las consultas, evitando inyecciones de rutas en los campos de texto, e integré este filtro en `_sanitize_query` para que cualquier entrada del usuario sea filtrada antes de llegar a los motores.

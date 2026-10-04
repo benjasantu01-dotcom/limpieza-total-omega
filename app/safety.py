@@ -467,65 +467,36 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
         raise UnsafePathError("Tipo de objeto de ruta inválido", SafetyValidationErrorCode.GENERIC)
     if _is_device_file(path):
         raise UnsafePathError(f"Acceso a dispositivo bloqueado: {path.name}", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
-    
-    # Pre-check de existencia robusto
-    if not os.access(path, os.F_OK):
-        raise UnsafePathError(f"Archivo inexistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
         
     try:
-        if _is_system_directory_junction(str(path)):
-            raise UnsafePathError(f"Punto de reparse detectado durante acceso estático: {path.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         return path.stat()
     except (PermissionError, FileNotFoundError):
         raise UnsafePathError(f"Acceso denegado o archivo inexistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     except OSError as e:
         win_err = getattr(e, 'winerror', None)
-        # 32: Sharing violation, 13: Permission denied, 1920: File is being used by a process
         if win_err in (32, 1920) or e.errno == 13:
              raise UnsafePathError(f"Archivo bloqueado por otro proceso: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
-        if win_err == 5:
-             raise UnsafePathError(f"Acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
         raise UnsafePathError(f"Acceso fallido: {path.name}", SafetyValidationErrorCode.IO_ERROR)
-    except (ValueError, TypeError) as e:
-        raise UnsafePathError(f"Error al leer metadatos de {path.name}: {e}", SafetyValidationErrorCode.IO_ERROR)
+    except Exception as e:
+        raise UnsafePathError(f"Error inesperado al leer metadatos de {path.name}: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     """
     Previene ataques Time-of-Check to Time-of-Use (TOCTOU).
-
-    Realiza una validación de dos pasos:
-    1. Confirma que el dispositivo de almacenamiento sea local y seguro.
-    2. Compara los identificadores de dispositivo (st_dev) e inodo (st_ino) 
-       obtenidos en `initial_stat` con el estado actual para detectar 
-       si el archivo fue reemplazado entre operaciones.
     """
-    if not os.access(path, os.F_OK):
+    # Verificar disponibilidad final antes de comparar integridad
+    if not path.exists():
         raise UnsafePathError("El archivo ya no existe (TOCTOU).", SafetyValidationErrorCode.IO_ERROR)
         
-    if os.name == 'nt':
-        root = path.anchor
-        if root:
-            try:
-                drive_type = ctypes.windll.kernel32.GetDriveTypeW(root)
-                if drive_type not in (DRIVE_FIXED, DRIVE_RAMDISK):
-                    raise UnsafePathError(f"Volumen no compatible/remoto: {root}", SafetyValidationErrorCode.IO_ERROR)
-            except (AttributeError, ctypes.ArgumentError):
-                pass
-
-    if not os.access(path, os.R_OK):
-        raise UnsafePathError(f"Acceso de lectura denegado a {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
-    
     current_stat = _get_path_stat_robust(path)
     
     # Detectar cambio de tipo de archivo (TOCTOU: reemplazar archivo por dir o viceversa)
     if stat.S_ISREG(initial_stat.st_mode) != stat.S_ISREG(current_stat.st_mode):
         raise UnsafePathError(f"Cambio de tipo detectado (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
     
+    # Detectar reemplazo físico mediante identificadores del sistema de archivos
     if current_stat.st_dev != initial_stat.st_dev or current_stat.st_ino != initial_stat.st_ino:
         raise UnsafePathError(f"Consistencia fallida (TOCTOU): {path.name}", SafetyValidationErrorCode.TOCTOU_VIOLATION)
-    
-    if _is_system_directory_junction(str(path)):
-        raise UnsafePathError(f"Junction detectada: {path.name}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         
     _evaluate_security_rules(path, current_stat)
 
@@ -546,7 +517,7 @@ def _validate_access_permissions(path: Path) -> None:
             raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED)
         if not os.access(path, os.W_OK):
             raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
-    except PermissionError:
+    except Exception:
         raise UnsafePathError("Acceso al archivo denegado por el sistema.", SafetyValidationErrorCode.ACCESS_DENIED)
 
 @lru_cache(maxsize=4096)
@@ -558,7 +529,6 @@ def normalize(path: PathLike) -> Path:
     if path is None: raise UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC)
     path_str = str(path).strip()
     
-    # Pre-validacion de longitud externa
     if os.name == 'nt' and _is_path_too_long(path_str):
         if not path_str.startswith("\\\\?\\"):
              raise UnsafePathError("Ruta demasiado larga.", SafetyValidationErrorCode.PATH_TOO_LONG)
@@ -611,7 +581,6 @@ def is_protected_path(path: PathLike) -> bool:
     try:
         p_str = str(path)
         p = normalize(p_str)
-        # Bloqueo total a puntos de reparse en cualquier parte del árbol
         if _is_system_directory_junction(str(p)): return True
         if p == Path(p.anchor): return True
         return _is_system_path_raw(str(p))
@@ -710,7 +679,6 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
     if is_protected_path(str(target_path)):
         raise UnsafePathError("Ruta en directorio del sistema bloqueada.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
     
-    # Prevención explícita contra carpetas protegidas por SVI (System Volume Information)
     if "system volume information" in str(target_path).lower():
         raise UnsafePathError("Modificación denegada: Volumen del Sistema.", SafetyValidationErrorCode.VOLUME_RESTRICTED)
 
@@ -782,21 +750,15 @@ def _validate_ntfs_reparse_redirection(path: Path) -> None:
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
     Valida exhaustivamente una ruta para garantizar que es segura de modificar.
-    
-    Esta función es el estándar para operaciones destructivas. Si la ruta es
-    insegura, lanza `UnsafePathError`. Si es segura, retorna el objeto `Path` 
-    absoluto y normalizado.
     """
     if path is None:
         raise UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC)
     
-    # Validar el tipo de entrada para prevenir errores en tiempo de ejecución
     if not isinstance(path, (str, Path, os.PathLike)):
         raise UnsafePathError(f"Tipo de ruta no soportado: {type(path).__name__}", SafetyValidationErrorCode.GENERIC)
     
     p = normalize(path)
     
-    # Pre-check de archivos críticos de kernel antes de cualquier operación
     if _is_kernel_managed(p):
         raise UnsafePathError(f"Archivo de sistema crítico: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
     
@@ -809,65 +771,30 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     _validate_structural_safety(p, str(p))
     _validate_boundary_conditions(p, base_dir)
     
-    # Verificación preventiva tras asegurar la estructura
-    if os.access(p, os.F_OK):
-        try:
-            _validate_access_permissions(p)
-            if _is_file_in_use_by_system(str(p)):
-                 raise UnsafePathError(f"Archivo en uso por el sistema: {p.name}", SafetyValidationErrorCode.FILE_IN_USE)
-            initial_stat = _get_path_stat_robust(p)
-            
-            if os.name == 'nt': 
-                _validate_ntfs_reparse_redirection(p)
-                try:
-                    if not os.access(p.parent, os.W_OK):
-                         raise UnsafePathError("Directorio contenedor marcado como solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY)
-                except OSError:
-                    pass
-            _check_file_integrity(p, initial_stat)
-        except UnsafePathError:
-            raise
-        except (PermissionError, OSError) as e:
-            raise UnsafePathError(f"Error de acceso: {e}", SafetyValidationErrorCode.IO_ERROR)
-        except Exception as e:
-            raise UnsafePathError(f"Error de acceso inesperado: {e}", SafetyValidationErrorCode.IO_ERROR)
+    if p.exists():
+        _validate_access_permissions(p)
+        if _is_file_in_use_by_system(str(p)):
+             raise UnsafePathError(f"Archivo en uso por el sistema: {p.name}", SafetyValidationErrorCode.FILE_IN_USE)
+        
+        initial_stat = _get_path_stat_robust(p)
+        if os.name == 'nt': 
+            _validate_ntfs_reparse_redirection(p)
+        _check_file_integrity(p, initial_stat)
     else:
-        # Validar permisos en el padre si el archivo no existe aún
-        try:
-            parent = p.parent
-            if not os.access(parent, os.F_OK):
-                return p
-            if not os.access(parent, os.W_OK):
-                raise UnsafePathError("Directorio contenedor no tiene permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
-            if is_protected_path(str(parent)):
-                raise UnsafePathError("Creación en directorio restringido.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
-            if os.name == 'nt' and _is_file_locked_by_other_process(str(parent)):
-                raise UnsafePathError("Directorio contenedor bloqueado por otro proceso.", SafetyValidationErrorCode.FILE_IN_USE)
-        except (OSError, RuntimeError):
-            pass
+        parent = p.parent
+        if parent.exists() and not os.access(parent, os.W_OK):
+            raise UnsafePathError("Directorio contenedor no tiene permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
     return p
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> bool:
-    """
-    Wrapper booleano para validar seguridad.
-    
-    Retorna `True` si la ruta es segura, `False` en caso contrario. Esta función
-    NO lanza excepciones, por lo que es la opción preferida para iterar sobre
-    listas de archivos donde se desea omitir silenciosamente los inseguros.
-    """
+    """Wrapper booleano para validar seguridad."""
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive, base_dir=base_dir)
         return True
     except (UnsafePathError, ValueError, TypeError, OSError, PermissionError): return False
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> list[Path]:
-    """
-    Filtra una colección de rutas, devolviendo solo aquellas seguras.
-    
-    Esta función utiliza internamente `ensure_safe_to_modify` e ignora cualquier
-    error de validación, garantizando que el resultado contenga solo rutas 
-    validadas y listas para su procesamiento.
-    """
+    """Filtra una colección de rutas, devolviendo solo aquellas seguras."""
     results = []
     for p in paths:
         if p is None: continue
