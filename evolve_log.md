@@ -641,3 +641,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-04T03:20:08` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 115): unterminated string literal (detected at line 115)
 - `2026-10-04T03:20:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T03:20:08` Corrida terminada. Total usado hoy: 80.
+- `2026-10-04T03:28:41` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-10-04T03:29:32` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Documenté con docstrings detallados las funciones `ensure_safe_to_modify`, `is_safe_to_modify` y `filter_safe_paths` para aclarar su contrato de uso, específicamente distinguiendo cuándo lanzan excepciones y cuándo retornan valores booleanos, evitando así futuros errores de lógica en su implementación.
+- `2026-10-04T03:30:00` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: Scanner._handle_directory, Scanner._has_invalid_name, Scanner._is_reparse_point
+- `2026-10-04T03:30:28` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult, _ValidatorEntry, _Validators._check_path_safety, _Validators._validate_enum_str
+- `2026-10-04T03:30:43` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación interna agregando `docstrings` de estilo Google en las funciones de la API pública y aclarando los motivos de seguridad en los métodos de `StartupEntry` para facilitar el mantenimiento futuro.
+- `2026-10-04T03:30:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T03:30:43` Corrida terminada. Total usado hoy: 84.

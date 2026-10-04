@@ -765,8 +765,11 @@ def _validate_ntfs_reparse_redirection(path: Path) -> None:
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
-    Función de entrada principal para validar si es seguro aplicar una modificación.
-    Combina validaciones de estructura, límites, permisos y metadatos del sistema de archivos.
+    Valida exhaustivamente una ruta para garantizar que es segura de modificar.
+    
+    Esta función es el estándar para operaciones destructivas. Si la ruta es
+    insegura, lanza `UnsafePathError`. Si es segura, retorna el objeto `Path` 
+    absoluto y normalizado.
     """
     if path is None:
         raise UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC)
@@ -829,14 +832,26 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     return p
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
-    """Wrapper booleano para validar seguridad, diseñado para uso seguro en bucles de filtrado."""
+    """
+    Wrapper booleano para validar seguridad.
+    
+    Retorna `True` si la ruta es segura, `False` en caso contrario. Esta función
+    NO lanza excepciones, por lo que es la opción preferida para iterar sobre
+    listas de archivos donde se desea omitir silenciosamente los inseguros.
+    """
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive)
         return True
     except (UnsafePathError, ValueError, TypeError, OSError, PermissionError): return False
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
-    """Filtra una colección de rutas, devolviendo solo las que cumplen con las garantías de seguridad."""
+    """
+    Filtra una colección de rutas, devolviendo solo aquellas seguras.
+    
+    Esta función utiliza internamente `ensure_safe_to_modify` e ignora cualquier
+    error de validación, garantizando que el resultado contenga solo rutas 
+    validadas y listas para su procesamiento.
+    """
     results = []
     for p in paths:
         if p is None: continue
