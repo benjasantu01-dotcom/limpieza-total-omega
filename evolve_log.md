@@ -1252,3 +1252,12 @@ FAILED evolve/tests/test_modules.py::test_pressure_level_without_data_is_informa
 - `2026-10-04T08:25:55` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
 - `2026-10-04T08:25:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T08:25:55` Corrida terminada. Total usado hoy: 200.
+- `2026-10-04T08:34:28` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-10-04T08:35:30` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-04T08:35:57` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-04T08:36:52` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-10-04T08:37:18` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-10-04T08:37:45` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._check_path_safety, _Validators._validate_enum_str
+- `2026-10-04T08:37:54` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-10-04T08:37:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T08:37:54` Corrida terminada. Total usado hoy: 204.
