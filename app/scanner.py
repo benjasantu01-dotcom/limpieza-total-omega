@@ -236,7 +236,7 @@ class Scanner:
             elif entry.is_file(follow_symlinks=False):
                 if self._is_relevant_extension(entry.name):
                     self._run_file_heuristics(Path(entry.path), entry)
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, AttributeError):
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:

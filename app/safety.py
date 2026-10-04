@@ -89,6 +89,7 @@ class Win32Attr(IntEnum):
 MAX_PATH_LENGTH: Final[int] = 260
 MAX_FILENAME_LENGTH: Final[int] = 255
 MAX_FILE_SIZE: Final[int] = 2 * 1024 * 1024 * 1024  # 2GB: Evita procesamiento de archivos gigantes para prevenir DoS.
+MAX_DIRECTORY_DEPTH: Final[int] = 32
 
 # Constantes Win32 Drive Types (retornadas por GetDriveType)
 DRIVE_UNKNOWN: Final[int] = 0
@@ -160,6 +161,7 @@ class SafetyValidationErrorCode(IntEnum):
     DEVICE_FILE_DETECTED = 28
     EMPTY_FILE = 29
     VOLUME_RESTRICTED = 30
+    PATH_TOO_DEEP = 31
 
 class UnsafePathError(Exception):
     """Excepción lanzada cuando una ruta no supera los filtros de seguridad."""
@@ -667,6 +669,8 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
             raise UnsafePathError("Ruta inconsistente con el sistema.", SafetyValidationErrorCode.GENERIC)
         if not target_path.parts or (len(target_path.parts) == 1 and target_path.parts[0] == os.sep):
              raise UnsafePathError("Ruta raíz no permitida.", SafetyValidationErrorCode.ROOT_ACCESS)
+        if len(target_path.parts) > MAX_DIRECTORY_DEPTH:
+             raise UnsafePathError("Profundidad de directorio excesiva.", SafetyValidationErrorCode.PATH_TOO_DEEP)
         for part in target_path.parts:
             if len(part) > MAX_FILENAME_LENGTH:
                 raise UnsafePathError(f"Nombre de componente demasiado largo.", SafetyValidationErrorCode.PATH_TOO_LONG)

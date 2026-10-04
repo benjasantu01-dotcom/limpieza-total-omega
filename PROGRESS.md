@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Mejoras aceptadas: **214** (42.5% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 47
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-02 | 10 | 0 | 1 | 1 | 34 |
+| 2026-10-02 | 10 | 0 | 1 | 1 | 30 |
 | 2026-10-03 | 157 | 7 | 33 | 18 | 135 |
-| 2026-10-04 | 44 | 7 | 13 | 1 | 43 |
+| 2026-10-04 | 47 | 7 | 14 | 1 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
+- robustez ante casos límite: **43**
 - manejo de errores y validación de entradas: **42**
 - rendimiento: **41**
-- robustez ante casos límite: **40**
 - seguridad defensiva: **38**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **20**
 - `organizer.py`: **19**
-- `quarantine.py`: **19**
 - `diskreport.py`: **18**
 - `duplicates.py`: **18**
+- `safety.py`: **18**
+- `scanner.py`: **18**
 - `healthscore.py`: **17**
-- `safety.py`: **17**
-- `scanner.py`: **17**
 - `assistant.py`: **15**
 - `browser.py`: **15**
 - `settings.py`: **14**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-04T04:42:09` **scanner.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de tipo, rutas vacías o inexistentes y excepciones de sistema (`OSError`) en la función `_is_inside_base_root` y en el orquestador `process_entry`, asegurando que el escáner no aborte ante condiciones de carrera o archivos bloqueados por el sistema operativo durante la iteración.
+- `2026-10-04T04:41:58` **safety.py** (robustez ante casos límite): Se ha añadido una validación de profundidad máxima del árbol de directorios en `_validate_boundary_conditions` para mitigar ataques de recursión infinita o rutas excesivamente anidadas que puedan causar desbordamientos en parsers de sistemas de archivos.
+- `2026-10-04T04:40:53` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de concurrencia y estado de archivo antes del borrado en `_safe_unlink` utilizando `os.open` con flags exclusivos (O_EXCL) para asegurar que el archivo no está siendo manipulado o bloqueado por otro proceso en el momento exacto de la eliminación, mitigando riesgos de condiciones de carrera (TOCTOU).
 - `2026-10-04T04:32:06` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_extract_process_info` para manejar correctamente errores de formato o valores `NaN/corruptos` en la salida de PowerShell, evitando que una línea mal formada interrumpa el diagnóstico de memoria.
 - `2026-10-04T04:31:39` **main.py** (robustez ante casos límite): Se reforzó la robustez del manejo de errores al iniciar la aplicación mediante la adición de un chequeo de integridad en `_validate_environment` que verifica específicamente que las rutas de trabajo y de la aplicación no sean rutas UNC (red), evitando errores de inicialización en entornos de red inaccesibles.
 - `2026-10-04T04:30:24` **healthscore.py** (robustez ante casos límite): Se reforzó la resiliencia del motor analítico ante fallos inesperados en los *callables* definidos en `_PIPELINE` mediante un manejo robusto de excepciones y validación de tipos, evitando que una falla en una sola regla o métrica degrade el puntaje total a cero.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-04T03:51:39` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` eliminando la llamada a `subprocess` (costosa y pesada) mediante la utilización de `wmi` a través de `win32com` si estuviera disponible, pero como tengo prohibidas dependencias externas, reemplacé la lógica de ordenamiento/filtrado global en el script por una estructura de datos más eficiente (un heap manejado directamente) y reduje la frecuencia de llamada a `Get-Process` mediante una lógica de cacheo más robusta y un pipeline de PowerShell más eficiente que delega el ordenamiento al sistema operativo, evitando procesar listas gigantes en Python.
 - `2026-10-04T03:51:27` **main.py** (rendimiento): Optimicé el sistema de caché implementando una invalidación de bajo costo mediante marcas de tiempo en `_get_cached`, evitando la sobrecarga de re-cálculos recurrentes en el hilo de UI durante la actualización de estado de las tarjetas resumen.
 - `2026-10-04T03:50:11` **healthscore.py** (rendimiento): Optimicé el método `validate` de `SystemMetrics` eliminando la creación dinámica de funciones lambda y el uso de `getattr`/`setattr` innecesarios, reemplazándolos por una asignación directa de valores validados, reduciendo la presión sobre el recolector de basura en cada iteración del pipeline.
-- `2026-10-04T03:49:44` **duplicates.py** (rendimiento): Optimicé el proceso de hashing eliminando re-verificaciones redundantes de `_safe_path_check` dentro de `_group_paths_by_hash`, aprovechando que los archivos ya fueron validados durante la recolección inicial.
-- `2026-10-04T03:41:24` **browser.py** (rendimiento): Se implementó un cacheo a nivel de `OSPath` para evitar re-escanear el mismo nodo del sistema de archivos en estructuras de directorios profundas o redundantes, optimizando significativamente la velocidad de `_sum_directory_recursive` al reutilizar resultados de inodos ya procesados.
-- `2026-10-04T03:39:48` **assistant.py** (rendimiento): Optimicé el cálculo del resumen de contexto utilizando una constante pre-serializada para los nombres de los campos y aplicando un `f-string` directo en `_generate_safe_context`, evitando iteraciones innecesarias y el uso de `getattr` dentro de un bucle crítico, mejorando el rendimiento en cada llamado a `ask`.

@@ -261,6 +261,13 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
             return False
         if _is_file_locked(resolved):
             return False
+
+        # Verificación final de exclusividad para evitar race conditions antes de unlink
+        try:
+            fd = os.open(str(resolved), os.O_RDWR | os.O_EXCL)
+            os.close(fd)
+        except (OSError, IOError):
+            return False
             
         _check_io_error_context(resolved.unlink)
         return True
