@@ -410,7 +410,7 @@ class SystemContext:
 
     def ingest(self, source: Any) -> bool:
         """
-        Normaliza e importa datos externos al contexto local.
+        Normaliza e importa datos externos al contexto local de manera transaccional.
         """
         if not self._validate_ingestion_source(source):
             return False
