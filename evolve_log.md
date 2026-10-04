@@ -1224,3 +1224,10 @@ FAILED evolve/tests/test_modules.py::test_pressure_level_without_data_is_informa
 - `2026-10-04T07:49:35` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y se clarificaron los nombres de variables en el flujo de aislamiento atómico (`_atomic_isolate_file`, `_write_temp_to_final`) para mejorar la legibilidad y explicitar las salvaguardas contra condiciones de carrera (TOCTOU).
 - `2026-10-04T07:49:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T07:49:35` Corrida terminada. Total usado hoy: 184.
+- `2026-10-04T07:53:39` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-10-04T07:54:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-04T07:54:44` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _CheckResult
+- `2026-10-04T07:55:10` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y se estructuró la documentación técnica mediante el uso de "Parametrized Type Aliases" y docstrings mejorados en `Suspicion` y `Scanner` para facilitar el mantenimiento del motor heurístico.
+- `2026-10-04T07:55:26` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de la lógica de validación extrayendo el bloque condicional de `_build_validator_map` hacia un método de factoría interno más declarativo, reduciendo la complejidad ciclomática de la función original.
+- `2026-10-04T07:55:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T07:55:26` Corrida terminada. Total usado hoy: 188.

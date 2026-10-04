@@ -269,17 +269,17 @@ INT_KEYS: Final = {
     ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB, ConfigKey.TOP_ARCHIVOS, ConfigKey.TOP_PROCESOS
 }
 
+def _determine_validator(key: ConfigKey) -> Callable[[ConfigKey, Any], Any]:
+    """Selecciona la estrategia de validación apropiada según el tipo de clave."""
+    if key in BOOL_KEYS: return _Validators.bool
+    if key in INT_KEYS: return _Validators.int
+    if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path
+    return _Validators.str
+
 @lru_cache(maxsize=1)
 def _build_validator_map() -> MappingProxyType[ConfigKey, _ValidatorEntry]:
     """Genera el mapa de validadores, mapeando cada clave de configuración a su función de control."""
-    mapping = {}
-    for key in ConfigKey:
-        if key in BOOL_KEYS: validator = _Validators.bool
-        elif key in INT_KEYS: validator = _Validators.int
-        elif key == ConfigKey.ULTIMA_CARPETA: validator = _Validators.path
-        else: validator = _Validators.str
-        mapping[key] = _ValidatorEntry(validator)
-    return MappingProxyType(mapping)
+    return MappingProxyType({key: _ValidatorEntry(_determine_validator(key)) for key in ConfigKey})
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
     """
