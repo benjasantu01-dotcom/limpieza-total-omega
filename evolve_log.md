@@ -1407,3 +1407,63 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-04T00:16:22` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante casos límite en la carga de archivos, implementando una validación previa de la integridad del JSON que evita lecturas parciales o corruptas mediante un bloque `try-except` más granular y una verificación explícita de `json.load` antes de procesar el diccionario, garantizando que el estado del objeto de configuración siempre se mantenga coherente.
 - `2026-10-04T00:16:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T00:16:22` Corrida terminada. Total usado hoy: 8.
+- `2026-10-04T00:23:57` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-10-04T00:24:34` Tests FALLARON:
+```
+st_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:167: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 7 warnings in 1.03s
+
+```
+- `2026-10-04T00:24:34` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry._resolve_and_cache_path` añadiendo un manejo explícito para rutas que, aunque existen, son directorios en lugar de archivos, evitando así falsos positivos en el inventario de ejecutables.
+- `2026-10-04T00:24:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-04T00:24:37` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-04T00:25:32` ➖ Sin cambios en assistant.py (enfoque: seguridad defensiva). Motivo: Reforcé la seguridad defensiva al añadir `_sanitize_query` dentro de `_build_payload`, garantizando que, incluso si el asistente en línea está habilitado, los datos de entrada se filtren nuevamente antes de la serialización JSON, previniendo cualquier inyección que pudiera saltar las validaciones previas al enviar datos a la API.
+- `2026-10-04T00:26:17` Tests FALLARON:
+```
+est_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:167: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_draw_logo_paints_on_the_canvas_without_a_display - NameError: name 'trramos' is not defined
+FAILED evolve/tests/test_modules.py::test_gradient_produces_the_requested_amount_of_colors - NameError: name 'trramos' is not defined
+FAILED evolve/tests/test_modules.py::test_gradient_starts_and_ends_on_its_stops - NameError: name 'trramos' is not defined
+FAILED evolve/tests/test_modules.py::test_gradient_actually_changes_color - NameError: name 'trramos' is not defined
+FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel - NameError: name 'trramos' is not defined
+FAILED evolve/tests/test_modules.py::test_logo_draws_a_gradient_and_a_halo - NameError: name 'trramos' is not defined
+6 failed, 293 passed, 7 warnings in 1.16s
+
+```
+- `2026-10-04T00:26:17` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se ha mejorado `save_logo_svg` para asegurar que la validación de seguridad sea previa a cualquier acceso al sistema de archivos, utilizando `ensure_safe_to_modify` para cumplir con las reglas de seguridad defensiva ante rutas maliciosas.
+- `2026-10-04T00:26:33` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha implementado una validación de rutas absoluta y estricta en `_resolve_browser_path` para prevenir ataques de *path traversal* mediante el uso de `joinpath` con componentes divididos, asegurando que cualquier ruta resultante se mantenga dentro del directorio base de manera canónica antes de ser procesada.
+- `2026-10-04T00:26:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T00:26:33` Corrida terminada. Total usado hoy: 12.

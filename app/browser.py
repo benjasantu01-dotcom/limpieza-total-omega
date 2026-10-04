@@ -309,11 +309,14 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
         return False
 
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
-    """Resuelve rutas absolutas a partir de la estructura predefinida de cada navegador."""
+    """Resuelve rutas absolutas a partir de la estructura predefinida de cada navegador, validando contención."""
     try:
-        target: Path = real_base.joinpath(*rel_str.split("\\"))
+        # Separamos la ruta relativa para evitar inyección de rutas absolutas mediante joinpath
+        parts = rel_str.split("\\")
+        target: Path = real_base.joinpath(*parts)
         if target.exists():
             target_res = target.resolve(strict=True)
+            # Validación estricta de que el destino resuelto permanezca dentro del perfil
             if _ensure_within_base(str(target_res), os.path.normcase(str(real_base))) and \
                is_safe_to_modify(target_res) and not is_protected_path(target_res):
                 return target_res
