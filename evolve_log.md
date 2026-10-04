@@ -648,3 +648,38 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-04T03:30:43` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación interna agregando `docstrings` de estilo Google en las funciones de la API pública y aclarando los motivos de seguridad en los métodos de `StartupEntry` para facilitar el mantenimiento futuro.
 - `2026-10-04T03:30:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T03:30:43` Corrida terminada. Total usado hoy: 84.
+- `2026-10-04T03:38:55` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-10-04T03:39:48` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el cálculo del resumen de contexto utilizando una constante pre-serializada para los nombres de los campos y aplicando un `f-string` directo en `_generate_safe_context`, evitando iteraciones innecesarias y el uso de `getattr` dentro de un bucle crítico, mejorando el rendimiento en cada llamado a `ask`.
+- `2026-10-04T03:39:56` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-04T03:40:42` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-10-04T03:41:24` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se implementó un cacheo a nivel de `OSPath` para evitar re-escanear el mismo nodo del sistema de archivos en estructuras de directorios profundas o redundantes, optimizando significativamente la velocidad de `_sum_directory_recursive` al reutilizar resultados de inodos ya procesados.
+- `2026-10-04T03:41:25` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-04T03:41:48` Tests FALLARON:
+```
+  nombres = {p.name for p, _ in diskreport.walk_files(tmp_path)}
+                   ^^^^^^
+E       AttributeError: 'str' object has no attribute 'name'
+
+evolve/tests/test_modules.py:577: AttributeError
+=============================== warnings summary ===============================
+app/diskreport.py:171
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:171: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_walk_files_finds_everything_recursively - AttributeError: 'str' object has no attribute 'name'
+FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - AttributeError: 'str' object has no attribute 'name'
+2 failed, 297 passed, 8 warnings in 1.54s
+
+```
+- `2026-10-04T03:41:48` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: Optronicé la recolección de datos en `_collect_summary_data` reemplazando la creación de una lista de `Path` dentro del heap por el uso de `os.fspath()` para reducir la sobrecarga de instanciación de objetos `Path` durante el escaneo intensivo de discos.
+- `2026-10-04T03:41:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T03:41:48` Corrida terminada. Total usado hoy: 88.

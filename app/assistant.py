@@ -497,14 +497,12 @@ def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> Syst
 
 def _generate_safe_context(ctx: SystemContext) -> str:
     """Genera un resumen textual del contexto validando cada métrica estrictamente."""
-    metrics_list = []
-    
+    res = []
     for key, unit, precision in _CONTEXT_SCHEMA:
         val = ctx.get_metric(key, -1.0)
-        if val >= 0 and val < 1e12: 
-            metrics_list.append(f"{key}: {_fmt_metric(val, unit, precision)}")
-            
-    return "\n".join(metrics_list)
+        if val >= 0:
+            res.append(f"{key}: {val:.{precision}f}{unit}")
+    return "\n".join(res)
 
 @lru_cache(maxsize=16)
 def _generate_context_cached(ctx: SystemContext) -> str:

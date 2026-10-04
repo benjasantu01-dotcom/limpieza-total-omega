@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **209** (41.5% de aceptación)
-- Rechazadas por tests: 11
+- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 46
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 216
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-02 | 23 | 0 | 3 | 3 | 41 |
+| 2026-10-02 | 23 | 0 | 3 | 1 | 39 |
 | 2026-10-03 | 157 | 7 | 33 | 18 | 135 |
-| 2026-10-04 | 29 | 4 | 10 | 1 | 40 |
+| 2026-10-04 | 31 | 5 | 10 | 1 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +26,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **36**
-- rendimiento: **32**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
@@ -36,10 +36,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **18**
 - `duplicates.py`: **18**
 - `settings.py`: **16**
+- `assistant.py`: **16**
 - `healthscore.py`: **16**
 - `scanner.py`: **16**
-- `assistant.py`: **15**
-- `browser.py`: **14**
+- `browser.py`: **15**
 - `memory.py`: **13**
 - `startup.py`: **11**
 - `branding.py`: **10**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-04T03:41:24` **browser.py** (rendimiento): Se implementó un cacheo a nivel de `OSPath` para evitar re-escanear el mismo nodo del sistema de archivos en estructuras de directorios profundas o redundantes, optimizando significativamente la velocidad de `_sum_directory_recursive` al reutilizar resultados de inodos ya procesados.
+- `2026-10-04T03:39:48` **assistant.py** (rendimiento): Optimicé el cálculo del resumen de contexto utilizando una constante pre-serializada para los nombres de los campos y aplicando un `f-string` directo en `_generate_safe_context`, evitando iteraciones innecesarias y el uso de `getattr` dentro de un bucle crítico, mejorando el rendimiento en cada llamado a `ask`.
 - `2026-10-04T03:30:43` **startup.py** (legibilidad y documentación): Mejoré la documentación interna agregando `docstrings` de estilo Google en las funciones de la API pública y aclarando los motivos de seguridad en los métodos de `StartupEntry` para facilitar el mantenimiento futuro.
 - `2026-10-04T03:29:32` **safety.py** (legibilidad y documentación): Documenté con docstrings detallados las funciones `ensure_safe_to_modify`, `is_safe_to_modify` y `filter_safe_paths` para aclarar su contrato de uso, específicamente distinguiendo cuándo lanzan excepciones y cuándo retornan valores booleanos, evitando así futuros errores de lógica en su implementación.
 - `2026-10-04T03:19:31` **organizer.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints explícitos, docstrings detallados en funciones críticas y la documentación del propósito de los atributos de Windows, facilitando la comprensión del flujo de seguridad para el dueño del proyecto.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-04T02:42:28` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` añadiendo un manejo de excepciones más granular y específico, asegurando que si el JSON está corrupto o es inaccesible, se registre el evento (fallo silencioso es riesgoso en seguridad) y se retorne una lista vacía de forma consistente, evitando que el estado del caché bloquee la app.
 - `2026-10-04T02:27:58` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` asegurando que el pipeline no falle ante métricas nulas o inesperadas, y añadí una validación explícita para evitar divisiones por cero en el cálculo de `_safe_inv` ante configuraciones inválidas.
 - `2026-10-04T02:27:46` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_file_locked` y `hash_file` capturando `OSError` de forma más específica y validando explícitamente el cierre del descriptor de archivo, evitando fugas de recursos (FDs) en caso de fallos durante la lectura.
-- `2026-10-04T02:27:19` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de entrada y el reporte final añadiendo validaciones específicas de tipo y capturando excepciones de sistema de forma más granular para evitar que operaciones fallidas en archivos individuales interrumpan el análisis completo.
-- `2026-10-04T02:19:02` **assistant.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de datos externos en `AssistantConfig._parse_config` y `SystemContext.ingest` validando exhaustivamente los tipos y rangos de las entradas, asegurando que cualquier valor inesperado sea descartado de forma segura sin interrumpir el flujo de la aplicación.
