@@ -750,6 +750,17 @@ def _validate_ntfs_reparse_redirection(path: Path) -> None:
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
     Valida exhaustivamente una ruta para garantizar que es segura de modificar.
+
+    Args:
+        path: La ruta del archivo o directorio a validar.
+        allow_sensitive: Si es True, permite archivos con extensiones críticas.
+        base_dir: Directorio sandbox opcional dentro del cual la ruta debe residir.
+
+    Returns:
+        Path: La ruta validada y normalizada.
+
+    Raises:
+        UnsafePathError: Si la ruta infringe políticas de seguridad o es inaccesible.
     """
     if path is None:
         raise UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC)
@@ -787,14 +798,34 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     return p
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> bool:
-    """Wrapper booleano para validar seguridad."""
+    """
+    Verifica si una ruta es segura para modificar mediante un valor booleano.
+
+    Args:
+        path: La ruta a evaluar.
+        allow_sensitive: Flag para permitir extensiones críticas.
+        base_dir: Sandbox raíz para validación de alcance.
+
+    Returns:
+        bool: True si la ruta es segura, False si hay riesgo detectado.
+    """
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive, base_dir=base_dir)
         return True
     except (UnsafePathError, ValueError, TypeError, OSError, PermissionError): return False
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> list[Path]:
-    """Filtra una colección de rutas, devolviendo solo aquellas seguras."""
+    """
+    Filtra una colección de rutas, devolviendo solo aquellas que superan las validaciones de seguridad.
+
+    Args:
+        paths: Lista de rutas candidatas.
+        allow_sensitive: Flag para permitir extensiones críticas.
+        base_dir: Sandbox raíz para validación de alcance.
+
+    Returns:
+        list[Path]: Lista de rutas validadas.
+    """
     results = []
     for p in paths:
         if p is None: continue
@@ -803,7 +834,15 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
     return results
 
 def describe_protection(path: PathLike) -> str:
-    """Retorna una descripción legible de la causa por la que una ruta es considerada insegura."""
+    """
+    Retorna una descripción legible de la causa por la que una ruta es considerada insegura.
+
+    Args:
+        path: Ruta a diagnosticar.
+
+    Returns:
+        str: Mensaje descriptivo con el motivo de la restricción.
+    """
     if path is None: return "Ruta nula."
     try:
         p = normalize(path)

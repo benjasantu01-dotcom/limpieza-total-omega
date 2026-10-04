@@ -539,7 +539,11 @@ def _create_temp_file(source: Path, destination: Path) -> Path:
 
 
 def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> None:
-    """Realiza copia byte a byte verificando integridad final mediante descriptores de archivo."""
+    """
+    Copia los datos de 'source' a 'temp_dest' mediante streaming, verificando el
+    tamaño y la integridad SHA256 final para asegurar que el archivo no fue 
+    manipulado ni truncado durante la transferencia I/O.
+    """
     flags = os.O_RDONLY
     if hasattr(os, 'O_NOFOLLOW'):
         flags |= os.O_NOFOLLOW
@@ -613,9 +617,10 @@ def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, int]:
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, int]:
     """
-    Realiza el aislamiento atómico de un archivo.
-    Verifica que el archivo fuente no haya sido modificado durante la validación
-    previa (prevención de TOCTOU) antes de iniciar la escritura al sandbox.
+    Ejecuta el aislamiento atómico de un archivo.
+    Verifica que el archivo fuente no haya cambiado de tamaño (TOCTOU) y
+    que no posea enlaces físicos (hard links) prohibidos antes de proceder
+    con la transferencia verificada y el registro de metadatos.
     """
     if not source.exists():
         raise FileNotFoundError("Archivo origen no existe.")
