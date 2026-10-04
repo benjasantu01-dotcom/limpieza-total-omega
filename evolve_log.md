@@ -481,3 +481,10 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-10-04T12:56:28` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el acceso al manifiesto de cuarentena transformando el caché `_MANIFEST_CACHE` en un diccionario que almacena los objetos `QuarantineItem` indexados por `item_id`, permitiendo búsquedas en O(1) en lugar de iterar toda la lista en cada consulta.
 - `2026-10-04T12:56:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T12:56:28` Corrida terminada. Total usado hoy: 304.
+- `2026-10-04T13:00:21` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-04T13:00:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-10-04T13:01:33` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un cache de tamaño fijo (`lru_cache`) en la función `_is_kernel_managed` para evitar la re-evaluación constante de strings y rutas en los bucles de escaneo, optimizando el rendimiento en operaciones de validación masiva.
+- `2026-10-04T13:02:00` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se implementó un filtrado preventivo en `process_entry` utilizando `entry.name` contra un conjunto de extensiones pre-filtradas antes de realizar cualquier operación de I/O o validación de rutas compleja, evitando así ciclos de CPU y accesos a disco innecesarios.
+- `2026-10-04T13:02:16` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Se optimizó `load()` para utilizar un mecanismo de caché más eficiente basado en `os.stat().st_mtime` y la invalidación granular del Singleton, reduciendo drásticamente las lecturas innecesarias de disco y los parses JSON repetitivos en el bucle principal.
+- `2026-10-04T13:02:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T13:02:16` Corrida terminada. Total usado hoy: 308.

@@ -387,6 +387,7 @@ def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
         pass
     return False
 
+@lru_cache(maxsize=1024)
 def _is_kernel_managed(path: Path) -> bool:
     """Identifica archivos del núcleo bloqueados permanentemente (ej. pagefile.sys), evitando su manipulación."""
     p_str = str(path).lower()
