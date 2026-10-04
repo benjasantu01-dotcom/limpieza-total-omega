@@ -175,9 +175,9 @@ def _should_skip_entry(
     is_junction_fn: JunctionChecker
 ) -> bool:
     """
-    Determina si un objeto del sistema de archivos debe omitirse.
-    Aplica filtros de seguridad: carpetas protegidas, rutas UNC, archivos críticos,
-    puntos de reparse (junctions) y atributos de sistema/ocultos.
+    Evalúa si un DirEntry debe omitirse.
+    Aplica filtros de seguridad: blacklist, rutas UNC, profundidad de caracteres,
+    protección de rutas del sistema y atributos de bajo nivel (Win32).
     """
     if entry.name is None or _is_excluded_file(entry.name):
         return True
@@ -199,7 +199,7 @@ def _should_skip_entry(
 def _is_file_in_use(path_obj: Path) -> bool:
     """
     Verifica si un archivo está bloqueado por el sistema o una aplicación.
-    Aplica validaciones de seguridad primero; luego intenta abrir en modo lectura.
+    Intenta abrir en modo lectura exclusiva para determinar disponibilidad.
     """
     if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
         return True
@@ -220,8 +220,8 @@ def _process_file_entry(
 ) -> ScanResult:
     """
     Procesa un elemento individual durante el escaneo.
-    Realiza validaciones de seguridad: profundidad máxima, contención dentro del 
-    perfil base, detección de ciclos de inodos y verificación de bloqueo de archivos.
+    Asegura integridad mediante control de profundidad, detección de ciclos de inodos
+    y validaciones de seguridad de ruta.
     """
     try:
         if depth > MAX_SCAN_DEPTH:
@@ -260,8 +260,8 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> ScanResult:
     """
-    Ejecuta un recorrido recursivo para calcular el tamaño en bytes de un directorio.
-    Implementa memoización (`visited_dirs`) y detección de ciclos (`visited_paths`).
+    Ejecuta un recorrido recursivo para calcular el tamaño de un directorio.
+    Utiliza memoización (visited_dirs) para optimizar el cálculo en estructuras compartidas.
     """
     if not isinstance(root_path, Path) or depth > MAX_SCAN_DEPTH:
         return ScanResult(0, False)

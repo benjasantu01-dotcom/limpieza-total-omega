@@ -96,6 +96,7 @@ class DuplicateGroup:
 def _is_file_locked(path: Path) -> bool:
     """
     Comprueba si el archivo está bloqueado intentando abrirlo en modo lectura exclusiva.
+    Retorna True si el acceso es denegado, lo que sugiere que está en uso o protegido.
     """
     if not isinstance(path, Path) or not is_safe_to_modify(path) or not path.exists():
         return True
@@ -138,7 +139,10 @@ def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
 
 
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula el hash SHA256 completo de un archivo mediante lectura segmentada."""
+    """
+    Calcula el hash SHA256 completo de un archivo mediante lectura segmentada.
+    Se utiliza como confirmación final para descartar colisiones de hash parcial.
+    """
     p: Optional[Path] = _validate_and_resolve_path(path)
     if p is None:
         return None
@@ -154,7 +158,11 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Calcula el hash SHA256 solo del inicio del archivo para descarte rápido."""
+    """
+    Calcula el hash SHA256 solo del inicio del archivo (primeros 64KB).
+    Permite filtrar archivos con alta probabilidad de ser distintos sin procesar
+    todo el contenido, optimizando el rendimiento en archivos grandes.
+    """
     p: Optional[Path] = _validate_and_resolve_path(path)
     if p is None:
         return None
@@ -170,7 +178,10 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
 
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
-    """Filtra archivos que no cumplen los requisitos de integridad o seguridad."""
+    """
+    Verifica si un archivo es un candidato legítimo para el análisis de duplicados.
+    Valida tamaño positivo y ausencia de bloqueos o atributos de sistema.
+    """
     if st_size <= 0:
         return False
     try:
@@ -266,6 +277,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
     """
     Refina grupos de archivos grandes aplicando hash parcial y luego completo.
+    La doble validación evita falsos positivos en archivos de gran tamaño.
     """
     partial_groups: Dict[str, List[Path]] = _group_paths_by_hash(paths, partial_hash)
     final_results: Dict[str, List[Path]] = {}
@@ -276,7 +288,10 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 
 
 def _decide_hash_strategy_and_process(size_bytes: int, file_paths: List[Path]) -> List[DuplicateGroup]:
-    """Selecciona la estrategia de hashing según el tamaño para optimizar rendimiento."""
+    """
+    Selecciona la estrategia de hashing: si el archivo es menor o igual a 64KB,
+    se aplica hash completo directamente; caso contrario, se usa el refinamiento.
+    """
     if not file_paths or size_bytes <= 0:
         return []
 

@@ -55,6 +55,9 @@ class ExtStats:
     """
     Contenedor mutable de métricas para agrupar estadísticas por extensión.
     
+    Se utiliza como acumulador dentro de diccionarios para sumarizar 
+    bytes y conteo por extensión durante el recorrido de archivos.
+
     Attributes:
         total_bytes: Sumatoria de bytes ocupados por archivos con esta extensión.
         count: Cantidad total de archivos encontrados con esta extensión.
@@ -69,6 +72,8 @@ class ExtStats:
 class FolderMetrics(NamedTuple):
     """
     Acumulador inmutable para métricas de subcarpetas durante la agregación.
+    
+    Permite el seguimiento de la carga de archivos por rama de directorio.
     
     Args:
         size: Tamaño acumulado en bytes.
@@ -282,9 +287,12 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     Recorre el sistema de archivos iterativamente usando una pila (stack) para
     evitar problemas de recursión profunda. 
     
-    Implementa detección de ciclos mediante inodos para evitar el seguimiento infinito 
-    de enlaces simbólicos o junctions. Saltea automáticamente las rutas marcadas
-    como protegidas por `safety.is_protected_path`.
+    Estrategia de recorrido:
+    1. Utiliza `os.scandir` para obtener metadatos eficientes.
+    2. Implementa detección de ciclos mediante inodos (dev, ino) para prevenir
+       el seguimiento infinito de junctions o enlaces simbólicos.
+    3. Aplica `_is_excluded_path` para filtrar rutas de sistema o protegidas antes
+       de procesar cualquier entrada.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -368,8 +376,11 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Recorre el sistema de archivos bajo el directorio dado y consolida los datos 
-    estadísticos (tamaño total, conteo, stats por extensión y top de archivos).
+    Recorre el sistema de archivos y consolida métricas globales.
+    
+    El proceso utiliza `walk_files` para la traversal y mantiene un `heapq` 
+    interno para mantener solo los N archivos más grandes (`limit`), 
+    evitando cargar toda la lista de archivos en memoria.
     """
     total_bytes: int = 0
     total_files: int = 0
