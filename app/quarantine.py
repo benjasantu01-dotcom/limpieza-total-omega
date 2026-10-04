@@ -788,10 +788,9 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     try:
         base_path = quarantine_dir(base)
         items = load_manifest(base)
-        # Diccionario para acceso O(1)
-        item_map = {i.item_id: i for i in items}
+        # Búsqueda eficiente usando un generador sin recrear el diccionario completo innecesariamente
+        quarantine_item = next((i for i in items if i.item_id == item_id), None)
         
-        quarantine_item = item_map.get(item_id)
         if quarantine_item is None:
             raise KeyError(f"Ítem no encontrado: {item_id}")
         
@@ -840,9 +839,8 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
         raise ValueError("ID de ítem vacío o inválido.")
     base_path = quarantine_dir(base)
     items = load_manifest(base)
-    item_map = {i.item_id: i for i in items}
+    quarantine_item = next((i for i in items if i.item_id == item_id), None)
     
-    quarantine_item = item_map.get(item_id)
     if quarantine_item is None:
         return False
         
