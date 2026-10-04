@@ -221,7 +221,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         except OSError:
             continue
 
-        if resolved_dir in visited or depth > MAX_RECURSION_DEPTH:
+        if resolved_dir in visited or depth > MAX_RECURSION_DEPTH or not is_safe_to_modify(resolved_dir):
             continue
         visited.add(resolved_dir)
             
@@ -265,7 +265,8 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
     partial_groups = _group_paths_by_hash(paths, partial_hash)
     final_results: Dict[str, List[Path]] = {}
     for candidate_subset in partial_groups.values():
-        full_hash_groups = _group_paths_by_hash(candidate_subset, hash_file)
+        valid_subset = [p for p in candidate_subset if _safe_path_check(p)]
+        full_hash_groups = _group_paths_by_hash(valid_subset, hash_file)
         final_results.update(full_hash_groups)
     return final_results
 

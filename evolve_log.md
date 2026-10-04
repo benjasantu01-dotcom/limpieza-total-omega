@@ -1467,3 +1467,13 @@ FAILED evolve/tests/test_modules.py::test_logo_draws_a_gradient_and_a_halo - Nam
 - `2026-10-04T00:26:33` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha implementado una validación de rutas absoluta y estricta en `_resolve_browser_path` para prevenir ataques de *path traversal* mediante el uso de `joinpath` con componentes divididos, asegurando que cualquier ruta resultante se mantenga dentro del directorio base de manera canónica antes de ser procesada.
 - `2026-10-04T00:26:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T00:26:33` Corrida terminada. Total usado hoy: 12.
+- `2026-10-04T00:34:08` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-10-04T00:34:39` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `walk_files` y `_collect_summary_data` validando que cada ruta procesada sea un archivo absoluto existente y que su nombre no contenga caracteres de control o de ofuscación de nombre antes de realizar cualquier operación de I/O, evitando condiciones de carrera (TOCTOU) y posibles vulnerabilidades de salto de directorio.
+- `2026-10-04T00:35:13` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` y `_process_large_file_subset` añadiendo validaciones explícitas de `is_safe_to_modify` antes de cualquier operación de I/O, garantizando que el escaneo no se desvíe si un archivo cambia de estado durante la iteración.
+- `2026-10-04T00:35:42` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la robustez del motor de recomendaciones mediante una validación estricta de las entradas externas y la protección del pipeline contra excepciones inesperadas en las funciones lambda de las reglas, asegurando que los mensajes no contengan caracteres de control o inyecciones accidentales de formato antes de llegar a la interfaz.
+- `2026-10-04T00:35:45` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-04T00:36:48` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-04T00:37:55` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-04T00:39:07` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-04T00:39:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T00:39:07` Corrida terminada. Total usado hoy: 16.

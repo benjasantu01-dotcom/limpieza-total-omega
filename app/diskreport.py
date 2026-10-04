@@ -296,9 +296,12 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode)
                                 stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            st = entry.stat(follow_symlinks=False)
-                            sz = int(st.st_size)
-                            if sz >= 0: yield Path(entry.path), sz
+                            # Validación adicional: confirmar ruta absoluta y existencia real
+                            target_path = Path(entry.path).resolve()
+                            if target_path.exists() and target_path.is_file():
+                                st = entry.stat(follow_symlinks=False)
+                                sz = int(st.st_size)
+                                if sz >= 0: yield target_path, sz
                     except (OSError, PermissionError, AttributeError, ValueError):
                         continue
         except (PermissionError, OSError): 
@@ -368,6 +371,10 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     
     for path, size_bytes in walk_files(directory, skip_protected):
         if not isinstance(size_bytes, int) or size_bytes < 0:
+            continue
+        
+        # Validar nuevamente seguridad de caracteres y confinamiento al procesar
+        if any(c in path.name for c in SUSPICIOUS_CHARS) or '\0' in path.name:
             continue
         
         try:
