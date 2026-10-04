@@ -378,13 +378,17 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     return DEFAULTS.copy()
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
-    """Asegura consistencia de tipos y reglas de negocio, revertiendo a defaults ante inconsistencias."""
-    final = DEFAULTS.copy()
+    """
+    Asegura consistencia de tipos y reglas de negocio, revertiendo a defaults ante inconsistencias.
+    Realiza una copia limpia del diccionario de configuración verificando tipos contra DEFAULTS.
+    """
+    final: AppSettings = DEFAULTS.copy() # type: ignore
     try:
         for key, expected_val in DEFAULTS.items():
             if key in settings and isinstance(settings[key], type(expected_val)):
                 final[key] = settings[key] # type: ignore
         
+        # Validar lógica de negocio: si el asistente está activado, requiere una clave válida.
         if final["asistente_activado"] and not (final["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
             final["asistente_activado"] = False
         return final
@@ -392,7 +396,10 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
         return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
-    """Persistencia atómica con validación previa de espacio y permisos de sistema."""
+    """
+    Persistencia atómica: Valida el estado de la configuración, verifica espacio en disco,
+    y utiliza un archivo temporal antes del reemplazo seguro para evitar corrupción.
+    """
     if not _is_dict(values): return None
     ruta = settings_path(custom_base)
     cleaned_settings = _coerce_and_verify(validate(values))
@@ -405,6 +412,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
         
+        # Validación de seguridad de rutas antes de intentar escribir
         ensure_safe_to_modify(str(parent))
         if ruta.exists(): ensure_safe_to_modify(str(ruta))
     except (TypeError, ValueError, OSError, PermissionError): return None

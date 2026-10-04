@@ -446,3 +446,21 @@ FAILED evolve/tests/test_modules.py::test_logo_draws_a_gradient_and_a_halo - Nam
 - `2026-10-04T12:21:46` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de heurística y métodos críticos, clarificando los parámetros, las precondiciones y el valor de retorno para facilitar el mantenimiento y la auditoría del motor de escaneo.
 - `2026-10-04T12:21:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T12:21:46` Corrida terminada. Total usado hoy: 292.
+- `2026-10-04T12:29:48` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-10-04T12:30:23` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints más precisos en `_coerce_and_verify` y `save` para clarificar la lógica de integridad de datos y las restricciones de seguridad que se aplican antes de persistir, mejorando la legibilidad técnica del flujo de datos.
+- `2026-10-04T12:30:54` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-04T12:31:52` Tests FALLARON:
+```
+ basura, 900 MB en duplicados.'
+ +  where 'Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 MB en duplicados.' = Answer(text='Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 M...lo más urgente que debería arreglar?', '¿Por qué mi PC está lenta?', '¿Es seguro borrar lo que encontró la limpieza?']).text
+FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_explains_they_are_signals - AssertionError: assert 'señales' in 'con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de ram, 2400 mb de basura, 900 mb en duplicados.'
+ +  where 'con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de ram, 2400 mb de basura, 900 mb en duplicados.' = <built-in method lower of str object at 0x7f085bfd14d0>()
+ +    where <built-in method lower of str object at 0x7f085bfd14d0> = 'Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 MB en duplicados.'.lower
+ +      where 'Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 MB en duplicados.' = Answer(text='Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 M...lo más urgente que debería arreglar?', '¿Por qué mi PC está lenta?', '¿Es seguro borrar lo que encontró la limpieza?']).text
+2 failed, 297 passed, 7 warnings in 1.29s
+
+```
+- `2026-10-04T12:31:52` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré el rendimiento del motor de inferencia local reemplazando la búsqueda lineal sobre `_TOKENS_MAP` (vía `_TOKEN_REGEX`) por una búsqueda directa en un `set` de claves, evitando el costo de `re.findall` en cada consulta.
+- `2026-10-04T12:32:15` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se eliminó el uso de `lru_cache` decorando una función anidada (`_get_segments`) dentro de `draw_gradient_bar`, ya que esto regeneraba el caché en cada llamada a la función contenedora, anulando el propósito de la memoización y consumiendo memoria innecesariamente; en su lugar, se movió la lógica de segmentación a una llamada directa optimizada.
+- `2026-10-04T12:32:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T12:32:15` Corrida terminada. Total usado hoy: 296.

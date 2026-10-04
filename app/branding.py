@@ -489,11 +489,10 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
         cx, cy = float(canvas_x), float(canvas_y)
         if not math.isfinite(cx) or not math.isfinite(cy): return
         
-        @lru_cache(maxsize=16)
-        def _get_segments(w: int, s: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, ...]:
-            return _get_grouped_segments(gradient_colors(w, s))
+        # Uso directo de la función cacheada globalmente para evitar reinicializaciones
+        segments = _get_grouped_segments(gradient_colors(w_val, stops))
             
-        for segment in _get_segments(w_val, stops):
+        for segment in segments:
             canvas.create_line(cx + segment.start_index, cy, 
                                cx + segment.end_index, cy, 
                                fill=segment.hex_color, width=h_val)
