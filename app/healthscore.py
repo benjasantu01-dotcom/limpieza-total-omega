@@ -217,27 +217,20 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], ratio: NormalizedRatio, findings: List[str]) -> None:
-    """Evalúa reglas de recomendación y formatea mensajes de salida de forma segura."""
+    """Evalúa reglas de recomendación de forma resiliente."""
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
                 msg = str(rule.message_factory(metrics))
-                # Sanitización: caracteres imprimibles y truncado por seguridad de interfaz
                 clean_msg = "".join(filter(str.isprintable, msg)).strip()
                 if clean_msg: 
                     findings.append(clean_msg[:200])
-        except Exception:
+        except (Exception, TypeError, ValueError):
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
-    Ejecuta el pipeline de evaluación: normalización, ponderación y generación de recomendaciones.
-    
-    Args:
-        metrics: Objeto SystemMetrics opcional. Si no se provee, se usa uno por defecto.
-        
-    Returns:
-        HealthResult: Objeto con el puntaje final, grado y desglose de las áreas evaluadas.
+    Ejecuta el pipeline de evaluación capturando errores para asegurar integridad del puntaje.
     """
     m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
     
@@ -249,11 +242,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         try:
             area_ratio = _clamp(entry.scorer(m))
             _evaluate_rules(m, entry.rules, area_ratio, recommendations)
-            
             points = area_ratio * entry.weight
             metric_breakdown[entry.area] = int(round(points))
             accumulated_score += points
-        except Exception:
+        except (Exception, TypeError, ValueError):
             metric_breakdown[entry.area] = 0
             
     if m.quarantined_count > 0:

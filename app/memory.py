@@ -177,13 +177,22 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     return MemorySnapshot(total=total, available=available, cached=cached)
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
+    # Espera formato CSV: Name,Id,WorkingSet
     parts = line.split(",", 2)
     if len(parts) < 3: return None
+    
     name, pid_str, ws_str = parts
+    # Limpieza robusta de IDs y valores de memoria (ignora caracteres no numéricos residuales)
     clean_pid = "".join(filter(str.isdigit, pid_str))
     if not clean_pid: return None
-    pid = int(clean_pid)
+    
+    try:
+        pid = int(clean_pid)
+    except ValueError:
+        return None
+        
     if pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid(): return None
+    
     ws = _safe_int_conversion(ws_str)
     if pid > 0 and 0 < ws < MAX_VALID_PROCESS_MEM:
         return ProcessMemory(name.strip("'\" "), pid, ws)
@@ -193,6 +202,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     if not raw_csv_text: return []
     lines = raw_csv_text.splitlines()
     processes = []
+    # Ignora cabeceras y líneas vacías
     for line in (l for l in lines[1:] if l and "," in l):
         proc = _extract_process_info(line)
         if proc:

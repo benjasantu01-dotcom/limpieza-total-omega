@@ -183,8 +183,12 @@ def validated_ui_operation(func: Callable) -> Callable:
 
 # Validación de seguridad defensiva en el inicio
 try:
+    # Verificación estricta de rutas UNC o inválidas antes de iniciar
+    cwd = Path.cwd().resolve()
+    if str(cwd).startswith(r"\\"):
+        raise RuntimeError("No se permite ejecutar desde rutas de red (UNC).")
     safety.ensure_safe_to_modify(Path.home().resolve())
-    safety.ensure_safe_to_modify(Path.cwd().resolve())
+    safety.ensure_safe_to_modify(cwd)
 except safety.UnsafePathError as e:
     logging.critical("Iniciando desde ruta insegura: %s", e)
     raise
@@ -299,9 +303,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         cwd = Path.cwd().resolve()
         home = Path.home()
         
-        if str(cwd).startswith(r"\\"):
-            raise RuntimeError("La aplicación no puede ejecutarse desde una ruta de red (UNC).")
-
         validations = [
             (app_root.exists(), "Directorio de aplicación inexistente."),
             (not app_root.is_symlink(), "App ubicada en enlace simbólico."),

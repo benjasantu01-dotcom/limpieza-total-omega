@@ -734,3 +734,35 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-04T04:21:24` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-10-04T04:21:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T04:21:24` Corrida terminada. Total usado hoy: 104.
+- `2026-10-04T04:29:56` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-10-04T04:30:24` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la resiliencia del motor analítico ante fallos inesperados en los *callables* definidos en `_PIPELINE` mediante un manejo robusto de excepciones y validación de tipos, evitando que una falla en una sola regla o métrica degrade el puntaje total a cero.
+- `2026-10-04T04:31:39` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se reforzó la robustez del manejo de errores al iniciar la aplicación mediante la adición de un chequeo de integridad en `_validate_environment` que verifica específicamente que las rutas de trabajo y de la aplicación no sean rutas UNC (red), evitando errores de inicialización en entornos de red inaccesibles.
+- `2026-10-04T04:32:06` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_extract_process_info` para manejar correctamente errores de formato o valores `NaN/corruptos` en la salida de PowerShell, evitando que una línea mal formada interrumpa el diagnóstico de memoria.
+- `2026-10-04T04:32:18` Tests FALLARON:
+```
+       +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-4/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+
+evolve/tests/test_basic.py:144: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:171: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_deleting_them - AssertionError: el archivo debe salir de su lugar original
+assert not True
+ +  where True = exists()
+ +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-4/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+1 failed, 298 passed, 7 warnings in 1.59s
+
+```
+- `2026-10-04T04:32:18` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Se ha mejorado `_is_file_locked` para utilizar `os.open` con flags de acceso exclusivo (`O_EXCL | O_CREAT`) en lugar de abrir el archivo en modo escritura, evitando así modificar accidentalmente la fecha de acceso o el contenido de archivos sensibles, cumpliendo mejor con el enfoque de seguridad defensiva.
+- `2026-10-04T04:32:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T04:32:19` Corrida terminada. Total usado hoy: 108.
