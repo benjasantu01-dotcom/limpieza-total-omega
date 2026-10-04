@@ -470,9 +470,10 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
         raise UnsafePathError(f"Acceso denegado o archivo inexistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     except OSError as e:
         win_err = getattr(e, 'winerror', None)
-        if win_err == 32 or (e.errno == 13):
+        # 32: Sharing violation, 13: Permission denied, 1920: File is being used by a process
+        if win_err in (32, 1920) or e.errno == 13:
              raise UnsafePathError(f"Archivo bloqueado por otro proceso: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
-        if win_err == 5 or (e.errno == 13):
+        if win_err == 5:
              raise UnsafePathError(f"Acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
         raise UnsafePathError(f"Acceso fallido: {path.name}", SafetyValidationErrorCode.IO_ERROR)
     except (ValueError, TypeError) as e:

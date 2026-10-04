@@ -348,8 +348,10 @@ def _load_impl(ruta: Path) -> AppSettings:
                 data = json.load(f)
             finally:
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+        
         if _is_dict(data):
-            return _coerce_and_verify(validate(data))
+            validated = validate(data)
+            return _coerce_and_verify(validated)
     except (OSError, PermissionError, IOError, json.JSONDecodeError, UnicodeDecodeError, EOFError):
         pass
     return DEFAULTS.copy()

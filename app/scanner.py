@@ -97,6 +97,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
             return None
         return stats
     except (OSError, PermissionError):
+        # El archivo está bloqueado o inaccesible, se ignora de forma segura
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
@@ -175,7 +176,7 @@ class Scanner:
             if len(self._root_cache) < 1000:
                 self._root_cache[entry_path] = result
             return result
-        except (OSError, RuntimeError, ValueError, TypeError):
+        except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
             return False
 
     def _has_invalid_name(self, name: str) -> bool:
