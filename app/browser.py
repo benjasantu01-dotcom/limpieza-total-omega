@@ -336,7 +336,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     Pipeline principal de detección: mapea navegadores, resuelve rutas y
     ejecuta el escaneo del tamaño de caché.
     """
-    raw_bases = bases if (bases is not None and isinstance(bases, (list, tuple))) else base_directories()
+    raw_bases: List[Path] = list(bases) if (bases is not None and isinstance(bases, (list, tuple))) else base_directories()
     browser_map: BrowserMap = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     k32: Optional[ctypes.WinDLL] = _get_kernel32()
     found: List[BrowserCache] = []

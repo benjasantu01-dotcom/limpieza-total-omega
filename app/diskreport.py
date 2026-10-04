@@ -67,7 +67,13 @@ class ExtStats:
 
 
 class FolderMetrics(NamedTuple):
-    """Acumulador inmutable para métricas de subcarpetas durante la agregación."""
+    """
+    Acumulador inmutable para métricas de subcarpetas durante la agregación.
+    
+    Args:
+        size: Tamaño acumulado en bytes.
+        file_count: Número total de archivos contabilizados.
+    """
     size: int
     file_count: int
 

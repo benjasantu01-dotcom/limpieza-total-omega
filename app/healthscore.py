@@ -51,7 +51,15 @@ class RecommendationRule(NamedTuple):
     check: Callable[[SystemMetrics, NormalizedRatio], bool]
 
 class PipelineEntry(NamedTuple):
-    """Define la configuración de una etapa: peso asignado, la función de cálculo y sus reglas de alerta."""
+    """
+    Define la configuración de una etapa de análisis.
+    
+    Attributes:
+        area: Identificador único de la categoría analizada.
+        weight: Porcentaje del puntaje total (0-100) que aporta esta categoría.
+        scorer: Función que normaliza la métrica bruta a un ratio de salud.
+        rules: Reglas de validación para generar advertencias al usuario.
+    """
     area: MetricKey
     weight: int
     scorer: Scorer
@@ -134,27 +142,45 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
         return min_val
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
-    """Calcula el ratio de basura: 1.0 es limpio, 0.0 es el límite crítico (_LIMIT_JUNK_MB)."""
+    """
+    Normaliza la cantidad de basura detectada.
+    Escala 1.0 (0MB) a 0.0 (>= _LIMIT_JUNK_MB).
+    """
     return _clamp(1.0 - (float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
-    """Calcula el ratio de seguridad penalizando amenazas detectadas y advertencias."""
+    """
+    Normaliza el estado de seguridad.
+    Puntúa 1.0 (óptimo) restando peso por amenazas (0.05) y advertencias (0.25).
+    """
     return _clamp(1.0 - _clamp((float(suspicious_count) * 0.05) + (float(warnings) * 0.25), 0.0, 1.0))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
-    """Calcula el ratio de memoria, donde valores altos de RAM disponible puntúan mejor."""
+    """
+    Normaliza la RAM disponible.
+    Puntúa directamente proporcional al porcentaje de memoria libre.
+    """
     return _clamp(float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
-    """Calcula el ratio de disco basándose en el espacio libre porcentual."""
+    """
+    Normaliza el espacio en disco.
+    Puntúa proporcional al porcentaje de espacio libre restante.
+    """
     return _clamp(float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
-    """Calcula el ratio de duplicados según el tamaño en MB encontrado respecto al límite."""
+    """
+    Normaliza el volumen de duplicados.
+    Escala 1.0 (0MB) a 0.0 (>= _LIMIT_DUPLICATE_MB).
+    """
     return _clamp(1.0 - (float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
-    """Calcula el ratio de arranque: menor cantidad de programas implica mayor salud."""
+    """
+    Normaliza la cantidad de procesos de inicio.
+    Escala 1.0 (0 programas) a 0.0 (>= _LIMIT_STARTUP_COUNT).
+    """
     return _clamp(1.0 - (float(startup_count) * _INV_STARTUP))
 
 @dataclass

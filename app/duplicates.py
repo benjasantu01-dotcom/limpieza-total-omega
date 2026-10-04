@@ -94,7 +94,15 @@ class DuplicateGroup:
 
 
 def _is_file_locked(path: Path) -> bool:
-    """Comprueba si el archivo está bloqueado intentando abrirlo en modo lectura exclusiva."""
+    """
+    Comprueba si el archivo está bloqueado intentando abrirlo en modo lectura exclusiva.
+    
+    Args:
+        path: Ruta del archivo a evaluar.
+        
+    Returns:
+        bool: True si el archivo está en uso o inaccesible, False en caso contrario.
+    """
     if not isinstance(path, Path) or not is_safe_to_modify(path) or not path.exists():
         return True
     fd = -1
