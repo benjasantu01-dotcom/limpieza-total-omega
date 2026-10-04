@@ -218,12 +218,6 @@ HEALTH_AREAS: Tuple[HealthMetricConfig, ...] = (
 class LimpiezaTotalOmegaApp(ctk.CTk):
     """
     Orquestador principal de la interfaz y la lógica de negocio.
-    
-    Esta clase implementa:
-    1. Registro de componentes UI mediante carga perezosa (Lazy Loading).
-    2. Concurrencia segura mediante `ThreadPoolExecutor` y bloqueos de estado.
-    3. Validación de seguridad en tiempo real para todas las operaciones de E/S.
-    4. Gestión centralizada de estados, caché y logs de usuario.
     """
 
     def __init__(self) -> None:
@@ -254,6 +248,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._last_card_values: Dict[str, str] = {}
         self._last_gauge_state: Tuple[int, str] = (-1, "")
         self._last_health_state: Optional[Tuple] = None
+        self._last_compilation_digest: Any = None
         self.settings: AppSettings = {}
         self.setting_vars: Dict[str, Any] = {}
         

@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **212** (42.1% de aceptación)
+- Mejoras aceptadas: **214** (42.5% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 45
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 134 | 7 | 27 | 17 | 127 |
-| 2026-10-04 | 78 | 13 | 18 | 3 | 80 |
+| 2026-10-03 | 132 | 7 | 26 | 17 | 126 |
+| 2026-10-04 | 82 | 13 | 18 | 3 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - seguridad defensiva: **46**
-- robustez ante casos límite: **41**
+- rendimiento: **40**
+- robustez ante casos límite: **39**
 - manejo de errores y validación de entradas: **39**
-- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `organizer.py`: **18**
-- `scanner.py`: **17**
+- `quarantine.py`: **18**
+- `healthscore.py`: **18**
+- `duplicates.py`: **17**
 - `safety.py`: **17**
-- `healthscore.py`: **17**
 - `assistant.py`: **17**
 - `browser.py`: **16**
-- `duplicates.py`: **16**
+- `scanner.py`: **16**
 - `settings.py`: **15**
 - `memory.py`: **13**
 - `branding.py`: **12**
 - `startup.py`: **11**
-- `main.py`: **6**
+- `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-04T08:16:24` **main.py** (rendimiento): He optimizado el sistema de caché y las consultas de métricas implementando un mecanismo de invalidación perezosa mediante estados (digests), evitando que el dashboard de Salud re-calcule datos costosos si no ha habido cambios en las fuentes (basura, sospechosos, inicio, cuarentena), lo cual reduce significativamente el overhead de procesamiento en cada refresco de UI.
+- `2026-10-04T08:15:26` **healthscore.py** (rendimiento): Optimicé el método `validate` de `SystemMetrics` y `_clamp` eliminando llamadas redundantes a `float()` y verificaciones iterativas, reduciendo la sobrecarga en cada iteración del bucle de score.
+- `2026-10-04T08:15:00` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando un `set` para `visited` y evitando resoluciones redundantes de `resolve()` dentro del bucle principal, lo que reduce drásticamente las llamadas a sistema en estructuras de directorios profundas.
+- `2026-10-04T08:14:33` **diskreport.py** (rendimiento): Optimicé el rendimiento de `_collect_summary_data` eliminando la llamada redundante `path.is_file()` dentro del bucle principal, ya que `walk_files` ya garantiza que el objeto entregado es un archivo, reduciendo así llamadas innecesarias al sistema de archivos por cada ítem encontrado.
 - `2026-10-04T08:05:52` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo sustituyendo la verificación de `path_stack` (O(N) por cada archivo) por un conjunto de hash `visited_paths` (O(1)), eliminando redundancias en las llamadas a `os.path.normcase`.
 - `2026-10-04T08:05:40` **branding.py** (rendimiento): Optimicé el cálculo del degradado en `draw_gradient_bar` mediante `lru_cache` y una estructura de segmentación más eficiente, evitando reconstruir listas de colores completas en cada redibujado de la interfaz.
 - `2026-10-04T08:05:04` **assistant.py** (rendimiento): Optimicé el rendimiento de `SystemContext.ingest` y el acceso a métricas eliminando la creación innecesaria de diccionarios intermedios y reduciendo la complejidad en la búsqueda de claves, aprovechando la estructura fija de `_VALIDATORS`.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-04T07:34:56` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de puntuación y la clase `PipelineEntry`, clarificando la lógica de normalización y el propósito de cada etapa del pipeline.
 - `2026-10-04T07:34:45` **duplicates.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la adición de Type Hints detallados, documentación Docstring estandarizada (con descripción de argumentos y retornos) y la refactorización de lógica compleja para cumplir con los estándares de calidad del proyecto.
 - `2026-10-04T07:34:15` **diskreport.py** (legibilidad y documentación): Documenté mediante docstrings detallados la lógica de los iteradores y estructuras de datos clave en `diskreport.py` para mejorar la mantenibilidad del código sin alterar su funcionamiento.
-- `2026-10-04T07:33:48` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en las colecciones internas, clarificación de docstrings en las funciones críticas de recursión y normalización de nombres para mejorar la legibilidad del flujo de datos.
-- `2026-10-04T07:25:15` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (usando el formato Google Style) que clarifican las dependencias, restricciones de seguridad y el propósito de las funciones, facilitando la auditoría del código sin alterar su lógica operativa.
-- `2026-10-04T07:24:54` **assistant.py** (legibilidad y documentación): He refactorizado la estructura de las reglas de seguridad (`SECURITY_PATTERNS`) y la lógica de `_ensure_safe_text` para mejorar la legibilidad y mantenibilidad, extrayendo las expresiones regulares complejas a constantes documentadas individualmente, facilitando así la auditoría de seguridad del código.
-- `2026-10-04T07:14:49` **safety.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita para el parámetro `root_directory` en `ensure_safe_to_modify` y `filter_safe_paths`, asegurando que, si se proporciona, sea una ruta absoluta y no nula, previniendo errores en cascada durante la validación de límites (sandbox).

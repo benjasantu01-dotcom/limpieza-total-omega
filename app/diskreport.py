@@ -171,8 +171,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         return is_protected_path(Path(entry.path))
     except (OSError, PermissionError, AttributeError, RuntimeError, TypeError):
         return True
-
-
+            
 def _get_local_windows_drives() -> List[str]:
     """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
     import string
@@ -375,10 +374,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     get_stats = ext_stats.__getitem__
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        # Validar tipo y existencia para evitar race conditions tras walk_files
-        if not path.is_file():
-            continue
-            
         total_bytes += size_bytes
         total_files += 1
         
