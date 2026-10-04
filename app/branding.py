@@ -399,8 +399,8 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         # Normalización y validación estricta de la ruta
         path = raw_path.resolve()
         
-        # Validación defensiva: pre-chequeo antes de crear directorios
-        if not is_safe_to_modify(path.parent) or not is_safe_to_modify(path):
+        # Validación defensiva: pre-chequeo antes de crear directorios o archivos
+        if is_protected_path(path) or not is_safe_to_modify(path.parent):
             return None
         
         # Asegurar integridad de la estructura de directorios

@@ -311,6 +311,17 @@ def _validate_response_length(text: Any) -> str:
     if not isinstance(text, str): return ""
     return text[:_MAX_TEXT_LENGTH]
 
+def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
+    """Valida que los datos del payload no contengan estructuras recursivas profundas o tipos inválidos."""
+    if depth > _MAX_NESTING_DEPTH: return False
+    if isinstance(val, (list, tuple)):
+        if len(val) > 10: return False
+        return all(_is_safe_payload_structure(i, depth + 1) for i in val)
+    if isinstance(val, dict):
+        if len(val) > 20: return False
+        return all(isinstance(k, str) and _is_safe_payload_structure(v, depth + 1) for k, v in val.items())
+    return isinstance(val, (str, int, float, bool, type(None)))
+
 def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
     """Recursivamente detecta estructuras de datos excesivamente anidadas o grandes."""
     if depth > _MAX_NESTING_DEPTH: return True
@@ -656,11 +667,13 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     
     full_prompt = f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"
     
+    payload_data = {"contents": [{"parts": [{"text": full_prompt}]}]}
+    if not _is_safe_payload_structure(payload_data): return None
+    
     if len(full_prompt) > _MAX_PROMPT_LIMIT or _is_input_too_deep_or_complex(full_prompt): 
         return None
         
     try:
-        payload_data = {"contents": [{"parts": [{"text": full_prompt}]}]}
         payload = json.dumps(payload_data).encode("utf-8")
         return payload if len(payload) <= (_MAX_RESPONSE_BYTES // 2) else None
     except (TypeError, ValueError, AttributeError):
@@ -713,6 +726,8 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             if not isinstance(raw_res, bytes) or len(raw_res) > _MAX_RESPONSE_BYTES: return None
             
             data = json.loads(raw_res.decode("utf-8"))
+            if not _is_safe_payload_structure(data): return None
+            
             raw_text = _extract_text_from_gemini_json(data)
             
             if isinstance(raw_text, str) and _ensure_safe_text(raw_text):

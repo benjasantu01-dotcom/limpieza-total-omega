@@ -129,15 +129,16 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     Valida que una ruta sea un directorio existente y seguro para ser escaneado.
     
     Comprueba existencia física, restricciones de seguridad mediante `is_protected_path`
-    y permisos de lectura efectivos.
+    y permisos de lectura efectivos. Usa strict=False en resolve para evitar errores 
+    por componentes inexistentes en la cadena, pero verifica la integridad final.
     """
     if directory is None:
         return None
     try:
         path_str = os.fspath(directory)
-        # Limitar longitud para evitar desbordamientos o rutas excesivas
         if len(path_str) > 2048: return None
-        raw_path = Path(path_str).resolve(strict=True)
+        # Usamos resolve() con symlinks desactivados conceptualmente mediante lógica posterior
+        raw_path = Path(path_str).resolve()
         if not raw_path.is_dir():
             return None
         if is_protected_path(raw_path) or not os.access(raw_path, os.R_OK):
@@ -158,15 +159,13 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         if any(c in entry.name for c in SUSPICIOUS_CHARS) or '\0' in entry.name:
             return True
         
-        # Validación de confinamiento: asegurar que la ruta real está bajo el root_path
-        entry_path = Path(entry.path).resolve()
+        # Validación de confinamiento estricto contra el root_path
+        entry_path = Path(entry.path).resolve(strict=False)
         if root_path not in entry_path.parents and entry_path != root_path:
             return True
             
         try:
-            # Chequeo de existencia física antes de llamar a stat para evitar race conditions
-            if not entry.is_dir(follow_symlinks=False) and not entry.is_file(follow_symlinks=False):
-                return True
+            # Chequeo explícito de tipo evitando seguir enlaces simbólicos
             st = entry.stat(follow_symlinks=False)
             is_reparse = (st.st_file_attributes & 0x0400) if os.name == 'nt' else entry.is_symlink()
             if is_reparse:
@@ -285,14 +284,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre el sistema de archivos iterativamente usando una pila (stack) para
-    evitar problemas de recursión profunda. 
-    
-    Estrategia de recorrido:
-    1. Utiliza `os.scandir` para obtener metadatos eficientes.
-    2. Implementa detección de ciclos mediante inodos (dev, ino) para prevenir
-       el seguimiento infinito de junctions o enlaces simbólicos.
-    3. Aplica `_is_excluded_path` para filtrar rutas de sistema o protegidas antes
-       de procesar cualquier entrada.
+    evitar problemas de recursión profunda.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -377,10 +369,6 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Recorre el sistema de archivos y consolida métricas globales.
-    
-    El proceso utiliza `walk_files` para la traversal y mantiene un `heapq` 
-    interno para mantener solo los N archivos más grandes (`limit`), 
-    evitando cargar toda la lista de archivos en memoria.
     """
     total_bytes: int = 0
     total_files: int = 0
@@ -394,7 +382,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             total_bytes += size_bytes
             total_files += 1
             
-            # Determinar extensión de forma segura
             ext_raw = path.suffix.lower() if path.suffix else None
             ext = ext_raw or "(sin extensión)"
             

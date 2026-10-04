@@ -221,6 +221,9 @@ def _sum_directory_recursive(
     Ejecuta un recorrido recursivo con memoización para calcular el tamaño.
     Evita procesar dos veces el mismo inodo o directorio normalizado.
     """
+    if depth > MAX_SCAN_DEPTH:
+        return ScanResult(0, True)
+
     path_norm = os.path.normcase(str(root_path))
     if path_norm in visited_dirs:
         return ScanResult(visited_dirs[path_norm], True)
@@ -229,7 +232,7 @@ def _sum_directory_recursive(
     try:
         with os.scandir(root_path) as it:
             for entry in it:
-                if depth > MAX_SCAN_DEPTH or _should_skip_entry(entry, kernel32, _IS_JUNCTION_FN):
+                if _should_skip_entry(entry, kernel32, _IS_JUNCTION_FN):
                     continue
                 try:
                     st = entry.stat(follow_symlinks=False)
@@ -238,9 +241,10 @@ def _sum_directory_recursive(
                     visited_inodes.add(st.st_ino)
 
                     if entry.is_dir(follow_symlinks=False):
-                        if not _ensure_within_base(entry.path, root_abs_norm):
+                        child_path = Path(entry.path)
+                        if is_protected_path(child_path) or not _ensure_within_base(entry.path, root_abs_norm):
                             continue
-                        res = _sum_directory_recursive(Path(entry.path), root_abs_norm, kernel32, visited_inodes, visited_dirs, depth + 1)
+                        res = _sum_directory_recursive(child_path, root_abs_norm, kernel32, visited_inodes, visited_dirs, depth + 1)
                         total_bytes += res.bytes_found
                     elif not _is_file_in_use(Path(entry.path)):
                         total_bytes += st.st_size
