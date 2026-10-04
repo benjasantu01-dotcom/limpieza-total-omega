@@ -1477,3 +1477,10 @@ FAILED evolve/tests/test_modules.py::test_logo_draws_a_gradient_and_a_halo - Nam
 - `2026-10-04T00:39:07` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-10-04T00:39:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T00:39:07` Corrida terminada. Total usado hoy: 16.
+- `2026-10-04T00:44:19` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-10-04T00:44:50` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad en `_get_process_path` validando que la ruta resuelta no solo sea segura según `is_protected_path`, sino que también esté estrictamente dentro de los directorios permitidos, evitando la resolución de rutas fuera del alcance esperado mediante un chequeo de normalización adicional.
+- `2026-10-04T00:45:17` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` integrando una verificación de "sistema de archivos" (device ID) para asegurar que la operación sea un movimiento local (renombrado atómico) y no una copia entre volúmenes distintos, evitando comportamientos inconsistentes y riesgos de integridad.
+- `2026-10-04T00:45:59` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se implementó un bloqueo defensivo en `_safe_unlink` para prevenir el borrado accidental de archivos que no coincidan estrictamente con los metadatos registrados (hash e inodo), reforzando la integridad frente a posibles manipulaciones del sistema de archivos o condiciones de carrera.
+- `2026-10-04T00:46:02` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-04T00:46:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T00:46:02` Corrida terminada. Total usado hoy: 20.

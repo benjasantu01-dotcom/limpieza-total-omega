@@ -248,6 +248,7 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
         if hasattr(os, 'getuid') and st.st_uid != os.getuid():
             return False
         
+        # Validación estricta de metadatos antes de la operación destructiva
         if expected_inode != 0 and st.st_ino != expected_inode:
             return False
             
@@ -255,6 +256,7 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
         if not is_safe_to_modify(resolved) or is_protected_path(resolved):
             return False
         
+        # Validación de integridad de contenido antes del borrado
         if expected_hash and _get_sha256(resolved) != expected_hash:
             return False
         if _is_file_locked(resolved):

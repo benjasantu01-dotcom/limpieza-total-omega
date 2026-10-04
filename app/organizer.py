@@ -201,11 +201,11 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         target_dir = dest.parent if dest.exists() else dest
         if not target_dir.is_dir() or not os.access(target_dir, os.W_OK): return False
         
-        if src.drive != target_dir.drive or _is_recursive_violation(src, dest): return False
+        if _is_recursive_violation(src, dest): return False
         if _is_file_locked(src): return False
         
-        # Validación extra: asegurarse que ambos residen en el mismo volumen lógico
-        if src.resolve().drive.lower() != target_dir.resolve().drive.lower(): return False
+        # Validación crítica: verificar que ambos residan en el mismo sistema de archivos (dev ID)
+        if src.resolve().stat().st_dev != target_dir.resolve().stat().st_dev: return False
         
         return True
     except (OSError, RuntimeError, AttributeError, ValueError):

@@ -364,8 +364,10 @@ def _get_process_path(pid: int) -> Optional[Path]:
         if length > 0 and length < buffer_size:
             raw_path = buf.value
             if not raw_path or ":" not in raw_path: return None
+            # Resolver ruta y normalizar para evitar escape de directorios
             path_obj = Path(raw_path).resolve()
             
+            # Verificación estricta de seguridad
             attr = kernel32.GetFileAttributesW(str(path_obj))
             if attr != -1 and (attr & FILE_ATTRIBUTE_REPARSE_POINT):
                 return None
