@@ -195,10 +195,7 @@ class StartupEntry:
             p_str: str = str(p)
             _EXISTS_CACHE[p_str] = True
             return p_str
-        except (OSError, PermissionError, FileNotFoundError, RuntimeError):
-            _EXISTS_CACHE[path_string] = False
-            return ""
-        except (ValueError, TypeError):
+        except (OSError, PermissionError, FileNotFoundError, RuntimeError, ValueError, TypeError):
             _EXISTS_CACHE[path_string] = False
             return ""
 

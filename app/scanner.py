@@ -304,7 +304,7 @@ def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     if entry: scanner.process_entry(entry, directory_stack, depth)
-        except (PermissionError, OSError):
+        except (PermissionError, OSError, UnicodeDecodeError):
             continue
     return scanner.results
 
