@@ -598,3 +598,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-04T02:42:28` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `load_manifest` añadiendo un manejo de excepciones más granular y específico, asegurando que si el JSON está corrupto o es inaccesible, se registre el evento (fallo silencioso es riesgoso en seguridad) y se retorne una lista vacía de forma consistente, evitando que el estado del caché bloquee la app.
 - `2026-10-04T02:42:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T02:42:28` Corrida terminada. Total usado hoy: 64.
+- `2026-10-04T02:47:16` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-10-04T02:47:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-10-04T02:48:27` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-04T02:49:03` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-04T02:49:32` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save` y `_load_impl` al centralizar el chequeo de seguridad mediante `ensure_safe_to_modify` antes de cualquier operación de I/O, evitando el uso de bloques `try-except` excesivamente laxos y garantizando una salida limpia ante rutas bloqueadas.
+- `2026-10-04T02:49:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T02:49:32` Corrida terminada. Total usado hoy: 68.

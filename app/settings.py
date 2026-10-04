@@ -321,15 +321,10 @@ def validate(raw_values: Any) -> AppSettings:
 def _is_file_secure_to_read(file_obj: Any) -> bool:
     """Garantiza mediante FSTAT que el archivo es regular, no un enlace, y posee permisos de solo usuario."""
     try:
-        # FSTAT garantiza la verificación sobre el descriptor ya abierto
         st = os.fstat(file_obj.fileno())
-        # Verificar que sea archivo regular y no un symlink
         if not stat.S_ISREG(st.st_mode) or os.path.islink(file_obj.name): return False
-        # Validar tamaño
         if st.st_size < 2 or st.st_size > MAX_SETTINGS_SIZE: return False
-        # Bloquear permisos de ejecución o escritura grupal/otros
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
-        # Verificar ownership (UID) y enlaces físicos
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if st.st_nlink != 1: return False
         return True
@@ -390,7 +385,6 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
             if val is not None and isinstance(val, type(expected_val)):
                 final[key] = val
         
-        # Validar lógica de negocio: el asistente requiere clave para estar habilitado
         if final["asistente_activado"] and not (final["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
             final["asistente_activado"] = False
         return final # type: ignore
