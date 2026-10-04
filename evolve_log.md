@@ -1182,3 +1182,45 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-04T07:34:56` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de puntuación y la clase `PipelineEntry`, clarificando la lógica de normalización y el propósito de cada etapa del pipeline.
 - `2026-10-04T07:34:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T07:34:56` Corrida terminada. Total usado hoy: 180.
+- `2026-10-04T07:43:30` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-10-04T07:44:32` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-04T07:45:35` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-04T07:46:41` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-04T07:47:53` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-04T07:48:37` Tests FALLARON:
+```
+_____ test_pressure_level_without_data_is_informative ________________
+
+    def test_pressure_level_without_data_is_informative():
+>       assert memory.pressure_level(memory.MemorySnapshot(0, 0)) == "info"
+E       AssertionError: assert 'ok' == 'info'
+E         
+E         - info
+E         + ok
+
+evolve/tests/test_modules.py:373: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:177: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_pressure_level_without_data_is_informative - AssertionError: assert 'ok' == 'info'
+  
+  - info
+  + ok
+1 failed, 298 passed, 7 warnings in 1.51s
+
+```
+- `2026-10-04T07:48:37` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la aplicación de type hints, la segregación lógica de los estados de presión de memoria en un enum y la clarificación de los docstrings en las funciones críticas de gestión de procesos.
+- `2026-10-04T07:49:08` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna mediante docstrings detallados en funciones críticas de validación y seguridad, explicando el PORQUÉ de las restricciones (como el uso de `st_nlink` para detectar archivos con múltiples enlaces duros o la necesidad de verificar `st_dev` para asegurar la atomicidad en el movimiento), mejorando así la mantenibilidad técnica del módulo.
+- `2026-10-04T07:49:35` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y se clarificaron los nombres de variables en el flujo de aislamiento atómico (`_atomic_isolate_file`, `_write_temp_to_final`) para mejorar la legibilidad y explicitar las salvaguardas contra condiciones de carrera (TOCTOU).
+- `2026-10-04T07:49:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T07:49:35` Corrida terminada. Total usado hoy: 184.

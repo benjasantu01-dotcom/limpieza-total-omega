@@ -192,12 +192,18 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Auditoría de pre-condiciones necesaria antes de ejecutar cualquier escritura en disco.
-    Verifica existencia, inmutabilidad de enlaces, permisos de escritura y bloqueos.
+    Verifica:
+    1. Que el archivo no sea crítico del SO.
+    2. Que no sea un enlace simbólico o tenga múltiples hard links (st_nlink > 1),
+       ya que modificar enlaces duros puede alterar archivos fuera del escaneo.
+    3. Que la operación no cruce límites de sistemas de archivos (st_dev), 
+       garantizando que el movimiento sea atómico (renombrado) y no una copia destructiva.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     try:
         if not src.exists() or src.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         st = src.lstat()
+        # st_nlink > 1 significa que el archivo tiene más de un nombre apuntando al mismo nodo
         if not src.is_file() or (st.st_mode & 0o170000 == 0o120000) or st.st_nlink > 1: return False
         if not is_safe_to_modify(src) or not _validate_path_security(src, dest): return False
         
@@ -207,7 +213,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if _is_recursive_violation(src, dest): return False
         if _is_file_locked(src): return False
         
-        # Validación crítica: verificar que ambos residan en el mismo sistema de archivos (dev ID)
+        # Validar mismo dispositivo para asegurar atomicidad
         if src.resolve().stat().st_dev != target_dir.resolve().stat().st_dev: return False
         
         return True

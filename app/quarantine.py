@@ -610,7 +610,10 @@ def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> 
 
 
 def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, int]:
-    """Gestiona el flujo completo: validación, copia verificada y reemplazo."""
+    """
+    Gestiona la copia verificada: crea un archivo temporal, copia datos, 
+    verifica hashes y mueve el archivo a su destino final.
+    """
     _check_path_syntax_integrity(destination)
     _validate_file_transfer_preconditions(source, destination)
     
@@ -639,7 +642,11 @@ def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, int]:
 
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, int]:
-    """Aislamiento atómico de un archivo sospechoso validando TOCTOU."""
+    """
+    Realiza el aislamiento atómico de un archivo.
+    Verifica que el archivo fuente no haya sido modificado durante la validación
+    previa (prevención de TOCTOU) antes de iniciar la escritura al sandbox.
+    """
     if not source.exists():
         raise FileNotFoundError("Archivo origen no existe.")
     stat_orig = _check_io_error_context(source.stat)
