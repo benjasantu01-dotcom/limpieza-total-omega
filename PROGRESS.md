@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Mejoras aceptadas: **210** (41.7% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 46
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 210
+- Rechazadas por guardia de seguridad: 47
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 127 | 4 | 26 | 17 | 126 |
-| 2026-10-04 | 84 | 13 | 20 | 3 | 84 |
+| 2026-10-03 | 124 | 4 | 26 | 16 | 126 |
+| 2026-10-04 | 86 | 13 | 21 | 3 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
-- seguridad defensiva: **43**
 - rendimiento: **42**
+- seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **39**
-- robustez ante casos límite: **37**
+- robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `organizer.py`: **19**
-- `quarantine.py`: **19**
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `healthscore.py`: **18**
+- `organizer.py`: **18**
+- `quarantine.py`: **18**
 - `safety.py`: **17**
 - `assistant.py`: **17**
 - `scanner.py`: **16**
 - `duplicates.py`: **16**
 - `browser.py`: **15**
 - `settings.py`: **14**
+- `branding.py`: **13**
 - `memory.py`: **13**
-- `branding.py`: **12**
 - `startup.py`: **10**
-- `main.py`: **7**
+- `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-04T08:46:57` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` frente a la concurrencia y los cambios dinámicos en el sistema de archivos, envolviendo la obtención de atributos con un manejo de excepciones exhaustivo para evitar que un archivo bloqueado o eliminado durante el escaneo detenga el proceso completo.
+- `2026-10-04T08:46:18` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y estados inválidos mediante una validación más estricta de las rutas y parámetros, asegurando que la operación de I/O no se ejecute si existen condiciones de carrera o datos corruptos.
 - `2026-10-04T08:25:52` **quarantine.py** (rendimiento): Se optimizó la carga y persistencia del manifiesto implementando una carga perezosa (`lazy loading`) en `load_manifest` y evitando la serialización innecesaria del caché, reduciendo drásticamente el uso de CPU y I/O en operaciones repetitivas sobre el mismo directorio de cuarentena.
 - `2026-10-04T08:25:12` **organizer.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo eliminando llamadas redundantes a `Path.resolve()` y `Path.exists()` dentro del bucle principal, aprovechando que `os.scandir` ya provee la información necesaria (`is_dir`, `is_file`, `stat`), reduciendo drásticamente las llamadas al sistema.
 - `2026-10-04T08:16:24` **main.py** (rendimiento): He optimizado el sistema de caché y las consultas de métricas implementando un mecanismo de invalidación perezosa mediante estados (digests), evitando que el dashboard de Salud re-calcule datos costosos si no ha habido cambios en las fuentes (basura, sospechosos, inicio, cuarentena), lo cual reduce significativamente el overhead de procesamiento en cada refresco de UI.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-04T07:55:26` **settings.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de validación extrayendo el bloque condicional de `_build_validator_map` hacia un método de factoría interno más declarativo, reduciendo la complejidad ciclomática de la función original.
 - `2026-10-04T07:55:10` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se estructuró la documentación técnica mediante el uso de "Parametrized Type Aliases" y docstrings mejorados en `Suspicion` y `Scanner` para facilitar el mantenimiento del motor heurístico.
 - `2026-10-04T07:49:35` **quarantine.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y se clarificaron los nombres de variables en el flujo de aislamiento atómico (`_atomic_isolate_file`, `_write_temp_to_final`) para mejorar la legibilidad y explicitar las salvaguardas contra condiciones de carrera (TOCTOU).
-- `2026-10-04T07:49:08` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante docstrings detallados en funciones críticas de validación y seguridad, explicando el PORQUÉ de las restricciones (como el uso de `st_nlink` para detectar archivos con múltiples enlaces duros o la necesidad de verificar `st_dev` para asegurar la atomicidad en el movimiento), mejorando así la mantenibilidad técnica del módulo.
-- `2026-10-04T07:34:56` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de puntuación y la clase `PipelineEntry`, clarificando la lógica de normalización y el propósito de cada etapa del pipeline.
