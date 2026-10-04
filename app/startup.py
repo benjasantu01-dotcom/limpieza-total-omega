@@ -154,6 +154,7 @@ class StartupEntry:
         try:
             if is_protected_path(p):
                 return False
+            # No seguir puntos de reparse (junctions/symlinks) para seguridad defensiva
             if p.is_symlink():
                 return False
             return p.stat().is_file()
@@ -166,11 +167,9 @@ class StartupEntry:
             return ""
         
         try:
-            # Validar longitud y formato de unidad
             if len(path_string) > 32767 or ":" in path_string[2:]:
                 return ""
             
-            # Normalizar sin elevar excepciones de codificación
             norm: str = os.path.normpath(path_string)
             if norm.startswith(r"\\"):
                 return ""
@@ -186,7 +185,7 @@ class StartupEntry:
                 _EXISTS_CACHE[path_string] = False
                 return ""
             
-            # Resolve puede fallar si la ruta contiene caracteres inválidos en disco
+            # Resolve evalúa el path real y evita fugas por reparse points
             p = p.resolve(strict=False)
             
             if not self._validate_file_access(p):
@@ -261,6 +260,7 @@ def startup_folders() -> List[Path]:
     for c in candidates:
         if c and c.is_dir():
             try:
+                # Defensa ante reparse points en directorios
                 resolved = c.resolve()
                 if resolved not in seen_paths and not c.is_symlink() and not is_protected_path(c):
                     seen_paths.add(resolved)

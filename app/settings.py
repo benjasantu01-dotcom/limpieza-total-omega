@@ -428,6 +428,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
                 raise PermissionError("Archivo temporal inseguro")
             fcntl.flock(f.fileno(), fcntl.LOCK_UN)
         
+        # Validación extra post-escritura: verificar que no sean enlaces
+        if os.path.islink(temp_path) or (ruta.exists() and os.path.islink(ruta)):
+            raise PermissionError("Operación sobre enlace detectada")
+            
         if ruta.exists():
             ensure_safe_to_modify(str(bak_path))
             try: os.replace(ruta, bak_path)
