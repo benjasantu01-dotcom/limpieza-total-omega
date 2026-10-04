@@ -37,6 +37,7 @@ Carga perezosa de pestañas implementada para alertar el inicio de la app.
 Se optimiza la recolección de basura mediante procesamiento por generadores.
 Se optimiza el volcado de reportes mediante inserción de bloques de texto únicos.
 Se implementa memoización de contexto para evitar re-cálculos en el asistente.
+Optimización de caché mediante marcas de tiempo para reducir re-cálculos de UI.
 
 Instalar dependencias:
     pip install customtkinter
@@ -990,17 +991,20 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return self._get_cached(key)
 
     def _get_cached(self, key: str, provider: Optional[Callable[[], Any]] = None, force: bool = False) -> Any:
-        """Helper: Gestiona caché expirada (TTL)."""
+        """Helper: Gestiona caché expirada (TTL) con invalidación eficiente."""
         now = time.time()
+        # Verificar caché con TTL
         if not force and key in self._cache:
             if now - self._cache_access_times.get(key, 0) < self._cache_ttl:
                 self._cache.move_to_end(key)
                 return self._cache[key]
         
+        # Obtener nuevo valor si el provider existe
         if provider:
             try:
                 data = provider()
                 if data is not None:
+                    # Gestión de tamaño de caché LRU
                     if len(self._cache) >= self._cache_max_size:
                         oldest_key, _ = self._cache.popitem(last=False)
                         self._cache_access_times.pop(oldest_key, None)

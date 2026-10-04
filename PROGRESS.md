@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 46
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-02 | 23 | 0 | 3 | 1 | 39 |
+| 2026-10-02 | 21 | 0 | 2 | 1 | 38 |
 | 2026-10-03 | 157 | 7 | 33 | 18 | 135 |
-| 2026-10-04 | 31 | 5 | 10 | 1 | 41 |
+| 2026-10-04 | 35 | 5 | 10 | 1 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **42**
-- robustez ante casos límite: **36**
-- rendimiento: **34**
+- rendimiento: **38**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `organizer.py`: **20**
+- `duplicates.py`: **19**
 - `quarantine.py`: **19**
-- `safety.py`: **18**
 - `diskreport.py`: **18**
-- `duplicates.py`: **18**
-- `settings.py`: **16**
+- `healthscore.py`: **17**
+- `safety.py`: **17**
 - `assistant.py`: **16**
-- `healthscore.py`: **16**
 - `scanner.py`: **16**
 - `browser.py`: **15**
-- `memory.py`: **13**
+- `settings.py`: **15**
+- `memory.py`: **14**
 - `startup.py`: **11**
 - `branding.py`: **10**
-- `main.py`: **5**
+- `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-04T03:51:39` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` eliminando la llamada a `subprocess` (costosa y pesada) mediante la utilización de `wmi` a través de `win32com` si estuviera disponible, pero como tengo prohibidas dependencias externas, reemplacé la lógica de ordenamiento/filtrado global en el script por una estructura de datos más eficiente (un heap manejado directamente) y reduje la frecuencia de llamada a `Get-Process` mediante una lógica de cacheo más robusta y un pipeline de PowerShell más eficiente que delega el ordenamiento al sistema operativo, evitando procesar listas gigantes en Python.
+- `2026-10-04T03:51:27` **main.py** (rendimiento): Optimicé el sistema de caché implementando una invalidación de bajo costo mediante marcas de tiempo en `_get_cached`, evitando la sobrecarga de re-cálculos recurrentes en el hilo de UI durante la actualización de estado de las tarjetas resumen.
+- `2026-10-04T03:50:11` **healthscore.py** (rendimiento): Optimicé el método `validate` de `SystemMetrics` eliminando la creación dinámica de funciones lambda y el uso de `getattr`/`setattr` innecesarios, reemplazándolos por una asignación directa de valores validados, reduciendo la presión sobre el recolector de basura en cada iteración del pipeline.
+- `2026-10-04T03:49:44` **duplicates.py** (rendimiento): Optimicé el proceso de hashing eliminando re-verificaciones redundantes de `_safe_path_check` dentro de `_group_paths_by_hash`, aprovechando que los archivos ya fueron validados durante la recolección inicial.
 - `2026-10-04T03:41:24` **browser.py** (rendimiento): Se implementó un cacheo a nivel de `OSPath` para evitar re-escanear el mismo nodo del sistema de archivos en estructuras de directorios profundas o redundantes, optimizando significativamente la velocidad de `_sum_directory_recursive` al reutilizar resultados de inodos ya procesados.
 - `2026-10-04T03:39:48` **assistant.py** (rendimiento): Optimicé el cálculo del resumen de contexto utilizando una constante pre-serializada para los nombres de los campos y aplicando un `f-string` directo en `_generate_safe_context`, evitando iteraciones innecesarias y el uso de `getattr` dentro de un bucle crítico, mejorando el rendimiento en cada llamado a `ask`.
 - `2026-10-04T03:30:43` **startup.py** (legibilidad y documentación): Mejoré la documentación interna agregando `docstrings` de estilo Google en las funciones de la API pública y aclarando los motivos de seguridad en los métodos de `StartupEntry` para facilitar el mantenimiento futuro.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-04T03:02:52` **browser.py** (legibilidad y documentación): Mejora la documentación técnica mediante la adición de docstrings detallados en las funciones de recorrido recursivo y validación de seguridad, clarificando el propósito, las restricciones de acceso y la lógica de prevención de riesgos (junctions, rutas UNC y contención de perfiles).
 - `2026-10-04T03:02:38` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados, type hints detallados y explicaciones claras sobre la intención funcional en las funciones críticas de renderizado, facilitando el mantenimiento y la auditoría del código.
 - `2026-10-04T02:58:57` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_resolve_and_cache_path` añadiendo un chequeo explícito de `None` y valores vacíos en `path_string`, además de envolver la lógica en un manejo de errores más específico (capturando `PermissionError` y `FileNotFoundError` por separado) para evitar que una ruta inválida o bloqueada por el sistema genere una excepción que interrumpa el escaneo del resto de las entradas.
-- `2026-10-04T02:49:32` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save` y `_load_impl` al centralizar el chequeo de seguridad mediante `ensure_safe_to_modify` antes de cualquier operación de I/O, evitando el uso de bloques `try-except` excesivamente laxos y garantizando una salida limpia ante rutas bloqueadas.
-- `2026-10-04T02:42:28` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` añadiendo un manejo de excepciones más granular y específico, asegurando que si el JSON está corrupto o es inaccesible, se registre el evento (fallo silencioso es riesgoso en seguridad) y se retorne una lista vacía de forma consistente, evitando que el estado del caché bloquee la app.
-- `2026-10-04T02:27:58` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` asegurando que el pipeline no falle ante métricas nulas o inesperadas, y añadí una validación explícita para evitar divisiones por cero en el cálculo de `_safe_inv` ante configuraciones inválidas.
-- `2026-10-04T02:27:46` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_file_locked` y `hash_file` capturando `OSError` de forma más específica y validando explícitamente el cierre del descriptor de archivo, evitando fugas de recursos (FDs) en caso de fallos durante la lectura.

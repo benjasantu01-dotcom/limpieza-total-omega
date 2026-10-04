@@ -258,8 +258,6 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if not isinstance(path, Path) or not _safe_path_check(path): 
-            continue
         digest = hash_func(path)
         if digest:
             groups_by_digest[digest].append(path)
@@ -275,8 +273,7 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
     partial_groups: Dict[str, List[Path]] = _group_paths_by_hash(paths, partial_hash)
     final_results: Dict[str, List[Path]] = {}
     for candidate_subset in partial_groups.values():
-        valid_subset = [p for p in candidate_subset if _safe_path_check(p)]
-        full_hash_groups = _group_paths_by_hash(valid_subset, hash_file)
+        full_hash_groups = _group_paths_by_hash(candidate_subset, hash_file)
         final_results.update(full_hash_groups)
     return final_results
 

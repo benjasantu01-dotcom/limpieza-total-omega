@@ -178,22 +178,21 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Asegura que todos los campos tengan tipos y rangos aceptables para el motor de score."""
-        def _to_clean(val: Any, default: float, min_v: float = 0.0, max_v: float = float('inf')) -> float:
+        def _clean(val: Any, default: float, min_v: float = 0.0, max_v: float = float('inf')) -> float:
             try:
-                f = float(val) if val is not None else default
-                if not math.isfinite(f): return default
-                return max(min_v, min(f, max_v))
+                f = float(val)
+                return max(min_v, min(f, max_v)) if math.isfinite(f) else default
             except (ValueError, TypeError):
                 return default
-        
-        self.junk_mb = _to_clean(self.junk_mb, 0.0)
-        self.duplicate_mb = _to_clean(self.duplicate_mb, 0.0)
-        self.suspicious_count = int(_to_clean(self.suspicious_count, 0.0))
-        self.suspicious_warnings = int(_to_clean(self.suspicious_warnings, 0.0))
-        self.startup_count = int(_to_clean(self.startup_count, 0.0))
-        self.quarantined_count = int(_to_clean(self.quarantined_count, 0.0))
-        self.memory_available_percent = _to_clean(self.memory_available_percent, 100.0, 0.0, 100.0)
-        self.disk_free_percent = _to_clean(self.disk_free_percent, 100.0, 0.0, 100.0)
+
+        self.junk_mb = _clean(self.junk_mb, 0.0)
+        self.duplicate_mb = _clean(self.duplicate_mb, 0.0)
+        self.suspicious_count = int(_clean(self.suspicious_count, 0.0))
+        self.suspicious_warnings = int(_clean(self.suspicious_warnings, 0.0))
+        self.startup_count = int(_clean(self.startup_count, 0.0))
+        self.quarantined_count = int(_clean(self.quarantined_count, 0.0))
+        self.memory_available_percent = _clean(self.memory_available_percent, 100.0, 0.0, 100.0)
+        self.disk_free_percent = _clean(self.disk_free_percent, 100.0, 0.0, 100.0)
 
     @property
     def is_finite(self) -> bool:
