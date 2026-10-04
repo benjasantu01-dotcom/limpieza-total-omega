@@ -693,8 +693,16 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
         
-    if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
-        raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
+    if root_directory:
+        try:
+            rd_path = Path(root_directory)
+            if not rd_path.is_absolute():
+                raise UnsafePathError("El directorio base debe ser absoluto.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
+            if not is_within_directory(target_path, rd_path, allow_equal=True):
+                raise UnsafePathError("Fuera de alcance permitido.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
+        except (TypeError, ValueError):
+            raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC)
+
     if is_protected_path(str(target_path)):
         raise UnsafePathError("Ruta en directorio del sistema bloqueada.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
     
@@ -835,7 +843,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             pass
     return p
 
-def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
+def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> bool:
     """
     Wrapper booleano para validar seguridad.
     
@@ -844,11 +852,11 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
     listas de archivos donde se desea omitir silenciosamente los inseguros.
     """
     try:
-        ensure_safe_to_modify(path, allow_sensitive=allow_sensitive)
+        ensure_safe_to_modify(path, allow_sensitive=allow_sensitive, base_dir=base_dir)
         return True
     except (UnsafePathError, ValueError, TypeError, OSError, PermissionError): return False
 
-def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
+def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> list[Path]:
     """
     Filtra una colección de rutas, devolviendo solo aquellas seguras.
     
@@ -859,7 +867,7 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
     results = []
     for p in paths:
         if p is None: continue
-        try: results.append(ensure_safe_to_modify(p, allow_sensitive=allow_sensitive))
+        try: results.append(ensure_safe_to_modify(p, allow_sensitive=allow_sensitive, base_dir=base_dir))
         except (UnsafePathError, ValueError, TypeError, OSError, PermissionError): continue
     return results
 

@@ -1109,3 +1109,32 @@ assert not {'replace'}
 - `2026-10-04T07:08:53` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). He robustecido el manejo de errores en `_process_directory` y `scan_for_junk` para capturar explícitamente `PermissionError` y `OSError` (evitando abortos silenciosos por rutas inválidas o inaccesibles) y mejorado la validación de parámetros de entrada en `stage_for_review` para prevenir ejecuciones con rutas malformadas.
 - `2026-10-04T07:08:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-04T07:08:53` Corrida terminada. Total usado hoy: 168.
+- `2026-10-04T07:12:58` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-10-04T07:13:42` Tests FALLARON:
+```
+t-of-runner/pytest-1/test_corrupt_manifest_does_not0/_Cuarentena/manifest.json: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
+
+app/quarantine.py:472: RuntimeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:171: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app - RuntimeError: Manifiesto corrupto o inválido en /tmp/pytest-of-runner/pytest-1/test_corrupt_manifest_does_not0/_Cuarentena/manifest.json: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
+1 failed, 298 passed, 7 warnings in 0.86s
+
+```
+- `2026-10-04T07:13:42` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `load_manifest` para prevenir errores silenciosos en la carga de datos, reemplazando el retorno de una lista vacía por una gestión de errores más explícita que diferencia entre un archivo inexistente y uno corrupto, asegurando la integridad del estado.
+- `2026-10-04T07:14:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-10-04T07:14:49` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación explícita para el parámetro `root_directory` en `ensure_safe_to_modify` y `filter_safe_paths`, asegurando que, si se proporciona, sea una ruta absoluta y no nula, previniendo errores en cascada durante la validación de límites (sandbox).
+- `2026-10-04T07:15:02` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-04T07:15:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-04T07:15:02` Corrida terminada. Total usado hoy: 172.
