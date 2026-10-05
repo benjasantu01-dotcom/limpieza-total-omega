@@ -198,7 +198,7 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Valida que los parámetros numéricos críticos no sean infinitos o NaN."""
-        return math.isfinite(self.junk_mb) and math.isfinite(self.suspicious_count)
+        return all(math.isfinite(getattr(self, attr)) for attr in self.__annotations__)
 
 @dataclass
 class HealthResult:
@@ -232,7 +232,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Procesa el pipeline completo de salud y retorna un objeto HealthResult unificado."""
-    if metrics is None:
+    if metrics is None or not metrics.is_finite:
         metrics = SystemMetrics()
     
     recommendations: List[str] = []

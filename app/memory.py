@@ -187,26 +187,22 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     """
     Interpreta una línea CSV de procesos filtrando ruido e instancias críticas.
-    Se ignoran procesos del sistema (PID 0, 4) y la propia app para evitar
-    inconsistencias o riesgos de bloqueo sobre el proceso en ejecución.
     """
-    parts = line.split(",", 2)
+    parts = [p.strip().strip("'\"") for p in line.split(",")]
     if len(parts) < 3: return None
     
-    name, pid_str, ws_str = parts
-    clean_pid = "".join(filter(str.isdigit, pid_str))
+    name, pid_str, ws_str = parts[0], parts[1], parts[2]
     
     try:
-        pid = int(clean_pid) if clean_pid else -1
-        raw_ws = "".join(filter(str.isdigit, ws_str))
-        ws = int(raw_ws) if raw_ws else 0
+        pid = int("".join(filter(str.isdigit, pid_str)))
+        ws = int("".join(filter(str.isdigit, ws_str)))
     except ValueError:
         return None
         
     if _is_system_process(pid) or pid <= 0: return None
     
     if 0 < ws < MAX_VALID_PROCESS_MEM:
-        return ProcessMemory(name.strip("'\" "), pid, BytesValue(ws))
+        return ProcessMemory(name, pid, BytesValue(ws))
     return None
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:

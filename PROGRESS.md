@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 42
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 206
+- Rechazadas por guardia de seguridad: 41
+- Sin cambios (nada sustancial que mejorar): 11
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 36 | 2 | 6 | 6 | 36 |
+| 2026-10-03 | 35 | 2 | 5 | 5 | 35 |
 | 2026-10-04 | 154 | 20 | 31 | 5 | 140 |
-| 2026-10-05 | 31 | 1 | 5 | 1 | 30 |
+| 2026-10-05 | 33 | 1 | 5 | 1 | 32 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
-- robustez ante casos límite: **46**
+- robustez ante casos límite: **48**
 - rendimiento: **42**
 - manejo de errores y validación de entradas: **41**
-- seguridad defensiva: **37**
+- seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
+- `healthscore.py`: **21**
 - `diskreport.py`: **20**
-- `healthscore.py`: **20**
 - `quarantine.py`: **19**
-- `safety.py`: **18**
 - `assistant.py`: **18**
 - `organizer.py`: **17**
+- `safety.py`: **17**
 - `duplicates.py`: **16**
+- `memory.py`: **15**
 - `scanner.py`: **15**
 - `browser.py`: **15**
 - `branding.py`: **14**
-- `memory.py`: **14**
 - `settings.py`: **13**
 - `startup.py`: **12**
 - `main.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T03:02:10` **memory.py** (robustez ante casos límite): Mejora la robustez en `_extract_process_info` para manejar casos límite donde el comando `Get-Process` retorna cadenas con caracteres inesperados o formatos de coma malinterpretados, evitando excepciones que detendrían la recolección de métricas.
+- `2026-10-05T02:58:18` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `SystemMetrics` ante casos límite mediante la validación explícita de `is_finite` antes de procesar el cálculo, garantizando que estados intermedios del sistema no propaguen valores numéricos erróneos a lo largo del pipeline.
 - `2026-10-05T02:48:29` **diskreport.py** (robustez ante casos límite): Se mejora la robustez de `walk_files` y `_collect_summary_data` ante casos de rutas extremadamente largas o inválidas que podrían interrumpir el flujo de enumeración, asegurando que `os.scandir` se maneje dentro de un contexto protegido y que la conversión de `Path` sea siempre segura para el sistema operativo.
 - `2026-10-05T02:48:17` **browser.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante rutas inexistentes o inaccesibles en `_sum_directory_recursive` mediante el uso de `os.scandir` bajo un bloque `try-except` más robusto y la validación explícita de `entry.is_dir()` con manejo de errores, evitando que el escaneo se interrumpa prematuramente por errores de acceso de solo lectura en subcarpetas.
 - `2026-10-05T02:47:06` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` ante datos de entrada malformados, agregando una verificación explícita para asegurar que los valores numéricos no solo sean finitos, sino que tengan sentido semántico (evitando valores negativos inesperados) antes de aplicarlos, evitando así que una fuente de datos corrupta pueda corromper el estado de salud de la app.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T02:16:17` **diskreport.py** (rendimiento): Optimizé `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y `path.lower()` dentro del loop de procesamiento, cacheando la extensión de forma eficiente y reduciendo la carga sobre el motor de tipos y objetos de `pathlib`.
 - `2026-10-05T02:07:31` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` al reemplazar la lógica de interpolación manual dentro del loop por una técnica de *pre-cálculo de pasos* más eficiente, reduciendo drásticamente la carga de CPU y memoria al evitar cálculos de punto flotante repetitivos durante el renderizado de franjas y barras.
 - `2026-10-05T02:06:52` **assistant.py** (rendimiento): Optimicé el cálculo del estado de salud del sistema mediante la sustitución de llamadas repetidas a `ctx.get_metric` por una tupla pre-procesada de valores, reduciendo la carga de cómputo en el bucle de renderizado y mejorando la eficiencia del motor local.
-- `2026-10-05T02:06:06` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el "porqué" de las decisiones de seguridad, como el filtrado de caracteres prohibidos y el uso de la caché, además de añadir type hints y mejorar la claridad en el manejo de errores de I/O dentro de la clase `StartupEntry`.
-- `2026-10-05T01:57:11` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más precisos en la clase `_Validators`, aclarando la intención de cada chequeo de seguridad, y se han renombrado variables internas en `_load_impl` y `save` para diferenciar explícitamente entre el archivo de configuración activo y el archivo de respaldo (`.bak`), mejorando la legibilidad técnica sin alterar la funcionalidad.
