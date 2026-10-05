@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 129 | 17 | 26 | 4 | 100 |
-| 2026-10-05 | 90 | 10 | 16 | 6 | 106 |
+| 2026-10-04 | 127 | 17 | 24 | 4 | 100 |
+| 2026-10-05 | 93 | 10 | 16 | 6 | 107 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **54**
-- legibilidad y documentación: **44**
 - rendimiento: **43**
 - seguridad defensiva: **43**
-- manejo de errores y validación de entradas: **35**
+- legibilidad y documentación: **42**
+- manejo de errores y validación de entradas: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **22**
 - `quarantine.py`: **20**
-- `memory.py`: **18**
 - `scanner.py`: **18**
 - `diskreport.py`: **18**
 - `safety.py`: **17**
-- `assistant.py`: **16**
-- `browser.py`: **16**
-- `organizer.py`: **15**
+- `assistant.py`: **17**
+- `browser.py`: **17**
+- `memory.py`: **17**
+- `branding.py`: **15**
 - `duplicates.py`: **14**
-- `branding.py`: **14**
+- `organizer.py`: **14**
 - `settings.py`: **13**
 - `startup.py`: **9**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T09:47:03` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del módulo `browser.py` mediante la validación explícita de `None` y tipos en parámetros críticos (`base_directories` y `detect_profiles`), asegurando que las funciones no fallen silenciosamente ante entradas inesperadas o estados de entorno inconsistentes, cumpliendo con el enfoque de manejo de errores y validación.
+- `2026-10-05T09:46:46` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `draw_ring` mediante validación explícita de tipos, chequeo de desbordamiento en parámetros y manejo de excepciones más granular para evitar fallos silenciosos en la UI.
+- `2026-10-05T09:46:07` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_input_too_deep_or_complex` y `_is_safe_payload_structure` para manejar correctamente objetos inesperados que podrían causar errores durante la introspección, fortaleciendo la validación de entrada antes del procesamiento.
 - `2026-10-05T08:23:37` **settings.py** (seguridad defensiva): Se ha añadido una validación de seguridad crítica en `_is_file_secure_to_read` para detectar y rechazar archivos de configuración que posean el bit de "setuid" o "setgid", además de reforzar la comprobación de permisos de propietario, evitando así posibles vectores de escalada de privilegios o ejecución de código en sistemas donde el archivo de configuración pudiera ser manipulado por usuarios no autorizados.
 - `2026-10-05T08:23:04` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_entry` al añadir una verificación explícita mediante `path.resolve()` antes de comparar con `base_root_str`, asegurando que no se pueda evadir el límite mediante ataques de rutas relativas o "traversal" (`..`).
 - `2026-10-05T08:14:34` **safety.py** (seguridad defensiva): Se ha añadido un chequeo adicional en `_is_kernel_managed` para prevenir de forma explícita que la aplicación interactúe con el archivo `pagefile.sys` (archivo de paginación) mediante la inclusión de una validación específica, protegiendo así la integridad del sistema ante posibles intentos de borrado o movimiento de archivos críticos en uso persistente por el kernel.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T07:43:51` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante archivos corruptos o truncados agregando una verificación de integridad del JSON antes de intentar procesarlo en `_load_impl`, previniendo que una carga parcial deje la app en un estado inconsistente.
 - `2026-10-05T07:43:16` **scanner.py** (robustez ante casos límite): Se mejora la robustez frente a errores de sistema (como rutas inexistentes o inaccesibles) al inicializar el `Scanner` y durante el escaneo, añadiendo validaciones de existencia y permisos mediante bloques `try-except` más granulares en `process_entry` y la inicialización de `Scanner` para evitar bloqueos por archivos que desaparecen durante la iteración.
 - `2026-10-05T07:42:38` **safety.py** (robustez ante casos límite): Se implementó un chequeo robusto en `ensure_safe_to_modify` para detectar si el archivo es un archivo de página de Windows (`pagefile.sys`, etc.) o está bajo el control exclusivo del sistema mediante la función `GetSystemDirectoryW`, previniendo errores de acceso denegado en operaciones de limpieza.
-- `2026-10-05T07:32:33` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para que maneje correctamente archivos vacíos o de tamaño cero, los cuales anteriormente podían ser interpretados erróneamente como bloqueados o inaccesibles, además de añadir validaciones adicionales ante situaciones de acceso denegado durante el escaneo de directorios.
-- `2026-10-05T07:32:05` **memory.py** (robustez ante casos límite): Se implementó un manejo de errores robusto en `_read_windows_snapshot` para prevenir fallos silenciosos o bloqueos ante llamadas a la API de Windows que retornan estructuras inválidas o errores de permisos inesperados, asegurando que `MemorySnapshot` siempre reciba valores coherentes.
-- `2026-10-05T07:24:25` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `score_security` y `compute_score` ante valores inesperados de entrada y posibles fallos en la ejecución de reglas, asegurando que el motor de puntuación no colapse ante datos corruptos o métricas malformadas.

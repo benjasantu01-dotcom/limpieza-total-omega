@@ -146,7 +146,7 @@ def _ensure_within_base(target: str, base_norm: str) -> bool:
 
 def base_directories() -> List[Path]:
     """Identifica la ruta de LOCALAPPDATA y valida su integridad y seguridad."""
-    local_env: Optional[str] = os.environ.get("LOCALAPPDATA")
+    local_env = os.environ.get("LOCALAPPDATA")
     if not isinstance(local_env, str) or not local_env or _is_unc_path(local_env):
         return []
     

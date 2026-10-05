@@ -314,13 +314,16 @@ def _validate_response_length(text: Any) -> str:
 def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
     """Valida que los datos del payload no contengan estructuras recursivas profundas o tipos inválidos."""
     if depth > _MAX_NESTING_DEPTH: return False
-    if isinstance(val, (list, tuple)):
-        if len(val) > 10: return False
-        return all(_is_safe_payload_structure(i, depth + 1) for i in val)
-    if isinstance(val, dict):
-        if len(val) > 20: return False
-        return all(isinstance(k, str) and _is_safe_payload_structure(v, depth + 1) for k, v in val.items())
-    return isinstance(val, (str, int, float, bool, type(None)))
+    try:
+        if isinstance(val, (list, tuple)):
+            if len(val) > 10: return False
+            return all(_is_safe_payload_structure(i, depth + 1) for i in val)
+        if isinstance(val, dict):
+            if len(val) > 20: return False
+            return all(isinstance(k, str) and _is_safe_payload_structure(v, depth + 1) for k, v in val.items())
+        return isinstance(val, (str, int, float, bool, type(None)))
+    except Exception:
+        return False
 
 def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
     """Recursivamente detecta estructuras de datos excesivamente anidadas o grandes."""
@@ -332,9 +335,9 @@ def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
         elif isinstance(val, dict):
             if len(val) > 50: return True
             return any(_is_input_too_deep_or_complex(k, depth + 1) or _is_input_too_deep_or_complex(v, depth + 1) for k, v in val.items())
+        return False
     except Exception:
         return True
-    return False
 
 def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
     """Verifica si un valor numérico está dentro del rango lógico definido por su especificación."""

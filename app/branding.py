@@ -522,7 +522,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, 
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, 
               track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """Dibuja indicador circular de progreso (anillo de salud)."""
+    """Dibuja indicador circular de progreso (anillo de salud) con validación de parámetros."""
     try:
         if canvas is None: return
         val = float(percent) if percent is not None else 0.0
