@@ -1510,3 +1510,12 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-05T06:56:59` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó el acceso a los datos de la cuarentena implementando un caché persistente basado en `pathlib.Path` dentro de `_MANIFEST_CACHE` y eliminando redundancias en la iteración de archivos durante el purgado, lo que reduce drásticamente las llamadas a disco y cálculos de hash innecesarios.
 - `2026-10-05T06:56:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T06:56:59` Corrida terminada. Total usado hoy: 164.
+- `2026-10-05T07:01:02` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-10-05T07:01:25` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-10-05T07:01:28` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T07:02:16` ➖ Sin cambios en safety.py (enfoque: rendimiento). Motivo: Optimizé la performance del módulo implementando `lru_cache` en funciones de chequeo crítico que se invocan repetidamente durante recorridos de disco (`_is_volume_readonly`, `_is_volume_removable_media` y `_is_volume_compressed_or_encrypted`), reduciendo llamadas costosas a la API de Windows mediante la memorización de resultados por unidad lógica.
+- `2026-10-05T07:02:17` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T07:02:48` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se implementó un `lru_cache` en `_is_inside_base_root` y se optimizó el chequeo de `_is_safe_entry` moviendo la validación de `is_protected_path` (que es costosa) después de filtros de caché y de string, reduciendo la cantidad de llamadas innecesarias al sistema de archivos durante el escaneo recursivo.
+- `2026-10-05T07:03:04` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Se optimizó la validación del mapa de validadores utilizando `functools.lru_cache` para evitar la reconstrucción innecesaria de objetos `MappingProxyType` en cada llamada a `validate` o `update`, reduciendo el costo computacional de las consultas frecuentes a la configuración.
+- `2026-10-05T07:03:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T07:03:04` Corrida terminada. Total usado hoy: 168.

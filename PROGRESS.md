@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
-- Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 42
-- Sin cambios (nada sustancial que mejorar): 8
+- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Rechazadas por tests: 23
+- Rechazadas por guardia de seguridad: 43
+- Sin cambios (nada sustancial que mejorar): 10
 - Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 149 | 19 | 30 | 4 | 138 |
-| 2026-10-05 | 69 | 5 | 12 | 4 | 74 |
+| 2026-10-04 | 146 | 18 | 30 | 4 | 138 |
+| 2026-10-05 | 70 | 5 | 13 | 6 | 74 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
-- seguridad defensiva: **43**
+- rendimiento: **43**
 - robustez ante casos límite: **43**
 - manejo de errores y validación de entradas: **42**
-- rendimiento: **42**
+- seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **22**
 - `quarantine.py`: **21**
-- `diskreport.py`: **19**
+- `diskreport.py`: **18**
 - `memory.py`: **17**
-- `browser.py`: **16**
-- `duplicates.py`: **16**
 - `safety.py`: **16**
 - `assistant.py`: **16**
+- `scanner.py`: **16**
 - `organizer.py`: **15**
-- `scanner.py`: **15**
+- `duplicates.py`: **15**
+- `browser.py`: **15**
 - `settings.py`: **13**
 - `branding.py`: **13**
 - `startup.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T07:02:48` **scanner.py** (rendimiento): Se implementó un `lru_cache` en `_is_inside_base_root` y se optimizó el chequeo de `_is_safe_entry` moviendo la validación de `is_protected_path` (que es costosa) después de filtros de caché y de string, reduciendo la cantidad de llamadas innecesarias al sistema de archivos durante el escaneo recursivo.
 - `2026-10-05T06:56:59` **quarantine.py** (rendimiento): Se optimizó el acceso a los datos de la cuarentena implementando un caché persistente basado en `pathlib.Path` dentro de `_MANIFEST_CACHE` y eliminando redundancias en la iteración de archivos durante el purgado, lo que reduce drásticamente las llamadas a disco y cálculos de hash innecesarios.
 - `2026-10-05T06:56:27` **organizer.py** (rendimiento): Se ha optimizado la validación de extensiones en `is_valid_junk_extension` reemplazando la lógica de comparación `lower()` por un acceso directo al registro en caché `JUNK_EXT_TUPLE` y se ha eliminado el llamado innecesario a `str()` en el bucle principal de `_process_directory`, evitando la creación de objetos innecesarios y reduciendo la presión sobre el recolector de basura.
 - `2026-10-05T06:55:57` **memory.py** (rendimiento): Optimicé el rendimiento de `parse_windows_process_csv` reemplazando la construcción manual de listas y bucles con una generación eficiente de objetos `ProcessMemory`, evitando el procesamiento redundante de líneas vacías o malformadas mediante el uso del generador integrado.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T06:01:44` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones críticas (`_collect_candidates`, `_is_file_locked`, `find_duplicates`) para explicar el PORQUÉ de las decisiones de diseño y las restricciones de seguridad, mejorando la mantenibilidad sin cambiar la lógica.
 - `2026-10-05T06:01:01` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación de los tipos de datos internos (`ScanResult`, `FileAttributes`) y se han clarificado las funciones de bajo nivel (`_is_system_hidden`, `_is_file_in_use`) mediante docstrings que explican la lógica de seguridad y los riesgos de bloqueo, facilitando el mantenimiento y la auditoría de seguridad exigida.
 - `2026-10-05T06:00:33` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la lógica de renderizado del escudo `_draw_shield_icon_decorations` sustituyendo los literales numéricos mágicos por constantes descriptivas (OFFSET, RADIUS, FONT_ADJUST) para facilitar futuras modificaciones visuales.
-- `2026-10-05T05:50:14` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas de archivo validando explícitamente que los resultados intermedios (como el tamaño del archivo o atributos) no sean negativos o inválidos antes de procesarlos, evitando así errores lógicos y excepciones innecesarias.

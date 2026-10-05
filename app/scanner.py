@@ -169,22 +169,13 @@ class Scanner:
         self.results: List[Suspicion] = []
         self.seen: set[str] = set()
         self.safe_cache: set[str] = set()
-        self._root_cache: Dict[str, bool] = {}
         self.base_root_str: str = str(base_root.resolve()).lower()
         self.now_ts: float = datetime.now().timestamp()
 
+    @lru_cache(maxsize=2048)
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica mediante resolución de ruta que el archivo reside en el árbol de escaneo."""
-        if not entry_path: return False
-        if entry_path in self._root_cache:
-            return self._root_cache[entry_path]
-        
-        entry_lower = entry_path.lower()
-        result = entry_lower.startswith(self.base_root_str)
-        
-        if len(self._root_cache) < 1000:
-            self._root_cache[entry_path] = result
-        return result
+        return entry_path.lower().startswith(self.base_root_str)
 
     def _has_invalid_name(self, name: str) -> bool:
         """Valida contra nombres de dispositivos reservados por el SO (ej: NUL, CON)."""
@@ -196,9 +187,7 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Filtro de seguridad: Valida integridad, reanálisis y exclusiones (whitelist)."""
-        if not isinstance(entry, os.DirEntry) or not entry.path:
-            return False
-        if "\0" in entry.path:
+        if not isinstance(entry, os.DirEntry) or not entry.path or "\0" in entry.path:
             return False
         if entry.path in self.safe_cache:
             return True
@@ -209,6 +198,7 @@ class Scanner:
                 return False
             if not self._is_inside_base_root(entry.path):
                 return False
+            # La validación de seguridad de paths se deja al final por costo computacional
             if is_protected_path(Path(entry.path)):
                 return False
             self.safe_cache.add(entry.path)
@@ -220,8 +210,9 @@ class Scanner:
         """Apila directorios para procesarlos iterativamente, respetando el límite de profundidad."""
         if current_depth >= SCAN_LIMITS.max_depth:
             return
-        if entry.path and entry.path.lower() not in self.seen:
-            self.seen.add(entry.path.lower())
+        path_lower = entry.path.lower() if entry.path else ""
+        if path_lower and path_lower not in self.seen:
+            self.seen.add(path_lower)
             directory_stack.append((entry.path, current_depth + 1))
 
     @staticmethod
@@ -235,14 +226,15 @@ class Scanner:
         try:
             if not entry.path: return
             
-            if not entry.is_dir(follow_symlinks=False):
-                if not self._is_relevant_extension(entry.name):
-                    return
+            # Filtro rápido de extensión antes de validaciones pesadas
+            is_dir = entry.is_dir(follow_symlinks=False)
+            if not is_dir and not self._is_relevant_extension(entry.name):
+                return
             
             if not self._is_safe_entry(entry):
                 return
                 
-            if entry.is_dir(follow_symlinks=False):
+            if is_dir:
                 self._handle_directory(entry, directory_stack, current_depth)
             else:
                 self._run_file_heuristics(Path(entry.path), entry)
