@@ -413,7 +413,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     parent = config_path.parent
     try:
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
-        # Verificación explícita de seguridad sobre la carpeta contenedora antes de escribir
         ensure_safe_to_modify(str(parent.resolve()))
         usage = shutil.disk_usage(parent)
         if usage.free < MAX_SETTINGS_SIZE * 2 or not os.access(parent, os.W_OK): return None
@@ -442,6 +441,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             ensure_safe_to_modify(str(bak_path.resolve()))
             try: os.replace(config_path, bak_path)
             except OSError: pass
+        
+        # Validar nuevamente antes del reemplazo final contra TOCTOU
+        if not is_safe_to_modify(str(config_path.resolve().parent)):
+            raise PermissionError("Seguridad comprometida: ruta alterada")
             
         os.replace(temp_path, config_path)
         _MANAGER.clear()

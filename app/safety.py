@@ -766,6 +766,9 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         _validate_boundary_conditions(p, base_dir)
         
         if p.exists():
+            # Validación preventiva temprana de permisos del SO
+            if not os.access(p, os.W_OK):
+                 raise UnsafePathError(f"Permisos de escritura insuficientes: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
             _validate_access_permissions(p)
             if _is_file_in_use_by_system(str(p)):
                  raise UnsafePathError(f"Archivo en uso por el sistema: {p.name}", SafetyValidationErrorCode.FILE_IN_USE)

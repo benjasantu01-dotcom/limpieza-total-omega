@@ -1023,3 +1023,13 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-05T12:39:59` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-05T12:39:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T12:39:59` Corrida terminada. Total usado hoy: 300.
+- `2026-10-05T12:47:54` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-05T12:48:37` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T12:49:26` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación preventiva mediante `os.access(path, os.W_OK)` antes de intentar cualquier operación de metadatos o apertura de archivo en `ensure_safe_to_modify`, lo cual reduce las excepciones de sistema y refuerza la seguridad defensiva al verificar permisos de escritura del proceso actual de manera temprana y explícita.
+- `2026-10-05T12:49:27` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T12:50:02` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-10-05T12:50:03` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T12:50:39` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en la escritura atómica de archivos añadiendo una validación explícita mediante `is_safe_to_modify` para detectar si la ruta de configuración ha sido alterada a un enlace simbólico o un punto de unión justo antes de la operación de `os.replace`, evitando ataques de tiempo de verificación/tiempo de uso (TOCTOU).
+- `2026-10-05T12:50:52` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-10-05T12:50:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T12:50:52` Corrida terminada. Total usado hoy: 304.
