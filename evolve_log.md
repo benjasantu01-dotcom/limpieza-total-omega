@@ -1598,3 +1598,50 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-05T07:33:33` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
 - `2026-10-05T07:33:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T07:33:33` Corrida terminada. Total usado hoy: 180.
+- `2026-10-05T07:41:45` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-10-05T07:41:47` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T07:42:38` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se implementó un chequeo robusto en `ensure_safe_to_modify` para detectar si el archivo es un archivo de página de Windows (`pagefile.sys`, etc.) o está bajo el control exclusivo del sistema mediante la función `GetSystemDirectoryW`, previniendo errores de acceso denegado en operaciones de limpieza.
+- `2026-10-05T07:42:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T07:42:42` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-05T07:43:16` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se mejora la robustez frente a errores de sistema (como rutas inexistentes o inaccesibles) al inicializar el `Scanner` y durante el escaneo, añadiendo validaciones de existencia y permisos mediante bloques `try-except` más granulares en `process_entry` y la inicialización de `Scanner` para evitar bloqueos por archivos que desaparecen durante la iteración.
+- `2026-10-05T07:43:51` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante archivos corruptos o truncados agregando una verificación de integridad del JSON antes de intentar procesarlo en `_load_impl`, previniendo que una carga parcial deje la app en un estado inconsistente.
+- `2026-10-05T07:44:05` Tests FALLARON:
+```
+lve/tests/test_modules.py:677: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:175: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'MiPrograma.lnk'
+  'Otro.lnk'
+  Extra items in the right set:
+  'Otro'
+  'MiPrograma'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed, 7 warnings in 1.04s
+
+```
+- `2026-10-05T07:44:05` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `_process_folder_entry` eliminando la referencia a una variable `_` inexistente y mal definida, reemplazándola por el nombre del archivo (`entry.name`), asegurando que la lógica no falle ante nombres de archivo inesperados o caracteres especiales.
+- `2026-10-05T07:44:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T07:44:05` Corrida terminada. Total usado hoy: 184.

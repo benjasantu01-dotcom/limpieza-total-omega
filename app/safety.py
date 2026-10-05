@@ -393,6 +393,14 @@ def _is_kernel_managed(path: Path) -> bool:
     p_str = str(path).lower()
     if any(blocked in p_str for blocked in ("pagefile.sys", "hiberfil.sys", "swapfile.sys", "dumpstack.log.tmp")):
         return True
+    
+    if os.name == 'nt':
+        buf = ctypes.create_unicode_buffer(512)
+        if ctypes.windll.kernel32.GetSystemDirectoryW(buf, 512) > 0:
+            sys_dir = Path(buf.value).resolve()
+            if sys_dir in path.parents:
+                return True
+                
     return any(part.lower() in ("config.msi", "installer") for part in path.parts)
 
 @lru_cache(maxsize=1024)

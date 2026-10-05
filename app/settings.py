@@ -345,9 +345,12 @@ def _load_impl(ruta: Path) -> AppSettings:
         ensure_safe_to_modify(str(resolved))
         with open(resolved, "r", encoding="utf-8") as f:
             if not _is_file_secure_to_read(f): return DEFAULTS.copy()
+            content = f.read(MAX_SETTINGS_SIZE + 1)
+            if not content or content.strip() == "": return DEFAULTS.copy()
+            
             fcntl.flock(f.fileno(), fcntl.LOCK_SH)
             try:
-                data = json.load(f)
+                data = json.loads(content)
             finally:
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
         

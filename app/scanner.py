@@ -72,7 +72,7 @@ SYSTEM32_LOWER: Final[str] = "system32"
 def _is_readable(path: Path) -> bool:
     """Verifica si el archivo existe y posee permisos de lectura."""
     try:
-        return path.is_file() and os.access(path, os.R_OK)
+        return path.exists() and path.is_file() and os.access(path, os.R_OK)
     except (OSError, PermissionError, ValueError, AttributeError):
         return False
 
@@ -198,7 +198,6 @@ class Scanner:
                 return False
             if not self._is_inside_base_root(entry.path):
                 return False
-            # La validación de seguridad de paths se deja al final por costo computacional
             if is_protected_path(Path(entry.path)):
                 return False
             self.safe_cache.add(entry.path)
@@ -224,9 +223,9 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
         """Orquestador: Decide si explorar subdirectorio o analizar archivo."""
         try:
-            if not entry.path: return
+            if not entry.path or not os.path.exists(entry.path): 
+                return
             
-            # Filtro rápido de extensión antes de validaciones pesadas
             is_dir = entry.is_dir(follow_symlinks=False)
             if not is_dir and not self._is_relevant_extension(entry.name):
                 return
