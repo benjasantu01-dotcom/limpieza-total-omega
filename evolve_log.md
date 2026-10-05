@@ -1100,3 +1100,34 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-05T03:29:00` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_collect_candidates` mediante la inclusión de un chequeo estricto en la resolución de rutas y el uso de `st_ino` (inode) de forma más segura, evitando el procesamiento redundante de rutas vinculadas simbólicamente o puntos de montaje que podrían causar ciclos infinitos o lectura de archivos fuera de los límites permitidos.
 - `2026-10-05T03:29:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T03:29:00` Corrida terminada. Total usado hoy: 84.
+- `2026-10-05T03:37:17` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-10-05T03:37:49` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva del método `SystemMetrics.validate` aplicando un saneamiento de tipo más robusto y añadiendo una comprobación de desbordamiento antes de la asignación, evitando que valores inyectados o maliciosos fuera de rango puedan comprometer los cálculos del pipeline.
+- `2026-10-05T03:38:49` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-05T03:38:52` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-05T03:38:59` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-05T03:39:12` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-05T03:39:57` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_get_process_path` integrando `is_protected_path` de forma explícita antes de cualquier resolución de ruta, asegurando que solo se validen rutas que cumplan con la política de seguridad del proyecto antes de procesar atributos.
+- `2026-10-05T03:40:14` Tests FALLARON:
+```
+t_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:176: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_finds_junk_and_ignores_other_files - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_recurses_into_subfolders - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_skips_system_folders - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_deleting_them - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+4 failed, 295 passed, 7 warnings in 1.61s
+
+```
+- `2026-10-05T03:40:14` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la seguridad defensiva en `organizer.py` implementando una validación de ruta mediante `os.path.commonpath` dentro de `_is_recursive_violation` para asegurar que las operaciones de movimiento no escapen del directorio de destino, y se añadió una verificación de integridad de `os.DirEntry` antes de su acceso para evitar posibles Race Conditions durante el escaneo.
+- `2026-10-05T03:40:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T03:40:14` Corrida terminada. Total usado hoy: 88.
