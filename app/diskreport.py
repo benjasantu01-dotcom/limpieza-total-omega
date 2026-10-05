@@ -134,7 +134,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     if directory is None:
         return None
     try:
-        p = Path(directory).resolve()
+        p = Path(directory).resolve(strict=True)
         if not p.is_dir():
             return None
         if is_protected_path(p) or not os.access(p, os.R_OK):
@@ -297,8 +297,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
-                            if skip_protected and is_protected_path(Path(entry.path)):
-                                continue
                             try:
                                 st = entry.stat(follow_symlinks=False)
                                 inode = (st.st_dev, st.st_ino)
@@ -393,7 +391,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
     """Genera un reporte de texto legible con un resumen del escaneo del directorio."""
     root = _validate_root(directory)
-    if root is None: return ["Error: Ruta no válida o inaccesible."]
+    if root is None: return ["Error: Ruta no válida, protegida o inaccesible."]
     
     data = _collect_summary_data(root, skip_protected, limit=20)
         

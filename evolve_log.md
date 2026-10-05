@@ -705,3 +705,14 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-05T09:47:03` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez del módulo `browser.py` mediante la validación explícita de `None` y tipos en parámetros críticos (`base_directories` y `detect_profiles`), asegurando que las funciones no fallen silenciosamente ante entradas inesperadas o estados de entorno inconsistentes, cumpliendo con el enfoque de manejo de errores y validación.
 - `2026-10-05T09:47:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T09:47:03` Corrida terminada. Total usado hoy: 232.
+- `2026-10-05T09:54:28` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-10-05T09:54:31` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T09:55:03` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` implementando una validación explícita para asegurar que el `root` pasado a las funciones sea un directorio absoluto y que `walk_files` no falle ante rutas inválidas o de longitud excesiva mediante capturas de excepciones más específicas.
+- `2026-10-05T09:55:31` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones de hash (`hash_file` y `partial_hash`) validando explícitamente que el tamaño del archivo no sea menor al esperado tras la apertura y envolviendo la operación en un bloque `try-finally` para asegurar el cierre del descriptor de archivo ante errores de lectura inesperados, evitando fugas de recursos.
+- `2026-10-05T09:55:58` ➖ Sin cambios en healthscore.py (enfoque: manejo de errores y validación de entradas). Motivo: Se reforzó la robustez de `compute_score` y `summarize` mediante validaciones de tipo explícitas y la eliminación de posibles excepciones en el acceso a claves de diccionario, protegiendo al motor de análisis ante estados de datos inconsistentes.
+- `2026-10-05T09:56:58` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-05T09:58:01` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-05T09:59:07` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-05T10:00:19` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-05T10:00:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T10:00:19` Corrida terminada. Total usado hoy: 236.
