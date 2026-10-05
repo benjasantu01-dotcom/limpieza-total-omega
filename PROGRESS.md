@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 26
 - Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 109 | 13 | 17 | 4 | 97 |
-| 2026-10-05 | 112 | 13 | 21 | 8 | 110 |
+| 2026-10-04 | 105 | 13 | 17 | 4 | 97 |
+| 2026-10-05 | 113 | 13 | 21 | 8 | 113 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
-- robustez ante casos límite: **47**
 - manejo de errores y validación de entradas: **45**
 - seguridad defensiva: **43**
-- rendimiento: **38**
+- robustez ante casos límite: **43**
+- rendimiento: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **21**
 - `diskreport.py`: **20**
-- `scanner.py`: **19**
 - `quarantine.py`: **19**
+- `memory.py`: **18**
+- `scanner.py`: **18**
 - `assistant.py`: **17**
-- `memory.py`: **17**
-- `safety.py`: **16**
 - `branding.py`: **16**
 - `organizer.py`: **16**
 - `browser.py`: **16**
 - `duplicates.py`: **16**
-- `settings.py`: **13**
-- `startup.py`: **8**
+- `safety.py`: **15**
+- `settings.py`: **12**
 - `main.py`: **7**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T11:21:45` **memory.py** (rendimiento): Se optimizó el rendimiento de `top_memory_processes` reemplazando la ejecución costosa de `powershell` por una implementación que utiliza `ctypes` para consultar la API nativa de Windows, eliminando el overhead de lanzar un proceso externo y el parsing de texto masivo en cada llamada.
 - `2026-10-05T11:07:48` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `is_protected_path` (que es una operación de costo fijo pero repetida en exceso) y centralizando la validación de seguridad para evitar múltiples chequeos de estado (`stat`, `exists`) sobre el mismo objeto `Path` en el mismo ciclo.
 - `2026-10-05T11:07:35` **diskreport.py** (rendimiento): Optimizé `_collect_summary_data` eliminando el uso de `dict(ext_stats)` al final y accediendo directamente a las propiedades del objeto `ExtStats` en lugar de llamar a `__getitem__` constantemente, mejorando el rendimiento y reduciendo el overhead de memoria en escaneos profundos.
 - `2026-10-05T11:06:38` **branding.py** (rendimiento): Optimicé el cálculo de `gradient_colors` eliminando la recreación innecesaria de tuplas RGB y objetos intermedios mediante el uso de un generador de índices eficiente y pre-calculado, reduciendo la carga de CPU en operaciones de renderizado repetitivas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T10:26:26` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con bloques de ejemplos de uso ("Examples:") en funciones complejas de dibujo y transformación para clarificar el flujo de parámetros y expectativas, mejorando la mantenibilidad sin alterar la lógica funcional.
 - `2026-10-05T10:16:15` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_file_size` y `_is_readable` reemplazando llamadas potencialmente ambiguas por validaciones explícitas de tipo y capturando excepciones de sistema que podrían ocurrir en entornos con alta actividad de disco, asegurando que las funciones devuelvan valores seguros (`-1` o `False`) en lugar de propagar errores.
 - `2026-10-05T10:15:46` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` ante errores inesperados durante la resolución de rutas y la validación de integridad, asegurando que cualquier fallo en las llamadas al sistema operativo se traduzca siempre en un `UnsafePathError` con código `IO_ERROR` en lugar de una excepción no controlada que detenga el hilo principal.
-- `2026-10-05T10:06:35` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` al unificar la validación de estados de archivo mediante un chequeo temprano de errores (`st_info` vs `source_path.stat()`) y reemplacé la verificación de colisiones genérica por un manejo explícito de excepciones, asegurando que la operación de aislamiento sea atómica y auditable ante fallos inesperados.

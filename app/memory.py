@@ -242,7 +242,7 @@ def read_snapshot() -> MemorySnapshot:
     return _get_cached_snapshot(int(time.time() / 5))
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Obtiene los N procesos de mayor consumo ejecutando un comando de PowerShell."""
+    """Obtiene los N procesos de mayor consumo usando la API nativa psapi."""
     if not hasattr(top_memory_processes, "_cache"):
         top_memory_processes._cache = (0.0, [])
     
@@ -251,16 +251,31 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     cache_time, cache_data = top_memory_processes._cache
     
     if (now - cache_time) > 60:
-        ps_query = "Get-Process|Sort-Object WorkingSet -Desc|Select -First 20 Name,Id,WorkingSet|ConvertTo-Csv -NoType"
-        cmd = ['powershell', '-NoProfile', '-NonInteractive', '-Command', ps_query]
-        try:
-            res = subprocess.run(cmd, capture_output=True, text=True, timeout=3)
-            if res.returncode == 0:
-                cache_data = parse_windows_process_csv(res.stdout, limit=limit)
-                cache_time = now
-                top_memory_processes._cache = (cache_time, cache_data)
-        except (OSError, subprocess.SubprocessError):
-            pass
+        psapi = ctypes.windll.psapi
+        kernel32 = ctypes.windll.kernel32
+        pids = (ctypes.c_ulong * 1024)()
+        cb = ctypes.sizeof(pids)
+        cb_needed = ctypes.c_ulong()
+        
+        processes = []
+        if psapi.EnumProcesses(ctypes.byref(pids), cb, ctypes.byref(cb_needed)):
+            count = cb_needed.value // ctypes.sizeof(ctypes.c_ulong)
+            for i in range(count):
+                pid = pids[i]
+                if _is_system_process(pid) or pid == 0: continue
+                handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+                if handle:
+                    pmc = ctypes.c_size_t * 6
+                    mem_counters = pmc()
+                    if psapi.GetProcessMemoryInfo(handle, ctypes.byref(mem_counters), ctypes.sizeof(mem_counters)):
+                        ws = mem_counters[3]
+                        if 0 < ws < MAX_VALID_PROCESS_MEM:
+                            processes.append(ProcessMemory(f"PID {pid}", pid, BytesValue(ws)))
+                    kernel32.CloseHandle(handle)
+            cache_data = sorted(processes, key=lambda p: p.working_set, reverse=True)[:limit]
+            cache_time = now
+            top_memory_processes._cache = (cache_time, cache_data)
+            
     return cache_data
 
 @lru_cache(maxsize=8)

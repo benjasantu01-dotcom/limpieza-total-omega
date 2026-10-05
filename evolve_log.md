@@ -868,3 +868,13 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-05T11:07:48` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `is_protected_path` (que es una operación de costo fijo pero repetida en exceso) y centralizando la validación de seguridad para evitar múltiples chequeos de estado (`stat`, `exists`) sobre el mismo objeto `Path` en el mismo ciclo.
 - `2026-10-05T11:07:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T11:07:48` Corrida terminada. Total usado hoy: 264.
+- `2026-10-05T11:16:09` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-10-05T11:16:38` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-10-05T11:17:38` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-05T11:18:41` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-05T11:19:47` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-05T11:20:59` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-05T11:21:45` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el rendimiento de `top_memory_processes` reemplazando la ejecución costosa de `powershell` por una implementación que utiliza `ctypes` para consultar la API nativa de Windows, eliminando el overhead de lanzar un proceso externo y el parsing de texto masivo en cada llamada.
+- `2026-10-05T11:22:00` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-10-05T11:22:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T11:22:00` Corrida terminada. Total usado hoy: 268.
