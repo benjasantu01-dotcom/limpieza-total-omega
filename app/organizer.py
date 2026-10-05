@@ -159,7 +159,9 @@ def _is_file_locked(path: Path) -> bool:
         return True
     
     try:
+        # Intenta abrir brevemente; si es 0 bytes, read(1) es suficiente para testear acceso
         with open(path, "rb") as f:
+            f.read(1)
             return False
     except (PermissionError, OSError, IOError, BlockingIOError, FileNotFoundError):
         return True

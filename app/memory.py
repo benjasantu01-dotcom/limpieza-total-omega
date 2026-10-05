@@ -265,13 +265,17 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
                 if _is_system_process(pid) or pid == 0: continue
                 handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
                 if handle:
-                    pmc = ctypes.c_size_t * 6
-                    mem_counters = pmc()
-                    if psapi.GetProcessMemoryInfo(handle, ctypes.byref(mem_counters), ctypes.sizeof(mem_counters)):
-                        ws = mem_counters[3]
-                        if 0 < ws < MAX_VALID_PROCESS_MEM:
-                            processes.append(ProcessMemory(f"PID {pid}", pid, BytesValue(ws)))
-                    kernel32.CloseHandle(handle)
+                    try:
+                        # Estructura PROCESS_MEMORY_COUNTERS (6 elementos c_size_t)
+                        pmc = (ctypes.c_size_t * 6)()
+                        if psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), ctypes.sizeof(pmc)):
+                            ws = pmc[3]
+                            if 0 < ws < MAX_VALID_PROCESS_MEM:
+                                processes.append(ProcessMemory(f"PID {pid}", pid, BytesValue(ws)))
+                    except (OSError, AttributeError):
+                        pass
+                    finally:
+                        kernel32.CloseHandle(handle)
             cache_data = sorted(processes, key=lambda p: p.working_set, reverse=True)[:limit]
             cache_time = now
             top_memory_processes._cache = (cache_time, cache_data)

@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 24
 - Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 98 | 10 | 16 | 4 | 96 |
-| 2026-10-05 | 120 | 14 | 23 | 9 | 114 |
+| 2026-10-04 | 97 | 10 | 16 | 4 | 93 |
+| 2026-10-05 | 123 | 14 | 23 | 9 | 115 |
 
 ## Mejoras aceptadas por enfoque
 
+- robustez ante casos límite: **51**
 - legibilidad y documentación: **48**
-- robustez ante casos límite: **48**
 - manejo de errores y validación de entradas: **45**
 - rendimiento: **41**
-- seguridad defensiva: **36**
+- seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **22**
 - `diskreport.py`: **20**
+- `quarantine.py`: **19**
 - `scanner.py`: **19**
-- `quarantine.py`: **18**
+- `memory.py`: **18**
 - `assistant.py`: **17**
 - `browser.py`: **17**
 - `duplicates.py`: **17**
-- `memory.py`: **17**
+- `organizer.py`: **16**
 - `safety.py`: **16**
-- `organizer.py`: **15**
 - `branding.py`: **15**
-- `settings.py`: **12**
+- `settings.py`: **11**
 - `startup.py`: **7**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T12:02:06` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera (TOCTOU) y errores de sistema de archivos al añadir una verificación explícita de `st_nlink` dentro de `_copy_with_verification` y un manejo más estricto del estado de las handles de archivo mediante `finally` en las operaciones críticas de I/O.
+- `2026-10-05T12:01:34` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar archivos de 0 bytes o corruptos que podrían causar excepciones inesperadas al intentar leer, y se añadió una verificación de volumen en `_is_safe_for_disk_op` para prevenir que `shutil.move` falle al intentar mover archivos entre distintos sistemas de archivos (operación que no es atómica y no es segura bajo nuestra política de `st_dev`).
+- `2026-10-05T12:01:04` **memory.py** (robustez ante casos límite): Se introdujo un manejo robusto de excepciones y validación de tipos en la lectura de memoria de procesos mediante `GetProcessMemoryInfo`, evitando cierres inesperados por desbordamiento de búfer o estructuras mal inicializadas al interactuar con procesos protegidos.
 - `2026-10-05T11:48:29` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `SystemMetrics.validate` ante entradas nulas o inesperadas durante la inicialización, asegurando que el motor de scoring no procese datos incoherentes incluso si el objeto se construye parcialmente.
 - `2026-10-05T11:48:09` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y accesibilidad dentro de `_calculate_keeper_heuristic` y `format_group` para evitar excepciones (como `FileNotFoundError`) en archivos que desaparecieron entre la etapa de recolección y la de visualización, mejorando la robustez del reporte.
 - `2026-10-05T11:47:44` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante errores de lectura de metadatos de archivos (como archivos bloqueados por el sistema o permisos denegados) dentro del bucle de recorrido en `walk_files`, garantizando que el proceso no se interrumpa ante entradas inaccesibles, y se ha añadido un manejo de errores más estricto al calcular rutas relativas en `largest_folders` para evitar fallos si el árbol cambia durante el escaneo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T11:07:35` **diskreport.py** (rendimiento): Optimizé `_collect_summary_data` eliminando el uso de `dict(ext_stats)` al final y accediendo directamente a las propiedades del objeto `ExtStats` en lugar de llamar a `__getitem__` constantemente, mejorando el rendimiento y reduciendo el overhead de memoria en escaneos profundos.
 - `2026-10-05T11:06:38` **branding.py** (rendimiento): Optimicé el cálculo de `gradient_colors` eliminando la recreación innecesaria de tuplas RGB y objetos intermedios mediante el uso de un generador de índices eficiente y pre-calculado, reduciendo la carga de CPU en operaciones de renderizado repetitivas.
 - `2026-10-05T10:58:20` **assistant.py** (rendimiento): Optimicé el acceso a los datos de `SystemContext` reemplazando llamadas repetitivas a `getattr` y validaciones redundantes por un caché calculado (`metrics_snapshot`), reduciendo el costo de CPU al generar respuestas y contexto.
-- `2026-10-05T10:56:12` **scanner.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el stack de procesamiento y métodos clave de `Scanner`, además de separar las responsabilidades de los chequeos heurísticos para mejorar la mantenibilidad y documentación interna de las reglas de detección.
-- `2026-10-05T10:46:07` **organizer.py** (legibilidad y documentación): Se ha mejorado la legibilidad y la seguridad semántica mediante la adición de docstrings técnicos (explicando el "porqué" de las validaciones de seguridad) y la mejora de los tipos en `_is_safe_for_disk_op` para prevenir errores de lógica.
-- `2026-10-05T10:40:17` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `memory.py` mediante docstrings detallados en las funciones de bajo nivel y utilicé Type Hints precisos para clarificar la interfaz entre el código Python y las estructuras de la API de Windows, facilitando la comprensión del flujo de datos.

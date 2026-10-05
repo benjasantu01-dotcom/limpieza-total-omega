@@ -226,12 +226,16 @@ def _get_sha256(path: Path) -> str:
     try:
         sha256_hash = hashlib.sha256()
         fd = os.open(str(path), flags)
-        with os.fdopen(fd, "rb") as handle:
-            while True:
-                chunk = handle.read(CHUNK_SIZE)
-                if not chunk:
-                    break
-                sha256_hash.update(chunk)
+        try:
+            with os.fdopen(fd, "rb") as handle:
+                while True:
+                    chunk = handle.read(CHUNK_SIZE)
+                    if not chunk:
+                        break
+                    sha256_hash.update(chunk)
+        except Exception:
+            os.close(fd)
+            raise
     except (OSError, PermissionError, IOError):
         return ""
     return sha256_hash.hexdigest()
@@ -573,6 +577,10 @@ def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> 
             stat_src = os.fstat(source_handle.fileno())
             if not (stat_src.st_mode & 0o100000):
                 raise OSError("El archivo origen no es un archivo regular.")
+            
+            # Verificación adicional TOCTOU: no permitir enlaces físicos en el destino
+            if stat_src.st_nlink > 1:
+                raise UnsafePathError("Archivo origen con enlaces físicos múltiples.")
             
             if not is_safe_to_modify(temp_dest.parent):
                 raise UnsafePathError("Directorio de destino no seguro.")

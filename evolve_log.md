@@ -938,3 +938,13 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-05T11:48:29` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `SystemMetrics.validate` ante entradas nulas o inesperadas durante la inicialización, asegurando que el motor de scoring no procese datos incoherentes incluso si el objeto se construye parcialmente.
 - `2026-10-05T11:48:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T11:48:29` Corrida terminada. Total usado hoy: 280.
+- `2026-10-05T11:56:54` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-10-05T11:56:58` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T11:58:01` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-05T11:59:07` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-05T12:00:20` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-05T12:01:04` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se introdujo un manejo robusto de excepciones y validación de tipos en la lectura de memoria de procesos mediante `GetProcessMemoryInfo`, evitando cierres inesperados por desbordamiento de búfer o estructuras mal inicializadas al interactuar con procesos protegidos.
+- `2026-10-05T12:01:34` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_file_locked` para manejar archivos de 0 bytes o corruptos que podrían causar excepciones inesperadas al intentar leer, y se añadió una verificación de volumen en `_is_safe_for_disk_op` para prevenir que `shutil.move` falle al intentar mover archivos entre distintos sistemas de archivos (operación que no es atómica y no es segura bajo nuestra política de `st_dev`).
+- `2026-10-05T12:02:06` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante condiciones de carrera (TOCTOU) y errores de sistema de archivos al añadir una verificación explícita de `st_nlink` dentro de `_copy_with_verification` y un manejo más estricto del estado de las handles de archivo mediante `finally` en las operaciones críticas de I/O.
+- `2026-10-05T12:02:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T12:02:06` Corrida terminada. Total usado hoy: 284.
