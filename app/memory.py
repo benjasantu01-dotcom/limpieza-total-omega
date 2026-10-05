@@ -203,11 +203,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     """Convierte el volcado CSV de procesos en una lista ordenada de objetos ProcessMemory."""
     if not raw_csv_text: return []
     lines = raw_csv_text.splitlines()
-    processes = []
-    for line in (l for l in lines[1:] if l and "," in l):
-        proc = _extract_process_info(line)
-        if proc:
-            processes.append(proc)
+    processes = (proc for line in lines[1:] if (proc := _extract_process_info(line)))
     return sorted(processes, key=lambda p: p.working_set, reverse=True)[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:

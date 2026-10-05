@@ -1499,3 +1499,14 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-05T06:42:23` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento de `SystemMetrics.is_finite` reemplazando la introspección costosa con `getattr` y `__annotations__` por una validación directa y explícita de los atributos críticos, reduciendo el overhead en cada iteración del pipeline.
 - `2026-10-05T06:42:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T06:42:23` Corrida terminada. Total usado hoy: 160.
+- `2026-10-05T06:50:51` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-10-05T06:51:52` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-05T06:52:55` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-05T06:54:01` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-05T06:55:13` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-05T06:55:57` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `parse_windows_process_csv` reemplazando la construcción manual de listas y bucles con una generación eficiente de objetos `ProcessMemory`, evitando el procesamiento redundante de líneas vacías o malformadas mediante el uso del generador integrado.
+- `2026-10-05T06:56:27` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se ha optimizado la validación de extensiones en `is_valid_junk_extension` reemplazando la lógica de comparación `lower()` por un acceso directo al registro en caché `JUNK_EXT_TUPLE` y se ha eliminado el llamado innecesario a `str()` en el bucle principal de `_process_directory`, evitando la creación de objetos innecesarios y reduciendo la presión sobre el recolector de basura.
+- `2026-10-05T06:56:27` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T06:56:59` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó el acceso a los datos de la cuarentena implementando un caché persistente basado en `pathlib.Path` dentro de `_MANIFEST_CACHE` y eliminando redundancias en la iteración de archivos durante el purgado, lo que reduce drásticamente las llamadas a disco y cálculos de hash innecesarios.
+- `2026-10-05T06:56:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T06:56:59` Corrida terminada. Total usado hoy: 164.
