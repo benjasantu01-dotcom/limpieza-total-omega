@@ -421,7 +421,8 @@ class SystemContext:
         has_updates = False
         try:
             for key, spec in _VALIDATORS.items():
-                if (res := self._apply_field(source, key, spec)) is not None:
+                res = self._apply_field(source, key, spec)
+                if res is not None and math.isfinite(float(res)):
                     object.__setattr__(self, key, res)
                     has_updates = True
             

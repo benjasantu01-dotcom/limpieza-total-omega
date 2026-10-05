@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **217** (43.1% de aceptación)
-- Rechazadas por tests: 23
+- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 43
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 206
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 63 | 3 | 12 | 10 | 50 |
+| 2026-10-03 | 61 | 2 | 12 | 9 | 50 |
 | 2026-10-04 | 154 | 20 | 31 | 5 | 140 |
-| 2026-10-05 | 0 | 0 | 0 | 0 | 16 |
+| 2026-10-05 | 1 | 0 | 0 | 0 | 19 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **51**
 - robustez ante casos límite: **50**
+- legibilidad y documentación: **49**
 - seguridad defensiva: **44**
 - rendimiento: **38**
-- manejo de errores y validación de entradas: **34**
+- manejo de errores y validación de entradas: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **21**
-- `diskreport.py`: **19**
+- `assistant.py`: **19**
 - `healthscore.py`: **19**
 - `organizer.py`: **18**
-- `assistant.py`: **18**
-- `duplicates.py`: **16**
+- `diskreport.py`: **18**
 - `safety.py`: **16**
 - `scanner.py`: **15**
+- `duplicates.py`: **15**
 - `memory.py`: **14**
 - `browser.py`: **14**
 - `branding.py`: **13**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T00:47:49` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingestión de datos en `SystemContext.ingest` capturando errores de forma granular y validando que el valor resultante de la conversión (`float_val`) pase `math.isfinite` antes de actualizar el estado, evitando así la propagación de valores corruptos o `NaN` que podrían romper cálculos posteriores en los handlers.
 - `2026-10-04T14:23:11` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en `_is_file_secure_to_read` para incluir una verificación de permisos más estricta (`stat.S_IWOTH` y `stat.S_IWGRP`), evitando así que el archivo de configuración sea legible o modificable por otros usuarios en sistemas compartidos, alineándose con el enfoque de seguridad defensiva.
 - `2026-10-04T14:22:38` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo implementando una validación de normalización de ruta antes de procesar cualquier entrada en `process_entry`, asegurando que `entry.path` sea tratado como una ruta absoluta y canónica para evitar vulnerabilidades de "path traversal" o inconsistencias por rutas relativas o mal formadas dentro del bucle de `os.scandir`.
 - `2026-10-04T14:13:26` **quarantine.py** (seguridad defensiva): Mejoré la seguridad de `quarantine.py` integrando validaciones de tipo en `_validate_isolation_request` para asegurar que el directorio de destino sea explícitamente un directorio y no un archivo, y reforzando la exclusividad en la escritura del manifiesto mediante una comprobación de existencia y permisos antes de la apertura del archivo temporal.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-04T13:42:35` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la carga de archivos mediante la implementación de `os.fsdecode` en el iterador `os.scandir` para prevenir errores de decodificación de caracteres malformados en sistemas de archivos (UnicodeDecodeError), garantizando que el escáner no aborte ante nombres de archivo exóticos.
 - `2026-10-04T13:42:08` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `safety.py` ante errores de sistema de archivos (como estados de carrera o acceso denegado durante la creación de handles) envolviendo la consulta de `GetVolumeInformationW` en un manejo de excepciones más granular y asegurando que `_is_volume_readonly` y `_is_volume_compressed_or_encrypted` retornen estados seguros (`False`) ante fallos inesperados de la API de Windows.
 - `2026-10-04T13:32:53` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de concurrencia mediante `msvcrt` (en Windows) o `fcntl` (en POSIX) dentro de `_check_isolation_safety` y `purge_item` para asegurar que el archivo no esté siendo bloqueado o utilizado por otros procesos, mitigando riesgos de errores de I/O al intentar mover o borrar archivos que el sistema pueda estar bloqueando temporalmente.
-- `2026-10-04T13:32:11` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente archivos con permisos de solo lectura o bloqueados por el sistema operativo, utilizando `os.access` como una comprobación previa no intrusiva y añadiendo un manejo de excepciones más preciso para evitar falsos positivos en el escáner.
