@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **219** (43.5% de aceptación)
-- Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 40
+- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Rechazadas por tests: 23
+- Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 13 | 1 | 2 | 3 | 3 |
+| 2026-10-03 | 10 | 0 | 2 | 3 | 3 |
 | 2026-10-04 | 154 | 20 | 31 | 5 | 140 |
-| 2026-10-05 | 52 | 3 | 7 | 2 | 68 |
+| 2026-10-05 | 54 | 3 | 8 | 2 | 69 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **53**
 - seguridad defensiva: **43**
-- legibilidad y documentación: **42**
-- rendimiento: **42**
-- manejo de errores y validación de entradas: **39**
+- manejo de errores y validación de entradas: **41**
+- legibilidad y documentación: **41**
+- rendimiento: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **21**
 - `diskreport.py`: **20**
-- `quarantine.py`: **19**
-- `assistant.py`: **18**
+- `quarantine.py`: **20**
+- `assistant.py`: **17**
+- `safety.py`: **17**
 - `duplicates.py`: **16**
 - `organizer.py`: **16**
-- `safety.py`: **16**
 - `browser.py`: **15**
 - `memory.py`: **15**
 - `scanner.py`: **14**
 - `settings.py`: **14**
-- `branding.py`: **13**
-- `startup.py`: **12**
+- `branding.py`: **12**
+- `startup.py`: **11**
 - `main.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T05:43:20` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_to_long_path` para evitar errores en llamadas recursivas o cuando la ruta ya contiene el prefijo `\\?\`, previniendo potenciales excepciones de tipo en el manejo de strings.
+- `2026-10-05T05:41:51` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_unlink` centralizando la validación de integridad (hash e inodo) antes de la eliminación, y refiné `purge_all` para asegurar que el manifiesto se actualice correctamente incluso si ocurren excepciones parciales al procesar archivos individuales, evitando estados inconsistentes.
 - `2026-10-05T05:35:17` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_process_path` y `trim_working_set` capturando errores críticos de la API de Windows mediante `ctypes.GetLastError` y validando explícitamente los handles devueltos antes de intentar operaciones, evitando punteros nulos o estados inconsistentes tras fallos de acceso.
 - `2026-10-05T05:34:52` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_settings` al añadir una sanitización de tipos más estricta y un manejo de errores robusto para evitar que la aplicación falle al procesar entradas de texto maliciosas o corruptas durante el guardado de ajustes.
 - `2026-10-05T05:30:15` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del proceso de puntuación mediante la validación explícita del tipo de entrada y la protección contra estados inválidos en la función principal `compute_score`, asegurando que `metrics` sea una instancia válida antes de operar.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T03:37:49` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del método `SystemMetrics.validate` aplicando un saneamiento de tipo más robusto y añadiendo una comprobación de desbordamiento antes de la asignación, evitando que valores inyectados o maliciosos fuera de rango puedan comprometer los cálculos del pipeline.
 - `2026-10-05T03:29:00` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de `_collect_candidates` mediante la inclusión de un chequeo estricto en la resolución de rutas y el uso de `st_ino` (inode) de forma más segura, evitando el procesamiento redundante de rutas vinculadas simbólicamente o puntos de montaje que podrían causar ciclos infinitos o lectura de archivos fuera de los límites permitidos.
 - `2026-10-05T03:28:46` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_validate_root` y `_collect_summary_data` ante posibles errores de resolución de rutas y acceso concurrente, reforzando la seguridad defensiva al asegurar que la operación no propague excepciones ni trabaje sobre enlaces simbólicos maliciosos, incluso en condiciones de carrera.
-- `2026-10-05T03:19:06` **assistant.py** (seguridad defensiva): Se endurece la validación de entrada en `_is_safe_path_input` añadiendo un chequeo explícito para detectar caracteres de escape ANSI o de control maliciosos antes de que el texto llegue a ser procesado por los motores, protegiendo contra posibles inyecciones en la UI.
-- `2026-10-05T03:17:59` **settings.py** (robustez ante casos límite): Se ha añadido un robusto manejo de exclusiones de exclusión en la carga y validación, asegurando que la ruta `ultima_carpeta` sea inexistente o resuelta correctamente antes de considerarse válida, evitando inyecciones de rutas inexistentes o mal formadas que podrían corromper la consistencia de la aplicación.

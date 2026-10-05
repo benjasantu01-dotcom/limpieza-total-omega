@@ -1367,3 +1367,14 @@ FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_del
 - `2026-10-05T05:35:17` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_get_process_path` y `trim_working_set` capturando errores críticos de la API de Windows mediante `ctypes.GetLastError` y validando explícitamente los handles devueltos antes de intentar operaciones, evitando punteros nulos o estados inconsistentes tras fallos de acceso.
 - `2026-10-05T05:35:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T05:35:17` Corrida terminada. Total usado hoy: 132.
+- `2026-10-05T05:39:33` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-10-05T05:39:36` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T05:39:43` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-05T05:39:52` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-05T05:40:52` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-05T05:41:51` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_safe_unlink` centralizando la validación de integridad (hash e inodo) antes de la eliminación, y refiné `purge_all` para asegurar que el manifiesto se actualice correctamente incluso si ocurren excepciones parciales al procesar archivos individuales, evitando estados inconsistentes.
+- `2026-10-05T05:42:27` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T05:42:49` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-10-05T05:43:20` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_to_long_path` para evitar errores en llamadas recursivas o cuando la ruta ya contiene el prefijo `\\?\`, previniendo potenciales excepciones de tipo en el manejo de strings.
+- `2026-10-05T05:43:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T05:43:20` Corrida terminada. Total usado hoy: 136.

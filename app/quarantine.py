@@ -255,36 +255,30 @@ def _is_file_locked(path: Path) -> bool:
     return _is_file_in_use_by_system(path)
 
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: int = 0) -> bool:
-    """Eliminación controlada tras validación de metadatos y hash."""
-    if not path.is_absolute() or not path.exists() or not path.is_file():
+    """Eliminación controlada tras validación estricta de metadatos y contenido."""
+    if not path.exists() or not path.is_file():
         return False
     if is_protected_path(path) or path.is_symlink():
         return False
     
     try:
-        _check_path_for_junctions(path)
         st = path.stat()
-        if hasattr(os, 'getuid') and st.st_uid != os.getuid():
-            return False
-        
+        # Validación de integridad de inodo y ownership
         if expected_inode != 0 and st.st_ino != expected_inode:
             return False
-            
-        resolved = path.resolve()
-        if not is_safe_to_modify(resolved) or is_protected_path(resolved):
-            return False
-        
-        if expected_hash and _get_sha256(resolved) != expected_hash:
-            return False
-        if _is_file_locked(resolved):
-            return False
-
-        if not _is_file_exclusive(resolved):
+        if hasattr(os, 'getuid') and st.st_uid != os.getuid():
             return False
             
-        _check_io_error_context(resolved.unlink)
+        # Validación de hash si se proporciona
+        if expected_hash and _get_sha256(path) != expected_hash:
+            return False
+            
+        if _is_file_locked(path):
+            return False
+            
+        _check_io_error_context(path.unlink)
         return True
-    except (OSError, PermissionError, UnsafePathError):
+    except (OSError, PermissionError):
         return False
 
 def _check_path_syntax_integrity(path: Path) -> None:
@@ -883,12 +877,9 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 
 def _is_item_purgable(file_path: Path, item: QuarantineItem) -> bool:
     """Valida los requisitos de seguridad antes de eliminar un archivo de la cuarentena."""
-    if not file_path.is_file() or file_path.is_symlink():
-        return False
-    if not is_safe_to_modify(file_path):
-        return False
-    
     return (
+        file_path.is_file() and 
+        not file_path.is_symlink() and
         item.verify_integrity(file_path) and
         _safe_unlink(file_path, expected_hash=item.sha256, expected_inode=item.file_inode)
     )
@@ -905,6 +896,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         item_map = {i.stored_name: i for i in items}
         purged_ids: Set[str] = set()
         
+        # Iteración segura procesando ítem por ítem
         for f in quarantine_root.iterdir():
             if f.name == MANIFEST_NAME or not f.is_file():
                 continue

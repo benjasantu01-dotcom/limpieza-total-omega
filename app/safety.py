@@ -108,10 +108,13 @@ def _to_long_path(path_str: str) -> str:
     Transforma la ruta al formato '\\?\' para permitir el acceso a rutas que exceden 
     los 260 caracteres (MAX_PATH) en Windows.
     """
-    if os.name == 'nt' and not path_str.startswith("\\\\?\\"):
-        if path_str.startswith("\\\\"): return "\\\\?\\UNC" + path_str[1:]
-        return "\\\\?\\" + path_str
-    return path_str
+    if os.name != 'nt' or not isinstance(path_str, str):
+        return path_str
+    if path_str.startswith("\\\\?\\"):
+        return path_str
+    if path_str.startswith("\\\\"):
+        return "\\\\?\\UNC" + path_str[1:]
+    return "\\\\?\\" + path_str
 
 def _is_path_too_long(path_str: str) -> bool:
     """Verifica si la longitud de la cadena excede el estándar MAX_PATH."""
