@@ -1492,3 +1492,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-05T06:32:55` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-10-05T06:32:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T06:32:55` Corrida terminada. Total usado hoy: 156.
+- `2026-10-05T06:40:41` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-10-05T06:41:13` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas costosas a `os.scandir` y estadísticas de archivos mediante la reutilización efectiva de la caché de resultados de directorios ya visitados, reduciendo drásticamente la E/S en estructuras de carpetas anidadas.
+- `2026-10-05T06:41:42` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el bucle de recorrido en `walk_files` evitando la creación innecesaria de objetos `Path` y conversiones de tipo dentro del hot-loop, reemplazando `Path(entry.path)` por `entry.path` donde es posible, para reducir el overhead de asignación de memoria durante escaneos intensivos.
+- `2026-10-05T06:42:08` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `Path.resolve()` dentro del bucle principal y consolidando la lógica de validación de rutas para minimizar las operaciones de E/S y llamadas al sistema.
+- `2026-10-05T06:42:23` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento de `SystemMetrics.is_finite` reemplazando la introspección costosa con `getattr` y `__annotations__` por una validación directa y explícita de los atributos críticos, reduciendo el overhead en cada iteración del pipeline.
+- `2026-10-05T06:42:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T06:42:23` Corrida terminada. Total usado hoy: 160.

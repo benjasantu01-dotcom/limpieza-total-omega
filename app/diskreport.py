@@ -144,7 +144,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
 
 
-def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
+def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
     """
     Evalúa si un `os.DirEntry` debe ser omitido por criterios de seguridad o integridad.
     
@@ -156,8 +156,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
             return True
         
         # Validación de confinamiento estricto contra el root_path
-        entry_path = Path(entry.path).resolve()
-        if not str(entry_path).startswith(str(root_path)):
+        if not entry.path.startswith(root_path_str):
             return True
             
         try:
@@ -283,8 +282,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     root_path = _validate_root(directory)
     if root_path is None: return
     
+    root_str = str(root_path)
     visited_inodes: set[Inode] = set()
-    stack: List[str] = [str(root_path)]
+    stack: List[str] = [root_str]
     
     while stack:
         current_dir = stack.pop()
@@ -292,7 +292,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if skip_protected and _is_excluded_path(entry, root_path):
+                        if skip_protected and _is_excluded_path(entry, root_str):
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
