@@ -254,7 +254,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if not _is_windows: return []
     now = time.time()
     if (now - _proc_cache_time) > 60:
-        ps_query = "Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First 20 Name,Id,WorkingSet | ConvertTo-Csv -NoTypeInformation"
+        ps_query = "Get-Process|Sort-Object WorkingSet -Desc|Select -First 20 Name,Id,WorkingSet|ConvertTo-Csv -NoType"
         cmd = ['powershell', '-NoProfile', '-NonInteractive', '-Command', ps_query]
         try:
             res = subprocess.run(cmd, capture_output=True, text=True, timeout=3)

@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 40
+- Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 45 | 2 | 6 | 7 | 38 |
+| 2026-10-03 | 41 | 2 | 6 | 7 | 38 |
 | 2026-10-04 | 154 | 20 | 31 | 5 | 140 |
-| 2026-10-05 | 23 | 0 | 3 | 1 | 29 |
+| 2026-10-05 | 25 | 0 | 4 | 1 | 30 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
-- robustez ante casos límite: **45**
-- seguridad defensiva: **44**
+- robustez ante casos límite: **43**
+- seguridad defensiva: **42**
 - manejo de errores y validación de entradas: **41**
-- rendimiento: **37**
+- rendimiento: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
+- `quarantine.py`: **20**
 - `healthscore.py`: **20**
-- `quarantine.py`: **19**
-- `assistant.py`: **18**
 - `organizer.py`: **18**
 - `safety.py`: **17**
+- `assistant.py`: **17**
 - `duplicates.py`: **16**
-- `branding.py`: **15**
 - `browser.py`: **15**
-- `settings.py`: **14**
-- `memory.py`: **14**
+- `memory.py`: **15**
+- `branding.py`: **14**
 - `scanner.py`: **14**
-- `startup.py`: **12**
+- `settings.py`: **13**
+- `startup.py`: **11**
 - `main.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T02:27:46` **quarantine.py** (rendimiento): Se optimizó la función `purge_all` para evitar lecturas de disco redundantes y llamadas excesivas a `load_manifest`, utilizando un conjunto (set) para las operaciones de búsqueda de IDs en lugar de recorridos lineales.
+- `2026-10-05T02:26:31` **memory.py** (rendimiento): Se optimizó el rendimiento de `top_memory_processes` reemplazando la ejecución costosa de un pipeline completo de PowerShell por una consulta más directa que minimiza el tiempo de espera del proceso hijo y el consumo de memoria al evitar la serialización innecesaria de objetos en el lado del cliente de PowerShell.
 - `2026-10-05T02:17:14` **healthscore.py** (rendimiento): Optimicé el método `SystemMetrics.validate` eliminando la creación repetitiva de tuplas y llamadas a `getattr/setattr` dentro de un bucle, reemplazándolo por una asignación directa y rápida, lo que reduce la carga de procesamiento en cada corrida del pipeline.
 - `2026-10-05T02:16:46` **duplicates.py** (rendimiento): Optimicé `_collect_candidates` utilizando un conjunto (`visited_inodes`) para rastrear archivos ya procesados mediante sus identificadores de dispositivo e inodo, evitando llamadas redundantes a `stat` y lecturas de sistema de archivos innecesarias en estructuras de directorios con enlaces simbólicos complejos o recursión profunda.
 - `2026-10-05T02:16:17` **diskreport.py** (rendimiento): Optimizé `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y `path.lower()` dentro del loop de procesamiento, cacheando la extensión de forma eficiente y reduciendo la carga sobre el motor de tipos y objetos de `pathlib`.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T01:49:42` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings estructurados y precisos en las funciones críticas de validación y procesamiento de archivos, clarificando el propósito, las pre-condiciones de seguridad y el comportamiento ante errores, facilitando el mantenimiento y la comprensión del flujo de seguridad.
 - `2026-10-05T01:49:14` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las estructuras de datos y funciones críticas en `memory.py`, incluyendo docstrings descriptivos para las constantes de máscara de acceso y una explicación del porqué del filtrado de procesos en `_extract_process_info`, manteniendo la integridad de las reglas de seguridad.
 - `2026-10-05T01:36:36` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a las funciones de normalización (`score_junk`, `score_security`, etc.) para aclarar qué métrica representan y cómo influyen en el puntaje, además de añadir type hints explícitos en los argumentos y retornos que faltaban para mejorar la legibilidad y el análisis estático.
-- `2026-10-05T01:35:57` **diskreport.py** (legibilidad y documentación): Mejoré la documentación de `walk_files` mediante un `docstring` detallado que especifica claramente sus parámetros, comportamiento ante errores y restricciones de seguridad, mejorando la legibilidad técnica para futuros desarrolladores.
-- `2026-10-05T01:35:27` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica y la precisión de los type hints en el módulo `browser.py` para clarificar la lógica de seguridad y el flujo de los recorridos de disco.
