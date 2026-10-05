@@ -186,7 +186,9 @@ class _Validators:
     def _run_safety_checks(path_str: str) -> bool:
         """Verifica recursivamente que ninguna parte de la ruta comprometa la seguridad del sistema."""
         try:
-            resolved = Path(path_str).resolve()
+            p = Path(path_str).expanduser()
+            if not p.is_absolute(): return False
+            resolved = p.resolve()
             for part in resolved.parts:
                 if _Validators._is_reparse_point(Path(part)):
                     return False
@@ -205,7 +207,7 @@ class _Validators:
         if not path_str or len(path_str) > 2048 or any(c in path_str for c in ("\0", "^", "\033")): return False
         if path_str.startswith(("\\\\", "//")): return False
         try:
-            return _Validators._check_path_safety(Path(path_str).expanduser())
+            return _Validators._check_path_safety(Path(path_str))
         except (OSError, RuntimeError, PermissionError, AttributeError, ValueError):
             return False
 
@@ -253,7 +255,6 @@ class _Validators:
         if val is None: return None
         text = str(val).strip()
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
-        if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path(key, text)
         return _Validators._validate_enum_str(text, key)
 
 BOOL_KEYS: Final = {

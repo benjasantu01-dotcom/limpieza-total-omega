@@ -292,9 +292,15 @@ def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
         current_dir, depth = directory_stack.pop()
         try:
             with os.scandir(current_dir) as it:
-                for entry in it:
-                    if entry: scanner.process_entry(entry, directory_stack, depth)
-        except (PermissionError, OSError, UnicodeDecodeError, AttributeError):
+                while True:
+                    try:
+                        entry = next(it)
+                        if entry: scanner.process_entry(entry, directory_stack, depth)
+                    except StopIteration:
+                        break
+                    except (UnicodeDecodeError, OSError):
+                        continue
+        except (PermissionError, OSError, AttributeError):
             continue
     return scanner.results
 

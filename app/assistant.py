@@ -457,8 +457,9 @@ class Answer:
         return self.source == "gemini"
 
 def _is_safe_path_input(text: str) -> bool:
-    """Verifica si el texto parece contener una ruta o referencia de sistema."""
+    """Verifica si el texto parece contener una ruta, referencia de sistema o caracteres de control maliciosos."""
     if is_protected_path(text): return True
+    if _REGEX_ANSI_ESCAPE.search(text) or _REGEX_CONTROL_CHARS.search(text): return True
     return bool(_REGEX_STRUCTURE_INJECTION.search(text) or _REGEX_PATH_TRAVERSAL.search(text) or _REGEX_SYSTEM_PATHS.search(text))
 
 def _ensure_safe_text(text: Any) -> bool:
