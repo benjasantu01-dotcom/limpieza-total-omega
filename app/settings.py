@@ -341,8 +341,9 @@ def _load_impl(ruta: Path) -> AppSettings:
     """
     if not ruta.exists(): return DEFAULTS.copy()
     try:
-        ensure_safe_to_modify(str(ruta))
-        with open(ruta, "r", encoding="utf-8") as f:
+        resolved = ruta.resolve()
+        ensure_safe_to_modify(str(resolved))
+        with open(resolved, "r", encoding="utf-8") as f:
             if not _is_file_secure_to_read(f): return DEFAULTS.copy()
             fcntl.flock(f.fileno(), fcntl.LOCK_SH)
             try:
@@ -413,9 +414,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
         
-        # Validación de seguridad de rutas antes de intentar escribir
-        ensure_safe_to_modify(str(parent))
-        if config_path.exists(): ensure_safe_to_modify(str(config_path))
+        ensure_safe_to_modify(str(config_path.resolve()))
     except (TypeError, ValueError, OSError, PermissionError): return None
     
     temp_path = config_path.with_suffix(".tmp")
@@ -425,7 +424,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             fcntl.flock(f.fileno(), fcntl.LOCK_EX)
             f.write(serialized)
             f.flush()
-            os.fsync(f.fileno())
             if not _is_file_secure_to_read(f):
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
                 raise PermissionError("Archivo temporal inseguro")
@@ -435,7 +433,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             raise PermissionError("Operación sobre enlace detectada")
             
         if config_path.exists():
-            ensure_safe_to_modify(str(bak_path))
+            ensure_safe_to_modify(str(bak_path.resolve()))
             try: os.replace(config_path, bak_path)
             except OSError: pass
             

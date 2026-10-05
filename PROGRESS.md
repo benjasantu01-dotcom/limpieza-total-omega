@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **233** (46.2% de aceptación)
+- Mejoras aceptadas: **234** (46.4% de aceptación)
 - Rechazadas por tests: 24
 - Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 192
+- Sin respuesta de la IA (error o límite): 191
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 35 | 1 | 5 | 5 | 16 |
+| 2026-10-03 | 35 | 1 | 5 | 5 | 12 |
 | 2026-10-04 | 154 | 20 | 31 | 5 | 140 |
-| 2026-10-05 | 44 | 3 | 7 | 2 | 36 |
+| 2026-10-05 | 45 | 3 | 7 | 2 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - robustez ante casos límite: **53**
+- seguridad defensiva: **43**
 - rendimiento: **42**
-- seguridad defensiva: **42**
 - manejo de errores y validación de entradas: **41**
 
 ## Mejoras aceptadas por archivo
@@ -40,13 +40,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **16**
 - `scanner.py`: **16**
 - `browser.py`: **15**
+- `settings.py`: **15**
 - `branding.py`: **14**
-- `settings.py`: **14**
 - `startup.py`: **12**
 - `main.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T03:58:24` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_load_impl` y `save` eliminando el uso de `os.fsync` y `fcntl` en rutas que no han sido verificadas contra ataques de tiempo de verificación/tiempo de uso (TOCTOU) de manera estricta, asegurando que `ensure_safe_to_modify` se aplique sobre la ruta absoluta resuelta antes de cualquier operación de I/O crítica.
 - `2026-10-05T03:48:16` **quarantine.py** (seguridad defensiva): Se introdujo `_check_path_for_junctions` como una capa de seguridad defensiva explícita para detectar y rechazar puntos de reparse (Junctions/Reparse Points) tanto en la ruta origen como en la de destino, reforzando la protección contra ataques de salto de directorio o recursividad no deseada mediante llamadas directas a `ctypes` en Windows.
 - `2026-10-05T03:39:57` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_get_process_path` integrando `is_protected_path` de forma explícita antes de cualquier resolución de ruta, asegurando que solo se validen rutas que cumplan con la política de seguridad del proyecto antes de procesar atributos.
 - `2026-10-05T03:37:49` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del método `SystemMetrics.validate` aplicando un saneamiento de tipo más robusto y añadiendo una comprobación de desbordamiento antes de la asignación, evitando que valores inyectados o maliciosos fuera de rango puedan comprometer los cálculos del pipeline.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T03:02:10` **memory.py** (robustez ante casos límite): Mejora la robustez en `_extract_process_info` para manejar casos límite donde el comando `Get-Process` retorna cadenas con caracteres inesperados o formatos de coma malinterpretados, evitando excepciones que detendrían la recolección de métricas.
 - `2026-10-05T02:58:18` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `SystemMetrics` ante casos límite mediante la validación explícita de `is_finite` antes de procesar el cálculo, garantizando que estados intermedios del sistema no propaguen valores numéricos erróneos a lo largo del pipeline.
 - `2026-10-05T02:48:29` **diskreport.py** (robustez ante casos límite): Se mejora la robustez de `walk_files` y `_collect_summary_data` ante casos de rutas extremadamente largas o inválidas que podrían interrumpir el flujo de enumeración, asegurando que `os.scandir` se maneje dentro de un contexto protegido y que la conversión de `Path` sea siempre segura para el sistema operativo.
-- `2026-10-05T02:48:17` **browser.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante rutas inexistentes o inaccesibles en `_sum_directory_recursive` mediante el uso de `os.scandir` bajo un bloque `try-except` más robusto y la validación explícita de `entry.is_dir()` con manejo de errores, evitando que el escaneo se interrumpa prematuramente por errores de acceso de solo lectura en subcarpetas.
