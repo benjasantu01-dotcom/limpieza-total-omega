@@ -479,6 +479,8 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
         raise UnsafePathError("Tipo de objeto de ruta inválido", SafetyValidationErrorCode.GENERIC)
     if _is_device_file(path):
         raise UnsafePathError(f"Acceso a dispositivo bloqueado: {path.name}", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
+    if not path.exists():
+        raise UnsafePathError(f"Archivo inexistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
         
     try:
         return path.stat()
@@ -522,6 +524,8 @@ def _is_readonly(path_str: str) -> bool:
 
 def _validate_access_permissions(path: Path) -> None:
     """Valida los permisos de lectura y escritura del usuario actual mediante el sistema operativo."""
+    if not path.exists():
+        raise UnsafePathError("Archivo inexistente, no se pueden validar permisos.", SafetyValidationErrorCode.ACCESS_DENIED)
     try:
         if not os.access(path, os.R_OK):
             raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED)

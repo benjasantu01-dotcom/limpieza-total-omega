@@ -948,3 +948,13 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-05T12:02:06` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante condiciones de carrera (TOCTOU) y errores de sistema de archivos al añadir una verificación explícita de `st_nlink` dentro de `_copy_with_verification` y un manejo más estricto del estado de las handles de archivo mediante `finally` en las operaciones críticas de I/O.
 - `2026-10-05T12:02:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T12:02:06` Corrida terminada. Total usado hoy: 284.
+- `2026-10-05T12:07:06` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-10-05T12:07:10` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T12:07:36` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-05T12:07:36` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T12:07:40` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-05T12:08:39` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante rutas inexistentes en `_get_path_stat_robust` agregando una comprobación explícita de existencia mediante `path.exists()` para evitar excepciones innecesarias en el flujo normal, y se ha fortalecido la integridad al asegurar que `_validate_access_permissions` no sea llamada sobre rutas inexistentes.
+- `2026-10-05T12:09:11` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra rutas que contienen caracteres nulos o nombres de dispositivos reservados dentro del bucle de `scan_directory` y `process_entry`, previniendo errores de sistema operativo en operaciones de entrada/salida críticas.
+- `2026-10-05T12:09:31` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save` mediante una verificación explícita de `is_safe_to_modify` en el directorio padre, previniendo operaciones de escritura en ubicaciones potencialmente peligrosas o restringidas antes de intentar crear archivos temporales.
+- `2026-10-05T12:09:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T12:09:31` Corrida terminada. Total usado hoy: 288.

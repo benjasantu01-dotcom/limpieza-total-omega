@@ -115,7 +115,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     """Valida la integridad de la cadena de la ruta (largo y caracteres especiales)."""
-    if not path_str or len(path_str) > SCAN_LIMITS.max_path:
+    if not path_str or len(path_str) > SCAN_LIMITS.max_path or "\0" in path_str:
         return False
     if UNC_PATH_RE.match(path_str) or RTL_CHAR_RE.search(path_str):
         return False
@@ -196,7 +196,7 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Filtro de seguridad: Valida integridad, reanálisis y exclusiones (whitelist)."""
-        if not isinstance(entry, os.DirEntry) or not entry.path or "\0" in entry.path:
+        if not isinstance(entry, os.DirEntry) or not entry.path:
             return False
         if entry.path in self.safe_cache:
             return True
@@ -232,7 +232,7 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
         """Orquestador: Decide si delegar a exploración de directorios o ejecución de heurísticas."""
         try:
-            if not entry.path: 
+            if not entry.path or "\0" in entry.path: 
                 return
 
             is_dir = entry.is_dir(follow_symlinks=False)
