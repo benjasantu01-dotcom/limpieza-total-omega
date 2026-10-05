@@ -292,10 +292,13 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Verificación de seguridad en cada entrada
                         if skip_protected and _is_excluded_path(entry, root_str):
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
+                            if skip_protected and is_protected_path(Path(entry.path)):
+                                continue
                             try:
                                 st = entry.stat(follow_symlinks=False)
                                 inode = (st.st_dev, st.st_ino)

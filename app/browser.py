@@ -250,7 +250,8 @@ def _sum_directory_recursive(
                     is_dir_entry = entry.is_dir(follow_symlinks=False)
                     if is_dir_entry:
                         child_path = Path(entry.path)
-                        if is_protected_path(child_path) or not _ensure_within_base(entry.path, root_abs_norm):
+                        # Validar seguridad antes de descender
+                        if not is_safe_to_modify(child_path) or is_protected_path(child_path) or not _ensure_within_base(entry.path, root_abs_norm):
                             continue
                         res = _sum_directory_recursive(child_path, root_abs_norm, kernel32, visited_inodes, visited_dirs, depth + 1)
                         total_bytes += res.bytes_found
@@ -258,9 +259,11 @@ def _sum_directory_recursive(
                         st = entry.stat(follow_symlinks=False)
                         if st.st_ino not in visited_inodes:
                             visited_inodes.add(st.st_ino)
-                            # Intentamos obtener tamaño; si está bloqueado, lo ignoramos para la suma
-                            if not _is_file_in_use(Path(entry.path)):
-                                total_bytes += st.st_size
+                            p_file = Path(entry.path)
+                            # Validar seguridad del archivo individual
+                            if is_safe_to_modify(p_file) and not is_protected_path(p_file):
+                                if not _is_file_in_use(p_file):
+                                    total_bytes += st.st_size
                 except (OSError, PermissionError):
                     continue
     except (OSError, PermissionError):
