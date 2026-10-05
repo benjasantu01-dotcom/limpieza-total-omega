@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
-- Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 41
+- Mejoras aceptadas: **225** (44.6% de aceptación)
+- Rechazadas por tests: 22
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 35 | 2 | 5 | 5 | 35 |
+| 2026-10-03 | 35 | 1 | 5 | 5 | 32 |
 | 2026-10-04 | 154 | 20 | 31 | 5 | 140 |
-| 2026-10-05 | 33 | 1 | 5 | 1 | 32 |
+| 2026-10-05 | 36 | 1 | 6 | 1 | 32 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
-- robustez ante casos límite: **48**
+- robustez ante casos límite: **51**
 - rendimiento: **42**
 - manejo de errores y validación de entradas: **41**
 - seguridad defensiva: **36**
@@ -32,10 +32,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `healthscore.py`: **21**
 - `diskreport.py`: **20**
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
 - `assistant.py`: **18**
-- `organizer.py`: **17**
-- `safety.py`: **17**
+- `organizer.py`: **18**
+- `safety.py`: **18**
 - `duplicates.py`: **16**
 - `memory.py`: **15**
 - `scanner.py`: **15**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T03:10:23` **safety.py** (robustez ante casos límite): Se introdujo una verificación adicional en `ensure_safe_to_modify` para detectar y bloquear el uso de rutas que contienen puntos de unión (`junctions`) o redirecciones NTFS dentro de la estructura de la ruta, utilizando `GetFinalPathNameByHandleW` de forma más rigurosa para evitar que las operaciones de manipulación sigan redirecciones que escapen del sandbox del usuario.
+- `2026-10-05T03:07:59` **quarantine.py** (robustez ante casos límite): Se introdujo una verificación de "path traversal" en `_validate_quarantine_path` mediante la validación del nombre base del archivo contra el nombre almacenado, previniendo que un manifiesto manipulado intente acceder a archivos fuera del sandbox usando rutas relativas o secuencias de escape.
+- `2026-10-05T03:07:13` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para que maneje excepciones de acceso de manera más granular (específicamente `BlockingIOError`), evitando que un archivo bloqueado por el SO detenga innecesariamente la ejecución, y se ha añadido una validación de `os.DirEntry.is_symlink` robusta en `_should_scan_directory` para prevenir errores en accesos a rutas virtuales.
 - `2026-10-05T03:02:10` **memory.py** (robustez ante casos límite): Mejora la robustez en `_extract_process_info` para manejar casos límite donde el comando `Get-Process` retorna cadenas con caracteres inesperados o formatos de coma malinterpretados, evitando excepciones que detendrían la recolección de métricas.
 - `2026-10-05T02:58:18` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `SystemMetrics` ante casos límite mediante la validación explícita de `is_finite` antes de procesar el cálculo, garantizando que estados intermedios del sistema no propaguen valores numéricos erróneos a lo largo del pipeline.
 - `2026-10-05T02:48:29` **diskreport.py** (robustez ante casos límite): Se mejora la robustez de `walk_files` y `_collect_summary_data` ante casos de rutas extremadamente largas o inválidas que podrían interrumpir el flujo de enumeración, asegurando que `os.scandir` se maneje dentro de un contexto protegido y que la conversión de `Path` sea siempre segura para el sistema operativo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T02:26:31` **memory.py** (rendimiento): Se optimizó el rendimiento de `top_memory_processes` reemplazando la ejecución costosa de un pipeline completo de PowerShell por una consulta más directa que minimiza el tiempo de espera del proceso hijo y el consumo de memoria al evitar la serialización innecesaria de objetos en el lado del cliente de PowerShell.
 - `2026-10-05T02:17:14` **healthscore.py** (rendimiento): Optimicé el método `SystemMetrics.validate` eliminando la creación repetitiva de tuplas y llamadas a `getattr/setattr` dentro de un bucle, reemplazándolo por una asignación directa y rápida, lo que reduce la carga de procesamiento en cada corrida del pipeline.
 - `2026-10-05T02:16:46` **duplicates.py** (rendimiento): Optimicé `_collect_candidates` utilizando un conjunto (`visited_inodes`) para rastrear archivos ya procesados mediante sus identificadores de dispositivo e inodo, evitando llamadas redundantes a `stat` y lecturas de sistema de archivos innecesarias en estructuras de directorios con enlaces simbólicos complejos o recursión profunda.
-- `2026-10-05T02:16:17` **diskreport.py** (rendimiento): Optimizé `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y `path.lower()` dentro del loop de procesamiento, cacheando la extensión de forma eficiente y reduciendo la carga sobre el motor de tipos y objetos de `pathlib`.
-- `2026-10-05T02:07:31` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` al reemplazar la lógica de interpolación manual dentro del loop por una técnica de *pre-cálculo de pasos* más eficiente, reduciendo drásticamente la carga de CPU y memoria al evitar cálculos de punto flotante repetitivos durante el renderizado de franjas y barras.
-- `2026-10-05T02:06:52` **assistant.py** (rendimiento): Optimicé el cálculo del estado de salud del sistema mediante la sustitución de llamadas repetidas a `ctx.get_metric` por una tupla pre-procesada de valores, reduciendo la carga de cómputo en el bucle de renderizado y mejorando la eficiencia del motor local.

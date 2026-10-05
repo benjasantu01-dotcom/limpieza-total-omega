@@ -115,6 +115,7 @@ def _is_junction(entry: os.DirEntry) -> bool:
     Bloquear el seguimiento de estas rutas previene recursiones infinitas y accesos no deseados.
     """
     try:
+        # Validar is_symlink() de forma segura antes de evaluar el bitmask
         return entry.is_symlink() or bool(_get_win_attributes(entry) & WIN_ATTR_JUNCTION)
     except (OSError, AttributeError):
         return True
@@ -163,7 +164,7 @@ def _is_file_locked(path: Path) -> bool:
     try:
         with open(path, "rb") as f:
             return False
-    except (PermissionError, OSError, IOError):
+    except (PermissionError, OSError, IOError, BlockingIOError):
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:

@@ -369,6 +369,9 @@ def _validate_quarantine_path(path: Path, base: Path) -> Path:
     resolved_base = base.resolve()
     if not is_within_directory(resolved_path, resolved_base):
         raise UnsafePathError("Acceso fuera del sandbox detectado.")
+    # Verificar que el nombre del archivo no intente evadir el control usando partes relativas
+    if resolved_path.name != path.name:
+        raise UnsafePathError("Intento de manipulación de ruta detectado.")
     return resolved_path
 
 def _check_windows_file_attributes(path_str: str) -> None:

@@ -1035,3 +1035,14 @@ FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - A
 - `2026-10-05T03:02:10` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejora la robustez en `_extract_process_info` para manejar casos límite donde el comando `Get-Process` retorna cadenas con caracteres inesperados o formatos de coma malinterpretados, evitando excepciones que detendrían la recolección de métricas.
 - `2026-10-05T03:02:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T03:02:10` Corrida terminada. Total usado hoy: 72.
+- `2026-10-05T03:06:42` Arrancando corrida. Quedan hoy ~228 peticiones objetivo.
+- `2026-10-05T03:07:13` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_file_locked` para que maneje excepciones de acceso de manera más granular (específicamente `BlockingIOError`), evitando que un archivo bloqueado por el SO detenga innecesariamente la ejecución, y se ha añadido una validación de `os.DirEntry.is_symlink` robusta en `_should_scan_directory` para prevenir errores en accesos a rutas virtuales.
+- `2026-10-05T03:07:59` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una verificación de "path traversal" en `_validate_quarantine_path` mediante la validación del nombre base del archivo contra el nombre almacenado, previniendo que un manifiesto manipulado intente acceder a archivos fuera del sandbox usando rutas relativas o secuencias de escape.
+- `2026-10-05T03:08:01` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T03:08:04` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-05T03:09:11` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-05T03:09:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-05T03:09:48` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T03:10:23` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo una verificación adicional en `ensure_safe_to_modify` para detectar y bloquear el uso de rutas que contienen puntos de unión (`junctions`) o redirecciones NTFS dentro de la estructura de la ruta, utilizando `GetFinalPathNameByHandleW` de forma más rigurosa para evitar que las operaciones de manipulación sigan redirecciones que escapen del sandbox del usuario.
+- `2026-10-05T03:10:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T03:10:23` Corrida terminada. Total usado hoy: 76.

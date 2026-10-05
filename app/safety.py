@@ -716,9 +716,10 @@ def _validate_ntfs_reparse_redirection(path: Path) -> None:
             
     final_path = _get_final_path_normalized(path)
     if final_path:
+        # Verifica que la ruta resuelta mantenga coherencia estructural con la ruta original
         if final_path.drive != path.resolve().drive:
             raise UnsafePathError("Redirección de unidad detectada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
-        if not str(final_path).startswith(str(path.parent)):
+        if not str(final_path).startswith(str(path.parent.resolve())):
             raise UnsafePathError("Salida de carpeta permitida vía redirección.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
@@ -817,4 +818,3 @@ def describe_protection(path: PathLike) -> str:
     except (OSError, FileNotFoundError, AttributeError): pass
     if is_sensitive_file(p): return f"'{p.name}' extensión sensible."
     return f"'{p}' es candidata a modificación."
-
