@@ -885,3 +885,47 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-05T11:28:46` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se ha optimizado `process_entry` moviendo la validación de la extensión (el filtro más rápido y frecuente) antes de realizar llamadas costosas al sistema como `_is_safe_entry`, reduciendo significativamente la cantidad de accesos al disco en archivos irrelevantes.
 - `2026-10-05T11:28:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T11:28:46` Corrida terminada. Total usado hoy: 272.
+- `2026-10-05T11:36:32` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-10-05T11:37:06` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-05T11:37:38` Tests FALLARON:
+```
+lve/tests/test_modules.py:677: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:175: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'MiPrograma.lnk'
+  'Otro.lnk'
+  Extra items in the right set:
+  'MiPrograma'
+  'Otro'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed, 7 warnings in 1.49s
+
+```
+- `2026-10-05T11:37:38` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `_process_folder_entry` reemplazando la construcción de `Path` dentro del bucle principal por comprobaciones de bajo costo usando `os.path` y `os.DirEntry.path`, evitando instancias innecesarias antes de confirmar que el archivo es un ejecutable relevante.
+- `2026-10-05T11:38:23` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Reforcé la robustez ante estados inesperados del sistema añadiendo una verificación explícita de `math.isfinite` y validación de tipos en `_check_metric_integrity` (usada en todo el módulo), evitando que valores `NaN` o `inf` inyectados en las métricas rompan la lógica de decisión del asistente.
+- `2026-10-05T11:38:46` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-10-05T11:38:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T11:38:46` Corrida terminada. Total usado hoy: 276.

@@ -92,7 +92,7 @@ def _is_safe_key(key: str) -> bool:
     """Valida que una clave de diccionario o atributo no sea privada o interna."""
     return isinstance(key, str) and not (key.startswith("__") or key.startswith("_") or key == "ingest")
 
-def _check_metric_integrity(val: float) -> bool:
+def _check_metric_integrity(val: Any) -> bool:
     """Verifica que un valor numérico sea seguro, finito y coherente para el asistente."""
     return isinstance(val, (int, float)) and not isinstance(val, bool) and math.isfinite(val) and not math.isnan(val)
 
@@ -146,7 +146,7 @@ class MetricSpec:
 
     def is_valid_type(self, val: Any) -> bool:
         """Verifica que el valor sea un número (int/float) real y no booleano."""
-        return isinstance(val, (int, float)) and not isinstance(val, bool)
+        return _check_metric_integrity(val)
 
 class ProblemCriterion(NamedTuple):
     """
@@ -299,10 +299,10 @@ _VALIDATORS: Final[dict[str, MetricSpec]] = {
 def _safe_float(val: Any, default: float = 0.0) -> float:
     """Convierte cualquier valor a float asegurando que el resultado sea finito, real y no negativo."""
     try:
-        if val is None or isinstance(val, bool) or not isinstance(val, (int, float, str)):
+        if not _check_metric_integrity(val):
             return default
         f = float(val)
-        return f if _check_metric_integrity(f) and f >= 0 else default
+        return f if f >= 0 else default
     except (TypeError, ValueError):
         return default
 
@@ -374,7 +374,7 @@ class SystemContext:
     def get_metric(self, key: str, default: float) -> float:
         """Retorna una métrica numérica validada o el valor por defecto si falla."""
         val = getattr(self, key, None)
-        if not _check_metric_integrity(val if isinstance(val, (int, float)) else -1.0):
+        if not _check_metric_integrity(val):
             return default
         return float(val)
 
@@ -431,7 +431,7 @@ class SystemContext:
             for key, spec in _VALIDATORS.items():
                 if _get_source_value(source, key) is not None:
                     res = self._apply_field(source, key, spec)
-                    if res is not None and math.isfinite(float(res)) and float(res) >= 0:
+                    if res is not None and _check_metric_integrity(res) and float(res) >= 0:
                         object.__setattr__(self, key, res)
                         has_updates = True
             
