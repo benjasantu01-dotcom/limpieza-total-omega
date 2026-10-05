@@ -236,8 +236,8 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
                 # Sanitización defensiva: solo texto imprimible, sin caracteres de control, longitud limitada
                 clean_msg = "".join(c for c in msg if c.isprintable() and c not in "\r\n\t").strip()
                 if clean_msg: findings.append(clean_msg[:200])
-        except Exception:
-            logging.error(f"Error evaluando regla: {rule.area}")
+        except (ValueError, TypeError, AttributeError) as e:
+            logging.error(f"Error evaluando regla en {rule.area}: {e}")
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Procesa el pipeline completo de salud y retorna un objeto HealthResult unificado."""
@@ -250,14 +250,15 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for entry in _PIPELINE:
         try:
+            if entry.scorer is None: continue
             area_ratio = entry.scorer(metrics)
-            # Validación post-scorer: asegurar que sea un ratio válido antes de seguir
             area_ratio = _clamp(area_ratio)
             _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             points = area_ratio * entry.weight
             metric_breakdown[entry.area] = int(round(points))
             accumulated_score += points
-        except Exception:
+        except (ValueError, TypeError, ZeroDivisionError) as e:
+            logging.error(f"Falla crítica en procesamiento de {entry.area}: {e}")
             metric_breakdown[entry.area] = 0
             
     if metrics.quarantined_count > 0:

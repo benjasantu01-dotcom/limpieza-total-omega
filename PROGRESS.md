@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **223** (44.2% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 40
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 84 | 7 | 15 | 2 | 60 |
-| 2026-10-05 | 138 | 15 | 25 | 9 | 149 |
+| 2026-10-04 | 82 | 7 | 13 | 2 | 60 |
+| 2026-10-05 | 141 | 15 | 25 | 9 | 150 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **54**
 - seguridad defensiva: **45**
-- legibilidad y documentación: **42**
+- manejo de errores y validación de entradas: **43**
 - rendimiento: **41**
-- manejo de errores y validación de entradas: **40**
+- legibilidad y documentación: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **21**
-- `quarantine.py`: **20**
+- `healthscore.py`: **22**
 - `scanner.py`: **20**
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
+- `quarantine.py`: **19**
 - `memory.py`: **19**
 - `assistant.py`: **17**
 - `safety.py`: **17**
-- `organizer.py`: **16**
 - `branding.py`: **16**
 - `browser.py`: **16**
-- `duplicates.py`: **15**
+- `duplicates.py`: **16**
+- `organizer.py`: **15**
 - `settings.py`: **13**
 - `startup.py`: **7**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T14:22:37` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` al encapsular la ejecución de los scorers individuales dentro de un bloque `try-except` más específico y añadiendo una validación explícita para prevenir valores `None` o comportamientos inesperados durante el procesamiento del pipeline.
+- `2026-10-05T14:22:13` **duplicates.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `suggest_keeper` y `format_group` agregando validaciones explícitas de tipos y estados, asegurando que si un archivo deja de ser accesible durante la ejecución, la aplicación no interrumpa su flujo ni devuelva resultados inconsistentes.
+- `2026-10-05T14:21:33` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_bytes_to_mb` y `format_size` ante entradas inválidas, y se añadió una validación defensiva en el bucle principal de `_collect_summary_data` para evitar errores de tipo si `walk_files` devolviera valores inconsistentes, alineándose con el enfoque de manejo de errores y validación de entradas.
 - `2026-10-05T14:14:46` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` al verificar explícitamente que la ruta resuelta no sea un directorio existente antes de intentar escribir, evitando errores de permisos o comportamientos inesperados, y se aseguró la integridad de los parámetros en las funciones de dibujo mediante la normalización temprana y validación de `None`.
 - `2026-10-05T14:14:18` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para validar explícitamente tipos de datos inesperados y manejar excepciones durante la recursión, evitando posibles bloqueos al procesar fuentes de datos externas malformadas.
 - `2026-10-05T12:50:39` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en la escritura atómica de archivos añadiendo una validación explícita mediante `is_safe_to_modify` para detectar si la ruta de configuración ha sido alterada a un enlace simbólico o un punto de unión justo antes de la operación de `os.replace`, evitando ataques de tiempo de verificación/tiempo de uso (TOCTOU).
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T12:19:52` **browser.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_file_in_use` eliminando el uso de `open(..., 'rb')` (que requiere permisos de lectura efectivos y puede fallar o activar bloqueos innecesarios) en favor de `ctypes` para intentar abrir el archivo con acceso de solo lectura sin bloqueo (`FILE_SHARE_READ | FILE_SHARE_WRITE`), evitando efectos secundarios sobre archivos en uso.
 - `2026-10-05T12:19:39` **branding.py** (seguridad defensiva): Se reforzó `save_logo_svg` añadiendo una comprobación explícita para evitar la escritura en archivos existentes que contengan flujos de datos alternativos (ADS) o rutas con caracteres no estándar, mitigando riesgos de manipulación de archivos mediante el uso de `path.parts` y validación de extensiones críticas.
 - `2026-10-05T12:18:58` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación estricta de tipos mediante un esquema de "círculo de confianza" (`isinstance` y chequeo de existencia) antes de acceder a los datos de la respuesta JSON, previniendo excepciones maliciosas por estructuras de datos inesperadas.
-- `2026-10-05T12:09:31` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `save` mediante una verificación explícita de `is_safe_to_modify` en el directorio padre, previniendo operaciones de escritura en ubicaciones potencialmente peligrosas o restringidas antes de intentar crear archivos temporales.
-- `2026-10-05T12:09:11` **scanner.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas que contienen caracteres nulos o nombres de dispositivos reservados dentro del bucle de `scan_directory` y `process_entry`, previniendo errores de sistema operativo en operaciones de entrada/salida críticas.
-- `2026-10-05T12:08:39` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas inexistentes en `_get_path_stat_robust` agregando una comprobación explícita de existencia mediante `path.exists()` para evitar excepciones innecesarias en el flujo normal, y se ha fortalecido la integridad al asegurar que `_validate_access_permissions` no sea llamada sobre rutas inexistentes.

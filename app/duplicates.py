@@ -296,7 +296,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     """Genera una tupla de pesos (mtime, length) para priorizar la conservación del archivo más antiguo."""
-    if not path.exists():
+    if not isinstance(path, Path) or not path.exists():
         return None
     try:
         stat = path.stat()
@@ -329,7 +329,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
     lines = [f"{group.count} copias de {mb_t} MB (recuperable: {mb_w} MB)"]
     
     for path in group.paths:
-        if not path.exists():
+        if not isinstance(path, Path) or not path.exists():
             lines.append(f"   [desaparecido] {path}")
         elif not _safe_path_check(path):
             lines.append(f"   [inaccesible] {path}")

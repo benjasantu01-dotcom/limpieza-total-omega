@@ -113,7 +113,7 @@ def _bytes_to_mb(size_bytes: int | float | None) -> float:
         return 0.0
     try:
         return round(float(size_bytes) / MB_SIZE, 2)
-    except (ZeroDivisionError, OverflowError):
+    except (ZeroDivisionError, OverflowError, ValueError):
         return 0.0
 
 
@@ -371,6 +371,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = [] 
     
     for path, size_bytes in walk_files(directory, skip_protected):
+        if not isinstance(size_bytes, int) or size_bytes < 0:
+            continue
         total_bytes += size_bytes
         total_files += 1
         ext_raw = path.suffix
