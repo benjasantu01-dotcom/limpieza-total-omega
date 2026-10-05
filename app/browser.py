@@ -201,11 +201,13 @@ def _should_skip_entry(
         
     return False
 
-def _is_file_in_use(path_obj: Path) -> bool:
+def _is_file_in_use(path_obj: Optional[Path]) -> bool:
     """
     Verifica si un archivo está bloqueado por el sistema o una aplicación.
     Intenta abrir en modo lectura exclusiva para determinar disponibilidad.
     """
+    if not isinstance(path_obj, Path) or not path_obj.is_file():
+        return True
     if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
         return True
     try:
@@ -241,7 +243,6 @@ def _sum_directory_recursive(
                 if _should_skip_entry(entry, kernel32, _IS_JUNCTION_FN):
                     continue
                 try:
-                    # Usamos una variable local para la comprobación del tipo
                     is_dir_entry = entry.is_dir(follow_symlinks=False)
                     st = entry.stat(follow_symlinks=False)
                     

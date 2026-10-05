@@ -318,7 +318,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
     """Retorna los N archivos más grandes encontrados en la ruta raíz."""
     root = _validate_root(directory)
-    if not root: return []
+    if root is None: return []
     data = _collect_summary_data(root, skip_protected, limit=_validate_limit(limit))
     return [FileEntry(p, s) for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True)]
 
@@ -326,7 +326,7 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
 def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
     """Calcula el uso de disco total agrupado por extensión de archivo."""
     root = _validate_root(directory)
-    if not root: return []
+    if root is None: return []
     data = _collect_summary_data(root, skip_protected, limit=0)
     usage_list = [ExtensionUsage(ext, s.total_bytes, s.count) for ext, s in data.ext_stats.items()]
     return heapq.nlargest(_validate_limit(limit), usage_list, key=lambda u: u.size_bytes)
@@ -335,7 +335,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     """Calcula el peso total de las subcarpetas directas (primer nivel) del directorio."""
     root = _validate_root(directory)
-    if not root: return []
+    if root is None: return []
     
     stats: Dict[Path, FolderMetrics] = defaultdict(lambda: FolderMetrics(0, 0))
     
@@ -355,7 +355,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> SizeReport:
     """Calcula la suma de bytes y cantidad de archivos en la ruta especificada."""
     root = _validate_root(directory)
-    if not root: return (0, 0)
+    if root is None: return (0, 0)
     data = _collect_summary_data(root, skip_protected, limit=0)
     return (data.total_bytes, data.total_files)
 

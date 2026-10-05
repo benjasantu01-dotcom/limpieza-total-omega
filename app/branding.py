@@ -399,8 +399,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     if destination is None:
         return None
     try:
-        raw_path = Path(destination)
-        path = raw_path.resolve()
+        path = Path(destination).resolve()
         
         # Validación defensiva: pre-chequeo contra Path Traversal y rutas protegidas
         if is_protected_path(path) or not is_safe_to_modify(path.parent):

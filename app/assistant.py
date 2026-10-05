@@ -426,10 +426,11 @@ class SystemContext:
         has_updates = False
         try:
             for key, spec in _VALIDATORS.items():
-                res = self._apply_field(source, key, spec)
-                if res is not None and math.isfinite(float(res)) and float(res) >= 0:
-                    object.__setattr__(self, key, res)
-                    has_updates = True
+                if _get_source_value(source, key) is not None:
+                    res = self._apply_field(source, key, spec)
+                    if res is not None and math.isfinite(float(res)) and float(res) >= 0:
+                        object.__setattr__(self, key, res)
+                        has_updates = True
             
             if (grade_val := self._clean_grade(_get_source_value(source, "grade"))):
                 object.__setattr__(self, 'grade', grade_val)
@@ -437,11 +438,10 @@ class SystemContext:
             
             if has_updates:
                 object.__setattr__(self, 'analyzed', True)
-                # Invalidar caché de snapshot si cambió algún valor
                 if 'metrics_snapshot' in self.__dict__: del self.__dict__['metrics_snapshot']
                 return True
-        except (AttributeError, TypeError, ValueError) as e:
-            logging.error(f"Falla durante la ingestión de contexto: {str(e)[:50]}")
+        except Exception:
+            pass
         return False
 
 @dataclass
@@ -478,10 +478,14 @@ def _get_source_value(source: Any, key: str) -> Any:
     """Acceso seguro a atributos evitando recursión, inyecciones de clase y acceso a métodos."""
     if not _is_safe_key(key): return None
     try:
-        val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
-        return None if callable(val) or isinstance(val, type) else val
+        if isinstance(source, dict):
+            return source.get(key)
+        if hasattr(source, key):
+            val = getattr(source, key)
+            return None if callable(val) or isinstance(val, type) else val
     except Exception:
-        return None
+        pass
+    return None
 
 def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> SystemContext:
     """Crea un objeto SystemContext a partir de múltiples fuentes de datos de análisis."""
@@ -494,7 +498,6 @@ def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> Syst
 def _generate_safe_context(ctx: SystemContext) -> str:
     """Genera un resumen textual del contexto validando cada métrica estrictamente."""
     res = []
-    # Usar snapshot cacheado para optimización de rendimiento
     snapshot = ctx.metrics_snapshot
     for key, unit, precision in _CONTEXT_SCHEMA:
         val = snapshot.get(key, -1.0)

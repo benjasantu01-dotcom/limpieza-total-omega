@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 20 | 1 | 3 | 3 | 3 |
+| 2026-10-03 | 16 | 1 | 3 | 3 | 3 |
 | 2026-10-04 | 154 | 20 | 31 | 5 | 140 |
-| 2026-10-05 | 45 | 3 | 7 | 2 | 67 |
+| 2026-10-05 | 49 | 3 | 7 | 2 | 67 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **53**
-- legibilidad y documentación: **49**
+- legibilidad y documentación: **45**
 - seguridad defensiva: **43**
 - rendimiento: **42**
-- manejo de errores y validación de entradas: **32**
+- manejo de errores y validación de entradas: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
+- `diskreport.py`: **20**
 - `healthscore.py`: **20**
-- `diskreport.py`: **19**
-- `organizer.py`: **17**
+- `quarantine.py`: **19**
+- `assistant.py`: **18**
 - `safety.py`: **17**
-- `assistant.py`: **17**
 - `duplicates.py`: **16**
-- `memory.py`: **15**
+- `organizer.py`: **16**
 - `scanner.py`: **15**
 - `settings.py`: **15**
-- `browser.py`: **14**
+- `browser.py`: **15**
+- `memory.py`: **14**
+- `branding.py`: **13**
 - `startup.py`: **12**
-- `branding.py`: **12**
-- `main.py`: **10**
+- `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T05:22:13` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones públicas `largest_files`, `usage_by_extension`, `largest_folders` y `total_size` añadiendo validaciones preventivas ante entradas `None` o rutas no existentes, evitando propagar errores inesperados hacia la interfaz.
+- `2026-10-05T05:21:59` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_in_use` y `directory_size` validando explícitamente los parámetros de entrada y normalizando el manejo de excepciones para evitar errores de tipo o rutas nulas que podrían interrumpir el escaneo de forma inesperada.
+- `2026-10-05T05:21:34` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save_logo_svg` y `draw_ring` mediante la validación explícita de `None` y valores fuera de rango antes de procesarlos, asegurando que las funciones no fallen silenciosamente ni con errores no controlados.
+- `2026-10-05T05:20:55` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_source_value` y `ingest` para prevenir excepciones ante datos malformados o inesperados, asegurando que `ingest` valide explícitamente la presencia de las claves antes de operar y que el acceso a datos sea defensivo frente a tipos de entrada no soportados.
 - `2026-10-05T03:58:24` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_load_impl` y `save` eliminando el uso de `os.fsync` y `fcntl` en rutas que no han sido verificadas contra ataques de tiempo de verificación/tiempo de uso (TOCTOU) de manera estricta, asegurando que `ensure_safe_to_modify` se aplique sobre la ruta absoluta resuelta antes de cualquier operación de I/O crítica.
 - `2026-10-05T03:48:16` **quarantine.py** (seguridad defensiva): Se introdujo `_check_path_for_junctions` como una capa de seguridad defensiva explícita para detectar y rechazar puntos de reparse (Junctions/Reparse Points) tanto en la ruta origen como en la de destino, reforzando la protección contra ataques de salto de directorio o recursividad no deseada mediante llamadas directas a `ctypes` en Windows.
 - `2026-10-05T03:39:57` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_get_process_path` integrando `is_protected_path` de forma explícita antes de cualquier resolución de ruta, asegurando que solo se validen rutas que cumplan con la política de seguridad del proyecto antes de procesar atributos.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T03:17:23` **scanner.py** (robustez ante casos límite): Mejoré la resiliencia del motor de escaneo añadiendo un manejo explícito de rutas que contienen caracteres no interpretables por el sistema operativo (UnicodeDecodeError y rutas malformadas) dentro del bucle de `os.scandir`, evitando que una única entrada corrupta detenga el proceso completo de análisis.
 - `2026-10-05T03:10:23` **safety.py** (robustez ante casos límite): Se introdujo una verificación adicional en `ensure_safe_to_modify` para detectar y bloquear el uso de rutas que contienen puntos de unión (`junctions`) o redirecciones NTFS dentro de la estructura de la ruta, utilizando `GetFinalPathNameByHandleW` de forma más rigurosa para evitar que las operaciones de manipulación sigan redirecciones que escapen del sandbox del usuario.
 - `2026-10-05T03:07:59` **quarantine.py** (robustez ante casos límite): Se introdujo una verificación de "path traversal" en `_validate_quarantine_path` mediante la validación del nombre base del archivo contra el nombre almacenado, previniendo que un manifiesto manipulado intente acceder a archivos fuera del sandbox usando rutas relativas o secuencias de escape.
-- `2026-10-05T03:07:13` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para que maneje excepciones de acceso de manera más granular (específicamente `BlockingIOError`), evitando que un archivo bloqueado por el SO detenga innecesariamente la ejecución, y se ha añadido una validación de `os.DirEntry.is_symlink` robusta en `_should_scan_directory` para prevenir errores en accesos a rutas virtuales.
-- `2026-10-05T03:02:10` **memory.py** (robustez ante casos límite): Mejora la robustez en `_extract_process_info` para manejar casos límite donde el comando `Get-Process` retorna cadenas con caracteres inesperados o formatos de coma malinterpretados, evitando excepciones que detendrían la recolección de métricas.
-- `2026-10-05T02:58:18` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `SystemMetrics` ante casos límite mediante la validación explícita de `is_finite` antes de procesar el cálculo, garantizando que estados intermedios del sistema no propaguen valores numéricos erróneos a lo largo del pipeline.
-- `2026-10-05T02:48:29` **diskreport.py** (robustez ante casos límite): Se mejora la robustez de `walk_files` y `_collect_summary_data` ante casos de rutas extremadamente largas o inválidas que podrían interrumpir el flujo de enumeración, asegurando que `os.scandir` se maneje dentro de un contexto protegido y que la conversión de `Path` sea siempre segura para el sistema operativo.
