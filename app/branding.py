@@ -405,6 +405,10 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         if is_protected_path(path) or not is_safe_to_modify(path.parent):
             return None
         
+        # Evitar crear archivos en rutas que no sean directorios válidos o persistibles
+        if path.exists() and not path.is_file():
+            return None
+        
         if not path.parent.exists():
             path.parent.mkdir(parents=True, exist_ok=True)
             

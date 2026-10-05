@@ -404,7 +404,7 @@ class SystemContext:
             float_val = float(val)
             if not _is_metric_within_bounds(float_val, spec): return None
             return spec.cast_func(float_val)
-        except (TypeError, ValueError):
+        except (TypeError, ValueError, OverflowError):
             return None
 
     def _clean_grade(self, val: Any) -> str:
@@ -440,7 +440,7 @@ class SystemContext:
                 object.__setattr__(self, 'analyzed', True)
                 if 'metrics_snapshot' in self.__dict__: del self.__dict__['metrics_snapshot']
                 return True
-        except Exception:
+        except (Exception, OverflowError):
             pass
         return False
 

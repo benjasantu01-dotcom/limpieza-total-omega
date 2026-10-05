@@ -207,9 +207,7 @@ def _should_skip_entry(
 def _is_file_in_use(path_obj: Optional[Path]) -> bool:
     """
     Determina si un archivo está bloqueado por otro proceso intentando abrirlo.
-    
-    Retorna True si el archivo no existe, está protegido o si el SO deniega
-    el acceso debido a un bloqueo de escritura/lectura exclusiva.
+    Se utiliza un modo de apertura de lectura exclusivo para detectar bloqueos sin modificar el archivo.
     """
     if not isinstance(path_obj, Path) or not path_obj.is_file():
         return True
@@ -219,6 +217,7 @@ def _is_file_in_use(path_obj: Optional[Path]) -> bool:
         with open(path_obj, 'rb'):
             return False
     except (OSError, PermissionError):
+        # El archivo está en uso o inaccesible, lo cual es normal en cachés activas.
         return True
 
 def _sum_directory_recursive(
@@ -259,6 +258,7 @@ def _sum_directory_recursive(
                         st = entry.stat(follow_symlinks=False)
                         if st.st_ino not in visited_inodes:
                             visited_inodes.add(st.st_ino)
+                            # Intentamos obtener tamaño; si está bloqueado, lo ignoramos para la suma
                             if not _is_file_in_use(Path(entry.path)):
                                 total_bytes += st.st_size
                 except (OSError, PermissionError):
