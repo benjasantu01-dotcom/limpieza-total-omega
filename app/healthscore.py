@@ -221,14 +221,16 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     """Ejecuta un set de reglas de recomendación basándose en el ratio normalizado obtenido."""
     if not isinstance(rules, tuple): return
     for rule in rules:
+        if not isinstance(rule, RecommendationRule): continue
         try:
-            if not isinstance(rule, RecommendationRule): continue
             if rule.check(metrics, normalized_ratio):
                 msg = str(rule.message_factory(metrics))
                 clean_msg = "".join(c for c in msg if c.isprintable() and c not in "\r\n\t").strip()
                 if clean_msg: findings.append(clean_msg[:200])
+        except (ValueError, TypeError, ZeroDivisionError) as e:
+            logging.error(f"Error evaluando regla en {rule.area}: {e}")
         except Exception as e:
-            logging.error(f"Error evaluando regla en área {rule.area if isinstance(rule, RecommendationRule) else 'unknown'}: {e}")
+            logging.error(f"Error inesperado en regla {rule.area}: {e}")
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Procesa el pipeline completo de salud y retorna un objeto HealthResult unificado."""

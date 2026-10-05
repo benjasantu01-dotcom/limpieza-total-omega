@@ -79,7 +79,7 @@ class JunkFile:
 
     def __post_init__(self) -> None:
         try:
-            if self.path.is_absolute():
+            if isinstance(self.path, Path) and self.path.is_absolute():
                 self.path = self.path.resolve()
         except (OSError, RuntimeError):
             pass
@@ -96,7 +96,7 @@ class JunkFile:
 
 def is_valid_junk_extension(filename: str) -> bool:
     """Valida si el sufijo del archivo pertenece a la lista definida en JUNK_EXTENSIONS."""
-    if not filename: return False
+    if not isinstance(filename, str) or not filename: return False
     return filename.lower().endswith(JUNK_EXT_TUPLE)
 
 def _get_win_attributes(entry: os.DirEntry) -> int:
@@ -124,7 +124,7 @@ def _is_unc_path(path: Path) -> bool:
     Detecta rutas de red (Universal Naming Convention) que requieren manejo especial.
     Las rutas UNC suelen ser inestables para operaciones de movimiento bloqueantes.
     """
-    if path is None: return True
+    if not isinstance(path, Path): return True
     try:
         p_str = str(path.absolute())
         return p_str.startswith(("\\\\", "//"))
@@ -146,24 +146,23 @@ def _generate_unique_target(target: Path) -> Path:
 
 def _is_allowed_directory(name: str) -> bool:
     """Verifica que el nombre de la carpeta no figure en SYSTEM_FOLDER_BLOCKLIST."""
-    if not name: return False
+    if not isinstance(name, str) or not name: return False
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _is_file_locked(path: Path) -> bool:
     """
     Verifica si el sistema permite acceso de lectura/escritura mediante intento de apertura.
-    Se utiliza os.access para una comprobación ligera y apertura exclusiva para validar candados.
     """
     if not isinstance(path, Path) or not path.is_file():
         return True
     
-    # Comprobar primero si tenemos permisos básicos de escritura antes de intentar abrir
-    if not os.access(path, os.R_OK | os.W_OK):
+    # Comprobar si tenemos permisos básicos de lectura
+    if not os.access(path, os.R_OK):
         return True
     
     try:
-        # Intento de apertura en modo lectura/escritura binaria
-        with open(path, "rb+") as f:
+        # Intentamos abrir solo en modo lectura para verificar bloqueo sin modificar el archivo
+        with open(path, "rb") as f:
             return False
     except (PermissionError, OSError, IOError):
         return True
@@ -173,7 +172,7 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
     Previene que una operación de movimiento resulte en un bucle lógico o recursivo.
     Verifica si el destino es un subdirectorio del origen o viceversa mediante `commonpath`.
     """
-    if src is None or dest is None: return True
+    if not isinstance(src, Path) or not isinstance(dest, Path): return True
     try:
         s = src.resolve(strict=False)
         d = dest.resolve(strict=False)
@@ -187,7 +186,7 @@ def _has_forbidden_chars(path: Path) -> bool:
     Valida la ausencia de caracteres reservados (NTFS/FAT) que corromperían la ruta.
     Bloquea rutas que contengan caracteres nulos o delimitadores de consola.
     """
-    if path is None: return True
+    if not isinstance(path, Path): return True
     path_str = str(path).lower()
     return any(c in path_str for c in ["<", ">", "|", "\0"])
 
@@ -196,7 +195,7 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
     Realiza validación de integridad para evitar colisiones de seguridad.
     Verifica restricciones de red (UNC), longitud de ruta absoluta y protección del sistema.
     """
-    if src is None or dest is None: return False
+    if not isinstance(src, Path) or not isinstance(dest, Path): return False
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     if len(str(src)) > MAX_PATH_LENGTH or len(str(dest)) > MAX_PATH_LENGTH: return False
     return not (is_protected_path(src) or is_protected_path(dest))
@@ -204,15 +203,11 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Auditoría de pre-condiciones de seguridad antes de cualquier escritura en disco.
-    - No permite archivos críticos (pagefile.sys, etc).
-    - Evita enlaces simbólicos o hard links (st_nlink > 1) para prevenir modificaciones externas.
-    - Garantiza atomicidad verificando que src y dest residan en el mismo sistema de archivos.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     try:
         if not src.exists() or src.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         st = src.lstat()
-        # st_nlink > 1 significa que el archivo tiene más de un nombre apuntando al mismo nodo
         if not src.is_file() or (st.st_mode & 0o170000 == 0o120000) or st.st_nlink > 1: return False
         if not is_safe_to_modify(src) or not _validate_path_security(src, dest): return False
         
@@ -222,7 +217,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if _is_recursive_violation(src, dest): return False
         if _is_file_locked(src): return False
         
-        # Validar mismo dispositivo para asegurar atomicidad y prevenir errores de copia entre volúmenes
+        # Validar mismo dispositivo para asegurar atomicidad
         if src.resolve().stat().st_dev != target_dir.resolve().stat().st_dev: return False
         
         return True
@@ -232,7 +227,6 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> bool:
     """
     Filtra directorios aptos para escaneo, utilizando caché para evitar chequeos redundantes.
-    Descarta rutas de sistema, puntos de reparse (junctions) y rutas protegidas por `safety.py`.
     """
     if entry is None or not _is_allowed_directory(entry.name) or _is_junction(entry): return False
     if bool(_get_win_attributes(entry) & WIN_ATTR_SYSTEM): return False
@@ -246,12 +240,11 @@ def _is_valid_junk_entry(name: str, stats: os.stat_result, now_ts: float) -> boo
     """Verifica si el archivo cumple con las heurísticas de tamaño, fecha y extensión."""
     return (0 <= stats.st_size < MAX_FILE_SIZE_BYTES and 
             stats.st_mtime <= now_ts + 3600 and
-            name.lower().endswith(JUNK_EXT_TUPLE))
+            is_valid_junk_extension(name))
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
     """
     Recorrido recursivo optimizado utilizando os.scandir para minimizar llamadas al SO.
-    Implementa profundidad máxima de 50 niveles para prevenir desbordamientos de pila.
     """
     if depth > 50: return
     try:
@@ -286,7 +279,6 @@ def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[Ju
         if not d: continue
         try:
             p = Path(d).expanduser()
-            # Validar existencia inicial de forma rápida
             if p.is_dir() and not _is_unc_path(p) and is_safe_to_modify(p):
                 _process_directory(p, found, 0, protected_cache, visited)
         except (OSError, RuntimeError):
@@ -310,22 +302,19 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             dest_base.mkdir(parents=True, exist_ok=True)
         dest_res = dest_base.resolve()
         if is_protected_path(dest_res): return None
-        # Validación de seguridad previa a la creación de contenido en el destino
         ensure_safe_to_modify(dest_res)
     except (OSError, RuntimeError, PermissionError) as e:
         logger.error(f"Fallo en inicialización de carpeta de revisión: {e}")
         return None
     
     for junk_file in files:
-        if junk_file is None or not isinstance(junk_file.path, Path): continue
+        if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): continue
         try:
-            # Validaciones lógicas booleanas previas a la acción destructiva
             if not junk_file.path.exists() or not is_safe_to_modify(junk_file.path): continue
             if not _is_safe_for_disk_op(junk_file.path, dest_res): continue
             
             target_path = _can_move_file(junk_file, dest_res)
             if target_path:
-                # El ensure_safe_to_modify aquí actúa como guardia final exigida por arquitectura
                 ensure_safe_to_modify(junk_file.path)
                 shutil.move(str(junk_file.path), str(target_path))
         except (OSError, shutil.Error, PermissionError) as e:
@@ -335,7 +324,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """Verifica disponibilidad de espacio en disco y genera una ruta única destino."""
-    if junk_file is None or dest_base is None or not dest_base.exists(): return None
+    if not isinstance(junk_file, JunkFile) or not isinstance(dest_base, Path) or not dest_base.exists(): return None
     try:
         usage = shutil.disk_usage(dest_base.anchor)
         if usage.free < (junk_file.size_bytes + MIN_FREE_SPACE_BYTES): return None

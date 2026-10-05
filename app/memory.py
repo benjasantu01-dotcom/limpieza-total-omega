@@ -190,19 +190,17 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     
     name, pid_str, ws_str = parts
     clean_pid = "".join(filter(str.isdigit, pid_str))
-    if not clean_pid: return None
     
     try:
-        pid = int(clean_pid)
-        # Extraer solo dígitos para evitar basura en la conversión
+        pid = int(clean_pid) if clean_pid else -1
         raw_ws = "".join(filter(str.isdigit, ws_str))
         ws = int(raw_ws) if raw_ws else 0
     except ValueError:
         return None
         
-    if pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid(): return None
+    if pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid() or pid <= 0: return None
     
-    if pid > 0 and 0 < ws < MAX_VALID_PROCESS_MEM:
+    if 0 < ws < MAX_VALID_PROCESS_MEM:
         return ProcessMemory(name.strip("'\" "), pid, BytesValue(ws))
     return None
 
@@ -325,8 +323,11 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """Solicita al sistema operativo la liberación de memoria no activa del proceso."""
     if not _is_windows: return False, "Solo soportado en Windows."
-    try: target_pid = int(pid)
-    except (ValueError, TypeError): return False, "PID proporcionado no es un número válido."
+    
+    try:
+        target_pid = int(pid)
+    except (ValueError, TypeError):
+        return False, "PID proporcionado no es un número válido."
     
     is_safe, error_msg = _is_safe_to_trim(target_pid)
     if not is_safe: return False, error_msg or "Verificación de seguridad fallida."
@@ -342,4 +343,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             error_code = ctypes.get_last_error()
             return False, f"El sistema rechazó la solicitud (código {error_code})."
         return True, f"Working set liberado. {TRIM_WARNING}"
-    finally: kernel32.CloseHandle(proc_handle)
+    finally:
+        kernel32.CloseHandle(proc_handle)

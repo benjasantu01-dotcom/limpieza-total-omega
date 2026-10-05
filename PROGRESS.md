@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Mejoras aceptadas: **214** (42.5% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 58 | 2 | 11 | 9 | 50 |
+| 2026-10-03 | 56 | 2 | 9 | 9 | 50 |
 | 2026-10-04 | 154 | 20 | 31 | 5 | 140 |
-| 2026-10-05 | 1 | 0 | 0 | 0 | 23 |
+| 2026-10-05 | 4 | 0 | 0 | 0 | 24 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **50**
-- legibilidad y documentación: **46**
 - seguridad defensiva: **44**
+- legibilidad y documentación: **44**
 - rendimiento: **38**
-- manejo de errores y validación de entradas: **35**
+- manejo de errores y validación de entradas: **38**
 
 ## Mejoras aceptadas por archivo
 
+- `healthscore.py`: **20**
 - `quarantine.py`: **20**
 - `assistant.py`: **19**
-- `healthscore.py`: **19**
+- `organizer.py`: **18**
 - `diskreport.py`: **18**
-- `organizer.py`: **17**
 - `safety.py`: **16**
-- `scanner.py`: **15**
 - `duplicates.py`: **15**
+- `memory.py`: **14**
+- `scanner.py`: **14**
 - `browser.py`: **14**
-- `memory.py`: **13**
 - `branding.py`: **13**
-- `startup.py`: **12**
 - `settings.py`: **12**
+- `startup.py`: **11**
 - `main.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T01:10:17` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_locked` para evitar errores de excepción innecesarios durante el escaneo y agregué validación de tipo para los parámetros de entrada en funciones críticas, asegurando que el flujo no se detenga ante objetos inesperados.
+- `2026-10-05T01:10:05` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_process_info` y `trim_working_set` capturando errores de conversión y estado de manera explícita, asegurando que valores inválidos o procesos inaccesibles no interrumpan el flujo de datos.
+- `2026-10-05T01:04:57` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.validate` y `_evaluate_rules` mediante la validación proactiva de tipos y el manejo defensivo de errores, evitando que valores inesperados o malformados interrumpan el cálculo del puntaje.
 - `2026-10-05T00:47:49` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingestión de datos en `SystemContext.ingest` capturando errores de forma granular y validando que el valor resultante de la conversión (`float_val`) pase `math.isfinite` antes de actualizar el estado, evitando así la propagación de valores corruptos o `NaN` que podrían romper cálculos posteriores en los handlers.
 - `2026-10-04T14:23:11` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en `_is_file_secure_to_read` para incluir una verificación de permisos más estricta (`stat.S_IWOTH` y `stat.S_IWGRP`), evitando así que el archivo de configuración sea legible o modificable por otros usuarios en sistemas compartidos, alineándose con el enfoque de seguridad defensiva.
 - `2026-10-04T14:22:38` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo implementando una validación de normalización de ruta antes de procesar cualquier entrada en `process_entry`, asegurando que `entry.path` sea tratado como una ruta absoluta y canónica para evitar vulnerabilidades de "path traversal" o inconsistencias por rutas relativas o mal formadas dentro del bucle de `os.scandir`.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-04T13:52:53` **branding.py** (seguridad defensiva): Mejoré la seguridad en `save_logo_svg` utilizando `is_protected_path` como pre-filtro antes de cualquier operación de escritura, asegurando que la ruta no sea parte de los directorios críticos del sistema.
 - `2026-10-04T13:52:18` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva de `assistant.py` mediante la implementación de `_is_safe_payload_structure` para validar que el contenido del prompt enviado a la API externa no contenga estructuras de datos anidadas profundas o tipos de datos maliciosos, protegiendo así contra ataques de denegación de servicio o manipulación de la estructura de la consulta.
 - `2026-10-04T13:43:19` **startup.py** (robustez ante casos límite): Se mejora la robustez de `StartupEntry._resolve_and_cache_path` añadiendo un bloque `try-except` específico para manejar casos donde `Path.resolve()` falla debido a rutas extremadamente largas o inválidas (limitación común en Windows), evitando que el escáner se detenga o lance excepciones no capturadas ante archivos inexistentes o bloqueados.
-- `2026-10-04T13:42:35` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la carga de archivos mediante la implementación de `os.fsdecode` en el iterador `os.scandir` para prevenir errores de decodificación de caracteres malformados en sistemas de archivos (UnicodeDecodeError), garantizando que el escáner no aborte ante nombres de archivo exóticos.
-- `2026-10-04T13:42:08` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `safety.py` ante errores de sistema de archivos (como estados de carrera o acceso denegado durante la creación de handles) envolviendo la consulta de `GetVolumeInformationW` en un manejo de excepciones más granular y asegurando que `_is_volume_readonly` y `_is_volume_compressed_or_encrypted` retornen estados seguros (`False`) ante fallos inesperados de la API de Windows.
-- `2026-10-04T13:32:53` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de concurrencia mediante `msvcrt` (en Windows) o `fcntl` (en POSIX) dentro de `_check_isolation_safety` y `purge_item` para asegurar que el archivo no esté siendo bloqueado o utilizado por otros procesos, mitigando riesgos de errores de I/O al intentar mover o borrar archivos que el sistema pueda estar bloqueando temporalmente.
