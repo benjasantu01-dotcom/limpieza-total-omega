@@ -736,13 +736,12 @@ def quarantine_file(
     p_source = _validate_input_path(source)
     
     try:
-        st_info = p_source.stat()
+        # Captura de estado inicial para validación TOCTOU
+        st_info = _check_io_error_context(p_source.stat)
     except OSError as e:
         raise RuntimeError(f"Falla al verificar estado del archivo origen: {e}")
         
     source_path = _validate_source_for_quarantine(p_source)
-    
-    original_size = st_info.st_size
     dest_dir = quarantine_dir(base)
     
     if _is_within_quarantine_sandbox(source_path, dest_dir.resolve()):
@@ -755,7 +754,7 @@ def quarantine_file(
         raise FileExistsError("Colisión: el nombre de destino ya existe en la cuarentena.")
 
     try:
-        file_hash, file_inode = _atomic_isolate_file(source_path, destination, original_size)
+        file_hash, file_inode = _atomic_isolate_file(source_path, destination, st_info.st_size)
         
         if not destination.exists() or _get_sha256(destination) != file_hash:
             raise RuntimeError("Falla crítica: el destino no es coherente tras la copia.")
@@ -766,7 +765,7 @@ def quarantine_file(
             except OSError as e:
                 raise RuntimeError(f"Aislamiento exitoso, pero falla al remover origen: {e}")
                 
-        item = _register_quarantine_item(destination, source_path, file_hash, file_inode, reason, original_size, base)
+        item = _register_quarantine_item(destination, source_path, file_hash, file_inode, reason, st_info.st_size, base)
         _verify_transaction_integrity(item, destination)
         return item
     except Exception as e:

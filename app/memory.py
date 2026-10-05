@@ -344,8 +344,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     kernel32 = ctypes.windll.kernel32
     proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
     if not proc_handle:
-        err = ctypes.get_last_error()
-        return False, f"No se pudo acceder al proceso (código {err})."
+        return False, f"No se pudo acceder al proceso (código {ctypes.get_last_error()})."
     try:
         if psapi.EmptyWorkingSet(proc_handle) == 0:
             error_code = ctypes.get_last_error()

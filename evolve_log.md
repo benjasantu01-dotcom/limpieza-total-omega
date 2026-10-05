@@ -716,3 +716,11 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-05T10:00:19` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-10-05T10:00:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T10:00:19` Corrida terminada. Total usado hoy: 236.
+- `2026-10-05T10:04:35` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-10-05T10:05:10` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` y `_get_process_path` validando explícitamente el valor de retorno de `OpenProcess` para evitar llamadas con handles nulos, reemplazando el chequeo implícito de punteros por una verificación de éxito conforme a la documentación de Windows API.
+- `2026-10-05T10:05:44` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). He mejorado la robustez de `_is_file_locked` para evitar falsos positivos y errores inesperados al capturar excepciones específicas (como `FileNotFoundError`) y validar el estado de `os.access` antes de intentar operaciones de lectura, siguiendo el enfoque de manejo de errores defensivo.
+- `2026-10-05T10:05:44` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T10:06:35` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` al unificar la validación de estados de archivo mediante un chequeo temprano de errores (`st_info` vs `source_path.stat()`) y reemplacé la verificación de colisiones genérica por un manejo explícito de excepciones, asegurando que la operación de aislamiento sea atómica y auditable ante fallos inesperados.
+- `2026-10-05T10:06:40` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-10-05T10:06:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T10:06:40` Corrida terminada. Total usado hoy: 240.
