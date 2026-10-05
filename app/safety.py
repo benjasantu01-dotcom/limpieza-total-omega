@@ -466,7 +466,9 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
             if rule.predicate(path, current_stat, sd):
                 code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
                 raise UnsafePathError(f"Integridad comprometida: {rule.reason.name}", code)
-    except (AttributeError, OSError, TypeError) as e:
+    except UnsafePathError:
+        raise
+    except Exception as e:
         raise UnsafePathError(f"Error evaluando reglas: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 def _get_path_stat_robust(path: Path) -> os.stat_result:
@@ -776,8 +778,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         return p
     except UnsafePathError:
         raise
-    except Exception as e:
+    except (OSError, AttributeError, RuntimeError, ValueError, TypeError) as e:
         raise UnsafePathError(f"Validación fallida inesperadamente: {e}", SafetyValidationErrorCode.IO_ERROR)
+    except Exception as e:
+        raise UnsafePathError(f"Error crítico durante la validación: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> bool:
     """Verifica si una ruta es segura mediante un booleano (útil para filtrado en bucles)."""

@@ -71,8 +71,10 @@ SYSTEM32_LOWER: Final[str] = "system32"
 
 def _is_readable(path: Path) -> bool:
     """Verifica si el archivo existe y posee permisos de lectura."""
+    if not isinstance(path, Path):
+        return False
     try:
-        return path.exists() and path.is_file() and os.access(path, os.R_OK)
+        return path.is_file() and os.access(path, os.R_OK)
     except (OSError, PermissionError, ValueError, AttributeError):
         return False
 
@@ -86,6 +88,8 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 
 def _get_file_size(path: Path) -> int:
     """Obtiene el tamaño del archivo con manejo robusto de excepciones de concurrencia."""
+    if not isinstance(path, Path):
+        return -1
     try:
         size = path.stat().st_size
         return int(size) if size >= 0 else -1
