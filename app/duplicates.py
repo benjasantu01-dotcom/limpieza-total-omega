@@ -234,12 +234,17 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     while stack:
         current_dir, depth = stack.pop()
         
-        if current_dir in visited_dirs or depth > MAX_RECURSION_DEPTH:
+        try:
+            resolved_dir = current_dir.resolve()
+        except OSError:
             continue
-        visited_dirs.add(current_dir)
+
+        if resolved_dir in visited_dirs or depth > MAX_RECURSION_DEPTH:
+            continue
+        visited_dirs.add(resolved_dir)
             
         try:
-            with os.scandir(current_dir) as iterator:
+            with os.scandir(resolved_dir) as iterator:
                 for entry in iterator:
                     try:
                         p_entry = Path(entry.path)

@@ -129,21 +129,17 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     Valida que una ruta sea un directorio existente y seguro para ser escaneado.
     
     Comprueba existencia física, restricciones de seguridad mediante `is_protected_path`
-    y permisos de lectura efectivos. Usa strict=False en resolve para evitar errores 
-    por componentes inexistentes en la cadena, pero verifica la integridad final.
+    y permisos de lectura efectivos.
     """
     if directory is None:
         return None
     try:
-        path_str = os.fspath(directory)
-        if len(path_str) > 2048: return None
-        # Usamos resolve() con symlinks desactivados conceptualmente mediante lógica posterior
-        raw_path = Path(path_str).resolve()
-        if not raw_path.is_dir():
+        p = Path(directory).resolve()
+        if not p.is_dir():
             return None
-        if is_protected_path(raw_path) or not os.access(raw_path, os.R_OK):
+        if is_protected_path(p) or not os.access(p, os.R_OK):
             return None
-        return raw_path
+        return p
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
         return None
 
@@ -160,12 +156,11 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
             return True
         
         # Validación de confinamiento estricto contra el root_path
-        entry_path = Path(entry.path).resolve(strict=False)
-        if root_path not in entry_path.parents and entry_path != root_path:
+        entry_path = Path(entry.path).resolve()
+        if not str(entry_path).startswith(str(root_path)):
             return True
             
         try:
-            # Chequeo explícito de tipo evitando seguir enlaces simbólicos
             st = entry.stat(follow_symlinks=False)
             is_reparse = (st.st_file_attributes & 0x0400) if os.name == 'nt' else entry.is_symlink()
             if is_reparse:
@@ -284,13 +279,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre el árbol de directorios de forma iterativa (no recursiva) para evitar desbordamientos de pila.
-
-    Args:
-        directory: La ruta raíz desde la cual iniciar el escaneo.
-        skip_protected: Si es True, filtra automáticamente archivos/carpetas según `safety.py`.
-
-    Yields:
-        Tuplas conteniendo la ruta `Path` del archivo y su tamaño en bytes.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -381,8 +369,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     
     get_stats = ext_stats.__getitem__
     
-    for path, size_bytes in walk_files(directory, skip_protected):
-        try:
+    try:
+        for path, size_bytes in walk_files(directory, skip_protected):
             total_bytes += size_bytes
             total_files += 1
             ext_raw = path.suffix
@@ -396,8 +384,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
                     heapq.heappush(top_heap, (size_bytes, path))
                 elif size_bytes > top_heap[0][0]: 
                     heapq.heapreplace(top_heap, (size_bytes, path))
-        except (OSError, PermissionError, AttributeError):
-            continue
+    except (OSError, PermissionError, AttributeError):
+        pass
                 
     return SummaryData(total_bytes, total_files, dict(ext_stats), top_heap)
 

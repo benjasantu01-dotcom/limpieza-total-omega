@@ -1092,3 +1092,11 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-05T03:19:06` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endurece la validación de entrada en `_is_safe_path_input` añadiendo un chequeo explícito para detectar caracteres de escape ANSI o de control maliciosos antes de que el texto llegue a ser procesado por los motores, protegiendo contra posibles inyecciones en la UI.
 - `2026-10-05T03:19:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T03:19:06` Corrida terminada. Total usado hoy: 80.
+- `2026-10-05T03:27:04` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-10-05T03:27:43` ➖ Sin cambios en branding.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia de la ruta mediante `Path.exists()` antes de realizar la escritura, evitando posibles errores de E/S o efectos secundarios inesperados en sistemas con permisos restrictivos.
+- `2026-10-05T03:27:43` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T03:28:16` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-10-05T03:28:46` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_validate_root` y `_collect_summary_data` ante posibles errores de resolución de rutas y acceso concurrente, reforzando la seguridad defensiva al asegurar que la operación no propague excepciones ni trabaje sobre enlaces simbólicos maliciosos, incluso en condiciones de carrera.
+- `2026-10-05T03:29:00` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_collect_candidates` mediante la inclusión de un chequeo estricto en la resolución de rutas y el uso de `st_ino` (inode) de forma más segura, evitando el procesamiento redundante de rutas vinculadas simbólicamente o puntos de montaje que podrían causar ciclos infinitos o lectura de archivos fuera de los límites permitidos.
+- `2026-10-05T03:29:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T03:29:00` Corrida terminada. Total usado hoy: 84.
