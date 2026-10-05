@@ -144,19 +144,19 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
 
 
-def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
+def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     """
     Evalúa si un `os.DirEntry` debe ser omitido por criterios de seguridad o integridad.
-    
-    Verifica caracteres sospechosos, límites de confinamiento, reparse points (Junctions/Symlinks)
-    y políticas de protección definidas en `safety.py`.
     """
     try:
         if any(c in entry.name for c in SUSPICIOUS_CHARS) or '\0' in entry.name:
             return True
         
-        # Validación de confinamiento estricto contra el root_path
-        if not entry.path.startswith(root_path_str):
+        # Validar confinamiento estricto: la ruta real debe estar bajo el root_path
+        entry_path = Path(entry.path).resolve()
+        try:
+            entry_path.relative_to(root_path)
+        except ValueError:
             return True
             
         try:
@@ -278,16 +278,12 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre el árbol de directorios de forma iterativa (no recursiva) para evitar desbordamientos de pila.
-    
-    Emplea un stack local para manejar la profundidad, registrando inodos visitados para prevenir
-    ciclos infinitos provocados por enlaces simbólicos o puntos de reanálisis.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
     
-    root_str = str(root_path)
     visited_inodes: set[Inode] = set()
-    stack: List[str] = [root_str]
+    stack: List[Path] = [root_path]
     
     while stack:
         current_dir = stack.pop()
@@ -295,7 +291,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if skip_protected and _is_excluded_path(entry, root_str):
+                        if skip_protected and _is_excluded_path(entry, root_path):
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
@@ -304,7 +300,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 inode = (st.st_dev, st.st_ino)
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
-                                    stack.append(entry.path)
+                                    stack.append(Path(entry.path))
                             except (OSError, PermissionError): continue
                         elif entry.is_file(follow_symlinks=False):
                             try:
