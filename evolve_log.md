@@ -447,3 +447,10 @@ FAILED evolve/tests/test_modules.py::test_partial_hash_only_reads_the_beginning 
 - `2026-10-05T08:06:16` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_get_process_path` validando que la ruta del ejecutable no sea una unión de directorios (reparse point) o una ruta protegida antes de procesar cualquier información sobre el mismo, integrando así una capa adicional de protección contra el acceso a rutas sensibles del sistema.
 - `2026-10-05T08:06:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T08:06:16` Corrida terminada. Total usado hoy: 192.
+- `2026-10-05T08:12:20` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-10-05T08:12:51` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-10-05T08:13:39` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad en `_is_file_exclusive` implementando un chequeo de bloqueo más robusto para Windows mediante `ctypes` (`LockFileEx`), garantizando que no se pueda manipular un archivo si el SO tiene un handle de escritura sobre él, eliminando la dependencia de `msvcrt.locking` que es insuficiente para archivos abiertos por procesos del sistema.
+- `2026-10-05T08:14:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-10-05T08:14:34` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido un chequeo adicional en `_is_kernel_managed` para prevenir de forma explícita que la aplicación interactúe con el archivo `pagefile.sys` (archivo de paginación) mediante la inclusión de una validación específica, protegiendo así la integridad del sistema ante posibles intentos de borrado o movimiento de archivos críticos en uso persistente por el kernel.
+- `2026-10-05T08:14:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T08:14:34` Corrida terminada. Total usado hoy: 196.

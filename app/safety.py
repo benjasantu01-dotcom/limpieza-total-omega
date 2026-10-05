@@ -391,7 +391,8 @@ def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
 def _is_kernel_managed(path: Path) -> bool:
     """Identifica archivos del núcleo o del sistema bloqueados permanentemente por el SO."""
     p_str = str(path).lower()
-    if any(blocked in p_str for blocked in ("pagefile.sys", "hiberfil.sys", "swapfile.sys", "dumpstack.log.tmp")):
+    # Protección explícita para archivos de paginación y volcado críticos
+    if any(blocked in p_str for blocked in ("pagefile.sys", "hiberfil.sys", "swapfile.sys", "dumpstack.log.tmp", "memory.dmp")):
         return True
     
     if os.name == 'nt':

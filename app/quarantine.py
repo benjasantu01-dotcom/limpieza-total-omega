@@ -96,20 +96,27 @@ def _check_io_error_context(func: Callable, *args, **kwargs) -> Any:
 
 def _is_file_exclusive(path: Path) -> bool:
     """Intenta obtener un lock exclusivo de sistema para verificar uso de archivo."""
+    if os.name == 'nt':
+        try:
+            k32 = ctypes.windll.kernel32
+            handle = k32.CreateFileW(str(path), 0x80000000 | 0x40000000, 0, None, 3, 0x00000080, None)
+            if handle == -1: return False
+            overlapped = ctypes.create_string_buffer(20)
+            locked = k32.LockFileEx(handle, 2, 0, 1, 0, overlapped)
+            if locked: k32.UnlockFileEx(handle, 0, 1, 0, overlapped)
+            k32.CloseHandle(handle)
+            return bool(locked)
+        except Exception: return False
+    
     try:
         fd = os.open(path, os.O_RDWR)
         try:
-            if os.name == 'nt':
-                import msvcrt
-                msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
-                msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
-            else:
-                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                fcntl.flock(fd, fcntl.LOCK_UN)
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            fcntl.flock(fd, fcntl.LOCK_UN)
             return True
         finally:
             os.close(fd)
-    except (OSError, IOError, ImportError, AttributeError):
+    except (OSError, IOError, AttributeError):
         return False
 
 @dataclass

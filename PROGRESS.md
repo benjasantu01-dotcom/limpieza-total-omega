@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 26
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 198
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 140 | 17 | 29 | 4 | 122 |
-| 2026-10-05 | 86 | 9 | 15 | 6 | 76 |
+| 2026-10-04 | 140 | 17 | 29 | 4 | 118 |
+| 2026-10-05 | 88 | 9 | 16 | 6 | 77 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,19 +25,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **48**
 - rendimiento: **43**
 - manejo de errores y validación de entradas: **42**
-- seguridad defensiva: **39**
+- seguridad defensiva: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **23**
+- `quarantine.py`: **21**
 - `diskreport.py`: **20**
-- `quarantine.py`: **20**
 - `memory.py`: **18**
 - `assistant.py`: **17**
 - `browser.py`: **17**
+- `safety.py`: **17**
 - `scanner.py`: **17**
 - `duplicates.py`: **16**
-- `safety.py`: **16**
 - `branding.py`: **15**
 - `organizer.py`: **15**
 - `settings.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T08:14:34` **safety.py** (seguridad defensiva): Se ha añadido un chequeo adicional en `_is_kernel_managed` para prevenir de forma explícita que la aplicación interactúe con el archivo `pagefile.sys` (archivo de paginación) mediante la inclusión de una validación específica, protegiendo así la integridad del sistema ante posibles intentos de borrado o movimiento de archivos críticos en uso persistente por el kernel.
+- `2026-10-05T08:13:39` **quarantine.py** (seguridad defensiva): Mejoré la seguridad en `_is_file_exclusive` implementando un chequeo de bloqueo más robusto para Windows mediante `ctypes` (`LockFileEx`), garantizando que no se pueda manipular un archivo si el SO tiene un handle de escritura sobre él, eliminando la dependencia de `msvcrt.locking` que es insuficiente para archivos abiertos por procesos del sistema.
 - `2026-10-05T08:06:16` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_get_process_path` validando que la ruta del ejecutable no sea una unión de directorios (reparse point) o una ruta protegida antes de procesar cualquier información sobre el mismo, integrando así una capa adicional de protección contra el acceso a rutas sensibles del sistema.
 - `2026-10-05T08:03:14` **healthscore.py** (seguridad defensiva): Se reforzó la robustez de `SystemMetrics.validate` para garantizar que las métricas crudas no solo tengan tipos válidos, sino también consistencia lógica (evitando valores negativos o fuera de rango) antes de que lleguen al motor de puntuación, mejorando la seguridad defensiva frente a datos de entrada potencialmente corruptos.
 - `2026-10-05T07:54:11` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo de carpetas en `walk_files` implementando una validación explícita mediante `is_protected_path` al procesar cada directorio, evitando que se sigan rutas que pudieran haberse escapado del chequeo inicial debido a enlaces simbólicos o cambios de permisos durante la ejecución, manteniendo el enfoque en seguridad defensiva.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T07:24:25` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `score_security` y `compute_score` ante valores inesperados de entrada y posibles fallos en la ejecución de reglas, asegurando que el motor de puntuación no colapse ante datos corruptos o métricas malformadas.
 - `2026-10-05T07:23:51` **duplicates.py** (robustez ante casos límite): Se añadió una validación de `path.exists()` y `path.is_file()` previa al cálculo de `stat()` en `_collect_candidates`, previniendo excepciones y bloqueos causados por archivos que desaparecen entre la iteración del directorio y el procesamiento del mismo (condición de carrera típica en escaneos de disco).
 - `2026-10-05T07:23:23` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o con metadatos inaccesibles, asegurando que las excepciones en `os.scandir` o `entry.stat` no terminen prematuramente el escaneo y garantizando que el `SummaryData` no retorne objetos corruptos.
-- `2026-10-05T07:13:21` **browser.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante errores de E/S en `_is_file_in_use` y `directory_size` para manejar correctamente archivos bloqueados por el sistema operativo mediante un filtrado de excepciones más específico, evitando que el escaneo se interrumpa por errores de acceso denegado (comunes en archivos de caché en uso).
-- `2026-10-05T07:13:05` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante casos límite de escritura en disco, añadiendo una verificación explícita para evitar operaciones con rutas inexistentes o inaccesibles que podrían causar un fallo silencioso o un comportamiento inesperado.
