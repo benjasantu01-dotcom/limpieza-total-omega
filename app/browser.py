@@ -190,11 +190,18 @@ def _should_skip_entry(
 
 @safe_path_operation(True)
 def _is_file_in_use(path_obj: Path) -> bool:
-    """Determina si un archivo está bloqueado sin modificarlo."""
+    """Determina si un archivo está bloqueado usando la API Win32 sin lectura forzada."""
     if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
         return True
-    with open(path_obj, 'rb'):
+    k32 = _get_kernel32()
+    if k32:
+        # GENERIC_READ (0x80000000), FILE_SHARE_READ|WRITE (0x3)
+        handle = k32.CreateFileW(str(path_obj), 0x80000000, 0x3, None, 3, 0x80, None)
+        if handle == -1: # INVALID_HANDLE_VALUE
+            return True
+        k32.CloseHandle(handle)
         return False
+    return False
 
 def _sum_directory_recursive(
     root_path: Path, 

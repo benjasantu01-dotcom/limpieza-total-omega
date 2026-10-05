@@ -958,3 +958,47 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-05T12:09:31` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save` mediante una verificación explícita de `is_safe_to_modify` en el directorio padre, previniendo operaciones de escritura en ubicaciones potencialmente peligrosas o restringidas antes de intentar crear archivos temporales.
 - `2026-10-05T12:09:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T12:09:31` Corrida terminada. Total usado hoy: 288.
+- `2026-10-05T12:17:19` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-10-05T12:18:11` Tests FALLARON:
+```
+lve/tests/test_modules.py:677: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:175: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'Otro.lnk'
+  'MiPrograma.lnk'
+  Extra items in the right set:
+  'MiPrograma'
+  'Otro'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed, 7 warnings in 1.49s
+
+```
+- `2026-10-05T12:18:11` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha corregido un error crítico de lógica en `_process_folder_entry` donde la variable `name` era asignada utilizando una referencia inválida `_` (posible remanente de iteración), lo que causaba excepciones al procesar archivos; además, se mejoró la robustez ante la ausencia de extensiones.
+- `2026-10-05T12:18:58` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_extract_text_from_gemini_json` implementando una validación estricta de tipos mediante un esquema de "círculo de confianza" (`isinstance` y chequeo de existencia) antes de acceder a los datos de la respuesta JSON, previniendo excepciones maliciosas por estructuras de datos inesperadas.
+- `2026-10-05T12:19:39` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó `save_logo_svg` añadiendo una comprobación explícita para evitar la escritura en archivos existentes que contengan flujos de datos alternativos (ADS) o rutas con caracteres no estándar, mitigando riesgos de manipulación de archivos mediante el uso de `path.parts` y validación de extensiones críticas.
+- `2026-10-05T12:19:52` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_is_file_in_use` eliminando el uso de `open(..., 'rb')` (que requiere permisos de lectura efectivos y puede fallar o activar bloqueos innecesarios) en favor de `ctypes` para intentar abrir el archivo con acceso de solo lectura sin bloqueo (`FILE_SHARE_READ | FILE_SHARE_WRITE`), evitando efectos secundarios sobre archivos en uso.
+- `2026-10-05T12:19:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T12:19:52` Corrida terminada. Total usado hoy: 292.

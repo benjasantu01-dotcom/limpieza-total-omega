@@ -407,16 +407,15 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     try:
         path = Path(destination).resolve()
         
-        # Validación defensiva: pre-chequeo contra Path Traversal, rutas protegidas y symlinks
+        # Validación defensiva estricta
         if is_protected_path(path) or not is_safe_to_modify(path.parent):
             return None
         
-        # Impedir escritura si la ruta es un punto de reparse/enlace simbólico para evitar hijacking
-        if path.exists() and path.is_symlink():
+        # Bloqueo de streams alternativos (ADS) y nombres con caracteres de control
+        if ":" in path.name or any(c in path.name for c in ("<", ">", '"', "|", "?", "*")):
             return None
         
-        # Evitar crear archivos en rutas que no sean archivos válidos
-        if path.exists() and not path.is_file():
+        if path.exists() and (path.is_symlink() or not path.is_file()):
             return None
         
         if not path.parent.exists():
