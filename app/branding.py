@@ -454,14 +454,18 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
     """Renderiza glifo y decoraciones superficiales del escudo (línea diagonal y omega)."""
     try:
         if not math.isfinite(scale) or scale <= 0: return
+        
+        LINE_WIDTH_FACTOR: Final[float] = 8.0
+        TEXT_Y_OFFSET: Final[float] = 96.0
+        
         canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, 
                            canvas_x + 75 * scale, canvas_y + 41 * scale, 
-                           fill=C_BACKGROUND, width=max(2, int(8 * scale)), capstyle="round")
+                           fill=C_BACKGROUND, width=max(2, int(LINE_WIDTH_FACTOR * scale)), capstyle="round")
         canvas.create_polygon(canvas_x + 75 * scale, canvas_y + 41 * scale, 
                               canvas_x + 89 * scale, canvas_y + 38 * scale, 
                               canvas_x + 92 * scale, canvas_y + 52 * scale, 
                               fill=C_BACKGROUND, outline="")
-        canvas.create_text(canvas_x + 64 * scale, canvas_y + 96 * scale, text="\u03a9", 
+        canvas.create_text(canvas_x + 64 * scale, canvas_y + TEXT_Y_OFFSET * scale, text="\u03a9", 
                            fill=C_BACKGROUND, font=(UI_FONT_FAMILY, max(8, int(UI_FONT_HEADER_SIZE * scale)), UI_FONT_BOLD))
     except (TypeError, ValueError, AttributeError): pass
 

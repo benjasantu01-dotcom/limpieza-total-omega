@@ -47,15 +47,17 @@ OSPath: TypeAlias = Union[str, Path]
 
 class ScanResult(NamedTuple):
     """
-    Representa el resultado de una operación recursiva de escaneo.
-    bytes_found: Total acumulado de bytes procesados.
-    success: Booleano que indica si el escaneo pudo completarse sin errores de acceso.
+    Resultado de la recursión sobre el árbol de archivos.
+    
+    Attributes:
+        bytes_found: Suma total de bytes de archivos accesibles.
+        success: False si ocurrió un error de acceso no manejado durante el recorrido.
     """
     bytes_found: int
     success: bool
 
 class FileAttributes(NamedTuple):
-    """Máscaras de bits para atributos extendidos de Win32 (kernel32.GetFileAttributesW)."""
+    """Máscaras de bits para atributos extendidos de la API Win32 (kernel32.GetFileAttributesW)."""
     READONLY: int = 0x01
     HIDDEN: int = 0x02
     SYSTEM: int = 0x04
@@ -164,8 +166,9 @@ def _is_excluded_file(name: Optional[str]) -> TypeGuard[str]:
 
 def _is_system_hidden(entry_path: Optional[str], kernel32: Optional[ctypes.WinDLL]) -> bool:
     """
-    Consulta atributos Win32 para identificar archivos marcados como ocultos, 
-    de sistema o puntos de reparse (Junctions).
+    Consulta los atributos de archivo mediante la API Win32.
+    Detecta si un archivo es de sistema, oculto, o un punto de reparse (Junction).
+    Un valor 0xFFFFFFFF indica fallo en la lectura de atributos.
     """
     if kernel32 is None or not entry_path: return False
     try:
@@ -203,8 +206,10 @@ def _should_skip_entry(
 
 def _is_file_in_use(path_obj: Optional[Path]) -> bool:
     """
-    Verifica si un archivo está bloqueado por el sistema o una aplicación.
-    Intenta abrir en modo lectura exclusiva para determinar disponibilidad.
+    Determina si un archivo está bloqueado por otro proceso intentando abrirlo.
+    
+    Retorna True si el archivo no existe, está protegido o si el SO deniega
+    el acceso debido a un bloqueo de escritura/lectura exclusiva.
     """
     if not isinstance(path_obj, Path) or not path_obj.is_file():
         return True

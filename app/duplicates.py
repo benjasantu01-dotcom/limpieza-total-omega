@@ -95,8 +95,10 @@ class DuplicateGroup:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Comprueba si el archivo está bloqueado intentando abrirlo en modo lectura exclusiva.
-    Retorna True si el acceso es denegado, lo que sugiere que está en uso o protegido.
+    Determina si un archivo está bloqueado por otro proceso.
+    Se utiliza una apertura de bajo nivel con lectura exclusiva para verificar acceso.
+    Retorna True si el acceso falla, impidiendo lecturas potencialmente corruptas 
+    o errores de acceso denegado en archivos del sistema.
     """
     if not isinstance(path, Path) or not is_safe_to_modify(path) or not path.exists():
         return True
@@ -221,7 +223,13 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Realiza un escaneo DFS recolectando archivos candidatos según tamaño y seguridad."""
+    """
+    Realiza un recorrido DFS de los directorios proporcionados buscando archivos elegibles.
+    
+    Usa `os.scandir` para eficiencia de E/S y mantiene un registro de inodos (st_dev, st_ino)
+    para evitar procesar enlaces físicos duplicados o ciclos de directorios. 
+    Aplica las reglas de `safety.py` en cada nivel para asegurar que no se accedan rutas bloqueadas.
+    """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     stack: List[Tuple[Path, int]] = []
     visited_dirs: set[Path] = set()
@@ -314,7 +322,14 @@ def _decide_hash_strategy_and_process(size_bytes: int, file_paths: List[Path]) -
 
 
 def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
-    """Orquestador: coordina la recolección, el hashing y el ordenamiento de grupos."""
+    """
+    Orquestador principal que ejecuta la lógica de detección.
+    
+    1. Recolecta candidatos filtrados por tamaño y seguridad (`_collect_candidates`).
+    2. Agrupa por tamaño.
+    3. Aplica hashing progresivo (parcial -> completo) para confirmar duplicidad.
+    4. Devuelve una lista ordenada por impacto (bytes desperdiciados).
+    """
     size_map = _collect_candidates(directories, min_size, skip_protected)
     groups: List[DuplicateGroup] = []
     for size, paths in size_map.items():

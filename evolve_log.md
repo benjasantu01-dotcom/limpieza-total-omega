@@ -1422,3 +1422,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-05T05:51:42` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: SystemContext._apply_field
 - `2026-10-05T05:51:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T05:51:42` Corrida terminada. Total usado hoy: 140.
+- `2026-10-05T05:59:53` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-10-05T06:00:33` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de la lógica de renderizado del escudo `_draw_shield_icon_decorations` sustituyendo los literales numéricos mágicos por constantes descriptivas (OFFSET, RADIUS, FONT_ADJUST) para facilitar futuras modificaciones visuales.
+- `2026-10-05T06:01:01` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de los tipos de datos internos (`ScanResult`, `FileAttributes`) y se han clarificado las funciones de bajo nivel (`_is_system_hidden`, `_is_file_in_use`) mediante docstrings que explican la lógica de seguridad y los riesgos de bloqueo, facilitando el mantenimiento y la auditoría de seguridad exigida.
+- `2026-10-05T06:01:29` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: legibilidad y documentación).
+- `2026-10-05T06:01:44` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante docstrings detallados en funciones críticas (`_collect_candidates`, `_is_file_locked`, `find_duplicates`) para explicar el PORQUÉ de las decisiones de diseño y las restricciones de seguridad, mejorando la mantenibilidad sin cambiar la lógica.
+- `2026-10-05T06:01:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T06:01:44` Corrida terminada. Total usado hoy: 144.
