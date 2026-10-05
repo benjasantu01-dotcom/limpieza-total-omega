@@ -789,3 +789,27 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-05T10:40:17` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `memory.py` mediante docstrings detallados en las funciones de bajo nivel y utilicé Type Hints precisos para clarificar la interfaz entre el código Python y las estructuras de la API de Windows, facilitando la comprensión del flujo de datos.
 - `2026-10-05T10:40:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T10:40:17` Corrida terminada. Total usado hoy: 252.
+- `2026-10-05T10:45:30` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-10-05T10:46:07` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad y la seguridad semántica mediante la adición de docstrings técnicos (explicando el "porqué" de las validaciones de seguridad) y la mejora de los tipos en `_is_safe_for_disk_op` para prevenir errores de lógica.
+- `2026-10-05T10:46:09` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T10:46:18` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-05T10:47:11` Tests FALLARON:
+```
+word argument 'base'
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - TypeError: quarantine_file() got an unexpected keyword argument 'base'
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - TypeError: quarantine_file() got an unexpected keyword argument 'base'
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - TypeError: quarantine_file() got an unexpected keyword argument 'base'
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - TypeError: quarantine_file() got an unexpected keyword argument 'base'
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - TypeError: quarantine_file() got an unexpected keyword argument 'base'
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - TypeError: quarantine_file() got an unexpected keyword argument 'base'
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - TypeError: quarantine_file() got an unexpected keyword argument 'base'
+FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly - TypeError: quarantine_file() got an unexpected keyword argument 'base'
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - TypeError: quarantine_file() got an unexpected keyword argument 'base'
+10 failed, 289 passed, 7 warnings in 1.18s
+
+```
+- `2026-10-05T10:47:11` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados, type hints consistentes en funciones auxiliares y renombrando parámetros internos para clarificar su propósito (ej. `base` a `base_dir`) sin alterar la lógica.
+- `2026-10-05T10:47:33` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 120): unterminated string literal (detected at line 120)
+- `2026-10-05T10:47:52` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): el archivo se encogió al 51% del original (posible pérdida de código)
+- `2026-10-05T10:47:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T10:47:52` Corrida terminada. Total usado hoy: 256.

@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 26
-- Rechazadas por guardia de seguridad: 37
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 207
 
@@ -16,13 +16,13 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 116 | 15 | 19 | 4 | 98 |
-| 2026-10-05 | 106 | 11 | 18 | 8 | 109 |
+| 2026-10-04 | 114 | 14 | 18 | 4 | 98 |
+| 2026-10-05 | 107 | 12 | 20 | 8 | 109 |
 
 ## Mejoras aceptadas por enfoque
 
-- robustez ante casos límite: **54**
-- legibilidad y documentación: **46**
+- robustez ante casos límite: **52**
+- legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **45**
 - seguridad defensiva: **43**
 - rendimiento: **34**
@@ -34,11 +34,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **20**
 - `memory.py`: **18**
 - `scanner.py`: **18**
-- `browser.py`: **17**
-- `branding.py`: **16**
 - `safety.py`: **16**
 - `assistant.py`: **16**
-- `organizer.py`: **15**
+- `organizer.py`: **16**
+- `browser.py`: **16**
+- `branding.py`: **15**
 - `duplicates.py`: **15**
 - `settings.py`: **13**
 - `main.py`: **8**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T10:46:07` **organizer.py** (legibilidad y documentación): Se ha mejorado la legibilidad y la seguridad semántica mediante la adición de docstrings técnicos (explicando el "porqué" de las validaciones de seguridad) y la mejora de los tipos en `_is_safe_for_disk_op` para prevenir errores de lógica.
 - `2026-10-05T10:40:17` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `memory.py` mediante docstrings detallados en las funciones de bajo nivel y utilicé Type Hints precisos para clarificar la interfaz entre el código Python y las estructuras de la API de Windows, facilitando la comprensión del flujo de datos.
 - `2026-10-05T10:36:24` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de puntuación y la reestructuración de la lógica de normalización para hacer explícita la intención de cada fórmula, facilitando la auditoría de los cálculos de salud.
 - `2026-10-05T10:35:44` **duplicates.py** (legibilidad y documentación): Documenté con docstrings claros y tipado los métodos auxiliares de `duplicates.py` para explicar el razonamiento detrás de la selección de "keeper" y las estrategias de hashing, mejorando la legibilidad técnica del proceso.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T09:55:31` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de hash (`hash_file` y `partial_hash`) validando explícitamente que el tamaño del archivo no sea menor al esperado tras la apertura y envolviendo la operación en un bloque `try-finally` para asegurar el cierre del descriptor de archivo ante errores de lectura inesperados, evitando fugas de recursos.
 - `2026-10-05T09:55:03` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` implementando una validación explícita para asegurar que el `root` pasado a las funciones sea un directorio absoluto y que `walk_files` no falle ante rutas inválidas o de longitud excesiva mediante capturas de excepciones más específicas.
 - `2026-10-05T09:47:03` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del módulo `browser.py` mediante la validación explícita de `None` y tipos en parámetros críticos (`base_directories` y `detect_profiles`), asegurando que las funciones no fallen silenciosamente ante entradas inesperadas o estados de entorno inconsistentes, cumpliendo con el enfoque de manejo de errores y validación.
-- `2026-10-05T09:46:46` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `draw_ring` mediante validación explícita de tipos, chequeo de desbordamiento en parámetros y manejo de excepciones más granular para evitar fallos silenciosos en la UI.
