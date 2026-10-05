@@ -234,7 +234,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Procesa el pipeline completo de salud y retorna un objeto HealthResult unificado."""
-    if metrics is None or not metrics.is_finite:
+    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         metrics = SystemMetrics()
     
     recommendations: List[str] = []

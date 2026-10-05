@@ -1947,16 +1947,20 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except (tk.TclError, Exception):
                 continue
         
-        if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists():
-            valores["duplicados_tamano_minimo_kb"] = self._get_numeric_setting_from_widget(self.min_dup_entry, "duplicados_tamano_minimo_kb", 64)
-            
-        if hasattr(self, 'top_files_entry') and self.top_files_entry.winfo_exists():
-            valores["top_archivos"] = self._get_numeric_setting_from_widget(self.top_files_entry, "top_archivos", 15)
-            
-        if hasattr(self, 'api_key_entry') and self.api_key_entry.winfo_exists():
-            clave_raw = self._safe_get_entry_value(self.api_key_entry, "")
-            if clave_raw:
-                valores["asistente_clave_api"] = "".join(c for c in clave_raw if c.isprintable())
+        # Extracción segura de valores numéricos de la interfaz
+        try:
+            if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists():
+                valores["duplicados_tamano_minimo_kb"] = self._get_numeric_setting_from_widget(self.min_dup_entry, "duplicados_tamano_minimo_kb", 64)
+                
+            if hasattr(self, 'top_files_entry') and self.top_files_entry.winfo_exists():
+                valores["top_archivos"] = self._get_numeric_setting_from_widget(self.top_files_entry, "top_archivos", 15)
+                
+            if hasattr(self, 'api_key_entry') and self.api_key_entry.winfo_exists():
+                clave_raw = self._safe_get_entry_value(self.api_key_entry, "")
+                if clave_raw:
+                    valores["asistente_clave_api"] = "".join(c for c in clave_raw if c.isprintable())
+        except Exception as e:
+            logging.error("Fallo durante recolección segura de parámetros UI: %s", e)
             
         return valores
 
