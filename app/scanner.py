@@ -81,7 +81,7 @@ def _get_file_size(path: Path) -> int:
     """Obtiene el tamaño del archivo con manejo robusto de excepciones de concurrencia."""
     try:
         return int(path.stat().st_size)
-    except (OSError, PermissionError, FileNotFoundError):
+    except (OSError, PermissionError, FileNotFoundError, AttributeError):
         return -1
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
@@ -98,7 +98,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         if getattr(stats, "st_nlink", 1) > 1:
             return None
         return stats
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, AttributeError):
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
@@ -110,20 +110,16 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     return True
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    Heurística: Detecta doble extensión que oculta el tipo real de archivo.
-    Compara el nombre del archivo contra patrones conocidos de ofuscación.
-    """
+    """Heurística: Detecta doble extensión que oculta el tipo real de archivo."""
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    Heurística: Identifica ejecutables recientes (<24h) en carpetas de alto riesgo.
-    Utiliza el timestamp de modificación (mtime) del archivo para calcular la antigüedad.
-    """
-    if not path or not path.parent or path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
+    """Heurística: Identifica ejecutables recientes (<24h) en carpetas de alto riesgo."""
+    if not path or not path.parent:
+        return None
+    if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
         return None
     stats = _safe_stat(entry) if entry else None
     if stats:
@@ -134,10 +130,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    Heurística: Detecta procesos críticos (ej: svchost.exe) ubicados fuera de System32.
-    El riesgo reside en la suplantación de identidad para evasión de detección.
-    """
+    """Heurística: Detecta procesos críticos (ej: svchost.exe) ubicados fuera de System32."""
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         path_str = str(path).lower()
         if SYSTEM32_LOWER not in path_str:
@@ -145,11 +138,8 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    Heurística: Identifica archivos ejecutables de 0 bytes.
-    A menudo se utilizan como marcadores de infección o shells inofensivos para pruebas.
-    """
-    if _get_file_size(path) == 0:
+    """Heurística: Identifica archivos ejecutables de 0 bytes."""
+    if path and _get_file_size(path) == 0:
         return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
     return None
 
@@ -213,7 +203,7 @@ class Scanner:
                 return False
             self.safe_cache.add(entry.path)
             return True
-        except (OSError, RuntimeError, ValueError):
+        except (OSError, RuntimeError, ValueError, AttributeError):
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
@@ -224,7 +214,7 @@ class Scanner:
             if entry.path and entry.path.lower() not in self.seen:
                 self.seen.add(entry.path.lower())
                 directory_stack.append((entry.path, current_depth + 1))
-        except OSError:
+        except (OSError, AttributeError):
             pass
 
     @staticmethod
@@ -236,8 +226,8 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
         """Orquestador: decide si explorar subdirectorio o analizar archivo basándose en el tipo."""
         try:
-            # Normalizar ruta antes de cualquier validación
-            abs_path = Path(entry.path).resolve(strict=False)
+            if not entry.path: return
+            
             if not entry.is_dir(follow_symlinks=False):
                 if not self._is_relevant_extension(entry.name):
                     return
@@ -248,13 +238,14 @@ class Scanner:
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, directory_stack, current_depth)
             else:
+                abs_path = Path(entry.path).resolve(strict=False)
                 self._run_file_heuristics(abs_path, entry)
         except (OSError, PermissionError, AttributeError):
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta toda la suite de heurísticas sobre el archivo indicado."""
-        if not os.access(path, os.R_OK):
+        if not path or not os.access(path, os.R_OK):
             return
         for check_fn in ALL_CHECKS:
             try:
@@ -270,7 +261,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     try:
         if not path.is_file() or not os.access(path, os.R_OK) or is_protected_path(path): 
             return []
-    except (OSError, PermissionError, ValueError): return []
+    except (OSError, PermissionError, ValueError, AttributeError): return []
     
     findings: List[Suspicion] = []
     for check_fn in ALL_CHECKS:
@@ -295,7 +286,7 @@ def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
             return []
         if is_protected_path(base_path): return []
         scanner = Scanner(base_root=base_path)
-    except (OSError, RuntimeError, ValueError, TypeError): return []
+    except (OSError, RuntimeError, ValueError, TypeError, AttributeError): return []
     
     directory_stack: DirectoryStack = [(str(base_path), 0)]
     scanner.seen.add(str(base_path).lower())
@@ -305,7 +296,7 @@ def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     if entry: scanner.process_entry(entry, directory_stack, depth)
-        except (PermissionError, OSError, UnicodeDecodeError):
+        except (PermissionError, OSError, UnicodeDecodeError, AttributeError):
             continue
     return scanner.results
 

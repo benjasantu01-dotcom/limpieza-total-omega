@@ -447,11 +447,14 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
     """
     Ejecuta el conjunto de reglas de integridad sobre un archivo dado.
     """
-    sd = _get_security_descriptor(path)
-    for rule in _VALIDATORS:
-        if rule.predicate(path, current_stat, sd):
-            code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
-            raise UnsafePathError(f"Integridad comprometida: {rule.reason.name}", code)
+    try:
+        sd = _get_security_descriptor(path)
+        for rule in _VALIDATORS:
+            if rule.predicate(path, current_stat, sd):
+                code = _REASON_TO_CODE.get(rule.reason, SafetyValidationErrorCode.GENERIC)
+                raise UnsafePathError(f"Integridad comprometida: {rule.reason.name}", code)
+    except (AttributeError, OSError, TypeError) as e:
+        raise UnsafePathError(f"Error evaluando reglas: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 def _get_path_stat_robust(path: Path) -> os.stat_result:
     """
@@ -714,40 +717,45 @@ def _validate_ntfs_reparse_redirection(path: Path) -> None:
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """Valida exhaustivamente una ruta para garantizar que es segura de modificar."""
-    if path is None:
-        raise UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC)
-    
-    if not isinstance(path, (str, Path, os.PathLike)):
-        raise UnsafePathError(f"Tipo de ruta no soportado: {type(path).__name__}", SafetyValidationErrorCode.GENERIC)
-    
-    p = normalize(path)
-    
-    if _is_kernel_managed(p):
-        raise UnsafePathError(f"Archivo de sistema crítico: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
-    
-    if os.name == 'nt' and (_is_volume_readonly(str(p)) or _is_volume_compressed_or_encrypted(str(p))):
-        raise UnsafePathError(f"Volumen restringido/solo lectura: {p.anchor}", SafetyValidationErrorCode.VOLUME_READ_ONLY)
+    try:
+        if path is None:
+            raise UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC)
+        
+        if not isinstance(path, (str, Path, os.PathLike)):
+            raise UnsafePathError(f"Tipo de ruta no soportado: {type(path).__name__}", SafetyValidationErrorCode.GENERIC)
+        
+        p = normalize(path)
+        
+        if _is_kernel_managed(p):
+            raise UnsafePathError(f"Archivo de sistema crítico: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
+        
+        if os.name == 'nt' and (_is_volume_readonly(str(p)) or _is_volume_compressed_or_encrypted(str(p))):
+            raise UnsafePathError(f"Volumen restringido/solo lectura: {p.anchor}", SafetyValidationErrorCode.VOLUME_READ_ONLY)
 
-    if not allow_sensitive and is_sensitive_file(p):
-        raise UnsafePathError(f"Extensión bloqueada '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION)
+        if not allow_sensitive and is_sensitive_file(p):
+            raise UnsafePathError(f"Extensión bloqueada '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION)
+            
+        _validate_structural_safety(p, str(p))
+        _validate_boundary_conditions(p, base_dir)
         
-    _validate_structural_safety(p, str(p))
-    _validate_boundary_conditions(p, base_dir)
-    
-    if p.exists():
-        _validate_access_permissions(p)
-        if _is_file_in_use_by_system(str(p)):
-             raise UnsafePathError(f"Archivo en uso por el sistema: {p.name}", SafetyValidationErrorCode.FILE_IN_USE)
-        
-        initial_stat = _get_path_stat_robust(p)
-        if os.name == 'nt': 
-            _validate_ntfs_reparse_redirection(p)
-        _check_file_integrity(p, initial_stat)
-    else:
-        parent = p.parent
-        if parent.exists() and not os.access(parent, os.W_OK):
-            raise UnsafePathError("Directorio contenedor no tiene permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
-    return p
+        if p.exists():
+            _validate_access_permissions(p)
+            if _is_file_in_use_by_system(str(p)):
+                 raise UnsafePathError(f"Archivo en uso por el sistema: {p.name}", SafetyValidationErrorCode.FILE_IN_USE)
+            
+            initial_stat = _get_path_stat_robust(p)
+            if os.name == 'nt': 
+                _validate_ntfs_reparse_redirection(p)
+            _check_file_integrity(p, initial_stat)
+        else:
+            parent = p.parent
+            if parent.exists() and not os.access(parent, os.W_OK):
+                raise UnsafePathError("Directorio contenedor no tiene permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
+        return p
+    except UnsafePathError:
+        raise
+    except Exception as e:
+        raise UnsafePathError(f"Validación fallida inesperadamente: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> bool:
     """Verifica si una ruta es segura mediante un booleano."""
