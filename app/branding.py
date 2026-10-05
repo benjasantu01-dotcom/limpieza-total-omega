@@ -5,9 +5,10 @@ Centraliza la gestión de activos visuales, paletas de colores, jerarquías
 tipográficas y sistemas de renderizado vectorial (SVG/Canvas).
 
 CONFIGURACIÓN Y ESTADOS:
-  - La paleta se expone vía MappingProxyType para garantizar inmutabilidad.
+  - La paleta se expone vía MappingProxyType para garantizar inmutabilidad,
+    evitando efectos secundarios accidentales durante la ejecución.
   - Los gradientes utilizan segmentación por agrupación de colores consecutivos 
-    para reducir el número de llamadas de dibujo en el objeto Canvas.
+    para optimizar el rendimiento de renderizado en el objeto Canvas.
   - Las funciones de dibujo capturan excepciones para mantener la estabilidad UI.
 
 NOTA DE SEGURIDAD:
@@ -15,7 +16,7 @@ NOTA DE SEGURIDAD:
   bajo principios de diseño defensivo, capturando excepciones de renderizado 
   para evitar que una paleta mal configurada o una entrada inválida 
   detengan el hilo principal de la aplicación. Las operaciones de disco 
-  utilizan validadores estrictos para prevenir Path Traversal.
+  utilizan validadores estrictos mediante el módulo 'safety'.
 """
 
 from __future__ import annotations
@@ -372,11 +373,12 @@ def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, .
     return tuple(segments)
 
 # Coordenadas relativas del icono principal (Escudo)
+# Definidas como (x, y) relativas a un viewBox de 128x128
 SHIELD_BASE_COORDS: Final[Tuple[float, ...]] = (64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
 
 @lru_cache(maxsize=128)
 def _get_scaled_poly(scale: float, canvas_x: float, canvas_y: float) -> Tuple[float, ...]:
-    """Escala las coordenadas del polígono base."""
+    """Escala las coordenadas del polígono del escudo según un factor de escala."""
     return tuple(canvas_x + (c * scale) if i % 2 == 0 else canvas_y + (c * scale) 
                  for i, c in enumerate(SHIELD_BASE_COORDS))
 
@@ -396,14 +398,12 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         return None
     try:
         raw_path = Path(destination)
-        # Normalización y validación estricta de la ruta
         path = raw_path.resolve()
         
-        # Validación defensiva: pre-chequeo antes de crear directorios o archivos
+        # Validación defensiva: pre-chequeo contra Path Traversal y rutas protegidas
         if is_protected_path(path) or not is_safe_to_modify(path.parent):
             return None
         
-        # Asegurar integridad de la estructura de directorios
         if not path.parent.exists():
             path.parent.mkdir(parents=True, exist_ok=True)
             
@@ -417,20 +417,24 @@ def logo_ascii() -> str:
     """Logo corporativo en formato texto plano (ASCII Art)."""
     return "\n   ___  __  __ ___ ___   _\n  / _ \\|  \\/  | __/ __| /_\\\n | (_) | |\\/| | _|| (_ // _ \\\n  \\___/|_|  |_|___\\___/_/ \\_\\\n      Limpieza Total Omega\n"
 
+# Constantes de geometría para el decorado de franjas internas
+STRIPE_THICKNESS_SCALE: Final[float] = 92.0
+STRIPE_OFFSET_X_FACTOR: Final[float] = 36.0
+
 @lru_cache(maxsize=16)
 def _get_stripe_params(scale: float, franjas_count: int) -> Tuple[Tuple[float, float, float], ...]:
-    """Calcula geometría de las franjas decorativas."""
-    return tuple((36.0 * scale * (1.0 if (i / (franjas_count - 1)) < 0.55 else 1.0 - (((i / (franjas_count - 1)) - 0.55) * 1.9)),
-                  i * (92.0 * scale / franjas_count),
-                  (i + 1) * (92.0 * scale / franjas_count)) for i in range(franjas_count))
+    """Calcula la geometría (ancho, y_start, y_end) de cada franja decorativa."""
+    return tuple((STRIPE_THICKNESS_SCALE * scale * (1.0 if (i / (franjas_count - 1)) < 0.55 else 1.0 - (((i / (franjas_count - 1)) - 0.55) * 1.9)),
+                  i * (STRIPE_THICKNESS_SCALE * scale / franjas_count),
+                  (i + 1) * (STRIPE_THICKNESS_SCALE * scale / franjas_count)) for i in range(franjas_count))
 
 @lru_cache(maxsize=128)
 def _get_cached_stripe_data(scale: float, franjas_count: int) -> Tuple[Tuple[Tuple[float, float, float], ...], Tuple[ColorHex, ...]]:
-    """Cachea parámetros de franjas para evitar cálculos repetitivos."""
+    """Cachea parámetros de franjas y sus colores correspondientes."""
     return _get_stripe_params(scale, franjas_count), gradient_colors(franjas_count)
 
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Renderiza las franjas internas del escudo."""
+    """Renderiza las franjas internas geométricas del escudo."""
     try:
         if not math.isfinite(scale) or scale <= 0: return
         franjas_count = max(6, int(28 * scale))
@@ -446,7 +450,7 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
     except (TypeError, ValueError, ZeroDivisionError, IndexError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Renderiza glifo y decoraciones superficiales del escudo."""
+    """Renderiza glifo y decoraciones superficiales del escudo (línea diagonal y omega)."""
     try:
         if not math.isfinite(scale) or scale <= 0: return
         canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, 
@@ -462,12 +466,12 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """
-    Renderiza el escudo corporativo.
+    Renderiza el escudo corporativo compuesto.
     Args:
         canvas: Objeto Canvas de la UI.
         size: Tamaño base en píxeles.
-        canvas_x: Offset X.
-        canvas_y: Offset Y.
+        canvas_x: Offset X para posicionar el logo.
+        canvas_y: Offset Y para posicionar el logo.
     """
     try:
         s = float(size)
@@ -494,7 +498,6 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
         cx, cy = float(canvas_x), float(canvas_y)
         if not math.isfinite(cx) or not math.isfinite(cy): return
         
-        # Uso directo de la función cacheada globalmente para evitar reinicializaciones
         segments = _get_grouped_segments(gradient_colors(w_val, stops))
             
         for segment in segments:

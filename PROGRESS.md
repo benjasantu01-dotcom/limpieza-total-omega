@@ -8,45 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **215** (42.7% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 41
-- Sin cambios (nada sustancial que mejorar): 15
+- Rechazadas por guardia de seguridad: 42
+- Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 55 | 2 | 9 | 9 | 47 |
+| 2026-10-03 | 53 | 2 | 9 | 8 | 46 |
 | 2026-10-04 | 154 | 20 | 31 | 5 | 140 |
-| 2026-10-05 | 6 | 0 | 1 | 1 | 24 |
+| 2026-10-05 | 8 | 0 | 2 | 1 | 25 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **50**
+- legibilidad y documentación: **45**
 - seguridad defensiva: **44**
-- legibilidad y documentación: **44**
-- manejo de errores y validación de entradas: **40**
-- rendimiento: **37**
+- manejo de errores y validación de entradas: **41**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **20**
 - `quarantine.py`: **20**
+- `healthscore.py`: **19**
 - `organizer.py`: **18**
 - `assistant.py`: **18**
 - `diskreport.py`: **18**
 - `safety.py`: **17**
 - `scanner.py`: **15**
 - `duplicates.py`: **15**
-- `memory.py`: **14**
+- `branding.py`: **14**
 - `browser.py`: **14**
-- `branding.py`: **13**
-- `settings.py`: **12**
+- `settings.py`: **13**
+- `memory.py`: **13**
 - `startup.py`: **11**
 - `main.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T01:26:50` **branding.py** (legibilidad y documentación): Se introdujeron constantes descriptivas para reemplazar los "números mágicos" en las coordenadas del logo y se mejoró la documentación interna mediante docstrings que explican el propósito de las transformaciones geométricas y el uso de `MappingProxyType`, facilitando la mantenibilidad para futuros colaboradores.
+- `2026-10-05T01:25:21` **settings.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en la función `validate` para asegurar que el proceso de normalización no falle ante tipos de datos inesperados en el JSON, y se refuerza la validación en `_load_impl` para capturar errores de formato o permisos de forma más granular.
 - `2026-10-05T01:16:36` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas agregando validaciones de tipo y presencia para los argumentos (`path`, `entry`), evitando excepciones inesperadas al procesar archivos con rutas inusuales o bloqueos de acceso durante la lectura.
 - `2026-10-05T01:16:23` **safety.py** (manejo de errores y validación de entradas): Se mejora la robustez de `ensure_safe_to_modify` ante errores de entrada inesperados, capturando excepciones de bajo nivel en las verificaciones de estado que podrían dejar el sistema en un estado inconsistente si fallan, asegurando que cualquier fallo inesperado se convierta en un `UnsafePathError` controlado y transparente para el llamador.
 - `2026-10-05T01:10:17` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_locked` para evitar errores de excepción innecesarios durante el escaneo y agregué validación de tipo para los parámetros de entrada en funciones críticas, asegurando que el flujo no se detenga ante objetos inesperados.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-04T14:03:53` **main.py** (seguridad defensiva): Se introdujo una capa de validación defensiva en `on_save_settings` para garantizar que cualquier carpeta de configuración persistida pase por `safety.ensure_safe_to_modify`, previniendo inyecciones de rutas externas en el archivo `settings.json` incluso si el usuario intenta configurar una ruta restringida manualmente.
 - `2026-10-04T14:02:38` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del sistema contra entradas inesperadas al añadir una validación de `TypeGuard` en `_evaluate_rules` y `compute_score`, asegurando que las métricas y reglas procesadas no contengan datos que puedan comprometer la integridad de la lógica de negocio ni causar desbordamientos durante la generación de mensajes.
 - `2026-10-04T13:53:34` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `_is_excluded_path` mediante la validación explícita de `follow_symlinks=False` en las llamadas a `Path.resolve()` y `os.stat()`, evitando que un usuario malintencionado pueda utilizar enlaces simbólicos para escapar del directorio raíz (`root_path`) durante el escaneo.
-- `2026-10-04T13:53:21` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante una validación de profundidad más estricta y un filtrado de rutas basado en `is_protected_path` al iterar, asegurando que el escáner no profundice en directorios prohibidos incluso si la resolución inicial de la ruta fue exitosa.
-- `2026-10-04T13:52:53` **branding.py** (seguridad defensiva): Mejoré la seguridad en `save_logo_svg` utilizando `is_protected_path` como pre-filtro antes de cualquier operación de escritura, asegurando que la ruta no sea parte de los directorios críticos del sistema.

@@ -313,9 +313,12 @@ def validate(raw_values: Any) -> AppSettings:
     
     for key_str, raw_val in raw_values.items():
         if (key_enum := _KEY_TO_ENUM.get(key_str)):
-            validated_val = validators[key_enum].func(key_enum, raw_val)
-            if validated_val is not None:
-                config[key_enum.value] = validated_val
+            try:
+                validated_val = validators[key_enum].func(key_enum, raw_val)
+                if validated_val is not None:
+                    config[key_enum.value] = validated_val
+            except Exception:
+                continue
     return config # type: ignore
 
 def _is_file_secure_to_read(file_obj: Any) -> bool:
@@ -350,8 +353,7 @@ def _load_impl(ruta: Path) -> AppSettings:
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
         
         if _is_dict(data):
-            validated = validate(data)
-            return _coerce_and_verify(validated)
+            return _coerce_and_verify(validate(data))
     except (OSError, PermissionError, IOError, json.JSONDecodeError, UnicodeDecodeError, EOFError):
         pass
     return DEFAULTS.copy()
