@@ -207,8 +207,13 @@ def _sum_directory_recursive(
     """Ejecuta un recorrido recursivo con memoización para calcular el tamaño."""
     if depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)
+    
+    try:
+        if not root_path.exists(): return ScanResult(0, True)
+        path_norm = os.path.normcase(str(root_path.resolve()))
+    except (OSError, RuntimeError):
+        return ScanResult(0, False)
 
-    path_norm = os.path.normcase(str(root_path))
     if path_norm in visited_dirs:
         return ScanResult(visited_dirs[path_norm], True)
 
@@ -244,6 +249,7 @@ def directory_size(path: Optional[OSPath]) -> int:
     """Interfaz pública para calcular el tamaño total de un directorio de caché."""
     if path is None: return 0
     path_obj: Path = Path(path)
+    if not path_obj.exists(): return 0
     resolved_p: Path = path_obj.resolve(strict=True)
     if not resolved_p.is_dir() or not is_safe_to_modify(resolved_p) or is_protected_path(resolved_p):
         return 0
@@ -265,6 +271,7 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Resuelve rutas absolutas a partir de la estructura predefinida."""
     parts = rel_str.split("\\")
     target: Path = real_base.joinpath(*parts)
+    if not target.exists(): return Path()
     target_res = target.resolve(strict=True)
     if _ensure_within_base(str(target_res), os.path.normcase(str(real_base))) and \
        is_safe_to_modify(target_res) and not is_protected_path(target_res):

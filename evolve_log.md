@@ -929,3 +929,12 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-05T11:38:46` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-10-05T11:38:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T11:38:46` Corrida terminada. Total usado hoy: 276.
+- `2026-10-05T11:46:43` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-10-05T11:47:10` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se introdujo una validación de profundidad y manejo de errores de resolución de rutas en `_sum_directory_recursive` para prevenir excepciones ante rutas inexistentes, enlaces rotos o recursión infinita en casos de estructuras de directorios corruptas o muy profundas.
+- `2026-10-05T11:47:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T11:47:44` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia ante errores de lectura de metadatos de archivos (como archivos bloqueados por el sistema o permisos denegados) dentro del bucle de recorrido en `walk_files`, garantizando que el proceso no se interrumpa ante entradas inaccesibles, y se ha añadido un manejo de errores más estricto al calcular rutas relativas en `largest_folders` para evitar fallos si el árbol cambia durante el escaneo.
+- `2026-10-05T11:48:09` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se introdujo una comprobación de existencia y accesibilidad dentro de `_calculate_keeper_heuristic` y `format_group` para evitar excepciones (como `FileNotFoundError`) en archivos que desaparecieron entre la etapa de recolección y la de visualización, mejorando la robustez del reporte.
+- `2026-10-05T11:48:10` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T11:48:29` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `SystemMetrics.validate` ante entradas nulas o inesperadas durante la inicialización, asegurando que el motor de scoring no procese datos incoherentes incluso si el objeto se construye parcialmente.
+- `2026-10-05T11:48:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T11:48:29` Corrida terminada. Total usado hoy: 280.

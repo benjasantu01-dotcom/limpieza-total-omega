@@ -183,6 +183,7 @@ class SystemMetrics:
     def validate(self) -> None:
         """Asegura que todos los campos tengan tipos y rangos aceptables de forma defensiva."""
         def _c(v: Any, d: float, min_v: float, max_v: float) -> float:
+            if v is None: return d
             try:
                 val = float(v)
                 if not math.isfinite(val) or val < min_v or val > max_v:
