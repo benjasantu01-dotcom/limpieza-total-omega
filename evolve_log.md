@@ -860,3 +860,11 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-05T10:58:20` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el acceso a los datos de `SystemContext` reemplazando llamadas repetitivas a `getattr` y validaciones redundantes por un caché calculado (`metrics_snapshot`), reduciendo el costo de CPU al generar respuestas y contexto.
 - `2026-10-05T10:58:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T10:58:20` Corrida terminada. Total usado hoy: 260.
+- `2026-10-05T11:05:53` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-10-05T11:05:56` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T11:06:38` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo de `gradient_colors` eliminando la recreación innecesaria de tuplas RGB y objetos intermedios mediante el uso de un generador de índices eficiente y pre-calculado, reduciendo la carga de CPU en operaciones de renderizado repetitivas.
+- `2026-10-05T11:07:03` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-10-05T11:07:35` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `_collect_summary_data` eliminando el uso de `dict(ext_stats)` al final y accediendo directamente a las propiedades del objeto `ExtStats` en lugar de llamar a `__getitem__` constantemente, mejorando el rendimiento y reduciendo el overhead de memoria en escaneos profundos.
+- `2026-10-05T11:07:48` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `is_protected_path` (que es una operación de costo fijo pero repetida en exceso) y centralizando la validación de seguridad para evitar múltiples chequeos de estado (`stat`, `exists`) sobre el mismo objeto `Path` en el mismo ciclo.
+- `2026-10-05T11:07:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T11:07:48` Corrida terminada. Total usado hoy: 264.

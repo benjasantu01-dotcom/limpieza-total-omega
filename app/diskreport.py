@@ -376,14 +376,12 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
     top_heap: List[Tuple[int, Path]] = [] 
     
-    get_stats = ext_stats.__getitem__
-    
     for path, size_bytes in walk_files(directory, skip_protected):
         total_bytes += size_bytes
         total_files += 1
         ext_raw = path.suffix
         ext = ext_raw.lower() if ext_raw else "(sin extensión)"
-        stats = get_stats(ext)
+        stats = ext_stats[ext]
         stats.total_bytes += size_bytes
         stats.count += 1
         
@@ -393,7 +391,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             elif size_bytes > top_heap[0][0]: 
                 heapq.heapreplace(top_heap, (size_bytes, path))
                 
-    return SummaryData(total_bytes, total_files, dict(ext_stats), top_heap)
+    return SummaryData(total_bytes, total_files, ext_stats, top_heap)
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
