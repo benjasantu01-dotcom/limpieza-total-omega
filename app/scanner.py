@@ -175,7 +175,11 @@ class Scanner:
     @lru_cache(maxsize=2048)
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica mediante resolución de ruta que el archivo reside en el árbol de escaneo."""
-        return entry_path.lower().startswith(self.base_root_str)
+        try:
+            resolved = str(Path(entry_path).resolve()).lower()
+            return resolved.startswith(self.base_root_str)
+        except (OSError, RuntimeError):
+            return False
 
     def _has_invalid_name(self, name: str) -> bool:
         """Valida contra nombres de dispositivos reservados por el SO (ej: NUL, CON)."""

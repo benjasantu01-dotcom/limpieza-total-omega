@@ -454,3 +454,52 @@ FAILED evolve/tests/test_modules.py::test_partial_hash_only_reads_the_beginning 
 - `2026-10-05T08:14:34` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido un chequeo adicional en `_is_kernel_managed` para prevenir de forma explícita que la aplicación interactúe con el archivo `pagefile.sys` (archivo de paginación) mediante la inclusión de una validación específica, protegiendo así la integridad del sistema ante posibles intentos de borrado o movimiento de archivos críticos en uso persistente por el kernel.
 - `2026-10-05T08:14:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T08:14:34` Corrida terminada. Total usado hoy: 196.
+- `2026-10-05T08:22:33` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-10-05T08:23:04` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_safe_entry` al añadir una verificación explícita mediante `path.resolve()` antes de comparar con `base_root_str`, asegurando que no se pueda evadir el límite mediante ataques de rutas relativas o "traversal" (`..`).
+- `2026-10-05T08:23:37` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha añadido una validación de seguridad crítica en `_is_file_secure_to_read` para detectar y rechazar archivos de configuración que posean el bit de "setuid" o "setgid", además de reforzar la comprobación de permisos de propietario, evitando así posibles vectores de escalada de privilegios o ejecución de código en sistemas donde el archivo de configuración pudiera ser manipulado por usuarios no autorizados.
+- `2026-10-05T08:24:09` Tests FALLARON:
+```
+lve/tests/test_modules.py:677: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:175: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'Otro.lnk'
+  'MiPrograma.lnk'
+  Extra items in the right set:
+  'MiPrograma'
+  'Otro'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed, 7 warnings in 1.07s
+
+```
+- `2026-10-05T08:24:09` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Reforcé la seguridad defensiva en `_process_folder_entry` al reemplazar el uso de una variable no definida `_` (que causaba un error de ejecución) por la propiedad `name` del objeto `DirEntry` y validando estrictamente la ruta antes de intentar cualquier acceso, asegurando que el proceso no procese rutas fuera del alcance permitido.
+- `2026-10-05T08:24:09` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-05T08:24:09` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-05T08:24:29` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-05T08:24:29` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-05T08:24:59` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-05T08:24:59` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-05T08:24:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T08:24:59` Corrida terminada. Total usado hoy: 200.

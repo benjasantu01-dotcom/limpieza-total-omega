@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
-- Rechazadas por tests: 26
+- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Rechazadas por tests: 27
 - Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 195
+- Sin respuesta de la IA (error o límite): 192
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 140 | 17 | 29 | 4 | 118 |
-| 2026-10-05 | 88 | 9 | 16 | 6 | 77 |
+| 2026-10-04 | 140 | 17 | 29 | 4 | 114 |
+| 2026-10-05 | 90 | 10 | 16 | 6 | 78 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **54**
 - legibilidad y documentación: **48**
 - rendimiento: **43**
+- seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **42**
-- seguridad defensiva: **41**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,19 +33,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **21**
 - `diskreport.py`: **20**
 - `memory.py`: **18**
+- `scanner.py`: **18**
 - `assistant.py`: **17**
 - `browser.py`: **17**
 - `safety.py`: **17**
-- `scanner.py`: **17**
 - `duplicates.py`: **16**
 - `branding.py`: **15**
 - `organizer.py`: **15**
-- `settings.py`: **13**
+- `settings.py`: **14**
 - `startup.py`: **10**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T08:23:37` **settings.py** (seguridad defensiva): Se ha añadido una validación de seguridad crítica en `_is_file_secure_to_read` para detectar y rechazar archivos de configuración que posean el bit de "setuid" o "setgid", además de reforzar la comprobación de permisos de propietario, evitando así posibles vectores de escalada de privilegios o ejecución de código en sistemas donde el archivo de configuración pudiera ser manipulado por usuarios no autorizados.
+- `2026-10-05T08:23:04` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_entry` al añadir una verificación explícita mediante `path.resolve()` antes de comparar con `base_root_str`, asegurando que no se pueda evadir el límite mediante ataques de rutas relativas o "traversal" (`..`).
 - `2026-10-05T08:14:34` **safety.py** (seguridad defensiva): Se ha añadido un chequeo adicional en `_is_kernel_managed` para prevenir de forma explícita que la aplicación interactúe con el archivo `pagefile.sys` (archivo de paginación) mediante la inclusión de una validación específica, protegiendo así la integridad del sistema ante posibles intentos de borrado o movimiento de archivos críticos en uso persistente por el kernel.
 - `2026-10-05T08:13:39` **quarantine.py** (seguridad defensiva): Mejoré la seguridad en `_is_file_exclusive` implementando un chequeo de bloqueo más robusto para Windows mediante `ctypes` (`LockFileEx`), garantizando que no se pueda manipular un archivo si el SO tiene un handle de escritura sobre él, eliminando la dependencia de `msvcrt.locking` que es insuficiente para archivos abiertos por procesos del sistema.
 - `2026-10-05T08:06:16` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_get_process_path` validando que la ruta del ejecutable no sea una unión de directorios (reparse point) o una ruta protegida antes de procesar cualquier información sobre el mismo, integrando así una capa adicional de protección contra el acceso a rutas sensibles del sistema.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T07:32:33` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para que maneje correctamente archivos vacíos o de tamaño cero, los cuales anteriormente podían ser interpretados erróneamente como bloqueados o inaccesibles, además de añadir validaciones adicionales ante situaciones de acceso denegado durante el escaneo de directorios.
 - `2026-10-05T07:32:05` **memory.py** (robustez ante casos límite): Se implementó un manejo de errores robusto en `_read_windows_snapshot` para prevenir fallos silenciosos o bloqueos ante llamadas a la API de Windows que retornan estructuras inválidas o errores de permisos inesperados, asegurando que `MemorySnapshot` siempre reciba valores coherentes.
 - `2026-10-05T07:24:25` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `score_security` y `compute_score` ante valores inesperados de entrada y posibles fallos en la ejecución de reglas, asegurando que el motor de puntuación no colapse ante datos corruptos o métricas malformadas.
-- `2026-10-05T07:23:51` **duplicates.py** (robustez ante casos límite): Se añadió una validación de `path.exists()` y `path.is_file()` previa al cálculo de `stat()` en `_collect_candidates`, previniendo excepciones y bloqueos causados por archivos que desaparecen entre la iteración del directorio y el procesamiento del mismo (condición de carrera típica en escaneos de disco).
-- `2026-10-05T07:23:23` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o con metadatos inaccesibles, asegurando que las excepciones en `os.scandir` o `entry.stat` no terminen prematuramente el escaneo y garantizando que el `SummaryData` no retorne objetos corruptos.
