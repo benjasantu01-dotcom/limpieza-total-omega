@@ -40,12 +40,17 @@ __all__ = [
     "SAFETY_NOTE",
 ]
 
+# Aliases para mejorar la legibilidad de las firmas de funciones
 JunctionChecker: TypeAlias = Callable[[str], bool]
 BrowserMap: TypeAlias = Dict[str, str]
 OSPath: TypeAlias = Union[str, Path]
 
 class ScanResult(NamedTuple):
-    """Resultado de la operación de conteo de bytes y su estado de éxito."""
+    """
+    Representa el resultado de una operación recursiva de escaneo.
+    bytes_found: Total acumulado de bytes procesados.
+    success: Booleano que indica si el escaneo pudo completarse sin errores de acceso.
+    """
     bytes_found: int
     success: bool
 
@@ -219,7 +224,8 @@ def _sum_directory_recursive(
 ) -> ScanResult:
     """
     Ejecuta un recorrido recursivo con memoización para calcular el tamaño.
-    Evita procesar dos veces el mismo inodo o directorio normalizado.
+    Evita procesar dos veces el mismo inodo o directorio normalizado para
+    prevenir bucles infinitos en estructuras de carpetas complejas.
     """
     if depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)

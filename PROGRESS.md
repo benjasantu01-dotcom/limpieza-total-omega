@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **215** (42.7% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 42
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 211
+- Rechazadas por guardia de seguridad: 41
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 53 | 2 | 9 | 8 | 46 |
+| 2026-10-03 | 51 | 2 | 8 | 7 | 46 |
 | 2026-10-04 | 154 | 20 | 31 | 5 | 140 |
-| 2026-10-05 | 8 | 0 | 2 | 1 | 25 |
+| 2026-10-05 | 11 | 0 | 2 | 1 | 26 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **50**
-- legibilidad y documentación: **45**
+- legibilidad y documentación: **48**
 - seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **41**
-- rendimiento: **35**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
-- `healthscore.py`: **19**
-- `organizer.py`: **18**
+- `healthscore.py`: **20**
+- `quarantine.py`: **19**
+- `diskreport.py`: **19**
 - `assistant.py`: **18**
-- `diskreport.py`: **18**
 - `safety.py`: **17**
+- `organizer.py`: **17**
 - `scanner.py`: **15**
+- `browser.py`: **15**
 - `duplicates.py`: **15**
 - `branding.py`: **14**
-- `browser.py`: **14**
 - `settings.py`: **13**
 - `memory.py`: **13**
 - `startup.py`: **11**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T01:36:36` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a las funciones de normalización (`score_junk`, `score_security`, etc.) para aclarar qué métrica representan y cómo influyen en el puntaje, además de añadir type hints explícitos en los argumentos y retornos que faltaban para mejorar la legibilidad y el análisis estático.
+- `2026-10-05T01:35:57` **diskreport.py** (legibilidad y documentación): Mejoré la documentación de `walk_files` mediante un `docstring` detallado que especifica claramente sus parámetros, comportamiento ante errores y restricciones de seguridad, mejorando la legibilidad técnica para futuros desarrolladores.
+- `2026-10-05T01:35:27` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica y la precisión de los type hints en el módulo `browser.py` para clarificar la lógica de seguridad y el flujo de los recorridos de disco.
 - `2026-10-05T01:26:50` **branding.py** (legibilidad y documentación): Se introdujeron constantes descriptivas para reemplazar los "números mágicos" en las coordenadas del logo y se mejoró la documentación interna mediante docstrings que explican el propósito de las transformaciones geométricas y el uso de `MappingProxyType`, facilitando la mantenibilidad para futuros colaboradores.
 - `2026-10-05T01:25:21` **settings.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en la función `validate` para asegurar que el proceso de normalización no falle ante tipos de datos inesperados en el JSON, y se refuerza la validación en `_load_impl` para capturar errores de formato o permisos de forma más granular.
 - `2026-10-05T01:16:36` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas agregando validaciones de tipo y presencia para los argumentos (`path`, `entry`), evitando excepciones inesperadas al procesar archivos con rutas inusuales o bloqueos de acceso durante la lectura.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-04T14:22:38` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo implementando una validación de normalización de ruta antes de procesar cualquier entrada en `process_entry`, asegurando que `entry.path` sea tratado como una ruta absoluta y canónica para evitar vulnerabilidades de "path traversal" o inconsistencias por rutas relativas o mal formadas dentro del bucle de `os.scandir`.
 - `2026-10-04T14:13:26` **quarantine.py** (seguridad defensiva): Mejoré la seguridad de `quarantine.py` integrando validaciones de tipo en `_validate_isolation_request` para asegurar que el directorio de destino sea explícitamente un directorio y no un archivo, y reforzando la exclusividad en la escritura del manifiesto mediante una comprobación de existencia y permisos antes de la apertura del archivo temporal.
 - `2026-10-04T14:12:34` **organizer.py** (seguridad defensiva): Se ha robustecido `_is_safe_for_disk_op` añadiendo una comprobación explícita de `st_dev` mediante `path.resolve()` antes de realizar operaciones de movimiento, asegurando que el origen y el destino pertenezcan al mismo sistema de archivos (evitando la corrupción de datos o el borrado incompleto entre particiones), y garantizando que el uso de `ensure_safe_to_modify` dentro de `stage_for_review` sea estrictamente preventivo tras las validaciones booleanas.
-- `2026-10-04T14:03:53` **main.py** (seguridad defensiva): Se introdujo una capa de validación defensiva en `on_save_settings` para garantizar que cualquier carpeta de configuración persistida pase por `safety.ensure_safe_to_modify`, previniendo inyecciones de rutas externas en el archivo `settings.json` incluso si el usuario intenta configurar una ruta restringida manualmente.
-- `2026-10-04T14:02:38` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del sistema contra entradas inesperadas al añadir una validación de `TypeGuard` en `_evaluate_rules` y `compute_score`, asegurando que las métricas y reglas procesadas no contengan datos que puedan comprometer la integridad de la lógica de negocio ni causar desbordamientos durante la generación de mensajes.
-- `2026-10-04T13:53:34` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `_is_excluded_path` mediante la validación explícita de `follow_symlinks=False` en las llamadas a `Path.resolve()` y `os.stat()`, evitando que un usuario malintencionado pueda utilizar enlaces simbólicos para escapar del directorio raíz (`root_path`) durante el escaneo.

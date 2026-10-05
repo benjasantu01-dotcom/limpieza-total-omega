@@ -139,27 +139,27 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     return min_val if value < min_val else (max_val if value > max_val else value)
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
-    """Normaliza el exceso de archivos temporales: 1.0 (sin basura) a 0.0 (>= _LIMIT_JUNK_MB)."""
+    """Calcula ratio basado en MB de basura: 1.0 es ideal (0 MB), 0.0 es crítico (> _LIMIT_JUNK_MB)."""
     return _clamp(1.0 - (float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
-    """Normaliza riesgos detectados: 1.0 es el estado óptimo (sin amenazas)."""
+    """Calcula ratio de seguridad: penaliza hallazgos y advertencias. 1.0 es estado seguro."""
     return _clamp(1.0 - ((suspicious_count * 0.05) + (warnings * 0.25)))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
-    """Normaliza la RAM libre: 1.0 representa capacidad suficiente, 0.0 saturación."""
+    """Calcula ratio de RAM: 1.0 indica abundancia de memoria, 0.0 indica falta de recursos."""
     return _clamp(float(available_percent) * _INV_RAM)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
-    """Normaliza espacio en disco: 1.0 es capacidad holgada, 0.0 espacio crítico."""
+    """Calcula ratio de disco: 1.0 es espacio amplio, 0.0 indica proximidad al límite de uso."""
     return _clamp(float(free_percent) * _INV_DISK)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
-    """Normaliza archivos redundantes: 1.0 (sin duplicados) a 0.0 (límite alcanzado)."""
+    """Calcula ratio de duplicados: 1.0 es libre de redundancia, 0.0 es máximo permitido."""
     return _clamp(1.0 - (float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
-    """Normaliza programas de inicio: 1.0 (limpio) a 0.0 (demasiados procesos activos)."""
+    """Calcula ratio de arranque: 1.0 indica pocos programas de inicio, 0.0 indica saturación."""
     return _clamp(1.0 - (float(startup_count) * _INV_STARTUP))
 
 @dataclass
@@ -264,6 +264,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     )
 
 def _render_bar(points: int, max_val: int) -> str:
+    """Dibuja una representación visual simple de progreso (barras de texto)."""
     limit = max(1, max_val)
     p = max(0, min(points, limit))
     return "#" * p + "." * (limit - p)

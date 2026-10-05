@@ -283,8 +283,18 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre el sistema de archivos iterativamente usando una pila (stack) para
-    evitar problemas de recursión profunda.
+    Recorre el árbol de directorios de forma iterativa (no recursiva) para evitar desbordamientos de pila.
+
+    Args:
+        directory: La ruta raíz desde la cual iniciar el escaneo.
+        skip_protected: Si es True, filtra automáticamente archivos/carpetas según `safety.py`.
+
+    Yields:
+        Tuplas conteniendo la ruta `Path` del archivo y su tamaño en bytes.
+
+    Notes:
+        - Mantiene un conjunto `visited_inodes` para evitar ciclos infinitos en enlaces físicos o reparse points.
+        - Salta silenciosamente ante errores de acceso (permisos, archivos bloqueados o bloqueos de SO).
     """
     root_path = _validate_root(directory)
     if root_path is None: return
