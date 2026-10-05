@@ -1576,3 +1576,25 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-05T07:26:47` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-10-05T07:26:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T07:26:47` Corrida terminada. Total usado hoy: 176.
+- `2026-10-05T07:31:34` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-10-05T07:32:05` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se implementó un manejo de errores robusto en `_read_windows_snapshot` para prevenir fallos silenciosos o bloqueos ante llamadas a la API de Windows que retornan estructuras inválidas o errores de permisos inesperados, asegurando que `MemorySnapshot` siempre reciba valores coherentes.
+- `2026-10-05T07:32:33` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_file_locked` para que maneje correctamente archivos vacíos o de tamaño cero, los cuales anteriormente podían ser interpretados erróneamente como bloqueados o inaccesibles, además de añadir validaciones adicionales ante situaciones de acceso denegado durante el escaneo de directorios.
+- `2026-10-05T07:33:18` Tests FALLARON:
+```
+ comprometida: el archivo cambió durante la transferencia.
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - RuntimeError: Error durante aislamiento: Integridad comprometida: el archivo cambió durante la transferencia.
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - RuntimeError: Error durante aislamiento: Integridad comprometida: el archivo cambió durante la transferencia.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error durante aislamiento: Integridad comprometida: el archivo cambió durante la transferencia.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error durante aislamiento: Integridad comprometida: el archivo cambió durante la transferencia.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error durante aislamiento: Integridad comprometida: el archivo cambió durante la transferencia.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error durante aislamiento: Integridad comprometida: el archivo cambió durante la transferencia.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error durante aislamiento: Integridad comprometida: el archivo cambió durante la transferencia.
+8 failed, 291 passed, 7 warnings in 1.13s
+
+```
+- `2026-10-05T07:33:18` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se introdujo una validación de estado de carrera (TOCTOU) adicional en `_atomic_isolate_file` para asegurar que el archivo no haya sido modificado o reemplazado durante la fase de preparación, comparando el inodo obtenido al inicio con el inodo tras la copia, garantizando así la inmutabilidad durante la transacción.
+- `2026-10-05T07:33:20` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T07:33:23` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-05T07:33:33` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-10-05T07:33:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T07:33:33` Corrida terminada. Total usado hoy: 180.

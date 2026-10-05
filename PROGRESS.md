@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **217** (43.1% de aceptación)
+- Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 141 | 18 | 29 | 4 | 136 |
-| 2026-10-05 | 76 | 6 | 13 | 6 | 75 |
+| 2026-10-04 | 140 | 17 | 29 | 4 | 134 |
+| 2026-10-05 | 78 | 7 | 14 | 6 | 75 |
 
 ## Mejoras aceptadas por enfoque
 
-- robustez ante casos límite: **49**
+- robustez ante casos límite: **51**
 - legibilidad y documentación: **48**
 - rendimiento: **43**
 - manejo de errores y validación de entradas: **42**
-- seguridad defensiva: **35**
+- seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,19 +33,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **20**
 - `diskreport.py`: **19**
 - `assistant.py`: **17**
+- `memory.py`: **17**
 - `duplicates.py`: **16**
 - `browser.py`: **16**
-- `memory.py`: **16**
 - `scanner.py`: **16**
+- `organizer.py`: **15**
 - `safety.py`: **15**
 - `branding.py`: **14**
-- `organizer.py`: **14**
-- `settings.py`: **13**
+- `settings.py`: **12**
 - `startup.py`: **10**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T07:32:33` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para que maneje correctamente archivos vacíos o de tamaño cero, los cuales anteriormente podían ser interpretados erróneamente como bloqueados o inaccesibles, además de añadir validaciones adicionales ante situaciones de acceso denegado durante el escaneo de directorios.
+- `2026-10-05T07:32:05` **memory.py** (robustez ante casos límite): Se implementó un manejo de errores robusto en `_read_windows_snapshot` para prevenir fallos silenciosos o bloqueos ante llamadas a la API de Windows que retornan estructuras inválidas o errores de permisos inesperados, asegurando que `MemorySnapshot` siempre reciba valores coherentes.
 - `2026-10-05T07:24:25` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `score_security` y `compute_score` ante valores inesperados de entrada y posibles fallos en la ejecución de reglas, asegurando que el motor de puntuación no colapse ante datos corruptos o métricas malformadas.
 - `2026-10-05T07:23:51` **duplicates.py** (robustez ante casos límite): Se añadió una validación de `path.exists()` y `path.is_file()` previa al cálculo de `stat()` en `_collect_candidates`, previniendo excepciones y bloqueos causados por archivos que desaparecen entre la iteración del directorio y el procesamiento del mismo (condición de carrera típica en escaneos de disco).
 - `2026-10-05T07:23:23` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o con metadatos inaccesibles, asegurando que las excepciones en `os.scandir` o `entry.stat` no terminen prematuramente el escaneo y garantizando que el `SummaryData` no retorne objetos corruptos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T06:42:23` **healthscore.py** (rendimiento): Optimicé el rendimiento de `SystemMetrics.is_finite` reemplazando la introspección costosa con `getattr` y `__annotations__` por una validación directa y explícita de los atributos críticos, reduciendo el overhead en cada iteración del pipeline.
 - `2026-10-05T06:42:08` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `Path.resolve()` dentro del bucle principal y consolidando la lógica de validación de rutas para minimizar las operaciones de E/S y llamadas al sistema.
 - `2026-10-05T06:41:42` **diskreport.py** (rendimiento): Optimicé el bucle de recorrido en `walk_files` evitando la creación innecesaria de objetos `Path` y conversiones de tipo dentro del hot-loop, reemplazando `Path(entry.path)` por `entry.path` donde es posible, para reducir el overhead de asignación de memoria durante escaneos intensivos.
-- `2026-10-05T06:41:13` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas costosas a `os.scandir` y estadísticas de archivos mediante la reutilización efectiva de la caché de resultados de directorios ya visitados, reduciendo drásticamente la E/S en estructuras de carpetas anidadas.
-- `2026-10-05T06:22:27` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adopción de un estilo uniforme en los docstrings (siguiendo el formato NumPy/Google), la adición de Type Hints explícitos para las variables de clase y funciones, y la extracción de la lógica de filtrado de extensiones a una función privada más descriptiva para mejorar la mantenibilidad.
