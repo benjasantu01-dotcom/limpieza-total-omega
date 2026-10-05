@@ -71,6 +71,17 @@ WINDOWS_RESERVED_NAMES: Set[str] = {
     "LPT6", "LPT7", "LPT8", "LPT9"
 }
 
+def _check_path_for_junctions(path: Path) -> None:
+    """Verifica si una ruta es un punto de reparse o junction usando la API de Windows."""
+    if os.name != 'nt':
+        return
+    try:
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+        if attrs != -1 and (attrs & 0x400):  # FILE_ATTRIBUTE_REPARSE_POINT
+            raise UnsafePathError("Ruta detectada como punto de reparse/junction.")
+    except (OSError, AttributeError):
+        pass
+
 def _check_io_error_context(func: Callable, *args, **kwargs) -> Any:
     """Implementa reintento con espera (backoff exponencial) para I/O bloqueado."""
     max_retries = 3
@@ -164,20 +175,17 @@ class QuarantineItem:
         """
         if not stored_path.exists(): return False
         try:
-            # Detectar enlaces simbólicos o puntos de reparse (amenaza de salto de directorio)
-            if stored_path.is_symlink() or (hasattr(stored_path, 'is_junction') and stored_path.is_junction()):
+            _check_path_for_junctions(stored_path)
+            if stored_path.is_symlink():
                 return False
             
             st = stored_path.stat()
-            # Validación de propiedad (previene ataques de suplantación de archivos)
             if hasattr(os, 'getuid') and st.st_uid != os.getuid():
                 return False
 
-            # Validación contra TOCTOU: compara el inodo registrado con el actual
             if self.file_inode != 0 and st.st_ino != self.file_inode:
                 return False
             
-            # Un archivo en cuarentena nunca debe tener enlaces físicos (nlink > 1)
             if st.st_nlink > 1:
                 return False
             
@@ -194,7 +202,6 @@ class QuarantineItem:
         if not self._validate_integrity(stored_path):
             return False
         try:
-            # Compara el estado actual del archivo en disco con la huella registrada (SHA256)
             current_hash = _get_sha256(stored_path)
             return bool(self.sha256 and current_hash == self.sha256)
         except (OSError, PermissionError):
@@ -205,7 +212,6 @@ def _get_sha256(path: Path) -> str:
     """Calcula hash SHA-256 usando búferes para evitar saturación de memoria."""
     if not path.exists() or not path.is_file():
         return ""
-    # Evitar seguir enlaces simbólicos al abrir para el hash
     flags = os.O_RDONLY
     if hasattr(os, 'O_NOFOLLOW'):
         flags |= os.O_NOFOLLOW
@@ -256,12 +262,11 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
         return False
     
     try:
+        _check_path_for_junctions(path)
         st = path.stat()
-        # Seguridad defensiva: verificar propiedad (POSIX)
         if hasattr(os, 'getuid') and st.st_uid != os.getuid():
             return False
         
-        # Validación estricta de metadatos antes de la operación destructiva
         if expected_inode != 0 and st.st_ino != expected_inode:
             return False
             
@@ -269,13 +274,11 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
         if not is_safe_to_modify(resolved) or is_protected_path(resolved):
             return False
         
-        # Validación de integridad de contenido antes del borrado
         if expected_hash and _get_sha256(resolved) != expected_hash:
             return False
         if _is_file_locked(resolved):
             return False
 
-        # Verificación final de exclusividad para evitar race conditions antes de unlink
         if not _is_file_exclusive(resolved):
             return False
             
@@ -297,12 +300,11 @@ def _check_path_syntax_integrity(path: Path) -> None:
     if path.name.upper() in WINDOWS_RESERVED_NAMES:
         raise UnsafePathError("Nombre de archivo reservado por el sistema.")
 
+    _check_path_for_junctions(path)
     try:
         resolved = path.resolve(strict=True)
         if resolved.is_symlink():
             raise UnsafePathError("Operación denegada: enlace simbólico.")
-        if hasattr(resolved, 'is_junction') and resolved.is_junction():
-            raise UnsafePathError("Operación denegada: punto de reparse.")
     except (OSError, RuntimeError):
         pass
 
@@ -337,12 +339,13 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         raise ValueError("El directorio base no puede estar vacío.")
     try:
         path = Path(base).expanduser().resolve()
+        _check_path_for_junctions(path)
         if not path.name.strip() or path == path.parent:
             raise UnsafePathError("Ruta de cuarentena inválida o es raíz.")
         if is_protected_path(path):
             raise UnsafePathError("Directorio de cuarentena reside en ruta protegida.")
-        if path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction()):
-             raise UnsafePathError("Ruta de cuarentena no puede ser un punto de reparse.")
+        if path.is_symlink():
+             raise UnsafePathError("Ruta de cuarentena no puede ser un enlace simbólico.")
         ensure_safe_to_modify(path)
         if not path.exists():
             _check_io_error_context(path.mkdir, parents=True, exist_ok=True)
@@ -369,7 +372,6 @@ def _validate_quarantine_path(path: Path, base: Path) -> Path:
     resolved_base = base.resolve()
     if not is_within_directory(resolved_path, resolved_base):
         raise UnsafePathError("Acceso fuera del sandbox detectado.")
-    # Verificar que el nombre del archivo no intente evadir el control usando partes relativas
     if resolved_path.name != path.name:
         raise UnsafePathError("Intento de manipulación de ruta detectado.")
     return resolved_path
@@ -644,7 +646,6 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if stat_orig.st_size != original_size:
         raise RuntimeError("El archivo cambió durante la validación inicial (TOCTOU).")
     
-    # Prevenir aislamiento de hard links (potencial riesgo de seguridad)
     if stat_orig.st_nlink > 1:
         raise UnsafePathError("Aislamiento denegado: el archivo tiene enlaces físicos múltiples.")
     
@@ -657,7 +658,6 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if not is_safe_to_modify(destination.parent):
         raise UnsafePathError("El sandbox destino ha sido invalidado.")
 
-    # Pre-verificación: asegurar que ningún inodo en uso coincida (integridad del sandbox)
     existing_items = load_manifest(destination.parent.parent)
     if any(i.file_inode == stat_orig.st_ino for i in existing_items):
         raise RuntimeError("Colisión de inodo: el archivo parece estar ya registrado en el sandbox.")
@@ -705,12 +705,7 @@ def _validate_source_for_quarantine(source: Path) -> Path:
     """Valida integridad de la fuente pre-aislamiento."""
     if source.is_symlink():
         raise UnsafePathError("Aislamiento de enlaces simbólicos no permitido.")
-    try:
-        resolved = source.resolve(strict=True)
-        if hasattr(resolved, 'is_junction') and resolved.is_junction():
-            raise UnsafePathError("Aislamiento de puntos de reparse (Junctions) no permitido.")
-    except (OSError, RuntimeError):
-        pass
+    _check_path_for_junctions(source)
     if source.is_dir():
         raise UnsafePathError("Aislamiento de directorios no permitido.")
     if not source.is_file():
@@ -757,7 +752,6 @@ def quarantine_file(
     """
     p_source = _validate_input_path(source)
     
-    # Validación estricta pre-operación
     try:
         st_info = p_source.stat()
     except OSError as e:
@@ -812,7 +806,6 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     try:
         base_path = quarantine_dir(base)
         base_key = str(base_path)
-        # Acceso O(1) vía caché
         if base_key not in _MANIFEST_CACHE:
             load_manifest(base)
         quarantine_item = _MANIFEST_CACHE[base_key].get(item_id)
@@ -822,7 +815,6 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         
         stored_file = _validate_quarantine_path(base_path / quarantine_item.stored_name, base_path)
         if not stored_file.exists() or not stored_file.is_file():
-            # Limpieza proactiva de caché y manifiesto ante archivo perdido
             items = load_manifest(base)
             save_manifest([i for i in items if i.item_id != item_id], base)
             raise RuntimeError("Archivo en cuarentena inexistente.")
@@ -910,7 +902,6 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         if not items:
             return 0
         
-        # Mapa para búsqueda eficiente O(1)
         item_map = {i.stored_name: i for i in items}
         purged_ids: Set[str] = set()
         

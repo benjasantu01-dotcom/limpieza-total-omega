@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **232** (46.0% de aceptación)
+- Mejoras aceptadas: **233** (46.2% de aceptación)
 - Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 194
+- Sin respuesta de la IA (error o límite): 192
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 35 | 1 | 5 | 5 | 20 |
+| 2026-10-03 | 35 | 1 | 5 | 5 | 16 |
 | 2026-10-04 | 154 | 20 | 31 | 5 | 140 |
-| 2026-10-05 | 43 | 3 | 6 | 2 | 34 |
+| 2026-10-05 | 44 | 3 | 7 | 2 | 36 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - robustez ante casos límite: **53**
 - rendimiento: **42**
+- seguridad defensiva: **42**
 - manejo de errores y validación de entradas: **41**
-- seguridad defensiva: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **22**
 - `diskreport.py`: **21**
-- `quarantine.py`: **20**
+- `quarantine.py`: **21**
 - `assistant.py`: **19**
 - `organizer.py`: **18**
 - `safety.py`: **18**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T03:48:16` **quarantine.py** (seguridad defensiva): Se introdujo `_check_path_for_junctions` como una capa de seguridad defensiva explícita para detectar y rechazar puntos de reparse (Junctions/Reparse Points) tanto en la ruta origen como en la de destino, reforzando la protección contra ataques de salto de directorio o recursividad no deseada mediante llamadas directas a `ctypes` en Windows.
 - `2026-10-05T03:39:57` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_get_process_path` integrando `is_protected_path` de forma explícita antes de cualquier resolución de ruta, asegurando que solo se validen rutas que cumplan con la política de seguridad del proyecto antes de procesar atributos.
 - `2026-10-05T03:37:49` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del método `SystemMetrics.validate` aplicando un saneamiento de tipo más robusto y añadiendo una comprobación de desbordamiento antes de la asignación, evitando que valores inyectados o maliciosos fuera de rango puedan comprometer los cálculos del pipeline.
 - `2026-10-05T03:29:00` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de `_collect_candidates` mediante la inclusión de un chequeo estricto en la resolución de rutas y el uso de `st_ino` (inode) de forma más segura, evitando el procesamiento redundante de rutas vinculadas simbólicamente o puntos de montaje que podrían causar ciclos infinitos o lectura de archivos fuera de los límites permitidos.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T02:58:18` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `SystemMetrics` ante casos límite mediante la validación explícita de `is_finite` antes de procesar el cálculo, garantizando que estados intermedios del sistema no propaguen valores numéricos erróneos a lo largo del pipeline.
 - `2026-10-05T02:48:29` **diskreport.py** (robustez ante casos límite): Se mejora la robustez de `walk_files` y `_collect_summary_data` ante casos de rutas extremadamente largas o inválidas que podrían interrumpir el flujo de enumeración, asegurando que `os.scandir` se maneje dentro de un contexto protegido y que la conversión de `Path` sea siempre segura para el sistema operativo.
 - `2026-10-05T02:48:17` **browser.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante rutas inexistentes o inaccesibles en `_sum_directory_recursive` mediante el uso de `os.scandir` bajo un bloque `try-except` más robusto y la validación explícita de `entry.is_dir()` con manejo de errores, evitando que el escaneo se interrumpa prematuramente por errores de acceso de solo lectura en subcarpetas.
-- `2026-10-05T02:47:06` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` ante datos de entrada malformados, agregando una verificación explícita para asegurar que los valores numéricos no solo sean finitos, sino que tengan sentido semántico (evitando valores negativos inesperados) antes de aplicarlos, evitando así que una fuente de datos corrupta pueda corromper el estado de salud de la app.

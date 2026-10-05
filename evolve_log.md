@@ -1131,3 +1131,13 @@ FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_del
 - `2026-10-05T03:40:14` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la seguridad defensiva en `organizer.py` implementando una validación de ruta mediante `os.path.commonpath` dentro de `_is_recursive_violation` para asegurar que las operaciones de movimiento no escapen del directorio de destino, y se añadió una verificación de integridad de `os.DirEntry` antes de su acceso para evitar posibles Race Conditions durante el escaneo.
 - `2026-10-05T03:40:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T03:40:14` Corrida terminada. Total usado hoy: 88.
+- `2026-10-05T03:47:31` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-10-05T03:48:16` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se introdujo `_check_path_for_junctions` como una capa de seguridad defensiva explícita para detectar y rechazar puntos de reparse (Junctions/Reparse Points) tanto en la ruta origen como en la de destino, reforzando la protección contra ataques de salto de directorio o recursividad no deseada mediante llamadas directas a `ctypes` en Windows.
+- `2026-10-05T03:48:40` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-10-05T03:48:41` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T03:49:15` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-05T03:49:50` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-05T03:50:17` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-05T03:50:45` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-10-05T03:50:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T03:50:45` Corrida terminada. Total usado hoy: 92.
