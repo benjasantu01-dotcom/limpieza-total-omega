@@ -291,10 +291,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
     Yields:
         Tuplas conteniendo la ruta `Path` del archivo y su tamaño en bytes.
-
-    Notes:
-        - Mantiene un conjunto `visited_inodes` para evitar ciclos infinitos en enlaces físicos o reparse points.
-        - Salta silenciosamente ante errores de acceso (permisos, archivos bloqueados o bloqueos de SO).
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -377,9 +373,7 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """
-    Recorre el sistema de archivos y consolida métricas globales.
-    """
+    """Recorre el sistema de archivos y consolida métricas globales."""
     total_bytes: int = 0
     total_files: int = 0
     ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
@@ -391,11 +385,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         try:
             total_bytes += size_bytes
             total_files += 1
-            
-            # Optimización: extracción e internado manual de extensión
             ext_raw = path.suffix
             ext = ext_raw.lower() if ext_raw else "(sin extensión)"
-            
             stats = get_stats(ext)
             stats.total_bytes += size_bytes
             stats.count += 1

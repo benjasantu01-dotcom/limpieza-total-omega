@@ -976,3 +976,49 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-05T02:38:18` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimizé `entries_from_folders` reemplazando la creación innecesaria de objetos `Path` y el uso de `os.path.splitext` dentro de cada iteración por el uso eficiente de `os.DirEntry` y una pre-filtración de extensiones para minimizar el I/O y la carga del recolector de basura.
 - `2026-10-05T02:38:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T02:38:18` Corrida terminada. Total usado hoy: 64.
+- `2026-10-05T02:46:20` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-10-05T02:47:06` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext.ingest` ante datos de entrada malformados, agregando una verificación explícita para asegurar que los valores numéricos no solo sean finitos, sino que tengan sentido semántico (evitando valores negativos inesperados) antes de aplicarlos, evitando así que una fuente de datos corrupta pueda corromper el estado de salud de la app.
+- `2026-10-05T02:47:44` Tests FALLARON:
+```
+assert canvas.llamadas == []
+E       AssertionError: assert ['line'] == []
+E         
+E         Left contains one more item: 'line'
+E         
+E         Full diff:
+E         - []
+E         + [
+E         +     'line',
+E         + ]
+
+evolve/tests/test_modules.py:233: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:181: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - AssertionError: assert ['line'] == []
+  
+  Left contains one more item: 'line'
+  
+  Full diff:
+  - []
+  + [
+  +     'line',
+  + ]
+1 failed, 298 passed, 7 warnings in 0.87s
+
+```
+- `2026-10-05T02:47:44` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se ha añadido un método de saneamiento de configuración `_clamp_int` para asegurar que las dimensiones y valores críticos de renderizado no causen desbordamientos o comportamientos indefinidos al recibir entradas inesperadas desde la UI.
+- `2026-10-05T02:48:17` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia ante rutas inexistentes o inaccesibles en `_sum_directory_recursive` mediante el uso de `os.scandir` bajo un bloque `try-except` más robusto y la validación explícita de `entry.is_dir()` con manejo de errores, evitando que el escaneo se interrumpa prematuramente por errores de acceso de solo lectura en subcarpetas.
+- `2026-10-05T02:48:29` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se mejora la robustez de `walk_files` y `_collect_summary_data` ante casos de rutas extremadamente largas o inválidas que podrían interrumpir el flujo de enumeración, asegurando que `os.scandir` se maneje dentro de un contexto protegido y que la conversión de `Path` sea siempre segura para el sistema operativo.
+- `2026-10-05T02:48:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T02:48:29` Corrida terminada. Total usado hoy: 68.

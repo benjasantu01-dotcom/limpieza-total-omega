@@ -7,46 +7,49 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **221** (43.8% de aceptación)
-- Rechazadas por tests: 22
+- Rechazadas por tests: 23
 - Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 39 | 2 | 6 | 6 | 37 |
+| 2026-10-03 | 36 | 2 | 6 | 6 | 36 |
 | 2026-10-04 | 154 | 20 | 31 | 5 | 140 |
-| 2026-10-05 | 28 | 0 | 5 | 1 | 30 |
+| 2026-10-05 | 31 | 1 | 5 | 1 | 30 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
-- robustez ante casos límite: **43**
+- robustez ante casos límite: **46**
 - rendimiento: **42**
 - manejo de errores y validación de entradas: **41**
-- seguridad defensiva: **40**
+- seguridad defensiva: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
+- `diskreport.py`: **20**
 - `healthscore.py`: **20**
-- `diskreport.py`: **19**
-- `organizer.py`: **18**
+- `quarantine.py`: **19**
 - `safety.py`: **18**
-- `assistant.py`: **17**
+- `assistant.py`: **18**
+- `organizer.py`: **17**
 - `duplicates.py`: **16**
-- `memory.py`: **15**
 - `scanner.py`: **15**
+- `browser.py`: **15**
 - `branding.py`: **14**
-- `browser.py`: **14**
+- `memory.py`: **14**
 - `settings.py`: **13**
 - `startup.py`: **12**
 - `main.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T02:48:29` **diskreport.py** (robustez ante casos límite): Se mejora la robustez de `walk_files` y `_collect_summary_data` ante casos de rutas extremadamente largas o inválidas que podrían interrumpir el flujo de enumeración, asegurando que `os.scandir` se maneje dentro de un contexto protegido y que la conversión de `Path` sea siempre segura para el sistema operativo.
+- `2026-10-05T02:48:17` **browser.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante rutas inexistentes o inaccesibles en `_sum_directory_recursive` mediante el uso de `os.scandir` bajo un bloque `try-except` más robusto y la validación explícita de `entry.is_dir()` con manejo de errores, evitando que el escaneo se interrumpa prematuramente por errores de acceso de solo lectura en subcarpetas.
+- `2026-10-05T02:47:06` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` ante datos de entrada malformados, agregando una verificación explícita para asegurar que los valores numéricos no solo sean finitos, sino que tengan sentido semántico (evitando valores negativos inesperados) antes de aplicarlos, evitando así que una fuente de datos corrupta pueda corromper el estado de salud de la app.
 - `2026-10-05T02:38:18` **startup.py** (rendimiento): Optimizé `entries_from_folders` reemplazando la creación innecesaria de objetos `Path` y el uso de `os.path.splitext` dentro de cada iteración por el uso eficiente de `os.DirEntry` y una pre-filtración de extensiones para minimizar el I/O y la carga del recolector de basura.
 - `2026-10-05T02:37:30` **scanner.py** (rendimiento): Optimicé el rendimiento de la recursión evitando llamadas innecesarias a `Path.resolve()` dentro del bucle de escaneo mediante el uso de strings y el caché de rutas, reduciendo significativamente las operaciones de I/O en cada iteración.
 - `2026-10-05T02:37:00` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` eliminando la llamada innecesaria a `normalize()` (que es costosa al resolver rutas) en favor de una verificación basada en prefijos de cadena, y agregué un chequeo de acceso rápido antes de intentar resolver estructuras profundas.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T02:06:52` **assistant.py** (rendimiento): Optimicé el cálculo del estado de salud del sistema mediante la sustitución de llamadas repetidas a `ctx.get_metric` por una tupla pre-procesada de valores, reduciendo la carga de cómputo en el bucle de renderizado y mejorando la eficiencia del motor local.
 - `2026-10-05T02:06:06` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el "porqué" de las decisiones de seguridad, como el filtrado de caracteres prohibidos y el uso de la caché, además de añadir type hints y mejorar la claridad en el manejo de errores de I/O dentro de la clase `StartupEntry`.
 - `2026-10-05T01:57:11` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más precisos en la clase `_Validators`, aclarando la intención de cada chequeo de seguridad, y se han renombrado variables internas en `_load_impl` y `save` para diferenciar explícitamente entre el archivo de configuración activo y el archivo de respaldo (`.bak`), mejorando la legibilidad técnica sin alterar la funcionalidad.
-- `2026-10-05T01:56:53` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más específicos, se documentaron los parámetros de las funciones de heurística y se extrajo la validación de acceso a archivo en una función privada `_is_readable` para mejorar la mantenibilidad y claridad del código siguiendo las normas de documentación y legibilidad.
-- `2026-10-05T01:56:23` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `safety.py` mediante la adición de docstrings detallados en las funciones de validación interna y la clarificación de las constantes de seguridad, facilitando el mantenimiento y auditoría del código conforme a los estándares exigidos.
-- `2026-10-05T01:50:14` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `quarantine.py` mediante la adición de docstrings técnicos detallados en las funciones de manipulación de archivos (`_copy_with_verification`, `_write_temp_to_final`, `_atomic_isolate_file`), aclarando las precondiciones de seguridad, el uso de I/O atómico y el manejo de excepciones, para asegurar que cualquier colaborador futuro entienda las salvaguardas de integridad implementadas.

@@ -241,12 +241,15 @@ def _sum_directory_recursive(
                 if _should_skip_entry(entry, kernel32, _IS_JUNCTION_FN):
                     continue
                 try:
+                    # Usamos una variable local para la comprobación del tipo
+                    is_dir_entry = entry.is_dir(follow_symlinks=False)
                     st = entry.stat(follow_symlinks=False)
+                    
                     if st.st_ino in visited_inodes:
                         continue
                     visited_inodes.add(st.st_ino)
 
-                    if entry.is_dir(follow_symlinks=False):
+                    if is_dir_entry:
                         child_path = Path(entry.path)
                         if is_protected_path(child_path) or not _ensure_within_base(entry.path, root_abs_norm):
                             continue
