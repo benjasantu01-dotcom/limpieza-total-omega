@@ -94,7 +94,11 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     return min_val if value < min_val else (max_val if value > max_val else value)
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
-    """Crea un normalizador lineal basado en un valor límite."""
+    """
+    Genera un normalizador lineal:
+    Si inverse es True, 0 es perfecto (1.0) y limit es crítico (0.0).
+    Si inverse es False, 0 es crítico (0.0) y limit es perfecto (1.0).
+    """
     def scorer(val: float) -> NormalizedRatio:
         ratio = val / limit if limit != 0 else 0.0
         return _clamp(1.0 - ratio if inverse else ratio)
@@ -134,28 +138,32 @@ _PIPELINE: Final[List[PipelineEntry]] = [
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
     """Calcula ratio: 1.0 (0 MB) a 0.0 (>= _LIMIT_JUNK_MB)."""
-    return create_linear_scorer(_LIMIT_JUNK_MB)(float(junk_mb))
+    return create_linear_scorer(_LIMIT_JUNK_MB, inverse=True)(float(junk_mb))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
-    """Calcula ratio de seguridad: penaliza hallazgos y advertencias. 1.0 es estado seguro."""
+    """
+    Calcula ratio de seguridad:
+     Penaliza hallazgos (0.05 por unidad) y advertencias (0.25 por unidad).
+     1.0 es el estado base de seguridad.
+    """
     penalization = (float(suspicious_count) * 0.05) + (float(warnings) * 0.25)
     return _clamp(1.0 - penalization)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
-    """Calcula ratio de RAM: Escala la disponibilidad frente al límite crítico."""
+    """Calcula ratio de RAM: Normaliza la disponibilidad actual contra el límite crítico (0.0 a 1.0)."""
     return _clamp(float(available_percent) / _LIMIT_RAM_PERCENT)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
-    """Calcula ratio de disco: Escala el espacio libre frente al límite crítico."""
+    """Calcula ratio de disco: Normaliza el espacio libre contra el límite crítico (0.0 a 1.0)."""
     return _clamp(float(free_percent) / _LIMIT_DISK_PERCENT)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
-    """Calcula ratio de duplicados: 1.0 es ideal, 0.0 es máximo permitido."""
-    return create_linear_scorer(_LIMIT_DUPLICATE_MB)(float(duplicate_mb))
+    """Calcula ratio de duplicados: 1.0 (0 MB) a 0.0 (>= _LIMIT_DUPLICATE_MB)."""
+    return create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)(float(duplicate_mb))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
-    """Calcula ratio de arranque: 1.0 indica pocos programas, 0.0 saturación."""
-    return create_linear_scorer(float(_LIMIT_STARTUP_COUNT))(float(startup_count))
+    """Calcula ratio de arranque: 1.0 (0 programas) a 0.0 (>= _LIMIT_STARTUP_COUNT)."""
+    return create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inverse=True)(float(startup_count))
 
 @dataclass
 class SystemMetrics:
