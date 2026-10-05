@@ -358,10 +358,11 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """Solicita al sistema la reducción del working set de un proceso específico."""
     if not _is_windows: return False, "Solo soportado en Windows."
     
+    # Validación estricta de entrada
     try:
         target_pid = int(pid)
     except (ValueError, TypeError):
-        return False, "PID proporcionado no es un número válido."
+        return False, "El PID proporcionado no es un número válido."
     
     is_safe, error_msg = _is_safe_to_trim(target_pid)
     if not is_safe: return False, error_msg or "Verificación de seguridad fallida."
@@ -372,11 +373,13 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     kernel32 = ctypes.windll.kernel32
     proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
     if not proc_handle:
-        return False, f"No se pudo acceder al proceso (código {ctypes.get_last_error()})."
+        err = ctypes.get_last_error()
+        return False, f"No se pudo abrir el proceso para el trim (código {err})."
+        
     try:
         if psapi.EmptyWorkingSet(proc_handle) == 0:
-            error_code = ctypes.get_last_error()
-            return False, f"El sistema rechazó la solicitud (código {error_code})."
+            err = ctypes.get_last_error()
+            return False, f"El sistema rechazó la solicitud de trim (código {err})."
         return True, f"Working set liberado. {TRIM_WARNING}"
     finally:
         kernel32.CloseHandle(proc_handle)

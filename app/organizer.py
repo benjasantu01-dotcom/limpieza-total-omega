@@ -159,7 +159,6 @@ def _is_file_locked(path: Path) -> bool:
         return True
     
     try:
-        # Intenta abrir brevemente; si es 0 bytes, read(1) es suficiente para testear acceso
         with open(path, "rb") as f:
             f.read(1)
             return False
@@ -210,7 +209,6 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         target_dir = dest.parent if dest.exists() else dest
         if not target_dir.is_dir() or not os.access(target_dir, os.W_OK): return False
         
-        # Evitar mover archivos que ya residen en la carpeta de destino
         if src.resolve().parent == target_dir.resolve(): return False
         
         if _is_recursive_violation(src, dest): return False
@@ -307,6 +305,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         return None
     
     for junk_file in files:
+        if not junk_file or not isinstance(junk_file.path, Path): continue
         try:
             if not junk_file.path.exists() or not is_safe_to_modify(junk_file.path): continue
             if not _is_safe_for_disk_op(junk_file.path, dest_res): continue
@@ -323,6 +322,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """Verifica disponibilidad de espacio en disco y genera una ruta única destino."""
     try:
+        if not junk_file or not dest_base: return None
         usage = shutil.disk_usage(dest_base.anchor)
         if usage.free < (junk_file.size_bytes + MIN_FREE_SPACE_BYTES): return None
         safe_name = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"

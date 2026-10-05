@@ -349,9 +349,14 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
             raise UnsafePathError("Directorio de cuarentena reside en ruta protegida.")
         if path.is_symlink():
              raise UnsafePathError("Ruta de cuarentena no puede ser un enlace simbólico.")
-        ensure_safe_to_modify(path)
+        
+        # Validar seguridad mediante el booleano antes de cualquier operación de escritura
+        if not is_safe_to_modify(path):
+            raise UnsafePathError("Ruta de cuarentena marcada como insegura.")
+            
         if not path.exists():
             _check_io_error_context(path.mkdir, parents=True, exist_ok=True)
+            
         if not os.access(path, os.W_OK | os.R_OK):
             raise PermissionError("Permisos insuficientes en directorio.")
         _ensure_path_ownership(path)

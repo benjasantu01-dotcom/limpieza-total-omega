@@ -1249,3 +1249,13 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-05T14:22:37` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` al encapsular la ejecución de los scorers individuales dentro de un bloque `try-except` más específico y añadiendo una validación explícita para prevenir valores `None` o comportamientos inesperados durante el procesamiento del pipeline.
 - `2026-10-05T14:22:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T14:22:37` Corrida terminada. Total usado hoy: 340.
+- `2026-10-05T14:30:45` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-05T14:31:47` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-05T14:31:50` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-05T14:31:57` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-05T14:32:09` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-05T14:32:57` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` y sus ayudantes validando explícitamente la entrada de `pid` y capturando errores de la API de Windows con `ctypes.GetLastError()` para ofrecer diagnósticos precisos en lugar de fallos silenciosos.
+- `2026-10-05T14:33:27` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` capturando errores específicos durante la iteración y validando la integridad del destino, evitando que una falla en un solo archivo detenga el proceso completo de organización mientras mantengo la seguridad mediante `is_safe_to_modify`.
+- `2026-10-05T14:34:00` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_dir` centralizando la validación de la estructura del directorio, evitando que errores de resolución de rutas (`OSError`) o permisos se propaguen silenciosamente y asegurando que `ensure_safe_to_modify` se utilice correctamente con un retorno booleano implícito en el flujo, añadiendo chequeos específicos contra valores `None` o rutas vacías.
+- `2026-10-05T14:34:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T14:34:00` Corrida terminada. Total usado hoy: 344.
