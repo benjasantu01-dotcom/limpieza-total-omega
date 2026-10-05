@@ -43,6 +43,7 @@ from safety import (
 # Tipos definidos para claridad en firmas de funciones
 PathLike: TypeAlias = Union[str, Path]
 ManifestData: TypeAlias = List[Dict[str, Any]]
+Inode: TypeAlias = int
 
 __all__: Tuple[str, ...] = (
     "QuarantineItem",
@@ -121,7 +122,7 @@ class QuarantineItem:
     reason: str
     quarantined_at: str
     sha256: str = ""
-    file_inode: int = 0  # Identificador de inodo para validación TOCTOU
+    file_inode: Inode = 0  # Identificador de inodo para validación TOCTOU
 
     def __post_init__(self) -> None:
         try:
@@ -170,8 +171,7 @@ class QuarantineItem:
     def _validate_integrity(self, stored_path: Path) -> bool:
         """
         Realiza validaciones estructurales de seguridad en el sandbox.
-        Verifica: existencia, tipos no permitidos (enlaces/junctions), 
-        propiedad del archivo, invariabilidad del inodo y tamaño esperado.
+        Verifica: existencia, tipos no permitidos, propiedad, inodo y tamaño.
         """
         if not stored_path.exists(): return False
         try:
@@ -198,7 +198,7 @@ class QuarantineItem:
             return False
 
     def verify_integrity(self, stored_path: Path) -> bool:
-        """Realiza comprobación completa: validación de estructura + verificación de contenido (hash)."""
+        """Realiza comprobación completa: validación de estructura + hash."""
         if not self._validate_integrity(stored_path):
             return False
         try:
@@ -254,7 +254,7 @@ def _is_file_locked(path: Path) -> bool:
     """Wrapper para chequeo de bloqueos de archivos en el sistema operativo."""
     return _is_file_in_use_by_system(path)
 
-def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: int = 0) -> bool:
+def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0) -> bool:
     """Eliminación controlada tras validación estricta de metadatos y contenido."""
     if not path.exists() or not path.is_file():
         return False
@@ -263,13 +263,11 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
     
     try:
         st = path.stat()
-        # Validación de integridad de inodo y ownership
         if expected_inode != 0 and st.st_ino != expected_inode:
             return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid():
             return False
             
-        # Validación de hash si se proporciona
         if expected_hash and _get_sha256(path) != expected_hash:
             return False
             
@@ -546,14 +544,16 @@ def _create_temp_file(source: Path, destination: Path) -> Path:
     return destination.parent / f".{destination.name}.{uuid.uuid4().hex}.tmp"
 
 
+def _verify_copied_data(source_stat: os.stat_result, dest_path: Path, source_hash: str) -> None:
+    """Valida la integridad de los datos transferidos comparando tamaño y hash."""
+    if dest_path.stat().st_size != source_stat.st_size:
+        raise OSError("Falla de integridad: tamaño mismatch tras copia.")
+    final_hash = _get_sha256(dest_path)
+    if not final_hash or final_hash != source_hash:
+        raise OSError("Falla crítica: el hash del archivo copiado no coincide.")
+
 def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> None:
-    """
-    Copia datos de 'source' a 'temp_dest' mediante streaming (I/O).
-    Realiza validaciones de integridad: verifica que el origen sea un archivo 
-    regular, utiliza un archivo temporal para evitar colisiones, fuerza el 
-    flushing al disco (fsync) y valida que el hash SHA256 y tamaño del archivo 
-    resultado coincidan con el original para detectar corrupción o sabotaje.
-    """
+    """Copia datos de 'source' a 'temp_dest' mediante streaming con validación."""
     flags = os.O_RDONLY
     if hasattr(os, 'O_NOFOLLOW'):
         flags |= os.O_NOFOLLOW
@@ -580,12 +580,7 @@ def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> 
             except Exception:
                 os.close(dest_fd)
                 raise
-        
-        if temp_dest.stat().st_size != stat_src.st_size:
-            raise OSError("Falla de integridad: tamaño mismatch tras copia.")
-        final_hash = _get_sha256(temp_dest)
-        if not final_hash or final_hash != source_hash:
-            raise OSError("Falla crítica: el hash del archivo copiado no coincide.")
+        _verify_copied_data(stat_src, temp_dest, source_hash)
     except (OSError, IOError) as e:
         if temp_dest.exists():
             try: _check_io_error_context(temp_dest.unlink)
@@ -593,12 +588,8 @@ def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> 
         raise OSError(f"Falla durante operación I/O de copia: {e}")
 
 
-def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, int]:
-    """
-    Gestiona la secuencia lógica de aislamiento: valida la sintaxis, 
-    las precondiciones de transferencia (seguridad y permisos), realiza la 
-    copia verificada (SHA256) y finalmente reemplaza el archivo destino.
-    """
+def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, Inode]:
+    """Gestiona la secuencia lógica de aislamiento: valida y reemplaza archivo."""
     _check_path_syntax_integrity(destination)
     _validate_file_transfer_preconditions(source, destination)
     
@@ -626,14 +617,8 @@ def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, int]:
         raise OSError(f"Error crítico en transferencia: {e}")
 
 
-def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, int]:
-    """
-    Ejecuta el aislamiento atómico de un archivo. 
-    Verifica mediante la técnica de inodos y tamaño que el archivo origen no 
-    haya sido modificado durante la fase de análisis (TOCTOU), rechaza el 
-    aislamiento de hard links por razones de seguridad de integridad, y delega 
-    la copia a la capa de transferencia verificada.
-    """
+def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode]:
+    """Ejecuta el aislamiento atómico verificando precondiciones TOCTOU."""
     if not source.exists():
         raise FileNotFoundError("Archivo origen no existe.")
     stat_orig = _check_io_error_context(source.stat)
@@ -654,7 +639,7 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
 
     existing_items = load_manifest(destination.parent.parent)
     if any(i.file_inode == stat_orig.st_ino for i in existing_items):
-        raise RuntimeError("Colisión de inodo: el archivo parece estar ya registrado en el sandbox.")
+        raise RuntimeError("Colisión de inodo: el archivo parece estar ya registrado.")
 
     try:
         return _write_temp_to_final(source, destination)
@@ -668,7 +653,7 @@ def _register_quarantine_item(
     destination: Path,
     source_path: Path,
     file_hash: str,
-    file_inode: int,
+    file_inode: Inode,
     reason: str,
     original_size: int,
     base: PathLike
@@ -741,9 +726,7 @@ def quarantine_file(
     reason: str = "Marcado como sospechoso",
     base: PathLike = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
-    """
-    Aísla un archivo de forma segura, respetando todas las garantías de integridad.
-    """
+    """Aísla un archivo de forma segura, respetando garantías de integridad."""
     p_source = _validate_input_path(source)
     
     try:
@@ -876,7 +859,7 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 
 
 def _is_item_purgable(file_path: Path, item: QuarantineItem) -> bool:
-    """Valida los requisitos de seguridad antes de eliminar un archivo de la cuarentena."""
+    """Valida los requisitos de seguridad antes de eliminar un archivo."""
     return (
         file_path.is_file() and 
         not file_path.is_symlink() and
@@ -896,7 +879,6 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         item_map = {i.stored_name: i for i in items}
         purged_ids: Set[str] = set()
         
-        # Iteración segura procesando ítem por ítem
         for f in quarantine_root.iterdir():
             if f.name == MANIFEST_NAME or not f.is_file():
                 continue

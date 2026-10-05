@@ -116,6 +116,10 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
         return False
     return True
 
+def _is_target_extension(name: str) -> bool:
+    """Verifica si la extensión del archivo es candidata para el análisis heurístico."""
+    return Path(name).suffix.lower() in SUSPICIOUS_ALL_EXTS
+
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Heurística: Detecta doble extensión que oculta el tipo real de archivo."""
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
@@ -191,7 +195,7 @@ class Scanner:
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Filtro de seguridad: Valida integridad, reparse points y exclusiones de la lista blanca."""
+        """Filtro de seguridad: Valida integridad, reanálisis y exclusiones (whitelist)."""
         if not isinstance(entry, os.DirEntry) or not entry.path:
             return False
         if "\0" in entry.path:
@@ -224,10 +228,10 @@ class Scanner:
     @lru_cache(maxsize=1024)
     def _is_relevant_extension(name: str) -> bool:
         """Cachea si una extensión pertenece al conjunto de archivos que requieren heurística."""
-        return Path(name).suffix.lower() in SUSPICIOUS_ALL_EXTS
+        return _is_target_extension(name)
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        """Orquestador: decide si explorar subdirectorio o analizar archivo basándose en el tipo."""
+        """Orquestador: Decide si explorar subdirectorio o analizar archivo."""
         try:
             if not entry.path: return
             
