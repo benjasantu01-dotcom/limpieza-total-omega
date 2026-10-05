@@ -87,7 +87,8 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 def _get_file_size(path: Path) -> int:
     """Obtiene el tamaño del archivo con manejo robusto de excepciones de concurrencia."""
     try:
-        return int(path.stat().st_size)
+        size = path.stat().st_size
+        return int(size) if size >= 0 else -1
     except (OSError, PermissionError, FileNotFoundError, AttributeError):
         return -1
 
@@ -101,7 +102,6 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         if _get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask:
             return None
         stats = entry.stat(follow_symlinks=False)
-        # st_nlink > 1 indica hard links, potencialmente complicados para el reporte
         if getattr(stats, "st_nlink", 1) > 1:
             return None
         return stats
@@ -146,7 +146,8 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Heurística: Identifica archivos ejecutables de 0 bytes."""
-    if path and _get_file_size(path) == 0:
+    size = _get_file_size(path)
+    if size == 0:
         return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
     return None
 

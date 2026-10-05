@@ -1378,3 +1378,47 @@ FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_del
 - `2026-10-05T05:43:20` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_to_long_path` para evitar errores en llamadas recursivas o cuando la ruta ya contiene el prefijo `\\?\`, previniendo potenciales excepciones de tipo en el manejo de strings.
 - `2026-10-05T05:43:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T05:43:20` Corrida terminada. Total usado hoy: 136.
+- `2026-10-05T05:49:44` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-10-05T05:50:14` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las heurísticas de archivo validando explícitamente que los resultados intermedios (como el tamaño del archivo o atributos) no sean negativos o inválidos antes de procesarlos, evitando así errores lógicos y excepciones innecesarias.
+- `2026-10-05T05:50:44` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._check_path_safety
+- `2026-10-05T05:51:14` Tests FALLARON:
+```
+lve/tests/test_modules.py:677: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:176: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'Otro.lnk'
+  'MiPrograma.lnk'
+  Extra items in the right set:
+  'MiPrograma'
+  'Otro'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed, 7 warnings in 1.50s
+
+```
+- `2026-10-05T05:51:14` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Corregí un error de referencia de variable (`_`) en `_process_folder_entry` y mejoré la robustez de la validación de entrada de archivos en carpeta asegurando que la ruta exista antes de procesarla, evitando posibles excepciones de tipo `None` o `OSError` al realizar el `stat`.
+- `2026-10-05T05:51:42` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: SystemContext._apply_field
+- `2026-10-05T05:51:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T05:51:42` Corrida terminada. Total usado hoy: 140.
