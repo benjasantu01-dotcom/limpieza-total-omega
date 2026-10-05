@@ -343,7 +343,7 @@ def _load_impl(ruta: Path) -> AppSettings:
     if not ruta.exists(): return DEFAULTS.copy()
     try:
         resolved = ruta.resolve()
-        ensure_safe_to_modify(str(resolved))
+        if not is_safe_to_modify(str(resolved)): return DEFAULTS.copy()
         with open(resolved, "r", encoding="utf-8") as f:
             if not _is_file_secure_to_read(f): return DEFAULTS.copy()
             content = f.read(MAX_SETTINGS_SIZE + 1)
@@ -442,9 +442,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             try: os.replace(config_path, bak_path)
             except OSError: pass
         
-        # Validar nuevamente antes del reemplazo final contra TOCTOU
         if not is_safe_to_modify(str(config_path.resolve().parent)):
-            raise PermissionError("Seguridad comprometida: ruta alterada")
+            raise PermissionError("Seguridad comprometida")
             
         os.replace(temp_path, config_path)
         _MANAGER.clear()

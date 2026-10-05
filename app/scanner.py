@@ -92,9 +92,9 @@ def _get_file_size(path: Path) -> int:
     if not isinstance(path, Path):
         return -1
     try:
-        size = path.stat().st_size
-        return int(size) if size >= 0 else -1
-    except (OSError, PermissionError, FileNotFoundError, AttributeError):
+        stats = path.stat()
+        return int(stats.st_size) if stats.st_size >= 0 else -1
+    except (OSError, PermissionError, FileNotFoundError, AttributeError, ValueError):
         return -1
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
@@ -102,14 +102,10 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     if not isinstance(entry, os.DirEntry):
         return None
     try:
-        if entry.is_symlink():
-            return None
-        if _get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask:
+        if entry.is_symlink() or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask):
             return None
         stats = entry.stat(follow_symlinks=False)
-        if getattr(stats, "st_nlink", 1) > 1:
-            return None
-        return stats
+        return stats if getattr(stats, "st_nlink", 1) <= 1 else None
     except (OSError, PermissionError, AttributeError):
         return None
 
@@ -139,7 +135,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
     stats = _safe_stat(entry) if entry else None
     if stats:
-        mtime = getattr(stats, "st_mtime", None)
+        mtime = getattr(stats, "st_mtime", 0.0)
         if isinstance(mtime, (int, float)) and mtime > 0:
             if (now_ts - float(mtime)) < (SCAN_LIMITS.recent_hours * 3600):
                 return Suspicion(path, f"Ejecutable reciente (<{SCAN_LIMITS.recent_hours}h)", "info")

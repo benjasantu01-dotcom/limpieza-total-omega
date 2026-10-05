@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 38
+- Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 11
 - Sin respuesta de la IA (error o límite): 211
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 78 | 7 | 13 | 2 | 60 |
-| 2026-10-05 | 144 | 15 | 25 | 9 | 151 |
+| 2026-10-04 | 74 | 7 | 13 | 2 | 60 |
+| 2026-10-05 | 147 | 15 | 26 | 9 | 151 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **54**
-- manejo de errores y validación de entradas: **46**
+- manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **45**
-- rendimiento: **40**
 - legibilidad y documentación: **37**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **22**
-- `diskreport.py`: **20**
 - `quarantine.py`: **20**
 - `memory.py`: **20**
-- `scanner.py`: **19**
-- `safety.py`: **17**
-- `branding.py`: **16**
-- `browser.py`: **16**
-- `duplicates.py`: **16**
+- `scanner.py`: **20**
+- `diskreport.py`: **19**
+- `safety.py`: **18**
 - `organizer.py`: **16**
 - `assistant.py`: **16**
-- `settings.py`: **12**
+- `branding.py`: **15**
+- `duplicates.py`: **15**
+- `browser.py`: **15**
+- `settings.py`: **13**
 - `main.py`: **6**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T14:43:00` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` encapsulando la lógica de escritura en un bloque `try...finally` más específico para garantizar que el archivo `temp` siempre se intente limpiar ante cualquier fallo, y añadí validaciones `is_safe_to_modify` previas a las operaciones de archivo para evitar excepciones inesperadas en entornos con restricciones de acceso.
+- `2026-10-05T14:42:37` **scanner.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `_safe_stat` y `_get_file_size` asegurando que los valores devueltos sean consistentes y manejables, evitando que excepciones de acceso a disco se propaguen fuera de las funciones de utilidad.
+- `2026-10-05T14:42:06` **safety.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `_to_long_path` y `_get_file_attrs` para evitar excepciones no capturadas al procesar rutas mal formadas o inaccesibles, asegurando que el bucle de seguridad retorne estados seguros en lugar de abortar la ejecución.
 - `2026-10-05T14:34:00` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_dir` centralizando la validación de la estructura del directorio, evitando que errores de resolución de rutas (`OSError`) o permisos se propaguen silenciosamente y asegurando que `ensure_safe_to_modify` se utilice correctamente con un retorno booleano implícito en el flujo, añadiendo chequeos específicos contra valores `None` o rutas vacías.
 - `2026-10-05T14:33:27` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` capturando errores específicos durante la iteración y validando la integridad del destino, evitando que una falla en un solo archivo detenga el proceso completo de organización mientras mantengo la seguridad mediante `is_safe_to_modify`.
 - `2026-10-05T14:32:57` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y sus ayudantes validando explícitamente la entrada de `pid` y capturando errores de la API de Windows con `ctypes.GetLastError()` para ofrecer diagnósticos precisos en lugar de fallos silenciosos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T12:49:26` **safety.py** (seguridad defensiva): Se ha añadido una validación preventiva mediante `os.access(path, os.W_OK)` antes de intentar cualquier operación de metadatos o apertura de archivo en `ensure_safe_to_modify`, lo cual reduce las excepciones de sistema y refuerza la seguridad defensiva al verificar permisos de escritura del proceso actual de manera temprana y explícita.
 - `2026-10-05T12:39:37` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_atomic_isolate_file` agregando una validación estricta de la relación padre-hijo después de resolver la ruta, previniendo ataques de tipo "Time-of-check to time-of-use" (TOCTOU) y garantizando que el archivo sea aislado únicamente en el directorio de cuarentena validado, bloqueando intentos de escape mediante manipulaciones de rutas relativas o symlinks.
 - `2026-10-05T12:38:51` **organizer.py** (seguridad defensiva): Se reforzó `_is_safe_for_disk_op` añadiendo una validación explícita para evitar que se intenten mover archivos que residen dentro del directorio de destino (`dest_res`), previniendo posibles errores de recursión o estados inconsistentes en la estructura de archivos durante la operación de limpieza.
-- `2026-10-05T12:38:18` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `trim_working_set` implementando un chequeo previo de integridad con `is_safe_to_modify` para asegurar que el proceso no esté operando sobre archivos protegidos o en ubicaciones bloqueadas antes de intentar cualquier manipulación de memoria.
-- `2026-10-05T12:29:13` **healthscore.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_evaluate_rules` y `compute_score` implementando una validación de integridad para evitar que inyecciones de mensajes malformados o errores en las funciones `scorer` propaguen estados inconsistentes, asegurando que el pipeline siempre retorne un resultado válido incluso ante métricas inesperadas.
-- `2026-10-05T12:28:06` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` implementando una validación explícita mediante `is_relative_to` (o equivalente) y `path.resolve()` antes de procesar cada entrada, evitando así vulnerabilidades de "path traversal" donde un enlace simbólico o un reparse point malicioso podría intentar escapar del directorio raíz definido, manteniendo la integridad del escaneo.

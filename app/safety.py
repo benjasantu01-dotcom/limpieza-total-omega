@@ -108,7 +108,7 @@ def _to_long_path(path_str: str) -> str:
     Transforma la ruta al formato '\\?\' para permitir el acceso a rutas que exceden 
     los 260 caracteres (MAX_PATH) en Windows.
     """
-    if os.name != 'nt' or not isinstance(path_str, str):
+    if os.name != 'nt' or not isinstance(path_str, str) or not path_str:
         return path_str
     if path_str.startswith("\\\\?\\"):
         return path_str
@@ -130,7 +130,7 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         return attrs if attrs != 0xFFFFFFFF else 0
-    except (AttributeError, OSError, ctypes.ArgumentError, TypeError):
+    except (AttributeError, OSError, ctypes.ArgumentError, TypeError, ValueError):
         return 0
 
 class SafetyValidationErrorCode(IntEnum):
