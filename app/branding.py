@@ -415,6 +415,10 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         if ":" in path.name or any(c in path.name for c in ("<", ">", '"', "|", "?", "*")):
             return None
         
+        # Impedir sobrescritura de directorios
+        if path.exists() and path.is_dir():
+            return None
+        
         if path.exists() and (path.is_symlink() or not path.is_file()):
             return None
         
@@ -450,7 +454,7 @@ def _get_cached_stripe_data(scale: float, franjas_count: int) -> Tuple[Tuple[Tup
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     """Renderiza las franjas internas geométricas del escudo."""
     try:
-        if not math.isfinite(scale) or scale <= 0: return
+        if canvas is None or not math.isfinite(scale) or scale <= 0: return
         franjas_count = max(6, int(28 * scale))
         base_y = canvas_y + 18 * scale
         center_x = canvas_x + 64 * scale
@@ -461,12 +465,12 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
             canvas.create_rectangle(center_x - w, base_y + y_start, 
                                     center_x + w, base_y + y_end, 
                                     fill=hex_color, outline="")
-    except (TypeError, ValueError, ZeroDivisionError, IndexError): pass
+    except (TypeError, ValueError, ZeroDivisionError, IndexError, AttributeError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     """Renderiza glifo y decoraciones superficiales del escudo (línea diagonal y omega)."""
     try:
-        if not math.isfinite(scale) or scale <= 0: return
+        if canvas is None or not math.isfinite(scale) or scale <= 0: return
         
         LINE_WIDTH_FACTOR: Final[float] = 8.0
         TEXT_Y_OFFSET: Final[float] = 96.0
@@ -485,6 +489,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """Renderiza el escudo corporativo compuesto."""
     try:
+        if canvas is None: return
         s = float(size)
         cx, cy = float(canvas_x), float(canvas_y)
         if not math.isfinite(s) or s <= 0 or not math.isfinite(cx) or not math.isfinite(cy): return

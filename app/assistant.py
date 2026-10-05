@@ -420,7 +420,10 @@ class SystemContext:
         """Realiza comprobaciones de seguridad sobre el objeto fuente antes de ingestarlo."""
         if source is None: return False
         if not isinstance(source, (dict, object)): return False
-        return not _is_input_too_deep_or_complex(source)
+        try:
+            return not _is_input_too_deep_or_complex(source)
+        except Exception:
+            return False
 
     def ingest(self, source: Any) -> bool:
         """Normaliza e importa datos externos al contexto local de manera transaccional."""

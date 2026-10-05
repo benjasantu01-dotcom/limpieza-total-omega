@@ -7,45 +7,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **222** (44.0% de aceptación)
-- Rechazadas por tests: 23
+- Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 86 | 8 | 15 | 2 | 61 |
-| 2026-10-05 | 136 | 15 | 25 | 9 | 147 |
+| 2026-10-04 | 84 | 7 | 15 | 2 | 60 |
+| 2026-10-05 | 138 | 15 | 25 | 9 | 149 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **54**
 - seguridad defensiva: **45**
-- legibilidad y documentación: **44**
+- legibilidad y documentación: **42**
 - rendimiento: **41**
-- manejo de errores y validación de entradas: **38**
+- manejo de errores y validación de entradas: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **22**
+- `healthscore.py`: **21**
 - `quarantine.py`: **20**
 - `scanner.py`: **20**
 - `diskreport.py`: **19**
 - `memory.py`: **19**
+- `assistant.py`: **17**
 - `safety.py`: **17**
-- `duplicates.py`: **16**
 - `organizer.py`: **16**
-- `assistant.py`: **16**
+- `branding.py`: **16**
 - `browser.py`: **16**
-- `branding.py`: **15**
+- `duplicates.py`: **15**
 - `settings.py`: **13**
 - `startup.py`: **7**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T14:14:46` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` al verificar explícitamente que la ruta resuelta no sea un directorio existente antes de intentar escribir, evitando errores de permisos o comportamientos inesperados, y se aseguró la integridad de los parámetros en las funciones de dibujo mediante la normalización temprana y validación de `None`.
+- `2026-10-05T14:14:18` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para validar explícitamente tipos de datos inesperados y manejar excepciones durante la recursión, evitando posibles bloqueos al procesar fuentes de datos externas malformadas.
 - `2026-10-05T12:50:39` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en la escritura atómica de archivos añadiendo una validación explícita mediante `is_safe_to_modify` para detectar si la ruta de configuración ha sido alterada a un enlace simbólico o un punto de unión justo antes de la operación de `os.replace`, evitando ataques de tiempo de verificación/tiempo de uso (TOCTOU).
 - `2026-10-05T12:49:26` **safety.py** (seguridad defensiva): Se ha añadido una validación preventiva mediante `os.access(path, os.W_OK)` antes de intentar cualquier operación de metadatos o apertura de archivo en `ensure_safe_to_modify`, lo cual reduce las excepciones de sistema y refuerza la seguridad defensiva al verificar permisos de escritura del proceso actual de manera temprana y explícita.
 - `2026-10-05T12:39:37` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_atomic_isolate_file` agregando una validación estricta de la relación padre-hijo después de resolver la ruta, previniendo ataques de tipo "Time-of-check to time-of-use" (TOCTOU) y garantizando que el archivo sea aislado únicamente en el directorio de cuarentena validado, bloqueando intentos de escape mediante manipulaciones de rutas relativas o symlinks.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T12:09:31` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `save` mediante una verificación explícita de `is_safe_to_modify` en el directorio padre, previniendo operaciones de escritura en ubicaciones potencialmente peligrosas o restringidas antes de intentar crear archivos temporales.
 - `2026-10-05T12:09:11` **scanner.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas que contienen caracteres nulos o nombres de dispositivos reservados dentro del bucle de `scan_directory` y `process_entry`, previniendo errores de sistema operativo en operaciones de entrada/salida críticas.
 - `2026-10-05T12:08:39` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas inexistentes en `_get_path_stat_robust` agregando una comprobación explícita de existencia mediante `path.exists()` para evitar excepciones innecesarias en el flujo normal, y se ha fortalecido la integridad al asegurar que `_validate_access_permissions` no sea llamada sobre rutas inexistentes.
-- `2026-10-05T12:02:06` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera (TOCTOU) y errores de sistema de archivos al añadir una verificación explícita de `st_nlink` dentro de `_copy_with_verification` y un manejo más estricto del estado de las handles de archivo mediante `finally` en las operaciones críticas de I/O.
-- `2026-10-05T12:01:34` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar archivos de 0 bytes o corruptos que podrían causar excepciones inesperadas al intentar leer, y se añadió una verificación de volumen en `_is_safe_for_disk_op` para prevenir que `shutil.move` falle al intentar mover archivos entre distintos sistemas de archivos (operación que no es atómica y no es segura bajo nuestra política de `st_dev`).
