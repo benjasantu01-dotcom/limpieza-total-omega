@@ -1349,3 +1349,4 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-05T21:45:30` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-05T21:55:40` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-05T22:05:49` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-10-05T22:16:02` Presupuesto diario agotado (350 usados). Corte hasta mañana.
