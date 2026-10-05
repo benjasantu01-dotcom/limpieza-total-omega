@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Mejoras aceptadas: **217** (43.1% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 41
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 212
 
@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 51 | 2 | 8 | 7 | 46 |
+| 2026-10-03 | 49 | 2 | 7 | 7 | 45 |
 | 2026-10-04 | 154 | 20 | 31 | 5 | 140 |
-| 2026-10-05 | 11 | 0 | 2 | 1 | 26 |
+| 2026-10-05 | 14 | 0 | 2 | 1 | 27 |
 
 ## Mejoras aceptadas por enfoque
 
-- robustez ante casos límite: **50**
-- legibilidad y documentación: **48**
+- legibilidad y documentación: **51**
+- robustez ante casos límite: **49**
 - seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **41**
-- rendimiento: **33**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **20**
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
 - `diskreport.py`: **19**
-- `assistant.py`: **18**
+- `organizer.py`: **18**
 - `safety.py`: **17**
-- `organizer.py`: **17**
-- `scanner.py`: **15**
+- `assistant.py`: **17**
 - `browser.py`: **15**
 - `duplicates.py`: **15**
+- `scanner.py`: **14**
 - `branding.py`: **14**
+- `memory.py`: **14**
 - `settings.py`: **13**
-- `memory.py`: **13**
 - `startup.py`: **11**
 - `main.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T01:50:14` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `quarantine.py` mediante la adición de docstrings técnicos detallados en las funciones de manipulación de archivos (`_copy_with_verification`, `_write_temp_to_final`, `_atomic_isolate_file`), aclarando las precondiciones de seguridad, el uso de I/O atómico y el manejo de excepciones, para asegurar que cualquier colaborador futuro entienda las salvaguardas de integridad implementadas.
+- `2026-10-05T01:49:42` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings estructurados y precisos en las funciones críticas de validación y procesamiento de archivos, clarificando el propósito, las pre-condiciones de seguridad y el comportamiento ante errores, facilitando el mantenimiento y la comprensión del flujo de seguridad.
+- `2026-10-05T01:49:14` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las estructuras de datos y funciones críticas en `memory.py`, incluyendo docstrings descriptivos para las constantes de máscara de acceso y una explicación del porqué del filtrado de procesos en `_extract_process_info`, manteniendo la integridad de las reglas de seguridad.
 - `2026-10-05T01:36:36` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a las funciones de normalización (`score_junk`, `score_security`, etc.) para aclarar qué métrica representan y cómo influyen en el puntaje, además de añadir type hints explícitos en los argumentos y retornos que faltaban para mejorar la legibilidad y el análisis estático.
 - `2026-10-05T01:35:57` **diskreport.py** (legibilidad y documentación): Mejoré la documentación de `walk_files` mediante un `docstring` detallado que especifica claramente sus parámetros, comportamiento ante errores y restricciones de seguridad, mejorando la legibilidad técnica para futuros desarrolladores.
 - `2026-10-05T01:35:27` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica y la precisión de los type hints en el módulo `browser.py` para clarificar la lógica de seguridad y el flujo de los recorridos de disco.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T01:04:57` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.validate` y `_evaluate_rules` mediante la validación proactiva de tipos y el manejo defensivo de errores, evitando que valores inesperados o malformados interrumpan el cálculo del puntaje.
 - `2026-10-05T00:47:49` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingestión de datos en `SystemContext.ingest` capturando errores de forma granular y validando que el valor resultante de la conversión (`float_val`) pase `math.isfinite` antes de actualizar el estado, evitando así la propagación de valores corruptos o `NaN` que podrían romper cálculos posteriores en los handlers.
 - `2026-10-04T14:23:11` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en `_is_file_secure_to_read` para incluir una verificación de permisos más estricta (`stat.S_IWOTH` y `stat.S_IWGRP`), evitando así que el archivo de configuración sea legible o modificable por otros usuarios en sistemas compartidos, alineándose con el enfoque de seguridad defensiva.
-- `2026-10-04T14:22:38` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo implementando una validación de normalización de ruta antes de procesar cualquier entrada en `process_entry`, asegurando que `entry.path` sea tratado como una ruta absoluta y canónica para evitar vulnerabilidades de "path traversal" o inconsistencias por rutas relativas o mal formadas dentro del bucle de `os.scandir`.
-- `2026-10-04T14:13:26` **quarantine.py** (seguridad defensiva): Mejoré la seguridad de `quarantine.py` integrando validaciones de tipo en `_validate_isolation_request` para asegurar que el directorio de destino sea explícitamente un directorio y no un archivo, y reforzando la exclusividad en la escritura del manifiesto mediante una comprobación de existencia y permisos antes de la apertura del archivo temporal.
-- `2026-10-04T14:12:34` **organizer.py** (seguridad defensiva): Se ha robustecido `_is_safe_for_disk_op` añadiendo una comprobación explícita de `st_dev` mediante `path.resolve()` antes de realizar operaciones de movimiento, asegurando que el origen y el destino pertenezcan al mismo sistema de archivos (evitando la corrupción de datos o el borrado incompleto entre particiones), y garantizando que el uso de `ensure_safe_to_modify` dentro de `stage_for_review` sea estrictamente preventivo tras las validaciones booleanas.

@@ -28,7 +28,6 @@ import subprocess
 import math
 import ctypes
 import time
-import heapq
 from pathlib import Path
 from functools import lru_cache
 from dataclasses import dataclass, field
@@ -51,7 +50,9 @@ BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 # Límite heurístico para filtrar valores erróneos de lectura de procesos (128GB).
 MAX_VALID_PROCESS_MEM: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
-# Máscaras de acceso Win32 (Permisos requeridos para consultar o modificar procesos).
+# Máscaras de acceso Win32 para interactuar con la memoria de procesos ajenos.
+# PROCESS_QUERY_LIMITED_INFORMATION: Permite leer datos básicos sin elevar privilegios.
+# PROCESS_SET_QUOTA: Necesario para modificar límites de working set (EmptyWorkingSet).
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x0400
 FILE_ATTRIBUTE_REPARSE_POINT: Final[int] = 0x0400
@@ -184,7 +185,11 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     return MemorySnapshot(total=total, available=available, cached=cached)
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
-    """Interpreta una línea de texto CSV (de PowerShell) como objeto ProcessMemory."""
+    """
+    Interpreta una línea CSV de procesos filtrando ruido e instancias críticas.
+    Se ignoran procesos del sistema (PID 0, 4) y la propia app para evitar
+    inconsistencias o riesgos de bloqueo sobre el proceso en ejecución.
+    """
     parts = line.split(",", 2)
     if len(parts) < 3: return None
     
@@ -198,7 +203,7 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     except ValueError:
         return None
         
-    if pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid() or pid <= 0: return None
+    if _is_system_process(pid) or pid <= 0: return None
     
     if 0 < ws < MAX_VALID_PROCESS_MEM:
         return ProcessMemory(name.strip("'\" "), pid, BytesValue(ws))
@@ -289,7 +294,7 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def _is_system_process(pid: int) -> bool:
-    """Verifica si un PID pertenece a procesos críticos del SO."""
+    """Verifica si un PID pertenece a procesos críticos del SO o a sí mismo."""
     return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
 
 def _get_process_path(pid: int) -> Optional[Path]:

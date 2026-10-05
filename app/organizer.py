@@ -133,8 +133,8 @@ def _is_unc_path(path: Path) -> bool:
 
 def _generate_unique_target(target: Path) -> Path:
     """
-    Resuelve colisiones en el destino añadiendo un contador numérico al nombre base.
-    Límite de 999 copias para evitar bucles de renombramiento accidentales.
+    Resuelve colisiones de nombre en el destino añadiendo un contador numérico al sufijo.
+    Se limita a 999 iteraciones para evitar bucles de renombramiento accidentales.
     """
     if not isinstance(target, Path): return target
     base_target = target
@@ -151,17 +151,16 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si el sistema permite acceso de lectura/escritura mediante intento de apertura.
+    Verifica si un archivo está bloqueado intentando abrirlo en modo lectura.
+    Retorna True si el archivo no existe, no es accesible o está bloqueado.
     """
     if not isinstance(path, Path) or not path.is_file():
         return True
     
-    # Comprobar si tenemos permisos básicos de lectura
     if not os.access(path, os.R_OK):
         return True
     
     try:
-        # Intentamos abrir solo en modo lectura para verificar bloqueo sin modificar el archivo
         with open(path, "rb") as f:
             return False
     except (PermissionError, OSError, IOError):
@@ -169,8 +168,8 @@ def _is_file_locked(path: Path) -> bool:
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """
-    Previene que una operación de movimiento resulte en un bucle lógico o recursivo.
-    Verifica si el destino es un subdirectorio del origen o viceversa mediante `commonpath`.
+    Comprueba que el destino no sea un subdirectorio del origen para evitar 
+    operaciones que comprometan la estructura lógica del sistema de archivos.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return True
     try:
@@ -183,8 +182,8 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 
 def _has_forbidden_chars(path: Path) -> bool:
     """
-    Valida la ausencia de caracteres reservados (NTFS/FAT) que corromperían la ruta.
-    Bloquea rutas que contengan caracteres nulos o delimitadores de consola.
+    Valida la ausencia de caracteres reservados de NTFS/FAT que podrían 
+    causar fallos al intentar manipular la ruta en el sistema operativo.
     """
     if not isinstance(path, Path): return True
     path_str = str(path).lower()
@@ -192,8 +191,8 @@ def _has_forbidden_chars(path: Path) -> bool:
 
 def _validate_path_security(src: Path, dest: Path) -> bool:
     """
-    Realiza validación de integridad para evitar colisiones de seguridad.
-    Verifica restricciones de red (UNC), longitud de ruta absoluta y protección del sistema.
+    Verifica los requisitos mínimos de seguridad antes de mover un archivo:
+    ausencia de caracteres prohibidos, límites de longitud y protección de sistema.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
@@ -202,7 +201,8 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
-    Auditoría de pre-condiciones de seguridad antes de cualquier escritura en disco.
+    Auditoría integral de seguridad previa a una operación de escritura (move).
+    Valida: existencia, exclusión de críticos, permisos, bucles y estado de bloqueo.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     try:
@@ -226,7 +226,8 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 
 def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> bool:
     """
-    Filtra directorios aptos para escaneo, utilizando caché para evitar chequeos redundantes.
+    Filtra directorios para escaneo, excluyendo rutas del sistema y reparse points.
+    Usa protected_cache para memorizar resultados de `is_protected_path`.
     """
     if entry is None or not _is_allowed_directory(entry.name) or _is_junction(entry): return False
     if bool(_get_win_attributes(entry) & WIN_ATTR_SYSTEM): return False
@@ -244,7 +245,7 @@ def _is_valid_junk_entry(name: str, stats: os.stat_result, now_ts: float) -> boo
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
     """
-    Recorrido recursivo optimizado utilizando os.scandir para minimizar llamadas al SO.
+    Recorrido recursivo optimizado utilizando os.scandir para minimizar llamadas al sistema.
     """
     if depth > 50: return
     try:

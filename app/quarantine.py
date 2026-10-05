@@ -549,9 +549,11 @@ def _create_temp_file(source: Path, destination: Path) -> Path:
 
 def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> None:
     """
-    Copia los datos de 'source' a 'temp_dest' mediante streaming, verificando el
-    tamaño y la integridad SHA256 final para asegurar que el archivo no fue 
-    manipulado ni truncado durante la transferencia I/O.
+    Copia datos de 'source' a 'temp_dest' mediante streaming (I/O).
+    Realiza validaciones de integridad: verifica que el origen sea un archivo 
+    regular, utiliza un archivo temporal para evitar colisiones, fuerza el 
+    flushing al disco (fsync) y valida que el hash SHA256 y tamaño del archivo 
+    resultado coincidan con el original para detectar corrupción o sabotaje.
     """
     flags = os.O_RDONLY
     if hasattr(os, 'O_NOFOLLOW'):
@@ -594,8 +596,9 @@ def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> 
 
 def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, int]:
     """
-    Gestiona la copia verificada: crea un archivo temporal, copia datos, 
-    verifica hashes y mueve el archivo a su destino final.
+    Gestiona la secuencia lógica de aislamiento: valida la sintaxis, 
+    las precondiciones de transferencia (seguridad y permisos), realiza la 
+    copia verificada (SHA256) y finalmente reemplaza el archivo destino.
     """
     _check_path_syntax_integrity(destination)
     _validate_file_transfer_preconditions(source, destination)
@@ -626,10 +629,11 @@ def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, int]:
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, int]:
     """
-    Ejecuta el aislamiento atómico de un archivo.
-    Verifica que el archivo fuente no haya cambiado de tamaño (TOCTOU) y
-    que no posea enlaces físicos (hard links) prohibidos antes de proceder
-    con la transferencia verificada y el registro de metadatos.
+    Ejecuta el aislamiento atómico de un archivo. 
+    Verifica mediante la técnica de inodos y tamaño que el archivo origen no 
+    haya sido modificado durante la fase de análisis (TOCTOU), rechaza el 
+    aislamiento de hard links por razones de seguridad de integridad, y delega 
+    la copia a la capa de transferencia verificada.
     """
     if not source.exists():
         raise FileNotFoundError("Archivo origen no existe.")
