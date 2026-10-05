@@ -441,6 +441,7 @@ class SystemContext:
             
             if has_updates:
                 object.__setattr__(self, 'analyzed', True)
+                # Invalidar caché forzando deleción del atributo
                 if 'metrics_snapshot' in self.__dict__: del self.__dict__['metrics_snapshot']
                 return True
         except (Exception, OverflowError):
@@ -507,11 +508,6 @@ def _generate_safe_context(ctx: SystemContext) -> str:
         if val >= 0:
             res.append(f"{key}: {val:.{precision}f}{unit}")
     return "\n".join(res)
-
-@lru_cache(maxsize=16)
-def _generate_context_cached(ctx: SystemContext) -> str:
-    """Resumen del sistema optimizado mediante caché para prompts de IA."""
-    return _generate_safe_context(ctx)
 
 def context_as_text(context: SystemContext) -> str:
     """Serializa el contexto a un formato textual seguro para el prompt del asistente."""

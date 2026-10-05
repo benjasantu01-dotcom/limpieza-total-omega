@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime
 from functools import lru_cache
-from typing import List, Optional, Union, Final, Callable, TypeAlias, NamedTuple, Dict, Sequence, Tuple
+from typing import List, Optional, Union, Final, Callable, TypeAlias, NamedTuple, Sequence, Tuple
 from safety import is_protected_path
 
 # Configuración de logger para el módulo
@@ -51,6 +51,7 @@ class Suspicion:
 # Reciben (ruta, entrada_dir, timestamp_actual) y devuelven un objeto Suspicion o None
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], float], Optional[Suspicion]]
 ScanResult: TypeAlias = List[Suspicion]
+# Tupla de (ruta_absoluta, profundidad_actual)
 DirectoryStack: TypeAlias = List[Tuple[str, int]]
 
 # Expresiones regulares para detección de ofuscación de nombres
@@ -214,7 +215,7 @@ class Scanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        """Apila directorios para procesarlos iterativamente, respetando el límite de profundidad."""
+        """Registra directorios válidos en la pila para exploración iterativa."""
         if current_depth >= SCAN_LIMITS.max_depth:
             return
         path_lower = entry.path.lower() if entry.path else ""
@@ -229,7 +230,7 @@ class Scanner:
         return _is_target_extension(name)
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        """Orquestador: Decide si explorar subdirectorio o analizar archivo."""
+        """Orquestador: Decide si delegar a exploración de directorios o ejecución de heurísticas."""
         try:
             if not entry.path or not os.path.exists(entry.path): 
                 return
@@ -249,7 +250,7 @@ class Scanner:
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta toda la suite de heurísticas sobre el archivo indicado."""
+        """Ejecuta toda la suite de heurísticas sobre el archivo indicado y captura errores aislados."""
         if not _is_readable(path):
             return
         for check_fn in ALL_CHECKS:
