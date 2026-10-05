@@ -69,6 +69,13 @@ TARGETED_DOWNLOAD_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp
 
 SYSTEM32_LOWER: Final[str] = "system32"
 
+def _is_readable(path: Path) -> bool:
+    """Verifica si el archivo existe y posee permisos de lectura."""
+    try:
+        return path.is_file() and os.access(path, os.R_OK)
+    except (OSError, PermissionError, ValueError, AttributeError):
+        return False
+
 def _get_file_attributes(entry: os.DirEntry) -> int:
     """Consulta la máscara de bits de atributos Win32 del archivo mediante syscall."""
     try:
@@ -245,7 +252,7 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta toda la suite de heurísticas sobre el archivo indicado."""
-        if not path or not os.access(path, os.R_OK):
+        if not _is_readable(path):
             return
         for check_fn in ALL_CHECKS:
             try:
@@ -257,11 +264,8 @@ class Scanner:
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> List[Suspicion]:
     """Realiza un análisis heurístico único sobre un archivo validado individualmente."""
-    if not isinstance(path, Path): return []
-    try:
-        if not path.is_file() or not os.access(path, os.R_OK) or is_protected_path(path): 
-            return []
-    except (OSError, PermissionError, ValueError, AttributeError): return []
+    if not isinstance(path, Path) or not _is_readable(path) or is_protected_path(path): 
+        return []
     
     findings: List[Suspicion] = []
     for check_fn in ALL_CHECKS:

@@ -175,7 +175,7 @@ class _Validators:
 
     @staticmethod
     def _is_reparse_point(path: Path) -> bool:
-        """Determina si la ruta apunta a un symlink o junction, evitando recursión peligrosa."""
+        """Detecta si la ruta es un punto de unión o enlace simbólico (evitar recursión)."""
         try:
             return path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction())
         except (OSError, PermissionError):
@@ -184,7 +184,7 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=128)
     def _run_safety_checks(path_str: str) -> bool:
-        """Valida que una ruta cumpla con los estándares de seguridad de `safety.py`."""
+        """Verifica recursivamente que ninguna parte de la ruta comprometa la seguridad del sistema."""
         try:
             resolved = Path(path_str).resolve()
             for part in resolved.parts:
@@ -196,15 +196,12 @@ class _Validators:
 
     @staticmethod
     def _check_path_safety(p: Path) -> bool:
-        """Helper para validar que la ruta sea absoluta y supere los chequeos de `safety.py`."""
+        """Valida que la ruta sea absoluta y supere las reglas de seguridad definidas en safety.py."""
         return p.is_absolute() and _Validators._run_safety_checks(str(p))
 
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
-        """
-        Filtra rutas inseguras basándose en caracteres NUL/ANSI, longitud, 
-        orígenes UNC y validación estricta en safety.py.
-        """
+        """Filtra rutas mediante comprobaciones de sintaxis y validaciones contra `safety.py`."""
         if not path_str or len(path_str) > 2048 or any(c in path_str for c in ("\0", "^", "\033")): return False
         if path_str.startswith(("\\\\", "//")): return False
         try:
@@ -214,7 +211,7 @@ class _Validators:
 
     @staticmethod
     def bool(key: ConfigKey, val: Any) -> Optional[bool]:
-        """Normaliza tipos booleanos permitiendo strings representativos (ej: 'si', 'true')."""
+        """Normaliza valores booleanos desde tipos nativos o representaciones textuales."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
@@ -225,7 +222,7 @@ class _Validators:
     @staticmethod
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
-        """Convierte a entero y aplica los límites definidos en _NUMERIC_LIMITS para evitar desbordes."""
+        """Convierte valor a entero y restringe el rango según las políticas de la aplicación."""
         if val is None: return None
         parsed_value = int(val)
         limit = _NUMERIC_LIMITS.get(key)
@@ -234,7 +231,7 @@ class _Validators:
 
     @staticmethod
     def path(key: ConfigKey, val: Any) -> Optional[str]:
-        """Valida que la ruta sea un string seguro y pase los chequeos de sistema."""
+        """Valida rutas de archivos asegurando que no contengan caracteres peligrosos ni enlaces fuera del alcance."""
         if val == "": return ""
         if not isinstance(val, str): return None
         path_string = val.strip()
@@ -243,7 +240,7 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
-        """Comprueba si el string está dentro del conjunto permitido (ej: temas, acentos)."""
+        """Verifica que el valor string pertenezca al conjunto permitido por la enumeración correspondiente."""
         val = text.lower()
         allowed = _ENUM_VALS.get(key)
         if allowed: return val if val in allowed else None
@@ -252,7 +249,7 @@ class _Validators:
     @staticmethod
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
-        """Sanitiza strings, bloqueando caracteres de control y secuencias de escape (ej: '..')."""
+        """Limpia strings bloqueando caracteres de control, secuencias de escape y directorios padres ('..')."""
         if val is None: return None
         text = str(val).strip()
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
@@ -270,7 +267,7 @@ INT_KEYS: Final = {
 }
 
 def _determine_validator(key: ConfigKey) -> Callable[[ConfigKey, Any], Any]:
-    """Selecciona la estrategia de validación apropiada según el tipo de clave."""
+    """Selecciona la estrategia de validación según el tipo de dato de la clave."""
     if key in BOOL_KEYS: return _Validators.bool
     if key in INT_KEYS: return _Validators.int
     if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path
@@ -278,7 +275,7 @@ def _determine_validator(key: ConfigKey) -> Callable[[ConfigKey, Any], Any]:
 
 @lru_cache(maxsize=1)
 def _build_validator_map() -> MappingProxyType[ConfigKey, _ValidatorEntry]:
-    """Genera el mapa de validadores, mapeando cada clave de configuración a su función de control."""
+    """Genera el mapa centralizado de validadores para toda la configuración."""
     return MappingProxyType({key: _ValidatorEntry(_determine_validator(key)) for key in ConfigKey})
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
@@ -360,20 +357,20 @@ def _load_impl(ruta: Path) -> AppSettings:
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga los ajustes desde el disco, utilizando caché por mtime."""
-    ruta = settings_path(custom_base)
-    bak = ruta.with_suffix(".bak")
+    primary_path = settings_path(custom_base)
+    backup_path = primary_path.with_suffix(".bak")
     
-    for r in [ruta, bak]:
-        if r.exists():
+    for path in [primary_path, backup_path]:
+        if path.exists():
             try:
-                st = r.stat()
-                cache_key = str(r)
+                st = path.stat()
+                cache_key = str(path)
                 if cache_key in _MANAGER.settings_cache:
                     mtime, cached_val = _MANAGER.settings_cache[cache_key]
                     if mtime == st.st_mtime:
                         return cached_val.copy()
                 
-                settings = _load_impl(r)
+                settings = _load_impl(path)
                 _MANAGER.settings_cache[cache_key] = (st.st_mtime, settings)
                 return settings.copy()
             except (OSError, PermissionError):
@@ -404,10 +401,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     y utiliza un archivo temporal antes del reemplazo seguro para evitar corrupción.
     """
     if not _is_dict(values): return None
-    ruta = settings_path(custom_base)
+    config_path = settings_path(custom_base)
     cleaned_settings = _coerce_and_verify(validate(values))
     
-    parent = ruta.parent
+    parent = config_path.parent
     try:
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         usage = shutil.disk_usage(parent)
@@ -417,11 +414,11 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         
         # Validación de seguridad de rutas antes de intentar escribir
         ensure_safe_to_modify(str(parent))
-        if ruta.exists(): ensure_safe_to_modify(str(ruta))
+        if config_path.exists(): ensure_safe_to_modify(str(config_path))
     except (TypeError, ValueError, OSError, PermissionError): return None
     
-    temp_path = ruta.with_suffix(".tmp")
-    bak_path = ruta.with_suffix(".bak")
+    temp_path = config_path.with_suffix(".tmp")
+    bak_path = config_path.with_suffix(".bak")
     try:
         with open(temp_path, "w", encoding="utf-8") as f:
             fcntl.flock(f.fileno(), fcntl.LOCK_EX)
@@ -433,17 +430,17 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
                 raise PermissionError("Archivo temporal inseguro")
             fcntl.flock(f.fileno(), fcntl.LOCK_UN)
         
-        if os.path.islink(temp_path) or (ruta.exists() and os.path.islink(ruta)):
+        if os.path.islink(temp_path) or (config_path.exists() and os.path.islink(config_path)):
             raise PermissionError("Operación sobre enlace detectada")
             
-        if ruta.exists():
+        if config_path.exists():
             ensure_safe_to_modify(str(bak_path))
-            try: os.replace(ruta, bak_path)
+            try: os.replace(config_path, bak_path)
             except OSError: pass
             
-        os.replace(temp_path, ruta)
+        os.replace(temp_path, config_path)
         _MANAGER.clear()
-        return ruta
+        return config_path
     except (OSError, IOError, PermissionError, json.JSONDecodeError): return None
     finally:
         if temp_path.exists():

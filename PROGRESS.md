@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **217** (43.1% de aceptación)
+- Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 40
+- Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 49 | 2 | 7 | 7 | 45 |
+| 2026-10-03 | 49 | 2 | 7 | 7 | 41 |
 | 2026-10-04 | 154 | 20 | 31 | 5 | 140 |
-| 2026-10-05 | 14 | 0 | 2 | 1 | 27 |
+| 2026-10-05 | 17 | 0 | 3 | 1 | 27 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **51**
+- legibilidad y documentación: **54**
 - robustez ante casos límite: **49**
 - seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **41**
@@ -33,20 +33,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **20**
 - `quarantine.py`: **20**
 - `diskreport.py`: **19**
+- `safety.py`: **18**
 - `organizer.py`: **18**
-- `safety.py`: **17**
 - `assistant.py`: **17**
+- `scanner.py`: **15**
 - `browser.py`: **15**
 - `duplicates.py`: **15**
-- `scanner.py`: **14**
+- `settings.py`: **14**
 - `branding.py`: **14**
 - `memory.py`: **14**
-- `settings.py`: **13**
 - `startup.py`: **11**
 - `main.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T01:57:11` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más precisos en la clase `_Validators`, aclarando la intención de cada chequeo de seguridad, y se han renombrado variables internas en `_load_impl` y `save` para diferenciar explícitamente entre el archivo de configuración activo y el archivo de respaldo (`.bak`), mejorando la legibilidad técnica sin alterar la funcionalidad.
+- `2026-10-05T01:56:53` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más específicos, se documentaron los parámetros de las funciones de heurística y se extrajo la validación de acceso a archivo en una función privada `_is_readable` para mejorar la mantenibilidad y claridad del código siguiendo las normas de documentación y legibilidad.
+- `2026-10-05T01:56:23` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `safety.py` mediante la adición de docstrings detallados en las funciones de validación interna y la clarificación de las constantes de seguridad, facilitando el mantenimiento y auditoría del código conforme a los estándares exigidos.
 - `2026-10-05T01:50:14` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `quarantine.py` mediante la adición de docstrings técnicos detallados en las funciones de manipulación de archivos (`_copy_with_verification`, `_write_temp_to_final`, `_atomic_isolate_file`), aclarando las precondiciones de seguridad, el uso de I/O atómico y el manejo de excepciones, para asegurar que cualquier colaborador futuro entienda las salvaguardas de integridad implementadas.
 - `2026-10-05T01:49:42` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings estructurados y precisos en las funciones críticas de validación y procesamiento de archivos, clarificando el propósito, las pre-condiciones de seguridad y el comportamiento ante errores, facilitando el mantenimiento y la comprensión del flujo de seguridad.
 - `2026-10-05T01:49:14` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las estructuras de datos y funciones críticas en `memory.py`, incluyendo docstrings descriptivos para las constantes de máscara de acceso y una explicación del porqué del filtrado de procesos en `_extract_process_info`, manteniendo la integridad de las reglas de seguridad.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T01:16:23` **safety.py** (manejo de errores y validación de entradas): Se mejora la robustez de `ensure_safe_to_modify` ante errores de entrada inesperados, capturando excepciones de bajo nivel en las verificaciones de estado que podrían dejar el sistema en un estado inconsistente si fallan, asegurando que cualquier fallo inesperado se convierta en un `UnsafePathError` controlado y transparente para el llamador.
 - `2026-10-05T01:10:17` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_locked` para evitar errores de excepción innecesarios durante el escaneo y agregué validación de tipo para los parámetros de entrada en funciones críticas, asegurando que el flujo no se detenga ante objetos inesperados.
 - `2026-10-05T01:10:05` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_process_info` y `trim_working_set` capturando errores de conversión y estado de manera explícita, asegurando que valores inválidos o procesos inaccesibles no interrumpan el flujo de datos.
-- `2026-10-05T01:04:57` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.validate` y `_evaluate_rules` mediante la validación proactiva de tipos y el manejo defensivo de errores, evitando que valores inesperados o malformados interrumpan el cálculo del puntaje.
-- `2026-10-05T00:47:49` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingestión de datos en `SystemContext.ingest` capturando errores de forma granular y validando que el valor resultante de la conversión (`float_val`) pase `math.isfinite` antes de actualizar el estado, evitando así la propagación de valores corruptos o `NaN` que podrían romper cálculos posteriores en los handlers.
-- `2026-10-04T14:23:11` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en `_is_file_secure_to_read` para incluir una verificación de permisos más estricta (`stat.S_IWOTH` y `stat.S_IWGRP`), evitando así que el archivo de configuración sea legible o modificable por otros usuarios en sistemas compartidos, alineándose con el enfoque de seguridad defensiva.
