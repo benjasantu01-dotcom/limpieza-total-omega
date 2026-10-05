@@ -179,23 +179,21 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Asegura que todos los campos tengan tipos y rangos aceptables de forma eficiente."""
-        def _clean(v: Any, d: float, min_v: float = 0.0, max_v: float = 1e9) -> float:
-            if v is None: return d
+        def _c(v: Any, d: float, min_v: float, max_v: float) -> float:
             try:
                 val = float(v)
                 return val if (math.isfinite(val) and min_v <= val <= max_v) else d
             except (ValueError, TypeError):
                 return d
 
-        fields = (
-            ("junk_mb", 0.0, 0.0, 1e9), ("duplicate_mb", 0.0, 0.0, 1e9),
-            ("suspicious_count", 0.0, 0.0, 1e6), ("suspicious_warnings", 0.0, 0.0, 1e6),
-            ("startup_count", 0.0, 0.0, 1e4), ("quarantined_count", 0.0, 0.0, 1e4),
-            ("memory_available_percent", 100.0, 0.0, 100.0), ("disk_free_percent", 100.0, 0.0, 100.0)
-        )
-        for name, d, min_v, max_v in fields:
-            val = _clean(getattr(self, name), d, min_v, max_v)
-            setattr(self, name, int(val) if "count" in name else val)
+        self.junk_mb = _c(self.junk_mb, 0.0, 0.0, 1e9)
+        self.duplicate_mb = _c(self.duplicate_mb, 0.0, 0.0, 1e9)
+        self.suspicious_count = int(_c(self.suspicious_count, 0, 0, 1e6))
+        self.suspicious_warnings = int(_c(self.suspicious_warnings, 0, 0, 1e6))
+        self.startup_count = int(_c(self.startup_count, 0, 0, 1e4))
+        self.quarantined_count = int(_c(self.quarantined_count, 0, 0, 1e4))
+        self.memory_available_percent = _c(self.memory_available_percent, 100.0, 0.0, 100.0)
+        self.disk_free_percent = _c(self.disk_free_percent, 100.0, 0.0, 100.0)
 
     @property
     def is_finite(self) -> bool:

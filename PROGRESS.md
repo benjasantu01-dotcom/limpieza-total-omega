@@ -8,45 +8,48 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 41
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 48 | 2 | 7 | 7 | 38 |
+| 2026-10-03 | 45 | 2 | 6 | 7 | 38 |
 | 2026-10-04 | 154 | 20 | 31 | 5 | 140 |
-| 2026-10-05 | 20 | 0 | 3 | 1 | 28 |
+| 2026-10-05 | 23 | 0 | 3 | 1 | 29 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
-- robustez ante casos límite: **48**
+- robustez ante casos límite: **45**
 - seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **41**
-- rendimiento: **34**
+- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
-- `diskreport.py`: **19**
-- `healthscore.py`: **19**
-- `safety.py`: **18**
+- `diskreport.py`: **20**
+- `healthscore.py`: **20**
+- `quarantine.py`: **19**
 - `assistant.py`: **18**
 - `organizer.py`: **18**
-- `scanner.py`: **15**
+- `safety.py`: **17**
+- `duplicates.py`: **16**
 - `branding.py`: **15**
 - `browser.py`: **15**
-- `duplicates.py`: **15**
 - `settings.py`: **14**
 - `memory.py`: **14**
+- `scanner.py`: **14**
 - `startup.py`: **12**
 - `main.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T02:17:14` **healthscore.py** (rendimiento): Optimicé el método `SystemMetrics.validate` eliminando la creación repetitiva de tuplas y llamadas a `getattr/setattr` dentro de un bucle, reemplazándolo por una asignación directa y rápida, lo que reduce la carga de procesamiento en cada corrida del pipeline.
+- `2026-10-05T02:16:46` **duplicates.py** (rendimiento): Optimicé `_collect_candidates` utilizando un conjunto (`visited_inodes`) para rastrear archivos ya procesados mediante sus identificadores de dispositivo e inodo, evitando llamadas redundantes a `stat` y lecturas de sistema de archivos innecesarias en estructuras de directorios con enlaces simbólicos complejos o recursión profunda.
+- `2026-10-05T02:16:17` **diskreport.py** (rendimiento): Optimizé `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y `path.lower()` dentro del loop de procesamiento, cacheando la extensión de forma eficiente y reduciendo la carga sobre el motor de tipos y objetos de `pathlib`.
 - `2026-10-05T02:07:31` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` al reemplazar la lógica de interpolación manual dentro del loop por una técnica de *pre-cálculo de pasos* más eficiente, reduciendo drásticamente la carga de CPU y memoria al evitar cálculos de punto flotante repetitivos durante el renderizado de franjas y barras.
 - `2026-10-05T02:06:52` **assistant.py** (rendimiento): Optimicé el cálculo del estado de salud del sistema mediante la sustitución de llamadas repetidas a `ctx.get_metric` por una tupla pre-procesada de valores, reduciendo la carga de cómputo en el bucle de renderizado y mejorando la eficiencia del motor local.
 - `2026-10-05T02:06:06` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el "porqué" de las decisiones de seguridad, como el filtrado de caracteres prohibidos y el uso de la caché, además de añadir type hints y mejorar la claridad en el manejo de errores de I/O dentro de la clase `StartupEntry`.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T01:36:36` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a las funciones de normalización (`score_junk`, `score_security`, etc.) para aclarar qué métrica representan y cómo influyen en el puntaje, además de añadir type hints explícitos en los argumentos y retornos que faltaban para mejorar la legibilidad y el análisis estático.
 - `2026-10-05T01:35:57` **diskreport.py** (legibilidad y documentación): Mejoré la documentación de `walk_files` mediante un `docstring` detallado que especifica claramente sus parámetros, comportamiento ante errores y restricciones de seguridad, mejorando la legibilidad técnica para futuros desarrolladores.
 - `2026-10-05T01:35:27` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica y la precisión de los type hints en el módulo `browser.py` para clarificar la lógica de seguridad y el flujo de los recorridos de disco.
-- `2026-10-05T01:26:50` **branding.py** (legibilidad y documentación): Se introdujeron constantes descriptivas para reemplazar los "números mágicos" en las coordenadas del logo y se mejoró la documentación interna mediante docstrings que explican el propósito de las transformaciones geométricas y el uso de `MappingProxyType`, facilitando la mantenibilidad para futuros colaboradores.
-- `2026-10-05T01:25:21` **settings.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en la función `validate` para asegurar que el proceso de normalización no falle ante tipos de datos inesperados en el JSON, y se refuerza la validación en `_load_impl` para capturar errores de formato o permisos de forma más granular.
-- `2026-10-05T01:16:36` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas agregando validaciones de tipo y presencia para los argumentos (`path`, `entry`), evitando excepciones inesperadas al procesar archivos con rutas inusuales o bloqueos de acceso durante la lectura.

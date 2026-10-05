@@ -224,7 +224,8 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     """Realiza un escaneo DFS recolectando archivos candidatos según tamaño y seguridad."""
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     stack: List[Tuple[Path, int]] = []
-    visited: set[Path] = set()
+    visited_dirs: set[Path] = set()
+    visited_inodes: set[Tuple[int, int]] = set()
 
     for d in directories:
         if (r := _resolve_and_verify_root(d)):
@@ -233,30 +234,32 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     while stack:
         current_dir, depth = stack.pop()
         
-        if current_dir in visited or depth > MAX_RECURSION_DEPTH:
+        if current_dir in visited_dirs or depth > MAX_RECURSION_DEPTH:
             continue
-        visited.add(current_dir)
+        visited_dirs.add(current_dir)
             
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
                         p_entry = Path(entry.path)
+                        st = entry.stat(follow_symlinks=False)
+                        inode_id = (st.st_dev, st.st_ino)
                     except OSError:
                         continue
                         
                     if not _safe_path_check(p_entry) or (skip_protected and is_protected_path(p_entry)):
                         continue
                     
-                    try:
-                        if entry.is_dir(follow_symlinks=False):
-                            stack.append((p_entry, depth + 1))
-                        elif entry.is_file(follow_symlinks=False):
-                            stat = entry.stat()
-                            if stat.st_size >= min_size and not is_system_or_hidden(p_entry) and not _is_file_locked(p_entry):
-                                size_to_paths_map[stat.st_size].append(p_entry)
-                    except (OSError, PermissionError):
-                        continue
+                    if entry.is_dir(follow_symlinks=False):
+                        stack.append((p_entry, depth + 1))
+                    elif entry.is_file(follow_symlinks=False):
+                        if inode_id in visited_inodes:
+                            continue
+                        visited_inodes.add(inode_id)
+                        
+                        if st.st_size >= min_size and not is_system_or_hidden(p_entry) and not _is_file_locked(p_entry):
+                            size_to_paths_map[st.st_size].append(p_entry)
         except (OSError, PermissionError, RuntimeError):
             continue
             

@@ -952,3 +952,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-05T02:07:43` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
 - `2026-10-05T02:07:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T02:07:43` Corrida terminada. Total usado hoy: 52.
+- `2026-10-05T02:15:45` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-10-05T02:16:17` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y `path.lower()` dentro del loop de procesamiento, cacheando la extensión de forma eficiente y reduciendo la carga sobre el motor de tipos y objetos de `pathlib`.
+- `2026-10-05T02:16:46` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé `_collect_candidates` utilizando un conjunto (`visited_inodes`) para rastrear archivos ya procesados mediante sus identificadores de dispositivo e inodo, evitando llamadas redundantes a `stat` y lecturas de sistema de archivos innecesarias en estructuras de directorios con enlaces simbólicos complejos o recursión profunda.
+- `2026-10-05T02:17:14` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el método `SystemMetrics.validate` eliminando la creación repetitiva de tuplas y llamadas a `getattr/setattr` dentro de un bucle, reemplazándolo por una asignación directa y rápida, lo que reduce la carga de procesamiento en cada corrida del pipeline.
+- `2026-10-05T02:18:14` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-05T02:19:17` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-05T02:20:24` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-05T02:20:36` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-05T02:20:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T02:20:36` Corrida terminada. Total usado hoy: 56.
