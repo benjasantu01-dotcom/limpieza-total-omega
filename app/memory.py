@@ -32,7 +32,7 @@ from pathlib import Path
 from functools import lru_cache
 from dataclasses import dataclass, field
 from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, Final, Set, NewType
-from safety import is_protected_path
+from safety import is_protected_path, is_safe_to_modify
 
 if TYPE_CHECKING:
     from ctypes import wintypes
@@ -344,7 +344,14 @@ def _get_process_path(pid: int) -> Optional[Path]:
 def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
     """Evalúa si el proceso es candidato a la operación de trim sin riesgos operativos."""
     if _is_system_process(pid): return False, "Proceso crítico del sistema protegido."
-    if _get_process_path(pid) is None: return False, "Ruta del proceso inaccesible o restringida por seguridad."
+    
+    path = _get_process_path(pid)
+    if path is None: return False, "Ruta del proceso inaccesible o restringida por seguridad."
+    
+    # Integridad defensiva: verificar que la ruta sea modificable según las reglas globales.
+    if not is_safe_to_modify(path):
+        return False, "La ruta del proceso está protegida por la política de seguridad."
+        
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:

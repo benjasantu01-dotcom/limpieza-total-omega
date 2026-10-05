@@ -1014,3 +1014,12 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-05T12:32:42` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-10-05T12:32:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T12:32:42` Corrida terminada. Total usado hoy: 296.
+- `2026-10-05T12:37:43` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-10-05T12:38:18` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `trim_working_set` implementando un chequeo previo de integridad con `is_safe_to_modify` para asegurar que el proceso no esté operando sobre archivos protegidos o en ubicaciones bloqueadas antes de intentar cualquier manipulación de memoria.
+- `2026-10-05T12:38:51` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó `_is_safe_for_disk_op` añadiendo una validación explícita para evitar que se intenten mover archivos que residen dentro del directorio de destino (`dest_res`), previniendo posibles errores de recursión o estados inconsistentes en la estructura de archivos durante la operación de limpieza.
+- `2026-10-05T12:39:37` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_atomic_isolate_file` agregando una validación estricta de la relación padre-hijo después de resolver la ruta, previniendo ataques de tipo "Time-of-check to time-of-use" (TOCTOU) y garantizando que el archivo sea aislado únicamente en el directorio de cuarentena validado, bloqueando intentos de escape mediante manipulaciones de rutas relativas o symlinks.
+- `2026-10-05T12:39:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T12:39:45` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-05T12:39:59` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-05T12:39:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T12:39:59` Corrida terminada. Total usado hoy: 300.

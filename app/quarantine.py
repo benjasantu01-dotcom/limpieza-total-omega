@@ -642,7 +642,13 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if stat_orig.st_nlink > 1:
         raise UnsafePathError("Aislamiento denegado: el archivo tiene enlaces físicos múltiples.")
     
-    if source.resolve() == destination.resolve():
+    # Validar que el destino resuelto sea hijo legítimo del sandbox
+    dest_resolved = destination.resolve()
+    base_resolved = destination.parent.resolve()
+    if not is_within_directory(dest_resolved, base_resolved):
+        raise UnsafePathError("Intento de escape del sandbox detectado.")
+        
+    if source.resolve() == dest_resolved:
         raise UnsafePathError("El origen ya reside en el directorio destino.")
     _validate_quarantine_path(destination, destination.parent)
     if len(str(destination)) >= 250:

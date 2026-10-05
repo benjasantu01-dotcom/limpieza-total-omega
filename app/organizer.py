@@ -200,23 +200,22 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Auditoría integral de seguridad previa a una operación de escritura (move).
     Valida: existencia, exclusión de críticos, permisos, bucles y estado de bloqueo.
-    La validación de st_dev asegura que src y dest estén en la misma unidad física,
-    evitando que 'shutil.move' realice copias inesperadas fuera del volumen.
     """
     try:
         if not src.exists() or src.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         st = src.lstat()
-        # Impedir mover enlaces simbólicos (st_mode 0o120000) o hardlinks (nlink > 1) por riesgo de integridad.
         if not src.is_file() or (st.st_mode & 0o170000 == 0o120000) or st.st_nlink > 1: return False
         if not is_safe_to_modify(src) or not _validate_path_security(src, dest): return False
         
         target_dir = dest.parent if dest.exists() else dest
         if not target_dir.is_dir() or not os.access(target_dir, os.W_OK): return False
         
+        # Evitar mover archivos que ya residen en la carpeta de destino
+        if src.resolve().parent == target_dir.resolve(): return False
+        
         if _is_recursive_violation(src, dest): return False
         if _is_file_locked(src): return False
         
-        # Validación de atomicidad: solo mover dentro del mismo dispositivo (st_dev).
         if src.resolve().stat().st_dev != target_dir.resolve().stat().st_dev: return False
         
         return True

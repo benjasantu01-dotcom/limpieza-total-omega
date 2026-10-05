@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Mejoras aceptadas: **231** (45.8% de aceptación)
 - Rechazadas por tests: 25
-- Rechazadas por guardia de seguridad: 40
+- Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 198
+- Sin respuesta de la IA (error o límite): 194
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 97 | 10 | 16 | 4 | 81 |
-| 2026-10-05 | 131 | 15 | 24 | 9 | 117 |
+| 2026-10-04 | 97 | 10 | 16 | 4 | 77 |
+| 2026-10-05 | 134 | 15 | 25 | 9 | 117 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **54**
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **45**
+- seguridad defensiva: **43**
 - rendimiento: **41**
-- seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **23**
 - `diskreport.py`: **21**
+- `quarantine.py`: **20**
 - `scanner.py`: **20**
-- `quarantine.py`: **19**
+- `memory.py`: **19**
 - `assistant.py`: **18**
 - `browser.py`: **18**
-- `memory.py`: **18**
 - `duplicates.py`: **17**
+- `organizer.py`: **17**
 - `safety.py`: **17**
-- `organizer.py`: **16**
 - `branding.py`: **16**
 - `settings.py`: **12**
 - `startup.py`: **7**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T12:39:37` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_atomic_isolate_file` agregando una validación estricta de la relación padre-hijo después de resolver la ruta, previniendo ataques de tipo "Time-of-check to time-of-use" (TOCTOU) y garantizando que el archivo sea aislado únicamente en el directorio de cuarentena validado, bloqueando intentos de escape mediante manipulaciones de rutas relativas o symlinks.
+- `2026-10-05T12:38:51` **organizer.py** (seguridad defensiva): Se reforzó `_is_safe_for_disk_op` añadiendo una validación explícita para evitar que se intenten mover archivos que residen dentro del directorio de destino (`dest_res`), previniendo posibles errores de recursión o estados inconsistentes en la estructura de archivos durante la operación de limpieza.
+- `2026-10-05T12:38:18` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `trim_working_set` implementando un chequeo previo de integridad con `is_safe_to_modify` para asegurar que el proceso no esté operando sobre archivos protegidos o en ubicaciones bloqueadas antes de intentar cualquier manipulación de memoria.
 - `2026-10-05T12:29:13` **healthscore.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_evaluate_rules` y `compute_score` implementando una validación de integridad para evitar que inyecciones de mensajes malformados o errores en las funciones `scorer` propaguen estados inconsistentes, asegurando que el pipeline siempre retorne un resultado válido incluso ante métricas inesperadas.
 - `2026-10-05T12:28:06` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` implementando una validación explícita mediante `is_relative_to` (o equivalente) y `path.resolve()` antes de procesar cada entrada, evitando así vulnerabilidades de "path traversal" donde un enlace simbólico o un reparse point malicioso podría intentar escapar del directorio raíz definido, manteniendo la integridad del escaneo.
 - `2026-10-05T12:19:52` **browser.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_file_in_use` eliminando el uso de `open(..., 'rb')` (que requiere permisos de lectura efectivos y puede fallar o activar bloqueos innecesarios) en favor de `ctypes` para intentar abrir el archivo con acceso de solo lectura sin bloqueo (`FILE_SHARE_READ | FILE_SHARE_WRITE`), evitando efectos secundarios sobre archivos en uso.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T12:01:34` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar archivos de 0 bytes o corruptos que podrían causar excepciones inesperadas al intentar leer, y se añadió una verificación de volumen en `_is_safe_for_disk_op` para prevenir que `shutil.move` falle al intentar mover archivos entre distintos sistemas de archivos (operación que no es atómica y no es segura bajo nuestra política de `st_dev`).
 - `2026-10-05T12:01:04` **memory.py** (robustez ante casos límite): Se introdujo un manejo robusto de excepciones y validación de tipos en la lectura de memoria de procesos mediante `GetProcessMemoryInfo`, evitando cierres inesperados por desbordamiento de búfer o estructuras mal inicializadas al interactuar con procesos protegidos.
 - `2026-10-05T11:48:29` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `SystemMetrics.validate` ante entradas nulas o inesperadas durante la inicialización, asegurando que el motor de scoring no procese datos incoherentes incluso si el objeto se construye parcialmente.
-- `2026-10-05T11:48:09` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y accesibilidad dentro de `_calculate_keeper_heuristic` y `format_group` para evitar excepciones (como `FileNotFoundError`) en archivos que desaparecieron entre la etapa de recolección y la de visualización, mejorando la robustez del reporte.
-- `2026-10-05T11:47:44` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante errores de lectura de metadatos de archivos (como archivos bloqueados por el sistema o permisos denegados) dentro del bucle de recorrido en `walk_files`, garantizando que el proceso no se interrumpa ante entradas inaccesibles, y se ha añadido un manejo de errores más estricto al calcular rutas relativas en `largest_folders` para evitar fallos si el árbol cambia durante el escaneo.
-- `2026-10-05T11:47:10` **browser.py** (robustez ante casos límite): Se introdujo una validación de profundidad y manejo de errores de resolución de rutas en `_sum_directory_recursive` para prevenir excepciones ante rutas inexistentes, enlaces rotos o recursión infinita en casos de estructuras de directorios corruptas o muy profundas.
