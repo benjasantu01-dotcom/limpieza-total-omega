@@ -307,10 +307,13 @@ def _get_process_path(pid: int) -> Optional[Path]:
         if 0 < length < buffer_size:
             raw_path = buf.value
             path_obj = Path(raw_path).resolve()
+            
+            # Validación estricta de seguridad defensiva
             if is_protected_path(str(path_obj)): return None
             
             attr = kernel32.GetFileAttributesW(str(path_obj))
             if attr != -1 and (attr & FILE_ATTRIBUTE_REPARSE_POINT): return None
+            
             if path_obj.exists() and path_obj.is_file():
                 return path_obj
     except (ctypes.ArgumentError, OSError, ValueError): pass

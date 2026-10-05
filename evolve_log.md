@@ -402,3 +402,48 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-05T07:54:11` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez del escaneo de carpetas en `walk_files` implementando una validación explícita mediante `is_protected_path` al procesar cada directorio, evitando que se sigan rutas que pudieran haberse escapado del chequeo inicial debido a enlaces simbólicos o cambios de permisos durante la ejecución, manteniendo el enfoque en seguridad defensiva.
 - `2026-10-05T07:54:11` Rotación — log: 1253 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T07:54:11` Corrida terminada. Total usado hoy: 188.
+- `2026-10-05T08:02:11` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-10-05T08:02:16` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T08:02:47` Tests FALLARON:
+```
+dencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:175: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_identical_files - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size - assert [] == [1, 2]
+  
+  Right contains 2 more items, first extra item: 1
+  
+  Full diff:
+  + []
+  - [
+  -     1,
+  -     2,
+  - ]
+FAILED evolve/tests/test_modules.py::test_hash_of_identical_content_matches - AttributeError: module 'ctypes' has no attribute 'windll'
+FAILED evolve/tests/test_modules.py::test_partial_hash_only_reads_the_beginning - AttributeError: module 'ctypes' has no attribute 'windll'
+5 failed, 294 passed, 7 warnings in 1.56s
+
+```
+- `2026-10-05T08:02:47` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez defensiva de `duplicates.py` mediante la implementación de una verificación de integridad en `_is_file_locked`, sustituyendo el uso de `os.open` (que podía dejar descriptores huérfanos o fallar silenciosamente en ciertos permisos de solo lectura) por una comprobación mediante `ctypes` que evita intentar abrir el archivo en modo exclusivo, mitigando errores de I/O en archivos bloqueados por el sistema operativo.
+- `2026-10-05T08:03:14` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la robustez de `SystemMetrics.validate` para garantizar que las métricas crudas no solo tengan tipos válidos, sino también consistencia lógica (evitando valores negativos o fuera de rango) antes de que lleguen al motor de puntuación, mejorando la seguridad defensiva frente a datos de entrada potencialmente corruptos.
+- `2026-10-05T08:03:15` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T08:03:18` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-05T08:04:24` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-05T08:05:36` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-05T08:05:52` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-05T08:05:55` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-05T08:06:16` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_get_process_path` validando que la ruta del ejecutable no sea una unión de directorios (reparse point) o una ruta protegida antes de procesar cualquier información sobre el mismo, integrando así una capa adicional de protección contra el acceso a rutas sensibles del sistema.
+- `2026-10-05T08:06:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T08:06:16` Corrida terminada. Total usado hoy: 192.

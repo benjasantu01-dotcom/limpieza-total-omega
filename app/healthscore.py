@@ -183,6 +183,7 @@ class SystemMetrics:
             except (ValueError, TypeError):
                 return d
 
+        # Sanitización estricta de límites para evitar métricas fuera de dominio
         self.junk_mb = _c(self.junk_mb, 0.0, 0.0, 1e9)
         self.duplicate_mb = _c(self.duplicate_mb, 0.0, 0.0, 1e9)
         self.suspicious_count = int(_c(self.suspicious_count, 0, 0, 1e6))
