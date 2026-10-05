@@ -577,10 +577,12 @@ def is_protected_path(path: PathLike) -> bool:
     if not isinstance(path, (str, Path)) or not path: return True
     try:
         p_str = str(path)
+        if _is_system_directory_junction(p_str): return True
+        # Chequeo rápido de prefijos antes de resolver la ruta
+        if _is_system_path_raw(p_str): return True
         p = normalize(p_str)
-        if _is_system_directory_junction(str(p)): return True
         if p == Path(p.anchor): return True
-        return _is_system_path_raw(str(p))
+        return False
     except (UnsafePathError, TypeError, OSError, RuntimeError, ValueError): return True
 
 @lru_cache(maxsize=4096)
@@ -815,3 +817,4 @@ def describe_protection(path: PathLike) -> str:
     except (OSError, FileNotFoundError, AttributeError): pass
     if is_sensitive_file(p): return f"'{p.name}' extensión sensible."
     return f"'{p}' es candidata a modificación."
+

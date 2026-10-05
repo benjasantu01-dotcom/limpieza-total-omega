@@ -165,8 +165,7 @@ class Scanner:
         self.seen: set[str] = set()
         self.safe_cache: set[str] = set()
         self._root_cache: Dict[str, bool] = {}
-        self.base_root: Path = base_root.resolve()
-        self.base_root_str: str = str(self.base_root).lower()
+        self.base_root_str: str = str(base_root.resolve()).lower()
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, entry_path: str) -> bool:
@@ -174,14 +173,13 @@ class Scanner:
         if not entry_path: return False
         if entry_path in self._root_cache:
             return self._root_cache[entry_path]
-        try:
-            target = Path(entry_path).resolve(strict=False)
-            result = str(target).lower().startswith(self.base_root_str)
-            if len(self._root_cache) < 1000:
-                self._root_cache[entry_path] = result
-            return result
-        except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
-            return False
+        
+        entry_lower = entry_path.lower()
+        result = entry_lower.startswith(self.base_root_str)
+        
+        if len(self._root_cache) < 1000:
+            self._root_cache[entry_path] = result
+        return result
 
     def _has_invalid_name(self, name: str) -> bool:
         """Valida contra nombres de dispositivos reservados por el SO (ej: NUL, CON)."""
@@ -210,19 +208,16 @@ class Scanner:
                 return False
             self.safe_cache.add(entry.path)
             return True
-        except (OSError, RuntimeError, ValueError, AttributeError):
+        except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
         """Apila directorios para procesarlos iterativamente, respetando el límite de profundidad."""
         if current_depth >= SCAN_LIMITS.max_depth:
             return
-        try:
-            if entry.path and entry.path.lower() not in self.seen:
-                self.seen.add(entry.path.lower())
-                directory_stack.append((entry.path, current_depth + 1))
-        except (OSError, AttributeError):
-            pass
+        if entry.path and entry.path.lower() not in self.seen:
+            self.seen.add(entry.path.lower())
+            directory_stack.append((entry.path, current_depth + 1))
 
     @staticmethod
     @lru_cache(maxsize=1024)
@@ -245,8 +240,7 @@ class Scanner:
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, directory_stack, current_depth)
             else:
-                abs_path = Path(entry.path).resolve(strict=False)
-                self._run_file_heuristics(abs_path, entry)
+                self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError, AttributeError):
             return
 

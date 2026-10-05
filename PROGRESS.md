@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 41
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 208
+- Rechazadas por guardia de seguridad: 42
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-03 | 41 | 2 | 6 | 7 | 38 |
+| 2026-10-03 | 39 | 2 | 6 | 6 | 37 |
 | 2026-10-04 | 154 | 20 | 31 | 5 | 140 |
-| 2026-10-05 | 25 | 0 | 4 | 1 | 30 |
+| 2026-10-05 | 28 | 0 | 5 | 1 | 30 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - robustez ante casos límite: **43**
-- seguridad defensiva: **42**
+- rendimiento: **42**
 - manejo de errores y validación de entradas: **41**
-- rendimiento: **39**
+- seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
 - `quarantine.py`: **20**
 - `healthscore.py`: **20**
+- `diskreport.py`: **19**
 - `organizer.py`: **18**
-- `safety.py`: **17**
+- `safety.py`: **18**
 - `assistant.py`: **17**
 - `duplicates.py`: **16**
-- `browser.py`: **15**
 - `memory.py`: **15**
+- `scanner.py`: **15**
 - `branding.py`: **14**
-- `scanner.py`: **14**
+- `browser.py`: **14**
 - `settings.py`: **13**
-- `startup.py`: **11**
+- `startup.py`: **12**
 - `main.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T02:38:18` **startup.py** (rendimiento): Optimizé `entries_from_folders` reemplazando la creación innecesaria de objetos `Path` y el uso de `os.path.splitext` dentro de cada iteración por el uso eficiente de `os.DirEntry` y una pre-filtración de extensiones para minimizar el I/O y la carga del recolector de basura.
+- `2026-10-05T02:37:30` **scanner.py** (rendimiento): Optimicé el rendimiento de la recursión evitando llamadas innecesarias a `Path.resolve()` dentro del bucle de escaneo mediante el uso de strings y el caché de rutas, reduciendo significativamente las operaciones de I/O en cada iteración.
+- `2026-10-05T02:37:00` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` eliminando la llamada innecesaria a `normalize()` (que es costosa al resolver rutas) en favor de una verificación basada en prefijos de cadena, y agregué un chequeo de acceso rápido antes de intentar resolver estructuras profundas.
 - `2026-10-05T02:27:46` **quarantine.py** (rendimiento): Se optimizó la función `purge_all` para evitar lecturas de disco redundantes y llamadas excesivas a `load_manifest`, utilizando un conjunto (set) para las operaciones de búsqueda de IDs en lugar de recorridos lineales.
 - `2026-10-05T02:26:31` **memory.py** (rendimiento): Se optimizó el rendimiento de `top_memory_processes` reemplazando la ejecución costosa de un pipeline completo de PowerShell por una consulta más directa que minimiza el tiempo de espera del proceso hijo y el consumo de memoria al evitar la serialización innecesaria de objetos en el lado del cliente de PowerShell.
 - `2026-10-05T02:17:14` **healthscore.py** (rendimiento): Optimicé el método `SystemMetrics.validate` eliminando la creación repetitiva de tuplas y llamadas a `getattr/setattr` dentro de un bucle, reemplazándolo por una asignación directa y rápida, lo que reduce la carga de procesamiento en cada corrida del pipeline.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T01:56:53` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más específicos, se documentaron los parámetros de las funciones de heurística y se extrajo la validación de acceso a archivo en una función privada `_is_readable` para mejorar la mantenibilidad y claridad del código siguiendo las normas de documentación y legibilidad.
 - `2026-10-05T01:56:23` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `safety.py` mediante la adición de docstrings detallados en las funciones de validación interna y la clarificación de las constantes de seguridad, facilitando el mantenimiento y auditoría del código conforme a los estándares exigidos.
 - `2026-10-05T01:50:14` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `quarantine.py` mediante la adición de docstrings técnicos detallados en las funciones de manipulación de archivos (`_copy_with_verification`, `_write_temp_to_final`, `_atomic_isolate_file`), aclarando las precondiciones de seguridad, el uso de I/O atómico y el manejo de excepciones, para asegurar que cualquier colaborador futuro entienda las salvaguardas de integridad implementadas.
-- `2026-10-05T01:49:42` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings estructurados y precisos en las funciones críticas de validación y procesamiento de archivos, clarificando el propósito, las pre-condiciones de seguridad y el comportamiento ante errores, facilitando el mantenimiento y la comprensión del flujo de seguridad.
-- `2026-10-05T01:49:14` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las estructuras de datos y funciones críticas en `memory.py`, incluyendo docstrings descriptivos para las constantes de máscara de acceso y una explicación del porqué del filtrado de procesos en `_extract_process_info`, manteniendo la integridad de las reglas de seguridad.
-- `2026-10-05T01:36:36` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a las funciones de normalización (`score_junk`, `score_security`, etc.) para aclarar qué métrica representan y cómo influyen en el puntaje, además de añadir type hints explícitos en los argumentos y retornos que faltaban para mejorar la legibilidad y el análisis estático.

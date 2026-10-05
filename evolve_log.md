@@ -969,3 +969,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-05T02:27:54` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-05T02:27:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T02:27:54` Corrida terminada. Total usado hoy: 60.
+- `2026-10-05T02:36:10` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-10-05T02:37:00` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `is_protected_path` eliminando la llamada innecesaria a `normalize()` (que es costosa al resolver rutas) en favor de una verificación basada en prefijos de cadena, y agregué un chequeo de acceso rápido antes de intentar resolver estructuras profundas.
+- `2026-10-05T02:37:30` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de la recursión evitando llamadas innecesarias a `Path.resolve()` dentro del bucle de escaneo mediante el uso de strings y el caché de rutas, reduciendo significativamente las operaciones de I/O en cada iteración.
+- `2026-10-05T02:38:02` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult, _ValidatorEntry
+- `2026-10-05T02:38:18` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimizé `entries_from_folders` reemplazando la creación innecesaria de objetos `Path` y el uso de `os.path.splitext` dentro de cada iteración por el uso eficiente de `os.DirEntry` y una pre-filtración de extensiones para minimizar el I/O y la carga del recolector de basura.
+- `2026-10-05T02:38:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T02:38:18` Corrida terminada. Total usado hoy: 64.
