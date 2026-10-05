@@ -77,8 +77,9 @@ class StartupEntry:
     """
     Representa una entrada de inicio detectada. 
     
-    Gestiona la normalización de comandos, la validación de rutas contra el 
-    sistema de seguridad y el cacheo de accesibilidad de archivos.
+    Gestiona la normalización de comandos y la validación de rutas contra el 
+    sistema de seguridad. Mantiene cachés internas de resolución de rutas 
+    debido a que `Path.resolve()` es una operación costosa en disco.
     
     Attributes:
         name (str): Nombre amigable del programa detectado.
@@ -102,7 +103,7 @@ class StartupEntry:
         return True
 
     def _is_reserved_device_name(self, path_str: str) -> bool:
-        """Comprueba si la ruta hace referencia a un nombre reservado del SO."""
+        """Comprueba si la ruta hace referencia a un dispositivo lógico de Windows."""
         try:
             if "\0" in path_str:
                 return True
@@ -111,24 +112,24 @@ class StartupEntry:
             return True
 
     def _is_path_suspicious(self, path_string: str) -> bool:
-        """Determina si la ruta contiene caracteres prohibidos o es una ruta UNC."""
+        """Bloquea rutas con metacaracteres o rutas UNC (riesgo de inyección/red)."""
         return any(c in path_string for c in SUSPICIOUS_CHARS) or path_string.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Valida que el archivo termine en una extensión ejecutable y no sea un enlace."""
+        """Valida extensión y asegura que el archivo no sea un enlace simbólico (anti-hijacking)."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_command: str) -> str:
-        """Limpia caracteres no imprimibles de la cadena de comando."""
+        """Elimina caracteres de control y espacios en blanco de la cadena cruda."""
         if not isinstance(raw_command, str):
             return ""
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
-        """Extrae y valida una ruta acotada por comillas dobles."""
+        """Extrae rutas encerradas en comillas para manejar espacios en nombres de archivos."""
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
         
@@ -150,11 +151,11 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """Confirma mediante el sistema de seguridad si el archivo es accesible."""
+        """Verifica la existencia del archivo delegando la protección a safety.py."""
         try:
             if is_protected_path(p):
                 return False
-            # No seguir puntos de reparse (junctions/symlinks) para seguridad defensiva
+            # Los enlaces simbólicos son ignorados para prevenir que la app siga punteros externos
             if p.is_symlink():
                 return False
             return p.stat().is_file()
@@ -162,7 +163,7 @@ class StartupEntry:
             return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
-        """Resuelve una ruta absoluta usando una caché local para evitar I/O repetitivo."""
+        """Resuelve rutas a su forma absoluta, usando la caché de sesión para evitar I/O redundante."""
         if not path_string or not isinstance(path_string, str) or not self.is_valid:
             return ""
         
@@ -200,7 +201,7 @@ class StartupEntry:
             return ""
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Analiza la línea de comandos para aislar el ejecutable."""
+        """Lógica de particionado de línea de comandos para aislar el ejecutable."""
         if not command_line or not isinstance(command_line, str):
             return ""
         
@@ -323,7 +324,8 @@ def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
     """
-    Parsea la salida de PowerShell CSV.
+    Parsea la salida de PowerShell CSV (formato crudo).
+    
     Args:
         csv_text: Salida en texto crudo de `ConvertTo-Csv`.
         source: Identificador de origen para reporte.

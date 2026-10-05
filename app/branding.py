@@ -332,15 +332,6 @@ def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
         ))
     except (TypeError, ValueError): return start
 
-@lru_cache(maxsize=128)
-def _interpolate_rgb(s1: RGBTuple, s2: RGBTuple, delta: float) -> RGBTuple:
-    """Cálculo intermedio para degradados RGB."""
-    return (
-        int(s1[0] + (s2[0] - s1[0]) * delta),
-        int(s1[1] + (s2[1] - s1[1]) * delta),
-        int(s1[2] + (s2[2] - s1[2]) * delta)
-    )
-
 @lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
     """Genera secuencia de colores para un gradiente dado el número de pasos."""
@@ -349,14 +340,25 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
         return (stops[0] if stops else C_TEXT_MUTED,) * n
     
     rgb_stops = tuple(_hex_to_rgb(s) for s in stops)
-    tramos = len(stops) - 1
-    paso = float(n - 1) if n > 1 else 1.0
+    n_segments = len(stops) - 1
     
+    # Pre-calculamos los índices de parada para evitar divisiones en el loop
     res = [None] * n
     for i in range(n):
-        pos = (i / paso) * tramos
-        idx = min(int(pos), tramos - 1)
-        res[i] = _rgb_to_hex(_interpolate_rgb(rgb_stops[idx], rgb_stops[idx + 1], pos - idx))
+        # Ratio normalizado 0.0 a 1.0
+        ratio = i / (n - 1) if n > 1 else 0.0
+        pos = ratio * n_segments
+        idx = min(int(pos), n_segments - 1)
+        delta = pos - idx
+        
+        s1, s2 = rgb_stops[idx], rgb_stops[idx + 1]
+        rgb = (
+            int(s1[0] + (s2[0] - s1[0]) * delta),
+            int(s1[1] + (s2[1] - s1[1]) * delta),
+            int(s1[2] + (s2[2] - s1[2]) * delta)
+        )
+        res[i] = _rgb_to_hex(rgb)
+        
     return tuple(res) # type: ignore
 
 @lru_cache(maxsize=128)
