@@ -269,7 +269,10 @@ def grade_color(grade: Optional[str]) -> ColorHex:
 
 @lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> ColorHex:
-    """Calcula el color del score (0-100) según umbrales definidos."""
+    """
+    Calcula el color del score (0-100) según umbrales definidos.
+    Example: score_color(95.0) -> "#22e39a" (Success)
+    """
     if score is None: 
         return C_TEXT_MUTED
     try:
@@ -285,7 +288,10 @@ def score_color(score: Union[float, int, None]) -> ColorHex:
 @lru_cache(maxsize=64)
 def bar(percent: Union[float, int, None], width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
-    """Crea una representación en texto plano de una barra de progreso."""
+    """
+    Crea una representación en texto plano de una barra de progreso.
+    Example: bar(50, width=4) -> "██░░"
+    """
     try:
         valor = float(percent) if percent is not None else 0.0
         if not math.isfinite(valor): valor = 0.0
@@ -319,7 +325,10 @@ def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
 
 @lru_cache(maxsize=128)
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
-    """Interpolación lineal entre dos colores."""
+    """
+    Interpolación lineal entre dos colores.
+    Example: blend("#000000", "#FFFFFF", 0.5) -> "#808080"
+    """
     try:
         r1, g1, b1 = _hex_to_rgb(start)
         r2, g2, b2 = _hex_to_rgb(end)
@@ -342,10 +351,8 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
     rgb_stops = tuple(_hex_to_rgb(s) for s in stops)
     n_segments = len(stops) - 1
     
-    # Pre-calculamos los índices de parada para evitar divisiones en el loop
     res = [None] * n
     for i in range(n):
-        # Ratio normalizado 0.0 a 1.0
         ratio = i / (n - 1) if n > 1 else 0.0
         pos = ratio * n_segments
         idx = min(int(pos), n_segments - 1)
@@ -478,14 +485,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """
-    Renderiza el escudo corporativo compuesto.
-    Args:
-        canvas: Objeto Canvas de la UI.
-        size: Tamaño base en píxeles.
-        canvas_x: Offset X para posicionar el logo.
-        canvas_y: Offset Y para posicionar el logo.
-    """
+    """Renderiza el escudo corporativo compuesto."""
     try:
         s = float(size)
         cx, cy = float(canvas_x), float(canvas_y)
@@ -522,7 +522,10 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, 
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, 
               track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """Dibuja indicador circular de progreso (anillo de salud) con validación de parámetros."""
+    """
+    Dibuja indicador circular de progreso con validación.
+    Example: draw_ring(canvas, 75, size=100) -> Dibuja un arco de 75%
+    """
     try:
         if canvas is None: return
         val = float(percent) if percent is not None else 0.0
