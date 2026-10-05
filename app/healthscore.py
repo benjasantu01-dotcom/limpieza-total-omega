@@ -88,18 +88,17 @@ _LIMIT_STARTUP_COUNT: Final[int] = 20
 _LIMIT_RAM_PERCENT: Final[float] = 35.0
 _LIMIT_DISK_PERCENT: Final[float] = 25.0
 
-# Inversos precalculados para optimizar el cálculo de ratios
-def _safe_inv(val: float, fallback: float = 1.0) -> float:
-    """Calcula el inverso multiplicativo de forma segura para evitar divisiones por cero."""
-    if not math.isfinite(val) or val == 0:
-        return fallback
-    return 1.0 / val
+def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
+    """Limita un valor numérico al rango [min_val, max_val]."""
+    if not math.isfinite(value): return min_val
+    return min_val if value < min_val else (max_val if value > max_val else value)
 
-_INV_JUNK: Final[float] = _safe_inv(_LIMIT_JUNK_MB)
-_INV_DUP: Final[float] = _safe_inv(_LIMIT_DUPLICATE_MB)
-_INV_STARTUP: Final[float] = _safe_inv(float(_LIMIT_STARTUP_COUNT))
-_INV_RAM: Final[float] = _safe_inv(_LIMIT_RAM_PERCENT, 0.01)
-_INV_DISK: Final[float] = _safe_inv(_LIMIT_DISK_PERCENT, 0.01)
+def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
+    """Crea un normalizador lineal basado en un valor límite."""
+    def scorer(val: float) -> NormalizedRatio:
+        ratio = val / limit if limit != 0 else 0.0
+        return _clamp(1.0 - ratio if inverse else ratio)
+    return scorer
 
 # Umbrales para disparar recomendaciones
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
@@ -133,34 +132,29 @@ _PIPELINE: Final[List[PipelineEntry]] = [
                   (RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),)),
 ]
 
-def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
-    """Limita un valor numérico al rango [min_val, max_val]."""
-    if not math.isfinite(value): return min_val
-    return min_val if value < min_val else (max_val if value > max_val else value)
-
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
-    """Calcula ratio basado en MB de basura: 1.0 es ideal (0 MB), 0.0 es crítico (> _LIMIT_JUNK_MB)."""
-    return _clamp(1.0 - (float(junk_mb) * _INV_JUNK))
+    """Calcula ratio: 1.0 (0 MB) a 0.0 (>= _LIMIT_JUNK_MB)."""
+    return create_linear_scorer(_LIMIT_JUNK_MB)(float(junk_mb))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
     """Calcula ratio de seguridad: penaliza hallazgos y advertencias. 1.0 es estado seguro."""
     return _clamp(1.0 - ((suspicious_count * 0.05) + (warnings * 0.25)))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
-    """Calcula ratio de RAM: 1.0 indica abundancia de memoria, 0.0 indica falta de recursos."""
-    return _clamp(float(available_percent) * _INV_RAM)
+    """Calcula ratio de RAM: Escala la disponibilidad frente al límite crítico."""
+    return _clamp(float(available_percent) / _LIMIT_RAM_PERCENT)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
-    """Calcula ratio de disco: 1.0 es espacio amplio, 0.0 indica proximidad al límite de uso."""
-    return _clamp(float(free_percent) * _INV_DISK)
+    """Calcula ratio de disco: Escala el espacio libre frente al límite crítico."""
+    return _clamp(float(free_percent) / _LIMIT_DISK_PERCENT)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
-    """Calcula ratio de duplicados: 1.0 es libre de redundancia, 0.0 es máximo permitido."""
-    return _clamp(1.0 - (float(duplicate_mb) * _INV_DUP))
+    """Calcula ratio de duplicados: 1.0 es ideal, 0.0 es máximo permitido."""
+    return create_linear_scorer(_LIMIT_DUPLICATE_MB)(float(duplicate_mb))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
-    """Calcula ratio de arranque: 1.0 indica pocos programas de inicio, 0.0 indica saturación."""
-    return _clamp(1.0 - (float(startup_count) * _INV_STARTUP))
+    """Calcula ratio de arranque: 1.0 indica pocos programas, 0.0 saturación."""
+    return create_linear_scorer(float(_LIMIT_STARTUP_COUNT))(float(startup_count))
 
 @dataclass
 class SystemMetrics:
