@@ -369,23 +369,20 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     
     get_stats = ext_stats.__getitem__
     
-    try:
-        for path, size_bytes in walk_files(directory, skip_protected):
-            total_bytes += size_bytes
-            total_files += 1
-            ext_raw = path.suffix
-            ext = ext_raw.lower() if ext_raw else "(sin extensión)"
-            stats = get_stats(ext)
-            stats.total_bytes += size_bytes
-            stats.count += 1
-            
-            if limit > 0:
-                if len(top_heap) < limit: 
-                    heapq.heappush(top_heap, (size_bytes, path))
-                elif size_bytes > top_heap[0][0]: 
-                    heapq.heapreplace(top_heap, (size_bytes, path))
-    except (OSError, PermissionError, AttributeError):
-        pass
+    for path, size_bytes in walk_files(directory, skip_protected):
+        total_bytes += size_bytes
+        total_files += 1
+        ext_raw = path.suffix
+        ext = ext_raw.lower() if ext_raw else "(sin extensión)"
+        stats = get_stats(ext)
+        stats.total_bytes += size_bytes
+        stats.count += 1
+        
+        if limit > 0:
+            if len(top_heap) < limit: 
+                heapq.heappush(top_heap, (size_bytes, path))
+            elif size_bytes > top_heap[0][0]: 
+                heapq.heapreplace(top_heap, (size_bytes, path))
                 
     return SummaryData(total_bytes, total_files, dict(ext_stats), top_heap)
 

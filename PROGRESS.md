@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Mejoras aceptadas: **217** (43.1% de aceptación)
 - Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 10
 - Sin respuesta de la IA (error o límite): 211
 
@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 143 | 18 | 30 | 4 | 137 |
-| 2026-10-05 | 73 | 6 | 13 | 6 | 74 |
+| 2026-10-04 | 141 | 18 | 29 | 4 | 136 |
+| 2026-10-05 | 76 | 6 | 13 | 6 | 75 |
 
 ## Mejoras aceptadas por enfoque
 
+- robustez ante casos límite: **49**
 - legibilidad y documentación: **48**
-- robustez ante casos límite: **46**
 - rendimiento: **43**
 - manejo de errores y validación de entradas: **42**
-- seguridad defensiva: **37**
+- seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
-- `healthscore.py`: **21**
-- `diskreport.py`: **18**
+- `healthscore.py`: **22**
+- `quarantine.py`: **20**
+- `diskreport.py`: **19**
 - `assistant.py`: **17**
-- `safety.py`: **16**
+- `duplicates.py`: **16**
 - `browser.py`: **16**
 - `memory.py`: **16**
 - `scanner.py`: **16**
-- `duplicates.py`: **15**
+- `safety.py`: **15**
 - `branding.py`: **14**
 - `organizer.py`: **14**
 - `settings.py`: **13**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-05T07:24:25` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `score_security` y `compute_score` ante valores inesperados de entrada y posibles fallos en la ejecución de reglas, asegurando que el motor de puntuación no colapse ante datos corruptos o métricas malformadas.
+- `2026-10-05T07:23:51` **duplicates.py** (robustez ante casos límite): Se añadió una validación de `path.exists()` y `path.is_file()` previa al cálculo de `stat()` en `_collect_candidates`, previniendo excepciones y bloqueos causados por archivos que desaparecen entre la iteración del directorio y el procesamiento del mismo (condición de carrera típica en escaneos de disco).
+- `2026-10-05T07:23:23` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o con metadatos inaccesibles, asegurando que las excepciones en `os.scandir` o `entry.stat` no terminen prematuramente el escaneo y garantizando que el `SummaryData` no retorne objetos corruptos.
 - `2026-10-05T07:13:21` **browser.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante errores de E/S en `_is_file_in_use` y `directory_size` para manejar correctamente archivos bloqueados por el sistema operativo mediante un filtrado de excepciones más específico, evitando que el escaneo se interrumpa por errores de acceso denegado (comunes en archivos de caché en uso).
 - `2026-10-05T07:13:05` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante casos límite de escritura en disco, añadiendo una verificación explícita para evitar operaciones con rutas inexistentes o inaccesibles que podrían causar un fallo silencioso o un comportamiento inesperado.
 - `2026-10-05T07:12:28` **assistant.py** (robustez ante casos límite): Reforcé la robustez del método `ingest` mediante la validación del estado del objeto ante posibles desbordamientos de punto flotante o errores de casting, evitando que un valor numérico malformado en la fuente de datos contamine el estado interno de `SystemContext`.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T06:41:42` **diskreport.py** (rendimiento): Optimicé el bucle de recorrido en `walk_files` evitando la creación innecesaria de objetos `Path` y conversiones de tipo dentro del hot-loop, reemplazando `Path(entry.path)` por `entry.path` donde es posible, para reducir el overhead de asignación de memoria durante escaneos intensivos.
 - `2026-10-05T06:41:13` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas costosas a `os.scandir` y estadísticas de archivos mediante la reutilización efectiva de la caché de resultados de directorios ya visitados, reduciendo drásticamente la E/S en estructuras de carpetas anidadas.
 - `2026-10-05T06:22:27` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adopción de un estilo uniforme en los docstrings (siguiendo el formato NumPy/Google), la adición de Type Hints explícitos para las variables de clase y funciones, y la extracción de la lógica de filtrado de extensiones a una función privada más descriptiva para mejorar la mantenibilidad.
-- `2026-10-05T06:21:04` **quarantine.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento mediante la incorporación de anotaciones de tipo más específicas (`TypeAlias`) y la refactorización de `_copy_with_verification` para separar la lógica de validación de la de E/S, facilitando la comprensión del flujo crítico de seguridad.
-- `2026-10-05T06:15:45` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del módulo agregando type hints faltantes en las estructuras de Win32, documentando con docstrings el propósito de funciones de bajo nivel (`_create_mem_status_ex`, `_extract_process_info`) y eliminando el uso de `global` mediante la transición hacia una gestión de caché más controlada, lo cual facilita el mantenimiento y la auditoría del código.
-- `2026-10-05T06:10:39` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del módulo `healthscore.py` al reemplazar la lógica opaca de normalización en línea por funciones de fábrica (`create_linear_scorer`) y documentación explícita de los rangos críticos, lo que facilita el mantenimiento futuro y la validación de nuevas métricas.

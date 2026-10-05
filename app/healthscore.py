@@ -138,7 +138,8 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
     """Calcula ratio de seguridad: penaliza hallazgos y advertencias. 1.0 es estado seguro."""
-    return _clamp(1.0 - ((suspicious_count * 0.05) + (warnings * 0.25)))
+    penalization = (float(suspicious_count) * 0.05) + (float(warnings) * 0.25)
+    return _clamp(1.0 - penalization)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
     """Calcula ratio de RAM: Escala la disponibilidad frente al límite crítico."""
@@ -224,10 +225,8 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
                 msg = str(rule.message_factory(metrics))
                 clean_msg = "".join(c for c in msg if c.isprintable() and c not in "\r\n\t").strip()
                 if clean_msg: findings.append(clean_msg[:200])
-        except (ValueError, TypeError, ZeroDivisionError) as e:
-            logging.error(f"Error evaluando regla en {rule.area}: {e}")
         except Exception as e:
-            logging.error(f"Error inesperado en regla {rule.area}: {e}")
+            logging.error(f"Error silencioso al evaluar regla en {rule.area}: {type(e).__name__}")
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Procesa el pipeline completo de salud y retorna un objeto HealthResult unificado."""

@@ -231,19 +231,20 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        st = entry.stat(follow_symlinks=False)
-                        inode_id = (st.st_dev, st.st_ino)
-                        
                         if entry.is_dir(follow_symlinks=False):
                             p_entry = Path(entry.path)
                             if _safe_path_check(p_entry) and not (skip_protected and is_protected_path(p_entry)):
                                 stack.append((p_entry, depth + 1))
                         
                         elif entry.is_file(follow_symlinks=False):
+                            p_entry = Path(entry.path)
+                            if not p_entry.exists(): continue
+                            st = p_entry.stat()
+                            inode_id = (st.st_dev, st.st_ino)
+                            
                             if inode_id in visited_inodes:
                                 continue
                             
-                            p_entry = Path(entry.path)
                             if st.st_size >= min_size and _is_valid_candidate(p_entry, st.st_size):
                                 visited_inodes.add(inode_id)
                                 size_to_paths_map[st.st_size].append(p_entry)
