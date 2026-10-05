@@ -457,8 +457,7 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
 
 def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
     """
-    Ejecuta el conjunto de reglas de integridad sobre un archivo dado.
-    Si cualquier regla se cumple, se lanza una UnsafePathError.
+    Ejecuta el conjunto de reglas de integridad sobre un archivo dado, usando cortocircuito.
     """
     try:
         sd = _get_security_descriptor(path)

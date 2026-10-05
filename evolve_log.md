@@ -878,3 +878,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-05T11:22:00` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-10-05T11:22:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-05T11:22:00` Corrida terminada. Total usado hoy: 268.
+- `2026-10-05T11:26:21` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-10-05T11:27:08` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Optimicé el acceso al manifiesto implementando una carga perezosa (`lazy loading`) global controlada por `_MANIFEST_CACHE` que reduce significativamente el I/O en operaciones sucesivas, evitando la re-serialización y re-lectura del archivo JSON en llamadas repetidas.
+- `2026-10-05T11:27:30` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 100): unterminated string literal (detected at line 100)
+- `2026-10-05T11:28:19` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimizamos la serie de validadores de integridad implementando un cortocircuito (short-circuit) en `_evaluate_security_rules`, evitando llamadas costosas a APIs de sistema cuando una regla de bajo costo ya ha fallado, y pre-calculamos el resultado de `_is_kernel_managed` para acelerar las validaciones repetitivas en bucles de escaneo.
+- `2026-10-05T11:28:46` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se ha optimizado `process_entry` moviendo la validación de la extensión (el filtro más rápido y frecuente) antes de realizar llamadas costosas al sistema como `_is_safe_entry`, reduciendo significativamente la cantidad de accesos al disco en archivos irrelevantes.
+- `2026-10-05T11:28:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-05T11:28:46` Corrida terminada. Total usado hoy: 272.

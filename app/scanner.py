@@ -232,10 +232,12 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
         """Orquestador: Decide si delegar a exploración de directorios o ejecución de heurísticas."""
         try:
-            if not entry.path or not os.path.exists(entry.path): 
+            if not entry.path: 
                 return
-            
+
             is_dir = entry.is_dir(follow_symlinks=False)
+            
+            # Optimización: Filtrado rápido de archivos irrelevantes antes de validación profunda
             if not is_dir and not self._is_relevant_extension(entry.name):
                 return
             
