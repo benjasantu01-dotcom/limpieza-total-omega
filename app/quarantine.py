@@ -681,6 +681,11 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     # 2. Validación de confinamiento
     dest_resolved = destination.resolve()
     base_resolved = destination.parent.resolve()
+    
+    # Seguridad reforzada: verificar que la base del sandbox no sea un atajo o reparse point
+    if base_resolved.is_symlink() or (os.name == 'nt' and _check_path_for_junctions(base_resolved)):
+        raise UnsafePathError("Sandbox destino inválido: no es una ruta física directa.")
+
     if not is_within_directory(dest_resolved, base_resolved):
         raise UnsafePathError("Intento de escape del sandbox detectado.")
         

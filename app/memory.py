@@ -336,21 +336,19 @@ def _get_process_path(pid: int) -> Optional[Path]:
             raw_path = buf.value
             if not raw_path: return None
             
-            # Resolvemos con cuidado frente a rutas inválidas o casos límite de OS
+            # Normalización y validación física previa antes de aplicar filtros de seguridad
             try:
-                path_obj = Path(raw_path).resolve(strict=False)
-            except OSError:
+                path_obj = Path(raw_path).resolve(strict=True)
+            except (OSError, RuntimeError):
                 return None
             
-            # Validación estricta de seguridad: verifica protección, reparse points y política global.
             if is_protected_path(str(path_obj)) or not is_safe_to_modify(path_obj):
                 return None
             
             attr = kernel32.GetFileAttributesW(str(path_obj))
             if attr != -1 and (attr & FILE_ATTRIBUTE_REPARSE_POINT): return None
             
-            if path_obj.exists() and path_obj.is_file():
-                return path_obj
+            return path_obj
     except (ctypes.ArgumentError, OSError, ValueError): pass
     finally: kernel32.CloseHandle(handle)
     return None

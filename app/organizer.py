@@ -173,8 +173,12 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     try:
         if not src.exists() or src.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         st = src.stat()
+        # Verificar integridad: el inodo y el conteo de enlaces deben coincidir con la detección
         if junk_file._ino is not None and st.st_ino != junk_file._ino: return False
         if not src.is_file() or st.st_nlink > 1: return False
+        # Validar ruta resuelta contra el origen original
+        if src.resolve() != src: return False
+        
         if is_protected_path(dest) or is_protected_path(dest.parent): return False
         if not is_safe_to_modify(src) or not _validate_path_security(src, dest): return False
         target_dir = dest.parent if dest.exists() else dest
