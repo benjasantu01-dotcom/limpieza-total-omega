@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Mejoras aceptadas: **217** (43.1% de aceptación)
 - Rechazadas por tests: 25
-- Rechazadas por guardia de seguridad: 39
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 53 | 6 | 8 | 2 | 49 |
+| 2026-10-04 | 51 | 6 | 8 | 2 | 47 |
 | 2026-10-05 | 147 | 16 | 26 | 9 | 152 |
-| 2026-10-06 | 16 | 3 | 5 | 1 | 11 |
+| 2026-10-06 | 19 | 3 | 6 | 1 | 11 |
 
 ## Mejoras aceptadas por enfoque
 
+- robustez ante casos límite: **50**
 - manejo de errores y validación de entradas: **49**
-- robustez ante casos límite: **47**
 - legibilidad y documentación: **44**
-- seguridad defensiva: **38**
 - rendimiento: **38**
+- seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
+- `memory.py`: **22**
 - `healthscore.py`: **21**
-- `memory.py`: **21**
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
 - `diskreport.py`: **19**
 - `scanner.py`: **19**
 - `browser.py`: **17**
@@ -40,13 +40,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **16**
 - `safety.py`: **16**
 - `duplicates.py`: **15**
-- `organizer.py`: **14**
-- `settings.py`: **13**
-- `startup.py`: **5**
+- `organizer.py`: **15**
+- `settings.py`: **12**
 - `main.py`: **4**
+- `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T01:42:00` **quarantine.py** (robustez ante casos límite): Se ha añadido una validación de `os.fsync` al directorio padre tras la creación del archivo en cuarentena, para asegurar que la entrada de directorio sea persistida en disco antes de finalizar `_atomic_isolate_file`, protegiendo ante pérdidas de metadatos o corrupción del FS ante reinicios inesperados.
+- `2026-10-06T01:41:17` **organizer.py** (robustez ante casos límite): Se ha mejorado `_is_safe_for_disk_op` para prevenir fallos por condiciones de carrera o inconsistencias de estado del sistema de archivos, añadiendo una validación explícita de `st_ino` (inodo/ID único) para confirmar que el archivo original no ha sido reemplazado o movido por otro proceso entre la detección y la intención de movimiento, y verificando que el espacio libre sea suficiente antes de cualquier operación de I/O.
+- `2026-10-06T01:40:47` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_get_process_path` y `trim_working_set` al centralizar la verificación de acceso, manejando correctamente los errores de permisos (ERROR_ACCESS_DENIED) y asegurando que las llamadas a la API Win32 no bloqueen el hilo principal si un proceso está bloqueado o en estado inaccesible.
 - `2026-10-06T01:31:58` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` frente a cambios dinámicos en el sistema de archivos (ej. archivos borrados mientras se escanea) y el manejo de rutas, asegurando que `os.scandir` gestione los errores de acceso de forma más granular para no interrumpir el análisis completo ante un único permiso denegado en un subdirectorio.
 - `2026-10-06T01:23:11` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_in_use` y `_sum_directory_recursive` evitando el uso de `stat()` en archivos bloqueados o con errores de acceso, previniendo excepciones innecesarias mediante una verificación previa del estado del handle y mejorando el manejo de rutas inexistentes o inaccesibles durante la recursión.
 - `2026-10-06T01:22:52` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación explícita de `path` y parámetros geométricos, asegurando que las excepciones de sistema o valores `NaN` no interrumpan el flujo de la aplicación.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T00:31:11` **scanner.py** (legibilidad y documentación): Se introdujo un `TypeAlias` más explícito para las heurísticas y se enriqueció la documentación interna de las funciones de chequeo mediante `docstrings` estandarizados, explicando el criterio técnico detrás de cada detección para facilitar futuras auditorías.
 - `2026-10-06T00:29:47` **quarantine.py** (legibilidad y documentación): Se han añadido docstrings descriptivos y type hints faltantes en funciones clave de bajo nivel (`_check_io_error_context`, `_is_file_exclusive`, `_get_sha256`), junto con una reorganización de los comentarios de advertencia en el encabezado, para mejorar la mantenibilidad y claridad sobre las garantías de seguridad del módulo.
 - `2026-10-06T00:23:02` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `top_memory_processes` para extraer la lógica de sondeo de procesos en una función privada más pequeña (`_get_process_memory_stats`), aplicando type hinting explícito y separando la gestión de recursos de la lógica de negocio.
-- `2026-10-06T00:19:10` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de la arquitectura del pipeline de `healthscore.py` mediante type hints específicos y docstrings detallados en las funciones de normalización y procesamiento, eliminando ambigüedades en la interpretación de los ratios.
-- `2026-10-06T00:10:41` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más específicos en las firmas de funciones clave y se agregaron docstrings descriptivos que detallan el propósito y los estados de retorno de las funciones internas del bucle de recolección, mejorando la mantenibilidad técnica del módulo.
-- `2026-10-06T00:09:44` **browser.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la centralización de la lógica de recorrido recursivo en `_sum_directory_recursive` mediante el uso de `TypedDict` para la estructura de `visited_dirs` y mejor documentación técnica sobre el propósito de la recursión.

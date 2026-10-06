@@ -252,7 +252,7 @@ def _get_process_memory_stats(pid: int) -> Optional[BytesValue]:
         pmc = (ctypes.c_size_t * 6)()
         if psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), ctypes.sizeof(pmc)):
             return BytesValue(pmc[3])
-    except (OSError, AttributeError):
+    except (ctypes.ArgumentError, OSError, AttributeError):
         pass
     finally:
         kernel32.CloseHandle(handle)
@@ -353,6 +353,7 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
     if _is_system_process(pid): return False, "Proceso crítico del sistema protegido."
     
     path = _get_process_path(pid)
+    # Si no podemos resolver la ruta (ej. permisos denegados), lo consideramos inseguro para tocar.
     if path is None: return False, "Ruta del proceso inaccesible o restringida por seguridad."
     
     # Integridad defensiva: verificar que la ruta sea modificable según las reglas globales.
@@ -365,7 +366,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """Solicita al sistema la reducción del working set de un proceso específico."""
     if not _is_windows: return False, "Solo soportado en Windows."
     
-    # Validación estricta de entrada
     try:
         target_pid = int(pid)
     except (ValueError, TypeError):
@@ -380,13 +380,12 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     kernel32 = ctypes.windll.kernel32
     proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
     if not proc_handle:
-        err = ctypes.get_last_error()
-        return False, f"No se pudo abrir el proceso para el trim (código {err})."
+        # Fallo de acceso (5) es común en procesos elevados si no ejecutamos con privilegios
+        return False, f"No se pudo abrir el proceso (error {ctypes.get_last_error()})."
         
     try:
         if psapi.EmptyWorkingSet(proc_handle) == 0:
-            err = ctypes.get_last_error()
-            return False, f"El sistema rechazó la solicitud de trim (código {err})."
+            return False, f"El sistema rechazó el trim (error {ctypes.get_last_error()})."
         return True, f"Working set liberado. {TRIM_WARNING}"
     finally:
         kernel32.CloseHandle(proc_handle)

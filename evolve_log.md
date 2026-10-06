@@ -1534,3 +1534,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-10-06T01:39:26` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-10-06T01:39:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T01:39:26` Corrida terminada. Total usado hoy: 36.
+- `2026-10-06T01:40:14` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-10-06T01:40:47` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_get_process_path` y `trim_working_set` al centralizar la verificación de acceso, manejando correctamente los errores de permisos (ERROR_ACCESS_DENIED) y asegurando que las llamadas a la API Win32 no bloqueen el hilo principal si un proceso está bloqueado o en estado inaccesible.
+- `2026-10-06T01:41:17` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado `_is_safe_for_disk_op` para prevenir fallos por condiciones de carrera o inconsistencias de estado del sistema de archivos, añadiendo una validación explícita de `st_ino` (inodo/ID único) para confirmar que el archivo original no ha sido reemplazado o movido por otro proceso entre la detección y la intención de movimiento, y verificando que el espacio libre sea suficiente antes de cualquier operación de I/O.
+- `2026-10-06T01:42:00` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha añadido una validación de `os.fsync` al directorio padre tras la creación del archivo en cuarentena, para asegurar que la entrada de directorio sea persistida en disco antes de finalizar `_atomic_isolate_file`, protegiendo ante pérdidas de metadatos o corrupción del FS ante reinicios inesperados.
+- `2026-10-06T01:42:25` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-06T01:42:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T01:42:25` Corrida terminada. Total usado hoy: 40.

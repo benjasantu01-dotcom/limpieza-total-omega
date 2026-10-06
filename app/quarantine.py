@@ -634,6 +634,12 @@ def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, Inode]:
     try:
         _copy_with_verification(source, temp_dest, source_hash)
         os.replace(temp_dest, destination)
+        
+        # Persistir directorio padre tras creación de nuevo archivo
+        dir_fd = os.open(str(destination.parent), os.O_RDONLY)
+        try: os.fsync(dir_fd)
+        finally: os.close(dir_fd)
+        
         ensure_safe_to_modify(destination, allow_sensitive=True)
         return source_hash, destination.stat().st_ino
     except Exception as e:

@@ -76,11 +76,14 @@ class JunkFile:
     path: Path
     size_bytes: int
     modified: datetime
+    _ino: Optional[int] = None
 
     def __post_init__(self) -> None:
         try:
             if isinstance(self.path, Path) and self.path.is_absolute():
                 self.path = self.path.resolve()
+            if self._ino is None:
+                self._ino = self.path.stat().st_ino
         except (OSError, RuntimeError):
             pass
 
@@ -195,29 +198,31 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
     if len(str(src)) > MAX_PATH_LENGTH or len(str(dest)) > MAX_PATH_LENGTH: return False
     return not (is_protected_path(src) or is_protected_path(dest))
 
-def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
+def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Auditoría integral de seguridad previa a una operación de escritura (move).
-    Valida: existencia, exclusión de críticos, permisos, bucles y estado de bloqueo.
+    Valida: existencia, exclusión de críticos, inmutabilidad de archivo (inodo),
+    permisos, bucles, bloqueo y disponibilidad de espacio.
     """
+    src = junk_file.path
     try:
         if not src.exists() or src.name.lower() in SYSTEM_CRITICAL_NAMES: return False
-        st = src.lstat()
-        if not src.is_file() or (st.st_mode & 0o170000 == 0o120000) or st.st_nlink > 1: return False
+        st = src.stat()
+        # Valida que el archivo sea el mismo que el detectado originalmente
+        if junk_file._ino is not None and st.st_ino != junk_file._ino: return False
+        if not src.is_file() or st.st_nlink > 1: return False
         if not is_safe_to_modify(src) or not _validate_path_security(src, dest): return False
         
         target_dir = dest.parent if dest.exists() else dest
         if not target_dir.is_dir() or not os.access(target_dir, os.W_OK): return False
         
-        if src.resolve().parent == target_dir.resolve(): return False
+        if _is_recursive_violation(src, dest) or _is_file_locked(src): return False
         
-        if _is_recursive_violation(src, dest): return False
-        if _is_file_locked(src): return False
-        
-        if src.resolve().stat().st_dev != target_dir.resolve().stat().st_dev: return False
+        # Validación de espacio antes de proceder
+        if shutil.disk_usage(dest.anchor).free < (st.st_size + MIN_FREE_SPACE_BYTES): return False
         
         return True
-    except (OSError, RuntimeError, AttributeError, ValueError):
+    except (OSError, AttributeError, ValueError):
         return False
 
 def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> bool:
@@ -260,7 +265,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         stats = item.stat(follow_symlinks=False)
                         if _is_valid_junk_entry(item.name, stats, now_ts):
                             if not (getattr(stats, 'st_file_attributes', 0) & WIN_ATTR_MASK):
-                                found.append(JunkFile(Path(item.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
+                                found.append(JunkFile(Path(item.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino))
                 except (PermissionError, OSError):
                     continue
     except (PermissionError, OSError, RuntimeError):
@@ -307,8 +312,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     for junk_file in files:
         if not junk_file or not isinstance(junk_file.path, Path): continue
         try:
-            if not junk_file.path.exists() or not is_safe_to_modify(junk_file.path): continue
-            if not _is_safe_for_disk_op(junk_file.path, dest_res): continue
+            if not _is_safe_for_disk_op(junk_file, dest_res): continue
             
             target_path = _can_move_file(junk_file, dest_res)
             if target_path:
@@ -320,11 +324,9 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     return dest_res
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
-    """Verifica disponibilidad de espacio en disco y genera una ruta única destino."""
+    """Genera una ruta única destino tras validación de nombre."""
     try:
         if not junk_file or not dest_base: return None
-        usage = shutil.disk_usage(dest_base.anchor)
-        if usage.free < (junk_file.size_bytes + MIN_FREE_SPACE_BYTES): return None
         safe_name = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
         return _generate_unique_target(dest_base / safe_name)
     except (OSError, AttributeError, ValueError): return None
