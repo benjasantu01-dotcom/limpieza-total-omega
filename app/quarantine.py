@@ -283,6 +283,7 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
     
     try:
         st = path.stat()
+        # Verificación estricta de inodo para prevenir TOCTOU
         if expected_inode != 0 and st.st_ino != expected_inode:
             return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid():
@@ -884,6 +885,7 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
         save_manifest([i for i in items if i.item_id != item_id], base)
         return True
     
+    # Validar integridad antes de purgar para evitar borrar el archivo equivocado
     if not quarantine_item.verify_integrity(stored_file):
         raise UnsafePathError(f"Integridad fallida para {item_id}.")
         

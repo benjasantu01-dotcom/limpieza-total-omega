@@ -226,7 +226,7 @@ SENSITIVE_EXTENSIONS: Final[frozenset[str]] = frozenset({
 })
 
 _SYSTEM_ROOT_PATHS: Final[tuple[str, ...]] = tuple(
-    os.path.normcase(os.environ[v]) for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
+    os.normcase(os.environ[v]) for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
     if os.environ.get(v)
 )
 
@@ -753,6 +753,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         
         p = normalize(path)
         
+        # Bloqueo adicional para puntos de montaje que puedan representar riesgos de integridad
+        if os.name == 'nt' and os.path.ismount(p):
+            raise UnsafePathError(f"Punto de montaje bloqueado: {p}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED)
+            
         if _is_kernel_managed(p):
             raise UnsafePathError(f"Archivo de sistema crítico: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
         

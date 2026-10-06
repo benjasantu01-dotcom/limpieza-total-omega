@@ -211,6 +211,10 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         # Valida que el archivo sea el mismo que el detectado originalmente
         if junk_file._ino is not None and st.st_ino != junk_file._ino: return False
         if not src.is_file() or st.st_nlink > 1: return False
+        
+        # Verificación extra: que el destino y sus padres inmediatos no estén protegidos
+        if is_protected_path(dest) or is_protected_path(dest.parent): return False
+        
         if not is_safe_to_modify(src) or not _validate_path_security(src, dest): return False
         
         target_dir = dest.parent if dest.exists() else dest

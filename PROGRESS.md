@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **226** (44.8% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 41
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 200
+- Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 51 | 6 | 8 | 2 | 35 |
+| 2026-10-04 | 51 | 6 | 8 | 2 | 31 |
 | 2026-10-05 | 147 | 16 | 26 | 9 | 152 |
-| 2026-10-06 | 25 | 5 | 7 | 2 | 13 |
+| 2026-10-06 | 28 | 5 | 8 | 2 | 13 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **51**
 - manejo de errores y validación de entradas: **49**
 - legibilidad y documentación: **44**
-- seguridad defensiva: **41**
+- seguridad defensiva: **44**
 - rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **23**
 - `healthscore.py`: **22**
-- `quarantine.py`: **20**
+- `quarantine.py`: **21**
 - `diskreport.py`: **20**
 - `scanner.py`: **19**
 - `browser.py`: **18**
 - `branding.py`: **18**
+- `safety.py`: **17**
 - `assistant.py`: **16**
-- `safety.py`: **16**
+- `organizer.py`: **16**
 - `duplicates.py`: **15**
-- `organizer.py`: **15**
 - `settings.py`: **13**
 - `main.py`: **4**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T02:23:39` **safety.py** (seguridad defensiva): Se ha añadido una verificación explícita en `ensure_safe_to_modify` para detectar si la ruta apunta a un "mount point" de volumen antes de permitir cualquier operación destructiva, protegiendo contra posibles borrados accidentales de estructuras de volúmenes montados que podrían no ser detectados por las reglas de sistema estándar.
+- `2026-10-06T02:22:52` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` mediante la implementación de una validación estricta de "estado constante" durante el borrado (`purge_item` y `purge_all`), asegurando que no se pueda purgar un archivo si su inodo ha cambiado desde que fue registrado, evitando así condiciones de carrera (TOCTOU) y ataques por sustitución de archivos en el sandbox.
+- `2026-10-06T02:22:10` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` al integrar una verificación explícita de `is_protected_path` sobre el directorio destino y sus padres, previniendo que la lógica de organización pueda intentar mover archivos hacia subdirectorios del sistema que pudieran estar excluidos de la lista de bloqueo pero no de la protección lógica.
 - `2026-10-06T02:14:56` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_process_path` integrando `is_safe_to_modify` antes de retornar la ruta, asegurando que cualquier proceso que se pretenda inspeccionar o gestionar no solo esté fuera de las rutas protegidas, sino que cumpla con los criterios globales de modificación segura.
 - `2026-10-06T02:12:28` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_evaluate_rules` validando explícitamente el origen de los mensajes para prevenir inyecciones o desbordamientos de datos malformados antes de que lleguen a la interfaz, además de asegurar que la entrada a `compute_score` sea siempre una instancia válida de `SystemMetrics` mediante un chequeo de tipo estricto.
 - `2026-10-06T02:03:22` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` al evitar el seguimiento de enlaces simbólicos mediante la validación del estado del inodo y la restricción estricta de rutas, previniendo así ciclos infinitos o la salida involuntaria del directorio raíz objetivo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T01:31:58` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` frente a cambios dinámicos en el sistema de archivos (ej. archivos borrados mientras se escanea) y el manejo de rutas, asegurando que `os.scandir` gestione los errores de acceso de forma más granular para no interrumpir el análisis completo ante un único permiso denegado en un subdirectorio.
 - `2026-10-06T01:23:11` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_in_use` y `_sum_directory_recursive` evitando el uso de `stat()` en archivos bloqueados o con errores de acceso, previniendo excepciones innecesarias mediante una verificación previa del estado del handle y mejorando el manejo de rutas inexistentes o inaccesibles durante la recursión.
 - `2026-10-06T01:22:52` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación explícita de `path` y parámetros geométricos, asegurando que las excepciones de sistema o valores `NaN` no interrumpan el flujo de la aplicación.
-- `2026-10-06T01:04:43` **quarantine.py** (rendimiento): Optimicé el acceso al manifiesto implementando una carga perezosa con caché indexada, reduciendo la complejidad de las búsquedas por `item_id` de O(n) a O(1) y evitando lecturas innecesarias del disco en operaciones repetitivas.
-- `2026-10-06T01:03:40` **memory.py** (rendimiento): Se optimizó `top_memory_processes` eliminando la llamada repetitiva a `EnumProcesses` y el loop innecesario en cada consulta, implementando una caché temporal más eficiente que evita el re-procesamiento de PIDs cuando los datos siguen vigentes.
-- `2026-10-06T00:51:11` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global evitando la creación redundante de objetos y minimizando el procesamiento de cadenas mediante la pre-compilación de los resultados del pipeline, además de utilizar un acceso más eficiente a los pesos.
