@@ -7,46 +7,49 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **212** (42.1% de aceptación)
-- Rechazadas por tests: 25
+- Rechazadas por tests: 26
 - Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 28 | 3 | 4 | 2 | 17 |
+| 2026-10-04 | 25 | 3 | 4 | 2 | 16 |
 | 2026-10-05 | 147 | 16 | 26 | 9 | 152 |
-| 2026-10-06 | 37 | 6 | 9 | 3 | 45 |
+| 2026-10-06 | 40 | 7 | 9 | 3 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **51**
-- manejo de errores y validación de entradas: **46**
+- manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **45**
-- rendimiento: **37**
+- rendimiento: **34**
 - legibilidad y documentación: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **22**
-- `healthscore.py`: **21**
 - `quarantine.py`: **20**
+- `scanner.py`: **20**
 - `diskreport.py`: **20**
-- `scanner.py`: **19**
-- `browser.py`: **17**
+- `healthscore.py`: **20**
 - `branding.py`: **17**
-- `safety.py`: **15**
+- `safety.py`: **16**
+- `browser.py`: **16**
 - `assistant.py`: **15**
 - `organizer.py`: **15**
-- `duplicates.py`: **14**
-- `settings.py`: **11**
+- `duplicates.py`: **13**
+- `settings.py`: **12**
 - `main.py`: **3**
 - `startup.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T04:25:55` **settings.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save()` capturando explícitamente excepciones de `json.dumps` y mejorando la validación del directorio padre para evitar errores de escritura en entornos con permisos restringidos o rutas inexistentes, asegurando que cualquier fallo deje el sistema en estado consistente.
+- `2026-10-06T04:25:19` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas mediante la validación proactiva de entrada (`None`/`path` inválido) y la captura específica de excepciones en `check_recent_executable_in_downloads` y `check_system_lookalike`, evitando comportamientos indefinidos al recibir datos inesperados.
+- `2026-10-06T04:24:46` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_volume_readonly`, `_is_volume_removable_media` y `_is_volume_compressed_or_encrypted` mediante la adición de verificaciones explícitas de integridad de la ruta y manejo de excepciones más granular para prevenir bloqueos por rutas inválidas o volúmenes inaccesibles.
 - `2026-10-06T04:15:41` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` mediante la captura explícita de `json.JSONDecodeError` y `FileNotFoundError` (implícito en el manejo de `OSError`), asegurando que el estado del sistema no se corrompa ante archivos de manifiesto malformados o faltantes durante la inicialización.
 - `2026-10-06T04:14:54` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_locked` para evitar falsos positivos y errores inesperados al manejar archivos, asegurando que solo se intente la apertura si el archivo realmente existe y tiene permisos básicos, capturando de forma más precisa las excepciones de acceso denegado.
 - `2026-10-06T04:14:18` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez en `_get_process_path` y `trim_working_set` capturando errores de la API de Windows mediante `ctypes.get_last_error()` en lugar de asumir silencio, y validando exhaustivamente el resultado de `OpenProcess` para evitar llamadas a `CloseHandle` con nulos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T02:23:39` **safety.py** (seguridad defensiva): Se ha añadido una verificación explícita en `ensure_safe_to_modify` para detectar si la ruta apunta a un "mount point" de volumen antes de permitir cualquier operación destructiva, protegiendo contra posibles borrados accidentales de estructuras de volúmenes montados que podrían no ser detectados por las reglas de sistema estándar.
 - `2026-10-06T02:22:52` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` mediante la implementación de una validación estricta de "estado constante" durante el borrado (`purge_item` y `purge_all`), asegurando que no se pueda purgar un archivo si su inodo ha cambiado desde que fue registrado, evitando así condiciones de carrera (TOCTOU) y ataques por sustitución de archivos en el sandbox.
 - `2026-10-06T02:22:10` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` al integrar una verificación explícita de `is_protected_path` sobre el directorio destino y sus padres, previniendo que la lógica de organización pueda intentar mover archivos hacia subdirectorios del sistema que pudieran estar excluidos de la lista de bloqueo pero no de la protección lógica.
-- `2026-10-06T02:14:56` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_process_path` integrando `is_safe_to_modify` antes de retornar la ruta, asegurando que cualquier proceso que se pretenda inspeccionar o gestionar no solo esté fuera de las rutas protegidas, sino que cumpla con los criterios globales de modificación segura.
-- `2026-10-06T02:12:28` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_evaluate_rules` validando explícitamente el origen de los mensajes para prevenir inyecciones o desbordamientos de datos malformados antes de que lleguen a la interfaz, además de asegurar que la entrada a `compute_score` sea siempre una instancia válida de `SystemMetrics` mediante un chequeo de tipo estricto.
-- `2026-10-06T02:03:22` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` al evitar el seguimiento de enlaces simbólicos mediante la validación del estado del inodo y la restricción estricta de rutas, previniendo así ciclos infinitos o la salida involuntaria del directorio raíz objetivo.

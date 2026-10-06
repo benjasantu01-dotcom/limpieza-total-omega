@@ -124,7 +124,6 @@ def _is_target_extension(name: str) -> bool:
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     HEURÍSTICA: Detecta uso de extensiones múltiples para ocultar la verdadera naturaleza del archivo.
-    Común en ataques de ingeniería social donde un archivo .exe se hace pasar por .pdf.
     """
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -133,35 +132,37 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     HEURÍSTICA: Identifica ejecutables descargados recientemente (<24h) en carpetas temporales.
-    Reduce la superficie de ataque priorizando archivos con alta probabilidad de ser 'droppers' de primer paso.
     """
-    if not path or not path.parent:
-        return None
-    if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
-        return None
-    stats = _safe_stat(entry) if entry else None
-    if stats:
-        mtime = getattr(stats, "st_mtime", 0.0)
-        if isinstance(mtime, (int, float)) and mtime > 0:
-            if (now_ts - float(mtime)) < (SCAN_LIMITS.recent_hours * 3600):
-                return Suspicion(path, f"Ejecutable reciente (<{SCAN_LIMITS.recent_hours}h)", "info")
+    try:
+        if not path or not path.parent:
+            return None
+        if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
+            return None
+        stats = _safe_stat(entry) if entry else None
+        if stats:
+            mtime = getattr(stats, "st_mtime", 0.0)
+            if isinstance(mtime, (int, float)) and mtime > 0:
+                if (now_ts - float(mtime)) < (SCAN_LIMITS.recent_hours * 3600):
+                    return Suspicion(path, f"Ejecutable reciente (<{SCAN_LIMITS.recent_hours}h)", "info")
+    except (OSError, AttributeError, ValueError):
+        pass
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    HEURÍSTICA: Detección de 'Binary Planting'. Busca ejecutables con nombres de procesos del sistema 
-    (ej: svchost.exe) situados en directorios ajenos a %System32%.
+    HEURÍSTICA: Detección de 'Binary Planting' buscando nombres de sistema fuera de System32.
     """
-    if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
-        path_str = str(path).lower()
-        if SYSTEM32_LOWER not in path_str:
-            return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
+    try:
+        if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
+            if SYSTEM32_LOWER not in str(path).lower():
+                return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
+    except (OSError, ValueError, AttributeError):
+        pass
     return None
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    HEURÍSTICA: Identifica ejecutables de 0 bytes. Frecuentemente utilizados como placeholders maliciosos 
-    o fallos de descarga/corrupción que pueden causar inestabilidad.
+    HEURÍSTICA: Identifica ejecutables de 0 bytes sospechosos.
     """
     size = _get_file_size(path)
     if size == 0:
@@ -211,7 +212,6 @@ class Scanner:
         if not _is_valid_path_structure(entry.path) or self._has_invalid_name(entry.name):
             return False
         try:
-            # Resolución obligatoria antes de validar: previene path traversal
             real_path = Path(entry.path).resolve()
             if self._is_reparse_point(entry) or entry.is_symlink():
                 return False
@@ -247,7 +247,6 @@ class Scanner:
 
             is_dir = entry.is_dir(follow_symlinks=False)
             
-            # Optimización: Filtrado rápido de archivos irrelevantes antes de validación profunda
             if not is_dir and not self._is_relevant_extension(entry.name):
                 return
             
@@ -288,10 +287,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
-    """
-    Escaneo recursivo mediante stack manual para prevenir desbordamiento de pila.
-    Es la función de entrada principal para el análisis masivo de directorios.
-    """
+    """Escaneo recursivo mediante stack manual para prevenir desbordamiento de pila."""
     if directory is None: return []
     try:
         path_str = str(directory).strip()

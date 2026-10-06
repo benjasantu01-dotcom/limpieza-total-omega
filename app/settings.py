@@ -452,7 +452,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         os.replace(temp_path, config_path)
         _MANAGER.clear()
         return config_path
-    except (OSError, IOError, PermissionError, json.JSONDecodeError): return None
+    except (OSError, IOError, PermissionError, json.JSONDecodeError, TypeError): return None
     finally:
         if temp_path.exists():
             try:

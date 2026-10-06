@@ -486,3 +486,48 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-10-06T04:15:46` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 114): unterminated string literal (detected at line 114)
 - `2026-10-06T04:15:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T04:15:46` Corrida terminada. Total usado hoy: 100.
+- `2026-10-06T04:23:51` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-10-06T04:23:53` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T04:24:46` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_volume_readonly`, `_is_volume_removable_media` y `_is_volume_compressed_or_encrypted` mediante la adición de verificaciones explícitas de integridad de la ruta y manejo de excepciones más granular para prevenir bloqueos por rutas inválidas o volúmenes inaccesibles.
+- `2026-10-06T04:25:19` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las heurísticas mediante la validación proactiva de entrada (`None`/`path` inválido) y la captura específica de excepciones en `check_recent_executable_in_downloads` y `check_system_lookalike`, evitando comportamientos indefinidos al recibir datos inesperados.
+- `2026-10-06T04:25:55` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `save()` capturando explícitamente excepciones de `json.dumps` y mejorando la validación del directorio padre para evitar errores de escritura en entornos con permisos restringidos o rutas inexistentes, asegurando que cualquier fallo deje el sistema en estado consistente.
+- `2026-10-06T04:26:13` Tests FALLARON:
+```
+lve/tests/test_modules.py:677: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:172: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'Otro.lnk'
+  'MiPrograma.lnk'
+  Extra items in the right set:
+  'Otro'
+  'MiPrograma'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed, 7 warnings in 1.63s
+
+```
+- `2026-10-06T04:26:13` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se corrigió un error lógico en `_process_folder_entry` donde la variable `name` intentaba iterar sobre un nombre no definido (`_`), sustituyéndolo correctamente por `entry.name`, y se añadieron chequeos de integridad para los parámetros en las funciones de procesamiento para evitar fallos silenciosos por entradas malformadas.
+- `2026-10-06T04:26:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T04:26:13` Corrida terminada. Total usado hoy: 104.

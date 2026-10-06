@@ -338,60 +338,47 @@ def _is_file_in_use_by_system(path_str: str) -> bool:
 
 @lru_cache(maxsize=128)
 def _is_volume_readonly(path_str: Optional[str]) -> bool:
-    """
-    Consulta los atributos de volumen mediante GetVolumeInformationW para verificar flags de solo lectura.
-    """
+    """Consulta los atributos de volumen mediante GetVolumeInformationW para verificar flags de solo lectura."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
     try:
+        root = os.path.splitdrive(path_str)[0] + "\\"
+        if not os.path.exists(root): return False
         buf = ctypes.create_unicode_buffer(260)
         if ctypes.windll.kernel32.GetVolumePathNameW(path_str, buf, 260) != 0:
-            root = buf.value
             flags = ctypes.c_ulong()
-            # FILE_READ_ONLY_VOLUME = 0x80000
             if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
                 return bool(flags.value & 0x80000)
-    except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
-        pass
+    except (AttributeError, OSError, TypeError, ctypes.ArgumentError): pass
     return False
 
 @lru_cache(maxsize=128)
 def _is_volume_removable_media(path_str: Optional[str]) -> bool:
-    """
-    Verifica si el volumen es extraíble usando GetDriveTypeW.
-    """
+    """Verifica si el volumen es extraíble usando GetDriveTypeW."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
     try:
-        drive_path = os.path.splitdrive(path_str)[0]
-        if not drive_path: return False
-        root = drive_path + "\\"
+        root = os.path.splitdrive(path_str)[0] + "\\"
+        if not os.path.exists(root): return False
         return ctypes.windll.kernel32.GetDriveTypeW(root) == DRIVE_REMOVABLE
-    except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
-        pass
+    except (AttributeError, OSError, TypeError, ctypes.ArgumentError): pass
     return False
 
 @lru_cache(maxsize=128)
 def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
-    """
-    Verifica mediante GetVolumeInformationW si el volumen posee flags de compresión o cifrado.
-    """
+    """Verifica mediante GetVolumeInformationW si el volumen posee flags de compresión o cifrado."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
     try:
-        drive_path = os.path.splitdrive(path_str)[0]
-        if not drive_path: return False
-        root = drive_path + "\\"
+        root = os.path.splitdrive(path_str)[0] + "\\"
+        if not os.path.exists(root): return False
         flags = ctypes.c_ulong()
-        # FILE_FILE_COMPRESSION (0x10) | FILE_SUPPORTS_ENCRYPTION (0x20000)
         if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
             return bool(flags.value & (0x10 | 0x20000))
-    except (AttributeError, OSError, TypeError, ctypes.ArgumentError):
-        pass
+    except (AttributeError, OSError, TypeError, ctypes.ArgumentError): pass
     return False
 
 @lru_cache(maxsize=1024)
 def _is_kernel_managed(path: Path) -> bool:
     """Identifica archivos del núcleo o del sistema bloqueados permanentemente por el SO."""
     p_str = str(path).lower()
-    # Protección explícita para archivos de paginación y volcado críticos
     if any(blocked in p_str for blocked in ("pagefile.sys", "hiberfil.sys", "swapfile.sys", "dumpstack.log.tmp", "memory.dmp")):
         return True
     
@@ -456,9 +443,7 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
 }
 
 def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
-    """
-    Ejecuta el conjunto de reglas de integridad sobre un archivo dado, usando cortocircuito.
-    """
+    """Ejecuta el conjunto de reglas de integridad sobre un archivo dado, usando cortocircuito."""
     try:
         sd = _get_security_descriptor(path)
         for rule in _VALIDATORS:
@@ -471,10 +456,7 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
         raise UnsafePathError(f"Error evaluando reglas: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 def _get_path_stat_robust(path: Path) -> os.stat_result:
-    """
-    Obtiene los metadatos de un archivo de manera segura, bloqueando el acceso a archivos de dispositivo.
-    Incluye manejo de excepciones específicas para estados de bloqueo de archivos.
-    """
+    """Obtiene los metadatos de un archivo de manera segura, bloqueando el acceso a archivos de dispositivo."""
     if not isinstance(path, Path):
         raise UnsafePathError("Tipo de objeto de ruta inválido", SafetyValidationErrorCode.GENERIC)
     if _is_device_file(path):
@@ -495,10 +477,7 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
         raise UnsafePathError(f"Error inesperado al leer metadatos de {path.name}: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
-    """
-    Previene ataques Time-of-Check to Time-of-Use (TOCTOU) verificando que el archivo
-    no haya cambiado su naturaleza desde la última lectura de metadatos.
-    """
+    """Previene ataques TOCTOU verificando que el archivo no haya cambiado su naturaleza."""
     if not path.exists():
         raise UnsafePathError("El archivo ya no existe (TOCTOU).", SafetyValidationErrorCode.IO_ERROR)
         
@@ -733,7 +712,6 @@ def _validate_ntfs_reparse_redirection(path: Path) -> None:
             
     final_path = _get_final_path_normalized(path)
     if final_path:
-        # Verifica que la ruta resuelta mantenga coherencia estructural con la ruta original
         if final_path.drive != path.resolve().drive:
             raise UnsafePathError("Redirección de unidad detectada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         if not str(final_path).startswith(str(path.parent.resolve())):
@@ -753,7 +731,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         
         p = normalize(path)
         
-        # Bloqueo adicional para puntos de montaje que puedan representar riesgos de integridad
         if os.name == 'nt' and os.path.ismount(p):
             raise UnsafePathError(f"Punto de montaje bloqueado: {p}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED)
             
@@ -770,7 +747,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         _validate_boundary_conditions(p, base_dir)
         
         if p.exists():
-            # Validación preventiva temprana de permisos del SO
             if not os.access(p, os.W_OK):
                  raise UnsafePathError(f"Permisos de escritura insuficientes: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
             _validate_access_permissions(p)
