@@ -132,8 +132,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         name = entry.name
         if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
             return True
-        # Usar path.resolve solo si es necesario para evitar bloqueos
-        entry_path = Path(entry.path)
+        entry_path = Path(entry.path).resolve()
         if not str(entry_path).startswith(str(root_path)):
             return True
         try:

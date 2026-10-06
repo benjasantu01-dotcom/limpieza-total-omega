@@ -1366,3 +1366,13 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-06T10:54:47` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). He refactorizado `save_logo_svg` para eliminar la llamada redundante a `is_protected_path` (que ya está implícita y mejor gestionada en `ensure_safe_to_modify` o mediante la lógica de validación interna) y centralizar la protección usando `ensure_safe_to_modify` antes de cualquier escritura. Esto estandariza la seguridad defensiva según el patrón solicitado, evitando chequeos parciales y asegurando que cualquier manipulación de archivos pase por la capa de seguridad central.
 - `2026-10-06T10:54:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T10:54:47` Corrida terminada. Total usado hoy: 256.
+- `2026-10-06T11:02:59` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-10-06T11:03:14` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T11:03:23` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-06T11:03:57` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-10-06T11:04:26` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `walk_files` y `_is_excluded_path` añadiendo una comprobación explícita de `is_protected_path` sobre la ruta real (`resolve()`) antes de cualquier operación de I/O, evitando seguir enlaces simbólicos maliciosos que apunten fuera de la raíz permitida.
+- `2026-10-06T11:04:36` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T11:05:05` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-10-06T11:05:15` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
+- `2026-10-06T11:05:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T11:05:15` Corrida terminada. Total usado hoy: 260.

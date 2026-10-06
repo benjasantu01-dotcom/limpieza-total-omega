@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **214** (42.5% de aceptación)
+- Mejoras aceptadas: **215** (42.7% de aceptación)
 - Rechazadas por tests: 30
 - Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-05 | 102 | 13 | 19 | 7 | 107 |
-| 2026-10-06 | 112 | 17 | 25 | 8 | 94 |
+| 2026-10-05 | 102 | 13 | 19 | 7 | 103 |
+| 2026-10-06 | 113 | 17 | 25 | 8 | 97 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - robustez ante casos límite: **46**
-- seguridad defensiva: **41**
+- seguridad defensiva: **42**
 - legibilidad y documentación: **40**
 - rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **23**
-- `diskreport.py`: **21**
+- `diskreport.py`: **22**
 - `quarantine.py`: **21**
 - `healthscore.py`: **20**
 - `browser.py`: **19**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T11:04:26` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` y `_is_excluded_path` añadiendo una comprobación explícita de `is_protected_path` sobre la ruta real (`resolve()`) antes de cualquier operación de I/O, evitando seguir enlaces simbólicos maliciosos que apunten fuera de la raíz permitida.
 - `2026-10-06T10:54:47` **branding.py** (seguridad defensiva): He refactorizado `save_logo_svg` para eliminar la llamada redundante a `is_protected_path` (que ya está implícita y mejor gestionada en `ensure_safe_to_modify` o mediante la lógica de validación interna) y centralizar la protección usando `ensure_safe_to_modify` antes de cualquier escritura. Esto estandariza la seguridad defensiva según el patrón solicitado, evitando chequeos parciales y asegurando que cualquier manipulación de archivos pase por la capa de seguridad central.
 - `2026-10-06T10:53:20` **settings.py** (robustez ante casos límite): Se reforzó la robustez del sistema ante el caso límite de archivos de configuración corruptos o bloqueados durante la escritura, implementando una verificación de integridad post-escritura más rigurosa (usando `os.fsync`) y un manejo de errores más específico en `save` para evitar dejar el sistema en estado inconsistente.
 - `2026-10-06T10:44:42` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la recursión introduciendo un control de errores más granular y preventivo, específicamente añadiendo validaciones de tipo y de integridad de ruta dentro de los bucles de `os.scandir` para evitar fallos por rutas con caracteres inválidos o acceso denegado antes de intentar procesarlas.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T10:12:56` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` implementando una comprobación de `os.stat` previa a cualquier apertura de archivo, evitando lecturas innecesarias en disco cuando el archivo no ha cambiado.
 - `2026-10-06T10:04:30` **safety.py** (rendimiento): Se optimizaron las búsquedas en `PROTECTED_DIR_NAMES` y `SENSITIVE_EXTENSIONS` convirtiéndolas de `frozenset` a estructuras que aprovechan mejor la cache de CPU y el hashing, y se refactorizó `is_protected_path` para evitar llamadas redundantes a `Path.resolve()` en el camino crítico.
 - `2026-10-06T10:03:29` **quarantine.py** (rendimiento): Se optimizó el acceso al manifiesto implementando una carga perezosa efectiva (`lazy loading`) y evitando la reconstrucción redundante de objetos en `list_items` y `purge_all` al reutilizar la caché, mejorando así el rendimiento en operaciones de lectura frecuentes.
-- `2026-10-06T09:56:16` **memory.py** (rendimiento): Optimizé la función `top_memory_processes` reemplazando la creación de una lista de objetos `ProcessMemory` mediante un bucle `for` explícito por un `generator expression` eficiente, y eliminé la lógica redundante de verificación `_is_system_process(pid) or pid == 0` dentro del bucle ya que `_is_system_process` ya incluye al `0`.
