@@ -1388,3 +1388,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-06T00:31:11` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujo un `TypeAlias` más explícito para las heurísticas y se enriqueció la documentación interna de las funciones de chequeo mediante `docstrings` estandarizados, explicando el criterio técnico detrás de cada detección para facilitar futuras auditorías.
 - `2026-10-06T00:31:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T00:31:11` Corrida terminada. Total usado hoy: 12.
+- `2026-10-06T00:39:05` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-10-06T00:39:46` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-06T00:40:26` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_path_suspicious, StartupEntry._is_reserved_device_name, StartupEntry._is_valid_executable, StartupEntry._sanitize_command
+- `2026-10-06T00:41:12` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimizé la generación del snapshot de métricas en `SystemContext` eliminando el uso de `getattr` en un bucle y reemplazándolo por una lectura directa de los atributos relevantes, reduciendo significativamente la sobrecarga de reflexión en cada consulta al asistente.
+- `2026-10-06T00:41:37` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó la generación de `_SVG_GRADIENT_STOPS` convirtiéndola en una constante calculada en tiempo de carga mediante `tuple` y `join`, eliminando el re-cálculo de strings innecesario, y se reemplazó el uso de `range` + indexación manual en `gradient_colors` por una pre-asignación de lista más eficiente.
+- `2026-10-06T00:41:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T00:41:37` Corrida terminada. Total usado hoy: 16.

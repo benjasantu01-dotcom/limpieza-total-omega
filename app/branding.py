@@ -43,8 +43,10 @@ class SeverityType(Enum):
     DANGER = "danger"
 
 # Pre-generación de fragmentos SVG estáticos para mejorar performance
-_SVG_GRADIENT_STOPS: Final[str] = "\n".join([f'      <stop offset="{o}" stop-color="{c}"/>' 
-                       for o, c in zip(["0%", "55%", "100%"], ["#00f0c0", "#7c5cff", "#ff2d78"])])
+_SVG_GRADIENT_STOPS: Final[str] = "\n".join(
+    f'      <stop offset="{o}" stop-color="{c}"/>' 
+    for o, c in zip(("0%", "55%", "100%"), ("#00f0c0", "#7c5cff", "#ff2d78"))
+)
 
 _SVG_TEMPLATE: Final[str] = """<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
   <defs>
@@ -351,7 +353,7 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
     rgb_stops = tuple(_hex_to_rgb(s) for s in stops)
     n_segments = len(stops) - 1
     
-    res = [ColorHex("")] * n
+    res = [""] * n
     for i in range(n):
         ratio = i / (n - 1) if n > 1 else 0.0
         pos = ratio * n_segments

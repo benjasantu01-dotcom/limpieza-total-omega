@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 38
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 68 | 7 | 10 | 2 | 55 |
+| 2026-10-04 | 65 | 7 | 10 | 2 | 54 |
 | 2026-10-05 | 147 | 16 | 26 | 9 | 152 |
-| 2026-10-06 | 7 | 0 | 2 | 1 | 2 |
+| 2026-10-06 | 9 | 0 | 4 | 1 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
-- robustez ante casos límite: **52**
+- robustez ante casos límite: **49**
 - manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **45**
 - legibilidad y documentación: **44**
-- rendimiento: **32**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **22**
-- `memory.py`: **21**
 - `scanner.py`: **21**
+- `healthscore.py`: **21**
 - `quarantine.py`: **20**
+- `memory.py`: **20**
 - `safety.py`: **18**
 - `diskreport.py`: **18**
-- `assistant.py`: **16**
+- `assistant.py`: **17**
 - `duplicates.py`: **16**
 - `browser.py`: **16**
+- `branding.py`: **16**
 - `organizer.py`: **15**
-- `branding.py`: **15**
 - `settings.py`: **13**
 - `startup.py`: **6**
-- `main.py`: **5**
+- `main.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T00:41:37` **branding.py** (rendimiento): Se optimizó la generación de `_SVG_GRADIENT_STOPS` convirtiéndola en una constante calculada en tiempo de carga mediante `tuple` y `join`, eliminando el re-cálculo de strings innecesario, y se reemplazó el uso de `range` + indexación manual en `gradient_colors` por una pre-asignación de lista más eficiente.
+- `2026-10-06T00:41:12` **assistant.py** (rendimiento): Optimizé la generación del snapshot de métricas en `SystemContext` eliminando el uso de `getattr` en un bucle y reemplazándolo por una lectura directa de los atributos relevantes, reduciendo significativamente la sobrecarga de reflexión en cada consulta al asistente.
 - `2026-10-06T00:31:11` **scanner.py** (legibilidad y documentación): Se introdujo un `TypeAlias` más explícito para las heurísticas y se enriqueció la documentación interna de las funciones de chequeo mediante `docstrings` estandarizados, explicando el criterio técnico detrás de cada detección para facilitar futuras auditorías.
 - `2026-10-06T00:29:47` **quarantine.py** (legibilidad y documentación): Se han añadido docstrings descriptivos y type hints faltantes en funciones clave de bajo nivel (`_check_io_error_context`, `_is_file_exclusive`, `_get_sha256`), junto con una reorganización de los comentarios de advertencia en el encabezado, para mejorar la mantenibilidad y claridad sobre las garantías de seguridad del módulo.
 - `2026-10-06T00:23:02` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `top_memory_processes` para extraer la lógica de sondeo de procesos en una función privada más pequeña (`_get_process_memory_stats`), aplicando type hinting explícito y separando la gestión de recursos de la lógica de negocio.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T14:34:00` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_dir` centralizando la validación de la estructura del directorio, evitando que errores de resolución de rutas (`OSError`) o permisos se propaguen silenciosamente y asegurando que `ensure_safe_to_modify` se utilice correctamente con un retorno booleano implícito en el flujo, añadiendo chequeos específicos contra valores `None` o rutas vacías.
 - `2026-10-05T14:33:27` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` capturando errores específicos durante la iteración y validando la integridad del destino, evitando que una falla en un solo archivo detenga el proceso completo de organización mientras mantengo la seguridad mediante `is_safe_to_modify`.
 - `2026-10-05T14:32:57` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y sus ayudantes validando explícitamente la entrada de `pid` y capturando errores de la API de Windows con `ctypes.GetLastError()` para ofrecer diagnósticos precisos en lugar de fallos silenciosos.
-- `2026-10-05T14:22:37` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` al encapsular la ejecución de los scorers individuales dentro de un bloque `try-except` más específico y añadiendo una validación explícita para prevenir valores `None` o comportamientos inesperados durante el procesamiento del pipeline.
-- `2026-10-05T14:22:13` **duplicates.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `suggest_keeper` y `format_group` agregando validaciones explícitas de tipos y estados, asegurando que si un archivo deja de ser accesible durante la ejecución, la aplicación no interrumpa su flujo ni devuelva resultados inconsistentes.

@@ -369,7 +369,7 @@ class SystemContext:
     @cached_property
     def metrics_snapshot(self) -> dict[str, float]:
         """Snapshot cacheado de las métricas numéricas para evitar llamadas frecuentes a getattr."""
-        return {key: self.get_metric(key, DEFAULT_METRIC_VAL) for key, _, _ in _CONTEXT_SCHEMA}
+        return {key: float(getattr(self, key)) for key, _, _ in _CONTEXT_SCHEMA if hasattr(self, key) and _check_metric_integrity(getattr(self, key))}
 
     def get_metric(self, key: str, default: float) -> float:
         """Retorna una métrica numérica validada o el valor por defecto si falla."""
