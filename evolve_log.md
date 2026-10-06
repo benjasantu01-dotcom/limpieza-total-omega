@@ -1285,3 +1285,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-06T10:13:53` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext.ingest` y `_apply_field` para manejar de forma resiliente la ingesta de datos externos, garantizando que una métrica mal formada o inesperada no aborte el proceso de actualización del contexto completo.
 - `2026-10-06T10:13:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T10:13:53` Corrida terminada. Total usado hoy: 240.
+- `2026-10-06T10:22:06` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-10-06T10:22:44` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-10-06T10:23:11` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante rutas corruptas o inexistentes en `_sum_directory_recursive` implementando un chequeo defensivo contra rutas extremadamente largas antes de llamar a `os.scandir` y asegurando que las subcarpetas procesadas mantengan la validación de seguridad de forma consistente mediante `is_safe_to_modify`.
+- `2026-10-06T10:23:37` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `_is_excluded_path` para prevenir fallos silenciosos y errores de desbordamiento de pila en estructuras de archivos profundas, asegurando que `_is_excluded_path` maneje correctamente rutas con caracteres nulos o inválidos y que `walk_files` gestione la recursión de forma más resiliente ante errores de acceso.
+- `2026-10-06T10:23:47` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-06T10:23:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T10:23:47` Corrida terminada. Total usado hoy: 244.

@@ -129,9 +129,12 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     """Evalúa si un `os.DirEntry` debe ser omitido por criterios de seguridad."""
     try:
-        if any(c in entry.name for c in SUSPICIOUS_CHARS) or '\0' in entry.name:
+        name = entry.name
+        if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
             return True
-        if not os.path.abspath(entry.path).startswith(str(root_path)):
+        # Usar path.resolve solo si es necesario para evitar bloqueos
+        entry_path = Path(entry.path)
+        if not str(entry_path).startswith(str(root_path)):
             return True
         try:
             st = entry.stat(follow_symlinks=False)
@@ -140,7 +143,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
                 return True
         except (OSError, PermissionError, AttributeError):
             return True
-        return is_protected_path(Path(entry.path))
+        return is_protected_path(entry_path)
     except (OSError, PermissionError, AttributeError, RuntimeError, TypeError):
         return True
             
@@ -249,7 +252,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """Recorre el árbol de directorios evitando enlaces simbólicos."""
+    """Recorre el árbol de directorios evitando enlaces simbólicos y errores de acceso."""
     root_path = _validate_root(directory)
     if root_path is None: return
     
@@ -271,14 +274,13 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
                                     stack.append(Path(entry.path))
-                            except OSError:
+                            except (OSError, PermissionError):
                                 continue
                         elif entry.is_file(follow_symlinks=False):
                             try:
                                 st = entry.stat(follow_symlinks=False)
-                                size = int(st.st_size)
-                                if size >= 0:
-                                    yield Path(entry.path), size
+                                if st.st_size >= 0:
+                                    yield Path(entry.path), int(st.st_size)
                             except (OSError, PermissionError):
                                 continue
                     except (OSError, PermissionError, AttributeError, ValueError):
@@ -310,17 +312,14 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     if root is None: return []
     stats: Dict[Path, FolderMetrics] = defaultdict(lambda: FolderMetrics(0, 0))
     
-    root_str = str(root)
     for path, size in walk_files(root, skip_protected):
-        parts = path.parent.parts
-        root_parts_len = len(root.parts)
-        if len(parts) > root_parts_len:
-            top_folder = root / parts[root_parts_len]
+        try:
+            relative = path.relative_to(root)
+            top_folder = root / relative.parts[0]
             curr = stats[top_folder]
             stats[top_folder] = FolderMetrics(curr.size + size, curr.file_count + 1)
-        elif path.parent == root:
-            curr = stats[path]
-            stats[path] = FolderMetrics(curr.size + size, curr.file_count + 1)
+        except (ValueError, IndexError):
+            continue
 
     results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items()]
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)
@@ -340,9 +339,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = [] 
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        if not isinstance(size_bytes, int) or size_bytes < 0:
-            continue
-        
         stats.register_file(size_bytes, path)
         
         if limit > 0:

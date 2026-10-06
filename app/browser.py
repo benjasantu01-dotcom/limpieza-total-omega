@@ -225,11 +225,11 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> ScanResult:
     """Recorre jerárquicamente un directorio de caché para sumar el peso de sus archivos."""
-    if depth > MAX_SCAN_DEPTH:
+    if depth > MAX_SCAN_DEPTH or len(str(root_path)) >= MAX_PATH_LEN:
         return ScanResult(0, True)
     
     try:
-        if not root_path.exists(): return ScanResult(0, True)
+        if not root_path.exists() or not is_safe_to_modify(root_path): return ScanResult(0, True)
         path_norm = os.path.normcase(str(root_path.resolve()))
     except (OSError, RuntimeError):
         return ScanResult(0, False)
@@ -255,7 +255,6 @@ def _sum_directory_recursive(
                         st = entry.stat(follow_symlinks=False)
                         if st.st_ino not in visited_inodes:
                             p_file = Path(entry.path)
-                            # Pre-validación rápida antes de la llamada costosa a _is_file_in_use
                             if is_safe_to_modify(p_file) and not _is_file_in_use(p_file, root_abs_norm):
                                 visited_inodes.add(st.st_ino)
                                 total_bytes += st.st_size
