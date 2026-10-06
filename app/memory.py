@@ -385,12 +385,12 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     kernel32 = ctypes.windll.kernel32
     proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
     if not proc_handle:
-        err = ctypes.get_last_error()
+        err = ctypes.GetLastError()
         return False, f"No se pudo abrir el proceso (error {err})."
         
     try:
         if psapi.EmptyWorkingSet(proc_handle) == 0:
-            err = ctypes.get_last_error()
+            err = ctypes.GetLastError()
             return False, f"El sistema rechazó el trim (error {err})."
         return True, f"Working set liberado. {TRIM_WARNING}"
     finally:

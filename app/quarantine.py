@@ -112,7 +112,7 @@ def _is_file_exclusive(path: Path) -> bool:
             if locked: k32.UnlockFileEx(handle, 0, 1, 0, overlapped)
             k32.CloseHandle(handle)
             return bool(locked)
-        except Exception: return False
+        except (OSError, AttributeError, ValueError): return False
     
     try:
         fd = os.open(path, os.O_RDONLY) 
@@ -242,7 +242,7 @@ def _get_sha256(path: Path) -> str:
                     if not chunk:
                         break
                     sha256_hash.update(chunk)
-        except Exception:
+        except (OSError, IOError):
             os.close(fd)
             raise
     except (OSError, PermissionError, IOError):
@@ -283,7 +283,6 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
     
     try:
         st = path.stat()
-        # Verificación estricta de inodo para prevenir TOCTOU
         if expected_inode != 0 and st.st_ino != expected_inode:
             return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid():
@@ -343,8 +342,11 @@ def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
 def _ensure_path_ownership(path: Path) -> None:
     """Verifica que el directorio pertenezca al usuario en sistemas POSIX."""
     if hasattr(os, 'getuid'):
-        if path.stat().st_uid != os.getuid():
-            raise UnsafePathError("Propiedad de directorio no coincide con usuario.")
+        try:
+            if path.stat().st_uid != os.getuid():
+                raise UnsafePathError("Propiedad de directorio no coincide con usuario.")
+        except OSError:
+            raise UnsafePathError("No se pudo verificar la propiedad del directorio.")
 
 def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     """Normaliza, valida y asegura la existencia del directorio de cuarentena."""
@@ -356,14 +358,12 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         if not path.name.strip() or path == path.parent:
             raise UnsafePathError("Ruta de cuarentena inválida o es raíz.")
         
-        # Validación de seguridad: el directorio resuelto no debe estar protegido
         if is_protected_path(path):
             raise UnsafePathError("Directorio de cuarentena reside en ruta protegida.")
         
         if path.is_symlink():
              raise UnsafePathError("Ruta de cuarentena no puede ser un enlace simbólico.")
         
-        # Validar seguridad mediante el booleano antes de cualquier operación de escritura
         if not is_safe_to_modify(path):
             raise UnsafePathError("Ruta de cuarentena marcada como insegura.")
             
@@ -414,8 +414,11 @@ def _check_windows_file_attributes(path_str: str) -> None:
 
 def _check_device_consistency(source: Path, target_dir: Path) -> None:
     """Valida que origen y destino estén en el mismo volumen (evita cruce)."""
-    if source.stat().st_dev != target_dir.stat().st_dev:
-        raise UnsafePathError("Operación entre distintos volúmenes no permitida.")
+    try:
+        if source.stat().st_dev != target_dir.stat().st_dev:
+            raise UnsafePathError("Operación entre distintos volúmenes no permitida.")
+    except OSError:
+        raise UnsafePathError("No se pudo verificar la consistencia del dispositivo.")
 
 def _validate_isolation_constraints(source_path: Path, dest_dir: Path) -> None:
     """Valida jerarquías de seguridad y evitar recursividad en el movimiento."""
@@ -446,12 +449,9 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
     if not os.access(dest_dir, os.W_OK):
         raise PermissionError("Directorio de cuarentena sin permisos de escritura.")
     
-    try:
-        _check_device_consistency(resolved_source, resolved_dest_dir)
-        if os.path.samefile(resolved_source, resolved_dest_dir):
-            raise UnsafePathError("Operación circular detectada.")
-    except OSError:
-        pass
+    _check_device_consistency(resolved_source, resolved_dest_dir)
+    if os.path.samefile(resolved_source, resolved_dest_dir):
+        raise UnsafePathError("Operación circular detectada.")
         
     _validate_isolation_constraints(resolved_source, resolved_dest_dir)
     ensure_safe_to_modify(resolved_source, allow_sensitive=True)
@@ -600,7 +600,6 @@ def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> 
             if not (stat_src.st_mode & 0o100000):
                 raise OSError("El archivo origen no es un archivo regular.")
             
-            # Verificación adicional TOCTOU: no permitir enlaces físicos en el destino
             if stat_src.st_nlink > 1:
                 raise UnsafePathError("Archivo origen con enlaces físicos múltiples.")
             
@@ -643,7 +642,6 @@ def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, Inode]:
         _copy_with_verification(source, temp_dest, source_hash)
         os.replace(temp_dest, destination)
         
-        # Persistir directorio padre tras creación de nuevo archivo
         dir_fd = os.open(str(destination.parent), os.O_RDONLY)
         try: os.fsync(dir_fd)
         finally: os.close(dir_fd)
@@ -660,15 +658,7 @@ def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, Inode]:
 
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode]:
-    """
-    Ejecuta el aislamiento atómico del archivo en el sandbox.
-    
-    Proceso:
-    1. Verifica condiciones iniciales para mitigar ataques TOCTOU.
-    2. Valida la integridad del sandbox y la inexistencia de colisiones.
-    3. Realiza la transferencia vía archivo temporal con validación de hash.
-    """
-    # 1. Verificaciones de precondición (TOCTOU)
+    """Ejecuta el aislamiento atómico del archivo en el sandbox."""
     if not source.exists():
         raise FileNotFoundError("Archivo origen no existe.")
     stat_orig = _check_io_error_context(source.stat)
@@ -678,11 +668,9 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if stat_orig.st_nlink > 1:
         raise UnsafePathError("Aislamiento denegado: el archivo tiene enlaces físicos múltiples.")
     
-    # 2. Validación de confinamiento
     dest_resolved = destination.resolve()
     base_resolved = destination.parent.resolve()
     
-    # Seguridad reforzada: verificar que la base del sandbox no sea un atajo o reparse point
     if base_resolved.is_symlink() or (os.name == 'nt' and _check_path_for_junctions(base_resolved)):
         raise UnsafePathError("Sandbox destino inválido: no es una ruta física directa.")
 
@@ -703,10 +691,9 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if any(i.file_inode == stat_orig.st_ino for i in existing_items):
         raise RuntimeError("Colisión de inodo: el archivo parece estar ya registrado.")
 
-    # 3. Ejecución de transferencia
     try:
         return _write_temp_to_final(source, destination)
-    except Exception as e:
+    except (OSError, IOError) as e:
         if destination.exists():
             _safe_unlink(destination)
         raise RuntimeError(f"Error durante aislamiento: {e}")
@@ -737,7 +724,7 @@ def _register_quarantine_item(
         items_list.append(quarantine_item)
         save_manifest(items_list, base)
         return quarantine_item
-    except Exception as e:
+    except (OSError, IOError, ValueError) as e:
         if destination.exists():
             _safe_unlink(destination)
         raise RuntimeError(f"Falla al registrar ítem en manifiesto: {e}")
@@ -793,7 +780,6 @@ def quarantine_file(
     p_source = _validate_input_path(source)
     
     try:
-        # Captura de estado inicial para validación TOCTOU
         st_info = _check_io_error_context(p_source.stat)
     except OSError as e:
         raise RuntimeError(f"Falla al verificar estado del archivo origen: {e}")
@@ -825,7 +811,7 @@ def quarantine_file(
         item = _register_quarantine_item(destination, source_path, file_hash, file_inode, reason, st_info.st_size, base)
         _verify_transaction_integrity(item, destination)
         return item
-    except Exception as e:
+    except (OSError, IOError, RuntimeError) as e:
         _cleanup_orphaned_destination(destination)
         raise RuntimeError(f"Error durante aislamiento: {e}")
 
@@ -872,10 +858,7 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         _ensure_disk_space(parent, quarantine_item.size_bytes)
         
         if not parent.exists():
-            try:
-                _check_io_error_context(parent.mkdir, parents=True, exist_ok=True)
-            except OSError as e:
-                raise RuntimeError(f"Falla al crear destino: {e}")
+            _check_io_error_context(parent.mkdir, parents=True, exist_ok=True)
         
         if not is_safe_to_modify(destination):
             raise UnsafePathError("Destino no seguro.")
@@ -905,7 +888,6 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
         save_manifest([i for i in items if i.item_id != item_id], base)
         return True
     
-    # Validar integridad antes de purgar para evitar borrar el archivo equivocado
     if not quarantine_item.verify_integrity(stored_file):
         raise UnsafePathError(f"Integridad fallida para {item_id}.")
         

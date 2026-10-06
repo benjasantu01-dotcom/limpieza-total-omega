@@ -171,16 +171,16 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """Auditoría integral: existencia, permisos, bucles y espacio en disco."""
     src = junk_file.path
     try:
-        if not src.exists() or src.name.lower() in SYSTEM_CRITICAL_NAMES: return False
+        if not src or not src.exists() or src.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         st = src.stat()
-        # Verificar integridad: el inodo y el conteo de enlaces deben coincidir con la detección
         if junk_file._ino is not None and st.st_ino != junk_file._ino: return False
         if not src.is_file() or st.st_nlink > 1: return False
-        # Validar ruta resuelta contra el origen original
         if src.resolve() != src: return False
         
-        if is_protected_path(dest) or is_protected_path(dest.parent): return False
+        # Uso estricto de is_safe_to_modify (bool) para el filtrado en bucle
         if not is_safe_to_modify(src) or not _validate_path_security(src, dest): return False
+        if is_protected_path(dest) or is_protected_path(dest.parent): return False
+        
         target_dir = dest.parent if dest.exists() else dest
         if not target_dir.is_dir() or not os.access(target_dir, os.W_OK): return False
         if _is_recursive_violation(src, dest) or _is_file_locked(src): return False
@@ -230,14 +230,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
         pass
 
 def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[JunkFile]:
-    """
-    Escanea directorios en busca de basura.
-    
-    Args:
-        directories: Lista de rutas a escanear. Si es None, usa DEFAULT_SCAN_DIRS.
-    Returns:
-        Lista de objetos JunkFile encontrados.
-    """
+    """Escanea directorios en busca de basura."""
     found: List[JunkFile] = []
     protected_cache: set[str] = set()
     visited: set[Path] = set()
@@ -265,6 +258,8 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         if not dest_base.exists():
             dest_base.mkdir(parents=True, exist_ok=True)
         dest_res = dest_base.resolve()
+        
+        # Validar destino antes de iterar
         if is_protected_path(dest_res): return None
         ensure_safe_to_modify(dest_res)
     except (OSError, RuntimeError, PermissionError) as e:
@@ -274,6 +269,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     for junk_file in files:
         if not junk_file or not isinstance(junk_file.path, Path): continue
         try:
+            # Uso de filtro booleano, luego acción destructiva protegida
             if not _is_safe_for_disk_op(junk_file, dest_res): continue
             target_path = _can_move_file(junk_file, dest_res)
             if target_path:
@@ -287,7 +283,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """Genera ruta destino única para un archivo candidato."""
     try:
-        if not junk_file or not dest_base: return None
+        if not junk_file or not junk_file.path or not dest_base: return None
         safe_name = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
         return _generate_unique_target(dest_base / safe_name)
     except (OSError, AttributeError, ValueError): return None
