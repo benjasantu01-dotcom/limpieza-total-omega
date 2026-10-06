@@ -48,7 +48,15 @@ class Grade(Enum):
         return cls.F.value
 
 class RecommendationRule(NamedTuple):
-    """Define una lógica de diagnóstico que genera mensajes de usuario si se cumplen condiciones críticas."""
+    """
+    Define una lógica de diagnóstico que genera mensajes de usuario.
+    
+    Attributes:
+        area: Identificador del componente (ej: 'disco').
+        threshold: Valor de ratio bajo el cual la regla se dispara.
+        message_factory: Función que genera un texto descriptivo basado en las métricas.
+        check: Predicado (SystemMetrics, NormalizedRatio) -> bool para decidir si aplicar la regla.
+    """
     area: MetricKey
     threshold: float
     message_factory: Callable[[SystemMetrics], str]
@@ -57,12 +65,6 @@ class RecommendationRule(NamedTuple):
 class PipelineEntry(NamedTuple):
     """
     Configuración de una etapa de análisis en el pipeline principal.
-    
-    Attributes:
-        area: Identificador único del componente analizado.
-        weight: Valor relativo (0-100) sobre el puntaje final.
-        scorer: Normalizador de métricas brutas a ratio.
-        rules: Colección de reglas de validación asociadas.
     """
     area: MetricKey
     weight: int
