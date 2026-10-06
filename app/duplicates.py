@@ -295,7 +295,10 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 
 def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
-    """Genera una tupla de pesos (mtime, length) para priorizar la conservación del archivo más antiguo."""
+    """
+    Genera una tupla de pesos (mtime, length) para priorizar la conservación.
+    Prioriza el archivo más antiguo (menor mtime); en caso de empate, la ruta más corta.
+    """
     if not isinstance(path, Path) or not path.exists():
         return None
     try:

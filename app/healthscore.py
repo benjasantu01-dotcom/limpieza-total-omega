@@ -156,6 +156,16 @@ def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
     return create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inverse=True)(float(startup_count))
 
+def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) -> float:
+    """Helper interno para sanitizar métricas numéricas."""
+    try:
+        val = float(value)
+        if not math.isfinite(val) or val < min_v or val > max_v:
+            return default
+        return val
+    except (ValueError, TypeError):
+        return default
+
 @dataclass
 class SystemMetrics:
     """Contenedor de datos estructurado que agrupa las métricas recolectadas del sistema."""
@@ -173,24 +183,14 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Asegura que los datos recibidos tengan tipos y rangos válidos de forma defensiva."""
-        def _c(v: Any, d: float, min_v: float, max_v: float) -> float:
-            if v is None: return d
-            try:
-                val = float(v)
-                if not math.isfinite(val) or val < min_v or val > max_v:
-                    return d
-                return val
-            except (ValueError, TypeError):
-                return d
-
-        self.junk_mb = _c(self.junk_mb, 0.0, 0.0, 1e9)
-        self.duplicate_mb = _c(self.duplicate_mb, 0.0, 0.0, 1e9)
-        self.suspicious_count = int(_c(self.suspicious_count, 0, 0, 1e6))
-        self.suspicious_warnings = int(_c(self.suspicious_warnings, 0, 0, 1e6))
-        self.startup_count = int(_c(self.startup_count, 0, 0, 1e4))
-        self.quarantined_count = int(_c(self.quarantined_count, 0, 0, 1e4))
-        self.memory_available_percent = _c(self.memory_available_percent, 100.0, 0.0, 100.0)
-        self.disk_free_percent = _c(self.disk_free_percent, 100.0, 0.0, 100.0)
+        self.junk_mb = _validate_numeric(self.junk_mb, 0.0, 0.0, 1e9)
+        self.duplicate_mb = _validate_numeric(self.duplicate_mb, 0.0, 0.0, 1e9)
+        self.suspicious_count = int(_validate_numeric(self.suspicious_count, 0, 0, 1e6))
+        self.suspicious_warnings = int(_validate_numeric(self.suspicious_warnings, 0, 0, 1e6))
+        self.startup_count = int(_validate_numeric(self.startup_count, 0, 0, 1e4))
+        self.quarantined_count = int(_validate_numeric(self.quarantined_count, 0, 0, 1e4))
+        self.memory_available_percent = _validate_numeric(self.memory_available_percent, 100.0, 0.0, 100.0)
+        self.disk_free_percent = _validate_numeric(self.disk_free_percent, 100.0, 0.0, 100.0)
 
     @property
     def is_finite(self) -> bool:
