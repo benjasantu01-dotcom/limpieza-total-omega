@@ -131,17 +131,14 @@ def ensure_safety(func: Callable) -> Callable:
     """
     Decorador preventivo: invoca `safety.ensure_safe_to_modify` antes de delegar
     ejecución a cualquier método que realice escrituras o modificaciones en el disco.
-    Asegura que el contexto global del usuario sea inmutable para procesos críticos.
     """
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
-        try:
-            # Validación de contexto global antes de operaciones destructivas o persistencia
-            safety.ensure_safe_to_modify(Path.home().resolve())
-            return func(*args, **kwargs)
-        except Exception as e:
-            logging.error("Violación de seguridad pre-ejecución: %s", e)
-            raise
+        home_path = Path.home().resolve()
+        if not home_path.is_dir():
+            raise RuntimeError("Contexto de seguridad degradado: Home no es directorio.")
+        safety.ensure_safe_to_modify(home_path)
+        return func(*args, **kwargs)
     return wrapper
 
 def safe_ui_operation(func: Callable) -> Callable:
@@ -327,13 +324,17 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _validate_disk_access(self, path: Union[str, Path]) -> Path:
         """Helper: Valida integridad de ruta absoluta y permisos de seguridad."""
         p = Path(path).resolve()
-        if any(ord(c) < 32 for c in str(p)):
-            raise safety.UnsafePathError("Ruta contiene caracteres inválidos")
+        # Control de caracteres de control y longitud mínima
+        if any(ord(c) < 32 for c in str(p)) or len(str(p)) < 3:
+            raise safety.UnsafePathError("Ruta contiene caracteres inválidos o es demasiado corta")
+        
         # Verificar existencia sin disparar excepciones de sistema bloqueantes
         if not p.exists():
             raise FileNotFoundError(f"Ruta inexistente: {p}")
-        if p.is_symlink() or (p.is_dir() and p.is_mount() and not p.exists()):
+            
+        if p.is_symlink():
             raise safety.UnsafePathError("Ruta inválida o enlace prohibido")
+            
         safety.ensure_safe_to_modify(p)
         return p
 

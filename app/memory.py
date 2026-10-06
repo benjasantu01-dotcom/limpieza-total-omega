@@ -344,7 +344,7 @@ def _get_process_path(pid: int) -> Optional[Path]:
             
             try:
                 path_obj = Path(raw_path).resolve(strict=True)
-                if _is_path_safe_and_valid(path_obj):
+                if _is_path_safe_and_valid(path_obj) and is_safe_to_modify(path_obj):
                     return path_obj
             except (OSError, RuntimeError):
                 return None

@@ -1376,3 +1376,30 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-06T11:05:15` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
 - `2026-10-06T11:05:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T11:05:15` Corrida terminada. Total usado hoy: 260.
+- `2026-10-06T11:13:12` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-10-06T11:14:30` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha implementado un control de integridad adicional en el decorador `ensure_safety` para verificar explícitamente que la ruta sea un directorio y no un archivo, y se ha fortalecido el método `_validate_disk_access` para bloquear rutas con longitudes inusualmente cortas o caracteres de control antes de que cualquier operación intente interactuar con el sistema de archivos.
+- `2026-10-06T11:15:02` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_get_process_path` validando que la ruta resuelta no solo sea un archivo existente, sino que también verifique explícitamente su ubicación mediante `is_safe_to_modify` antes de ser procesada, evitando posibles manipulaciones de rutas fuera de las áreas permitidas.
+- `2026-10-06T11:15:30` Tests FALLARON:
+```
+   estandar = set(sys.stdlib_module_names)
+    
+        for archivo in app_modules(include_gui=True):
+            for nombre in imported_names(parse(archivo)):
+>               assert nombre in estandar or nombre in locales or nombre in permitidos_externos, (
+                    f"{archivo.name} importa '{nombre}', que no es de la librería "
+                    "estándar ni del proyecto. No se permiten dependencias nuevas."
+                )
+E               AssertionError: organizer.py importa 'win32security', que no es de la librería estándar ni del proyecto. No se permiten dependencias nuevas.
+E               assert ('win32security' in {'__future__', '_abc', '_aix_support', '_ast', '_asyncio', '_bisect', ...} or 'win32security' in {'assistant', 'branding', 'browser', 'diskreport', 'duplicates', 'healthscore', ...} or 'win32security' in {'customtkinter'})
+
+evolve/tests/test_integrity.py:177: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_no_new_third_party_dependencies - AssertionError: organizer.py importa 'win32security', que no es de la librería estándar ni del proyecto. No se permiten dependencias nuevas.
+assert ('win32security' in {'__future__', '_abc', '_aix_support', '_ast', '_asyncio', '_bisect', ...} or 'win32security' in {'assistant', 'branding', 'browser', 'diskreport', 'duplicates', 'healthscore', ...} or 'win32security' in {'customtkinter'})
+1 failed, 298 passed in 1.47s
+
+```
+- `2026-10-06T11:15:30` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `organizer.py` implementando una validación estricta de la propiedad del directorio de revisión (`is_owned_by_user`) para prevenir ataques de secuestro de rutas (TOCTOU/symlink) en carpetas temporales, asegurando que solo el usuario actual pueda ser propietario del destino de cuarentena.
+- `2026-10-06T11:16:00` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha implementado una validación de "bloqueo de escritura" explícita en `save_manifest` para prevenir la corrupción de datos durante operaciones concurrentes o en escenarios de baja integridad del sistema de archivos, asegurando que el manifiesto solo se sobrescriba si el archivo es tratable como un archivo de datos normal sin atributos de sistema que impidan su reemplazo.
+- `2026-10-06T11:16:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T11:16:00` Corrida terminada. Total usado hoy: 264.

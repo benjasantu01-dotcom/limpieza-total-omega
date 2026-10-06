@@ -519,8 +519,14 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         serializable_items = [item.to_dict() for item in items]
         encoded_content = json.dumps(serializable_items, indent=2, ensure_ascii=False).encode('utf-8')
         
-        if target_path.exists() and not os.access(target_path, os.W_OK):
-            raise PermissionError("Manifiesto existente no es escribible.")
+        if target_path.exists():
+            if not os.access(target_path, os.W_OK):
+                raise PermissionError("Manifiesto existente no es escribible.")
+            # Verificar si es un archivo de sistema o especial para evitar sobrescrituras de seguridad
+            if os.name == 'nt':
+                attrs = ctypes.windll.kernel32.GetFileAttributesW(str(target_path))
+                if attrs != -1 and (attrs & 0x02 or attrs & 0x04):
+                    raise PermissionError("Manifiesto con atributos restringidos.")
 
         with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as tf:
             tf.write(encoded_content)
