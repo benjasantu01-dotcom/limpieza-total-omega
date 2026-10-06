@@ -260,6 +260,12 @@ def _get_process_memory_stats(pid: int) -> Optional[BytesValue]:
         kernel32.CloseHandle(handle)
     return None
 
+def _get_proc_memory_by_pid(pid: int) -> Optional[ProcessMemory]:
+    """Helper para top_memory_processes que encapsula la lógica de filtrado y extracción."""
+    if _is_system_process(pid): return None
+    ws = _get_process_memory_stats(pid)
+    return ProcessMemory(f"PID {pid}", pid, ws) if ws and 0 < ws < MAX_VALID_PROCESS_MEM else None
+
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Obtiene los N procesos de mayor consumo usando la API nativa psapi."""
     if not hasattr(top_memory_processes, "_cache"):
@@ -277,13 +283,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         
         if psapi.EnumProcesses(ctypes.byref(pids), cb, ctypes.byref(cb_needed)):
             count = cb_needed.value // ctypes.sizeof(ctypes.c_ulong)
-            
-            def get_proc(pid: int) -> Optional[ProcessMemory]:
-                if _is_system_process(pid): return None
-                ws = _get_process_memory_stats(pid)
-                return ProcessMemory(f"PID {pid}", pid, ws) if ws and 0 < ws < MAX_VALID_PROCESS_MEM else None
-
-            processes = (p for pid in pids[:count] if (p := get_proc(pid)))
+            processes = (p for pid in pids[:count] if (p := _get_proc_memory_by_pid(pid)))
             cache_data = sorted(processes, key=lambda p: p.working_set, reverse=True)[:limit]
             top_memory_processes._cache = (now, cache_data)
             

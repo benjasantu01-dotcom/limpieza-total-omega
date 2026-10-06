@@ -7,44 +7,46 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **208** (41.3% de aceptación)
-- Rechazadas por tests: 31
+- Rechazadas por tests: 30
 - Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-05 | 67 | 9 | 12 | 3 | 77 |
-| 2026-10-06 | 141 | 22 | 33 | 8 | 132 |
+| 2026-10-05 | 65 | 8 | 11 | 3 | 77 |
+| 2026-10-06 | 143 | 22 | 34 | 8 | 133 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **48**
+- seguridad defensiva: **47**
 - legibilidad y documentación: **41**
-- robustez ante casos límite: **36**
-- rendimiento: **33**
+- rendimiento: **35**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **22**
+- `memory.py`: **23**
 - `diskreport.py`: **21**
+- `quarantine.py`: **20**
 - `healthscore.py`: **19**
-- `quarantine.py`: **19**
-- `branding.py`: **17**
 - `browser.py`: **17**
 - `safety.py`: **16**
 - `scanner.py`: **16**
+- `branding.py`: **16**
 - `organizer.py`: **16**
-- `settings.py`: **14**
+- `settings.py`: **13**
 - `assistant.py`: **13**
 - `duplicates.py`: **13**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T14:29:35` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y `list_items` convirtiendo las listas de elementos a `dict` (indexado por `stored_name` o `item_id`) para evitar recorridos O(N^2) durante la validación de archivos, manteniendo la consistencia del manifiesto.
+- `2026-10-06T14:27:56` **memory.py** (rendimiento): Optimizé `top_memory_processes` reemplazando la creación de una función anónima dentro del bucle por una referencia a una función local definida fuera, evitando la redefinición constante del objeto función en cada iteración sobre la lista de PIDs.
 - `2026-10-06T14:18:37` **healthscore.py** (rendimiento): Optimicé el rendimiento del `compute_score` eliminando la recreación de funciones `lambda` en cada iteración y evitando el procesamiento redundante mediante el cacheo de las funciones `scorer` asociadas a las reglas del pipeline.
 - `2026-10-06T14:17:31` **diskreport.py** (rendimiento): Optimicé el rendimiento del escaneo en `walk_files` evitando la llamada redundante y costosa a `Path(entry.path).resolve()` dentro de `_is_excluded_path`, utilizando el atributo `entry.path` directamente para las validaciones de seguridad, reduciendo drásticamente las syscalls de resolución de rutas por cada archivo encontrado.
 - `2026-10-06T14:09:28` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` eliminando la creación innecesaria de listas mutables y mejorando la precisión del cálculo de pasos, además de reducir el gasto de memoria en el bucle principal al utilizar pre-calculado de segmentos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T13:39:19` **duplicates.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en las funciones clave de procesamiento de archivos para mejorar la mantenibilidad y claridad del flujo de trabajo, sin alterar la lógica de detección ni las reglas de seguridad.
 - `2026-10-06T13:36:47` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `_sum_directory_recursive` extrayendo la lógica compleja de escaneo de archivos a una función auxiliar `_process_file_node`, lo que clarifica el flujo de control y facilita futuras auditorías de seguridad.
 - `2026-10-06T13:26:37` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` capturando explícitamente posibles excepciones de E/S y privilegios durante la creación y sincronización del archivo, garantizando que el estado de la configuración no quede en un estado intermedio inconsistente mediante el uso de bloques `try-finally` más seguros.
-- `2026-10-06T13:18:06` **safety.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita para detectar caracteres de escape o nombres reservados de Windows en la función `ensure_safe_to_modify`, previniendo errores de bajo nivel en llamadas a la API de Win32 que podrían ser explotados para bypass de seguridad.
-- `2026-10-06T13:08:27` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de entrada (`None`/vacíos) y encapsulando las operaciones de movimiento/borrado en bloques `try-except` más granulares para prevenir que errores en un archivo detengan el procesamiento de toda la lista, asegurando que la integridad del proceso de limpieza se mantenga ante fallos de I/O específicos.

@@ -827,7 +827,6 @@ def quarantine_file(
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Lista elementos en cuarentena, ordenados por fecha de aislamiento."""
     try:
-        # Reutilizamos la lista de la caché cargada
         items = load_manifest(base)
         return sorted(items, key=lambda x: x.quarantined_at, reverse=True)
     except (OSError, UnsafePathError, PermissionError):
@@ -911,7 +910,6 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 
 def _is_item_purgable(file_path: Path, item: QuarantineItem) -> bool:
     """Valida los requisitos de seguridad antes de eliminar un archivo."""
-    # Verificación extra: comprobar si está en uso antes de intentar el unlinking
     if _is_file_in_use_by_system(file_path):
         return False
     return (
@@ -923,28 +921,29 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem) -> bool:
 
 
 def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
-    """Elimina todos los archivos verificados de la cuarentena."""
+    """Elimina todos los archivos verificados de la cuarentena (Optimizado O(N))."""
     try:
         quarantine_root = quarantine_dir(base)
         items = load_manifest(base)
         if not items:
             return 0
         
+        # Mapeo O(1) para lookups de metadatos por nombre
         item_map = {i.stored_name: i for i in items}
-        purged_ids: Set[str] = set()
+        purged_names: Set[str] = set()
         
         for f in quarantine_root.iterdir():
             if f.name == MANIFEST_NAME or not f.is_file():
                 continue
             item = item_map.get(f.name)
             if item and _is_item_purgable(f, item):
-                purged_ids.add(item.item_id)
+                purged_names.add(item.item_id)
         
-        if purged_ids:
-            remaining = [i for i in items if i.item_id not in purged_ids]
+        if purged_names:
+            remaining = [i for i in items if i.item_id not in purged_names]
             save_manifest(remaining, base)
             
-        return len(purged_ids)
+        return len(purged_names)
     except (OSError, PermissionError, UnsafePathError):
         return 0
 

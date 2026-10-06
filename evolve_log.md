@@ -1875,3 +1875,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_pa
 - `2026-10-06T14:19:16` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._apply_ui_update_safely, LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run, LimpiezaTotalOmegaApp._get_home_disk_info, LimpiezaTotalOmegaApp._get_numeric_setting_from_widget, LimpiezaTotalOmegaApp._is_safe_file_access, LimpiezaTotalOmegaApp._is_safe_target_dir, LimpiezaTotalOmegaApp._is_valid_dir, LimpiezaTotalOmegaApp._safe_run, LimpiezaTotalOmegaApp._update_cards, LimpiezaTotalOmegaApp._verify_disk_path
 - `2026-10-06T14:19:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T14:19:16` Corrida terminada. Total usado hoy: 336.
+- `2026-10-06T14:27:14` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-06T14:27:56` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé `top_memory_processes` reemplazando la creación de una función anónima dentro del bucle por una referencia a una función local definida fuera, evitando la redefinición constante del objeto función en cada iteración sobre la lista de PIDs.
+- `2026-10-06T14:28:38` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-10-06T14:29:35` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `purge_all` y `list_items` convirtiendo las listas de elementos a `dict` (indexado por `stored_name` o `item_id`) para evitar recorridos O(N^2) durante la validación de archivos, manteniendo la consistencia del manifiesto.
+- `2026-10-06T14:29:42` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-10-06T14:29:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T14:29:42` Corrida terminada. Total usado hoy: 340.
