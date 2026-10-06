@@ -123,6 +123,10 @@ WEIGHTS: Final[Dict[MetricKey, int]] = {
 if sum(WEIGHTS.values()) != 100:
     raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
 
+_JUNK_SCORER = create_linear_scorer(_LIMIT_JUNK_MB, inverse=True)
+_DUP_SCORER = create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)
+_STARTUP_SCORER = create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inverse=True)
+
 _PIPELINE: Final[List[PipelineEntry]] = [
     PipelineEntry(
         "seguridad", 30, 
@@ -157,7 +161,7 @@ _PIPELINE: Final[List[PipelineEntry]] = [
 ]
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
-    return create_linear_scorer(_LIMIT_JUNK_MB, inverse=True)(float(junk_mb))
+    return _JUNK_SCORER(float(junk_mb))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
     """Calcula el ratio de seguridad penalizando hallazgos (0.05 c/u) y advertencias (0.25 c/u)."""
@@ -176,10 +180,10 @@ def score_disk(free_percent: float | int) -> NormalizedRatio:
     return _clamp(float(free_percent) / _LIMIT_DISK_PERCENT)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
-    return create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)(float(duplicate_mb))
+    return _DUP_SCORER(float(duplicate_mb))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
-    return create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inverse=True)(float(startup_count))
+    return _STARTUP_SCORER(float(startup_count))
 
 def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) -> float:
     """Helper interno para sanitizar métricas numéricas."""

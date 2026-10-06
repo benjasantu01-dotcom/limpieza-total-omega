@@ -132,8 +132,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         name = entry.name
         if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
             return True
-        entry_path = Path(entry.path).resolve()
-        if not str(entry_path).startswith(str(root_path)):
+        if not entry.path.startswith(str(root_path)):
             return True
         try:
             st = entry.stat(follow_symlinks=False)
@@ -142,7 +141,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
                 return True
         except (OSError, PermissionError, AttributeError):
             return True
-        return is_protected_path(entry_path)
+        return is_protected_path(Path(entry.path))
     except (OSError, PermissionError, AttributeError, RuntimeError, TypeError):
         return True
             

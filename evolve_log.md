@@ -1868,3 +1868,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_pa
 - `2026-10-06T14:09:41` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
 - `2026-10-06T14:09:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T14:09:41` Corrida terminada. Total usado hoy: 332.
+- `2026-10-06T14:17:02` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-06T14:17:31` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo en `walk_files` evitando la llamada redundante y costosa a `Path(entry.path).resolve()` dentro de `_is_excluded_path`, utilizando el atributo `entry.path` directamente para las validaciones de seguridad, reduciendo drásticamente las syscalls de resolución de rutas por cada archivo encontrado.
+- `2026-10-06T14:18:00` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-06T14:18:37` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento del `compute_score` eliminando la recreación de funciones `lambda` en cada iteración y evitando el procesamiento redundante mediante el cacheo de las funciones `scorer` asociadas a las reglas del pipeline.
+- `2026-10-06T14:19:16` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._apply_ui_update_safely, LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run, LimpiezaTotalOmegaApp._get_home_disk_info, LimpiezaTotalOmegaApp._get_numeric_setting_from_widget, LimpiezaTotalOmegaApp._is_safe_file_access, LimpiezaTotalOmegaApp._is_safe_target_dir, LimpiezaTotalOmegaApp._is_valid_dir, LimpiezaTotalOmegaApp._safe_run, LimpiezaTotalOmegaApp._update_cards, LimpiezaTotalOmegaApp._verify_disk_path
+- `2026-10-06T14:19:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T14:19:16` Corrida terminada. Total usado hoy: 336.
