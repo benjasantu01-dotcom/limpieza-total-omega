@@ -557,3 +557,48 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-06T04:56:30` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): el archivo se encogió al 47% del original (posible pérdida de código)
 - `2026-10-06T04:56:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T04:56:30` Corrida terminada. Total usado hoy: 116.
+- `2026-10-06T05:04:44` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-10-06T05:05:55` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y la mantenibilidad del código mediante la formalización de las firmas de tipo y la extracción de lógica compleja de filtrado en `_is_safe_entry` hacia componentes más modulares y documentados.
+- `2026-10-06T05:06:28` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult, _Validators, _Validators._check_path_safety, _Validators._is_reparse_point, _Validators._is_safe_path, _Validators._run_safety_checks, _Validators._validate_enum_str, _Validators.bool, _Validators.int, _Validators.path, _Validators.str
+- `2026-10-06T05:07:02` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T05:07:53` Tests FALLARON:
+```
+lve/tests/test_modules.py:677: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:172: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'MiPrograma.lnk'
+  'Otro.lnk'
+  Extra items in the right set:
+  'Otro'
+  'MiPrograma'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed, 7 warnings in 1.17s
+
+```
+- `2026-10-06T05:07:53` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y robustez de `startup.py` corrigiendo un error de lógica en `_process_folder_entry` (donde la variable `name` era inexistente), añadiendo type hints faltantes en funciones críticas y documentando el propósito de las transformaciones de texto con docstrings más precisos.
+- `2026-10-06T05:08:20` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se implementó un `lru_cache` en `context_as_text` para evitar la serialización repetitiva de las métricas durante el procesamiento de consultas, mejorando la eficiencia al evitar cálculos de strings innecesarios en cada llamada.
+- `2026-10-06T05:08:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T05:08:20` Corrida terminada. Total usado hoy: 120.

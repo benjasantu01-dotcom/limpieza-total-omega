@@ -204,21 +204,37 @@ class Scanner:
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Filtro de seguridad: Valida integridad, reanálisis y exclusiones (whitelist)."""
+        """
+        Valida que la entrada sea segura para procesar:
+        - Verifica integridad estructural.
+        - Descarta puntos de reanálisis.
+        - Confirma que la ruta reside dentro del árbol base de escaneo.
+        - Filtra rutas protegidas definidas en safety.py.
+        """
         if not isinstance(entry, os.DirEntry) or not entry.path:
             return False
+        
+        # Check cache de éxito previo
         if entry.path in self.safe_cache:
             return True
+            
+        # Validación básica de estructura
         if not _is_valid_path_structure(entry.path) or self._has_invalid_name(entry.name):
             return False
+            
         try:
-            real_path = Path(entry.path).resolve()
+            # Validación de reanálisis y alcance lógico
             if self._is_reparse_point(entry) or entry.is_symlink():
                 return False
+                
+            real_path = Path(entry.path).resolve()
             if not str(real_path).lower().startswith(self.base_root_str):
                 return False
+                
+            # Validación de seguridad global
             if is_protected_path(real_path):
                 return False
+                
             self.safe_cache.add(entry.path)
             return True
         except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
@@ -247,9 +263,11 @@ class Scanner:
 
             is_dir = entry.is_dir(follow_symlinks=False)
             
+            # Solo procesamos directorios o archivos con extensiones relevantes
             if not is_dir and not self._is_relevant_extension(entry.name):
                 return
             
+            # Filtro de seguridad (no destructivo)
             if not self._is_safe_entry(entry):
                 return
                 

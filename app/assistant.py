@@ -502,10 +502,11 @@ def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> Syst
             ctx.ingest(s)
     return ctx
 
-def _generate_safe_context(ctx: SystemContext) -> str:
+@lru_cache(maxsize=8)
+def _generate_safe_context(ctx_hash: int, ctx_snapshot: tuple[tuple[str, float], ...]) -> str:
     """Genera un resumen textual del contexto validando cada métrica estrictamente."""
     res = []
-    snapshot = ctx.metrics_snapshot
+    snapshot = dict(ctx_snapshot)
     for key, unit, precision in _CONTEXT_SCHEMA:
         val = snapshot.get(key, -1.0)
         if val >= 0:
@@ -514,7 +515,10 @@ def _generate_safe_context(ctx: SystemContext) -> str:
 
 def context_as_text(context: SystemContext) -> str:
     """Serializa el contexto a un formato textual seguro para el prompt del asistente."""
-    return _generate_safe_context(context) if not context.is_empty else ""
+    if context.is_empty: return ""
+    # Se usa el hash del contexto y su snapshot para asegurar la integridad de la caché
+    snapshot_tuple = tuple(sorted(context.metrics_snapshot.items()))
+    return _generate_safe_context(hash(context), snapshot_tuple)
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     """Formatea métricas numéricas convirtiéndolas a strings legibles."""
