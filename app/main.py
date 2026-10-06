@@ -1292,11 +1292,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
         self._last_health_state = state_key
 
-        self._safe_run_ui_callback(lambda: (
-            self._draw_gauge(resultado.score, resultado.grade),
-            self._apply_card_updates(junk_mb, sospechosos, ram_libre, disco_libre),
+        self._safe_run_ui_callback(lambda: self._apply_ui_update_safely(resultado, junk_mb, sospechosos, ram_libre, disco_libre))
+
+    def _apply_ui_update_safely(self, resultado: healthscore.ScoreResult, junk_mb: float, sospechosos: int, ram_libre: float, disco_libre: float) -> None:
+        try:
+            self._draw_gauge(resultado.score, resultado.grade)
+            self._apply_card_updates(junk_mb, sospechosos, ram_libre, disco_libre)
             self._update_health_bars(resultado)
-        ))
+        except (tk.TclError, RuntimeError, AttributeError):
+            pass
 
     def _update_cards(self, junk_mb: float, sospechosos: int, ram_libre: float, disco_libre: float) -> None:
         """Helper: Debounce actualización de tarjetas."""

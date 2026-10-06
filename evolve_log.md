@@ -1292,3 +1292,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-06T10:23:47` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-10-06T10:23:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T10:23:47` Corrida terminada. Total usado hoy: 244.
+- `2026-10-06T10:32:22` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-10-06T10:32:52` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-10-06T10:34:07` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se implementó una robustez ante la inicialización de widgets y estados de la UI durante cierres repentinos de la aplicación, añadiendo un `try-except` específico para `tk.TclError` en el método `_update_health_visuals` y asegurando que las actualizaciones de estado asíncronas no operen sobre widgets inexistentes tras la destrucción de la ventana.
+- `2026-10-06T10:34:37` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez en `_get_process_path` y `trim_working_set` al añadir una validación explícita para rutas UNC (evitando excepciones en la resolución de `Path.resolve`) y manejando correctamente casos donde el `pid` es inválido o el proceso finaliza durante la ejecución.
+- `2026-10-06T10:34:50` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_is_safe_for_disk_op` añadiendo una comprobación explícita para evitar que `shutil.disk_usage` lance excepciones fatales ante rutas inválidas o dispositivos sin soporte de espacio, y se añadió una validación de `st_dev` para asegurar que el movimiento sea dentro de la misma partición física, evitando errores de `shutil.move` entre volúmenes.
+- `2026-10-06T10:34:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T10:34:50` Corrida terminada. Total usado hoy: 248.

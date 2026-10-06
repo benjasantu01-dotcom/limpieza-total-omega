@@ -74,13 +74,17 @@ class JunkFile:
     size_bytes: int
     modified: datetime
     _ino: Optional[int] = None
+    _dev: Optional[int] = None
 
     def __post_init__(self) -> None:
         try:
             if isinstance(self.path, Path) and self.path.is_absolute():
                 self.path = self.path.resolve()
+            st = self.path.stat()
             if self._ino is None:
-                self._ino = self.path.stat().st_ino
+                self._ino = st.st_ino
+            if self._dev is None:
+                self._dev = st.st_dev
         except (OSError, RuntimeError):
             pass
 
@@ -177,7 +181,8 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     try:
         if not src or not src.exists() or src.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         st = src.stat()
-        if junk_file._ino is not None and st.st_ino != junk_file._ino: return False
+        if (junk_file._ino is not None and st.st_ino != junk_file._ino) or \
+           (junk_file._dev is not None and st.st_dev != junk_file._dev): return False
         if not src.is_file() or st.st_nlink > 1: return False
         if src.resolve() != src: return False
         
@@ -187,7 +192,11 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         target_dir = dest.parent if dest.exists() else dest
         if not target_dir.is_dir() or not os.access(target_dir, os.W_OK): return False
         if _is_recursive_violation(src, dest) or _is_file_locked(src): return False
-        if shutil.disk_usage(dest.anchor).free < (st.st_size + MIN_FREE_SPACE_BYTES): return False
+        
+        # Validar cambio de volumen (st_dev) y espacio libre
+        dest_st = target_dir.stat()
+        if dest_st.st_dev != st.st_dev: return False
+        if shutil.disk_usage(target_dir).free < (st.st_size + MIN_FREE_SPACE_BYTES): return False
         return True
     except (OSError, AttributeError, ValueError):
         return False
@@ -226,7 +235,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         stats = item.stat(follow_symlinks=False)
                         if _is_valid_junk_entry(item.name, stats, now_ts):
                             if not (getattr(stats, 'st_file_attributes', 0) & WIN_ATTR_MASK):
-                                found.append(JunkFile(Path(item.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino))
+                                found.append(JunkFile(Path(item.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
                 except (PermissionError, OSError):
                     continue
     except (PermissionError, OSError, RuntimeError):

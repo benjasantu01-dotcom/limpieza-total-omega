@@ -340,7 +340,7 @@ def _get_process_path(pid: int) -> Optional[Path]:
         length = psapi.GetModuleFileNameExW(handle, None, buf, buffer_size)
         if 0 < length < buffer_size:
             raw_path = buf.value
-            if not raw_path: return None
+            if not raw_path or raw_path.startswith("\\\\"): return None
             
             try:
                 path_obj = Path(raw_path).resolve(strict=True)
@@ -357,10 +357,8 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
     if _is_system_process(pid): return False, "Proceso crítico del sistema protegido."
     
     path = _get_process_path(pid)
-    # Si no podemos resolver la ruta o no supera la seguridad, lo consideramos inseguro para tocar.
     if path is None: return False, "Ruta del proceso inaccesible o restringida por seguridad."
     
-    # Integridad defensiva: verificar que la ruta sea modificable según las reglas globales.
     if not is_safe_to_modify(path):
         return False, "La ruta del proceso está protegida por la política de seguridad."
         
@@ -384,13 +382,11 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     kernel32 = ctypes.windll.kernel32
     proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
     if not proc_handle:
-        err = ctypes.GetLastError()
-        return False, f"No se pudo abrir el proceso (error {err})."
+        return False, "No se pudo acceder al proceso (posible cierre reciente)."
         
     try:
         if psapi.EmptyWorkingSet(proc_handle) == 0:
-            err = ctypes.GetLastError()
-            return False, f"El sistema rechazó el trim (error {err})."
+            return False, "El sistema rechazó el trim (error de privilegios o estado)."
         return True, f"Working set liberado. {TRIM_WARNING}"
     finally:
         kernel32.CloseHandle(proc_handle)
