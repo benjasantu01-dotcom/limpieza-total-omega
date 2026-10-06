@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **223** (44.2% de aceptación)
 - Rechazadas por tests: 27
 - Rechazadas por guardia de seguridad: 41
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 203
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 51 | 6 | 8 | 2 | 39 |
+| 2026-10-04 | 51 | 6 | 8 | 2 | 35 |
 | 2026-10-05 | 147 | 16 | 26 | 9 | 152 |
-| 2026-10-06 | 23 | 5 | 7 | 1 | 12 |
+| 2026-10-06 | 25 | 5 | 7 | 2 | 13 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **51**
 - manejo de errores y validación de entradas: **49**
 - legibilidad y documentación: **44**
-- seguridad defensiva: **39**
+- seguridad defensiva: **41**
 - rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **22**
-- `healthscore.py`: **21**
+- `memory.py`: **23**
+- `healthscore.py`: **22**
 - `quarantine.py`: **20**
 - `diskreport.py`: **20**
 - `scanner.py`: **19**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T02:14:56` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_process_path` integrando `is_safe_to_modify` antes de retornar la ruta, asegurando que cualquier proceso que se pretenda inspeccionar o gestionar no solo esté fuera de las rutas protegidas, sino que cumpla con los criterios globales de modificación segura.
+- `2026-10-06T02:12:28` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_evaluate_rules` validando explícitamente el origen de los mensajes para prevenir inyecciones o desbordamientos de datos malformados antes de que lleguen a la interfaz, además de asegurar que la entrada a `compute_score` sea siempre una instancia válida de `SystemMetrics` mediante un chequeo de tipo estricto.
 - `2026-10-06T02:03:22` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` al evitar el seguimiento de enlaces simbólicos mediante la validación del estado del inodo y la restricción estricta de rutas, previniendo así ciclos infinitos o la salida involuntaria del directorio raíz objetivo.
 - `2026-10-06T02:03:10` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_file_in_use` al incluir un chequeo explícito de `is_protected_path` adicional a `is_safe_to_modify`, asegurando que ninguna operación de comprobación de estado pueda intentar acceder a una ruta protegida incluso si las validaciones previas fallaran.
 - `2026-10-06T02:02:39` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la verificación manual de caracteres prohibidos por `filter_safe_paths` para asegurar consistencia con el resto del sistema, y se encapsuló la construcción de la ruta dentro de una verificación estricta para prevenir posibles escapes de directorio mediante manipulación de entrada.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T01:04:43` **quarantine.py** (rendimiento): Optimicé el acceso al manifiesto implementando una carga perezosa con caché indexada, reduciendo la complejidad de las búsquedas por `item_id` de O(n) a O(1) y evitando lecturas innecesarias del disco en operaciones repetitivas.
 - `2026-10-06T01:03:40` **memory.py** (rendimiento): Se optimizó `top_memory_processes` eliminando la llamada repetitiva a `EnumProcesses` y el loop innecesario en cada consulta, implementando una caché temporal más eficiente que evita el re-procesamiento de PIDs cuando los datos siguen vigentes.
 - `2026-10-06T00:51:11` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global evitando la creación redundante de objetos y minimizando el procesamiento de cadenas mediante la pre-compilación de los resultados del pipeline, además de utilizar un acceso más eficiente a los pesos.
-- `2026-10-06T00:50:25` **diskreport.py** (rendimiento): Optimicé el rendimiento de `_is_excluded_path` reemplazando la creación de objetos `Path` pesados en cada iteración por el uso de `os.path` y métodos de `os.DirEntry` (`path`, `is_symlink`), reduciendo drásticamente la carga de memoria y el tiempo de CPU durante el escaneo del disco.
-- `2026-10-06T00:41:37` **branding.py** (rendimiento): Se optimizó la generación de `_SVG_GRADIENT_STOPS` convirtiéndola en una constante calculada en tiempo de carga mediante `tuple` y `join`, eliminando el re-cálculo de strings innecesario, y se reemplazó el uso de `range` + indexación manual en `gradient_colors` por una pre-asignación de lista más eficiente.

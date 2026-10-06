@@ -1614,3 +1614,11 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-06T02:03:22` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `walk_files` al evitar el seguimiento de enlaces simbólicos mediante la validación del estado del inodo y la restricción estricta de rutas, previniendo así ciclos infinitos o la salida involuntaria del directorio raíz objetivo.
 - `2026-10-06T02:03:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T02:03:22` Corrida terminada. Total usado hoy: 48.
+- `2026-10-06T02:11:24` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-10-06T02:11:56` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-10-06T02:12:28` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_evaluate_rules` validando explícitamente el origen de los mensajes para prevenir inyecciones o desbordamientos de datos malformados antes de que lleguen a la interfaz, además de asegurar que la entrada a `compute_score` sea siempre una instancia válida de `SystemMetrics` mediante un chequeo de tipo estricto.
+- `2026-10-06T02:13:28` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-06T02:14:42` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Se introdujo una validación defensiva en la creación de rutas en `on_save_report` para garantizar que el directorio padre exista y sea seguro, evitando posibles ataques de inyección de rutas fuera de los límites permitidos, alineándose con el enfoque de seguridad defensiva.
+- `2026-10-06T02:14:56` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_get_process_path` integrando `is_safe_to_modify` antes de retornar la ruta, asegurando que cualquier proceso que se pretenda inspeccionar o gestionar no solo esté fuera de las rutas protegidas, sino que cumpla con los criterios globales de modificación segura.
+- `2026-10-06T02:14:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T02:14:56` Corrida terminada. Total usado hoy: 52.

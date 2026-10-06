@@ -220,10 +220,11 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     for rule in rules:
         try:
             if rule.check(metrics, normalized_ratio):
-                msg = str(rule.message_factory(metrics))
-                clean_msg = "".join(c for c in msg if c.isprintable() and c not in "\r\n\t").strip()
+                raw_msg = rule.message_factory(metrics)
+                if not isinstance(raw_msg, str): continue
+                clean_msg = "".join(c for c in raw_msg if c.isprintable() and c not in "\r\n\t").strip()
                 if clean_msg: findings.append(clean_msg[:200])
-        except (ValueError, TypeError, AttributeError) as e:
+        except Exception as e:
             logging.error(f"Error evaluando regla en {rule.area}: {e}")
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:

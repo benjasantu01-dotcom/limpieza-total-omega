@@ -336,8 +336,9 @@ def _get_process_path(pid: int) -> Optional[Path]:
             raw_path = buf.value
             path_obj = Path(raw_path).resolve()
             
-            # Validación estricta de seguridad: verifica protección y reparse points.
-            if is_protected_path(str(path_obj)): return None
+            # Validación estricta de seguridad: verifica protección, reparse points y política global.
+            if is_protected_path(str(path_obj)) or not is_safe_to_modify(path_obj):
+                return None
             
             attr = kernel32.GetFileAttributesW(str(path_obj))
             if attr != -1 and (attr & FILE_ATTRIBUTE_REPARSE_POINT): return None
@@ -353,7 +354,7 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
     if _is_system_process(pid): return False, "Proceso crítico del sistema protegido."
     
     path = _get_process_path(pid)
-    # Si no podemos resolver la ruta (ej. permisos denegados), lo consideramos inseguro para tocar.
+    # Si no podemos resolver la ruta o no supera la seguridad, lo consideramos inseguro para tocar.
     if path is None: return False, "Ruta del proceso inaccesible o restringida por seguridad."
     
     # Integridad defensiva: verificar que la ruta sea modificable según las reglas globales.
