@@ -241,6 +241,23 @@ def read_snapshot() -> MemorySnapshot:
     """Interfaz pública: retorna un snapshot del estado de memoria actual (TTL 5s)."""
     return _get_cached_snapshot(int(time.time() / 5))
 
+def _get_process_memory_stats(pid: int) -> Optional[BytesValue]:
+    """Extrae el Working Set de un proceso mediante PSAPI, retornando None si falla."""
+    kernel32 = ctypes.windll.kernel32
+    psapi = ctypes.windll.psapi
+    handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+    if not handle:
+        return None
+    try:
+        pmc = (ctypes.c_size_t * 6)()
+        if psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), ctypes.sizeof(pmc)):
+            return BytesValue(pmc[3])
+    except (OSError, AttributeError):
+        pass
+    finally:
+        kernel32.CloseHandle(handle)
+    return None
+
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Obtiene los N procesos de mayor consumo usando la API nativa psapi."""
     if not hasattr(top_memory_processes, "_cache"):
@@ -252,7 +269,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     
     if (now - cache_time) > 60:
         psapi = ctypes.windll.psapi
-        kernel32 = ctypes.windll.kernel32
         pids = (ctypes.c_ulong * 1024)()
         cb = ctypes.sizeof(pids)
         cb_needed = ctypes.c_ulong()
@@ -263,22 +279,12 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
             for i in range(count):
                 pid = pids[i]
                 if _is_system_process(pid) or pid == 0: continue
-                handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
-                if handle:
-                    try:
-                        # Estructura PROCESS_MEMORY_COUNTERS (6 elementos c_size_t)
-                        pmc = (ctypes.c_size_t * 6)()
-                        if psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), ctypes.sizeof(pmc)):
-                            ws = pmc[3]
-                            if 0 < ws < MAX_VALID_PROCESS_MEM:
-                                processes.append(ProcessMemory(f"PID {pid}", pid, BytesValue(ws)))
-                    except (OSError, AttributeError):
-                        pass
-                    finally:
-                        kernel32.CloseHandle(handle)
+                ws = _get_process_memory_stats(pid)
+                if ws is not None and 0 < ws < MAX_VALID_PROCESS_MEM:
+                    processes.append(ProcessMemory(f"PID {pid}", pid, ws))
+            
             cache_data = sorted(processes, key=lambda p: p.working_set, reverse=True)[:limit]
-            cache_time = now
-            top_memory_processes._cache = (cache_time, cache_data)
+            top_memory_processes._cache = (now, cache_data)
             
     return cache_data
 

@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 38
+- Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 70 | 7 | 12 | 2 | 59 |
+| 2026-10-04 | 70 | 7 | 11 | 2 | 56 |
 | 2026-10-05 | 147 | 16 | 26 | 9 | 152 |
-| 2026-10-06 | 3 | 0 | 0 | 1 | 0 |
+| 2026-10-06 | 5 | 0 | 0 | 1 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **54**
 - manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **45**
-- legibilidad y documentación: **40**
+- legibilidad y documentación: **42**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **21**
-- `memory.py`: **20**
+- `healthscore.py`: **22**
+- `memory.py`: **21**
 - `scanner.py`: **20**
 - `diskreport.py`: **19**
 - `quarantine.py`: **19**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T00:23:02` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `top_memory_processes` para extraer la lógica de sondeo de procesos en una función privada más pequeña (`_get_process_memory_stats`), aplicando type hinting explícito y separando la gestión de recursos de la lógica de negocio.
+- `2026-10-06T00:19:10` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de la arquitectura del pipeline de `healthscore.py` mediante type hints específicos y docstrings detallados en las funciones de normalización y procesamiento, eliminando ambigüedades en la interpretación de los ratios.
 - `2026-10-06T00:10:41` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más específicos en las firmas de funciones clave y se agregaron docstrings descriptivos que detallan el propósito y los estados de retorno de las funciones internas del bucle de recolección, mejorando la mantenibilidad técnica del módulo.
 - `2026-10-06T00:09:44` **browser.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la centralización de la lógica de recorrido recursivo en `_sum_directory_recursive` mediante el uso de `TypedDict` para la estructura de `visited_dirs` y mejor documentación técnica sobre el propósito de la recursión.
 - `2026-10-06T00:09:09` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la lógica de renderizado del logo mediante la extracción de parámetros geométricos hacia constantes con nombre claro y la implementación de una firma de tipo más precisa en `_draw_shield_stripes` y `_draw_shield_icon_decorations`.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-05T14:22:13` **duplicates.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `suggest_keeper` y `format_group` agregando validaciones explícitas de tipos y estados, asegurando que si un archivo deja de ser accesible durante la ejecución, la aplicación no interrumpa su flujo ni devuelva resultados inconsistentes.
 - `2026-10-05T14:21:33` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_bytes_to_mb` y `format_size` ante entradas inválidas, y se añadió una validación defensiva en el bucle principal de `_collect_summary_data` para evitar errores de tipo si `walk_files` devolviera valores inconsistentes, alineándose con el enfoque de manejo de errores y validación de entradas.
 - `2026-10-05T14:14:46` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` al verificar explícitamente que la ruta resuelta no sea un directorio existente antes de intentar escribir, evitando errores de permisos o comportamientos inesperados, y se aseguró la integridad de los parámetros en las funciones de dibujo mediante la normalización temprana y validación de `None`.
-- `2026-10-05T14:14:18` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para validar explícitamente tipos de datos inesperados y manejar excepciones durante la recursión, evitando posibles bloqueos al procesar fuentes de datos externas malformadas.
-- `2026-10-05T12:50:39` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en la escritura atómica de archivos añadiendo una validación explícita mediante `is_safe_to_modify` para detectar si la ruta de configuración ha sido alterada a un enlace simbólico o un punto de unión justo antes de la operación de `os.replace`, evitando ataques de tiempo de verificación/tiempo de uso (TOCTOU).
