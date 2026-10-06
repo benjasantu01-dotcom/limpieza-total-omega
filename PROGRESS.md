@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **217** (43.1% de aceptación)
-- Rechazadas por tests: 23
+- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Rechazadas por tests: 25
 - Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 57 | 6 | 9 | 2 | 52 |
+| 2026-10-04 | 56 | 6 | 9 | 2 | 49 |
 | 2026-10-05 | 147 | 16 | 26 | 9 | 152 |
-| 2026-10-06 | 13 | 1 | 5 | 1 | 8 |
+| 2026-10-06 | 15 | 3 | 5 | 1 | 8 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
+- robustez ante casos límite: **46**
 - legibilidad y documentación: **44**
-- robustez ante casos límite: **44**
-- seguridad defensiva: **42**
+- seguridad defensiva: **41**
 - rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **22**
+- `healthscore.py`: **21**
 - `memory.py`: **21**
 - `quarantine.py`: **20**
 - `scanner.py`: **20**
 - `diskreport.py`: **18**
 - `safety.py`: **17**
+- `browser.py`: **17**
+- `branding.py`: **17**
 - `assistant.py`: **16**
-- `browser.py`: **16**
-- `branding.py`: **16**
 - `duplicates.py`: **15**
 - `organizer.py`: **14**
 - `settings.py`: **13**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T01:23:11` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_in_use` y `_sum_directory_recursive` evitando el uso de `stat()` en archivos bloqueados o con errores de acceso, previniendo excepciones innecesarias mediante una verificación previa del estado del handle y mejorando el manejo de rutas inexistentes o inaccesibles durante la recursión.
+- `2026-10-06T01:22:52` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación explícita de `path` y parámetros geométricos, asegurando que las excepciones de sistema o valores `NaN` no interrumpan el flujo de la aplicación.
 - `2026-10-06T01:04:43` **quarantine.py** (rendimiento): Optimicé el acceso al manifiesto implementando una carga perezosa con caché indexada, reduciendo la complejidad de las búsquedas por `item_id` de O(n) a O(1) y evitando lecturas innecesarias del disco en operaciones repetitivas.
 - `2026-10-06T01:03:40` **memory.py** (rendimiento): Se optimizó `top_memory_processes` eliminando la llamada repetitiva a `EnumProcesses` y el loop innecesario en cada consulta, implementando una caché temporal más eficiente que evita el re-procesamiento de PIDs cuando los datos siguen vigentes.
 - `2026-10-06T00:51:11` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global evitando la creación redundante de objetos y minimizando el procesamiento de cadenas mediante la pre-compilación de los resultados del pipeline, además de utilizar un acceso más eficiente a los pesos.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T00:10:41` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más específicos en las firmas de funciones clave y se agregaron docstrings descriptivos que detallan el propósito y los estados de retorno de las funciones internas del bucle de recolección, mejorando la mantenibilidad técnica del módulo.
 - `2026-10-06T00:09:44` **browser.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la centralización de la lógica de recorrido recursivo en `_sum_directory_recursive` mediante el uso de `TypedDict` para la estructura de `visited_dirs` y mejor documentación técnica sobre el propósito de la recursión.
 - `2026-10-06T00:09:09` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la lógica de renderizado del logo mediante la extracción de parámetros geométricos hacia constantes con nombre claro y la implementación de una firma de tipo más precisa en `_draw_shield_stripes` y `_draw_shield_icon_decorations`.
-- `2026-10-05T14:43:00` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` encapsulando la lógica de escritura en un bloque `try...finally` más específico para garantizar que el archivo `temp` siempre se intente limpiar ante cualquier fallo, y añadí validaciones `is_safe_to_modify` previas a las operaciones de archivo para evitar excepciones inesperadas en entornos con restricciones de acceso.
-- `2026-10-05T14:42:37` **scanner.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `_safe_stat` y `_get_file_size` asegurando que los valores devueltos sean consistentes y manejables, evitando que excepciones de acceso a disco se propaguen fuera de las funciones de utilidad.

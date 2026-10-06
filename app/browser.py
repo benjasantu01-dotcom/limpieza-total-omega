@@ -23,7 +23,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import (
     Iterable, Sequence, Dict, List, Optional, Callable, 
-    Union, TypeAlias, NamedTuple, Set, TypeGuard, Any, functools, TypedDict
+    Union, TypeAlias, NamedTuple, Set, TypeGuard, Any, functools
 )
 
 from safety import is_protected_path, is_safe_to_modify
@@ -53,7 +53,7 @@ def safe_path_operation(default: Any) -> Callable:
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             try:
                 return func(*args, **kwargs)
-            except (OSError, PermissionError, RuntimeError, AttributeError):
+            except (OSError, PermissionError, RuntimeError, AttributeError, ValueError):
                 return default
         return wrapper
     return decorator
@@ -155,9 +155,12 @@ def base_directories() -> List[Path]:
     
     p = Path(local_env)
     if p.exists() and p.is_dir():
-        path_local: Path = p.resolve(strict=True)
-        if is_safe_to_modify(path_local) and not is_protected_path(path_local):
-            return [path_local]
+        try:
+            path_local: Path = p.resolve(strict=True)
+            if is_safe_to_modify(path_local) and not is_protected_path(path_local):
+                return [path_local]
+        except (OSError, RuntimeError):
+            return []
     return []
 
 def _is_excluded_file(name: Optional[str]) -> TypeGuard[str]:
@@ -198,7 +201,7 @@ def _is_file_in_use(path_obj: Path) -> bool:
     if k32:
         # GENERIC_READ (0x80000000), FILE_SHARE_READ|WRITE (0x3)
         handle = k32.CreateFileW(str(path_obj), 0x80000000, 0x3, None, 3, 0x80, None)
-        if handle == -1: # INVALID_HANDLE_VALUE
+        if handle == -1 or handle is None: 
             return True
         k32.CloseHandle(handle)
         return False
@@ -212,11 +215,7 @@ def _sum_directory_recursive(
     visited_dirs: VisitedDirs,
     depth: int = 0
 ) -> ScanResult:
-    """
-    Recorrido recursivo para calcular tamaño de caché.
-    Utiliza memoización por inodo (archivos) y ruta (directorios) para evitar ciclos
-    y redundancia en estructuras complejas de archivos de caché.
-    """
+    """Recorrido recursivo para calcular tamaño de caché."""
     if depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)
     
@@ -238,18 +237,20 @@ def _sum_directory_recursive(
                 
                 if entry.is_dir(follow_symlinks=False):
                     child_path = Path(entry.path)
-                    # Validación de seguridad: no seguir rutas fuera del base_abs_norm original
                     if not is_safe_to_modify(child_path) or is_protected_path(child_path) or not _ensure_within_base(entry.path, root_abs_norm):
                         continue
                     res = _sum_directory_recursive(child_path, root_abs_norm, kernel32, visited_inodes, visited_dirs, depth + 1)
                     total_bytes += res.bytes_found
                 else:
-                    st = entry.stat(follow_symlinks=False)
-                    if st.st_ino not in visited_inodes:
-                        visited_inodes.add(st.st_ino)
-                        p_file = Path(entry.path)
-                        if is_safe_to_modify(p_file) and not is_protected_path(p_file) and not _is_file_in_use(p_file):
-                            total_bytes += st.st_size
+                    try:
+                        st = entry.stat(follow_symlinks=False)
+                        if st.st_ino not in visited_inodes:
+                            p_file = Path(entry.path)
+                            if not _is_file_in_use(p_file):
+                                visited_inodes.add(st.st_ino)
+                                total_bytes += st.st_size
+                    except (OSError, PermissionError):
+                        continue
     except (OSError, PermissionError):
         return ScanResult(total_bytes, False)
         

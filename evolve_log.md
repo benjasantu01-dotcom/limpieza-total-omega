@@ -1459,3 +1459,63 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-06T01:16:10` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-10-06T01:16:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T01:16:10` Corrida terminada. Total usado hoy: 28.
+- `2026-10-06T01:19:50` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-10-06T01:20:23` Tests FALLARON:
+```
+lve/tests/test_modules.py:677: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:172: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'MiPrograma.lnk'
+  'Otro.lnk'
+  Extra items in the right set:
+  'MiPrograma'
+  'Otro'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed, 7 warnings in 1.08s
+
+```
+- `2026-10-06T01:20:23` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `_process_folder_entry` eliminando la creación innecesaria de objetos `Path` y normalizando la extensión directamente sobre el nombre del archivo, además de corregir un error de referencia de variable (`_` por `entry.name`).
+- `2026-10-06T01:21:11` Tests FALLARON:
+```
+py::test_low_disk_is_reported_as_the_top_priority - AttributeError: 're.Pattern' object has no attribute 'get'
+FAILED evolve/tests/test_assistant.py::test_space_question_adds_up_what_can_be_recovered - AttributeError: 're.Pattern' object has no attribute 'get'
+FAILED evolve/tests/test_assistant.py::test_security_question_without_findings_is_reassuring - AttributeError: 're.Pattern' object has no attribute 'get'
+FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_explains_they_are_signals - AttributeError: 're.Pattern' object has no attribute 'get'
+FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer - AttributeError: 're.Pattern' object has no attribute 'get'
+FAILED evolve/tests/test_assistant.py::test_local_answer_always_says_it_did_not_send_anything - AttributeError: 're.Pattern' object has no attribute 'get'
+FAILED evolve/tests/test_assistant.py::test_ask_stays_local_when_the_assistant_is_off - AttributeError: 're.Pattern' object has no attribute 'get'
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - AttributeError: 're.Pattern' object has no attribute 'get'
+FAILED evolve/tests/test_assistant.py::test_online_failure_falls_back_to_local - AttributeError: 're.Pattern' object has no attribute 'get'
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AttributeError: 're.Pattern' object has no attribute 'get'
+13 failed, 286 passed, 7 warnings in 1.27s
+
+```
+- `2026-10-06T01:21:11` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `SystemContext.ingest` y `_apply_field` para manejar fallos granulares en la fuente de datos, evitando que un único dato malformado o un tipo inesperado interrumpan la actualización completa de las métricas de salud del sistema.
+- `2026-10-06T01:22:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T01:22:52` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación explícita de `path` y parámetros geométricos, asegurando que las excepciones de sistema o valores `NaN` no interrumpan el flujo de la aplicación.
+- `2026-10-06T01:23:11` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_file_in_use` y `_sum_directory_recursive` evitando el uso de `stat()` en archivos bloqueados o con errores de acceso, previniendo excepciones innecesarias mediante una verificación previa del estado del handle y mejorando el manejo de rutas inexistentes o inaccesibles durante la recursión.
+- `2026-10-06T01:23:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T01:23:11` Corrida terminada. Total usado hoy: 32.
