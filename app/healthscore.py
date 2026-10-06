@@ -144,8 +144,15 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
     """Calcula el ratio de seguridad penalizando hallazgos (0.05 c/u) y advertencias (0.25 c/u)."""
-    count = max(0, float(suspicious_count))
-    warns = max(0, float(warnings))
+    try:
+        c = float(suspicious_count)
+        w = float(warnings)
+        if not math.isfinite(c) or not math.isfinite(w):
+            return 0.0
+        count = max(0.0, c)
+        warns = max(0.0, w)
+    except (TypeError, ValueError):
+        return 0.0
     penalization = (count * 0.05) + (warns * 0.25)
     return _clamp(1.0 - penalization)
 

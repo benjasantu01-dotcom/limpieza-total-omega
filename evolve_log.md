@@ -1679,3 +1679,13 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-06T12:57:08` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-06T12:57:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T12:57:08` Corrida terminada. Total usado hoy: 304.
+- `2026-10-06T13:05:28` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-06T13:05:58` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se mejoró la robustez de `score_security` mediante la validación explícita de tipos y la implementación de una técnica defensiva contra entradas no numéricas o infinitas antes del cálculo, evitando errores de propagación en el pipeline.
+- `2026-10-06T13:06:01` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T13:06:06` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-06T13:06:14` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-06T13:07:42` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado `_validate_environment` para incluir una validación de seguridad proactiva mediante `safety.ensure_safe_to_modify` sobre las rutas críticas del entorno, asegurando que la aplicación no pueda iniciarse si el directorio de la aplicación o el home del usuario son manipulados por terceros antes de la ejecución.
+- `2026-10-06T13:08:10` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez de `trim_working_set` y sus ayudantes validando explícitamente el `handle` antes de llamar a `EmptyWorkingSet` y añadiendo chequeos de nulidad en las APIs de `ctypes` para evitar llamadas a funciones inexistentes o punteros nulos que podrían causar errores en tiempo de ejecución.
+- `2026-10-06T13:08:27` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de entrada (`None`/vacíos) y encapsulando las operaciones de movimiento/borrado en bloques `try-except` más granulares para prevenir que errores en un archivo detengan el procesamiento de toda la lista, asegurando que la integridad del proceso de limpieza se mantenga ante fallos de I/O específicos.
+- `2026-10-06T13:08:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T13:08:27` Corrida terminada. Total usado hoy: 308.

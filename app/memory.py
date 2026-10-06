@@ -389,4 +389,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, "El sistema rechazó el trim (error de privilegios o estado)."
         return True, f"Working set liberado. {TRIM_WARNING}"
     finally:
-        kernel32.CloseHandle(proc_handle)
+        if proc_handle:
+            kernel32.CloseHandle(proc_handle)

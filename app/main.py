@@ -301,25 +301,31 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _validate_environment(self) -> None:
         """Verifica que el entorno de ejecución cumpla las reglas de seguridad."""
-        app_root = Path(__file__).resolve().parent
-        cwd = Path.cwd().resolve()
-        home = Path.home()
-        
-        validations = [
-            (app_root.exists(), "Directorio de aplicación inexistente."),
-            (not app_root.is_symlink(), "App ubicada en enlace simbólico."),
-            (home.exists(), "Directorio home del usuario inaccesible."),
-            (home.resolve().is_absolute(), "La ruta home no es absoluta."),
-            (safety.is_safe_to_modify(cwd), "Directorio de trabajo inseguro."),
-            (not safety.is_protected_path(app_root), "Directorio de aplicación protegido."),
-            (not str(cwd).lower().startswith(tuple(["c:\\windows", "c:\\program files"])), "Ejecución desde ruta de sistema restringida.")
-        ]
-        
-        for condition, error_msg in validations:
-            if not condition:
-                raise RuntimeError(f"Entorno inválido: {error_msg}")
-        
-        safety.ensure_safe_to_modify(app_root)
+        try:
+            app_root = Path(__file__).resolve().parent
+            cwd = Path.cwd().resolve()
+            home = Path.home()
+            
+            # Validación estricta mediante el sistema de seguridad
+            safety.ensure_safe_to_modify(app_root)
+            safety.ensure_safe_to_modify(home)
+            safety.ensure_safe_to_modify(cwd)
+            
+            validations = [
+                (app_root.exists(), "Directorio de aplicación inexistente."),
+                (not app_root.is_symlink(), "App ubicada en enlace simbólico."),
+                (home.exists(), "Directorio home del usuario inaccesible."),
+                (home.resolve().is_absolute(), "La ruta home no es absoluta."),
+                (safety.is_safe_to_modify(cwd), "Directorio de trabajo inseguro."),
+                (not safety.is_protected_path(app_root), "Directorio de aplicación protegido."),
+                (not str(cwd).lower().startswith(tuple(["c:\\windows", "c:\\program files"])), "Ejecución desde ruta de sistema restringida.")
+            ]
+            
+            for condition, error_msg in validations:
+                if not condition:
+                    raise RuntimeError(f"Entorno inválido: {error_msg}")
+        except safety.UnsafePathError as e:
+            raise RuntimeError(f"Violación de seguridad de entorno: {e}")
 
     def _validate_disk_access(self, path: Union[str, Path]) -> Path:
         """Helper: Valida integridad de ruta absoluta y permisos de seguridad."""

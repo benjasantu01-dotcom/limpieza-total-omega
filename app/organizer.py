@@ -265,7 +265,6 @@ def sort_junk(files: Sequence[JunkFile], by: str = "size", ascending: bool = Tru
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """
     Gestiona el movimiento de archivos validados a la zona de cuarentena.
-    Primero prepara el directorio de destino y luego procesa cada archivo de forma segura.
     """
     if not files: return None
     try:
@@ -303,6 +302,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """Elimina permanentemente archivos tras verificación de seguridad en la carpeta de cuarentena."""
+    if not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser().resolve()
         if not dest.exists() or not dest.is_dir(): return 0
