@@ -440,6 +440,12 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         
         ensure_safe_to_modify(str(config_path.resolve()))
         os.replace(temp_path, config_path)
+        # Sincronizar directorio padre para asegurar persistencia del nuevo archivo
+        dir_fd = os.open(str(parent), os.O_RDONLY)
+        try:
+            os.fsync(dir_fd)
+        finally:
+            os.close(dir_fd)
         _MANAGER.clear()
         return config_path
     except (OSError, IOError, PermissionError, json.JSONDecodeError, TypeError): return None

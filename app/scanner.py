@@ -283,7 +283,8 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta toda la suite de heurísticas sobre el archivo indicado y captura errores aislados."""
-        if not _is_readable(path):
+        # Validación de integridad post-resolución
+        if not path.is_file() or not _is_readable(path):
             return
         for check_fn in ALL_CHECKS:
             try:

@@ -753,6 +753,14 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         
         p = normalize(path)
         
+        # Validación de componentes intermedios contra puntos de reparse
+        current_check = Path(p.anchor)
+        for part in p.parts:
+            if part in (os.sep, os.altsep): continue
+            current_check = current_check / part
+            if current_check.exists() and _is_system_directory_junction(str(current_check)):
+                raise UnsafePathError(f"Punto de reparse detectado en el camino: {current_check}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+
         if os.name == 'nt' and os.path.ismount(p):
             raise UnsafePathError(f"Punto de montaje bloqueado: {p}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED)
             

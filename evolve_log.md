@@ -1403,3 +1403,12 @@ assert ('win32security' in {'__future__', '_abc', '_aix_support', '_ast', '_asyn
 - `2026-10-06T11:16:00` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha implementado una validación de "bloqueo de escritura" explícita en `save_manifest` para prevenir la corrupción de datos durante operaciones concurrentes o en escenarios de baja integridad del sistema de archivos, asegurando que el manifiesto solo se sobrescriba si el archivo es tratable como un archivo de datos normal sin atributos de sistema que impidan su reemplazo.
 - `2026-10-06T11:16:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T11:16:00` Corrida terminada. Total usado hoy: 264.
+- `2026-10-06T11:23:23` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-10-06T11:23:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-06T11:23:46` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T11:24:39` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación estricta en `ensure_safe_to_modify` para detectar y bloquear rutas que contengan "puntos de reparse" intermedios durante la resolución de la ruta, utilizando `path.parts` para evitar que un atacante utilice un enlace simbólico o junction en una carpeta padre para escapar del sandbox.
+- `2026-10-06T11:24:41` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T11:25:12` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las heurísticas de seguridad añadiendo una capa de validación de integridad en `_run_file_heuristics` para asegurar que el archivo no haya cambiado de tipo (a directorio) o desaparecido entre la selección del escáner y la ejecución del análisis, mitigando riesgos de condiciones de carrera (TOCTOU).
+- `2026-10-06T11:25:33` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad de la persistencia agregando `os.fsync` al directorio padre tras la creación del archivo de configuración, asegurando que los metadatos del directorio estén sincronizados en disco antes de considerar la operación de guardado como finalizada.
+- `2026-10-06T11:25:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T11:25:33` Corrida terminada. Total usado hoy: 268.
