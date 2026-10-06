@@ -48,7 +48,7 @@ class Suspicion:
     severity: str
 
 # Definición de tipos para el sistema de heurísticas:
-# Reciben (ruta, entrada_dir, timestamp_actual) y devuelven un objeto Suspicion o None
+# Recibe (ruta_archivo, entrada_directorio_opcional, timestamp_actual) -> Suspicion | None
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], float], Optional[Suspicion]]
 ScanResult: TypeAlias = List[Suspicion]
 # Tupla de (ruta_absoluta, profundidad_actual)
@@ -122,13 +122,19 @@ def _is_target_extension(name: str) -> bool:
     return Path(name).suffix.lower() in SUSPICIOUS_ALL_EXTS
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Heurística: Detecta doble extensión que oculta el tipo real de archivo."""
+    """
+    HEURÍSTICA: Detecta uso de extensiones múltiples para ocultar la verdadera naturaleza del archivo.
+    Común en ataques de ingeniería social donde un archivo .exe se hace pasar por .pdf.
+    """
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Heurística: Identifica ejecutables recientes (<24h) en carpetas de alto riesgo."""
+    """
+    HEURÍSTICA: Identifica ejecutables descargados recientemente (<24h) en carpetas temporales.
+    Reduce la superficie de ataque priorizando archivos con alta probabilidad de ser 'droppers' de primer paso.
+    """
     if not path or not path.parent:
         return None
     if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
@@ -142,7 +148,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Heurística: Detecta procesos críticos (ej: svchost.exe) ubicados fuera de System32."""
+    """
+    HEURÍSTICA: Detección de 'Binary Planting'. Busca ejecutables con nombres de procesos del sistema 
+    (ej: svchost.exe) situados en directorios ajenos a %System32%.
+    """
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         path_str = str(path).lower()
         if SYSTEM32_LOWER not in path_str:
@@ -150,7 +159,10 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Heurística: Identifica archivos ejecutables de 0 bytes."""
+    """
+    HEURÍSTICA: Identifica ejecutables de 0 bytes. Frecuentemente utilizados como placeholders maliciosos 
+    o fallos de descarga/corrupción que pueden causar inestabilidad.
+    """
     size = _get_file_size(path)
     if size == 0:
         return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")

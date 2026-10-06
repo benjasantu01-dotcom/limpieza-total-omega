@@ -83,8 +83,11 @@ def _check_path_for_junctions(path: Path) -> None:
     except (OSError, AttributeError):
         pass
 
-def _check_io_error_context(func: Callable, *args, **kwargs) -> Any:
-    """Implementa reintento con espera (backoff exponencial) para I/O bloqueado."""
+def _check_io_error_context(func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
+    """
+    Implementa reintento con espera exponencial (backoff) para manejar bloqueos
+    temporales de E/S causados por antivirus o indexadores de sistema.
+    """
     max_retries = 3
     for i in range(max_retries):
         try:
@@ -95,7 +98,10 @@ def _check_io_error_context(func: Callable, *args, **kwargs) -> Any:
             time.sleep(0.1 * (2 ** i))
 
 def _is_file_exclusive(path: Path) -> bool:
-    """Intenta obtener un lock exclusivo de sistema para verificar uso de archivo."""
+    """
+    Verifica si un archivo está disponible para acceso exclusivo. 
+    En Windows usa LockFileEx, en POSIX usa flock(LOCK_EX | LOCK_NB).
+    """
     if os.name == 'nt':
         try:
             k32 = ctypes.windll.kernel32
@@ -109,7 +115,7 @@ def _is_file_exclusive(path: Path) -> bool:
         except Exception: return False
     
     try:
-        fd = os.open(path, os.O_RDWR)
+        fd = os.open(path, os.O_RDONLY) # Cambiado a O_RDONLY para lectura segura
         try:
             fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
             fcntl.flock(fd, fcntl.LOCK_UN)
@@ -216,7 +222,10 @@ class QuarantineItem:
 
 
 def _get_sha256(path: Path) -> str:
-    """Calcula hash SHA-256 usando búferes para evitar saturación de memoria."""
+    """
+    Calcula el hash SHA-256 de un archivo mediante bloques (streaming) para
+    evitar la carga innecesaria del archivo completo en memoria.
+    """
     if not path.exists() or not path.is_file():
         return ""
     flags = os.O_RDONLY

@@ -1380,3 +1380,11 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-06T00:26:00` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-10-06T00:26:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T00:26:00` Corrida terminada. Total usado hoy: 8.
+- `2026-10-06T00:28:53` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-10-06T00:28:55` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T00:29:47` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se han añadido docstrings descriptivos y type hints faltantes en funciones clave de bajo nivel (`_check_io_error_context`, `_is_file_exclusive`, `_get_sha256`), junto con una reorganización de los comentarios de advertencia en el encabezado, para mejorar la mantenibilidad y claridad sobre las garantías de seguridad del módulo.
+- `2026-10-06T00:30:08` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 122): unterminated string literal (detected at line 122)
+- `2026-10-06T00:30:53` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _CheckResult
+- `2026-10-06T00:31:11` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujo un `TypeAlias` más explícito para las heurísticas y se enriqueció la documentación interna de las funciones de chequeo mediante `docstrings` estandarizados, explicando el criterio técnico detrás de cada detección para facilitar futuras auditorías.
+- `2026-10-06T00:31:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T00:31:11` Corrida terminada. Total usado hoy: 12.
