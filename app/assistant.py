@@ -432,7 +432,8 @@ class SystemContext:
         has_updates = False
         try:
             for key, spec in _VALIDATORS.items():
-                if _get_source_value(source, key) is not None:
+                val = _get_source_value(source, key)
+                if val is not None:
                     res = self._apply_field(source, key, spec)
                     if res is not None and _check_metric_integrity(res) and float(res) >= 0:
                         object.__setattr__(self, key, res)
@@ -444,11 +445,10 @@ class SystemContext:
             
             if has_updates:
                 object.__setattr__(self, 'analyzed', True)
-                # Invalidar caché forzando deleción del atributo
                 if 'metrics_snapshot' in self.__dict__: del self.__dict__['metrics_snapshot']
                 return True
         except (Exception, OverflowError):
-            pass
+            logging.warning("Fallo durante la ingesta de datos.")
         return False
 
 @dataclass
@@ -516,7 +516,6 @@ def _generate_safe_context(ctx_hash: int, ctx_snapshot: tuple[tuple[str, float],
 def context_as_text(context: SystemContext) -> str:
     """Serializa el contexto a un formato textual seguro para el prompt del asistente."""
     if context.is_empty: return ""
-    # Se usa el hash del contexto y su snapshot para asegurar la integridad de la caché
     snapshot_tuple = tuple(sorted(context.metrics_snapshot.items()))
     return _generate_safe_context(hash(context), snapshot_tuple)
 
