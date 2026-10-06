@@ -1206,3 +1206,13 @@ ERROR evolve/tests/test_assistant.py - ValueError: 'score' in __slots__ conflict
 - `2026-10-06T09:43:16` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `walk_files` evitando el uso de `path.relative_to` dentro de `largest_folders` (que requiere múltiples cálculos de path objects) e integré la lógica de agregación de `stats` directamente en un solo paso de escaneo para reducir el overhead de procesamiento de rutas.
 - `2026-10-06T09:43:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T09:43:16` Corrida terminada. Total usado hoy: 228.
+- `2026-10-06T09:51:26` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-10-06T09:51:56` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el proceso de recolección de candidatos en `_collect_candidates` para evitar llamadas redundantes a `Path.exists()` y `stat()` sobre el mismo inodo, además de centralizar las verificaciones de seguridad para reducir la carga de E/S innecesaria durante el recorrido recursivo.
+- `2026-10-06T09:52:24` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento de `compute_score` cacheando las funciones de reglas pre-compiladas y evitando el acceso redundante a `math.isfinite` mediante la consolidación de la validación, reduciendo el overhead en cada ejecución del bucle principal.
+- `2026-10-06T09:53:24` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-06T09:54:27` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-06T09:54:33` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-06T09:56:02` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se optimizó el método `_compile_metrics` en `main.py` para evitar la lectura redundante y bloqueante de información del sistema, implementando un mecanismo de caché validado por TTL (Time-To-Live) que evita recalculos innecesarios durante la actualización del dashboard de salud.
+- `2026-10-06T09:56:16` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé la función `top_memory_processes` reemplazando la creación de una lista de objetos `ProcessMemory` mediante un bucle `for` explícito por un `generator expression` eficiente, y eliminé la lógica redundante de verificación `_is_system_process(pid) or pid == 0` dentro del bucle ya que `_is_system_process` ya incluye al `0`.
+- `2026-10-06T09:56:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T09:56:16` Corrida terminada. Total usado hoy: 232.

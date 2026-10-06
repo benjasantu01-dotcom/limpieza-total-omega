@@ -1216,12 +1216,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         startup_items = self._get_cached("startup") or []
         quarantine_items = quarantine.list_items()
         
+        # Uso de caché con tiempo para evitar lecturas bloqueantes frecuentes
         ram_snapshot = self._get_cached("ram_snapshot")
         if not ram_snapshot:
             ram_snapshot = memory_mod.read_snapshot()
             self._cache["ram_snapshot"] = ram_snapshot
             self._cache_access_times["ram_snapshot"] = time.time()
             
+        # Refrescado forzado solo si no existe información
         disk_info = self._get_home_disk_info()
             
         metrics = healthscore.SystemMetrics(

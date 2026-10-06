@@ -94,8 +94,8 @@ _LIMIT_DISK_PERCENT: Final[float] = 25.0
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     """Asegura que un valor se mantenga dentro de los límites [min_val, max_val]."""
-    if not math.isfinite(value): return min_val
-    return min_val if value < min_val else (max_val if value > max_val else value)
+    if value < min_val: return min_val
+    return max_val if value > max_val else value
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
     """
@@ -202,10 +202,7 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verifica que ninguna métrica numérica sea infinita o no-numérica."""
-        return (math.isfinite(self.junk_mb) and math.isfinite(self.suspicious_count) and 
-                math.isfinite(self.suspicious_warnings) and math.isfinite(self.memory_available_percent) and 
-                math.isfinite(self.disk_free_percent) and math.isfinite(self.duplicate_mb) and 
-                math.isfinite(self.startup_count) and math.isfinite(self.quarantined_count))
+        return all(math.isfinite(getattr(self, f)) for f in self.__dataclass_fields__ if isinstance(getattr(self, f), (int, float)))
 
 @dataclass
 class HealthResult:
@@ -249,7 +246,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     for entry in _PIPELINE:
         try:
             area_ratio = _clamp(entry.scorer(metrics))
-            _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
+            if entry.rules:
+                _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             points = area_ratio * entry.weight
             metric_breakdown[entry.area] = int(round(points))
             accumulated_score += points

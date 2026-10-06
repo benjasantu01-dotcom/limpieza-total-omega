@@ -98,7 +98,7 @@ def _is_file_locked(path: Path) -> bool:
     Determina si un archivo está bloqueado intentando abrirlo en modo lectura.
     Retorna True si el archivo está inaccesible o en uso exclusivo.
     """
-    if not isinstance(path, Path) or not is_safe_to_modify(path) or not path.exists():
+    if not isinstance(path, Path) or not is_safe_to_modify(path):
         return True
     fd = -1
     try:
@@ -130,7 +130,7 @@ def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
         return None
     try:
         p: Path = Path(path).resolve()
-        if p.exists() and p.is_file() and _safe_path_check(p) and not _is_file_locked(p):
+        if p.is_file() and _safe_path_check(p) and not _is_file_locked(p):
             if p.stat().st_size > 0:
                 return p
     except (OSError, RuntimeError, ValueError):
@@ -189,10 +189,10 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
         if not p: continue
         try:
             path_obj = Path(p).resolve()
-            if not path_obj.exists() or not path_obj.is_file(): continue
-            st_size = path_obj.stat().st_size
-            if _is_valid_candidate(path_obj, st_size):
-                groups[st_size].append(path_obj)
+            if path_obj.is_file():
+                st_size = path_obj.stat().st_size
+                if _is_valid_candidate(path_obj, st_size):
+                    groups[st_size].append(path_obj)
         except (OSError, ValueError, TypeError):
             continue
     return groups
@@ -203,7 +203,7 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
     if not item: return None
     try:
         root = Path(item).resolve()
-        if root.exists() and root.is_dir() and _safe_path_check(root):
+        if root.is_dir() and _safe_path_check(root):
             return root
     except (OSError, ValueError, RuntimeError, TypeError):
         return None
@@ -211,7 +211,7 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Realiza un recorrido DFS iterativo optimizado para identificar candidatos a duplicados."""
+    """Realiza un recorrido DFS iterativo optimizado identificando candidatos mediante inodos."""
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     stack: List[Tuple[Path, int]] = []
     visited_dirs: set[Path] = set()
@@ -231,18 +231,18 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    p_entry = Path(entry.path)
                     try:
                         if entry.is_dir(follow_symlinks=False):
+                            p_entry = Path(entry.path)
                             if _safe_path_check(p_entry) and not (skip_protected and is_protected_path(p_entry)):
                                 stack.append((p_entry, depth + 1))
-                        
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat()
                             if st.st_size >= min_size:
                                 inode_id = (st.st_dev, st.st_ino)
-                                if inode_id not in visited_inodes and _is_valid_candidate(p_entry, st.st_size):
-                                    if not (skip_protected and is_protected_path(p_entry)):
+                                if inode_id not in visited_inodes:
+                                    p_entry = Path(entry.path)
+                                    if not (skip_protected and is_protected_path(p_entry)) and _is_valid_candidate(p_entry, st.st_size):
                                         visited_inodes.add(inode_id)
                                         size_to_paths_map[st.st_size].append(p_entry)
                     except (OSError, PermissionError):
@@ -300,7 +300,7 @@ def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     Genera una tupla de pesos (mtime, length) para priorizar la conservación.
     Prioriza el archivo más antiguo (menor mtime); en caso de empate, la ruta más corta.
     """
-    if not isinstance(path, Path) or not path.exists():
+    if not isinstance(path, Path):
         return None
     try:
         stat = path.stat()

@@ -267,7 +267,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     now = time.time()
     cache_time, cache_data = top_memory_processes._cache
     
-    # TTL de 60 segundos para evitar carga innecesaria del sistema
     if (now - cache_time) > 60:
         psapi = ctypes.windll.psapi
         pids = (ctypes.c_ulong * 4096)()
@@ -276,14 +275,13 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         
         if psapi.EnumProcesses(ctypes.byref(pids), cb, ctypes.byref(cb_needed)):
             count = cb_needed.value // ctypes.sizeof(ctypes.c_ulong)
-            processes = []
-            for i in range(count):
-                pid = pids[i]
-                if _is_system_process(pid) or pid == 0: continue
-                ws = _get_process_memory_stats(pid)
-                if ws is not None and 0 < ws < MAX_VALID_PROCESS_MEM:
-                    processes.append(ProcessMemory(f"PID {pid}", pid, ws))
             
+            def get_proc(pid):
+                if _is_system_process(pid): return None
+                ws = _get_process_memory_stats(pid)
+                return ProcessMemory(f"PID {pid}", pid, ws) if ws and 0 < ws < MAX_VALID_PROCESS_MEM else None
+
+            processes = (p for pid in pids[:count] if (p := get_proc(pid)))
             cache_data = sorted(processes, key=lambda p: p.working_set, reverse=True)[:limit]
             top_memory_processes._cache = (now, cache_data)
             
