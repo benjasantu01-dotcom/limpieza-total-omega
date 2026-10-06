@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **209** (41.5% de aceptación)
-- Rechazadas por tests: 28
-- Rechazadas por guardia de seguridad: 41
+- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Rechazadas por tests: 29
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-05 | 118 | 15 | 21 | 8 | 122 |
-| 2026-10-06 | 91 | 13 | 20 | 7 | 89 |
+| 2026-10-05 | 115 | 15 | 21 | 8 | 121 |
+| 2026-10-06 | 92 | 14 | 22 | 7 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - seguridad defensiva: **47**
-- robustez ante casos límite: **45**
-- legibilidad y documentación: **39**
+- robustez ante casos límite: **42**
+- legibilidad y documentación: **40**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **23**
-- `diskreport.py`: **21**
-- `healthscore.py`: **21**
 - `quarantine.py`: **21**
-- `browser.py`: **18**
-- `scanner.py`: **17**
+- `diskreport.py`: **20**
+- `healthscore.py`: **20**
+- `scanner.py`: **18**
 - `branding.py`: **17**
+- `browser.py`: **17**
 - `organizer.py`: **16**
 - `duplicates.py`: **15**
 - `safety.py`: **14**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T09:32:57` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la suite de heurísticas introduciendo un protocolo mediante `typing.Protocol` para `SuspicionCheck`, lo que documenta explícitamente la interfaz esperada por las funciones de análisis, y documenté la jerarquía de los procesos de escaneo mediante docstrings enriquecidos.
 - `2026-10-06T09:22:42` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `quarantine.py` mediante la refactorización de `QuarantineItem.from_dict` y `_write_temp_to_final`, reemplazando lógica compleja y anidada por validaciones tempranas (guard clauses) y docstrings técnicos más precisos.
 - `2026-10-06T09:21:52` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la adición de Type Hints detallados, la estructuración de la lógica de filtrado de directorios para mayor claridad y la inclusión de docstrings explicativos en funciones complejas, asegurando que las decisiones de diseño sean comprensibles para otros colaboradores.
 - `2026-10-06T09:21:22` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la estructura `MEMORYSTATUSEX` añadiendo un comentario que explica el propósito de cada campo, y realicé una refactorización de `_get_process_path` para extraer la lógica de validación de rutas en una función privada, reduciendo el anidamiento y mejorando la claridad del flujo de seguridad.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T08:43:41` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `quarantine.py` al reemplazar bloques `try-except` genéricos en funciones críticas por capturas de excepciones específicas (`OSError`, `PermissionError`, `ValueError`), garantizando que los errores de sistema no enmascaren fallos lógicos y mejorando la precisión en el manejo de estados corruptos.
 - `2026-10-06T08:43:12` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_safe_for_disk_op` y `stage_for_review` asegurando que la validación de `ensure_safe_to_modify` no sea ignorada silenciosamente y reforzando el manejo de rutas nulas o inválidas mediante guardias explícitas antes de cualquier operación de I/O.
 - `2026-10-06T08:42:43` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de las operaciones de bajo nivel mediante la captura explícita de `ctypes.get_last_error()` en los fallos de `OpenProcess` y la validación de integridad al abrir manejadores, garantizando que los errores sean procesables y no silenciosos.
-- `2026-10-06T08:31:26` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `summarize` implementando validaciones defensivas ante entradas `None` y valores atípicos, además de endurecer el manejo de excepciones para evitar que el motor de puntuación falle catastróficamente ante datos de entrada corrompidos.

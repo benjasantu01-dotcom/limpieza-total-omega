@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime
 from functools import lru_cache
-from typing import List, Optional, Union, Final, Callable, TypeAlias, NamedTuple, Sequence, Tuple
+from typing import List, Optional, Union, Final, Callable, TypeAlias, NamedTuple, Sequence, Tuple, Protocol
 from safety import is_protected_path
 
 # Configuración de logger para el módulo
@@ -47,9 +47,10 @@ class Suspicion:
     reason: str
     severity: str
 
-# Definición de tipos para el sistema de heurísticas:
-# Recibe (ruta_archivo, entrada_directorio_opcional, timestamp_actual) -> Suspicion | None
-SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], float], Optional[Suspicion]]
+class SuspicionCheck(Protocol):
+    """Protocolo para definir funciones de heurística de seguridad."""
+    def __call__(self, path: Path, entry: Optional[os.DirEntry], now_ts: float) -> Optional[Suspicion]: ...
+
 ScanResult: TypeAlias = List[Suspicion]
 # Tupla de (ruta_absoluta, profundidad_actual)
 DirectoryStack: TypeAlias = List[Tuple[str, int]]
@@ -312,7 +313,11 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
-    """Escaneo recursivo mediante stack manual para prevenir desbordamiento de pila."""
+    """
+    Inicia el escaneo recursivo de un árbol de directorios.
+    Utiliza una pila explícita en lugar de recursión nativa para evitar
+    el desbordamiento de pila en estructuras de directorios profundas.
+    """
     if directory is None: return []
     try:
         path_str = str(directory).strip()
