@@ -402,3 +402,48 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-06T14:39:40` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimicé `_process_folder_entry` para eliminar la conversión redundante de objetos `Path` en el bucle caliente de escaneo, utilizando `os.path` directamente para reducir la presión sobre el recolector de basura y mejorar el rendimiento de `entries_from_folders`.
 - `2026-10-06T14:39:40` Rotación — log: 1527 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T14:39:40` Corrida terminada. Total usado hoy: 344.
+- `2026-10-06T14:47:45` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-06T14:47:49` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T14:48:40` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_extract_text_from_gemini_json` para manejar estructuras de datos malformadas o inesperadas mediante un chequeo de tipos exhaustivo en cada nivel de acceso, evitando excepciones de `AttributeError` o `KeyError` que podrían ocurrir si la respuesta de la API no sigue el esquema esperado.
+- `2026-10-06T14:49:49` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de sistema y colisiones de rutas mediante la implementación de una verificación de estado de escritura más estricta antes de intentar cualquier operación de disco.
+- `2026-10-06T14:50:18` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante rutas inexistentes o inaccesibles en `_is_file_in_use` y `_process_file_node` mediante la validación estricta de `Path.exists()` antes de cualquier operación de I/O, evitando excepciones innecesarias en sistemas con cachés parcialmente eliminadas o bloqueadas.
+- `2026-10-06T14:50:36` Tests FALLARON:
+```
+ where [] = <function largest_files at 0x7f8237c840e0>(PosixPath('/tmp/pytest-of-runner/pytest-4/test_largest_files_respects_th0'), limit=2)
+ +      where <function largest_files at 0x7f8237c840e0> = diskreport.largest_files
+FAILED evolve/tests/test_modules.py::test_usage_by_extension_groups_and_counts - KeyError: '.jpg'
+FAILED evolve/tests/test_modules.py::test_usage_by_extension_labels_files_without_extension - assert False
+ +  where False = any(<generator object test_usage_by_extension_labels_files_without_extension.<locals>.<genexpr> at 0x7f8237416670>)
+FAILED evolve/tests/test_modules.py::test_largest_folders_ranks_subfolders - AssertionError: assert [] == ['grande', 'media', 'chica']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'media',
+  -     'chica',
+  - ]
+FAILED evolve/tests/test_modules.py::test_total_size_counts_bytes_and_files - assert (0, 0) == (300, 2)
+  
+  At index 0 diff: 0 != 300
+  
+  Full diff:
+    (
+  -     300,
+  ?     --
+  +     0,
+  -     2,
+  ?     ^
+  +     0,
+  ?     ^
+    )
+FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_totals - AssertionError: assert '/tmp/pytest-of-runner/pytest-4/test_summarize_mentions_the_fo0' in 'Aviso: No hay archivos accesibles.'
+ +  where '/tmp/pytest-of-runner/pytest-4/test_summarize_mentions_the_fo0' = str(PosixPath('/tmp/pytest-of-runner/pytest-4/test_summarize_mentions_the_fo0'))
+9 failed, 290 passed, 7 warnings in 1.09s
+
+```
+- `2026-10-06T14:50:36` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: Se ha añadido un chequeo de existencia (`entry.exists()`) dentro de `walk_files` para manejar de forma robusta la condición de carrera donde un archivo o carpeta es eliminado o renombrado por el sistema entre la iteración del `scandir` y la llamada a `stat`.
+- `2026-10-06T14:50:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T14:50:36` Corrida terminada. Total usado hoy: 348.

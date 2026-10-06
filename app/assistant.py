@@ -714,10 +714,11 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
         
     try:
         candidates = data.get("candidates")
-        if not isinstance(candidates, list) or not candidates: return None
+        if not isinstance(candidates, list) or not candidates or not isinstance(candidates[0], dict): 
+            return None
         
         first_candidate = candidates[0]
-        if not isinstance(first_candidate, dict) or first_candidate.get("finishReason") != "STOP": 
+        if first_candidate.get("finishReason") != "STOP": 
             return None
         
         content = first_candidate.get("content")

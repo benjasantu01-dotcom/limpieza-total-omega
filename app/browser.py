@@ -220,9 +220,10 @@ def _is_file_in_use(path_obj: Any, base_norm: str) -> bool:
 def _process_file_node(entry: os.DirEntry, root_abs_norm: str, visited_inodes: Set[int]) -> int:
     """Extrae el tamaño de un archivo individual tras validar su seguridad e integridad."""
     try:
+        p_file = Path(entry.path)
+        if not p_file.exists(): return 0
         st = entry.stat(follow_symlinks=False)
         if st.st_ino not in visited_inodes:
-            p_file = Path(entry.path)
             if is_safe_to_modify(p_file) and not _is_file_in_use(p_file, root_abs_norm):
                 visited_inodes.add(st.st_ino)
                 return st.st_size
@@ -260,7 +261,7 @@ def _sum_directory_recursive(
                 
                 if entry.is_dir(follow_symlinks=False):
                     child_path = Path(entry.path)
-                    if not is_safe_to_modify(child_path) or is_protected_path(child_path) or not _ensure_within_base(entry.path, root_abs_norm):
+                    if not child_path.exists() or not is_safe_to_modify(child_path) or is_protected_path(child_path) or not _ensure_within_base(entry.path, root_abs_norm):
                         continue
                     res = _sum_directory_recursive(child_path, root_abs_norm, kernel32, visited_inodes, visited_dirs, depth + 1)
                     total_bytes += res.bytes_found
@@ -287,7 +288,7 @@ def directory_size(path: Optional[OSPath]) -> int:
 @safe_path_operation(False)
 def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
     """Valida la integridad de la ruta candidata antes de iniciar el escaneo."""
-    if not candidate: return False
+    if not candidate or not candidate.exists(): return False
     real: Path = candidate.resolve(strict=True)
     if not real.is_dir() or not _ensure_within_base(str(real), os.path.normcase(base_abs_str)):
         return False
