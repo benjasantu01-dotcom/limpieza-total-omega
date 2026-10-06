@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 40
+- Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 51 | 6 | 8 | 2 | 43 |
+| 2026-10-04 | 51 | 6 | 8 | 2 | 39 |
 | 2026-10-05 | 147 | 16 | 26 | 9 | 152 |
-| 2026-10-06 | 20 | 5 | 6 | 1 | 12 |
+| 2026-10-06 | 23 | 5 | 7 | 1 | 12 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **51**
 - manejo de errores y validación de entradas: **49**
 - legibilidad y documentación: **44**
+- seguridad defensiva: **39**
 - rendimiento: **38**
-- seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **22**
 - `healthscore.py`: **21**
 - `quarantine.py`: **20**
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
 - `scanner.py`: **19**
-- `browser.py`: **17**
-- `branding.py`: **17**
+- `browser.py`: **18**
+- `branding.py`: **18**
 - `assistant.py`: **16**
 - `safety.py`: **16**
 - `duplicates.py`: **15**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T02:03:22` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` al evitar el seguimiento de enlaces simbólicos mediante la validación del estado del inodo y la restricción estricta de rutas, previniendo así ciclos infinitos o la salida involuntaria del directorio raíz objetivo.
+- `2026-10-06T02:03:10` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_file_in_use` al incluir un chequeo explícito de `is_protected_path` adicional a `is_safe_to_modify`, asegurando que ninguna operación de comprobación de estado pueda intentar acceder a una ruta protegida incluso si las validaciones previas fallaran.
+- `2026-10-06T02:02:39` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la verificación manual de caracteres prohibidos por `filter_safe_paths` para asegurar consistencia con el resto del sistema, y se encapsuló la construcción de la ruta dentro de una verificación estricta para prevenir posibles escapes de directorio mediante manipulación de entrada.
 - `2026-10-06T01:52:18` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante estados inconsistentes del sistema de archivos al añadir una comprobación estricta de "archivo bloqueado o en uso" mediante `os.access` y una validación de `st_nlink` para detectar hardlinks maliciosos, además de asegurar que la carga de configuración no falle catastróficamente si el archivo es un directorio o tiene permisos de escritura global.
 - `2026-10-06T01:42:00` **quarantine.py** (robustez ante casos límite): Se ha añadido una validación de `os.fsync` al directorio padre tras la creación del archivo en cuarentena, para asegurar que la entrada de directorio sea persistida en disco antes de finalizar `_atomic_isolate_file`, protegiendo ante pérdidas de metadatos o corrupción del FS ante reinicios inesperados.
 - `2026-10-06T01:41:17` **organizer.py** (robustez ante casos límite): Se ha mejorado `_is_safe_for_disk_op` para prevenir fallos por condiciones de carrera o inconsistencias de estado del sistema de archivos, añadiendo una validación explícita de `st_ino` (inodo/ID único) para confirmar que el archivo original no ha sido reemplazado o movido por otro proceso entre la detección y la intención de movimiento, y verificando que el espacio libre sea suficiente antes de cualquier operación de I/O.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T00:51:11` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global evitando la creación redundante de objetos y minimizando el procesamiento de cadenas mediante la pre-compilación de los resultados del pipeline, además de utilizar un acceso más eficiente a los pesos.
 - `2026-10-06T00:50:25` **diskreport.py** (rendimiento): Optimicé el rendimiento de `_is_excluded_path` reemplazando la creación de objetos `Path` pesados en cada iteración por el uso de `os.path` y métodos de `os.DirEntry` (`path`, `is_symlink`), reduciendo drásticamente la carga de memoria y el tiempo de CPU durante el escaneo del disco.
 - `2026-10-06T00:41:37` **branding.py** (rendimiento): Se optimizó la generación de `_SVG_GRADIENT_STOPS` convirtiéndola en una constante calculada en tiempo de carga mediante `tuple` y `join`, eliminando el re-cálculo de strings innecesario, y se reemplazó el uso de `range` + indexación manual en `gradient_colors` por una pre-asignación de lista más eficiente.
-- `2026-10-06T00:41:12` **assistant.py** (rendimiento): Optimizé la generación del snapshot de métricas en `SystemContext` eliminando el uso de `getattr` en un bucle y reemplazándolo por una lectura directa de los atributos relevantes, reduciendo significativamente la sobrecarga de reflexión en cada consulta al asistente.
-- `2026-10-06T00:31:11` **scanner.py** (legibilidad y documentación): Se introdujo un `TypeAlias` más explícito para las heurísticas y se enriqueció la documentación interna de las funciones de chequeo mediante `docstrings` estandarizados, explicando el criterio técnico detrás de cada detección para facilitar futuras auditorías.
-- `2026-10-06T00:29:47` **quarantine.py** (legibilidad y documentación): Se han añadido docstrings descriptivos y type hints faltantes en funciones clave de bajo nivel (`_check_io_error_context`, `_is_file_exclusive`, `_get_sha256`), junto con una reorganización de los comentarios de advertencia en el encabezado, para mejorar la mantenibilidad y claridad sobre las garantías de seguridad del módulo.

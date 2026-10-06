@@ -407,10 +407,8 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     if destination is None: return None
     try:
         path = Path(destination).resolve()
-        # Validación de ruta protegida y permisos
-        if is_protected_path(path) or (path.exists() and not is_safe_to_modify(path.parent)): return None
-        # Validación de nombres reservados o caracteres sospechosos
-        if any(c in path.name for c in ("<", ">", '"', "|", "?", "*")) or ":" in path.name: return None
+        # Validación de ruta protegida y permisos mediante sistema centralizado
+        if is_protected_path(path) or not filter_safe_paths([path]): return None
         # Evitar sobrescritura de directorios o symlinks
         if path.exists() and (path.is_dir() or path.is_symlink()): return None
         # Crear directorio si es necesario tras validar seguridad

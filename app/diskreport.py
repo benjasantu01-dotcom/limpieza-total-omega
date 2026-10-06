@@ -274,7 +274,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre el árbol de directorios de forma iterativa (no recursiva) para evitar desbordamientos de pila.
+    Recorre el árbol de directorios de forma iterativa (no recursiva) evitando enlaces simbólicos.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -288,22 +288,19 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Verificación de confinamiento de ruta y seguridad
                         if skip_protected and _is_excluded_path(entry, root_path):
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
-                            try:
-                                st = entry.stat(follow_symlinks=False)
-                                inode = (st.st_dev, st.st_ino)
-                                if inode not in visited_inodes:
-                                    visited_inodes.add(inode)
-                                    stack.append(Path(entry.path))
-                            except (OSError, PermissionError): continue
+                            st = entry.stat(follow_symlinks=False)
+                            inode = (st.st_dev, st.st_ino)
+                            if inode not in visited_inodes:
+                                visited_inodes.add(inode)
+                                stack.append(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
-                            try:
-                                st = entry.stat(follow_symlinks=False)
-                                yield Path(entry.path), int(st.st_size)
-                            except (OSError, PermissionError, ValueError, AttributeError): continue
+                            st = entry.stat(follow_symlinks=False)
+                            yield Path(entry.path), int(st.st_size)
                     except (OSError, PermissionError, AttributeError, ValueError):
                         continue
         except (PermissionError, OSError, FileNotFoundError): 

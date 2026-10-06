@@ -195,7 +195,8 @@ def _should_skip_entry(
 @safe_path_operation(True)
 def _is_file_in_use(path_obj: Path) -> bool:
     """Determina si un archivo está bloqueado usando la API Win32."""
-    if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
+    # Validación de seguridad defensiva extra: ni siquiera intentar abrir si está protegido
+    if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
         return True
     k32 = _get_kernel32()
     if k32:
