@@ -1848,3 +1848,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_pa
 - `2026-10-06T13:51:31` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y el mantenimiento de la lógica de aislamiento extrayendo el complejo bloque de validaciones de precondiciones y seguridad en `quarantine_file` hacia una nueva función `_prepare_quarantine_context`, reduciendo la carga cognitiva de la función principal y mejorando la trazabilidad de errores.
 - `2026-10-06T13:51:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T13:51:31` Corrida terminada. Total usado hoy: 324.
+- `2026-10-06T13:56:37` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-06T13:57:01` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 113): unterminated string literal (detected at line 113)
+- `2026-10-06T13:57:02` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T13:57:52` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `ensure_safe_to_modify` extrayendo la lógica de validación de componentes en bucle a una función privada dedicada `_validate_path_components`, reduciendo el acoplamiento y facilitando la comprensión del flujo principal.
+- `2026-10-06T13:58:24` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad de `scanner.py` mediante la adición de docstrings detallados en los métodos de heurística y la estandarización de las anotaciones de tipo, facilitando el mantenimiento y la comprensión de las reglas de seguridad.
+- `2026-10-06T13:58:44` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y el tipado de `_Validators` para clarificar la lógica de validación, añadiendo docstrings descriptivos que explican el "porqué" de las restricciones de seguridad en las rutas, facilitando el mantenimiento y la auditoría.
+- `2026-10-06T13:58:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T13:58:44` Corrida terminada. Total usado hoy: 328.

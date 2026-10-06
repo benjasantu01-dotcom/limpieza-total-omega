@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **210** (41.7% de aceptación)
+- Mejoras aceptadas: **209** (41.5% de aceptación)
 - Rechazadas por tests: 32
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 11
 - Sin respuesta de la IA (error o límite): 208
 
@@ -16,35 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-05 | 76 | 10 | 13 | 3 | 78 |
-| 2026-10-06 | 134 | 22 | 30 | 8 | 130 |
+| 2026-10-05 | 72 | 10 | 13 | 3 | 78 |
+| 2026-10-06 | 137 | 22 | 31 | 8 | 130 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - seguridad defensiva: **48**
-- robustez ante casos límite: **45**
-- legibilidad y documentación: **38**
+- robustez ante casos límite: **41**
+- legibilidad y documentación: **41**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **23**
-- `diskreport.py`: **21**
+- `diskreport.py`: **20**
 - `healthscore.py`: **19**
 - `quarantine.py`: **19**
-- `browser.py`: **18**
-- `branding.py`: **17**
 - `organizer.py`: **17**
-- `safety.py`: **16**
-- `scanner.py`: **16**
-- `duplicates.py`: **14**
-- `settings.py`: **13**
+- `safety.py`: **17**
+- `scanner.py`: **17**
+- `browser.py`: **17**
+- `branding.py`: **16**
+- `settings.py`: **14**
+- `duplicates.py`: **13**
 - `assistant.py`: **12**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T13:58:44` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `_Validators` para clarificar la lógica de validación, añadiendo docstrings descriptivos que explican el "porqué" de las restricciones de seguridad en las rutas, facilitando el mantenimiento y la auditoría.
+- `2026-10-06T13:58:24` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `scanner.py` mediante la adición de docstrings detallados en los métodos de heurística y la estandarización de las anotaciones de tipo, facilitando el mantenimiento y la comprensión de las reglas de seguridad.
+- `2026-10-06T13:57:52` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `ensure_safe_to_modify` extrayendo la lógica de validación de componentes en bucle a una función privada dedicada `_validate_path_components`, reduciendo el acoplamiento y facilitando la comprensión del flujo principal.
 - `2026-10-06T13:50:59` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` mediante la adición de docstrings detallados en funciones clave, la clarificación de constantes mediante tipos explícitos y la refactorización del bloque de validación de seguridad en `_is_safe_for_disk_op` para separar las comprobaciones de integridad física de las restricciones lógicas.
 - `2026-10-06T13:49:02` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad mediante la adición de docstrings técnicos que explican las constantes de Win32, la estandarización de type hints y la clarificación de las responsabilidades de las funciones, facilitando la comprensión del flujo de datos en las interacciones con la API nativa sin modificar la lógica operativa.
 - `2026-10-06T13:39:34` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `healthscore.py` mediante la refactorización de `_PIPELINE` hacia una estructura más declarativa y desacoplada, utilizando docstrings extendidos que documentan el contrato de las funciones de puntuación.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T13:07:42` **main.py** (manejo de errores y validación de entradas): Se ha mejorado `_validate_environment` para incluir una validación de seguridad proactiva mediante `safety.ensure_safe_to_modify` sobre las rutas críticas del entorno, asegurando que la aplicación no pueda iniciarse si el directorio de la aplicación o el home del usuario son manipulados por terceros antes de la ejecución.
 - `2026-10-06T13:05:58` **healthscore.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `score_security` mediante la validación explícita de tipos y la implementación de una técnica defensiva contra entradas no numéricas o infinitas antes del cálculo, evitando errores de propagación en el pipeline.
 - `2026-10-06T12:56:59` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de alto nivel (`largest_files`, `usage_by_extension`, `largest_folders` y `total_size`) validando explícitamente que la entrada sea una ruta absoluta y resoluble antes de iniciar el escaneo, y agregué una gestión de errores más defensiva en la lógica de `largest_folders` para evitar fallos si el `relative_to` falla por rutas mal formadas.
-- `2026-10-06T12:56:23` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_in_use` y `directory_size` validando explícitamente los parámetros de entrada y normalizando rutas para evitar comportamientos inesperados ante valores `None` o rutas mal formadas, reforzando la integridad bajo el enfoque de manejo de errores.
-- `2026-10-06T12:55:51` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_hex_to_rgb` y `_rgb_to_hex` reemplazando los bloques `try-except` genéricos por validaciones explícitas de tipos y límites, asegurando que cualquier entrada malformada retorne valores seguros sin riesgos de excepciones inesperadas durante el renderizado.
-- `2026-10-06T12:48:47` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingesta de datos en `SystemContext.ingest` y `_apply_field` implementando un manejo de excepciones más granular y validación estricta de tipos antes de la actualización, evitando que un único campo corrupto o mal formado interrumpa la ingesta de los demás o genere estados inconsistentes.

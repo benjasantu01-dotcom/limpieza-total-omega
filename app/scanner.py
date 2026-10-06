@@ -125,7 +125,8 @@ def _is_target_extension(name: str) -> bool:
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    HEURÍSTICA: Detecta uso de extensiones múltiples para ocultar la verdadera naturaleza del archivo.
+    HEURÍSTICA: Detecta uso de extensiones múltiples (ej: doc.pdf.exe).
+    Busca patrones donde una extensión de documento precede a una ejecutable para engañar al usuario.
     """
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -133,7 +134,8 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    HEURÍSTICA: Identifica ejecutables descargados recientemente (<24h) en carpetas temporales.
+    HEURÍSTICA: Identifica ejecutables descargados recientemente (<24h) en carpetas de alto riesgo.
+    Analiza la fecha de modificación (mtime) comparándola con el timestamp actual.
     """
     try:
         if not path or not path.parent:
@@ -152,7 +154,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    HEURÍSTICA: Detección de 'Binary Planting' buscando nombres de sistema fuera de System32.
+    HEURÍSTICA: Detección de 'Binary Planting'.
+    Identifica ejecutables con nombres de procesos del sistema crítico alojados fuera de C:\Windows\System32.
     """
     try:
         if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
@@ -164,7 +167,8 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    HEURÍSTICA: Identifica ejecutables de 0 bytes sospechosos.
+    HEURÍSTICA: Identifica ejecutables de 0 bytes.
+    Los ejecutables sin contenido suelen ser marcadores de error o intentos de ocultación de funcionalidad.
     """
     size = _get_file_size(path)
     if size == 0:

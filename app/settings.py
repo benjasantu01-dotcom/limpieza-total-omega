@@ -175,7 +175,10 @@ class _Validators:
 
     @staticmethod
     def _is_reparse_point(path: Path) -> bool:
-        """Detecta si la ruta es un punto de unión o enlace simbólico (evitar recursión)."""
+        """
+        Detecta enlaces simbólicos o junctions para prevenir ataques de traversal 
+        fuera de las carpetas de usuario esperadas.
+        """
         try:
             return path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction())
         except (OSError, PermissionError):
@@ -184,7 +187,11 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=128)
     def _run_safety_checks(path_str: str) -> bool:
-        """Verifica recursivamente que ninguna parte de la ruta comprometa la seguridad del sistema."""
+        """
+        Verifica la integridad de cada segmento de la ruta.
+        No confiamos en rutas que contengan puntos de reparse, ya que podrían
+        apuntar a directorios protegidos del sistema.
+        """
         try:
             p = Path(path_str).expanduser()
             if not p.is_absolute(): return False
@@ -203,7 +210,10 @@ class _Validators:
 
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
-        """Filtra rutas mediante comprobaciones de sintaxis y validaciones contra `safety.py`."""
+        """
+        Filtra rutas mediante comprobaciones de sintaxis (bloqueo de NUL bytes/UNC)
+        y validaciones de acceso contra `safety.py`.
+        """
         if not path_str or len(path_str) > 2048 or any(c in path_str for c in ("\0", "^", "\033")): return False
         if path_str.startswith(("\\\\", "//")): return False
         try:
@@ -213,7 +223,7 @@ class _Validators:
 
     @staticmethod
     def bool(key: ConfigKey, val: Any) -> Optional[bool]:
-        """Normaliza valores booleanos desde tipos nativos o representaciones textuales."""
+        """Convierte entradas de usuario (bool, str) a un valor booleano canonizado."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
@@ -224,7 +234,7 @@ class _Validators:
     @staticmethod
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
-        """Convierte valor a entero y restringe el rango según las políticas de la aplicación."""
+        """Convierte a entero y asegura que el valor esté dentro del rango definido en _NUMERIC_LIMITS."""
         if val is None: return None
         parsed_value = int(val)
         limit = _NUMERIC_LIMITS.get(key)
@@ -233,7 +243,7 @@ class _Validators:
 
     @staticmethod
     def path(key: ConfigKey, val: Any) -> Optional[str]:
-        """Valida rutas de archivos asegurando que no contengan caracteres peligrosos ni enlaces fuera del alcance."""
+        """Valida que la cadena de ruta sea segura para ser utilizada por el motor de organización."""
         if val == "": return ""
         if not isinstance(val, str): return None
         path_string = val.strip()
@@ -242,7 +252,7 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
-        """Verifica que el valor string pertenezca al conjunto permitido por la enumeración correspondiente."""
+        """Restringe strings a un conjunto predefinido de valores permitidos (enums de UI)."""
         val = text.lower()
         allowed = _ENUM_VALS.get(key)
         if allowed: return val if val in allowed else None
@@ -251,7 +261,7 @@ class _Validators:
     @staticmethod
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
-        """Limpia strings bloqueando caracteres de control, secuencias de escape y directorios padres ('..')."""
+        """Limpia cadenas de texto: previene inyección de caracteres de control y directorios padres."""
         if val is None: return None
         text = str(val).strip()
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
@@ -268,7 +278,7 @@ INT_KEYS: Final = {
 }
 
 def _determine_validator(key: ConfigKey) -> Callable[[ConfigKey, Any], Any]:
-    """Selecciona la estrategia de validación según el tipo de dato de la clave."""
+    """Asigna la función de validación adecuada según el tipo de clave."""
     if key in BOOL_KEYS: return _Validators.bool
     if key in INT_KEYS: return _Validators.int
     if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path
@@ -282,7 +292,7 @@ def _build_validator_map() -> MappingProxyType[ConfigKey, _ValidatorEntry]:
 def settings_path(custom_base: PathLike | None = None) -> Path:
     """
     Retorna la ruta absoluta al archivo de configuración.
-    Asegura que el directorio exista y que el acceso a archivos sea seguro.
+    Garantiza que el directorio de configuración sea seguro antes de intentar su uso.
     """
     cache_key = str(custom_base) if custom_base else None
     if cache_key in _MANAGER.path_cache:
@@ -320,7 +330,11 @@ def validate(raw_values: Any) -> AppSettings:
     return config # type: ignore
 
 def _is_file_secure_to_read(file_obj: Any) -> bool:
-    """Garantiza mediante FSTAT que el archivo es regular, no un enlace, y posee permisos de solo usuario."""
+    """
+    Verifica mediante fstat que el archivo de configuración sea un archivo regular
+    propiedad del usuario y sin permisos de ejecución, previniendo lectura de
+    ficheros sensibles o enlaces peligrosos.
+    """
     try:
         st = os.fstat(file_obj.fileno())
         mode = st.st_mode
@@ -337,8 +351,8 @@ def _is_file_secure_to_read(file_obj: Any) -> bool:
 
 def _load_impl(ruta: Path) -> AppSettings:
     """
-    Lógica interna: abre el archivo solo si es seguro, bloquea mediante 
-    flock para concurrencia y valida el contenido JSON post-apertura.
+    Implementación de carga: valida seguridad, utiliza locks advisory (flock) 
+    para evitar corrupción por accesos concurrentes y parsea el contenido.
     """
     if not ruta.is_file(): return DEFAULTS.copy()
     try:
