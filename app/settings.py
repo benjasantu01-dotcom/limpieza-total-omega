@@ -420,6 +420,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     
     temp_path = config_path.with_suffix(".tmp")
     bak_path = config_path.with_suffix(".bak")
+    dir_fd = None
     try:
         with open(temp_path, "w", encoding="utf-8") as f:
             fcntl.flock(f.fileno(), fcntl.LOCK_EX)
@@ -440,16 +441,17 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         
         ensure_safe_to_modify(str(config_path.resolve()))
         os.replace(temp_path, config_path)
-        # Sincronizar directorio padre para asegurar persistencia del nuevo archivo
+        
         dir_fd = os.open(str(parent), os.O_RDONLY)
-        try:
-            os.fsync(dir_fd)
-        finally:
-            os.close(dir_fd)
+        os.fsync(dir_fd)
         _MANAGER.clear()
         return config_path
-    except (OSError, IOError, PermissionError, json.JSONDecodeError, TypeError): return None
+    except (OSError, IOError, PermissionError, json.JSONDecodeError, TypeError): 
+        return None
     finally:
+        if dir_fd is not None:
+            try: os.close(dir_fd)
+            except OSError: pass
         if temp_path.exists():
             try: os.remove(temp_path)
             except OSError: pass

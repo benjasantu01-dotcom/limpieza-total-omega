@@ -1729,3 +1729,65 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-10-06T13:18:30` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: Scanner._is_inside_base_root, Scanner._is_reparse_point
 - `2026-10-06T13:18:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T13:18:30` Corrida terminada. Total usado hoy: 312.
+- `2026-10-06T13:26:01` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-06T13:26:37` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` capturando explícitamente posibles excepciones de E/S y privilegios durante la creación y sincronización del archivo, garantizando que el estado de la configuración no quede en un estado intermedio inconsistente mediante el uso de bloques `try-finally` más seguros.
+- `2026-10-06T13:26:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T13:26:41` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-06T13:27:19` Tests FALLARON:
+```
+ carpeta.mkdir()
+        (carpeta / "MiPrograma.lnk").write_text("x")
+        (carpeta / "Otro.lnk").write_text("y")
+        entradas = startup.entries_from_folders([carpeta])
+>       assert {e.name for e in entradas} == {"MiPrograma", "Otro"}
+E       AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+E         
+E         Extra items in the left set:
+E         'Otro.lnk'
+E         'MiPrograma.lnk'
+E         Extra items in the right set:
+E         'MiPrograma'
+E         'Otro'
+E         
+E         Full diff:
+E           {
+E         -     'MiPrograma',
+E         +     'MiPrograma.lnk',
+E         ?                ++++
+E         -     'Otro',
+E         +     'Otro.lnk',
+E         ?          ++++
+E           }
+
+evolve/tests/test_modules.py:677: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'Otro.lnk'
+  'MiPrograma.lnk'
+  Extra items in the right set:
+  'MiPrograma'
+  'Otro'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+2 failed, 297 passed in 1.55s
+
+```
+- `2026-10-06T13:27:19` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_process_folder_entry` corrigiendo una variable no definida (`_` en lugar de `entry.name`) y fortaleciendo la validación de entrada para evitar errores de ejecución en carpetas con nombres de archivo inusuales.
+- `2026-10-06T13:27:20` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T13:28:12` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 605): unterminated string literal (detected at line 605)
+- `2026-10-06T13:28:35` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-10-06T13:28:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T13:28:35` Corrida terminada. Total usado hoy: 316.
