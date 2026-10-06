@@ -141,7 +141,7 @@ def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Calcula el hash SHA256 completo de un archivo mediante bloques de memoria."""
     p: Optional[Path] = _validate_and_resolve_path(path)
-    if p is None or p.stat().st_size == 0:
+    if p is None:
         return None
             
     try:

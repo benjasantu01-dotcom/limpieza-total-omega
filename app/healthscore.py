@@ -229,8 +229,10 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Calcula el puntaje global mediante la ejecución del pipeline completo."""
-    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
+    if not isinstance(metrics, SystemMetrics):
         metrics = SystemMetrics()
+    if not metrics.is_finite:
+        metrics.validate()
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -243,7 +245,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             points = area_ratio * entry.weight
             metric_breakdown[entry.area] = int(round(points))
             accumulated_score += points
-        except (ValueError, TypeError, ZeroDivisionError) as e:
+        except Exception as e:
             logging.error(f"Falla crítica en procesamiento de {entry.area}: {e}")
             metric_breakdown[entry.area] = 0
             

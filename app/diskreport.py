@@ -338,7 +338,8 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
                 top_folder = root / relative.parts[0]
                 curr = stats[top_folder]
                 stats[top_folder] = FolderMetrics(curr.size + size, curr.file_count + 1)
-        except (ValueError, OSError, PermissionError): continue
+        except (ValueError, OSError, PermissionError, RuntimeError): 
+            continue
 
     results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items()]
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)
