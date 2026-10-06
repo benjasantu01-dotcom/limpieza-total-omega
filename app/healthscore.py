@@ -238,7 +238,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     metric_breakdown: Dict[MetricKey, int] = {}
     accumulated_score: float = 0.0
     
-    for entry in _PIPELINE:
+    pipeline = _PIPELINE
+    for entry in pipeline:
         try:
             area_ratio = _clamp(entry.scorer(metrics))
             _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
@@ -272,8 +273,9 @@ def summarize(result: HealthResult | None) -> List[str]:
         return ["Error: Informe de salud no disponible."]
         
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
+    bd = result.breakdown
     for area, maximo in WEIGHTS.items():
-        points = result.breakdown.get(area, 0)
+        points = bd.get(area, 0)
         lines.append(f"  {area.capitalize():<12} {points:>2}/{maximo:<2} [{_render_bar(points, maximo)}]")
     
     recs = result.recommendations if result.recommendations else ["Sin recomendaciones."]

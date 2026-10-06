@@ -8,45 +8,48 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **210** (41.7% de aceptación)
 - Rechazadas por tests: 26
-- Rechazadas por guardia de seguridad: 40
+- Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 13 | 1 | 1 | 0 | 15 |
+| 2026-10-04 | 10 | 1 | 1 | 0 | 14 |
 | 2026-10-05 | 147 | 16 | 26 | 9 | 152 |
-| 2026-10-06 | 50 | 9 | 13 | 3 | 49 |
+| 2026-10-06 | 53 | 9 | 14 | 3 | 49 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **45**
-- robustez ante casos límite: **42**
 - legibilidad y documentación: **41**
-- rendimiento: **33**
+- robustez ante casos límite: **39**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
+- `memory.py`: **22**
 - `diskreport.py`: **21**
-- `memory.py`: **21**
-- `scanner.py`: **20**
-- `healthscore.py`: **20**
+- `healthscore.py`: **21**
 - `quarantine.py`: **19**
+- `scanner.py`: **19**
 - `branding.py`: **17**
 - `browser.py`: **17**
-- `safety.py`: **15**
+- `organizer.py`: **16**
 - `assistant.py`: **15**
-- `organizer.py`: **15**
+- `safety.py`: **14**
 - `duplicates.py`: **13**
 - `settings.py`: **12**
-- `startup.py`: **3**
 - `main.py`: **2**
+- `startup.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T05:27:20` **organizer.py** (rendimiento): Optimicé el bucle de escaneo de `organizer.py` mediante el uso de `str.endswith()` directamente con la tupla `JUNK_EXT_TUPLE` pre-calculada, eliminando la llamada a funciones intermedias y reduciendo la sobrecarga de CPU en cada iteración del escáner de archivos.
+- `2026-10-06T05:27:07` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la iteración completa sobre todos los PIDs por una consulta inicial mediante `EnumProcesses` optimizada y reduciendo llamadas innecesarias al sistema operativo al verificar condiciones de seguridad solo una vez.
+- `2026-10-06T05:25:40` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global en `compute_score` cacheando el acceso al diccionario `_PIPELINE` y pre-calculando el desglose de métricas mediante un diccionario local, evitando llamadas a `.get()` y búsquedas iterativas adicionales dentro del bucle.
 - `2026-10-06T05:17:21` **diskreport.py** (rendimiento): Optimicé el rendimiento de `_collect_summary_data` eliminando la creación repetida de objetos `ExtStats` en el diccionario mediante un acceso directo `setdefault` o acceso por clave, y consolidé el procesamiento de la extensión para reducir la sobrecarga de llamadas a métodos de `Path` dentro del bucle crítico de escaneo.
 - `2026-10-06T05:08:20` **assistant.py** (rendimiento): Se implementó un `lru_cache` en `context_as_text` para evitar la serialización repetitiva de las métricas durante el procesamiento de consultas, mejorando la eficiencia al evitar cálculos de strings innecesarios en cada llamada.
 - `2026-10-06T05:05:55` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y la mantenibilidad del código mediante la formalización de las firmas de tipo y la extracción de lógica compleja de filtrado en `_is_safe_entry` hacia componentes más modulares y documentados.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T04:35:21` **branding.py** (legibilidad y documentación): He mejorado la legibilidad y la mantenibilidad del archivo documentando exhaustivamente la estructura de datos del `_SVG_TEMPLATE` y las funciones de dibujo geométrico mediante docstrings estándar, clarificando el propósito de los factores de escalado utilizados en la UI.
 - `2026-10-06T04:25:55` **settings.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save()` capturando explícitamente excepciones de `json.dumps` y mejorando la validación del directorio padre para evitar errores de escritura en entornos con permisos restringidos o rutas inexistentes, asegurando que cualquier fallo deje el sistema en estado consistente.
 - `2026-10-06T04:25:19` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas mediante la validación proactiva de entrada (`None`/`path` inválido) y la captura específica de excepciones en `check_recent_executable_in_downloads` y `check_system_lookalike`, evitando comportamientos indefinidos al recibir datos inesperados.
-- `2026-10-06T04:24:46` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_volume_readonly`, `_is_volume_removable_media` y `_is_volume_compressed_or_encrypted` mediante la adición de verificaciones explícitas de integridad de la ruta y manejo de excepciones más granular para prevenir bloqueos por rutas inválidas o volúmenes inaccesibles.
-- `2026-10-06T04:15:41` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` mediante la captura explícita de `json.JSONDecodeError` y `FileNotFoundError` (implícito en el manejo de `OSError`), asegurando que el estado del sistema no se corrompa ante archivos de manifiesto malformados o faltantes durante la inicialización.
-- `2026-10-06T04:14:54` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_locked` para evitar falsos positivos y errores inesperados al manejar archivos, asegurando que solo se intente la apertura si el archivo realmente existe y tiene permisos básicos, capturando de forma más precisa las excepciones de acceso denegado.

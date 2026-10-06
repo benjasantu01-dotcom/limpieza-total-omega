@@ -270,7 +270,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     # TTL de 60 segundos para evitar carga innecesaria del sistema
     if (now - cache_time) > 60:
         psapi = ctypes.windll.psapi
-        pids = (ctypes.c_ulong * 2048)()
+        pids = (ctypes.c_ulong * 4096)()
         cb = ctypes.sizeof(pids)
         cb_needed = ctypes.c_ulong()
         

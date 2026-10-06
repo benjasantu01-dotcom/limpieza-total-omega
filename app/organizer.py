@@ -92,7 +92,7 @@ class JunkFile:
     @property
     def is_junk_extension(self) -> bool:
         """Verifica si la extensión del archivo coincide con las heurísticas de basura."""
-        return is_valid_junk_extension(self.path.name)
+        return self.path.name.lower().endswith(JUNK_EXT_TUPLE)
 
 def is_valid_junk_extension(filename: str) -> bool:
     """Valida si el sufijo del archivo pertenece a la lista definida en JUNK_EXTENSIONS."""
@@ -199,7 +199,7 @@ def _is_valid_junk_entry(name: str, stats: os.stat_result, now_ts: float) -> boo
     """Verifica heurísticas de tamaño, fecha y extensión."""
     return (0 <= stats.st_size < MAX_FILE_SIZE_BYTES and 
             stats.st_mtime <= now_ts + 3600 and
-            is_valid_junk_extension(name))
+            name.lower().endswith(JUNK_EXT_TUPLE))
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
     """Recorrido recursivo optimizado utilizando os.scandir."""
