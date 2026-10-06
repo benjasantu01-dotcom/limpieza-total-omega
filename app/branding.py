@@ -306,25 +306,20 @@ def bar(percent: Union[float, int, None], width: int = 24,
 
 @lru_cache(maxsize=256)
 def _hex_to_rgb(value: ColorHex) -> RGBTuple:
-    """Transforma HEX a tupla RGB con validación."""
+    """Transforma HEX a tupla RGB con validación estricta."""
     if isinstance(value, str) and len(value) == 7 and value.startswith('#'):
         try:
             val = int(value[1:], 16)
             return ((val >> 16) & 0xFF, (val >> 8) & 0xFF, val & 0xFF)
-        except (ValueError, TypeError):
+        except ValueError:
             pass
     return (0, 0, 0)
 
 @lru_cache(maxsize=256)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
-    """Transforma tupla RGB a HEX con clamping de seguridad."""
-    def _clamp(c: Any) -> int: 
-        try:
-            val = int(c)
-            return max(0, min(255, val))
-        except (ValueError, TypeError):
-            return 0
-    return "#{:02x}{:02x}{:02x}".format(_clamp(rgb[0]), _clamp(rgb[1]), _clamp(rgb[2]))
+    """Transforma tupla RGB a HEX asegurando que los componentes sean enteros válidos."""
+    r, g, b = [max(0, min(255, int(c))) for c in rgb]
+    return "#{:02x}{:02x}{:02x}".format(r, g, b)
 
 @lru_cache(maxsize=128)
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:

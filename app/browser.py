@@ -53,7 +53,7 @@ def safe_path_operation(default: Any) -> Callable:
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             try:
                 return func(*args, **kwargs)
-            except (OSError, PermissionError, RuntimeError, AttributeError, ValueError):
+            except (OSError, PermissionError, RuntimeError, AttributeError, ValueError, TypeError):
                 return default
         return wrapper
     return decorator
@@ -142,6 +142,7 @@ def _is_unc_path(path_str: Optional[str]) -> TypeGuard[str]:
 def _ensure_within_base(target: str, base_norm: str) -> bool:
     """Validación de contención: comprueba que 'target' pertenezca a 'base_norm'."""
     try:
+        if not target: return False
         target_norm: str = os.path.normcase(os.path.abspath(target))
         return target_norm.startswith(base_norm)
     except Exception:
@@ -281,6 +282,7 @@ def directory_size(path: Optional[OSPath]) -> int:
 @safe_path_operation(False)
 def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
     """Valida la integridad de la ruta candidata antes de iniciar el escaneo."""
+    if not candidate: return False
     real: Path = candidate.resolve(strict=True)
     if not real.is_dir() or not _ensure_within_base(str(real), os.path.normcase(base_abs_str)):
         return False
@@ -291,6 +293,7 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
 @safe_path_operation(Path())
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Resuelve rutas absolutas a partir de la estructura predefinida."""
+    if not real_base or not rel_str: return Path()
     parts = rel_str.split("\\")
     target: Path = real_base.joinpath(*parts)
     if not target.exists(): return Path()

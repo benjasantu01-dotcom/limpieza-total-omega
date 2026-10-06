@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
+- Mejoras aceptadas: **209** (41.5% de aceptación)
 - Rechazadas por tests: 31
-- Rechazadas por guardia de seguridad: 42
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 208
+- Rechazadas por guardia de seguridad: 41
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-05 | 88 | 12 | 16 | 7 | 81 |
-| 2026-10-06 | 120 | 19 | 26 | 8 | 127 |
+| 2026-10-05 | 86 | 12 | 15 | 6 | 81 |
+| 2026-10-06 | 123 | 19 | 26 | 8 | 128 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **48**
 - robustez ante casos límite: **46**
-- manejo de errores y validación de entradas: **41**
+- manejo de errores y validación de entradas: **44**
 - rendimiento: **37**
-- legibilidad y documentación: **36**
+- legibilidad y documentación: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **23**
-- `quarantine.py`: **21**
-- `diskreport.py`: **21**
+- `diskreport.py`: **22**
+- `memory.py`: **22**
+- `quarantine.py`: **20**
 - `scanner.py`: **18**
+- `browser.py`: **18**
 - `healthscore.py`: **18**
-- `browser.py`: **17**
+- `branding.py`: **17**
 - `organizer.py`: **16**
-- `branding.py`: **16**
 - `safety.py`: **15**
 - `duplicates.py`: **14**
 - `assistant.py`: **13**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T12:56:59` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de alto nivel (`largest_files`, `usage_by_extension`, `largest_folders` y `total_size`) validando explícitamente que la entrada sea una ruta absoluta y resoluble antes de iniciar el escaneo, y agregué una gestión de errores más defensiva en la lógica de `largest_folders` para evitar fallos si el `relative_to` falla por rutas mal formadas.
+- `2026-10-06T12:56:23` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_in_use` y `directory_size` validando explícitamente los parámetros de entrada y normalizando rutas para evitar comportamientos inesperados ante valores `None` o rutas mal formadas, reforzando la integridad bajo el enfoque de manejo de errores.
+- `2026-10-06T12:55:51` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_hex_to_rgb` y `_rgb_to_hex` reemplazando los bloques `try-except` genéricos por validaciones explícitas de tipos y límites, asegurando que cualquier entrada malformada retorne valores seguros sin riesgos de excepciones inesperadas durante el renderizado.
 - `2026-10-06T12:48:47` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingesta de datos en `SystemContext.ingest` y `_apply_field` implementando un manejo de excepciones más granular y validación estricta de tipos antes de la actualización, evitando que un único campo corrupto o mal formado interrumpa la ingesta de los demás o genere estados inconsistentes.
 - `2026-10-06T11:25:33` **settings.py** (seguridad defensiva): Se reforzó la seguridad de la persistencia agregando `os.fsync` al directorio padre tras la creación del archivo de configuración, asegurando que los metadatos del directorio estén sincronizados en disco antes de considerar la operación de guardado como finalizada.
 - `2026-10-06T11:25:12` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez de las heurísticas de seguridad añadiendo una capa de validación de integridad en `_run_file_heuristics` para asegurar que el archivo no haya cambiado de tipo (a directorio) o desaparecido entre la selección del escáner y la ejecución del análisis, mitigando riesgos de condiciones de carrera (TOCTOU).
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T10:53:20` **settings.py** (robustez ante casos límite): Se reforzó la robustez del sistema ante el caso límite de archivos de configuración corruptos o bloqueados durante la escritura, implementando una verificación de integridad post-escritura más rigurosa (usando `os.fsync`) y un manejo de errores más específico en `save` para evitar dejar el sistema en estado inconsistente.
 - `2026-10-06T10:44:42` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la recursión introduciendo un control de errores más granular y preventivo, específicamente añadiendo validaciones de tipo y de integridad de ruta dentro de los bucles de `os.scandir` para evitar fallos por rutas con caracteres inválidos o acceso denegado antes de intentar procesarlas.
 - `2026-10-06T10:44:27` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes de la API de Windows añadiendo un manejo explícito para rutas que, aunque existen, devuelven atributos inválidos (0xFFFFFFFF) o fallan por bloqueos de kernel, asegurando que `ensure_safe_to_modify` no aborte por errores transitorios de E/S.
-- `2026-10-06T10:43:20` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de concurrencia y bloqueos temporales implementando una verificación de "estado en uso" mediante `GetFileAttributesW` antes de realizar operaciones de borrado en `_safe_unlink`, asegurando que no se intente operar sobre archivos bloqueados por otros procesos del sistema.
-- `2026-10-06T10:34:50` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `_is_safe_for_disk_op` añadiendo una comprobación explícita para evitar que `shutil.disk_usage` lance excepciones fatales ante rutas inválidas o dispositivos sin soporte de espacio, y se añadió una validación de `st_dev` para asegurar que el movimiento sea dentro de la misma partición física, evitando errores de `shutil.move` entre volúmenes.
-- `2026-10-06T10:34:37` **memory.py** (robustez ante casos límite): Se mejora la robustez en `_get_process_path` y `trim_working_set` al añadir una validación explícita para rutas UNC (evitando excepciones en la resolución de `Path.resolve`) y manejando correctamente casos donde el `pid` es inválido o el proceso finaliza durante la ejecución.
