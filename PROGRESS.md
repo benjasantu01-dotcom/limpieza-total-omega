@@ -5,26 +5,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **204** (40.6% de aceptación)
 - Rechazadas por tests: 31
-- Rechazadas por guardia de seguridad: 45
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-05 | 60 | 7 | 11 | 3 | 75 |
-| 2026-10-06 | 146 | 24 | 34 | 8 | 136 |
+| 2026-10-05 | 57 | 7 | 10 | 3 | 75 |
+| 2026-10-06 | 147 | 24 | 34 | 8 | 137 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **42**
 - legibilidad y documentación: **41**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **39**
+- seguridad defensiva: **39**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
@@ -32,19 +32,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **22**
 - `diskreport.py`: **20**
 - `quarantine.py`: **19**
-- `healthscore.py`: **18**
+- `healthscore.py`: **19**
 - `branding.py`: **17**
 - `browser.py`: **17**
-- `safety.py`: **16**
-- `scanner.py`: **16**
 - `organizer.py`: **16**
+- `safety.py`: **15**
+- `scanner.py`: **15**
 - `assistant.py`: **14**
-- `settings.py`: **13**
 - `duplicates.py`: **13**
+- `settings.py`: **12**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T14:59:01` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del método `SystemMetrics.is_finite` añadiendo una validación explícita para evitar errores de acceso si el objeto no tiene atributos esperados o si se utilizan tipos incompatibles, asegurando que el pipeline nunca trabaje con datos corruptos.
 - `2026-10-06T14:50:18` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante rutas inexistentes o inaccesibles en `_is_file_in_use` y `_process_file_node` mediante la validación estricta de `Path.exists()` antes de cualquier operación de I/O, evitando excepciones innecesarias en sistemas con cachés parcialmente eliminadas o bloqueadas.
 - `2026-10-06T14:49:49` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de sistema y colisiones de rutas mediante la implementación de una verificación de estado de escritura más estricta antes de intentar cualquier operación de disco.
 - `2026-10-06T14:48:40` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_extract_text_from_gemini_json` para manejar estructuras de datos malformadas o inesperadas mediante un chequeo de tipos exhaustivo en cada nivel de acceso, evitando excepciones de `AttributeError` o `KeyError` que podrían ocurrir si la respuesta de la API no sigue el esquema esperado.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T13:57:52` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `ensure_safe_to_modify` extrayendo la lógica de validación de componentes en bucle a una función privada dedicada `_validate_path_components`, reduciendo el acoplamiento y facilitando la comprensión del flujo principal.
 - `2026-10-06T13:50:59` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` mediante la adición de docstrings detallados en funciones clave, la clarificación de constantes mediante tipos explícitos y la refactorización del bloque de validación de seguridad en `_is_safe_for_disk_op` para separar las comprobaciones de integridad física de las restricciones lógicas.
 - `2026-10-06T13:49:02` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad mediante la adición de docstrings técnicos que explican las constantes de Win32, la estandarización de type hints y la clarificación de las responsabilidades de las funciones, facilitando la comprensión del flujo de datos en las interacciones con la API nativa sin modificar la lógica operativa.
-- `2026-10-06T13:39:34` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `healthscore.py` mediante la refactorización de `_PIPELINE` hacia una estructura más declarativa y desacoplada, utilizando docstrings extendidos que documentan el contrato de las funciones de puntuación.

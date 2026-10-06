@@ -224,7 +224,14 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verifica que ninguna métrica numérica sea infinita o no-numérica."""
-        return all(math.isfinite(getattr(self, f)) for f in self.__dataclass_fields__ if isinstance(getattr(self, f), (int, float)))
+        for field_name in self.__dataclass_fields__:
+            try:
+                val = getattr(self, field_name)
+                if isinstance(val, (int, float)) and not math.isfinite(val):
+                    return False
+            except AttributeError:
+                return False
+        return True
 
 @dataclass
 class HealthResult:

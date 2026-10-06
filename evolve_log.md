@@ -447,3 +447,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-10-06T14:50:36` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: Se ha añadido un chequeo de existencia (`entry.exists()`) dentro de `walk_files` para manejar de forma robusta la condición de carrera donde un archivo o carpeta es eliminado o renombrado por el sistema entre la iteración del `scandir` y la llamada a `stat`.
 - `2026-10-06T14:50:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T14:50:36` Corrida terminada. Total usado hoy: 348.
+- `2026-10-06T14:57:59` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-06T14:58:30` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-06T14:58:31` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T14:59:01` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del método `SystemMetrics.is_finite` añadiendo una validación explícita para evitar errores de acceso si el objeto no tiene atributos esperados o si se utilizan tipos incompatibles, asegurando que el pipeline nunca trabaje con datos corruptos.
+- `2026-10-06T14:59:01` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-10-06T14:59:01` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T14:59:01` Corrida terminada. Total usado hoy: 350.
