@@ -233,7 +233,11 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> ScanResult:
     """
-    Recorrido recursivo para calcular tamaño de caché respetando límites de seguridad.
+    Recorre jerárquicamente un directorio de caché para sumar el peso de sus archivos.
+    
+    Utiliza un set de 'visited_inodes' para prevenir el conteo duplicado en sistemas
+    con hard-links y 'visited_dirs' como caché de resultados parciales. Aplica
+    filtros de seguridad en cada nivel para asegurar que no se salgan del scope.
     """
     if depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)
@@ -263,6 +267,7 @@ def _sum_directory_recursive(
                 else:
                     try:
                         st = entry.stat(follow_symlinks=False)
+                        # Usar inodo para asegurar que un mismo archivo no se cuente dos veces
                         if st.st_ino not in visited_inodes:
                             p_file = Path(entry.path)
                             if not _is_file_in_use(p_file, root_abs_norm):

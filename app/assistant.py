@@ -400,12 +400,14 @@ class SystemContext:
         return _ensure_safe_text(self.grade) if self.grade else True
 
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
-        """Valida y normaliza un campo individual de la fuente de datos."""
+        """Valida, convierte y verifica límites de un campo individual proveniente de la fuente."""
         val = _get_source_value(source, key)
-        if val is None or not spec.is_valid_type(val): return None
+        if val is None or not spec.is_valid_type(val): 
+            return None
         try:
             float_val = float(val)
-            if not _is_metric_within_bounds(float_val, spec): return None
+            if not _is_metric_within_bounds(float_val, spec): 
+                return None
             return spec.cast_func(float_val)
         except (TypeError, ValueError, OverflowError):
             return None
@@ -417,7 +419,7 @@ class SystemContext:
         return clean if _ensure_safe_text(clean) and not is_protected_path(clean) else ""
 
     def _validate_ingestion_source(self, source: Any) -> bool:
-        """Realiza comprobaciones de seguridad sobre el objeto fuente antes de ingestarlo."""
+        """Realiza comprobaciones de seguridad estructural sobre el objeto fuente antes de procesar."""
         if source is None: return False
         if not isinstance(source, (dict, object)): return False
         try:
@@ -426,7 +428,12 @@ class SystemContext:
             return False
 
     def ingest(self, source: Any) -> bool:
-        """Normaliza e importa datos externos al contexto local de manera transaccional."""
+        """
+        Normaliza e importa datos externos al contexto de manera transaccional.
+        
+        Itera sobre las métricas definidas en _VALIDATORS, aplicando filtros de 
+        seguridad y límites de rango. Retorna True si al menos un campo fue actualizado.
+        """
         if not self._validate_ingestion_source(source): return False
         
         has_updates = False

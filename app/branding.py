@@ -81,7 +81,7 @@ class ColorSegment(NamedTuple):
     end_index: int
 
 class PaletteDict(TypedDict):
-    """Esquema de colores centralizado para mantener consistencia en toda la UI."""
+    """Esquema de colores centralizado. Define el lenguaje visual de la app."""
     background: ColorHex
     surface: ColorHex
     surface_alt: ColorHex
@@ -105,7 +105,7 @@ class PaletteDict(TypedDict):
     glow: ColorHex
 
 class FontSizesDict(TypedDict):
-    """Escalado de fuentes: desde títulos destacados (display) hasta notas (caption)."""
+    """Jerarquía de tamaños tipográficos para mantener consistencia en la interfaz."""
     display: int
     title: int
     subtitle: int
