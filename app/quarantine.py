@@ -355,8 +355,11 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         _check_path_for_junctions(path)
         if not path.name.strip() or path == path.parent:
             raise UnsafePathError("Ruta de cuarentena inválida o es raíz.")
+        
+        # Validación de seguridad: el directorio resuelto no debe estar protegido
         if is_protected_path(path):
             raise UnsafePathError("Directorio de cuarentena reside en ruta protegida.")
+        
         if path.is_symlink():
              raise UnsafePathError("Ruta de cuarentena no puede ser un enlace simbólico.")
         

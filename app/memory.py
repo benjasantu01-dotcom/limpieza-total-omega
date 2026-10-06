@@ -334,7 +334,13 @@ def _get_process_path(pid: int) -> Optional[Path]:
         length = psapi.GetModuleFileNameExW(handle, None, buf, buffer_size)
         if 0 < length < buffer_size:
             raw_path = buf.value
-            path_obj = Path(raw_path).resolve()
+            if not raw_path: return None
+            
+            # Resolvemos con cuidado frente a rutas inválidas o casos límite de OS
+            try:
+                path_obj = Path(raw_path).resolve(strict=False)
+            except OSError:
+                return None
             
             # Validación estricta de seguridad: verifica protección, reparse points y política global.
             if is_protected_path(str(path_obj)) or not is_safe_to_modify(path_obj):
