@@ -401,10 +401,10 @@ class SystemContext:
 
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
         """Valida, convierte y verifica límites de un campo individual proveniente de la fuente."""
-        val = _get_source_value(source, key)
-        if val is None or not spec.is_valid_type(val): 
-            return None
         try:
+            val = _get_source_value(source, key)
+            if val is None: return None
+            
             float_val = float(val)
             if not _is_metric_within_bounds(float_val, spec): 
                 return None
@@ -439,15 +439,13 @@ class SystemContext:
         has_updates = False
         try:
             for key, spec in _VALIDATORS.items():
-                try:
-                    res = self._apply_field(source, key, spec)
-                    if res is not None and _check_metric_integrity(res) and float(res) >= 0:
-                        object.__setattr__(self, key, res)
-                        has_updates = True
-                except Exception:
-                    continue
+                res = self._apply_field(source, key, spec)
+                if res is not None:
+                    object.__setattr__(self, key, res)
+                    has_updates = True
             
-            if (grade_val := self._clean_grade(_get_source_value(source, "grade"))):
+            grade_val = self._clean_grade(_get_source_value(source, "grade"))
+            if grade_val:
                 object.__setattr__(self, 'grade', grade_val)
                 has_updates = True
             
@@ -655,8 +653,9 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         return Answer("Entrada no válida.")
     
     for token in _TOKEN_REGEX.findall(q_sanitized.lower()):
-        if handler := _TOKENS_MAP.get(token):
-            return handler(context, question)
+        if handler := _TOKEN_REGEX.findall(q_sanitized.lower()):
+            if handler := _TOKENS_MAP.get(token):
+                return handler(context, question)
             
     cuerpo = _format_problem_message(context.active_problems, context.score or "N/A")
     ans = Answer(_validate_response_length(cuerpo), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
