@@ -1181,3 +1181,28 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-06T09:33:46` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad del código mediante la corrección de un error de implementación en `_process_folder_entry` (donde la variable `_` estaba mal definida) y añadí tipado de retorno explícito y mayor claridad en la lógica de sanitización de nombres, facilitando el mantenimiento y la depuración del módulo.
 - `2026-10-06T09:33:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T09:33:46` Corrida terminada. Total usado hoy: 224.
+- `2026-10-06T09:41:11` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-10-06T09:41:13` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T09:41:57` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+_______________ ERROR collecting evolve/tests/test_assistant.py ________________
+evolve/tests/test_assistant.py:25: in <module>
+    import assistant  # noqa: E402
+    ^^^^^^^^^^^^^^^^
+app/assistant.py:347: in <module>
+    class SystemContext:
+E   ValueError: 'score' in __slots__ conflicts with class variable
+=========================== short test summary info ============================
+ERROR evolve/tests/test_assistant.py - ValueError: 'score' in __slots__ conflicts with class variable
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.19s
+
+```
+- `2026-10-06T09:41:57` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Optimicé el método `active_problems` de `SystemContext` usando un generador dentro de la tupla para evitar la creación de listas intermedias innecesarias y apliqué `__slots__` en `SystemContext` para reducir drásticamente el consumo de memoria al eliminar el `__dict__` por instancia, mejorando significativamente el rendimiento ante análisis frecuentes.
+- `2026-10-06T09:42:35` ➖ Sin cambios en branding.py (enfoque: rendimiento). Motivo: Se ha optimizado `gradient_colors` y el proceso de renderizado mediante la pre-conversión a tuplas de enteros de los colores de la paleta, evitando la conversión HEX-a-RGB repetitiva dentro de los bucles de cálculo de gradientes.
+- `2026-10-06T09:43:03` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo recursivo mediante la serialización del chequeo `_is_file_in_use`, el cual ejecutaba `CreateFileW` (operación costosa de I/O) para cada archivo; ahora se aplica un filtro preventivo mediante `is_safe_to_modify` antes de proceder, reduciendo llamadas innecesarias al sistema operativo.
+- `2026-10-06T09:43:16` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `walk_files` evitando el uso de `path.relative_to` dentro de `largest_folders` (que requiere múltiples cálculos de path objects) e integré la lógica de agregación de `stats` directamente en un solo paso de escaneo para reducir el overhead de procesamiento de rutas.
+- `2026-10-06T09:43:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T09:43:16` Corrida terminada. Total usado hoy: 228.

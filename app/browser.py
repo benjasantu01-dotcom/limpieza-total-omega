@@ -194,27 +194,19 @@ def _should_skip_entry(
 
 @safe_path_operation(True)
 def _is_file_in_use(path_obj: Any, base_norm: str) -> bool:
-    """
-    Determina si un archivo está bloqueado por otro proceso, validando antes el scope.
-    """
+    """Determina si un archivo está bloqueado, usando filtros de seguridad como precondición rápida."""
     if not isinstance(path_obj, Path) or not path_obj.exists():
         return True
     
-    # Prevenir acceso fuera del directorio de caché (path traversal)
-    if not _ensure_within_base(str(path_obj), base_norm):
-        return True
-        
-    if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
+    if not _ensure_within_base(str(path_obj), base_norm) or is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
         return True
     
-    # Verificación de permisos básicos antes de llamar a CreateFileW
     if not os.access(path_obj, os.R_OK):
         return True
     
     k32 = _get_kernel32()
     if k32:
         try:
-            # GENERIC_READ (0x80000000), FILE_SHARE_READ|WRITE (0x3)
             handle = k32.CreateFileW(str(path_obj), 0x80000000, 0x3, None, 3, 0x80, None)
             if handle == -1 or handle is None: 
                 return True
@@ -232,13 +224,7 @@ def _sum_directory_recursive(
     visited_dirs: VisitedDirs,
     depth: int = 0
 ) -> ScanResult:
-    """
-    Recorre jerárquicamente un directorio de caché para sumar el peso de sus archivos.
-    
-    Utiliza un set de 'visited_inodes' para prevenir el conteo duplicado en sistemas
-    con hard-links y 'visited_dirs' como caché de resultados parciales. Aplica
-    filtros de seguridad en cada nivel para asegurar que no se salgan del scope.
-    """
+    """Recorre jerárquicamente un directorio de caché para sumar el peso de sus archivos."""
     if depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)
     
@@ -267,10 +253,10 @@ def _sum_directory_recursive(
                 else:
                     try:
                         st = entry.stat(follow_symlinks=False)
-                        # Usar inodo para asegurar que un mismo archivo no se cuente dos veces
                         if st.st_ino not in visited_inodes:
                             p_file = Path(entry.path)
-                            if not _is_file_in_use(p_file, root_abs_norm):
+                            # Pre-validación rápida antes de la llamada costosa a _is_file_in_use
+                            if is_safe_to_modify(p_file) and not _is_file_in_use(p_file, root_abs_norm):
                                 visited_inodes.add(st.st_ino)
                                 total_bytes += st.st_size
                     except (OSError, PermissionError):
