@@ -344,7 +344,7 @@ def _load_impl(ruta: Path) -> AppSettings:
     Lógica interna: abre el archivo solo si es seguro, bloquea mediante 
     flock para concurrencia y valida el contenido JSON post-apertura.
     """
-    if not ruta.exists() or not ruta.is_file(): return DEFAULTS.copy()
+    if not ruta.is_file(): return DEFAULTS.copy()
     try:
         resolved = ruta.resolve()
         if not is_safe_to_modify(str(resolved)): return DEFAULTS.copy()
@@ -353,11 +353,12 @@ def _load_impl(ruta: Path) -> AppSettings:
             content = f.read(MAX_SETTINGS_SIZE + 1)
             if not content or content.strip() == "": return DEFAULTS.copy()
             
-            fcntl.flock(f.fileno(), fcntl.LOCK_SH)
             try:
+                fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
                 data = json.loads(content)
-            finally:
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+            except (IOError, OSError):
+                return DEFAULTS.copy()
         
         if _is_dict(data):
             return _coerce_and_verify(validate(data))
@@ -371,7 +372,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     backup_path = primary_path.with_suffix(".bak")
     
     for path in [primary_path, backup_path]:
-        if path.exists():
+        if path.is_file():
             try:
                 st = path.stat()
                 cache_key = str(path)

@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
-- Rechazadas por tests: 26
-- Rechazadas por guardia de seguridad: 42
+- Mejoras aceptadas: **209** (41.5% de aceptación)
+- Rechazadas por tests: 27
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 0 | 0 | 0 | 0 | 10 |
+| 2026-10-04 | 0 | 0 | 0 | 0 | 6 |
 | 2026-10-05 | 147 | 16 | 26 | 9 | 152 |
-| 2026-10-06 | 61 | 10 | 16 | 5 | 52 |
+| 2026-10-06 | 62 | 11 | 17 | 5 | 53 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
-- robustez ante casos límite: **45**
+- robustez ante casos límite: **46**
 - legibilidad y documentación: **41**
 - rendimiento: **38**
 - seguridad defensiva: **35**
@@ -41,12 +41,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **15**
 - `assistant.py`: **14**
 - `duplicates.py`: **13**
-- `settings.py`: **11**
+- `settings.py`: **12**
 - `startup.py`: **2**
 - `main.py`: **1**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T06:17:53` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante fallos en el sistema de archivos al añadir verificaciones de `is_file()` antes de realizar operaciones de lectura/stat, y agregué un manejo explícito para archivos bloqueados (reintentos o aborto seguro) que previene excepciones no capturadas durante la carga.
 - `2026-10-06T06:13:59` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_dir` añadiendo una validación explícita de `is_protected_path` sobre la ruta resuelta, previniendo que manipulaciones de rutas (como el uso de puntos o enlaces relativos) permitan esquivar el bloqueo de carpetas del sistema.
 - `2026-10-06T06:09:13` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_get_process_path` para evitar que el uso de `pathlib.Path.resolve()` en rutas inválidas o nombres de dispositivo erróneos (que pueden causar excepciones `OSError` o bloqueos en Windows) interrumpa el diagnóstico, añadiendo un manejo de excepciones específico y una validación de longitud previa.
 - `2026-10-06T05:57:24` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del pipeline ante errores de entrada y fallas en los normalizadores, eliminando dependencias de valores potencialmente nulos o mal formados en los lambda-scorers, asegurando que el cálculo del puntaje no se interrumpa ante datos inesperados.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T05:17:21` **diskreport.py** (rendimiento): Optimicé el rendimiento de `_collect_summary_data` eliminando la creación repetida de objetos `ExtStats` en el diccionario mediante un acceso directo `setdefault` o acceso por clave, y consolidé el procesamiento de la extensión para reducir la sobrecarga de llamadas a métodos de `Path` dentro del bucle crítico de escaneo.
 - `2026-10-06T05:08:20` **assistant.py** (rendimiento): Se implementó un `lru_cache` en `context_as_text` para evitar la serialización repetitiva de las métricas durante el procesamiento de consultas, mejorando la eficiencia al evitar cálculos de strings innecesarios en cada llamada.
 - `2026-10-06T05:05:55` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y la mantenibilidad del código mediante la formalización de las firmas de tipo y la extracción de lógica compleja de filtrado en `_is_safe_entry` hacia componentes más modulares y documentados.
-- `2026-10-06T04:55:51` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y la mantenibilidad de `quarantine.py` mediante la refactorización de `_atomic_isolate_file` para dividir su lógica en pasos explícitos y la adición de documentación técnica detallada en el `docstring` de las funciones críticas, facilitando el entendimiento del flujo de seguridad.
