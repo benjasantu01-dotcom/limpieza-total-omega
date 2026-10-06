@@ -75,7 +75,8 @@ def _is_readable(path: Path) -> bool:
     if not isinstance(path, Path):
         return False
     try:
-        return path.is_file() and os.access(path, os.R_OK)
+        resolved = path.resolve(strict=True)
+        return resolved.is_file() and os.access(resolved, os.R_OK)
     except (OSError, PermissionError, ValueError, AttributeError):
         return False
 
@@ -92,7 +93,7 @@ def _get_file_size(path: Path) -> int:
     if not isinstance(path, Path):
         return -1
     try:
-        stats = path.stat()
+        stats = path.resolve(strict=True).stat()
         return int(stats.st_size) if stats.st_size >= 0 else -1
     except (OSError, PermissionError, FileNotFoundError, AttributeError, ValueError):
         return -1
@@ -227,7 +228,7 @@ class Scanner:
             if self._is_reparse_point(entry) or entry.is_symlink():
                 return False
                 
-            real_path = Path(entry.path).resolve()
+            real_path = Path(entry.path).resolve(strict=True)
             if not str(real_path).lower().startswith(self.base_root_str):
                 return False
                 
@@ -274,7 +275,7 @@ class Scanner:
             if is_dir:
                 self._handle_directory(entry, directory_stack, current_depth)
             else:
-                self._run_file_heuristics(Path(entry.path), entry)
+                self._run_file_heuristics(Path(entry.path).resolve(), entry)
         except (OSError, PermissionError, AttributeError):
             return
 
@@ -292,13 +293,18 @@ class Scanner:
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> List[Suspicion]:
     """Realiza un análisis heurístico único sobre un archivo validado individualmente."""
-    if not isinstance(path, Path) or not _is_readable(path) or is_protected_path(path): 
+    if not isinstance(path, Path): return []
+    try:
+        resolved = path.resolve(strict=True)
+        if not _is_readable(resolved) or is_protected_path(resolved): 
+            return []
+    except (OSError, RuntimeError):
         return []
     
     findings: List[Suspicion] = []
     for check_fn in ALL_CHECKS:
         try:
-            res = check_fn(path, entry, now_ts)
+            res = check_fn(resolved, entry, now_ts)
             if res is not None: findings.append(res)
         except (OSError, PermissionError, AttributeError, ValueError):
             continue
@@ -310,8 +316,8 @@ def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
     try:
         path_str = str(directory).strip()
         if not path_str or not _is_valid_path_structure(path_str): return []
-        base_path = Path(path_str).resolve()
-        if not base_path.exists() or not base_path.is_dir() or base_path.is_symlink() or not os.access(base_path, os.R_OK):
+        base_path = Path(path_str).resolve(strict=True)
+        if not base_path.is_dir() or base_path.is_symlink() or not os.access(base_path, os.R_OK):
             return []
         if is_protected_path(base_path): return []
         scanner = Scanner(base_root=base_path)

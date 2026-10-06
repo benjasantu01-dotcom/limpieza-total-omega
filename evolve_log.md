@@ -819,3 +819,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-06T06:48:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-06T06:48:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T06:48:22` Corrida terminada. Total usado hoy: 160.
+- `2026-10-06T06:56:51` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-10-06T06:57:40` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una verificación de "propietario" mediante la API Win32 `GetNamedSecurityInfoW` en `ensure_safe_to_modify` para asegurar que el archivo no pertenezca al grupo `TrustedInstaller` o `SYSTEM`, previniendo modificaciones en archivos que, aunque no tengan el flag de "sistema" activo, están protegidos por ACLs críticas del sistema operativo.
+- `2026-10-06T06:58:11` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `scanner.py` implementando una validación estricta de rutas mediante `path.resolve()` antes de realizar cualquier heurística, previniendo riesgos de "race conditions" o ataques de tipo TOCTOU donde la estructura del sistema de archivos podría cambiar durante la ejecución.
+- `2026-10-06T06:58:46` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad de la persistencia de configuración mediante la validación estricta de rutas antes de cualquier operación de escritura (mediante `ensure_safe_to_modify`) y se reemplazó el uso de `os.remove` por una verificación explícita de seguridad, evitando riesgos de manipulación de enlaces simbólicos o rutas críticas durante la limpieza de archivos temporales.
+- `2026-10-06T06:59:01` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-10-06T06:59:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T06:59:01` Corrida terminada. Total usado hoy: 164.

@@ -447,9 +447,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             try: os.replace(config_path, bak_path)
             except OSError: pass
         
-        if not is_safe_to_modify(str(config_path.resolve().parent)):
-            raise PermissionError("Seguridad comprometida")
-            
+        ensure_safe_to_modify(str(config_path.resolve()))
         os.replace(temp_path, config_path)
         _MANAGER.clear()
         return config_path
@@ -457,7 +455,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     finally:
         if temp_path.exists():
             try:
-                if not os.path.islink(temp_path): os.remove(temp_path)
+                # Verificación de seguridad antes de remover el temporal
+                if not os.path.islink(temp_path) and is_safe_to_modify(str(temp_path.resolve())):
+                    os.remove(temp_path)
             except OSError: pass
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:

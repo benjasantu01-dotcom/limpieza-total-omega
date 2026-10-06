@@ -167,6 +167,7 @@ class SafetyValidationErrorCode(IntEnum):
     EMPTY_FILE = 29
     VOLUME_RESTRICTED = 30
     PATH_TOO_DEEP = 31
+    SYSTEM_OWNER_PROTECTION = 32
 
 class UnsafePathError(Exception):
     """Excepción lanzada cuando una ruta no supera los filtros de seguridad."""
@@ -200,6 +201,7 @@ class ProtectionReason(Enum):
     SPARSE_FILE = auto()
     DEVICE_FILE = auto()
     VOLUME_RESTRICTED = auto()
+    SYSTEM_OWNER = auto()
 
 class ValidationContext(Enum):
     """Contexto de la validación: Estructural (nombres) o Integridad (disco)."""
@@ -255,6 +257,25 @@ def is_running_as_admin() -> bool:
         return bool(shell32.IsUserAnAdmin())
     except (AttributeError, OSError, ctypes.ArgumentError):
         return False
+
+def _is_file_owned_by_system(path_str: str) -> bool:
+    """Verifica si el propietario del archivo es el grupo SYSTEM o TrustedInstaller (Windows)."""
+    if os.name != 'nt': return False
+    try:
+        advapi32 = ctypes.windll.advapi32
+        sid_ptr = ctypes.c_void_p()
+        # SE_FILE_OBJECT = 1
+        res = advapi32.GetNamedSecurityInfoW(
+            path_str, 1, 0x00000001, ctypes.byref(sid_ptr), None, None, None, None
+        )
+        if res == 0:
+            # SIDs conocidos: S-1-5-18 (SYSTEM), S-1-5-80-956008885-3418522649-1831038088-1856943809-1736724339 (TrustedInstaller)
+            sid_str = ctypes.create_unicode_buffer(128)
+            advapi32.ConvertSidToStringSidW(sid_ptr, ctypes.byref(sid_str))
+            sid_val = sid_str.value
+            return sid_val.startswith("S-1-5-18") or sid_val.startswith("S-1-5-80")
+    except (AttributeError, OSError, ctypes.ArgumentError): pass
+    return False
 
 def _has_invalid_chars(path_str: Optional[str]) -> bool:
     """Detecta caracteres de control invisibles o prohibidos en nombres de rutas de Windows."""
@@ -418,6 +439,7 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _rule(ProtectionReason.EXCESSIVE_SIZE, lambda p, st, __: p.is_file() and st.st_size > MAX_FILE_SIZE),
     _rule(ProtectionReason.MOUNT_POINT, lambda p, _, __: os.path.ismount(p)),
     _rule(ProtectionReason.INVALID_TYPE, lambda _, st, __: not (stat.S_ISREG(st.st_mode) or stat.S_ISDIR(st.st_mode))),
+    _rule(ProtectionReason.SYSTEM_OWNER, lambda p, _, __: _is_file_owned_by_system(str(p))),
 ]
 
 _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
@@ -437,7 +459,8 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
     ProtectionReason.MOUNT_POINT: SafetyValidationErrorCode.MOUNT_POINT_DETECTED,
     ProtectionReason.SPARSE_FILE: SafetyValidationErrorCode.SPARSE_FILE_DETECTED,
     ProtectionReason.EMPTY_FILE: SafetyValidationErrorCode.EMPTY_FILE,
-    ProtectionReason.READ_ONLY: SafetyValidationErrorCode.WRITE_ACCESS_DENIED
+    ProtectionReason.READ_ONLY: SafetyValidationErrorCode.WRITE_ACCESS_DENIED,
+    ProtectionReason.SYSTEM_OWNER: SafetyValidationErrorCode.SYSTEM_OWNER_PROTECTION
 }
 
 def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
