@@ -1435,3 +1435,13 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-06T00:51:11` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje global evitando la creación redundante de objetos y minimizando el procesamiento de cadenas mediante la pre-compilación de los resultados del pipeline, además de utilizar un acceso más eficiente a los pesos.
 - `2026-10-06T00:51:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T00:51:11` Corrida terminada. Total usado hoy: 20.
+- `2026-10-06T00:59:28` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-10-06T00:59:32` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T01:00:35` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-06T01:01:41` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-06T01:02:53` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-06T01:03:40` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó `top_memory_processes` eliminando la llamada repetitiva a `EnumProcesses` y el loop innecesario en cada consulta, implementando una caché temporal más eficiente que evita el re-procesamiento de PIDs cuando los datos siguen vigentes.
+- `2026-10-06T01:04:13` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-10-06T01:04:43` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el acceso al manifiesto implementando una carga perezosa con caché indexada, reduciendo la complejidad de las búsquedas por `item_id` de O(n) a O(1) y evitando lecturas innecesarias del disco en operaciones repetitivas.
+- `2026-10-06T01:04:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T01:04:43` Corrida terminada. Total usado hoy: 24.

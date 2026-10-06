@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **219** (43.5% de aceptación)
 - Rechazadas por tests: 24
 - Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 62 | 7 | 9 | 2 | 54 |
+| 2026-10-04 | 59 | 7 | 9 | 2 | 53 |
 | 2026-10-05 | 147 | 16 | 26 | 9 | 152 |
-| 2026-10-06 | 11 | 1 | 4 | 1 | 3 |
+| 2026-10-06 | 13 | 1 | 4 | 1 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
-- robustez ante casos límite: **46**
-- seguridad defensiva: **45**
+- seguridad defensiva: **44**
 - legibilidad y documentación: **44**
-- rendimiento: **36**
+- robustez ante casos límite: **44**
+- rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **22**
-- `scanner.py`: **21**
-- `memory.py`: **20**
+- `memory.py`: **21**
+- `quarantine.py`: **20**
+- `scanner.py`: **20**
 - `diskreport.py`: **19**
-- `quarantine.py`: **19**
-- `assistant.py`: **17**
 - `safety.py`: **17**
 - `duplicates.py`: **16**
+- `assistant.py`: **16**
 - `browser.py`: **16**
 - `branding.py`: **16**
 - `organizer.py`: **14**
 - `settings.py`: **13**
-- `startup.py`: **6**
+- `startup.py`: **5**
 - `main.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T01:04:43` **quarantine.py** (rendimiento): Optimicé el acceso al manifiesto implementando una carga perezosa con caché indexada, reduciendo la complejidad de las búsquedas por `item_id` de O(n) a O(1) y evitando lecturas innecesarias del disco en operaciones repetitivas.
+- `2026-10-06T01:03:40` **memory.py** (rendimiento): Se optimizó `top_memory_processes` eliminando la llamada repetitiva a `EnumProcesses` y el loop innecesario en cada consulta, implementando una caché temporal más eficiente que evita el re-procesamiento de PIDs cuando los datos siguen vigentes.
 - `2026-10-06T00:51:11` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global evitando la creación redundante de objetos y minimizando el procesamiento de cadenas mediante la pre-compilación de los resultados del pipeline, además de utilizar un acceso más eficiente a los pesos.
 - `2026-10-06T00:50:25` **diskreport.py** (rendimiento): Optimicé el rendimiento de `_is_excluded_path` reemplazando la creación de objetos `Path` pesados en cada iteración por el uso de `os.path` y métodos de `os.DirEntry` (`path`, `is_symlink`), reduciendo drásticamente la carga de memoria y el tiempo de CPU durante el escaneo del disco.
 - `2026-10-06T00:41:37` **branding.py** (rendimiento): Se optimizó la generación de `_SVG_GRADIENT_STOPS` convirtiéndola en una constante calculada en tiempo de carga mediante `tuple` y `join`, eliminando el re-cálculo de strings innecesario, y se reemplazó el uso de `range` + indexación manual en `gradient_colors` por una pre-asignación de lista más eficiente.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T00:09:09` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la lógica de renderizado del logo mediante la extracción de parámetros geométricos hacia constantes con nombre claro y la implementación de una firma de tipo más precisa en `_draw_shield_stripes` y `_draw_shield_icon_decorations`.
 - `2026-10-05T14:43:00` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` encapsulando la lógica de escritura en un bloque `try...finally` más específico para garantizar que el archivo `temp` siempre se intente limpiar ante cualquier fallo, y añadí validaciones `is_safe_to_modify` previas a las operaciones de archivo para evitar excepciones inesperadas en entornos con restricciones de acceso.
 - `2026-10-05T14:42:37` **scanner.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `_safe_stat` y `_get_file_size` asegurando que los valores devueltos sean consistentes y manejables, evitando que excepciones de acceso a disco se propaguen fuera de las funciones de utilidad.
-- `2026-10-05T14:42:06` **safety.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `_to_long_path` y `_get_file_attrs` para evitar excepciones no capturadas al procesar rutas mal formadas o inaccesibles, asegurando que el bucle de seguridad retorne estados seguros en lugar de abortar la ejecución.
-- `2026-10-05T14:34:00` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_dir` centralizando la validación de la estructura del directorio, evitando que errores de resolución de rutas (`OSError`) o permisos se propaguen silenciosamente y asegurando que `ensure_safe_to_modify` se utilice correctamente con un retorno booleano implícito en el flujo, añadiendo chequeos específicos contra valores `None` o rutas vacías.

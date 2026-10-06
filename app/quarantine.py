@@ -115,7 +115,7 @@ def _is_file_exclusive(path: Path) -> bool:
         except Exception: return False
     
     try:
-        fd = os.open(path, os.O_RDONLY) # Cambiado a O_RDONLY para lectura segura
+        fd = os.open(path, os.O_RDONLY) 
         try:
             fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
             fcntl.flock(fd, fcntl.LOCK_UN)
@@ -815,10 +815,8 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         raise ValueError("ID de ítem vacío o inválido.")
     try:
         base_path = quarantine_dir(base)
-        manifest = _MANIFEST_CACHE.get(base_path)
-        if manifest is None:
-            load_manifest(base)
-            manifest = _MANIFEST_CACHE.get(base_path, {})
+        # El caché es gestionado por load_manifest
+        manifest = {i.item_id: i for i in load_manifest(base)}
             
         quarantine_item = manifest.get(item_id)
         if not quarantine_item:
@@ -826,7 +824,7 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         
         stored_file = _validate_quarantine_path(base_path / quarantine_item.stored_name, base_path)
         if not stored_file.exists() or not stored_file.is_file():
-            items = load_manifest(base)
+            items = load_manifest(base, force_reload=True)
             save_manifest([i for i in items if i.item_id != item_id], base)
             raise RuntimeError("Archivo en cuarentena inexistente.")
             
@@ -856,7 +854,7 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
             raise UnsafePathError("Destino no seguro.")
             
         os.replace(str(stored_file), str(destination))
-        items = load_manifest(base)
+        items = load_manifest(base, force_reload=True)
         save_manifest([i for i in items if i.item_id != item_id], base)
         return destination
     except (OSError, PermissionError, IOError) as e:
@@ -869,18 +867,14 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
         raise ValueError("ID de ítem vacío o inválido.")
     base_path = quarantine_dir(base)
     
-    manifest = _MANIFEST_CACHE.get(base_path)
-    if manifest is None:
-        load_manifest(base)
-        manifest = _MANIFEST_CACHE.get(base_path, {})
-        
+    manifest = {i.item_id: i for i in load_manifest(base)}
     quarantine_item = manifest.get(item_id)
     if quarantine_item is None:
         return False
         
     stored_file = _validate_quarantine_path(base_path / quarantine_item.stored_name, base_path)
     if not stored_file.exists():
-        items = load_manifest(base)
+        items = load_manifest(base, force_reload=True)
         save_manifest([i for i in items if i.item_id != item_id], base)
         return True
     
@@ -888,7 +882,7 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
         raise UnsafePathError(f"Integridad fallida para {item_id}.")
         
     if _safe_unlink(stored_file, expected_hash=quarantine_item.sha256, expected_inode=quarantine_item.file_inode):
-        items = load_manifest(base)
+        items = load_manifest(base, force_reload=True)
         save_manifest([i for i in items if i.item_id != item_id], base)
         return True
     return False

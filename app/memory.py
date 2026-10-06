@@ -267,15 +267,16 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     now = time.time()
     cache_time, cache_data = top_memory_processes._cache
     
+    # TTL de 60 segundos para evitar carga innecesaria del sistema
     if (now - cache_time) > 60:
         psapi = ctypes.windll.psapi
-        pids = (ctypes.c_ulong * 1024)()
+        pids = (ctypes.c_ulong * 2048)()
         cb = ctypes.sizeof(pids)
         cb_needed = ctypes.c_ulong()
         
-        processes = []
         if psapi.EnumProcesses(ctypes.byref(pids), cb, ctypes.byref(cb_needed)):
             count = cb_needed.value // ctypes.sizeof(ctypes.c_ulong)
+            processes = []
             for i in range(count):
                 pid = pids[i]
                 if _is_system_process(pid) or pid == 0: continue
