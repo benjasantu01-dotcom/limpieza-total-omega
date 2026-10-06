@@ -657,7 +657,15 @@ def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, Inode]:
 
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode]:
-    """Ejecuta el aislamiento atómico verificando precondiciones TOCTOU."""
+    """
+    Ejecuta el aislamiento atómico del archivo en el sandbox.
+    
+    Proceso:
+    1. Verifica condiciones iniciales para mitigar ataques TOCTOU.
+    2. Valida la integridad del sandbox y la inexistencia de colisiones.
+    3. Realiza la transferencia vía archivo temporal con validación de hash.
+    """
+    # 1. Verificaciones de precondición (TOCTOU)
     if not source.exists():
         raise FileNotFoundError("Archivo origen no existe.")
     stat_orig = _check_io_error_context(source.stat)
@@ -667,7 +675,7 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if stat_orig.st_nlink > 1:
         raise UnsafePathError("Aislamiento denegado: el archivo tiene enlaces físicos múltiples.")
     
-    # Validar que el destino resuelto sea hijo legítimo del sandbox
+    # 2. Validación de confinamiento
     dest_resolved = destination.resolve()
     base_resolved = destination.parent.resolve()
     if not is_within_directory(dest_resolved, base_resolved):
@@ -676,6 +684,7 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if source.resolve() == dest_resolved:
         raise UnsafePathError("El origen ya reside en el directorio destino.")
     _validate_quarantine_path(destination, destination.parent)
+    
     if len(str(destination)) >= 250:
         raise OSError("Ruta destino demasiado larga.")
         
@@ -686,6 +695,7 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if any(i.file_inode == stat_orig.st_ino for i in existing_items):
         raise RuntimeError("Colisión de inodo: el archivo parece estar ya registrado.")
 
+    # 3. Ejecución de transferencia
     try:
         return _write_temp_to_final(source, destination)
     except Exception as e:
