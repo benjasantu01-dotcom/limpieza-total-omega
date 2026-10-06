@@ -64,7 +64,7 @@ __all__: Tuple[str, ...] = (
 DEFAULT_QUARANTINE_DIR: str = "~/LimpiezaTotalOmega/_Cuarentena"
 MANIFEST_NAME: str = "manifest.json"
 CHUNK_SIZE: int = 131072  # 128KB para procesamiento de I/O
-_MANIFEST_CACHE: Dict[Path, Dict[str, QuarantineItem]] = {}
+_MANIFEST_CACHE: Dict[Path, List[QuarantineItem]] = {}
 
 WINDOWS_RESERVED_NAMES: Set[str] = {
     "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", 
@@ -475,19 +475,19 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
 
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Deserializa el manifiesto, usando caché perezoso indexado para rendimiento O(1)."""
+    """Deserializa el manifiesto, usando caché perezoso para rendimiento O(1)."""
     try:
         base_dir = quarantine_dir(base)
     except (OSError, UnsafePathError):
         return []
         
     if not force_reload and base_dir in _MANIFEST_CACHE:
-        return list(_MANIFEST_CACHE[base_dir].values())
+        return _MANIFEST_CACHE[base_dir]
         
     try:
         m_path = _manifest_path(base_dir)
         if not m_path.exists() or m_path.stat().st_size == 0:
-            _MANIFEST_CACHE[base_dir] = {}
+            _MANIFEST_CACHE[base_dir] = []
             return []
         
         with open(m_path, "r", encoding="utf-8") as f:
@@ -497,15 +497,15 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
             raise ValueError("Formato de manifiesto inválido.")
             
         items = [i for d in data if (i := QuarantineItem.from_dict(d))]
-        _MANIFEST_CACHE[base_dir] = {item.item_id: item for item in items}
+        _MANIFEST_CACHE[base_dir] = items
         return items
     except (OSError, json.JSONDecodeError, ValueError):
-        _MANIFEST_CACHE[base_dir] = {}
+        _MANIFEST_CACHE[base_dir] = []
         return []
 
 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Persiste el manifiesto usando escritura atómica y actualiza el caché indexado."""
+    """Persiste el manifiesto usando escritura atómica y actualiza la caché."""
     base_path = quarantine_dir(base)
     target_path = _manifest_path(base_path)
     
@@ -523,7 +523,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
             temp_name = tf.name
             
         os.replace(temp_name, target_path)
-        _MANIFEST_CACHE[base_path] = {item.item_id: item for item in items}
+        _MANIFEST_CACHE[base_path] = items
         return target_path
     except (OSError, IOError) as e:
         raise RuntimeError(f"Error crítico al persistir manifiesto: {e}")
@@ -824,7 +824,6 @@ def quarantine_file(
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Lista elementos en cuarentena, ordenados por fecha de aislamiento."""
     try:
-        quarantine_dir(base)
         return sorted(load_manifest(base), key=lambda x: x.quarantined_at, reverse=True)
     except (OSError, UnsafePathError, PermissionError):
         return []
@@ -836,10 +835,9 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         raise ValueError("ID de ítem vacío o inválido.")
     try:
         base_path = quarantine_dir(base)
-        # El caché es gestionado por load_manifest
-        manifest = {i.item_id: i for i in load_manifest(base)}
+        manifest = load_manifest(base)
             
-        quarantine_item = manifest.get(item_id)
+        quarantine_item = next((i for i in manifest if i.item_id == item_id), None)
         if not quarantine_item:
             raise KeyError(f"Ítem no encontrado: {item_id}")
         
@@ -888,8 +886,8 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
         raise ValueError("ID de ítem vacío o inválido.")
     base_path = quarantine_dir(base)
     
-    manifest = {i.item_id: i for i in load_manifest(base)}
-    quarantine_item = manifest.get(item_id)
+    items = load_manifest(base)
+    quarantine_item = next((i for i in items if i.item_id == item_id), None)
     if quarantine_item is None:
         return False
         
@@ -951,9 +949,7 @@ def total_quarantined_bytes(base: PathLike = DEFAULT_QUARANTINE_DIR, items: Opti
     """Calcula el espacio total ocupado por los archivos en cuarentena."""
     if items is None:
         items = load_manifest(base)
-    if not isinstance(items, list):
-        return 0
-    return sum(item.size_bytes for item in items if isinstance(item, QuarantineItem))
+    return sum(item.size_bytes for item in items)
 
 
 def summarize(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[str]:

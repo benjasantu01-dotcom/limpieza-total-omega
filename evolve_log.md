@@ -652,3 +652,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-06T05:27:20` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el bucle de escaneo de `organizer.py` mediante el uso de `str.endswith()` directamente con la tupla `JUNK_EXT_TUPLE` pre-calculada, eliminando la llamada a funciones intermedias y reduciendo la sobrecarga de CPU en cada iteración del escáner de archivos.
 - `2026-10-06T05:27:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T05:27:20` Corrida terminada. Total usado hoy: 128.
+- `2026-10-06T05:35:15` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-10-06T05:36:01` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `load_manifest` y `save_manifest` mediante el uso de una caché estática (`_MANIFEST_CACHE`) más efectiva y evité la serialización innecesaria del JSON completo al acceder a la lista de ítems, reduciendo el I/O en operaciones frecuentes.
+- `2026-10-06T05:36:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 100): unterminated string literal (detected at line 100)
+- `2026-10-06T05:37:10` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado `_is_system_path_raw` reemplazando la evaluación lineal mediante una lista de prefijos por un conjunto (frozenset) de rutas normalizadas y el uso de `commonpath` para una detección de pertenencia en O(1) o O(n) sobre componentes de ruta en lugar de costosos chequeos de cadenas, mejorando el rendimiento en el escaneo masivo de archivos.
+- `2026-10-06T05:37:25` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_inside_base_root, Scanner._is_reparse_point
+- `2026-10-06T05:37:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T05:37:25` Corrida terminada. Total usado hoy: 132.

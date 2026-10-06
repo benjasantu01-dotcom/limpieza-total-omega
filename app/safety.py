@@ -225,12 +225,10 @@ SENSITIVE_EXTENSIONS: Final[frozenset[str]] = frozenset({
     ".reg", ".pol", ".key", ".pem", ".pfx", ".p12", ".crt", ".cer",
 })
 
-_SYSTEM_ROOT_PATHS: Final[tuple[str, ...]] = tuple(
-    os.normcase(os.environ[v]) for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
+_SYSTEM_ROOT_PATHS: Final[frozenset[Path]] = frozenset(
+    Path(os.environ[v]).resolve() for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
     if os.environ.get(v)
 )
-
-_SYSTEM_ROOT_PATHS_TUPLE: Final[tuple[str, ...]] = tuple(p.lower() for p in _SYSTEM_ROOT_PATHS)
 
 _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
     r'^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$', re.IGNORECASE
@@ -562,10 +560,15 @@ def is_drive_root(path: PathLike) -> bool:
 @lru_cache(maxsize=4096)
 def _is_system_path_raw(path_str: str) -> bool:
     """Comprueba si una ruta pertenece a directorios críticos del sistema basándose en prefijos y partes."""
-    path_lower = path_str.lower()
-    if any(path_lower.startswith(root) for root in _SYSTEM_ROOT_PATHS_TUPLE):
+    try:
+        p = Path(path_str).resolve()
+        # Si la ruta es subdirectorio de algún root protegido
+        if any(root in p.parents or p == root for root in _SYSTEM_ROOT_PATHS):
+            return True
+        # Chequeo por componentes de nombre prohibidos
+        return any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts)
+    except (OSError, RuntimeError):
         return True
-    return any(p in PROTECTED_DIR_NAMES for p in Path(path_lower).parts)
 
 @lru_cache(maxsize=4096)
 def is_protected_path(path: PathLike) -> bool:
@@ -574,7 +577,7 @@ def is_protected_path(path: PathLike) -> bool:
     try:
         p_str = str(path)
         if _is_system_directory_junction(p_str): return True
-        # Chequeo rápido de prefijos antes de resolver la ruta
+        # Chequeo rápido antes de una resolución completa
         if _is_system_path_raw(p_str): return True
         p = normalize(p_str)
         if p == Path(p.anchor): return True

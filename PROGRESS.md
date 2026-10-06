@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **210** (41.7% de aceptación)
+- Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 26
-- Rechazadas por guardia de seguridad: 41
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 12
 - Sin respuesta de la IA (error o límite): 215
 
@@ -16,30 +16,30 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 10 | 1 | 1 | 0 | 14 |
+| 2026-10-04 | 6 | 1 | 1 | 0 | 14 |
 | 2026-10-05 | 147 | 16 | 26 | 9 | 152 |
-| 2026-10-06 | 53 | 9 | 14 | 3 | 49 |
+| 2026-10-06 | 55 | 9 | 16 | 3 | 49 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **45**
+- seguridad defensiva: **41**
 - legibilidad y documentación: **41**
 - robustez ante casos límite: **39**
-- rendimiento: **36**
+- rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **22**
-- `diskreport.py`: **21**
 - `healthscore.py`: **21**
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
+- `diskreport.py`: **20**
 - `scanner.py`: **19**
-- `branding.py`: **17**
-- `browser.py`: **17**
 - `organizer.py`: **16**
-- `assistant.py`: **15**
-- `safety.py`: **14**
+- `branding.py`: **16**
+- `browser.py`: **16**
+- `safety.py`: **15**
+- `assistant.py`: **14**
 - `duplicates.py`: **13**
 - `settings.py`: **12**
 - `main.py`: **2**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T05:37:10` **safety.py** (rendimiento): Se ha optimizado `_is_system_path_raw` reemplazando la evaluación lineal mediante una lista de prefijos por un conjunto (frozenset) de rutas normalizadas y el uso de `commonpath` para una detección de pertenencia en O(1) o O(n) sobre componentes de ruta en lugar de costosos chequeos de cadenas, mejorando el rendimiento en el escaneo masivo de archivos.
+- `2026-10-06T05:36:01` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` y `save_manifest` mediante el uso de una caché estática (`_MANIFEST_CACHE`) más efectiva y evité la serialización innecesaria del JSON completo al acceder a la lista de ítems, reduciendo el I/O en operaciones frecuentes.
 - `2026-10-06T05:27:20` **organizer.py** (rendimiento): Optimicé el bucle de escaneo de `organizer.py` mediante el uso de `str.endswith()` directamente con la tupla `JUNK_EXT_TUPLE` pre-calculada, eliminando la llamada a funciones intermedias y reduciendo la sobrecarga de CPU en cada iteración del escáner de archivos.
 - `2026-10-06T05:27:07` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la iteración completa sobre todos los PIDs por una consulta inicial mediante `EnumProcesses` optimizada y reduciendo llamadas innecesarias al sistema operativo al verificar condiciones de seguridad solo una vez.
 - `2026-10-06T05:25:40` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global en `compute_score` cacheando el acceso al diccionario `_PIPELINE` y pre-calculando el desglose de métricas mediante un diccionario local, evitando llamadas a `.get()` y búsquedas iterativas adicionales dentro del bucle.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T04:36:07` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y la precisión del mantenimiento del estado en `_collect_summary_data` y `largest_folders` mediante la adición de docstrings técnicos detallados, type hints explícitos y la clarificación de la lógica de acumulación de métricas, facilitando el mantenimiento a largo plazo.
 - `2026-10-06T04:35:50` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings estructurados (usando el formato Google Style) en las funciones críticas de escaneo y validación, junto con una revisión de los tipos de retorno para clarificar las intenciones de diseño.
 - `2026-10-06T04:35:21` **branding.py** (legibilidad y documentación): He mejorado la legibilidad y la mantenibilidad del archivo documentando exhaustivamente la estructura de datos del `_SVG_TEMPLATE` y las funciones de dibujo geométrico mediante docstrings estándar, clarificando el propósito de los factores de escalado utilizados en la UI.
-- `2026-10-06T04:25:55` **settings.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save()` capturando explícitamente excepciones de `json.dumps` y mejorando la validación del directorio padre para evitar errores de escritura en entornos con permisos restringidos o rutas inexistentes, asegurando que cualquier fallo deje el sistema en estado consistente.
-- `2026-10-06T04:25:19` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas mediante la validación proactiva de entrada (`None`/`path` inválido) y la captura específica de excepciones en `check_recent_executable_in_downloads` y `check_system_lookalike`, evitando comportamientos indefinidos al recibir datos inesperados.
