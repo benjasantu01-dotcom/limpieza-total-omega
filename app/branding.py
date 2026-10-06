@@ -349,7 +349,7 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
     rgb_stops = tuple(_hex_to_rgb(s) for s in stops)
     n_segments = len(stops) - 1
     
-    res = [""] * n
+    res = [C_TEXT_MUTED] * n
     for i in range(n):
         ratio = i / (n - 1) if n > 1 else 0.0
         pos = ratio * n_segments

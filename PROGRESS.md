@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **209** (41.5% de aceptación)
+- Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 32
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 11
 - Sin respuesta de la IA (error o límite): 208
 
@@ -16,35 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-05 | 72 | 10 | 13 | 3 | 78 |
-| 2026-10-06 | 137 | 22 | 31 | 8 | 130 |
+| 2026-10-05 | 69 | 10 | 13 | 3 | 77 |
+| 2026-10-06 | 139 | 22 | 32 | 8 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - seguridad defensiva: **48**
-- robustez ante casos límite: **41**
 - legibilidad y documentación: **41**
-- rendimiento: **29**
+- robustez ante casos límite: **38**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **23**
+- `memory.py`: **22**
 - `diskreport.py`: **20**
-- `healthscore.py`: **19**
 - `quarantine.py`: **19**
-- `organizer.py`: **17**
+- `healthscore.py`: **18**
 - `safety.py`: **17**
 - `scanner.py`: **17**
+- `branding.py`: **17**
 - `browser.py`: **17**
-- `branding.py`: **16**
+- `organizer.py`: **16**
 - `settings.py`: **14**
+- `assistant.py`: **13**
 - `duplicates.py`: **13**
-- `assistant.py`: **12**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T14:09:28` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` eliminando la creación innecesaria de listas mutables y mejorando la precisión del cálculo de pasos, además de reducir el gasto de memoria en el bucle principal al utilizar pre-calculado de segmentos.
+- `2026-10-06T14:08:20` **assistant.py** (rendimiento): Optimicé el buscador de manejadores en `local_answer` eliminando una redundancia lógica (se ejecutaba `findall` dos veces sobre el mismo resultado) y reemplazando la lógica de búsqueda por un acceso directo al diccionario `_TOKENS_MAP` usando el primer token encontrado, reduciendo ciclos innecesarios.
 - `2026-10-06T13:58:44` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `_Validators` para clarificar la lógica de validación, añadiendo docstrings descriptivos que explican el "porqué" de las restricciones de seguridad en las rutas, facilitando el mantenimiento y la auditoría.
 - `2026-10-06T13:58:24` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `scanner.py` mediante la adición de docstrings detallados en los métodos de heurística y la estandarización de las anotaciones de tipo, facilitando el mantenimiento y la comprensión de las reglas de seguridad.
 - `2026-10-06T13:57:52` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `ensure_safe_to_modify` extrayendo la lógica de validación de componentes en bucle a una función privada dedicada `_validate_path_components`, reduciendo el acoplamiento y facilitando la comprensión del flujo principal.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T13:08:27` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de entrada (`None`/vacíos) y encapsulando las operaciones de movimiento/borrado en bloques `try-except` más granulares para prevenir que errores en un archivo detengan el procesamiento de toda la lista, asegurando que la integridad del proceso de limpieza se mantenga ante fallos de I/O específicos.
 - `2026-10-06T13:08:10` **memory.py** (manejo de errores y validación de entradas): Se mejora la robustez de `trim_working_set` y sus ayudantes validando explícitamente el `handle` antes de llamar a `EmptyWorkingSet` y añadiendo chequeos de nulidad en las APIs de `ctypes` para evitar llamadas a funciones inexistentes o punteros nulos que podrían causar errores en tiempo de ejecución.
 - `2026-10-06T13:07:42` **main.py** (manejo de errores y validación de entradas): Se ha mejorado `_validate_environment` para incluir una validación de seguridad proactiva mediante `safety.ensure_safe_to_modify` sobre las rutas críticas del entorno, asegurando que la aplicación no pueda iniciarse si el directorio de la aplicación o el home del usuario son manipulados por terceros antes de la ejecución.
-- `2026-10-06T13:05:58` **healthscore.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `score_security` mediante la validación explícita de tipos y la implementación de una técnica defensiva contra entradas no numéricas o infinitas antes del cálculo, evitando errores de propagación en el pipeline.
-- `2026-10-06T12:56:59` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de alto nivel (`largest_files`, `usage_by_extension`, `largest_folders` y `total_size`) validando explícitamente que la entrada sea una ruta absoluta y resoluble antes de iniciar el escaneo, y agregué una gestión de errores más defensiva en la lógica de `largest_folders` para evitar fallos si el `relative_to` falla por rutas mal formadas.
