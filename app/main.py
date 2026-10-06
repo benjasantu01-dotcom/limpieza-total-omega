@@ -102,7 +102,7 @@ def get_cached_settings() -> Dict[str, Any]:
         if isinstance(raw, dict):
             # Validar que carpetas guardadas en ajustes sigan siendo seguras
             for key in ["carpeta_excluida"]:
-                if key in raw and raw[key] and not safety.is_safe_to_modify(Path(raw[key])):
+                if key in raw and raw[key] and not safety.is_safe_to_modify(Path(raw[key]).resolve()):
                     raw[key] = ""
             return raw
     except Exception as e:

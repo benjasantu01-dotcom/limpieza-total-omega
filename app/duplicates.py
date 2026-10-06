@@ -241,9 +241,11 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                             st = entry.stat()
                             if st.st_size >= min_size:
                                 inode_id = (st.st_dev, st.st_ino)
+                                # Adicional: verificar protección explícita también en archivos
                                 if inode_id not in visited_inodes and _is_valid_candidate(p_entry, st.st_size):
-                                    visited_inodes.add(inode_id)
-                                    size_to_paths_map[st.st_size].append(p_entry)
+                                    if not (skip_protected and is_protected_path(p_entry)):
+                                        visited_inodes.add(inode_id)
+                                        size_to_paths_map[st.st_size].append(p_entry)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError, RuntimeError):

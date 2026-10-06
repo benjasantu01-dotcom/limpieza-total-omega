@@ -6,33 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Mejoras aceptadas: **215** (42.7% de aceptación)
 - Rechazadas por tests: 28
 - Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 0 | 0 | 0 | 0 | 2 |
-| 2026-10-05 | 147 | 16 | 26 | 9 | 152 |
-| 2026-10-06 | 64 | 12 | 17 | 5 | 54 |
+| 2026-10-05 | 147 | 16 | 26 | 9 | 150 |
+| 2026-10-06 | 68 | 12 | 17 | 5 | 54 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
 - robustez ante casos límite: **46**
 - legibilidad y documentación: **41**
+- seguridad defensiva: **41**
 - rendimiento: **38**
-- seguridad defensiva: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **23**
-- `healthscore.py`: **21**
-- `diskreport.py`: **21**
+- `healthscore.py`: **22**
+- `diskreport.py`: **22**
 - `quarantine.py`: **20**
 - `scanner.py`: **18**
 - `branding.py`: **18**
@@ -40,13 +39,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - `organizer.py`: **15**
 - `safety.py`: **15**
 - `assistant.py`: **14**
-- `duplicates.py`: **13**
+- `duplicates.py`: **14**
 - `settings.py`: **12**
 - `startup.py`: **2**
-- `main.py`: **1**
+- `main.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T06:38:57` **main.py** (seguridad defensiva): Se introdujo una validación defensiva en `_build_header` que utiliza `Path.resolve()` sobre las rutas de los archivos de configuración y directorios críticos durante el inicio, asegurando que cualquier manipulación de la interfaz no resuelva rutas fuera del espacio de trabajo permitido, reforzando así el aislamiento de la aplicación.
+- `2026-10-06T06:37:58` **healthscore.py** (seguridad defensiva): Se ha robustecido el motor de normalización reemplazando el `lambda` en el pipeline de seguridad por una función dedicada `score_security` que, al igual que los demás scorers, encapsula la lógica de validación de entradas dentro de un contrato explícito de `NormalizedRatio`, evitando que valores inesperados (como números negativos de advertencias) comprometan el cálculo del puntaje global.
+- `2026-10-06T06:37:27` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de las verificaciones de seguridad en `_collect_candidates` integrando explícitamente `is_protected_path` en la validación de archivos (no solo directorios), evitando así el acceso a rutas sensibles detectadas mediante la API de seguridad centralizada.
+- `2026-10-06T06:36:57` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `walk_files` y `_collect_summary_data` validando explícitamente que el tamaño de los archivos sea un valor positivo antes de procesarlo, evitando errores de lógica o desbordamientos derivados de reportes erróneos del sistema de archivos, y asegurando que `total_bytes` no se contamine con valores negativos.
 - `2026-10-06T06:32:10` **browser.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_file_in_use` para prevenir errores de acceso durante el escaneo, añadiendo una validación explícita para asegurar que el path resuelto esté bajo el directorio de caché antes de intentar cualquier operación de sistema, evitando el potencial "path traversal" fuera de los límites permitidos.
 - `2026-10-06T06:31:48` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` y `draw_logo` validando explícitamente la integridad de los parámetros numéricos y estados de ruta, asegurando que cualquier entrada maliciosa o malformada (como valores `inf` o rutas no seguras) sea capturada antes de intentar operaciones de I/O o renderizado.
 - `2026-10-06T06:17:53` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante fallos en el sistema de archivos al añadir verificaciones de `is_file()` antes de realizar operaciones de lectura/stat, y agregué un manejo explícito para archivos bloqueados (reintentos o aborto seguro) que previene excepciones no capturadas durante la carga.
@@ -58,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T05:48:12` **branding.py** (robustez ante casos límite): Mejoré la resiliencia de `save_logo_svg` ante casos límite de sistema de archivos al añadir validaciones de estado previas a la escritura y una gestión más estricta de las excepciones, asegurando que no se produzcan intentos de escritura en rutas bloqueadas o inválidas antes de invocar la operación crítica.
 - `2026-10-06T05:37:10` **safety.py** (rendimiento): Se ha optimizado `_is_system_path_raw` reemplazando la evaluación lineal mediante una lista de prefijos por un conjunto (frozenset) de rutas normalizadas y el uso de `commonpath` para una detección de pertenencia en O(1) o O(n) sobre componentes de ruta en lugar de costosos chequeos de cadenas, mejorando el rendimiento en el escaneo masivo de archivos.
 - `2026-10-06T05:36:01` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` y `save_manifest` mediante el uso de una caché estática (`_MANIFEST_CACHE`) más efectiva y evité la serialización innecesaria del JSON completo al acceder a la lista de ítems, reduciendo el I/O en operaciones frecuentes.
-- `2026-10-06T05:27:20` **organizer.py** (rendimiento): Optimicé el bucle de escaneo de `organizer.py` mediante el uso de `str.endswith()` directamente con la tupla `JUNK_EXT_TUPLE` pre-calculada, eliminando la llamada a funciones intermedias y reduciendo la sobrecarga de CPU en cada iteración del escáner de archivos.
-- `2026-10-06T05:27:07` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la iteración completa sobre todos los PIDs por una consulta inicial mediante `EnumProcesses` optimizada y reduciendo llamadas innecesarias al sistema operativo al verificar condiciones de seguridad solo una vez.
-- `2026-10-06T05:25:40` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global en `compute_score` cacheando el acceso al diccionario `_PIPELINE` y pre-calculando el desglose de métricas mediante un diccionario local, evitando llamadas a `.get()` y búsquedas iterativas adicionales dentro del bucle.
-- `2026-10-06T05:17:21` **diskreport.py** (rendimiento): Optimicé el rendimiento de `_collect_summary_data` eliminando la creación repetida de objetos `ExtStats` en el diccionario mediante un acceso directo `setdefault` o acceso por clave, y consolidé el procesamiento de la extensión para reducir la sobrecarga de llamadas a métodos de `Path` dentro del bucle crítico de escaneo.
