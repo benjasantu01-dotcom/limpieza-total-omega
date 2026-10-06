@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **209** (41.5% de aceptación)
+- Mejoras aceptadas: **212** (42.1% de aceptación)
 - Rechazadas por tests: 29
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-05 | 102 | 13 | 19 | 7 | 115 |
-| 2026-10-06 | 107 | 16 | 23 | 8 | 94 |
+| 2026-10-05 | 102 | 13 | 19 | 7 | 111 |
+| 2026-10-06 | 110 | 16 | 24 | 8 | 94 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
-- robustez ante casos límite: **42**
+- robustez ante casos límite: **45**
 - legibilidad y documentación: **40**
 - seguridad defensiva: **40**
 - rendimiento: **37**
@@ -31,20 +31,23 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `memory.py`: **23**
 - `diskreport.py`: **21**
+- `quarantine.py`: **21**
 - `healthscore.py`: **20**
-- `quarantine.py`: **20**
 - `browser.py`: **19**
+- `scanner.py`: **18**
 - `branding.py`: **17**
-- `scanner.py`: **17**
 - `organizer.py`: **16**
+- `safety.py`: **15**
 - `duplicates.py`: **15**
-- `safety.py`: **14**
 - `assistant.py`: **13**
 - `settings.py`: **10**
 - `main.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T10:44:42` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la recursión introduciendo un control de errores más granular y preventivo, específicamente añadiendo validaciones de tipo y de integridad de ruta dentro de los bucles de `os.scandir` para evitar fallos por rutas con caracteres inválidos o acceso denegado antes de intentar procesarlas.
+- `2026-10-06T10:44:27` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes de la API de Windows añadiendo un manejo explícito para rutas que, aunque existen, devuelven atributos inválidos (0xFFFFFFFF) o fallan por bloqueos de kernel, asegurando que `ensure_safe_to_modify` no aborte por errores transitorios de E/S.
+- `2026-10-06T10:43:20` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de concurrencia y bloqueos temporales implementando una verificación de "estado en uso" mediante `GetFileAttributesW` antes de realizar operaciones de borrado en `_safe_unlink`, asegurando que no se intente operar sobre archivos bloqueados por otros procesos del sistema.
 - `2026-10-06T10:34:50` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `_is_safe_for_disk_op` añadiendo una comprobación explícita para evitar que `shutil.disk_usage` lance excepciones fatales ante rutas inválidas o dispositivos sin soporte de espacio, y se añadió una validación de `st_dev` para asegurar que el movimiento sea dentro de la misma partición física, evitando errores de `shutil.move` entre volúmenes.
 - `2026-10-06T10:34:37` **memory.py** (robustez ante casos límite): Se mejora la robustez en `_get_process_path` y `trim_working_set` al añadir una validación explícita para rutas UNC (evitando excepciones en la resolución de `Path.resolve`) y manejando correctamente casos donde el `pid` es inválido o el proceso finaliza durante la ejecución.
 - `2026-10-06T10:34:07` **main.py** (robustez ante casos límite): Se implementó una robustez ante la inicialización de widgets y estados de la UI durante cierres repentinos de la aplicación, añadiendo un `try-except` específico para `tk.TclError` en el método `_update_health_visuals` y asegurando que las actualizaciones de estado asíncronas no operen sobre widgets inexistentes tras la destrucción de la ventana.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T09:56:16` **memory.py** (rendimiento): Optimizé la función `top_memory_processes` reemplazando la creación de una lista de objetos `ProcessMemory` mediante un bucle `for` explícito por un `generator expression` eficiente, y eliminé la lógica redundante de verificación `_is_system_process(pid) or pid == 0` dentro del bucle ya que `_is_system_process` ya incluye al `0`.
 - `2026-10-06T09:56:02` **main.py** (rendimiento): Se optimizó el método `_compile_metrics` en `main.py` para evitar la lectura redundante y bloqueante de información del sistema, implementando un mecanismo de caché validado por TTL (Time-To-Live) que evita recalculos innecesarios durante la actualización del dashboard de salud.
 - `2026-10-06T09:52:24` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` cacheando las funciones de reglas pre-compiladas y evitando el acceso redundante a `math.isfinite` mediante la consolidación de la validación, reduciendo el overhead en cada ejecución del bucle principal.
-- `2026-10-06T09:51:56` **duplicates.py** (rendimiento): Optimizé el proceso de recolección de candidatos en `_collect_candidates` para evitar llamadas redundantes a `Path.exists()` y `stat()` sobre el mismo inodo, además de centralizar las verificaciones de seguridad para reducir la carga de E/S innecesaria durante el recorrido recursivo.
-- `2026-10-06T09:43:16` **diskreport.py** (rendimiento): Optimizé `walk_files` evitando el uso de `path.relative_to` dentro de `largest_folders` (que requiere múltiples cálculos de path objects) e integré la lógica de agregación de `stats` directamente en un solo paso de escaneo para reducir el overhead de procesamiento de rutas.
-- `2026-10-06T09:43:03` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante la serialización del chequeo `_is_file_in_use`, el cual ejecutaba `CreateFileW` (operación costosa de I/O) para cada archivo; ahora se aplica un filtro preventivo mediante `is_safe_to_modify` antes de proceder, reduciendo llamadas innecesarias al sistema operativo.

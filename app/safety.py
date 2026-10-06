@@ -332,10 +332,11 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
 def _get_security_descriptor_cached(path_str: str) -> SecurityDescriptor:
     """Consulta atributos de seguridad de forma cacheada basada en la ruta."""
     attrs = _get_file_attrs(path_str)
+    # Si la API falló (0 o 0xFFFFFFFF), los flags de uso se evalúan bajo sospecha
     return SecurityDescriptor(
         attrs=attrs,
         is_protected_system=bool(attrs & (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | Win32Attr.TEMPORARY | Win32Attr.REPARSE_POINT)),
-        is_in_use=_is_file_locked_by_other_process(path_str),
+        is_in_use=_is_file_locked_by_other_process(path_str) if attrs != 0xFFFFFFFF else True,
         is_readonly=bool(attrs & Win32Attr.READONLY),
         is_reparse=bool(attrs & Win32Attr.REPARSE_POINT)
     )

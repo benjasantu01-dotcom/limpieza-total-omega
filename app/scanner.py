@@ -263,14 +263,14 @@ class Scanner:
             if not isinstance(entry, os.DirEntry) or not entry.path: 
                 return
 
+            # Filtro de seguridad preventivo
+            if not self._is_safe_entry(entry):
+                return
+
             is_dir = entry.is_dir(follow_symlinks=False)
             
             # Solo procesamos directorios o archivos con extensiones relevantes
             if not is_dir and not self._is_relevant_extension(entry.name):
-                return
-            
-            # Filtro de seguridad (no destructivo)
-            if not self._is_safe_entry(entry):
                 return
                 
             if is_dir:

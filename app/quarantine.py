@@ -905,6 +905,9 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 
 def _is_item_purgable(file_path: Path, item: QuarantineItem) -> bool:
     """Valida los requisitos de seguridad antes de eliminar un archivo."""
+    # Verificación extra: comprobar si está en uso antes de intentar el unlinking
+    if _is_file_in_use_by_system(file_path):
+        return False
     return (
         file_path.is_file() and 
         not file_path.is_symlink() and
