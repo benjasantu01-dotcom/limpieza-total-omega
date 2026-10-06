@@ -48,6 +48,7 @@ _SVG_GRADIENT_STOPS: Final[str] = "\n".join(
     for o, c in zip(("0%", "55%", "100%"), ("#00f0c0", "#7c5cff", "#ff2d78"))
 )
 
+# Plantilla SVG parametrizada: {s} tamaño, {stops} gradientes, {glow} color brillo, {bg} color fondo, {font} tipografía
 _SVG_TEMPLATE: Final[str] = """<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
   <defs>
     <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">{stops}</linearGradient>
@@ -431,7 +432,7 @@ STRIPE_BASE_Y_OFFSET: Final[float] = 18.0
 
 @lru_cache(maxsize=16)
 def _get_stripe_params(scale: float, franjas_count: int) -> Tuple[Tuple[float, float, float], ...]:
-    """Calcula la geometría (ancho, y_start, y_end) de cada franja decorativa."""
+    """Calcula la geometría (ancho, y_start, y_end) de cada franja decorativa basada en escala."""
     return tuple((STRIPE_THICKNESS_SCALE * scale * (1.0 if (i / (franjas_count - 1)) < 0.55 else 1.0 - (((i / (franjas_count - 1)) - 0.55) * 1.9)),
                   i * (STRIPE_THICKNESS_SCALE * scale / franjas_count),
                   (i + 1) * (STRIPE_THICKNESS_SCALE * scale / franjas_count)) for i in range(franjas_count))
@@ -477,7 +478,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Renderiza el escudo corporativo compuesto."""
+    """Renderiza el escudo corporativo compuesto (Polígono, franjas y glifo)."""
     try:
         if canvas is None: return
         s = float(size)
@@ -496,7 +497,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja barra decorativa con gradiente optimizado por cache y segmentación."""
+    """Dibuja barra decorativa con gradiente segmentado para optimizar el número de elementos Canvas."""
     try:
         if canvas is None or stops is None: return
         w_val = max(1, min(4096, int(width)))
@@ -516,7 +517,7 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, 
               track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
     """
-    Dibuja indicador circular de progreso con validación.
+    Dibuja indicador circular de progreso (anillo de carga) con validación de límites.
     Example: draw_ring(canvas, 75, size=100) -> Dibuja un arco de 75%
     """
     try:

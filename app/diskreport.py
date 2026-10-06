@@ -325,7 +325,12 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """Calcula el peso total de las subcarpetas directas (primer nivel) del directorio."""
+    """
+    Calcula el peso total de las subcarpetas de primer nivel respecto a la raíz.
+    
+    Utiliza un diccionario de `FolderMetrics` para agregar recursivamente el tamaño
+    de cada archivo encontrado a su directorio padre inmediato.
+    """
     root = _validate_root(directory)
     if root is None: return []
     
@@ -333,6 +338,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
+            # Obtener el componente de primer nivel bajo el root
             relative = path.relative_to(root)
             if relative.parts:
                 top_folder = root / relative.parts[0]
@@ -357,8 +363,9 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     """
     Recorre el sistema de archivos y consolida métricas globales.
     
-    Usa un min-heap de tamaño fijo (`top_heap`) para mantener solo los N archivos más grandes
-    de forma eficiente (O(n log k)), evitando ordenar toda la lista de archivos encontrados.
+    Utiliza un min-heap de tamaño fijo (`top_heap`) para mantener eficientemente
+    los N archivos más pesados encontrados, operando con una complejidad de 
+    O(n log k) donde k es el límite solicitado.
     """
     total_bytes: int = 0
     total_files: int = 0
@@ -368,14 +375,19 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     for path, size_bytes in walk_files(directory, skip_protected):
         if not isinstance(size_bytes, int) or size_bytes < 0:
             continue
+        
+        # Actualización de contadores globales
         total_bytes += size_bytes
         total_files += 1
+        
+        # Clasificación por extensión
         ext_raw = path.suffix
         ext = ext_raw.lower() if ext_raw else "(sin extensión)"
         stats = ext_stats[ext]
         stats.total_bytes += size_bytes
         stats.count += 1
         
+        # Gestión del top de archivos usando un heap para optimizar memoria
         if limit > 0:
             if len(top_heap) < limit: 
                 heapq.heappush(top_heap, (size_bytes, path))
