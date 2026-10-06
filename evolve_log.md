@@ -602,3 +602,44 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-06T05:08:20` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se implementó un `lru_cache` en `context_as_text` para evitar la serialización repetitiva de las métricas durante el procesamiento de consultas, mejorando la eficiencia al evitar cálculos de strings innecesarios en cada llamada.
 - `2026-10-06T05:08:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T05:08:20` Corrida terminada. Total usado hoy: 120.
+- `2026-10-06T05:14:54` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-10-06T05:15:35` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-10-06T05:16:03` Tests FALLARON:
+```
+=========
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:172: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_data_folders - AssertionError: assert [BrowserCache...size_bytes=7)] == []
+  
+  Left contains one more item: BrowserCache(browser='Chrome', path=PosixPath('/tmp/pytest-of-runner/pytest-1/test_detect_profiles_never_rep0/Perfil/Cookies'), size_bytes=7)
+  
+  Full diff:
+  - []
+  + [
+  +     BrowserCache(
+  +         browser='Chrome',
+  +         path=PosixPath('/tmp/pytest-of-runner/pytest-1/test_detect_profiles_never_rep0/Perfil/Cookies'),
+  +         size_bytes=7,
+  +     ),
+  + ]
+1 failed, 298 passed, 7 warnings in 0.90s
+
+```
+- `2026-10-06T05:16:03` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento del escaneo recursivo mediante la eliminación de llamadas redundantes a `Path.exists()` y `Path.resolve()` dentro del bucle, además de implementar un filtrado previo más agresivo utilizando las capacidades de `os.scandir` para reducir las operaciones de E/S.
+- `2026-10-06T05:16:29` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T05:16:33` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-06T05:16:40` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-06T05:17:21` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_summary_data` eliminando la creación repetida de objetos `ExtStats` en el diccionario mediante un acceso directo `setdefault` o acceso por clave, y consolidé el procesamiento de la extensión para reducir la sobrecarga de llamadas a métodos de `Path` dentro del bucle crítico de escaneo.
+- `2026-10-06T05:17:33` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-06T05:17:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T05:17:33` Corrida terminada. Total usado hoy: 124.

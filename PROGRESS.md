@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **212** (42.1% de aceptación)
-- Rechazadas por tests: 25
-- Rechazadas por guardia de seguridad: 41
+- Mejoras aceptadas: **210** (41.7% de aceptación)
+- Rechazadas por tests: 26
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 16 | 1 | 2 | 0 | 15 |
+| 2026-10-04 | 13 | 1 | 1 | 0 | 15 |
 | 2026-10-05 | 147 | 16 | 26 | 9 | 152 |
-| 2026-10-06 | 49 | 8 | 13 | 3 | 47 |
+| 2026-10-06 | 50 | 9 | 13 | 3 | 49 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
-- robustez ante casos límite: **45**
 - seguridad defensiva: **45**
+- robustez ante casos límite: **42**
 - legibilidad y documentación: **41**
-- rendimiento: **32**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **22**
-- `quarantine.py`: **20**
+- `diskreport.py`: **21**
+- `memory.py`: **21**
 - `scanner.py`: **20**
-- `diskreport.py`: **20**
 - `healthscore.py`: **20**
+- `quarantine.py`: **19**
 - `branding.py`: **17**
 - `browser.py`: **17**
-- `organizer.py`: **16**
 - `safety.py`: **15**
 - `assistant.py`: **15**
+- `organizer.py`: **15**
 - `duplicates.py`: **13**
 - `settings.py`: **12**
 - `startup.py`: **3**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T05:17:21` **diskreport.py** (rendimiento): Optimicé el rendimiento de `_collect_summary_data` eliminando la creación repetida de objetos `ExtStats` en el diccionario mediante un acceso directo `setdefault` o acceso por clave, y consolidé el procesamiento de la extensión para reducir la sobrecarga de llamadas a métodos de `Path` dentro del bucle crítico de escaneo.
 - `2026-10-06T05:08:20` **assistant.py** (rendimiento): Se implementó un `lru_cache` en `context_as_text` para evitar la serialización repetitiva de las métricas durante el procesamiento de consultas, mejorando la eficiencia al evitar cálculos de strings innecesarios en cada llamada.
 - `2026-10-06T05:05:55` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y la mantenibilidad del código mediante la formalización de las firmas de tipo y la extracción de lógica compleja de filtrado en `_is_safe_entry` hacia componentes más modulares y documentados.
 - `2026-10-06T04:55:51` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y la mantenibilidad de `quarantine.py` mediante la refactorización de `_atomic_isolate_file` para dividir su lógica en pasos explícitos y la adición de documentación técnica detallada en el `docstring` de las funciones críticas, facilitando el entendimiento del flujo de seguridad.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T04:24:46` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_volume_readonly`, `_is_volume_removable_media` y `_is_volume_compressed_or_encrypted` mediante la adición de verificaciones explícitas de integridad de la ruta y manejo de excepciones más granular para prevenir bloqueos por rutas inválidas o volúmenes inaccesibles.
 - `2026-10-06T04:15:41` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` mediante la captura explícita de `json.JSONDecodeError` y `FileNotFoundError` (implícito en el manejo de `OSError`), asegurando que el estado del sistema no se corrompa ante archivos de manifiesto malformados o faltantes durante la inicialización.
 - `2026-10-06T04:14:54` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_locked` para evitar falsos positivos y errores inesperados al manejar archivos, asegurando que solo se intente la apertura si el archivo realmente existe y tiene permisos básicos, capturando de forma más precisa las excepciones de acceso denegado.
-- `2026-10-06T04:14:18` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez en `_get_process_path` y `trim_working_set` capturando errores de la API de Windows mediante `ctypes.get_last_error()` en lugar de asumir silencio, y validando exhaustivamente el resultado de `OpenProcess` para evitar llamadas a `CloseHandle` con nulos.
