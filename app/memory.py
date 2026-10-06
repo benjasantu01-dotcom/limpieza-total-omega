@@ -86,15 +86,15 @@ TRIM_WARNING: Final[str] = (
 class MEMORYSTATUSEX(ctypes.Structure):
     """Estructura Win32 mapeada para la API GlobalMemoryStatusEx."""
     _fields_: List[Tuple[str, type]] = [
-        ("dwLength", ctypes.c_ulong),
-        ("dwMemoryLoad", ctypes.c_ulong),
-        ("ullTotalPhys", ctypes.c_ulonglong),
-        ("ullAvailPhys", ctypes.c_ulonglong),
-        ("ullTotalPageFile", ctypes.c_ulonglong),
-        ("ullAvailPageFile", ctypes.c_ulonglong),
-        ("ullTotalVirtual", ctypes.c_ulonglong),
-        ("ullAvailVirtual", ctypes.c_ulonglong),
-        ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
+        ("dwLength", ctypes.c_ulong),            # Tamaño de la estructura en bytes
+        ("dwMemoryLoad", ctypes.c_ulong),        # Porcentaje de uso de memoria (0-100)
+        ("ullTotalPhys", ctypes.c_ulonglong),    # Memoria física total
+        ("ullAvailPhys", ctypes.c_ulonglong),    # Memoria física disponible
+        ("ullTotalPageFile", ctypes.c_ulonglong),# Límite del archivo de paginación
+        ("ullAvailPageFile", ctypes.c_ulonglong),# Disponible en archivo de paginación
+        ("ullTotalVirtual", ctypes.c_ulonglong), # Espacio virtual total
+        ("ullAvailVirtual", ctypes.c_ulonglong), # Espacio virtual disponible
+        ("ullAvailExtendedVirtual", ctypes.c_ulonglong), # Siempre 0 (reservado)
     ]
 
 @dataclass(frozen=True)
@@ -321,6 +321,14 @@ def _is_system_process(pid: int) -> bool:
     """Filtra PIDs críticos del kernel o del propio proceso de la app."""
     return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
 
+def _is_path_safe_and_valid(path_obj: Path) -> bool:
+    """Verifica si una ruta es un archivo ejecutable legítimo y no un reparse point."""
+    kernel32 = ctypes.windll.kernel32
+    if is_protected_path(str(path_obj)) or not is_safe_to_modify(path_obj):
+        return False
+    attr = kernel32.GetFileAttributesW(str(path_obj))
+    return attr != -1 and not (attr & FILE_ATTRIBUTE_REPARSE_POINT)
+
 def _get_process_path(pid: int) -> Optional[Path]:
     """Resuelve la ruta absoluta del ejecutable usando la API Win32 PSAPI."""
     kernel32 = ctypes.windll.kernel32
@@ -336,19 +344,12 @@ def _get_process_path(pid: int) -> Optional[Path]:
             raw_path = buf.value
             if not raw_path: return None
             
-            # Normalización y validación física previa antes de aplicar filtros de seguridad
             try:
                 path_obj = Path(raw_path).resolve(strict=True)
+                if _is_path_safe_and_valid(path_obj):
+                    return path_obj
             except (OSError, RuntimeError):
                 return None
-            
-            if is_protected_path(str(path_obj)) or not is_safe_to_modify(path_obj):
-                return None
-            
-            attr = kernel32.GetFileAttributesW(str(path_obj))
-            if attr != -1 and (attr & FILE_ATTRIBUTE_REPARSE_POINT): return None
-            
-            return path_obj
     except (ctypes.ArgumentError, OSError, ValueError): pass
     finally: kernel32.CloseHandle(handle)
     return None

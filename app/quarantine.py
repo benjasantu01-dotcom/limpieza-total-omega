@@ -161,16 +161,19 @@ class QuarantineItem:
         """Reconstruye un QuarantineItem validando tipos y existencia de campos."""
         if not isinstance(data, dict):
             return None
-        required: Tuple[str, ...] = ("item_id", "original_path", "stored_name", "size_bytes", "reason", "quarantined_at")
-        if not all(key in data and data[key] is not None for key in required):
+        
+        required = ("item_id", "original_path", "stored_name", "size_bytes", "reason", "quarantined_at")
+        if not all(k in data and data[k] is not None for k in required):
             return None
+            
         try:
-            orig_p = str(data["original_path"])
-            if not Path(orig_p).is_absolute():
+            orig_p = Path(str(data["original_path"]))
+            if not orig_p.is_absolute():
                 return None
+                
             return cls(
                 item_id=str(data["item_id"]),
-                original_path=orig_p,
+                original_path=str(orig_p),
                 stored_name=str(data["stored_name"]),
                 size_bytes=int(data["size_bytes"]),
                 reason=str(data["reason"]),

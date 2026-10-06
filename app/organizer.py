@@ -168,7 +168,11 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
     return not (is_protected_path(src) or is_protected_path(dest))
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
-    """Auditoría integral: existencia, permisos, bucles y espacio en disco."""
+    """
+    Auditoría integral: asegura la viabilidad del movimiento.
+    Verifica que el archivo sea un archivo real, no esté protegido, tenga permisos
+    de escritura y existan recursos suficientes en disco.
+    """
     src = junk_file.path
     try:
         if not src or not src.exists() or src.name.lower() in SYSTEM_CRITICAL_NAMES: return False
@@ -177,7 +181,6 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         if not src.is_file() or st.st_nlink > 1: return False
         if src.resolve() != src: return False
         
-        # Uso estricto de is_safe_to_modify (bool) para el filtrado en bucle
         if not is_safe_to_modify(src) or not _validate_path_security(src, dest): return False
         if is_protected_path(dest) or is_protected_path(dest.parent): return False
         
@@ -190,7 +193,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         return False
 
 def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> bool:
-    """Filtra directorios para escaneo, excluyendo rutas del sistema y reparse points."""
+    """Filtra directorios para escaneo basándose en heurísticas de seguridad del SO."""
     if not _is_allowed_directory(entry.name) or _is_junction(entry): return False
     if bool(_get_win_attributes(entry) & WIN_ATTR_SYSTEM): return False
     if entry.path in protected_cache: return False
@@ -200,13 +203,13 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> boo
     return True
 
 def _is_valid_junk_entry(name: str, stats: os.stat_result, now_ts: float) -> bool:
-    """Verifica heurísticas de tamaño, fecha y extensión."""
+    """Valida si un archivo cumple con los criterios de ser considerado 'basura'."""
     return (0 <= stats.st_size < MAX_FILE_SIZE_BYTES and 
             stats.st_mtime <= now_ts + 3600 and
             name.lower().endswith(JUNK_EXT_TUPLE))
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
-    """Recorrido recursivo optimizado utilizando os.scandir."""
+    """Realiza un recorrido recursivo controlado por profundidad del árbol de archivos."""
     if depth > 50: return
     try:
         resolved_dir = current_dir.resolve()
@@ -230,7 +233,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
         pass
 
 def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[JunkFile]:
-    """Escanea directorios en busca de basura."""
+    """Escanea directorios en busca de basura, aplicando validaciones de seguridad previas."""
     found: List[JunkFile] = []
     protected_cache: set[str] = set()
     visited: set[Path] = set()
@@ -246,12 +249,15 @@ def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[Ju
     return found
 
 def sort_junk(files: Sequence[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
-    """Ordena los archivos basura según el criterio especificado en SORT_REGISTRY."""
+    """Ordena los archivos encontrados basándose en el registro de configuración de ordenamiento."""
     config = SORT_REGISTRY.get(by.lower(), SORT_REGISTRY["size"])
     return sorted(files, key=config.key_func, reverse=not bool(ascending))
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """Mueve archivos validados a cuarentena."""
+    """
+    Gestiona el movimiento de archivos validados a la zona de cuarentena.
+    Primero prepara el directorio de destino y luego procesa cada archivo de forma segura.
+    """
     if not files: return None
     try:
         dest_base = Path(review_dir).expanduser()
@@ -259,7 +265,6 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             dest_base.mkdir(parents=True, exist_ok=True)
         dest_res = dest_base.resolve()
         
-        # Validar destino antes de iterar
         if is_protected_path(dest_res): return None
         ensure_safe_to_modify(dest_res)
     except (OSError, RuntimeError, PermissionError) as e:
@@ -269,7 +274,6 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     for junk_file in files:
         if not junk_file or not isinstance(junk_file.path, Path): continue
         try:
-            # Uso de filtro booleano, luego acción destructiva protegida
             if not _is_safe_for_disk_op(junk_file, dest_res): continue
             target_path = _can_move_file(junk_file, dest_res)
             if target_path:
@@ -281,7 +285,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     return dest_res
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
-    """Genera ruta destino única para un archivo candidato."""
+    """Genera un nombre de archivo único en destino para evitar sobrescrituras."""
     try:
         if not junk_file or not junk_file.path or not dest_base: return None
         safe_name = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
@@ -289,7 +293,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     except (OSError, AttributeError, ValueError): return None
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Elimina permanentemente archivos tras verificación de seguridad en cuarentena."""
+    """Elimina permanentemente archivos tras verificación de seguridad en la carpeta de cuarentena."""
     try:
         dest = Path(review_dir).expanduser().resolve()
         if not dest.exists() or not dest.is_dir(): return 0
