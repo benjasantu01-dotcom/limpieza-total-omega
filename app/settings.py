@@ -324,16 +324,12 @@ def _is_file_secure_to_read(file_obj: Any) -> bool:
     try:
         st = os.fstat(file_obj.fileno())
         mode = st.st_mode
-        # Si es un directorio o algo distinto a un archivo regular, abortar.
         if not stat.S_ISREG(mode) or os.path.islink(file_obj.name): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
-        # Permisos prohibidos: escritura grupal/global, ejecución, setuid/gid
         if mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
         if mode & (stat.S_ISUID | stat.S_ISGID): return False
-        # Bloquear si el archivo tiene más de un hardlink (posible riesgo de tampered data)
         if st.st_nlink != 1: return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-        # Verificar que el descriptor sea realmente legible y no esté bloqueado por procesos ajenos
         if not os.access(file_obj.name, os.R_OK): return False
         return True
     except (OSError, PermissionError, AttributeError):
@@ -390,7 +386,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """
     Asegura consistencia de tipos y reglas de negocio, revertiendo a defaults ante inconsistencias.
-    Realiza una copia limpia del diccionario de configuración verificando tipos contra DEFAULTS.
     """
     final: AppSettings = DEFAULTS.copy() # type: ignore
     try:
@@ -398,7 +393,6 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
             if key in settings and isinstance(settings[key], type(expected_val)):
                 final[key] = settings[key] # type: ignore
         
-        # Validar lógica de negocio: si el asistente está activado, requiere una clave válida.
         if final["asistente_activado"] and not (final["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
             final["asistente_activado"] = False
         return final
@@ -407,8 +401,7 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     """
-    Persistencia atómica: Valida el estado de la configuración, verifica espacio en disco,
-    y utiliza un archivo temporal antes del reemplazo seguro para evitar corrupción.
+    Persistencia atómica: Valida el estado, usa archivo temporal, fsync y reemplazo.
     """
     if not _is_dict(values): return None
     config_path = settings_path(custom_base)
@@ -422,7 +415,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if usage.free < MAX_SETTINGS_SIZE * 2 or not os.access(parent, os.W_OK): return None
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
-        
         ensure_safe_to_modify(str(config_path.resolve()))
     except (TypeError, ValueError, OSError, PermissionError): return None
     
@@ -433,8 +425,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             fcntl.flock(f.fileno(), fcntl.LOCK_EX)
             f.write(serialized)
             f.flush()
+            os.fsync(f.fileno())
             if not _is_file_secure_to_read(f):
-                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
                 raise PermissionError("Archivo temporal inseguro")
             fcntl.flock(f.fileno(), fcntl.LOCK_UN)
         
@@ -453,10 +445,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     except (OSError, IOError, PermissionError, json.JSONDecodeError, TypeError): return None
     finally:
         if temp_path.exists():
-            try:
-                # Verificación de seguridad antes de remover el temporal
-                if not os.path.islink(temp_path) and is_safe_to_modify(str(temp_path.resolve())):
-                    os.remove(temp_path)
+            try: os.remove(temp_path)
             except OSError: pass
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:

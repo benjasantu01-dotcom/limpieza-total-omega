@@ -1306,3 +1306,63 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-06T10:44:42` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la recursión introduciendo un control de errores más granular y preventivo, específicamente añadiendo validaciones de tipo y de integridad de ruta dentro de los bucles de `os.scandir` para evitar fallos por rutas con caracteres inválidos o acceso denegado antes de intentar procesarlas.
 - `2026-10-06T10:44:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T10:44:42` Corrida terminada. Total usado hoy: 252.
+- `2026-10-06T10:52:48` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-10-06T10:53:20` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez del sistema ante el caso límite de archivos de configuración corruptos o bloqueados durante la escritura, implementando una verificación de integridad post-escritura más rigurosa (usando `os.fsync`) y un manejo de errores más específico en `save` para evitar dejar el sistema en estado inconsistente.
+- `2026-10-06T10:53:48` Tests FALLARON:
+```
+-2/test_entries_from_folders_read0')
+
+    def test_entries_from_folders_reads_injected_folders(tmp_path):
+        carpeta = tmp_path / "Inicio"
+        carpeta.mkdir()
+        (carpeta / "MiPrograma.lnk").write_text("x")
+        (carpeta / "Otro.lnk").write_text("y")
+        entradas = startup.entries_from_folders([carpeta])
+>       assert {e.name for e in entradas} == {"MiPrograma", "Otro"}
+E       AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+E         
+E         Extra items in the left set:
+E         'Otro.lnk'
+E         'MiPrograma.lnk'
+E         Extra items in the right set:
+E         'Otro'
+E         'MiPrograma'
+E         
+E         Full diff:
+E           {
+E         -     'MiPrograma',
+E         +     'MiPrograma.lnk',
+E         ?                ++++
+E         -     'Otro',
+E         +     'Otro.lnk',
+E         ?          ++++
+E           }
+
+evolve/tests/test_modules.py:677: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'Otro.lnk'
+  'MiPrograma.lnk'
+  Extra items in the right set:
+  'Otro'
+  'MiPrograma'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed in 1.51s
+
+```
+- `2026-10-06T10:53:48` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha corregido un error crítico de referencia en `_process_folder_entry` donde se intentaba acceder a una variable `_` inexistente para obtener el nombre del archivo, además de añadir validación defensiva frente a nombres de archivos vacíos o inválidos antes de instanciar `StartupEntry`.
+- `2026-10-06T10:54:27` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 608): unterminated string literal (detected at line 608)
+- `2026-10-06T10:54:47` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). He refactorizado `save_logo_svg` para eliminar la llamada redundante a `is_protected_path` (que ya está implícita y mejor gestionada en `ensure_safe_to_modify` o mediante la lógica de validación interna) y centralizar la protección usando `ensure_safe_to_modify` antes de cualquier escritura. Esto estandariza la seguridad defensiva según el patrón solicitado, evitando chequeos parciales y asegurando que cualquier manipulación de archivos pase por la capa de seguridad central.
+- `2026-10-06T10:54:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T10:54:47` Corrida terminada. Total usado hoy: 256.

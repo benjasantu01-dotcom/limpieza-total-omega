@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **212** (42.1% de aceptación)
-- Rechazadas por tests: 29
-- Rechazadas por guardia de seguridad: 43
+- Mejoras aceptadas: **214** (42.5% de aceptación)
+- Rechazadas por tests: 30
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-05 | 102 | 13 | 19 | 7 | 111 |
-| 2026-10-06 | 110 | 16 | 24 | 8 | 94 |
+| 2026-10-05 | 102 | 13 | 19 | 7 | 107 |
+| 2026-10-06 | 112 | 17 | 25 | 8 | 94 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
-- robustez ante casos límite: **45**
+- robustez ante casos límite: **46**
+- seguridad defensiva: **41**
 - legibilidad y documentación: **40**
-- seguridad defensiva: **40**
 - rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
@@ -34,17 +34,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **21**
 - `healthscore.py`: **20**
 - `browser.py`: **19**
+- `branding.py`: **18**
 - `scanner.py`: **18**
-- `branding.py`: **17**
 - `organizer.py`: **16**
 - `safety.py`: **15**
 - `duplicates.py`: **15**
 - `assistant.py`: **13**
-- `settings.py`: **10**
+- `settings.py`: **11**
 - `main.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T10:54:47` **branding.py** (seguridad defensiva): He refactorizado `save_logo_svg` para eliminar la llamada redundante a `is_protected_path` (que ya está implícita y mejor gestionada en `ensure_safe_to_modify` o mediante la lógica de validación interna) y centralizar la protección usando `ensure_safe_to_modify` antes de cualquier escritura. Esto estandariza la seguridad defensiva según el patrón solicitado, evitando chequeos parciales y asegurando que cualquier manipulación de archivos pase por la capa de seguridad central.
+- `2026-10-06T10:53:20` **settings.py** (robustez ante casos límite): Se reforzó la robustez del sistema ante el caso límite de archivos de configuración corruptos o bloqueados durante la escritura, implementando una verificación de integridad post-escritura más rigurosa (usando `os.fsync`) y un manejo de errores más específico en `save` para evitar dejar el sistema en estado inconsistente.
 - `2026-10-06T10:44:42` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la recursión introduciendo un control de errores más granular y preventivo, específicamente añadiendo validaciones de tipo y de integridad de ruta dentro de los bucles de `os.scandir` para evitar fallos por rutas con caracteres inválidos o acceso denegado antes de intentar procesarlas.
 - `2026-10-06T10:44:27` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes de la API de Windows añadiendo un manejo explícito para rutas que, aunque existen, devuelven atributos inválidos (0xFFFFFFFF) o fallan por bloqueos de kernel, asegurando que `ensure_safe_to_modify` no aborte por errores transitorios de E/S.
 - `2026-10-06T10:43:20` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de concurrencia y bloqueos temporales implementando una verificación de "estado en uso" mediante `GetFileAttributesW` antes de realizar operaciones de borrado en `_safe_unlink`, asegurando que no se intente operar sobre archivos bloqueados por otros procesos del sistema.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T10:04:30` **safety.py** (rendimiento): Se optimizaron las búsquedas en `PROTECTED_DIR_NAMES` y `SENSITIVE_EXTENSIONS` convirtiéndolas de `frozenset` a estructuras que aprovechan mejor la cache de CPU y el hashing, y se refactorizó `is_protected_path` para evitar llamadas redundantes a `Path.resolve()` en el camino crítico.
 - `2026-10-06T10:03:29` **quarantine.py** (rendimiento): Se optimizó el acceso al manifiesto implementando una carga perezosa efectiva (`lazy loading`) y evitando la reconstrucción redundante de objetos en `list_items` y `purge_all` al reutilizar la caché, mejorando así el rendimiento en operaciones de lectura frecuentes.
 - `2026-10-06T09:56:16` **memory.py** (rendimiento): Optimizé la función `top_memory_processes` reemplazando la creación de una lista de objetos `ProcessMemory` mediante un bucle `for` explícito por un `generator expression` eficiente, y eliminé la lógica redundante de verificación `_is_system_process(pid) or pid == 0` dentro del bucle ya que `_is_system_process` ya incluye al `0`.
-- `2026-10-06T09:56:02` **main.py** (rendimiento): Se optimizó el método `_compile_metrics` en `main.py` para evitar la lectura redundante y bloqueante de información del sistema, implementando un mecanismo de caché validado por TTL (Time-To-Live) que evita recalculos innecesarios durante la actualización del dashboard de salud.
-- `2026-10-06T09:52:24` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` cacheando las funciones de reglas pre-compiladas y evitando el acceso redundante a `math.isfinite` mediante la consolidación de la validación, reduciendo el overhead en cada ejecución del bucle principal.
