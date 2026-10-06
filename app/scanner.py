@@ -211,11 +211,13 @@ class Scanner:
         if not _is_valid_path_structure(entry.path) or self._has_invalid_name(entry.name):
             return False
         try:
+            # Resolución obligatoria antes de validar: previene path traversal
+            real_path = Path(entry.path).resolve()
             if self._is_reparse_point(entry) or entry.is_symlink():
                 return False
-            if not self._is_inside_base_root(entry.path):
+            if not str(real_path).lower().startswith(self.base_root_str):
                 return False
-            if is_protected_path(Path(entry.path)):
+            if is_protected_path(real_path):
                 return False
             self.safe_cache.add(entry.path)
             return True

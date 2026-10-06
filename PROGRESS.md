@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
-- Rechazadas por tests: 27
+- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Rechazadas por tests: 28
 - Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 196
+- Sin respuesta de la IA (error o límite): 194
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 51 | 6 | 8 | 2 | 31 |
+| 2026-10-04 | 51 | 6 | 8 | 2 | 27 |
 | 2026-10-05 | 147 | 16 | 26 | 9 | 152 |
-| 2026-10-06 | 28 | 5 | 8 | 2 | 13 |
+| 2026-10-06 | 29 | 6 | 8 | 2 | 15 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **51**
 - manejo de errores y validación de entradas: **49**
+- seguridad defensiva: **45**
 - legibilidad y documentación: **44**
-- seguridad defensiva: **44**
 - rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
@@ -34,7 +34,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **22**
 - `quarantine.py`: **21**
 - `diskreport.py`: **20**
-- `scanner.py`: **19**
+- `scanner.py`: **20**
 - `browser.py`: **18**
 - `branding.py`: **18**
 - `safety.py`: **17**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T02:32:20` **scanner.py** (seguridad defensiva): He endurecido la validación de seguridad de `_is_safe_entry` en `scanner.py` para asegurar que las rutas se verifiquen mediante `resolve()` antes de cualquier comparación, mitigando ataques de escalada de privilegios o saltos de directorio mediante el uso de nombres de archivos especialmente construidos (path traversal) que podrían eludir los filtros anteriores.
 - `2026-10-06T02:23:39` **safety.py** (seguridad defensiva): Se ha añadido una verificación explícita en `ensure_safe_to_modify` para detectar si la ruta apunta a un "mount point" de volumen antes de permitir cualquier operación destructiva, protegiendo contra posibles borrados accidentales de estructuras de volúmenes montados que podrían no ser detectados por las reglas de sistema estándar.
 - `2026-10-06T02:22:52` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` mediante la implementación de una validación estricta de "estado constante" durante el borrado (`purge_item` y `purge_all`), asegurando que no se pueda purgar un archivo si su inodo ha cambiado desde que fue registrado, evitando así condiciones de carrera (TOCTOU) y ataques por sustitución de archivos en el sandbox.
 - `2026-10-06T02:22:10` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` al integrar una verificación explícita de `is_protected_path` sobre el directorio destino y sus padres, previniendo que la lógica de organización pueda intentar mover archivos hacia subdirectorios del sistema que pudieran estar excluidos de la lista de bloqueo pero no de la protección lógica.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T01:40:47` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_get_process_path` y `trim_working_set` al centralizar la verificación de acceso, manejando correctamente los errores de permisos (ERROR_ACCESS_DENIED) y asegurando que las llamadas a la API Win32 no bloqueen el hilo principal si un proceso está bloqueado o en estado inaccesible.
 - `2026-10-06T01:31:58` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` frente a cambios dinámicos en el sistema de archivos (ej. archivos borrados mientras se escanea) y el manejo de rutas, asegurando que `os.scandir` gestione los errores de acceso de forma más granular para no interrumpir el análisis completo ante un único permiso denegado en un subdirectorio.
 - `2026-10-06T01:23:11` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_in_use` y `_sum_directory_recursive` evitando el uso de `stat()` en archivos bloqueados o con errores de acceso, previniendo excepciones innecesarias mediante una verificación previa del estado del handle y mejorando el manejo de rutas inexistentes o inaccesibles durante la recursión.
-- `2026-10-06T01:22:52` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación explícita de `path` y parámetros geométricos, asegurando que las excepciones de sistema o valores `NaN` no interrumpan el flujo de la aplicación.
