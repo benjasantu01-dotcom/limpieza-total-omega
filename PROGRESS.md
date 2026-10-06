@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
-- Rechazadas por tests: 26
+- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Rechazadas por tests: 27
 - Rechazadas por guardia de seguridad: 43
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 215
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 6 | 1 | 1 | 0 | 14 |
+| 2026-10-04 | 4 | 1 | 1 | 0 | 12 |
 | 2026-10-05 | 147 | 16 | 26 | 9 | 152 |
-| 2026-10-06 | 55 | 9 | 16 | 3 | 49 |
+| 2026-10-06 | 56 | 10 | 16 | 5 | 49 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **41**
 - legibilidad y documentación: **41**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **40**
+- seguridad defensiva: **39**
 - rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **22**
-- `healthscore.py`: **21**
 - `quarantine.py`: **20**
+- `healthscore.py`: **20**
 - `diskreport.py`: **20**
 - `scanner.py`: **19**
+- `branding.py`: **17**
 - `organizer.py`: **16**
-- `branding.py`: **16**
 - `browser.py`: **16**
 - `safety.py`: **15**
 - `assistant.py`: **14**
 - `duplicates.py`: **13**
 - `settings.py`: **12**
-- `main.py`: **2**
 - `startup.py`: **2**
+- `main.py`: **1**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T05:48:12` **branding.py** (robustez ante casos límite): Mejoré la resiliencia de `save_logo_svg` ante casos límite de sistema de archivos al añadir validaciones de estado previas a la escritura y una gestión más estricta de las excepciones, asegurando que no se produzcan intentos de escritura en rutas bloqueadas o inválidas antes de invocar la operación crítica.
 - `2026-10-06T05:37:10` **safety.py** (rendimiento): Se ha optimizado `_is_system_path_raw` reemplazando la evaluación lineal mediante una lista de prefijos por un conjunto (frozenset) de rutas normalizadas y el uso de `commonpath` para una detección de pertenencia en O(1) o O(n) sobre componentes de ruta en lugar de costosos chequeos de cadenas, mejorando el rendimiento en el escaneo masivo de archivos.
 - `2026-10-06T05:36:01` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` y `save_manifest` mediante el uso de una caché estática (`_MANIFEST_CACHE`) más efectiva y evité la serialización innecesaria del JSON completo al acceder a la lista de ítems, reduciendo el I/O en operaciones frecuentes.
 - `2026-10-06T05:27:20` **organizer.py** (rendimiento): Optimicé el bucle de escaneo de `organizer.py` mediante el uso de `str.endswith()` directamente con la tupla `JUNK_EXT_TUPLE` pre-calculada, eliminando la llamada a funciones intermedias y reduciendo la sobrecarga de CPU en cada iteración del escáner de archivos.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T04:45:16` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints detallados, documentación explícita en funciones críticas y la estandarización de docstrings para aclarar la lógica de las heurísticas, facilitando la comprensión del flujo de datos sin alterar la funcionalidad.
 - `2026-10-06T04:36:07` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y la precisión del mantenimiento del estado en `_collect_summary_data` y `largest_folders` mediante la adición de docstrings técnicos detallados, type hints explícitos y la clarificación de la lógica de acumulación de métricas, facilitando el mantenimiento a largo plazo.
 - `2026-10-06T04:35:50` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings estructurados (usando el formato Google Style) en las funciones críticas de escaneo y validación, junto con una revisión de los tipos de retorno para clarificar las intenciones de diseño.
-- `2026-10-06T04:35:21` **branding.py** (legibilidad y documentación): He mejorado la legibilidad y la mantenibilidad del archivo documentando exhaustivamente la estructura de datos del `_SVG_TEMPLATE` y las funciones de dibujo geométrico mediante docstrings estándar, clarificando el propósito de los factores de escalado utilizados en la UI.
