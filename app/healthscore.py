@@ -238,8 +238,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     metric_breakdown: Dict[MetricKey, int] = {}
     accumulated_score: float = 0.0
     
-    pipeline = _PIPELINE
-    for entry in pipeline:
+    for entry in _PIPELINE:
         try:
             area_ratio = _clamp(entry.scorer(metrics))
             _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)

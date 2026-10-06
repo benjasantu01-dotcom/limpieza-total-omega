@@ -196,17 +196,15 @@ def _should_skip_entry(
 def _is_file_in_use(path_obj: Any) -> bool:
     """
     Determina si un archivo está bloqueado por otro proceso usando la API Win32.
-    
-    Args:
-        path_obj: Objeto Path del archivo a verificar.
-        
-    Returns:
-        True si el archivo está en uso, no existe o está protegido; False en otro caso.
     """
     if not isinstance(path_obj, Path) or not path_obj.exists():
         return True
     if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
         return True
+    # Verificación de permisos básicos antes de llamar a CreateFileW
+    if not os.access(path_obj, os.R_OK):
+        return True
+    
     k32 = _get_kernel32()
     if k32:
         try:
@@ -230,16 +228,6 @@ def _sum_directory_recursive(
 ) -> ScanResult:
     """
     Recorrido recursivo para calcular tamaño de caché respetando límites de seguridad.
-    
-    Args:
-        root_path: Directorio inicial del escaneo.
-        root_abs_norm: Ruta absoluta normalizada para validación de scope.
-        kernel32: Handle a la librería Win32 si está disponible.
-        visited_inodes: Conjunto de inodos visitados para evitar conteo doble.
-        visited_dirs: Cache de resultados por ruta normalizada.
-        
-    Returns:
-        ScanResult con los bytes acumulados y flag de éxito.
     """
     if depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)
