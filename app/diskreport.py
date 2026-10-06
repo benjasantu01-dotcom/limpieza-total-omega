@@ -152,11 +152,8 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         if any(c in entry.name for c in SUSPICIOUS_CHARS) or '\0' in entry.name:
             return True
         
-        # Validar confinamiento estricto: la ruta real debe estar bajo el root_path
-        entry_path = Path(entry.path).resolve()
-        try:
-            entry_path.relative_to(root_path)
-        except ValueError:
+        # Validación de confinamiento usando rutas absolutas crudas para velocidad
+        if not os.path.abspath(entry.path).startswith(str(root_path)):
             return True
             
         try:
@@ -242,7 +239,7 @@ class DriveUsage:
 
 
 def format_size(num: Union[int, float, None]) -> str:
-    """Convierte bytes a formato legible (B, KB, MB, GB, TB)."""
+    """Convierta bytes a formato legible (B, KB, MB, GB, TB)."""
     if not isinstance(num, (int, float)) or num < 0:
         return "0 B"
     value = float(num)

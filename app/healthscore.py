@@ -217,13 +217,10 @@ def grade_for_score(score: float | int) -> str:
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio, findings: List[str]) -> None:
     """Ejecuta las reglas asociadas a una métrica y sanitiza el texto de los resultados."""
-    if not isinstance(rules, tuple): return
     for rule in rules:
-        if not isinstance(rule, RecommendationRule): continue
         try:
             if rule.check(metrics, normalized_ratio):
                 msg = str(rule.message_factory(metrics))
-                # Sanitización de caracteres: solo caracteres imprimibles, sin control, longitud máxima
                 clean_msg = "".join(c for c in msg if c.isprintable() and c not in "\r\n\t").strip()
                 if clean_msg: findings.append(clean_msg[:200])
         except (ValueError, TypeError, AttributeError) as e:
@@ -240,9 +237,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for entry in _PIPELINE:
         try:
-            if entry.scorer is None: continue
-            area_ratio = entry.scorer(metrics)
-            area_ratio = _clamp(area_ratio)
+            area_ratio = _clamp(entry.scorer(metrics))
             _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             points = area_ratio * entry.weight
             metric_breakdown[entry.area] = int(round(points))

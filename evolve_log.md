@@ -1395,3 +1395,43 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-06T00:41:37` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó la generación de `_SVG_GRADIENT_STOPS` convirtiéndola en una constante calculada en tiempo de carga mediante `tuple` y `join`, eliminando el re-cálculo de strings innecesario, y se reemplazó el uso de `range` + indexación manual en `gradient_colors` por una pre-asignación de lista más eficiente.
 - `2026-10-06T00:41:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T00:41:37` Corrida terminada. Total usado hoy: 16.
+- `2026-10-06T00:49:17` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-10-06T00:49:46` Tests FALLARON:
+```
+=========
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:175: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_data_folders - AssertionError: assert [BrowserCache...size_bytes=7)] == []
+  
+  Left contains one more item: BrowserCache(browser='Chrome', path=PosixPath('/tmp/pytest-of-runner/pytest-1/test_detect_profiles_never_rep0/Perfil/Cookies'), size_bytes=7)
+  
+  Full diff:
+  - []
+  + [
+  +     BrowserCache(
+  +         browser='Chrome',
+  +         path=PosixPath('/tmp/pytest-of-runner/pytest-1/test_detect_profiles_never_rep0/Perfil/Cookies'),
+  +         size_bytes=7,
+  +     ),
+  + ]
+1 failed, 298 passed, 7 warnings in 1.45s
+
+```
+- `2026-10-06T00:49:46` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se optimizó el escaneo del sistema de archivos reemplazando la creación repetida de objetos `Path` y el uso intensivo de `resolve()` dentro del bucle crítico por operaciones basadas en `os.DirEntry` y cadenas normalizadas, reduciendo significativamente la carga de I/O.
+- `2026-10-06T00:49:48` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T00:50:25` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `_is_excluded_path` reemplazando la creación de objetos `Path` pesados en cada iteración por el uso de `os.path` y métodos de `os.DirEntry` (`path`, `is_symlink`), reduciendo drásticamente la carga de memoria y el tiempo de CPU durante el escaneo del disco.
+- `2026-10-06T00:50:52` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-06T00:50:52` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T00:51:11` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje global evitando la creación redundante de objetos y minimizando el procesamiento de cadenas mediante la pre-compilación de los resultados del pipeline, además de utilizar un acceso más eficiente a los pesos.
+- `2026-10-06T00:51:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T00:51:11` Corrida terminada. Total usado hoy: 20.
