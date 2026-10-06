@@ -37,7 +37,10 @@ class Grade(Enum):
     @classmethod
     def from_score(cls, score: float | int) -> str:
         """Asigna una letra según el puntaje obtenido (A: >=90, B: >=80, C: >=65, D: >=50, F: <50)."""
-        s = float(score)
+        try:
+            s = float(score)
+        except (TypeError, ValueError):
+            return cls.F.value
         if s >= 90: return cls.A.value
         if s >= 80: return cls.B.value
         if s >= 65: return cls.C.value
@@ -233,6 +236,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Calcula el puntaje global mediante la ejecución del pipeline completo."""
     if not isinstance(metrics, SystemMetrics):
         metrics = SystemMetrics()
+    
     if not metrics.is_finite:
         metrics.validate()
     
@@ -252,7 +256,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             metric_breakdown[entry.area] = 0
             
     if metrics.quarantined_count > 0:
-        recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
+        recommendations.append(f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena.")
     
     final_score = int(round(_clamp(accumulated_score, 0.0, 100.0)))
     return HealthResult(
@@ -264,9 +268,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 
 def _render_bar(points: int, max_val: int) -> str:
     """Representación visual: barra de caracteres ASCII para la interfaz."""
-    limit = max(1, max_val)
-    p = max(0, min(points, limit))
-    return "#" * p + "." * (limit - p)
+    try:
+        limit = max(1, int(max_val))
+        p = max(0, min(int(points), limit))
+        return "#" * p + "." * (limit - p)
+    except (ValueError, TypeError):
+        return "." * max(1, max_val)
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera una lista de cadenas legible para el informe de estado final."""
