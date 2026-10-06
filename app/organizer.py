@@ -166,19 +166,22 @@ def _has_forbidden_chars(path: Path) -> bool:
     return any(c in path_str for c in ["<", ">", "|", "\0"])
 
 def _validate_path_security(src: Path, dest: Path) -> bool:
-    """Verifica requisitos de seguridad (longitud, caracteres, protección) previo a movimiento."""
+    """Verifica restricciones de ruta (longitud, caracteres, protección) previo a movimiento."""
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     if len(str(src)) > MAX_PATH_LENGTH or len(str(dest)) > MAX_PATH_LENGTH: return False
     return not (is_protected_path(src) or is_protected_path(dest))
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
-    Auditoría integral: asegura la viabilidad del movimiento.
-    Verifica que el archivo sea un archivo real, no esté protegido, tenga permisos
-    de escritura y existan recursos suficientes en disco.
+    Auditoría de seguridad para operaciones de disco (movimiento).
+    
+    Valida la integridad del archivo (identidad via inode), permisos, ausencia de
+    bloqueos por otros procesos, y asegura que la operación no infrinja rutas
+    protegidas o límites de espacio.
     """
     src = junk_file.path
     try:
+        # 1. Validación de integridad física y existencia
         if not src or not src.exists() or src.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         st = src.stat()
         if (junk_file._ino is not None and st.st_ino != junk_file._ino) or \
@@ -186,6 +189,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         if not src.is_file() or st.st_nlink > 1: return False
         if src.resolve() != src: return False
         
+        # 2. Validación de seguridad y permisos
         if not is_safe_to_modify(src) or not _validate_path_security(src, dest): return False
         if is_protected_path(dest) or is_protected_path(dest.parent): return False
         
@@ -193,7 +197,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         if not target_dir.is_dir() or not os.access(target_dir, os.W_OK): return False
         if _is_recursive_violation(src, dest) or _is_file_locked(src): return False
         
-        # Validar cambio de volumen (st_dev) y espacio libre
+        # 3. Validación de recursos (espacio en volumen destino)
         dest_st = target_dir.stat()
         if dest_st.st_dev != st.st_dev: return False
         if shutil.disk_usage(target_dir).free < (st.st_size + MIN_FREE_SPACE_BYTES): return False

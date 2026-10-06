@@ -51,6 +51,8 @@ BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 MAX_VALID_PROCESS_MEM: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
 # Máscaras de acceso Win32 para interactuar con la memoria de procesos ajenos.
+# PROCESS_QUERY_LIMITED_INFORMATION: Permite obtener metadatos básicos del proceso.
+# PROCESS_SET_QUOTA: Necesario para modificar límites de working set.
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x0400
 FILE_ATTRIBUTE_REPARSE_POINT: Final[int] = 0x0400
@@ -276,7 +278,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         if psapi.EnumProcesses(ctypes.byref(pids), cb, ctypes.byref(cb_needed)):
             count = cb_needed.value // ctypes.sizeof(ctypes.c_ulong)
             
-            def get_proc(pid):
+            def get_proc(pid: int) -> Optional[ProcessMemory]:
                 if _is_system_process(pid): return None
                 ws = _get_process_memory_stats(pid)
                 return ProcessMemory(f"PID {pid}", pid, ws) if ws and 0 < ws < MAX_VALID_PROCESS_MEM else None

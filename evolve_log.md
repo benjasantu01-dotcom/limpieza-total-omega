@@ -1801,3 +1801,50 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-06T13:39:34` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `healthscore.py` mediante la refactorización de `_PIPELINE` hacia una estructura más declarativa y desacoplada, utilizando docstrings extendidos que documentan el contrato de las funciones de puntuación.
 - `2026-10-06T13:39:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T13:39:34` Corrida terminada. Total usado hoy: 320.
+- `2026-10-06T13:46:24` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-06T13:47:02` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T13:47:09` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-06T13:48:29` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._init_state
+- `2026-10-06T13:49:02` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y la legibilidad mediante la adición de docstrings técnicos que explican las constantes de Win32, la estandarización de type hints y la clarificación de las responsabilidades de las funciones, facilitando la comprensión del flujo de datos en las interacciones con la API nativa sin modificar la lógica operativa.
+- `2026-10-06T13:49:05` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T13:49:12` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-06T13:50:18` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-06T13:50:59` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `organizer.py` mediante la adición de docstrings detallados en funciones clave, la clarificación de constantes mediante tipos explícitos y la refactorización del bloque de validación de seguridad en `_is_safe_for_disk_op` para separar las comprobaciones de integridad física de las restricciones lógicas.
+- `2026-10-06T13:51:31` Tests FALLARON:
+```
+te.dat"
+        critico.write_text("no me toques")
+    
+        with pytest.raises(safety.UnsafePathError):
+>           quarantine.quarantine_file(critico, base=cuarentena)
+
+evolve/tests/test_safety.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+source = PosixPath('/tmp/pytest-of-runner/pytest-3/test_quarantine_refuses_files_0/Windows/System32/importante.dat')
+reason = 'Marcado como sospechoso'
+base = PosixPath('/tmp/pytest-of-runner/pytest-3/test_quarantine_refuses_files_0/_Cuarentena')
+
+    def quarantine_file(
+        source: PathLike,
+        reason: str = "Marcado como sospechoso",
+        base: PathLike = DEFAULT_QUARANTINE_DIR,
+    ) -> QuarantineItem:
+        """Aísla un archivo de forma segura, respetando garantías de integridad."""
+        p_source = _validate_input_path(source)
+    
+        try:
+            source_path, dest_dir, original_size = _prepare_quarantine_context(p_source, base)
+        except (OSError, RuntimeError, UnsafePathError) as e:
+>           raise RuntimeError(f"Error en fase de pre-aislamiento: {e}")
+E           RuntimeError: Error en fase de pre-aislamiento: [GENERIC] Ruta origen protegida.
+
+app/quarantine.py:806: RuntimeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - RuntimeError: Error en fase de pre-aislamiento: [GENERIC] Ruta origen protegida.
+1 failed, 298 passed in 1.59s
+
+```
+- `2026-10-06T13:51:31` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y el mantenimiento de la lógica de aislamiento extrayendo el complejo bloque de validaciones de precondiciones y seguridad en `quarantine_file` hacia una nueva función `_prepare_quarantine_context`, reduciendo la carga cognitiva de la función principal y mejorando la trazabilidad de errores.
+- `2026-10-06T13:51:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T13:51:31` Corrida terminada. Total usado hoy: 324.
