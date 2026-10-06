@@ -126,11 +126,11 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
     Consulta los atributos de archivo mediante la API Win32 GetFileAttributesW.
     Permite detectar flags de sistema, ocultos o puntos de reparse.
     """
-    if os.name != 'nt' or not path_str: return 0
+    if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return 0
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         return attrs if attrs != 0xFFFFFFFF else 0
-    except (AttributeError, OSError, ctypes.ArgumentError, TypeError, ValueError):
+    except (AttributeError, OSError, ctypes.ArgumentError):
         return 0
 
 class SafetyValidationErrorCode(IntEnum):

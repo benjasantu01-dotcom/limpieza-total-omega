@@ -243,10 +243,10 @@ class Scanner:
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
         """Registra directorios válidos en la pila para exploración iterativa."""
-        if current_depth >= SCAN_LIMITS.max_depth:
+        if current_depth >= SCAN_LIMITS.max_depth or not entry.path:
             return
-        path_lower = entry.path.lower() if entry.path else ""
-        if path_lower and path_lower not in self.seen:
+        path_lower = entry.path.lower()
+        if path_lower not in self.seen:
             self.seen.add(path_lower)
             directory_stack.append((entry.path, current_depth + 1))
 
@@ -259,7 +259,7 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
         """Orquestador: Decide si delegar a exploración de directorios o ejecución de heurísticas."""
         try:
-            if not entry.path or "\0" in entry.path: 
+            if not isinstance(entry, os.DirEntry) or not entry.path: 
                 return
 
             is_dir = entry.is_dir(follow_symlinks=False)
@@ -275,8 +275,9 @@ class Scanner:
             if is_dir:
                 self._handle_directory(entry, directory_stack, current_depth)
             else:
-                self._run_file_heuristics(Path(entry.path).resolve(), entry)
-        except (OSError, PermissionError, AttributeError):
+                path_obj = Path(entry.path)
+                self._run_file_heuristics(path_obj.resolve(), entry)
+        except (OSError, PermissionError, AttributeError, RuntimeError):
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
@@ -329,13 +330,10 @@ def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
         current_dir, depth = directory_stack.pop()
         try:
             with os.scandir(current_dir) as it:
-                while True:
+                for entry in it:
                     try:
-                        entry = next(it)
-                        if entry: scanner.process_entry(entry, directory_stack, depth)
-                    except StopIteration:
-                        break
-                    except (UnicodeDecodeError, OSError):
+                        scanner.process_entry(entry, directory_stack, depth)
+                    except (OSError, PermissionError, AttributeError):
                         continue
         except (PermissionError, OSError, AttributeError):
             continue

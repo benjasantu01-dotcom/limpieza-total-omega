@@ -1047,3 +1047,12 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-06T08:43:41` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `quarantine.py` al reemplazar bloques `try-except` genéricos en funciones críticas por capturas de excepciones específicas (`OSError`, `PermissionError`, `ValueError`), garantizando que los errores de sistema no enmascaren fallos lógicos y mejorando la precisión en el manejo de estados corruptos.
 - `2026-10-06T08:43:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T08:43:41` Corrida terminada. Total usado hoy: 204.
+- `2026-10-06T08:50:09` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-10-06T08:50:13` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T08:50:41` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-10-06T08:50:42` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T08:51:33` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se introdujo una captura selectiva y más específica de excepciones en `_get_file_attrs` para evitar que errores inesperados del sistema (como `TypeError` durante la normalización de Unicode en rutas mal formadas) retornen silenciosamente una máscara de bits vacía, lo cual podría inducir a falsos positivos en las validaciones de seguridad.
+- `2026-10-06T08:52:02` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez del manejo de errores en `Scanner.process_entry` y `scan_directory` para evitar la propagación de fallos ante entradas de sistema volátiles o malformadas, utilizando capturas de excepciones más granulares y verificaciones de tipo (`isinstance`) más estrictas.
+- `2026-10-06T08:52:20` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-06T08:52:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T08:52:20` Corrida terminada. Total usado hoy: 208.
