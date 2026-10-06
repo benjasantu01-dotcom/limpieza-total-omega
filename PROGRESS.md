@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 25
-- Rechazadas por guardia de seguridad: 40
+- Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 56 | 6 | 9 | 2 | 49 |
+| 2026-10-04 | 53 | 6 | 8 | 2 | 49 |
 | 2026-10-05 | 147 | 16 | 26 | 9 | 152 |
-| 2026-10-06 | 15 | 3 | 5 | 1 | 8 |
+| 2026-10-06 | 16 | 3 | 5 | 1 | 11 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
-- robustez ante casos límite: **46**
+- robustez ante casos límite: **47**
 - legibilidad y documentación: **44**
-- seguridad defensiva: **41**
+- seguridad defensiva: **38**
 - rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **21**
 - `memory.py`: **21**
-- `quarantine.py`: **20**
-- `scanner.py`: **20**
-- `diskreport.py`: **18**
-- `safety.py`: **17**
+- `quarantine.py`: **19**
+- `diskreport.py`: **19**
+- `scanner.py`: **19**
 - `browser.py`: **17**
 - `branding.py`: **17**
 - `assistant.py`: **16**
+- `safety.py`: **16**
 - `duplicates.py`: **15**
 - `organizer.py`: **14**
 - `settings.py`: **13**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T01:31:58` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` frente a cambios dinámicos en el sistema de archivos (ej. archivos borrados mientras se escanea) y el manejo de rutas, asegurando que `os.scandir` gestione los errores de acceso de forma más granular para no interrumpir el análisis completo ante un único permiso denegado en un subdirectorio.
 - `2026-10-06T01:23:11` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_in_use` y `_sum_directory_recursive` evitando el uso de `stat()` en archivos bloqueados o con errores de acceso, previniendo excepciones innecesarias mediante una verificación previa del estado del handle y mejorando el manejo de rutas inexistentes o inaccesibles durante la recursión.
 - `2026-10-06T01:22:52` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación explícita de `path` y parámetros geométricos, asegurando que las excepciones de sistema o valores `NaN` no interrumpan el flujo de la aplicación.
 - `2026-10-06T01:04:43` **quarantine.py** (rendimiento): Optimicé el acceso al manifiesto implementando una carga perezosa con caché indexada, reduciendo la complejidad de las búsquedas por `item_id` de O(n) a O(1) y evitando lecturas innecesarias del disco en operaciones repetitivas.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T00:19:10` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de la arquitectura del pipeline de `healthscore.py` mediante type hints específicos y docstrings detallados en las funciones de normalización y procesamiento, eliminando ambigüedades en la interpretación de los ratios.
 - `2026-10-06T00:10:41` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más específicos en las firmas de funciones clave y se agregaron docstrings descriptivos que detallan el propósito y los estados de retorno de las funciones internas del bucle de recolección, mejorando la mantenibilidad técnica del módulo.
 - `2026-10-06T00:09:44` **browser.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la centralización de la lógica de recorrido recursivo en `_sum_directory_recursive` mediante el uso de `TypedDict` para la estructura de `visited_dirs` y mejor documentación técnica sobre el propósito de la recursión.
-- `2026-10-06T00:09:09` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la lógica de renderizado del logo mediante la extracción de parámetros geométricos hacia constantes con nombre claro y la implementación de una firma de tipo más precisa en `_draw_shield_stripes` y `_draw_shield_icon_decorations`.
