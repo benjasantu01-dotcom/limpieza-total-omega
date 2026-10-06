@@ -217,6 +217,19 @@ def _is_file_in_use(path_obj: Any, base_norm: str) -> bool:
             return True
     return False
 
+def _process_file_node(entry: os.DirEntry, root_abs_norm: str, visited_inodes: Set[int]) -> int:
+    """Extrae el tamaño de un archivo individual tras validar su seguridad e integridad."""
+    try:
+        st = entry.stat(follow_symlinks=False)
+        if st.st_ino not in visited_inodes:
+            p_file = Path(entry.path)
+            if is_safe_to_modify(p_file) and not _is_file_in_use(p_file, root_abs_norm):
+                visited_inodes.add(st.st_ino)
+                return st.st_size
+    except (OSError, PermissionError):
+        pass
+    return 0
+
 def _sum_directory_recursive(
     root_path: Path, 
     root_abs_norm: str,
@@ -252,15 +265,7 @@ def _sum_directory_recursive(
                     res = _sum_directory_recursive(child_path, root_abs_norm, kernel32, visited_inodes, visited_dirs, depth + 1)
                     total_bytes += res.bytes_found
                 else:
-                    try:
-                        st = entry.stat(follow_symlinks=False)
-                        if st.st_ino not in visited_inodes:
-                            p_file = Path(entry.path)
-                            if is_safe_to_modify(p_file) and not _is_file_in_use(p_file, root_abs_norm):
-                                visited_inodes.add(st.st_ino)
-                                total_bytes += st.st_size
-                    except (OSError, PermissionError):
-                        continue
+                    total_bytes += _process_file_node(entry, root_abs_norm, visited_inodes)
     except (OSError, PermissionError):
         return ScanResult(total_bytes, False)
         

@@ -23,7 +23,12 @@ NormalizedRatio: TypeAlias = Annotated[float, "Valor de salud normalizado entre 
 MetricKey: TypeAlias = str
 
 class Scorer(Protocol):
-    """Interfaz para funciones que transforman métricas de entrada a un rango de salud [0.0, 1.0]."""
+    """
+    Protocolo para funciones que transforman métricas de entrada a un rango de salud [0.0, 1.0].
+    
+    Un Scorer debe ser idempotente, no realizar operaciones I/O y manejar internamente
+    cualquier valor de entrada inválido devolviendo un puntaje seguro (típicamente 0.0).
+    """
     def __call__(self, metrics: SystemMetrics) -> NormalizedRatio: ...
 
 class Grade(Enum):
@@ -54,8 +59,8 @@ class RecommendationRule(NamedTuple):
     Attributes:
         area: Identificador del componente (ej: 'disco').
         threshold: Valor de ratio bajo el cual la regla se dispara.
-        message_factory: Función que genera un texto descriptivo basado en las métricas.
-        check: Predicado (SystemMetrics, NormalizedRatio) -> bool para decidir si aplicar la regla.
+        message_factory: Función (SystemMetrics) -> str que genera un texto descriptivo.
+        check: Predicado (SystemMetrics, NormalizedRatio) -> bool que activa la regla.
     """
     area: MetricKey
     threshold: float
@@ -63,9 +68,7 @@ class RecommendationRule(NamedTuple):
     check: Callable[[SystemMetrics, NormalizedRatio], bool]
 
 class PipelineEntry(NamedTuple):
-    """
-    Configuración de una etapa de análisis en el pipeline principal.
-    """
+    """Configuración de una etapa de análisis en el pipeline principal."""
     area: MetricKey
     weight: int
     scorer: Scorer
@@ -98,11 +101,7 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     return max_val if value > max_val else value
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
-    """
-    Fábrica de normalizadores lineales.
-    Si inverse es True: 0 es perfecto (1.0), limit es crítico (0.0).
-    Si inverse es False: 0 es crítico (0.0), limit es perfecto (1.0).
-    """
+    """Fábrica de normalizadores lineales."""
     def scorer(val: float) -> NormalizedRatio:
         ratio = val / limit if limit != 0 else 0.0
         return _clamp(1.0 - ratio if inverse else ratio)
@@ -125,18 +124,36 @@ if sum(WEIGHTS.values()) != 100:
     raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
 
 _PIPELINE: Final[List[PipelineEntry]] = [
-    PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), 
-                  (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, lambda m: f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad.", lambda m, r: r < WARN_THRESHOLD_HIGH),)),
-    PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), 
-                  (RecommendationRule("disco", WARN_THRESHOLD_LOW, lambda m: f"Queda {m.disk_free_percent:.1f}% de disco libre.", lambda m, r: r < WARN_THRESHOLD_LOW),)),
-    PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), 
-                  (RecommendationRule("memoria", WARN_THRESHOLD_LOW, lambda m: "Memoria disponible baja: cerrá procesos innecesarios.", lambda m, r: r < WARN_THRESHOLD_LOW),)),
-    PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), 
-                  (RecommendationRule("basura", WARN_THRESHOLD_MED, lambda m: f"Hay {m.junk_mb:.0f} MB de archivos temporales.", lambda m, r: r < WARN_THRESHOLD_MED),)),
-    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), 
-                  (RecommendationRule("duplicados", WARN_THRESHOLD_MED, lambda m: f"Podrías recuperar {m.duplicate_mb:.0f} MB eliminando duplicados.", lambda m, r: r < WARN_THRESHOLD_MED),)),
-    PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), 
-                  (RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),)),
+    PipelineEntry(
+        "seguridad", 30, 
+        lambda m: score_security(m.suspicious_count, m.suspicious_warnings), 
+        (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, lambda m: f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad.", lambda m, r: r < WARN_THRESHOLD_HIGH),)
+    ),
+    PipelineEntry(
+        "disco", 20, 
+        lambda m: score_disk(m.disk_free_percent), 
+        (RecommendationRule("disco", WARN_THRESHOLD_LOW, lambda m: f"Queda {m.disk_free_percent:.1f}% de disco libre.", lambda m, r: r < WARN_THRESHOLD_LOW),)
+    ),
+    PipelineEntry(
+        "memoria", 18, 
+        lambda m: score_memory(m.memory_available_percent), 
+        (RecommendationRule("memoria", WARN_THRESHOLD_LOW, lambda m: "Memoria disponible baja: cerrá procesos innecesarios.", lambda m, r: r < WARN_THRESHOLD_LOW),)
+    ),
+    PipelineEntry(
+        "basura", 14, 
+        lambda m: score_junk(m.junk_mb), 
+        (RecommendationRule("basura", WARN_THRESHOLD_MED, lambda m: f"Hay {m.junk_mb:.0f} MB de archivos temporales.", lambda m, r: r < WARN_THRESHOLD_MED),)
+    ),
+    PipelineEntry(
+        "duplicados", 10, 
+        lambda m: score_duplicates(m.duplicate_mb), 
+        (RecommendationRule("duplicados", WARN_THRESHOLD_MED, lambda m: f"Podrías recuperar {m.duplicate_mb:.0f} MB eliminando duplicados.", lambda m, r: r < WARN_THRESHOLD_MED),)
+    ),
+    PipelineEntry(
+        "arranque", 8, 
+        lambda m: score_startup(m.startup_count), 
+        (RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),)
+    ),
 ]
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
@@ -145,23 +162,17 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
     """Calcula el ratio de seguridad penalizando hallazgos (0.05 c/u) y advertencias (0.25 c/u)."""
     try:
-        c = float(suspicious_count)
-        w = float(warnings)
-        if not math.isfinite(c) or not math.isfinite(w):
-            return 0.0
-        count = max(0.0, c)
-        warns = max(0.0, w)
+        c, w = float(suspicious_count), float(warnings)
+        if not math.isfinite(c) or not math.isfinite(w): return 0.0
+        penalization = (max(0.0, c) * 0.05) + (max(0.0, w) * 0.25)
+        return _clamp(1.0 - penalization)
     except (TypeError, ValueError):
         return 0.0
-    penalization = (count * 0.05) + (warns * 0.25)
-    return _clamp(1.0 - penalization)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
-    """Normaliza la RAM disponible: [0.0, 1.0] contra _LIMIT_RAM_PERCENT."""
     return _clamp(float(available_percent) / _LIMIT_RAM_PERCENT)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
-    """Normaliza el espacio en disco: [0.0, 1.0] contra _LIMIT_DISK_PERCENT."""
     return _clamp(float(free_percent) / _LIMIT_DISK_PERCENT)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 

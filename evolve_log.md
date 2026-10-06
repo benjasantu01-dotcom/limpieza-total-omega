@@ -1791,3 +1791,13 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-06T13:28:35` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
 - `2026-10-06T13:28:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T13:28:35` Corrida terminada. Total usado hoy: 316.
+- `2026-10-06T13:36:13` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-06T13:36:47` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `_sum_directory_recursive` extrayendo la lógica compleja de escaneo de archivos a una función auxiliar `_process_file_node`, lo que clarifica el flujo de control y facilita futuras auditorías de seguridad.
+- `2026-10-06T13:37:21` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T13:38:00` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-06T13:38:09` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-06T13:38:32` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-06T13:39:19` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints consistentes en las funciones clave de procesamiento de archivos para mejorar la mantenibilidad y claridad del flujo de trabajo, sin alterar la lógica de detección ni las reglas de seguridad.
+- `2026-10-06T13:39:34` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `healthscore.py` mediante la refactorización de `_PIPELINE` hacia una estructura más declarativa y desacoplada, utilizando docstrings extendidos que documentan el contrato de las funciones de puntuación.
+- `2026-10-06T13:39:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T13:39:34` Corrida terminada. Total usado hoy: 320.

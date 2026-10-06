@@ -211,7 +211,10 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Realiza un recorrido DFS iterativo optimizado identificando candidatos mediante inodos."""
+    """
+    Realiza un recorrido DFS iterativo optimizado identificando candidatos mediante inodos.
+    Evita procesar archivos redundantes y respeta límites de recursión de seguridad.
+    """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     stack: List[Tuple[Path, int]] = []
     visited_dirs: set[Path] = set()
