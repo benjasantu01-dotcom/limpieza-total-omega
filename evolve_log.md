@@ -1541,3 +1541,69 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-10-06T01:42:25` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-10-06T01:42:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T01:42:25` Corrida terminada. Total usado hoy: 40.
+- `2026-10-06T01:50:26` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-10-06T01:51:12` Tests FALLARON:
+```
+ests/test_safety.py:160: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:172: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_is_within_directory_same_path_requires_allow_equal - AssertionError: assert not True
+ +  where True = <functools._lru_cache_wrapper object at 0x7fd9f571c670>(PosixPath('/tmp/pytest-of-runner/pytest-1/test_is_within_directory_same_0'), PosixPath('/tmp/pytest-of-runner/pytest-1/test_is_within_directory_same_0'))
+ +    where <functools._lru_cache_wrapper object at 0x7fd9f571c670> = safety.is_within_directory
+1 failed, 298 passed, 7 warnings in 1.47s
+
+```
+- `2026-10-06T01:51:12` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez ante casos límite en `safety.py` introduciendo una verificación estricta de "Path Traversal" mediante `os.path.commonpath` al normalizar, asegurando que cualquier resolución resulte dentro de los límites del volumen esperado y no pueda escapar hacia otras unidades o rutas fuera de la raíz del sistema de archivos.
+- `2026-10-06T01:51:46` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-06T01:52:18` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante estados inconsistentes del sistema de archivos al añadir una comprobación estricta de "archivo bloqueado o en uso" mediante `os.access` y una validación de `st_nlink` para detectar hardlinks maliciosos, además de asegurar que la carga de configuración no falle catastróficamente si el archivo es un directorio o tiene permisos de escritura global.
+- `2026-10-06T01:52:31` Tests FALLARON:
+```
+lve/tests/test_modules.py:677: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:172: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'Otro.lnk'
+  'MiPrograma.lnk'
+  Extra items in the right set:
+  'MiPrograma'
+  'Otro'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed, 7 warnings in 1.56s
+
+```
+- `2026-10-06T01:52:31` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha corregido un error crítico de lógica en `_process_folder_entry` donde el nombre del archivo no se estaba extrayendo correctamente (referenciaba una variable global `_` inexistente), y se ha mejorado la robustez ante rutas corruptas o nombres de archivo inválidos al capturar excepciones específicas de `Path` y `os.path`.
+- `2026-10-06T01:52:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T01:52:31` Corrida terminada. Total usado hoy: 44.

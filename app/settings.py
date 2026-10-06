@@ -324,13 +324,17 @@ def _is_file_secure_to_read(file_obj: Any) -> bool:
     try:
         st = os.fstat(file_obj.fileno())
         mode = st.st_mode
+        # Si es un directorio o algo distinto a un archivo regular, abortar.
         if not stat.S_ISREG(mode) or os.path.islink(file_obj.name): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
-        # Bloquea permisos de ejecución, setuid, setgid, y permisos para grupo/otros
+        # Permisos prohibidos: escritura grupal/global, ejecución, setuid/gid
         if mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
         if mode & (stat.S_ISUID | stat.S_ISGID): return False
-        if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
+        # Bloquear si el archivo tiene más de un hardlink (posible riesgo de tampered data)
         if st.st_nlink != 1: return False
+        if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
+        # Verificar que el descriptor sea realmente legible y no esté bloqueado por procesos ajenos
+        if not os.access(file_obj.name, os.R_OK): return False
         return True
     except (OSError, PermissionError, AttributeError):
         return False
@@ -340,7 +344,7 @@ def _load_impl(ruta: Path) -> AppSettings:
     Lógica interna: abre el archivo solo si es seguro, bloquea mediante 
     flock para concurrencia y valida el contenido JSON post-apertura.
     """
-    if not ruta.exists(): return DEFAULTS.copy()
+    if not ruta.exists() or not ruta.is_file(): return DEFAULTS.copy()
     try:
         resolved = ruta.resolve()
         if not is_safe_to_modify(str(resolved)): return DEFAULTS.copy()
