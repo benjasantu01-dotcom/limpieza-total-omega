@@ -125,7 +125,7 @@ def _safe_path_check(path: Path) -> bool:
 
 
 def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
-    """Normaliza, verifica existencia y disponibilidad de lectura para una ruta."""
+    """Normaliza una ruta, verifica existencia, integridad de seguridad y acceso de lectura."""
     if not path:
         return None
     try:
@@ -171,7 +171,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
 
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
-    """Verifica si un archivo es un candidato legítimo para el análisis."""
+    """Verifica si un archivo es un candidato legítimo para el análisis de duplicados."""
     if st_size <= 0:
         return False
     try:
@@ -199,7 +199,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 
 
 def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
-    """Valida que una ruta raíz sea un directorio apto."""
+    """Valida que una ruta raíz sea un directorio apto y accesible."""
     if not item: return None
     try:
         root = Path(item).resolve()
@@ -211,7 +211,7 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Realiza un recorrido DFS iterativo optimizado sobre los directorios proporcionados."""
+    """Realiza un recorrido DFS iterativo optimizado para identificar candidatos a duplicados."""
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     stack: List[Tuple[Path, int]] = []
     visited_dirs: set[Path] = set()

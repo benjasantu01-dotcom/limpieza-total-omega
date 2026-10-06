@@ -23,7 +23,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import (
     Iterable, Sequence, Dict, List, Optional, Callable, 
-    Union, TypeAlias, NamedTuple, Set, TypeGuard, Any, functools
+    Union, TypeAlias, NamedTuple, Set, TypeGuard, Any, functools, TypedDict
 )
 
 from safety import is_protected_path, is_safe_to_modify
@@ -44,6 +44,7 @@ __all__ = [
 JunctionChecker: TypeAlias = Callable[[str], bool]
 BrowserMap: TypeAlias = Dict[str, str]
 OSPath: TypeAlias = Union[str, Path]
+VisitedDirs: TypeAlias = Dict[str, int]
 
 def safe_path_operation(default: Any) -> Callable:
     """Decorador para asegurar que las operaciones de archivo sean seguras y no aborten el bucle."""
@@ -175,7 +176,7 @@ def _should_skip_entry(
     kernel32: Optional[ctypes.WinDLL], 
     is_junction_fn: JunctionChecker
 ) -> bool:
-    """Evalúa si un DirEntry debe omitirse por seguridad."""
+    """Evalúa si un DirEntry debe omitirse por seguridad antes de seguir procesando."""
     if entry.name is None or _is_excluded_file(entry.name):
         return True
     if _is_unc_path(entry.path) or len(entry.path) >= MAX_PATH_LEN:
@@ -190,7 +191,7 @@ def _should_skip_entry(
 
 @safe_path_operation(True)
 def _is_file_in_use(path_obj: Path) -> bool:
-    """Determina si un archivo está bloqueado usando la API Win32 sin lectura forzada."""
+    """Determina si un archivo está bloqueado usando la API Win32."""
     if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
         return True
     k32 = _get_kernel32()
@@ -208,10 +209,14 @@ def _sum_directory_recursive(
     root_abs_norm: str,
     kernel32: Optional[ctypes.WinDLL],
     visited_inodes: Set[int],
-    visited_dirs: Dict[str, int],
+    visited_dirs: VisitedDirs,
     depth: int = 0
 ) -> ScanResult:
-    """Ejecuta un recorrido recursivo con memoización para calcular el tamaño."""
+    """
+    Recorrido recursivo para calcular tamaño de caché.
+    Utiliza memoización por inodo (archivos) y ruta (directorios) para evitar ciclos
+    y redundancia en estructuras complejas de archivos de caché.
+    """
     if depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)
     
@@ -231,9 +236,9 @@ def _sum_directory_recursive(
                 if _should_skip_entry(entry, kernel32, _IS_JUNCTION_FN):
                     continue
                 
-                is_dir_entry = entry.is_dir(follow_symlinks=False)
-                if is_dir_entry:
+                if entry.is_dir(follow_symlinks=False):
                     child_path = Path(entry.path)
+                    # Validación de seguridad: no seguir rutas fuera del base_abs_norm original
                     if not is_safe_to_modify(child_path) or is_protected_path(child_path) or not _ensure_within_base(entry.path, root_abs_norm):
                         continue
                     res = _sum_directory_recursive(child_path, root_abs_norm, kernel32, visited_inodes, visited_dirs, depth + 1)
@@ -294,7 +299,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     k32 = _get_kernel32()
     found: List[BrowserCache] = []
     visited_inodes: Set[int] = set()
-    visited_dirs: Dict[str, int] = {}
+    visited_dirs: VisitedDirs = {}
     
     for base in raw_bases:
         if not isinstance(base, Path) or not base.exists(): continue

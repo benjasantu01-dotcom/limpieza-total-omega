@@ -437,7 +437,8 @@ def logo_ascii() -> str:
 
 # Constantes de geometría para el decorado de franjas internas
 STRIPE_THICKNESS_SCALE: Final[float] = 92.0
-STRIPE_OFFSET_X_FACTOR: Final[float] = 36.0
+STRIPE_COUNT_FACTOR: Final[float] = 28.0
+STRIPE_BASE_Y_OFFSET: Final[float] = 18.0
 
 @lru_cache(maxsize=16)
 def _get_stripe_params(scale: float, franjas_count: int) -> Tuple[Tuple[float, float, float], ...]:
@@ -455,8 +456,8 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
     """Renderiza las franjas internas geométricas del escudo."""
     try:
         if canvas is None or not math.isfinite(scale) or scale <= 0: return
-        franjas_count = max(6, int(28 * scale))
-        base_y = canvas_y + 18 * scale
+        franjas_count = max(6, int(STRIPE_COUNT_FACTOR * scale))
+        base_y = canvas_y + STRIPE_BASE_Y_OFFSET * scale
         center_x = canvas_x + 64 * scale
         params, colors = _get_cached_stripe_data(scale, franjas_count)
         
