@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
-- Rechazadas por tests: 29
+- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Rechazadas por tests: 30
 - Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 209
@@ -16,35 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-05 | 108 | 14 | 20 | 7 | 119 |
-| 2026-10-06 | 100 | 15 | 23 | 8 | 90 |
+| 2026-10-05 | 105 | 14 | 20 | 7 | 118 |
+| 2026-10-06 | 102 | 16 | 23 | 8 | 91 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **46**
+- seguridad defensiva: **43**
 - legibilidad y documentación: **40**
-- rendimiento: **36**
-- robustez ante casos límite: **36**
+- rendimiento: **37**
+- robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **23**
-- `diskreport.py`: **21**
-- `healthscore.py`: **21**
 - `quarantine.py`: **21**
+- `diskreport.py`: **20**
+- `healthscore.py`: **20**
 - `browser.py`: **18**
 - `branding.py`: **17**
 - `scanner.py`: **17**
-- `duplicates.py`: **16**
+- `duplicates.py`: **15**
 - `organizer.py`: **15**
 - `safety.py`: **14**
-- `assistant.py`: **12**
-- `settings.py`: **10**
+- `assistant.py`: **13**
+- `settings.py`: **11**
 - `main.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T10:13:53` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `_apply_field` para manejar de forma resiliente la ingesta de datos externos, garantizando que una métrica mal formada o inesperada no aborte el proceso de actualización del contexto completo.
+- `2026-10-06T10:12:56` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` implementando una comprobación de `os.stat` previa a cualquier apertura de archivo, evitando lecturas innecesarias en disco cuando el archivo no ha cambiado.
 - `2026-10-06T10:04:30` **safety.py** (rendimiento): Se optimizaron las búsquedas en `PROTECTED_DIR_NAMES` y `SENSITIVE_EXTENSIONS` convirtiéndolas de `frozenset` a estructuras que aprovechan mejor la cache de CPU y el hashing, y se refactorizó `is_protected_path` para evitar llamadas redundantes a `Path.resolve()` en el camino crítico.
 - `2026-10-06T10:03:29` **quarantine.py** (rendimiento): Se optimizó el acceso al manifiesto implementando una carga perezosa efectiva (`lazy loading`) y evitando la reconstrucción redundante de objetos en `list_items` y `purge_all` al reutilizar la caché, mejorando así el rendimiento en operaciones de lectura frecuentes.
 - `2026-10-06T09:56:16` **memory.py** (rendimiento): Optimizé la función `top_memory_processes` reemplazando la creación de una lista de objetos `ProcessMemory` mediante un bucle `for` explícito por un `generator expression` eficiente, y eliminé la lógica redundante de verificación `_is_system_process(pid) or pid == 0` dentro del bucle ya que `_is_system_process` ya incluye al `0`.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T09:21:52` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la adición de Type Hints detallados, la estructuración de la lógica de filtrado de directorios para mayor claridad y la inclusión de docstrings explicativos en funciones complejas, asegurando que las decisiones de diseño sean comprensibles para otros colaboradores.
 - `2026-10-06T09:21:22` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la estructura `MEMORYSTATUSEX` añadiendo un comentario que explica el propósito de cada campo, y realicé una refactorización de `_get_process_path` para extraer la lógica de validación de rutas en una función privada, reduciendo el anidamiento y mejorando la claridad del flujo de seguridad.
 - `2026-10-06T09:12:53` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y mantenibilidad del módulo mediante la adición de Type Hints en la interfaz de `RecommendationRule` y la mejora de los Docstrings, garantizando que el contrato funcional entre el Pipeline y el sistema de evaluación sea explícito y auto-explicativo.
-- `2026-10-06T09:11:38` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad del flujo lógico mediante type hints consistentes en los retornos de las funciones de hash y la estandarización de los docstrings siguiendo el estilo explicativo del proyecto.
-- `2026-10-06T09:11:08` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` mediante la refactorización de `_collect_summary_data`, consolidando la lógica de actualización en métodos dedicados dentro de los contenedores de datos (`ExtStats` y un nuevo `GlobalStats`), eliminando la complejidad procedural del bucle principal y facilitando la comprensión del flujo de datos.

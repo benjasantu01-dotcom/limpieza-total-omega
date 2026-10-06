@@ -376,10 +376,9 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             try:
                 st = path.stat()
                 cache_key = str(path)
-                if cache_key in _MANAGER.settings_cache:
-                    mtime, cached_val = _MANAGER.settings_cache[cache_key]
-                    if mtime == st.st_mtime:
-                        return cached_val.copy()
+                cached = _MANAGER.settings_cache.get(cache_key)
+                if cached and cached[0] == st.st_mtime:
+                    return cached[1].copy()
                 
                 settings = _load_impl(path)
                 _MANAGER.settings_cache[cache_key] = (st.st_mtime, settings)

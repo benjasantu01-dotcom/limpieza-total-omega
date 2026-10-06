@@ -439,12 +439,13 @@ class SystemContext:
         has_updates = False
         try:
             for key, spec in _VALIDATORS.items():
-                val = _get_source_value(source, key)
-                if val is not None:
+                try:
                     res = self._apply_field(source, key, spec)
                     if res is not None and _check_metric_integrity(res) and float(res) >= 0:
                         object.__setattr__(self, key, res)
                         has_updates = True
+                except Exception:
+                    continue
             
             if (grade_val := self._clean_grade(_get_source_value(source, "grade"))):
                 object.__setattr__(self, 'grade', grade_val)
