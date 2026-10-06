@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **212** (42.1% de aceptación)
-- Rechazadas por tests: 30
-- Rechazadas por guardia de seguridad: 40
+- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Rechazadas por tests: 31
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-05 | 85 | 11 | 14 | 5 | 81 |
-| 2026-10-06 | 127 | 19 | 26 | 8 | 128 |
+| 2026-10-05 | 83 | 11 | 14 | 5 | 79 |
+| 2026-10-06 | 128 | 20 | 28 | 8 | 128 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **48**
-- manejo de errores y validación de entradas: **48**
 - robustez ante casos límite: **46**
-- rendimiento: **37**
+- rendimiento: **35**
 - legibilidad y documentación: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **23**
-- `diskreport.py`: **22**
+- `diskreport.py`: **21**
 - `quarantine.py`: **20**
 - `healthscore.py`: **19**
-- `browser.py`: **18**
 - `organizer.py`: **17**
 - `scanner.py`: **17**
 - `branding.py`: **17**
-- `safety.py`: **15**
+- `browser.py`: **17**
+- `safety.py`: **16**
 - `duplicates.py`: **14**
 - `assistant.py`: **13**
 - `settings.py`: **12**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T13:18:06` **safety.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita para detectar caracteres de escape o nombres reservados de Windows en la función `ensure_safe_to_modify`, previniendo errores de bajo nivel en llamadas a la API de Win32 que podrían ser explotados para bypass de seguridad.
 - `2026-10-06T13:08:27` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de entrada (`None`/vacíos) y encapsulando las operaciones de movimiento/borrado en bloques `try-except` más granulares para prevenir que errores en un archivo detengan el procesamiento de toda la lista, asegurando que la integridad del proceso de limpieza se mantenga ante fallos de I/O específicos.
 - `2026-10-06T13:08:10` **memory.py** (manejo de errores y validación de entradas): Se mejora la robustez de `trim_working_set` y sus ayudantes validando explícitamente el `handle` antes de llamar a `EmptyWorkingSet` y añadiendo chequeos de nulidad en las APIs de `ctypes` para evitar llamadas a funciones inexistentes o punteros nulos que podrían causar errores en tiempo de ejecución.
 - `2026-10-06T13:07:42` **main.py** (manejo de errores y validación de entradas): Se ha mejorado `_validate_environment` para incluir una validación de seguridad proactiva mediante `safety.ensure_safe_to_modify` sobre las rutas críticas del entorno, asegurando que la aplicación no pueda iniciarse si el directorio de la aplicación o el home del usuario son manipulados por terceros antes de la ejecución.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T11:16:00` **quarantine.py** (seguridad defensiva): Se ha implementado una validación de "bloqueo de escritura" explícita en `save_manifest` para prevenir la corrupción de datos durante operaciones concurrentes o en escenarios de baja integridad del sistema de archivos, asegurando que el manifiesto solo se sobrescriba si el archivo es tratable como un archivo de datos normal sin atributos de sistema que impidan su reemplazo.
 - `2026-10-06T11:15:02` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_get_process_path` validando que la ruta resuelta no solo sea un archivo existente, sino que también verifique explícitamente su ubicación mediante `is_safe_to_modify` antes de ser procesada, evitando posibles manipulaciones de rutas fuera de las áreas permitidas.
 - `2026-10-06T11:14:30` **main.py** (seguridad defensiva): Se ha implementado un control de integridad adicional en el decorador `ensure_safety` para verificar explícitamente que la ruta sea un directorio y no un archivo, y se ha fortalecido el método `_validate_disk_access` para bloquear rutas con longitudes inusualmente cortas o caracteres de control antes de que cualquier operación intente interactuar con el sistema de archivos.
-- `2026-10-06T11:04:26` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` y `_is_excluded_path` añadiendo una comprobación explícita de `is_protected_path` sobre la ruta real (`resolve()`) antes de cualquier operación de I/O, evitando seguir enlaces simbólicos maliciosos que apunten fuera de la raíz permitida.

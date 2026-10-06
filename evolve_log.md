@@ -1689,3 +1689,43 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-06T13:08:27` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de entrada (`None`/vacíos) y encapsulando las operaciones de movimiento/borrado en bloques `try-except` más granulares para prevenir que errores en un archivo detengan el procesamiento de toda la lista, asegurando que la integridad del proceso de limpieza se mantenga ante fallos de I/O específicos.
 - `2026-10-06T13:08:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T13:08:27` Corrida terminada. Total usado hoy: 308.
+- `2026-10-06T13:15:47` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-06T13:16:46` Tests FALLARON:
+```
+f is_protected_path(destination):
+                raise UnsafePathError("Restauración denegada: destino protegido.")
+            if destination.exists():
+                raise FileExistsError("El destino ya existe, no se sobrescribirá.")
+    
+            _check_device_consistency(stored_file, destination.parent.resolve())
+            parent = destination.parent
+            if not is_safe_to_modify(parent):
+                raise UnsafePathError("Directorio padre de destino no seguro.")
+    
+            _ensure_disk_space(parent, quarantine_item.size_bytes)
+    
+            if not parent.exists():
+                _check_io_error_context(parent.mkdir, parents=True, exist_ok=True)
+    
+            os.replace(str(stored_file), str(destination))
+    
+            items = load_manifest(base, force_reload=True)
+            save_manifest([i for i in items if i.item_id != item_id], base)
+            return destination
+        except (OSError, PermissionError, IOError, UnsafePathError) as e:
+>           raise RuntimeError(f"Error crítico en restauración: {e}")
+E           RuntimeError: Error crítico en restauración: [GENERIC] Restauración denegada: destino protegido.
+
+app/quarantine.py:882: RuntimeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error crítico en restauración: [GENERIC] Restauración denegada: destino protegido.
+1 failed, 298 passed in 1.86s
+
+```
+- `2026-10-06T13:16:46` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se mejora el manejo de errores en `restore_item` capturando explícitamente `FileNotFoundError` y casos de corrupción de manifiesto, asegurando que la operación de restauración sea atómica y no deje inconsistencias entre el archivo restaurado y el manifiesto.
+- `2026-10-06T13:17:12` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-06T13:17:13` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T13:18:06` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación explícita para detectar caracteres de escape o nombres reservados de Windows en la función `ensure_safe_to_modify`, previniendo errores de bajo nivel en llamadas a la API de Win32 que podrían ser explotados para bypass de seguridad.
+- `2026-10-06T13:18:30` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: Scanner._is_inside_base_root, Scanner._is_reparse_point
+- `2026-10-06T13:18:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T13:18:30` Corrida terminada. Total usado hoy: 312.
