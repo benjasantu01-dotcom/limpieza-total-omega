@@ -209,7 +209,7 @@ class ValidationContext(Enum):
     INTEGRITY = auto()
 
 # Directorios críticos del sistema que la aplicación NUNCA debe modificar
-PROTECTED_DIR_NAMES: Final[frozenset[str]] = frozenset({
+PROTECTED_DIR_NAMES: Final[set[str]] = {
     "windows", "winnt", "system32", "syswow64", "system", "boot",
     "program files", "program files (x86)", "programdata",
     "$recycle.bin", "system volume information", "recovery",
@@ -219,15 +219,15 @@ PROTECTED_DIR_NAMES: Final[frozenset[str]] = frozenset({
     "bin", "sbin", "usr", "etc", "var", "lib", "lib64", "proc", "sys",
     "dev", "root", "library", "applications",
     "config.msi", "installer",
-})
+}
 
 # Extensiones ejecutables y configuraciones de seguridad críticas
-SENSITIVE_EXTENSIONS: Final[frozenset[str]] = frozenset({
+SENSITIVE_EXTENSIONS: Final[set[str]] = {
     ".sys", ".dll", ".exe", ".msi", ".drv", ".ocx", ".cpl", ".efi",
     ".reg", ".pol", ".key", ".pem", ".pfx", ".p12", ".crt", ".cer",
-})
+}
 
-_SYSTEM_ROOT_PATHS: Final[frozenset[Path]] = frozenset(
+_SYSTEM_ROOT_PATHS: Final[tuple[Path, ...]] = tuple(
     Path(os.environ[v]).resolve() for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
     if os.environ.get(v)
 )
@@ -269,7 +269,6 @@ def _is_file_owned_by_system(path_str: str) -> bool:
             path_str, 1, 0x00000001, ctypes.byref(sid_ptr), None, None, None, None
         )
         if res == 0:
-            # SIDs conocidos: S-1-5-18 (SYSTEM), S-1-5-80-956008885-3418522649-1831038088-1856943809-1736724339 (TrustedInstaller)
             sid_str = ctypes.create_unicode_buffer(128)
             advapi32.ConvertSidToStringSidW(sid_ptr, ctypes.byref(sid_str))
             sid_val = sid_str.value
@@ -582,30 +581,26 @@ def is_drive_root(path: PathLike) -> bool:
 
 @lru_cache(maxsize=4096)
 def _is_system_path_raw(path_str: str) -> bool:
-    """Comprueba si una ruta pertenece a directorios críticos del sistema basándose en prefijos y partes."""
+    """Comprueba si una ruta pertenece a directorios críticos del sistema."""
     try:
-        p = Path(path_str).resolve()
-        # Si la ruta es subdirectorio de algún root protegido
-        if any(root in p.parents or p == root for root in _SYSTEM_ROOT_PATHS):
-            return True
-        # Chequeo por componentes de nombre prohibidos
-        return any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts)
-    except (OSError, RuntimeError):
+        parts = Path(path_str).parts
+        if not parts: return True
+        return any(part.lower() in PROTECTED_DIR_NAMES for part in parts)
+    except Exception:
         return True
 
 @lru_cache(maxsize=4096)
 def is_protected_path(path: PathLike) -> bool:
-    """Valida si la ruta está marcada como protegida contra modificaciones por estar en zonas críticas."""
+    """Valida si la ruta está marcada como protegida contra modificaciones."""
     if not isinstance(path, (str, Path)) or not path: return True
     try:
         p_str = str(path)
         if _is_system_directory_junction(p_str): return True
-        # Chequeo rápido antes de una resolución completa
         if _is_system_path_raw(p_str): return True
-        p = normalize(p_str)
-        if p == Path(p.anchor): return True
-        return False
-    except (UnsafePathError, TypeError, OSError, RuntimeError, ValueError): return True
+        p = Path(p_str).resolve()
+        if any(p == root or root in p.parents for root in _SYSTEM_ROOT_PATHS): return True
+        return p == Path(p.anchor)
+    except Exception: return True
 
 @lru_cache(maxsize=4096)
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:

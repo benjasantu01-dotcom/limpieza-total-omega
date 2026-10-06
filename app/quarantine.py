@@ -821,7 +821,9 @@ def quarantine_file(
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Lista elementos en cuarentena, ordenados por fecha de aislamiento."""
     try:
-        return sorted(load_manifest(base), key=lambda x: x.quarantined_at, reverse=True)
+        # Reutilizamos la lista de la caché cargada
+        items = load_manifest(base)
+        return sorted(items, key=lambda x: x.quarantined_at, reverse=True)
     except (OSError, UnsafePathError, PermissionError):
         return []
 
