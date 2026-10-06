@@ -756,3 +756,51 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-10-06T06:17:53` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante fallos en el sistema de archivos al añadir verificaciones de `is_file()` antes de realizar operaciones de lectura/stat, y agregué un manejo explícito para archivos bloqueados (reintentos o aborto seguro) que previene excepciones no capturadas durante la carga.
 - `2026-10-06T06:17:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T06:17:53` Corrida terminada. Total usado hoy: 148.
+- `2026-10-06T06:26:16` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-10-06T06:26:49` Tests FALLARON:
+```
+lve/tests/test_modules.py:677: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/diskreport.py:172: SyntaxWarning: invalid escape sequence '\ '
+    """Retorna una lista de unidades montadas (A:\ a Z:\) en Windows excluyendo protegidas."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'Otro.lnk'
+  'MiPrograma.lnk'
+  Extra items in the right set:
+  'MiPrograma'
+  'Otro'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed, 7 warnings in 1.29s
+
+```
+- `2026-10-06T06:26:49` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha corregido un error crítico de referencia en `_process_folder_entry` donde se intentaba acceder a una variable `_` inexistente para obtener el nombre del archivo, además de añadir validación contra rutas inexistentes que causaban excepciones durante el escaneo de directorios.
+- `2026-10-06T06:27:49` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-06T06:28:33` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-06T06:28:45` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-06T06:29:57` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-06T06:31:01` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T06:31:48` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` y `draw_logo` validando explícitamente la integridad de los parámetros numéricos y estados de ruta, asegurando que cualquier entrada maliciosa o malformada (como valores `inf` o rutas no seguras) sea capturada antes de intentar operaciones de I/O o renderizado.
+- `2026-10-06T06:32:10` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_file_in_use` para prevenir errores de acceso durante el escaneo, añadiendo una validación explícita para asegurar que el path resuelto esté bajo el directorio de caché antes de intentar cualquier operación de sistema, evitando el potencial "path traversal" fuera de los límites permitidos.
+- `2026-10-06T06:32:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T06:32:10` Corrida terminada. Total usado hoy: 152.

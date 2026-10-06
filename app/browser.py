@@ -193,14 +193,20 @@ def _should_skip_entry(
     return False
 
 @safe_path_operation(True)
-def _is_file_in_use(path_obj: Any) -> bool:
+def _is_file_in_use(path_obj: Any, base_norm: str) -> bool:
     """
-    Determina si un archivo está bloqueado por otro proceso usando la API Win32.
+    Determina si un archivo está bloqueado por otro proceso, validando antes el scope.
     """
     if not isinstance(path_obj, Path) or not path_obj.exists():
         return True
+    
+    # Prevenir acceso fuera del directorio de caché (path traversal)
+    if not _ensure_within_base(str(path_obj), base_norm):
+        return True
+        
     if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
         return True
+    
     # Verificación de permisos básicos antes de llamar a CreateFileW
     if not os.access(path_obj, os.R_OK):
         return True
@@ -259,7 +265,7 @@ def _sum_directory_recursive(
                         st = entry.stat(follow_symlinks=False)
                         if st.st_ino not in visited_inodes:
                             p_file = Path(entry.path)
-                            if not _is_file_in_use(p_file):
+                            if not _is_file_in_use(p_file, root_abs_norm):
                                 visited_inodes.add(st.st_ino)
                                 total_bytes += st.st_size
                     except (OSError, PermissionError):
