@@ -456,3 +456,16 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-10-06T03:47:16` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-10-06T03:47:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-06T03:47:16` Corrida terminada. Total usado hoy: 88.
+- `2026-10-06T03:53:17` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-10-06T03:53:19` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-06T03:53:19` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-06T03:53:39` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-06T03:53:39` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-06T03:54:09` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-06T03:54:09` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-06T03:55:10` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para validar tipos complejos (como `set` o `tuple` no contemplados) y añadí una verificación estricta de `_MAX_RESPONSE_BYTES` antes de cargar JSONs remotos, evitando posibles ataques por desbordamiento de memoria.
+- `2026-10-06T03:55:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-06T03:55:54` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-06T03:56:10` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_in_use` capturando explícitamente `OSError` durante la creación del manejador de archivos y agregué validación de tipo/existencia para `path_obj` antes de operar, evitando posibles `ValueError` al pasar rutas mal formadas.
+- `2026-10-06T03:56:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-06T03:56:10` Corrida terminada. Total usado hoy: 92.

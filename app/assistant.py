@@ -315,11 +315,11 @@ def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
     """Valida que los datos del payload no contengan estructuras recursivas profundas o tipos inválidos."""
     if depth > _MAX_NESTING_DEPTH: return False
     try:
-        if isinstance(val, (list, tuple)):
-            if len(val) > 10: return False
+        if isinstance(val, (list, tuple, set)):
+            if len(val) > 20: return False
             return all(_is_safe_payload_structure(i, depth + 1) for i in val)
         if isinstance(val, dict):
-            if len(val) > 20: return False
+            if len(val) > 50: return False
             return all(isinstance(k, str) and _is_safe_payload_structure(v, depth + 1) for k, v in val.items())
         return isinstance(val, (str, int, float, bool, type(None)))
     except Exception:
@@ -330,7 +330,7 @@ def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
     if depth > _MAX_NESTING_DEPTH: return True
     try:
         if isinstance(val, (list, tuple, set)):
-            if len(val) > 20: return True
+            if len(val) > 50: return True
             return any(_is_input_too_deep_or_complex(item, depth + 1) for item in val)
         elif isinstance(val, dict):
             if len(val) > 50: return True
@@ -745,6 +745,11 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: 
                 return None
+            
+            # Verificar tamaño antes de leer para evitar DoS
+            content_length = res.headers.get("Content-Length")
+            if content_length and int(content_length) > _MAX_RESPONSE_BYTES: return None
+                
             raw_res = res.read(_MAX_RESPONSE_BYTES + 1)
             if not isinstance(raw_res, bytes) or len(raw_res) > _MAX_RESPONSE_BYTES: return None
             
