@@ -155,7 +155,7 @@ def _is_file_locked(path: Path) -> bool:
     Verifica si un archivo está bloqueado intentando abrirlo en modo lectura.
     Valida existencia y permisos básicos antes de la operación de apertura.
     """
-    if not path.exists():
+    if not path.is_file():
         return True
     
     if not os.access(path, os.R_OK):
@@ -165,7 +165,7 @@ def _is_file_locked(path: Path) -> bool:
         with open(path, "rb") as f:
             f.read(1)
             return False
-    except (PermissionError, OSError, IOError, BlockingIOError, FileNotFoundError):
+    except (PermissionError, OSError, IOError, BlockingIOError):
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:

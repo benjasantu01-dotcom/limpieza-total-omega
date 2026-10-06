@@ -476,7 +476,11 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
     """Deserializa el manifiesto, usando caché perezoso indexado para rendimiento O(1)."""
-    base_dir = quarantine_dir(base)
+    try:
+        base_dir = quarantine_dir(base)
+    except (OSError, UnsafePathError):
+        return []
+        
     if not force_reload and base_dir in _MANIFEST_CACHE:
         return list(_MANIFEST_CACHE[base_dir].values())
         
@@ -495,7 +499,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         items = [i for d in data if (i := QuarantineItem.from_dict(d))]
         _MANIFEST_CACHE[base_dir] = {item.item_id: item for item in items}
         return items
-    except (OSError, PermissionError, json.JSONDecodeError, ValueError):
+    except (OSError, json.JSONDecodeError, ValueError):
         _MANIFEST_CACHE[base_dir] = {}
         return []
 

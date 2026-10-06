@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **211** (41.9% de aceptación)
-- Rechazadas por tests: 26
+- Mejoras aceptadas: **212** (42.1% de aceptación)
+- Rechazadas por tests: 25
 - Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 214
@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-04 | 30 | 4 | 5 | 2 | 17 |
+| 2026-10-04 | 28 | 3 | 4 | 2 | 17 |
 | 2026-10-05 | 147 | 16 | 26 | 9 | 152 |
-| 2026-10-06 | 34 | 6 | 8 | 3 | 45 |
+| 2026-10-06 | 37 | 6 | 9 | 3 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **51**
+- manejo de errores y validación de entradas: **46**
 - seguridad defensiva: **45**
-- manejo de errores y validación de entradas: **43**
-- rendimiento: **38**
-- legibilidad y documentación: **34**
+- rendimiento: **37**
+- legibilidad y documentación: **33**
 
 ## Mejoras aceptadas por archivo
 
+- `memory.py`: **22**
 - `healthscore.py`: **21**
-- `memory.py`: **21**
+- `quarantine.py`: **20**
 - `diskreport.py`: **20**
-- `quarantine.py`: **19**
 - `scanner.py`: **19**
-- `branding.py`: **18**
 - `browser.py`: **17**
+- `branding.py`: **17**
 - `safety.py`: **15**
 - `assistant.py`: **15**
+- `organizer.py`: **15**
 - `duplicates.py`: **14**
-- `organizer.py`: **14**
-- `settings.py`: **12**
+- `settings.py`: **11**
 - `main.py`: **3**
 - `startup.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-06T04:15:41` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` mediante la captura explícita de `json.JSONDecodeError` y `FileNotFoundError` (implícito en el manejo de `OSError`), asegurando que el estado del sistema no se corrompa ante archivos de manifiesto malformados o faltantes durante la inicialización.
+- `2026-10-06T04:14:54` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_locked` para evitar falsos positivos y errores inesperados al manejar archivos, asegurando que solo se intente la apertura si el archivo realmente existe y tiene permisos básicos, capturando de forma más precisa las excepciones de acceso denegado.
+- `2026-10-06T04:14:18` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez en `_get_process_path` y `trim_working_set` capturando errores de la API de Windows mediante `ctypes.get_last_error()` en lugar de asumir silencio, y validando exhaustivamente el resultado de `OpenProcess` para evitar llamadas a `CloseHandle` con nulos.
 - `2026-10-06T04:05:07` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` asegurando que el cálculo del puntaje no falle silenciosamente ante métricas mal formadas, añadiendo una validación explícita de `metrics` y capturando errores en el pipeline para evitar retornos inconsistentes, mejorando la fiabilidad del diagnóstico frente a estados inesperados del sistema.
 - `2026-10-06T04:04:35` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` implementando una gestión de excepciones más estricta al abrir archivos, asegurando que los recursos (file descriptors) se liberen correctamente incluso ante fallos de lectura, y añadiendo una validación explícita para evitar procesar archivos que se vuelven inaccesibles durante la ejecución.
 - `2026-10-06T04:04:03` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` capturando errores de acceso a atributos de archivo (`st_dev`, `st_ino`) y manejando explícitamente rutas relativas vacías, evitando que excepciones en el acceso a metadatos interrumpan el escaneo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T02:14:56` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_process_path` integrando `is_safe_to_modify` antes de retornar la ruta, asegurando que cualquier proceso que se pretenda inspeccionar o gestionar no solo esté fuera de las rutas protegidas, sino que cumpla con los criterios globales de modificación segura.
 - `2026-10-06T02:12:28` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_evaluate_rules` validando explícitamente el origen de los mensajes para prevenir inyecciones o desbordamientos de datos malformados antes de que lleguen a la interfaz, además de asegurar que la entrada a `compute_score` sea siempre una instancia válida de `SystemMetrics` mediante un chequeo de tipo estricto.
 - `2026-10-06T02:03:22` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` al evitar el seguimiento de enlaces simbólicos mediante la validación del estado del inodo y la restricción estricta de rutas, previniendo así ciclos infinitos o la salida involuntaria del directorio raíz objetivo.
-- `2026-10-06T02:03:10` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_file_in_use` al incluir un chequeo explícito de `is_protected_path` adicional a `is_safe_to_modify`, asegurando que ninguna operación de comprobación de estado pueda intentar acceder a una ruta protegida incluso si las validaciones previas fallaran.
-- `2026-10-06T02:02:39` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la verificación manual de caracteres prohibidos por `filter_safe_paths` para asegurar consistencia con el resto del sistema, y se encapsuló la construcción de la ruta dentro de una verificación estricta para prevenir posibles escapes de directorio mediante manipulación de entrada.
-- `2026-10-06T01:52:18` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante estados inconsistentes del sistema de archivos al añadir una comprobación estricta de "archivo bloqueado o en uso" mediante `os.access` y una validación de `st_nlink` para detectar hardlinks maliciosos, además de asegurar que la carga de configuración no falle catastróficamente si el archivo es un directorio o tiene permisos de escritura global.
