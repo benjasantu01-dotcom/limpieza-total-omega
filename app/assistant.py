@@ -408,7 +408,7 @@ class SystemContext:
         """Valida, convierte y verifica límites de un campo individual."""
         try:
             val = _get_source_value(source, key)
-            if val is None or isinstance(val, (dict, list, set)): return None
+            if val is None or isinstance(val, (dict, list, set, type)): return None
             
             float_val = float(val)
             if not _is_metric_within_bounds(float_val, spec): 
@@ -426,7 +426,7 @@ class SystemContext:
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad sobre el objeto fuente."""
         if source is None: return False
-        if not (isinstance(source, dict) or (isinstance(source, object) and not isinstance(source, (str, int, float, bool)))):
+        if not (isinstance(source, dict) or (isinstance(source, object) and not isinstance(source, (str, int, float, bool, type(None))))):
             return False
         try:
             return not _is_input_too_deep_or_complex(source)

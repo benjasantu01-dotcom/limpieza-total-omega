@@ -302,7 +302,11 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     
     try:
         if _Validators._is_safe_path(str(base_path)) and not _Validators._is_reparse_point(base_path):
-            if not base_path.exists(): base_path.mkdir(parents=True, exist_ok=True)
+            if not base_path.exists():
+                base_path.mkdir(parents=True, exist_ok=True)
+                dir_fd = os.open(str(base_path.parent), os.O_RDONLY)
+                try: os.fsync(dir_fd)
+                finally: os.close(dir_fd)
             if base_path.is_dir() and os.access(base_path, os.R_OK | os.W_OK):
                 full_path = base_path / SETTINGS_FILE
                 _MANAGER.path_cache[cache_key] = full_path

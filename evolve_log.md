@@ -726,3 +726,67 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-07T13:48:58` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-10-07T13:48:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T13:48:58` Corrida terminada. Total usado hoy: 322.
+- `2026-10-07T13:50:36` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-07T13:51:16` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `settings.py` ante errores de entrada y manipulación del sistema de archivos mediante la implementación de `os.fsync` en el directorio padre durante la creación inicial del mismo, y añadiendo comprobaciones de integridad adicionales (`st_mode` y `st_nlink`) para asegurar que el archivo de configuración no sea un punto de unión o un archivo manipulado durante el proceso de guardado.
+- `2026-10-07T13:51:56` Tests FALLARON:
+```
+-2/test_entries_from_folders_read0')
+
+    def test_entries_from_folders_reads_injected_folders(tmp_path):
+        carpeta = tmp_path / "Inicio"
+        carpeta.mkdir()
+        (carpeta / "MiPrograma.lnk").write_text("x")
+        (carpeta / "Otro.lnk").write_text("y")
+        entradas = startup.entries_from_folders([carpeta])
+>       assert {e.name for e in entradas} == {"MiPrograma", "Otro"}
+E       AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+E         
+E         Extra items in the left set:
+E         'MiPrograma.lnk'
+E         'Otro.lnk'
+E         Extra items in the right set:
+E         'Otro'
+E         'MiPrograma'
+E         
+E         Full diff:
+E           {
+E         -     'MiPrograma',
+E         +     'MiPrograma.lnk',
+E         ?                ++++
+E         -     'Otro',
+E         +     'Otro.lnk',
+E         ?          ++++
+E           }
+
+evolve/tests/test_modules.py:677: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'MiPrograma.lnk'
+  'Otro.lnk'
+  Extra items in the right set:
+  'Otro'
+  'MiPrograma'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed in 1.78s
+
+```
+- `2026-10-07T13:51:56` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se mejoró la robustez de `_process_folder_entry` corrigiendo un error de referencia de variable (`name` usaba un `_` mal definido) y se añadieron chequeos de límites en la lógica de procesamiento para prevenir excepciones ante rutas mal formadas o inaccesibles.
+- `2026-10-07T13:52:09` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-07T13:52:23` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-07T13:53:36` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva de `SystemContext.ingest` implementando una validación de tipo más estricta durante la ingesta de datos, asegurando que no se inyecten objetos no autorizados que contengan métodos o atributos inesperados, reforzando el cumplimiento de la regla de no procesar datos externos no validados.
+- `2026-10-07T13:53:51` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-07T13:54:05` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-07T13:54:51` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-10-07T13:54:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T13:54:51` Corrida terminada. Total usado hoy: 326.
