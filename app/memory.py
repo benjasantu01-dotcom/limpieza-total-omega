@@ -183,7 +183,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     return MemorySnapshot(total=total, available=available, cached=cached)
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
-    """Extrae datos de una línea CSV (Formato esperado: Nombre,PID,WorkingSet)."""
+    """Extracts data from a CSV line (Format: Name,PID,WorkingSet)."""
     parts = [p.strip().strip("'\"") for p in line.split(",")]
     if len(parts) < 3: return None
     
@@ -280,7 +280,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         
         if psapi.EnumProcesses(ctypes.byref(pids), cb, ctypes.byref(cb_needed)):
             count = cb_needed.value // ctypes.sizeof(ctypes.c_ulong)
-            processes = (p for pid in pids[:count] if (p := _get_proc_memory_by_pid(pid)))
+            processes = [p for pid in pids[:count] if not _is_system_process(pid) and (p := _get_proc_memory_by_pid(pid))]
             cache_data = sorted(processes, key=lambda p: p.working_set, reverse=True)[:limit]
             top_memory_processes._cache = (now, cache_data)
             

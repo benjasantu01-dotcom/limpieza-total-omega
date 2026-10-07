@@ -943,3 +943,13 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-07T03:37:16` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `walk_files` para que no reconstruya objetos `Path` innecesarios dentro del bucle crítico, manteniendo la referencia al string del sistema de archivos y reduciendo la sobrecarga de instanciación de objetos.
 - `2026-10-07T03:37:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T03:37:16` Corrida terminada. Total usado hoy: 88.
+- `2026-10-07T03:45:14` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-10-07T03:45:45` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-07T03:46:13` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el método `is_finite` de `SystemMetrics` reemplazando la introspección costosa `__dataclass_fields__` (que ocurría en cada iteración del bucle) por una comprobación directa de los atributos relevantes, mejorando significativamente la eficiencia en el hot-path del cálculo.
+- `2026-10-07T03:47:13` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-07T03:48:16` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-07T03:49:22` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-07T03:50:34` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-07T03:51:05` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó `top_memory_processes` eliminando la recreación innecesaria de objetos `ProcessMemory` en cada iteración al cachear solo el resultado final, y se redujo el costo computacional de las llamadas a `_get_proc_memory_by_pid` mediante un filtrado previo de PIDs inválidos o críticos antes de intentar abrir el proceso.
+- `2026-10-07T03:51:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T03:51:05` Corrida terminada. Total usado hoy: 92.
