@@ -265,12 +265,14 @@ def _sum_directory_recursive(
     try:
         with os.scandir(root_path) as it:
             for entry in it:
+                # Validación estricta y uso booleano de filtros de seguridad
+                if not is_safe_to_modify(Path(entry.path)):
+                    continue
                 if _should_skip_entry(entry, kernel32, _IS_JUNCTION_FN):
                     continue
                 
                 if entry.is_dir(follow_symlinks=False):
                     child_path = Path(entry.path)
-                    # Validación adicional de longitud antes de recurrir
                     if len(entry.path) >= MAX_PATH_LEN:
                         continue
                     if not child_path.exists() or not _ensure_within_base(entry.path, root_abs_norm):

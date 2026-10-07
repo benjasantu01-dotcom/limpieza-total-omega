@@ -274,6 +274,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     try:
                         if skip_protected and _is_excluded_path(entry, root_path_str):
                             continue
+                        
                         if entry.is_dir(follow_symlinks=False):
                             st = _safe_stat(entry.path)
                             if st:
@@ -283,7 +284,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                     stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
                             st = _safe_stat(entry.path)
-                            if st and st.st_size >= 0:
+                            if st is not None and hasattr(st, 'st_size'):
                                 yield Path(entry.path), int(st.st_size)
                     except (OSError, PermissionError, AttributeError, ValueError, RuntimeError):
                         continue
@@ -358,7 +359,10 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     root = _validate_root(directory)
     if root is None: return ["Error: Ruta no válida, protegida o inaccesible."]
     
-    data = _collect_summary_data(root, skip_protected, limit=20)
+    try:
+        data = _collect_summary_data(root, skip_protected, limit=20)
+    except Exception:
+        return ["Error durante el escaneo de archivos."]
         
     if data.total_files == 0: return ["Aviso: No hay archivos accesibles."]
     
