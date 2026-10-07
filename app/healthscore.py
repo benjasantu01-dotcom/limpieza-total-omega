@@ -24,15 +24,15 @@ MetricKey: TypeAlias = str
 
 class Scorer(Protocol):
     """
-    Protocolo para funciones que transforman métricas de entrada a un rango de salud [0.0, 1.0].
+    Protocolo funcional para transformar SystemMetrics en un ratio de salud [0.0, 1.0].
     
-    Un Scorer debe ser idempotente, no realizar operaciones I/O y manejar internamente
-    cualquier valor de entrada inválido devolviendo un puntaje seguro (típicamente 0.0).
+    Implementaciones deben ser puras (sin I/O), manejar valores atípicos y 
+    garantizar consistencia en la salida (siempre devuelve float).
     """
     def __call__(self, metrics: SystemMetrics) -> NormalizedRatio: ...
 
 class Grade(Enum):
-    """Calificaciones alfabéticas estándar mapeadas a rangos de puntaje (0-100)."""
+    """Representación semántica de los rangos de puntaje (0-100)."""
     A = "A"
     B = "B"
     C = "C"
@@ -41,7 +41,7 @@ class Grade(Enum):
 
     @classmethod
     def from_score(cls, score: float | int) -> str:
-        """Asigna una letra según el puntaje obtenido (A: >=90, B: >=80, C: >=65, D: >=50, F: <50)."""
+        """Convierte una puntuación numérica a su categoría alfabética equivalente."""
         try:
             s = float(score)
         except (TypeError, ValueError):
@@ -54,14 +54,13 @@ class Grade(Enum):
 
 class RecommendationRule(NamedTuple):
     """
-    Define una lógica de diagnóstico que genera mensajes de usuario cuando una métrica
-    cae por debajo de un umbral específico.
+    Regla de diagnóstico ejecutable para detectar anomalías en una métrica específica.
     
     Attributes:
-        area: Identificador del componente (ej: 'disco').
-        threshold: Valor límite (0.0-1.0) debajo del cual se activa la alerta.
-        message_factory: Callable que recibe las métricas y devuelve un mensaje legible.
-        check: Predicado (SystemMetrics, NormalizedRatio) -> bool para decidir si alertar.
+        area: Identificador de la métrica (ej: 'disco').
+        threshold: Límite inferior de salud para activar la sugerencia.
+        message_factory: Función que genera un mensaje contextual al usuario.
+        check: Predicado booleano que evalúa si la métrica actual requiere atención.
     """
     area: MetricKey
     threshold: float
@@ -70,10 +69,7 @@ class RecommendationRule(NamedTuple):
 
 class PipelineEntry(NamedTuple):
     """
-    Configuración de una etapa de análisis en el pipeline.
-    
-    Contiene la metadata necesaria para ponderar el resultado final (weight) 
-    y ejecutar el cálculo y las reglas de diagnóstico asociadas.
+    Configuración completa de una unidad de análisis dentro del motor de salud.
     """
     area: MetricKey
     weight: int
@@ -102,16 +98,18 @@ _LIMIT_RAM_PERCENT: Final[float] = 35.0
 _LIMIT_DISK_PERCENT: Final[float] = 25.0
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
-    """Asegura que un valor se mantenga dentro de los límites [min_val, max_val]."""
+    """Asegura que un valor se mantenga dentro del intervalo de normalización [0.0, 1.0]."""
     if not math.isfinite(value): return min_val
-    if value < min_val: return min_val
-    return max_val if value > max_val else value
+    return max(min_val, min(max_val, value))
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
     """
-    Fábrica de normalizadores lineales. 
-    Si inverse es True, valores mayores al límite reducen el ratio (ej: archivos temporales).
-    Si inverse es False, valores mayores al límite aumentan el ratio (ej: espacio libre).
+    Fábrica para crear normalizadores lineales.
+    
+    Args:
+        limit: Valor umbral para el cálculo.
+        inverse: Si True, un valor mayor al límite reduce el ratio (ej: basura acumulada).
+                 Si False, un valor mayor al límite aumenta el ratio (ej: espacio libre).
     """
     def scorer(val: float) -> NormalizedRatio:
         if not math.isfinite(val): return 0.0

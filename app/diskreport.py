@@ -52,7 +52,13 @@ SizeReport: TypeAlias = Tuple[int, int]
 
 
 def _safe_stat(path: str) -> Optional[os.stat_result]:
-    """Obtiene atributos de archivo de forma segura ante errores de acceso o rutas rotas."""
+    """
+    Intenta recuperar los metadatos de un archivo sin seguir enlaces simbólicos.
+    
+    Returns:
+        os.stat_result si es accesible, None en caso de error de acceso (permisos, 
+        archivo no encontrado o rutas demasiado largas).
+    """
     try:
         return os.stat(path, follow_symlinks=False)
     except (OSError, PermissionError, FileNotFoundError):
@@ -338,13 +344,22 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """Realiza un recorrido del sistema de archivos, consolidando métricas y manteniendo los N archivos más grandes en un heap."""
+    """
+    Realiza el escaneo recursivo, procesando métricas globales y manteniendo un 
+    heap para los N archivos más grandes encontrados.
+
+    Args:
+        directory: Path base a escanear.
+        skip_protected: Si es True, ignora rutas protegidas por `safety`.
+        limit: Máximo de archivos grandes a rastrear (0 para deshabilitar).
+    """
     stats = GlobalStats()
     top_heap: List[Tuple[int, Path]] = [] 
     
     for path, size_bytes in walk_files(directory, skip_protected):
         stats.register_file(size_bytes, path)
         
+        # Lógica de heap para mantener solo los archivos más grandes encontrados
         if limit > 0:
             if len(top_heap) < limit: 
                 heapq.heappush(top_heap, (size_bytes, path))

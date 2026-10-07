@@ -180,7 +180,13 @@ def _should_skip_entry(
     kernel32: Optional[ctypes.WinDLL], 
     is_junction_fn: JunctionChecker
 ) -> bool:
-    """Evalúa si un DirEntry debe omitirse por seguridad antes de seguir procesando."""
+    """
+    Determina si una entrada de directorio es insegura para el escaneo.
+    
+    Aplica filtros de seguridad: excluye archivos protegidos definidos en NEVER_TOUCH,
+    rutas UNC, rutas excesivamente largas, puntos de reparse (junctions) y 
+    archivos marcados con atributos de sistema/oculto vía Win32.
+    """
     if entry.name is None or _is_excluded_file(entry.name) or is_protected_path(Path(entry.path)):
         return True
     if _is_unc_path(entry.path) or len(entry.path) >= MAX_PATH_LEN:
@@ -195,11 +201,16 @@ def _should_skip_entry(
 
 @safe_path_operation(True)
 def _is_file_in_use(path_obj: Any, base_norm: str) -> bool:
-    """Determina si un archivo está bloqueado, usando filtros de seguridad como precondición rápida."""
+    """
+    Verifica si un archivo está bloqueado por el sistema operativo.
+    
+    Intenta abrir un handle en modo lectura exclusiva con la API de Windows.
+    Si la operación falla, se considera que el archivo está 'en uso' (bloqueado),
+    evitando intentar moverlo o procesarlo durante la limpieza.
+    """
     if not isinstance(path_obj, Path) or not path_obj.is_file():
         return True
     
-    # Refuerzo de seguridad defensiva
     if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
         return True
         
@@ -209,6 +220,7 @@ def _is_file_in_use(path_obj: Any, base_norm: str) -> bool:
     k32 = _get_kernel32()
     if k32:
         try:
+            # 0x80000000 = GENERIC_READ, 0x3 = FILE_SHARE_READ|FILE_SHARE_WRITE
             handle = k32.CreateFileW(str(path_obj), 0x80000000, 0x3, None, 3, 0x80, None)
             if handle == -1 or handle is None: 
                 return True
@@ -219,14 +231,17 @@ def _is_file_in_use(path_obj: Any, base_norm: str) -> bool:
     return False
 
 def _process_file_node(entry: os.DirEntry, root_abs_norm: str, visited_inodes: Set[int]) -> int:
-    """Extrae el tamaño de un archivo individual tras validar su seguridad e integridad."""
+    """
+    Calcula el tamaño de un archivo individual tras validar integridad.
+    
+    Usa el ID de inodo (st_ino) para evitar conteo doble en sistemas de archivos 
+    con enlaces duros (hard links). Solo se suma si el archivo no está bloqueado.
+    """
     if not entry or not entry.is_file(): return 0
     try:
         p_file = Path(entry.path)
-        # Refuerzo de seguridad defensiva previo a stat
         if is_protected_path(p_file) or not is_safe_to_modify(p_file): return 0
         st = entry.stat(follow_symlinks=False)
-        # st.st_ino permite identificar archivos únicos incluso con enlaces duros
         if st.st_ino not in visited_inodes:
             if not _is_file_in_use(p_file, root_abs_norm):
                 visited_inodes.add(st.st_ino)
@@ -245,8 +260,11 @@ def _sum_directory_recursive(
 ) -> ScanResult:
     """
     Recorre jerárquicamente un directorio de caché.
+    
+    Utiliza una estrategia de recursión controlada por profundidad (MAX_SCAN_DEPTH) 
+    y validación constante mediante `is_safe_to_modify` para asegurar que el escaneo 
+    no escape de los límites permitidos.
     """
-    # Protección contra casos límite de profundidad o longitud de ruta
     if depth > MAX_SCAN_DEPTH or len(str(root_path)) >= MAX_PATH_LEN:
         return ScanResult(0, True)
     
@@ -257,7 +275,6 @@ def _sum_directory_recursive(
     except (OSError, RuntimeError):
         return ScanResult(0, False)
 
-    # Memoización de directorios
     if path_norm in visited_dirs:
         return ScanResult(visited_dirs[path_norm], True)
 
@@ -265,7 +282,6 @@ def _sum_directory_recursive(
     try:
         with os.scandir(root_path) as it:
             for entry in it:
-                # Validación estricta y uso booleano de filtros de seguridad
                 if not is_safe_to_modify(Path(entry.path)):
                     continue
                 if _should_skip_entry(entry, kernel32, _IS_JUNCTION_FN):

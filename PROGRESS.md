@@ -6,45 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 31
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-06 | 135 | 23 | 30 | 7 | 133 |
-| 2026-10-07 | 65 | 8 | 12 | 3 | 88 |
+| 2026-10-06 | 134 | 23 | 29 | 7 | 131 |
+| 2026-10-07 | 69 | 8 | 12 | 3 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **48**
 - seguridad defensiva: **44**
 - robustez ante casos límite: **42**
-- legibilidad y documentación: **36**
-- rendimiento: **30**
+- legibilidad y documentación: **40**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
+- `quarantine.py`: **21**
+- `browser.py`: **20**
 - `memory.py`: **20**
-- `browser.py`: **19**
-- `healthscore.py`: **19**
-- `diskreport.py`: **18**
+- `healthscore.py`: **20**
+- `diskreport.py`: **19**
 - `safety.py`: **16**
 - `assistant.py`: **15**
 - `organizer.py`: **14**
 - `settings.py`: **14**
 - `branding.py`: **13**
 - `scanner.py`: **13**
-- `duplicates.py`: **9**
+- `duplicates.py`: **10**
 - `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-07T07:31:53` **healthscore.py** (legibilidad y documentación): Mejoré la documentación de los métodos de cálculo y las estructuras de datos (Scorer, RecommendationRule, PipelineEntry) para clarificar la arquitectura funcional y los contratos de tipos, facilitando el mantenimiento técnico de la demo.
+- `2026-10-07T07:31:41` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings exhaustivos en funciones clave para clarificar las responsabilidades de cada etapa del pipeline de duplicados, asegurando que cualquier colaborador entienda el flujo sin ambigüedades.
+- `2026-10-07T07:31:14` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código añadiendo *docstrings* detallados en las funciones de procesamiento interno (`_collect_summary_data`, `_safe_stat`) y clarificando las estructuras de datos con *type hints* explícitos, lo que facilita el mantenimiento y la comprensión de la lógica de agregación.
+- `2026-10-07T07:30:29` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de recursión y filtrado mediante docstrings de estilo Google para explicar el "porqué" de las validaciones de seguridad y el manejo de excepciones, y se han añadido type hints más precisos para clarificar el flujo de datos.
 - `2026-10-07T07:21:23` **assistant.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando la intención de los decoradores y estructuras de datos críticas mediante docstrings detallados y type hints, además de refactorizar la lógica de `_is_input_too_deep_or_complex` para reducir su complejidad ciclomática mediante una estructura más clara.
 - `2026-10-07T07:12:47` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `process_entry` y `scan_directory` añadiendo validaciones explícitas de tipo y estado antes de operar sobre objetos del sistema de archivos, previniendo excepciones por rutas `None` o entradas malformadas que pueden ocurrir en condiciones de carrera.
 - `2026-10-07T07:12:29` **safety.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `_get_file_attrs` y `_get_security_descriptor_cached` añadiendo validaciones de tipo y estructura que previenen excepciones no capturadas al procesar rutas malformadas o tipos de datos inesperados.
@@ -56,7 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-07T06:52:23` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_sum_directory_recursive` mediante una validación estricta de `entry.path` antes de cualquier procesamiento, asegurando que `is_safe_to_modify` se utilice como filtro booleano para prevenir el acceso a rutas inválidas o fuera de alcance durante el escaneo.
 - `2026-10-07T06:43:05` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para garantizar que el asistente no procese estructuras de datos recursivas o inesperadamente grandes (DoS por inyección de JSON), asegurando que cualquier entrada externa sea validada antes de operar.
 - `2026-10-07T05:19:08` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_load_impl` y `save` sustituyendo el uso de `os.replace` (que puede ser atómico pero no garantiza consistencia en todos los sistemas de archivos ante fallos de hardware) por una validación explícita de la integridad del archivo tras la escritura y evitando operaciones sobre rutas no resueltas.
-- `2026-10-07T05:18:49` **scanner.py** (seguridad defensiva): Se reforzó `_is_safe_entry` para prevenir ataques de suplantación de identidad de archivos, asegurando que `entry.path` sea realmente un archivo regular mediante `is_file()` antes de procesarlo, evitando así que el escáner intente operar sobre dispositivos especiales o tuberías nombradas que podrían causar bloqueos o comportamientos inesperados.
-- `2026-10-07T05:18:21` **safety.py** (seguridad defensiva): Se ha añadido una protección contra el acceso a archivos de sistema mediante el uso de nombres de dispositivo lógicos (como `\\.\PhysicalDrive0`), bloqueando explícitamente el uso de `\\.\` o `\\?\` (fuera del formato normalizado) en el método `_validate_structural_safety` para prevenir ataques de bajo nivel al sistema de archivos.
-- `2026-10-07T05:10:22` **quarantine.py** (seguridad defensiva): Se ha añadido un chequeo de integridad adicional en `quarantine_file` que verifica que la ruta de origen no sea una ruta de sistema crítica ni un volumen montado, reforzando el filtro de seguridad antes de cualquier operación de I/O.
-- `2026-10-07T05:09:51` **organizer.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_safe_for_disk_op` añadiendo una validación explícita mediante `is_protected_path` sobre el directorio destino *antes* de cualquier operación, y se ha encapsulado el acceso a `shutil.disk_usage` con un manejo de excepciones más robusto para evitar que errores de sistema al consultar volúmenes desconectados o sin permisos aborten el proceso de limpieza.
