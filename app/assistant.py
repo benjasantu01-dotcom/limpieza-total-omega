@@ -173,16 +173,13 @@ class ProblemCriterion(NamedTuple):
             return val > self.threshold
         return False
 
-    def is_triggered_by(self, ctx: SystemContext) -> bool:
-        """Verifica si el criterio de riesgo actual se cumple."""
-        val = ctx.get_metric(self.metric_key, DEFAULT_METRIC_VAL)
+    def is_triggered_by(self, val: float) -> bool:
+        """Verifica si el criterio de riesgo se cumple dado un valor."""
         return val >= 0 and self._evaluate_metric(val)
 
-    def format_if_triggered(self, ctx: SystemContext) -> Optional[str]:
+    def format_if_triggered(self, val: float) -> Optional[str]:
         """Formatea un mensaje de advertencia si el criterio se dispara."""
-        val: float = ctx.get_metric(self.metric_key, DEFAULT_METRIC_VAL)
-        
-        if not _check_metric_integrity(val) or val < 0 or not self._evaluate_metric(val):
+        if not self.is_triggered_by(val):
             return None
             
         try:
@@ -382,7 +379,14 @@ class SystemContext:
     def active_problems(self) -> tuple[str, ...]:
         """Evalúa los criterios de salud contra los datos actuales y retorna los problemas activos."""
         if not self.analyzed: return ()
-        return tuple(p for p in (c.format_if_triggered(self) for c in _CRITERIOS_SALUD) if p is not None)
+        snapshot = self.metrics_snapshot
+        
+        results = []
+        for c in _CRITERIOS_SALUD:
+            val = snapshot.get(c.metric_key, DEFAULT_METRIC_VAL)
+            if (msg := c.format_if_triggered(val)) is not None:
+                results.append(msg)
+        return tuple(results)
 
     @property
     def is_empty(self) -> bool:

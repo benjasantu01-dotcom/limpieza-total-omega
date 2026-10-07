@@ -936,3 +936,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-07T03:26:55` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y robustez de la función `_process_folder_entry` corrigiendo una variable no definida (`_`) y centralizando la validación mediante `is_safe_to_modify` para alinear el módulo con las reglas de seguridad exigidas.
 - `2026-10-07T03:26:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T03:26:55` Corrida terminada. Total usado hoy: 84.
+- `2026-10-07T03:35:00` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-10-07T03:35:52` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el cálculo de `active_problems` eliminando la recreación de objetos en el bucle y mejorando el uso de `metrics_snapshot`, reduciendo la carga de CPU y memoria en cada consulta del asistente.
+- `2026-10-07T03:36:30` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-10-07T03:36:59` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `_sum_directory_recursive` mediante la aplicación de un filtro de exclusión temprana usando `is_protected_path` directamente sobre los nombres de archivo antes de realizar llamadas costosas al sistema de archivos como `os.stat` o `entry.is_file()`, reduciendo la carga de I/O en árboles de caché densos.
+- `2026-10-07T03:37:16` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `walk_files` para que no reconstruya objetos `Path` innecesarios dentro del bucle crítico, manteniendo la referencia al string del sistema de archivos y reduciendo la sobrecarga de instanciación de objetos.
+- `2026-10-07T03:37:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T03:37:16` Corrida terminada. Total usado hoy: 88.

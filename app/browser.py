@@ -181,13 +181,13 @@ def _should_skip_entry(
     is_junction_fn: JunctionChecker
 ) -> bool:
     """Evalúa si un DirEntry debe omitirse por seguridad antes de seguir procesando."""
-    if entry.name is None or _is_excluded_file(entry.name):
+    if entry.name is None or _is_excluded_file(entry.name) or is_protected_path(Path(entry.path)):
         return True
     if _is_unc_path(entry.path) or len(entry.path) >= MAX_PATH_LEN:
         return True
     
     path_p = Path(entry.path)
-    if is_protected_path(path_p) or not is_safe_to_modify(path_p):
+    if not is_safe_to_modify(path_p):
         return True
     if entry.is_symlink() or is_junction_fn(entry.path) or _is_system_hidden(entry.path, kernel32):
         return True

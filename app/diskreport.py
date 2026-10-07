@@ -126,13 +126,13 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
 
 
-def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
+def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
     """Evalúa si un `os.DirEntry` debe ser omitido por criterios de seguridad o reparse points."""
     try:
         name = entry.name
         if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
             return True
-        if not entry.path.startswith(str(root_path)):
+        if not entry.path.startswith(root_path_str):
             return True
         try:
             st = entry.stat(follow_symlinks=False)
@@ -254,8 +254,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     root_path = _validate_root(directory)
     if root_path is None: return
     
+    root_path_str = str(root_path)
     visited_inodes: set[Inode] = set()
-    stack: List[Path] = [root_path]
+    stack: List[str] = [root_path_str]
     
     while stack:
         current_dir = stack.pop()
@@ -263,7 +264,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if skip_protected and _is_excluded_path(entry, root_path):
+                        if skip_protected and _is_excluded_path(entry, root_path_str):
                             continue
                         if entry.is_dir(follow_symlinks=False):
                             try:
@@ -271,7 +272,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 inode = (st.st_dev, st.st_ino)
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
-                                    stack.append(Path(entry.path))
+                                    stack.append(entry.path)
                             except (OSError, PermissionError):
                                 continue
                         elif entry.is_file(follow_symlinks=False):
