@@ -223,6 +223,10 @@ class SystemMetrics:
     def __post_init__(self) -> None:
         self.validate()
 
+    def safe_get(self, field_name: str, default: Any = 0) -> Any:
+        """Acceso defensivo a los campos del contenedor."""
+        return getattr(self, field_name, default)
+
     def validate(self) -> None:
         """Asegura que los datos recibidos tengan tipos y rangos válidos de forma defensiva."""
         self.junk_mb = _validate_numeric(self.junk_mb, 0.0, 0.0, 1e9)

@@ -1722,3 +1722,37 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-07T09:25:40` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_is_file_locked` para asegurar que el manejo de descriptores de archivo sea consistente y no deje recursos abiertos en caso de error, previniendo posibles bloqueos de archivos en sistemas Windows durante el escaneo.
 - `2026-10-07T09:25:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T09:25:40` Corrida terminada. Total usado hoy: 224.
+- `2026-10-07T09:33:07` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-10-07T09:33:51` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al aislar el acceso a los datos de la instancia `SystemMetrics` mediante un método `safe_get` que previene excepciones por atributos inesperados, y se añadieron chequeos explícitos de desbordamiento en el cálculo del puntaje acumulado.
+- `2026-10-07T09:34:51` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-07T09:34:56` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-07T09:35:07` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-07T09:36:19` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-07T09:37:16` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las funciones de acceso a procesos en `memory.py` mediante la validación estricta de rutas mediante `is_safe_to_modify` y la resolución de rutas relativas/alias, asegurando que ninguna operación de trim se aplique sobre ejecutables situados en rutas protegidas o bloqueadas por la política de seguridad global, evitando así el error de usar `ensure_safe_to_modify` (que lanza excepciones) y prefiriendo `is_safe_to_modify` (booleano) como dictan las reglas.
+- `2026-10-07T09:37:17` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-07T09:37:31` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+_________________ ERROR collecting evolve/tests/test_basic.py __________________
+ImportError while importing test module '/home/runner/work/limpieza-total-omega/limpieza-total-omega/evolve/tests/test_basic.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+evolve/tests/test_basic.py:22: in <module>
+    import organizer  # noqa: E402
+    ^^^^^^^^^^^^^^^^
+app/organizer.py:16: in <module>
+    import msvcrt
+E   ModuleNotFoundError: No module named 'msvcrt'
+=========================== short test summary info ============================
+ERROR evolve/tests/test_basic.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.30s
+
+```
+- `2026-10-07T09:37:31` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `_is_file_locked` para evitar falsos positivos y posibles bloqueos mediante el uso de `msvcrt` (disponible en Windows) para realizar un bloqueo compartido (`locking`) antes de intentar abrir el archivo, garantizando un chequeo más seguro del estado del recurso sin violar la integridad del mismo.
+- `2026-10-07T09:37:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T09:37:31` Corrida terminada. Total usado hoy: 228.

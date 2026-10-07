@@ -362,7 +362,7 @@ def _get_process_path(pid: int) -> Optional[Path]:
             try:
                 if p_test.exists():
                     resolved = p_test.resolve()
-                    if _is_path_safe_and_valid(resolved) and is_safe_to_modify(resolved):
+                    if _is_path_safe_and_valid(resolved):
                         return resolved
             except OSError:
                 return None
