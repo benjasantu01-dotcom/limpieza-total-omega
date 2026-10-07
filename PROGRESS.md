@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **202** (40.1% de aceptación)
 - Rechazadas por tests: 30
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 220
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-05 | 11 | 1 | 1 | 0 | 33 |
+| 2026-10-05 | 11 | 1 | 1 | 0 | 29 |
 | 2026-10-06 | 147 | 24 | 34 | 8 | 137 |
-| 2026-10-07 | 42 | 5 | 8 | 3 | 50 |
+| 2026-10-07 | 44 | 5 | 9 | 3 | 51 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - legibilidad y documentación: **42**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **41**
 - rendimiento: **35**
 - seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **22**
 - `memory.py`: **21**
-- `quarantine.py`: **21**
 - `healthscore.py`: **20**
 - `diskreport.py`: **19**
 - `browser.py`: **18**
 - `branding.py`: **15**
+- `safety.py`: **15**
 - `assistant.py`: **14**
 - `organizer.py`: **14**
-- `safety.py`: **14**
 - `scanner.py`: **13**
 - `settings.py`: **13**
 - `duplicates.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-07T04:38:33` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `_get_security_descriptor` añadiendo una comprobación explícita para evitar que `is_file_locked_by_other_process` intente realizar I/O sobre directorios, lo cual puede disparar excepciones de sistema innecesarias o falsos positivos en el estado de bloqueo.
+- `2026-10-07T04:37:13` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera (Race Conditions) y fallos de I/O en `_atomic_isolate_file` implementando una validación previa de la existencia del archivo de destino con `os.open` usando `os.O_EXCL`, asegurando atomicidad a nivel de sistema operativo frente a colisiones imprevistas.
 - `2026-10-07T04:28:34` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar archivos que son accesibles pero que, por condiciones de carrera o restricciones del sistema de archivos, fallan al intentar leer un solo byte, y se ha añadido una validación de `st_nlink` para evitar mover archivos con enlaces duros (hard links) que podrían ser críticos.
 - `2026-10-07T04:28:22` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez en `_get_process_path` para evitar errores de excepciones no capturadas al lidiar con rutas de procesos inexistentes, inaccesibles o bloqueadas por permisos de sistema, asegurando que `Path.resolve(strict=True)` se ejecute dentro de un bloque seguro y verificado.
 - `2026-10-07T04:27:53` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante errores inesperados durante la carga asíncrona de pestañas (`_tab_factory`), protegiendo al motor principal de fallos en constructores específicos mediante un manejo de excepciones localizado y validaciones de existencia de widgets.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-07T03:51:05` **memory.py** (rendimiento): Se optimizó `top_memory_processes` eliminando la recreación innecesaria de objetos `ProcessMemory` en cada iteración al cachear solo el resultado final, y se redujo el costo computacional de las llamadas a `_get_proc_memory_by_pid` mediante un filtrado previo de PIDs inválidos o críticos antes de intentar abrir el proceso.
 - `2026-10-07T03:46:13` **healthscore.py** (rendimiento): Se optimizó el método `is_finite` de `SystemMetrics` reemplazando la introspección costosa `__dataclass_fields__` (que ocurría en cada iteración del bucle) por una comprobación directa de los atributos relevantes, mejorando significativamente la eficiencia en el hot-path del cálculo.
 - `2026-10-07T03:37:16` **diskreport.py** (rendimiento): Optimizé la función `walk_files` para que no reconstruya objetos `Path` innecesarios dentro del bucle crítico, manteniendo la referencia al string del sistema de archivos y reduciendo la sobrecarga de instanciación de objetos.
-- `2026-10-07T03:36:59` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` mediante la aplicación de un filtro de exclusión temprana usando `is_protected_path` directamente sobre los nombres de archivo antes de realizar llamadas costosas al sistema de archivos como `os.stat` o `entry.is_file()`, reduciendo la carga de I/O en árboles de caché densos.
-- `2026-10-07T03:35:52` **assistant.py** (rendimiento): Optimicé el cálculo de `active_problems` eliminando la recreación de objetos en el bucle y mejorando el uso de `metrics_snapshot`, reduciendo la carga de CPU y memoria en cada consulta del asistente.

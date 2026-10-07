@@ -316,6 +316,8 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
     Si el handle falla con sharing violation, se considera el archivo bloqueado.
     """
     if not isinstance(path_str, str) or os.name != 'nt' or not os.path.isabs(path_str): return False
+    # No intentar bloquear carpetas
+    if os.path.isdir(path_str): return False
     kernel32 = ctypes.windll.kernel32
     try:
         handle = kernel32.CreateFileW(

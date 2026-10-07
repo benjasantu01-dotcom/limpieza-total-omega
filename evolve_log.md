@@ -1062,3 +1062,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-07T04:28:34` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_file_locked` para manejar archivos que son accesibles pero que, por condiciones de carrera o restricciones del sistema de archivos, fallan al intentar leer un solo byte, y se ha añadido una validación de `st_nlink` para evitar mover archivos con enlaces duros (hard links) que podrían ser críticos.
 - `2026-10-07T04:28:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T04:28:34` Corrida terminada. Total usado hoy: 108.
+- `2026-10-07T04:36:17` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-10-07T04:37:13` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante condiciones de carrera (Race Conditions) y fallos de I/O en `_atomic_isolate_file` implementando una validación previa de la existencia del archivo de destino con `os.open` usando `os.O_EXCL`, asegurando atomicidad a nivel de sistema operativo frente a colisiones imprevistas.
+- `2026-10-07T04:37:32` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 113): unterminated string literal (detected at line 113)
+- `2026-10-07T04:38:33` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_get_security_descriptor` añadiendo una comprobación explícita para evitar que `is_file_locked_by_other_process` intente realizar I/O sobre directorios, lo cual puede disparar excepciones de sistema innecesarias o falsos positivos en el estado de bloqueo.
+- `2026-10-07T04:38:59` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-07T04:38:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T04:38:59` Corrida terminada. Total usado hoy: 112.

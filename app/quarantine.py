@@ -638,6 +638,7 @@ def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> 
             if not is_safe_to_modify(temp_dest.parent):
                 raise UnsafePathError("Directorio de destino no seguro.")
             
+            # Asegurar exclusividad y evitar sobreescritura accidental mediante flags atómicos
             dest_fd = os.open(str(temp_dest), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
             try:
                 with os.fdopen(dest_fd, "wb") as dest_handle:
@@ -727,6 +728,9 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         raise RuntimeError("Colisión de inodo: el archivo parece estar ya registrado.")
 
     try:
+        # Pre-verificar exclusividad antes de la escritura atómica de temp
+        if destination.exists():
+            raise FileExistsError("Colisión de ruta: archivo destino ya presente.")
         return _write_temp_to_final(source, destination)
     except (OSError, IOError) as e:
         if destination.exists():
