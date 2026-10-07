@@ -250,7 +250,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                                         size_to_paths_map[st.st_size].append(p_entry)
                     except (OSError, PermissionError):
                         continue
-        except (OSError, PermissionError, RuntimeError):
+        except (OSError, PermissionError):
             continue
             
     return {sz: files for sz, files in size_to_paths_map.items() if len(files) > 1}

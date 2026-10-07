@@ -51,6 +51,14 @@ Inode: TypeAlias = Tuple[int, int]
 SizeReport: TypeAlias = Tuple[int, int]
 
 
+def _safe_stat(path: str) -> Optional[os.stat_result]:
+    """Obtiene atributos de archivo de forma segura ante errores de acceso o rutas rotas."""
+    try:
+        return os.stat(path, follow_symlinks=False)
+    except (OSError, PermissionError, FileNotFoundError):
+        return None
+
+
 class ExtStats:
     """Contenedor de métricas para agrupar estadísticas por extensión."""
     __slots__ = ('total_bytes', 'count')
@@ -267,21 +275,16 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if skip_protected and _is_excluded_path(entry, root_path_str):
                             continue
                         if entry.is_dir(follow_symlinks=False):
-                            try:
-                                st = entry.stat(follow_symlinks=False)
+                            st = _safe_stat(entry.path)
+                            if st:
                                 inode = (st.st_dev, st.st_ino)
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
                                     stack.append(entry.path)
-                            except (OSError, PermissionError):
-                                continue
                         elif entry.is_file(follow_symlinks=False):
-                            try:
-                                st = entry.stat(follow_symlinks=False)
-                                if st.st_size >= 0:
-                                    yield Path(entry.path), int(st.st_size)
-                            except (OSError, PermissionError):
-                                continue
+                            st = _safe_stat(entry.path)
+                            if st and st.st_size >= 0:
+                                yield Path(entry.path), int(st.st_size)
                     except (OSError, PermissionError, AttributeError, ValueError, RuntimeError):
                         continue
         except (PermissionError, OSError, FileNotFoundError, RuntimeError): 

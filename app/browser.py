@@ -243,13 +243,8 @@ def _sum_directory_recursive(
 ) -> ScanResult:
     """
     Recorre jerárquicamente un directorio de caché.
-    
-    Args:
-        root_path: Path de la carpeta a escanear.
-        root_abs_norm: String normalizado del path base para validar contención.
-        visited_inodes: Set de inodos ya procesados para evitar contar duplicados.
-        visited_dirs: Cache de resultados previos por path normalizado.
     """
+    # Protección contra casos límite de profundidad o longitud de ruta
     if depth > MAX_SCAN_DEPTH or len(str(root_path)) >= MAX_PATH_LEN:
         return ScanResult(0, True)
     
@@ -260,7 +255,7 @@ def _sum_directory_recursive(
     except (OSError, RuntimeError):
         return ScanResult(0, False)
 
-    # Memoización de directorios: evita re-procesar subárboles ya visitados
+    # Memoización de directorios
     if path_norm in visited_dirs:
         return ScanResult(visited_dirs[path_norm], True)
 
@@ -273,6 +268,9 @@ def _sum_directory_recursive(
                 
                 if entry.is_dir(follow_symlinks=False):
                     child_path = Path(entry.path)
+                    # Validación adicional de longitud antes de recurrir
+                    if len(entry.path) >= MAX_PATH_LEN:
+                        continue
                     if not child_path.exists() or not _ensure_within_base(entry.path, root_abs_norm):
                         continue
                     res = _sum_directory_recursive(child_path, root_abs_norm, kernel32, visited_inodes, visited_dirs, depth + 1)

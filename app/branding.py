@@ -444,7 +444,7 @@ def _get_cached_stripe_data(scale: float, franjas_count: int) -> Tuple[Tuple[Tup
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     """Renderiza las franjas internas geométricas del escudo."""
     try:
-        if canvas is None or not math.isfinite(scale) or scale <= 0: return
+        if canvas is None or not math.isfinite(scale) or scale <= 0 or not math.isfinite(canvas_x) or not math.isfinite(canvas_y): return
         franjas_count = max(6, int(STRIPE_COUNT_FACTOR * scale))
         base_y = canvas_y + STRIPE_BASE_Y_OFFSET * scale
         center_x = canvas_x + 64 * scale
@@ -510,7 +510,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
             canvas.create_line(cx + segment.start_index, cy, 
                                cx + segment.end_index, cy, 
                                fill=segment.hex_color, width=h_val)
-    except (TypeError, ValueError, AttributeError, ZeroDivisionError): pass
+    except (TypeError, ValueError, AttributeError, ZeroDivisionError, IndexError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, 
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, 
