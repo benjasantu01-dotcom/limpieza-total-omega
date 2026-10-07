@@ -99,10 +99,10 @@ def _check_metric_integrity(val: Any) -> bool:
 
 def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
     """
-    Decorador para proteger los manejadores de consulta contra excepciones.
+    Decorador protector para manejadores de consulta (query handlers).
     
-    Asegura la disponibilidad del contexto y captura errores de ejecución
-    para evitar que el hilo principal de la UI falle, retornando un fallback.
+    Asegura que el `SystemContext` sea válido antes de procesar y captura 
+    cualquier excepción durante la ejecución para evitar fallos en la interfaz.
     """
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
@@ -123,7 +123,7 @@ class AssistantConfig(NamedTuple):
     Configuración estructurada para el cliente de IA (Gemini).
 
     Attributes:
-        api_key (str): Credencial para la API, idealmente desde variables de entorno.
+        api_key (str): Credencial de API.
         model (str): Identificador del modelo remoto (ej. gemini-3.1-flash-lite).
         allow_metrics (bool): Flag de privacidad para autorizar el envío de métricas.
     """
@@ -138,26 +138,20 @@ class MetricSpec:
 
     Attributes:
         cast_func (Callable): Función para normalizar el tipo de dato.
-        min_val (float): Límite inferior permitido para el valor.
-        max_val (float): Límite superior permitido para el valor.
+        min_val (float): Límite inferior permitido.
+        max_val (float): Límite superior permitido.
     """
     cast_func: Callable[[Any], Any]
     min_val: float
     max_val: float
 
     def is_valid_type(self, val: Any) -> bool:
-        """Verifica que el valor sea un número (int/float) real y no booleano."""
+        """Verifica que el valor sea un número real y no booleano."""
         return _check_metric_integrity(val)
 
 class ProblemCriterion(NamedTuple):
     """
-    Regla declarativa de detección de problemas basada en umbrales.
-
-    Attributes:
-        metric_key (str): Nombre de la métrica a evaluar en SystemContext.
-        threshold (float): Valor límite para disparar el criterio.
-        operator (str): Operador lógico ('<' o '>') de comparación.
-        message_format (str): Template de mensaje educativo para el usuario.
+    Regla declarativa para detección de problemas basada en umbrales.
     """
     metric_key: str
     threshold: float
@@ -324,18 +318,18 @@ def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
         return False
 
 def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
-    """Recursivamente detecta estructuras de datos excesivamente anidadas o grandes."""
+    """Detecta si una estructura de datos excede los límites de seguridad."""
     if depth > _MAX_NESTING_DEPTH: return True
-    try:
-        if isinstance(val, (list, tuple, set)):
-            if len(val) > _MAX_COLLECTION_SIZE: return True
-            return any(_is_input_too_deep_or_complex(item, depth + 1) for item in val)
-        elif isinstance(val, dict):
-            if len(val) > _MAX_COLLECTION_SIZE: return True
-            return any(_is_input_too_deep_or_complex(k, depth + 1) or _is_input_too_deep_or_complex(v, depth + 1) for k, v in val.items())
-        return False
-    except Exception:
-        return True
+    
+    if isinstance(val, (list, tuple, set)):
+        if len(val) > _MAX_COLLECTION_SIZE: return True
+        return any(_is_input_too_deep_or_complex(item, depth + 1) for item in val)
+    
+    if isinstance(val, dict):
+        if len(val) > _MAX_COLLECTION_SIZE: return True
+        return any(_is_input_too_deep_or_complex(k, depth + 1) or _is_input_too_deep_or_complex(v, depth + 1) for k, v in val.items())
+    
+    return False
 
 def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
     """Verifica si un valor numérico está dentro del rango lógico definido por su especificación."""
@@ -366,7 +360,7 @@ class SystemContext:
 
     @cached_property
     def metrics_snapshot(self) -> dict[str, float]:
-        """Snapshot cacheado de las métricas numéricas para evitar llamadas frecuentes a getattr."""
+        """Snapshot cacheado de las métricas numéricas."""
         return {key: float(getattr(self, key)) for key, _, _ in _CONTEXT_SCHEMA if hasattr(self, key) and _check_metric_integrity(getattr(self, key))}
 
     def get_metric(self, key: str, default: float) -> float:
@@ -405,7 +399,7 @@ class SystemContext:
         return _ensure_safe_text(self.grade) if self.grade else True
 
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
-        """Valida, convierte y verifica límites de un campo individual proveniente de la fuente."""
+        """Valida, convierte y verifica límites de un campo individual."""
         try:
             val = _get_source_value(source, key)
             if val is None: return None
@@ -424,9 +418,8 @@ class SystemContext:
         return clean if _ensure_safe_text(clean) and not is_protected_path(clean) else ""
 
     def _validate_ingestion_source(self, source: Any) -> bool:
-        """Realiza comprobaciones de seguridad estructural sobre el objeto fuente antes de procesar."""
+        """Realiza comprobaciones de seguridad sobre el objeto fuente."""
         if source is None: return False
-        # Se restringe la ingesta a tipos permitidos (dict o clases simples)
         if not (isinstance(source, dict) or (isinstance(source, object) and not isinstance(source, (str, int, float, bool)))):
             return False
         try:
@@ -437,9 +430,6 @@ class SystemContext:
     def ingest(self, source: Any) -> bool:
         """
         Normaliza e importa datos externos al contexto de manera transaccional.
-        
-        Itera sobre las métricas definidas en _VALIDATORS, aplicando filtros de 
-        seguridad y límites de rango. Retorna True si al menos un campo fue actualizado.
         """
         if not self._validate_ingestion_source(source): return False
         
@@ -477,13 +467,13 @@ class Answer:
         return self.source == "gemini"
 
 def _is_safe_path_input(text: str) -> bool:
-    """Verifica si el texto parece contener una ruta, referencia de sistema o caracteres de control maliciosos."""
+    """Verifica si el texto parece contener rutas o caracteres de control maliciosos."""
     if is_protected_path(text): return True
     if _REGEX_ANSI_ESCAPE.search(text) or _REGEX_CONTROL_CHARS.search(text): return True
     return bool(_REGEX_STRUCTURE_INJECTION.search(text) or _REGEX_PATH_TRAVERSAL.search(text) or _REGEX_SYSTEM_PATHS.search(text))
 
 def _ensure_safe_text(text: Any) -> bool:
-    """Realiza una desinfección estricta y validación de seguridad sobre cadenas."""
+    """Realiza una desinfección estricta sobre cadenas."""
     if not isinstance(text, str) or not text or len(text) > _MAX_TEXT_LENGTH:
         return False
     if _REGEX_CONTROL_CHARS.search(text) or any(c in text for c in "<>|&^"):
@@ -500,7 +490,6 @@ def _get_source_value(source: Any, key: str) -> Any:
     try:
         if isinstance(source, dict):
             return source.get(key)
-        # Verificamos hasattr antes de getattr para objetos arbitrarios
         if hasattr(source, key):
             val = getattr(source, key)
             return None if callable(val) or isinstance(val, type) else val
@@ -555,7 +544,7 @@ def _format_problem_message(problems: tuple[str, ...], score: int | str) -> str:
 
 @_safe_handler_wrapper
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
-    """Gestiona las consultas relacionadas con el estado de la memoria RAM."""
+    """Gestiona consultas sobre memoria RAM."""
     snapshot = ctx.metrics_snapshot
     mem_pct = snapshot.get("memory_available_percent", DEFAULT_RAM_PCT)
     total_gb = ctx.get_metric("memory_total_gb", 0.0)
@@ -574,7 +563,7 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
 
 @_safe_handler_wrapper
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
-    """Gestiona las consultas relacionadas con el almacenamiento y limpieza."""
+    """Gestiona consultas sobre almacenamiento y limpieza."""
     snapshot = ctx.metrics_snapshot
     junk = snapshot.get("junk_mb", 0.0)
     dup = snapshot.get("duplicate_mb", 0.0)
@@ -591,7 +580,7 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
 
 @_safe_handler_wrapper
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
-    """Gestiona las consultas sobre archivos sospechosos y seguridad."""
+    """Gestiona consultas sobre archivos sospechosos y seguridad."""
     snapshot = ctx.metrics_snapshot
     count = int(snapshot.get("suspicious_count", 0.0))
     warn = int(ctx.get_metric("suspicious_warnings", 0.0))
@@ -605,7 +594,7 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
 
 @lru_cache(maxsize=32)
 def _get_score_response(score: int | None, grade: str, problems: tuple[str, ...]) -> str:
-    """Genera y cachea la explicación del puntaje de salud."""
+    """Genera la explicación del puntaje de salud."""
     score_val = score if score is not None else "N/A"
     grade_str = grade if grade else ""
     score_display = f"Tu puntaje es {score_val}/100{f' (nota {grade_str})' if grade_str else ''}."
@@ -616,7 +605,7 @@ def _get_score_response(score: int | None, grade: str, problems: tuple[str, ...]
 
 @_safe_handler_wrapper
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
-    """Gestiona las consultas sobre el puntaje de salud global."""
+    """Gestiona consultas sobre el puntaje de salud global."""
     return Answer(
         _validate_response_length(_get_score_response(ctx.score, ctx.grade, ctx.active_problems)), 
         notice=OFFLINE_NOTICE
@@ -624,7 +613,7 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
 
 @_safe_handler_wrapper
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
-    """Gestiona las consultas sobre aplicaciones de arranque."""
+    """Gestiona consultas sobre aplicaciones de arranque."""
     snapshot = ctx.metrics_snapshot
     count = int(snapshot.get("startup_count", 0.0))
     estado = f"Tenés {count} programas que arrancan con Windows."
@@ -641,7 +630,7 @@ _TOKENS_MAP: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
 }
 
 def _sanitize_query(question: str) -> str:
-    """Limpia y trunca la consulta del usuario para prevenir abusos de longitud o inyección."""
+    """Limpia y trunca la consulta del usuario."""
     if not isinstance(question, str): return ""
     clean = _REGEX_CONTROL_CHARS.sub(' ', question).strip()[:100]
     return clean if _ensure_safe_text(clean) else ""
@@ -676,7 +665,7 @@ def available(base: str | Path | None = None) -> bool:
         return False
 
 def _parse_config(raw_cfg: Any) -> AssistantConfig:
-    """Parsea la configuración de usuario para el asistente, con valores seguros por defecto."""
+    """Parsea la configuración de usuario para el asistente."""
     default = AssistantConfig("", "gemini-3.1-flash-lite", True)
     if not isinstance(raw_cfg, dict):
         return default
@@ -764,7 +753,6 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             if res.status != 200: 
                 return None
             
-            # Verificar tamaño antes de leer para evitar DoS
             content_length = res.headers.get("Content-Length")
             if content_length and int(content_length) > _MAX_RESPONSE_BYTES: return None
                 

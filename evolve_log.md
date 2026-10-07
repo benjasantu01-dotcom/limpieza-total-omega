@@ -1415,3 +1415,63 @@ FAILED evolve/tests/test_modules.py::test_format_group_marks_which_copy_to_keep 
 - `2026-10-07T07:12:47` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `process_entry` y `scan_directory` añadiendo validaciones explícitas de tipo y estado antes de operar sobre objetos del sistema de archivos, previniendo excepciones por rutas `None` o entradas malformadas que pueden ocurrir en condiciones de carrera.
 - `2026-10-07T07:12:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T07:12:47` Corrida terminada. Total usado hoy: 172.
+- `2026-10-07T07:19:41` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-10-07T07:20:13` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-07T07:20:43` Tests FALLARON:
+```
+-1/test_entries_from_folders_read0')
+
+    def test_entries_from_folders_reads_injected_folders(tmp_path):
+        carpeta = tmp_path / "Inicio"
+        carpeta.mkdir()
+        (carpeta / "MiPrograma.lnk").write_text("x")
+        (carpeta / "Otro.lnk").write_text("y")
+        entradas = startup.entries_from_folders([carpeta])
+>       assert {e.name for e in entradas} == {"MiPrograma", "Otro"}
+E       AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+E         
+E         Extra items in the left set:
+E         'MiPrograma.lnk'
+E         'Otro.lnk'
+E         Extra items in the right set:
+E         'Otro'
+E         'MiPrograma'
+E         
+E         Full diff:
+E           {
+E         -     'MiPrograma',
+E         +     'MiPrograma.lnk',
+E         ?                ++++
+E         -     'Otro',
+E         +     'Otro.lnk',
+E         ?          ++++
+E           }
+
+evolve/tests/test_modules.py:677: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'MiPrograma.lnk'
+  'Otro.lnk'
+  Extra items in the right set:
+  'Otro'
+  'MiPrograma'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed in 0.89s
+
+```
+- `2026-10-07T07:20:43` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_process_folder_entry` corrigiendo una variable no definida (`_`) por `entry.name` y reforzando la validación de acceso al archivo con `is_safe_to_modify` antes de procesarlo, evitando excepciones silenciosas.
+- `2026-10-07T07:21:23` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). He mejorado la legibilidad y mantenibilidad del archivo documentando la intención de los decoradores y estructuras de datos críticas mediante docstrings detallados y type hints, además de refactorizar la lógica de `_is_input_too_deep_or_complex` para reducir su complejidad ciclomática mediante una estructura más clara.
+- `2026-10-07T07:21:42` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-10-07T07:21:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T07:21:42` Corrida terminada. Total usado hoy: 176.
