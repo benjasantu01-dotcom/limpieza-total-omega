@@ -965,21 +965,22 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         if not items:
             return 0
         
+        # Mapeo eficiente O(1) para lookups
         item_map = {i.stored_name: i for i in items}
-        purged_names: Set[str] = set()
+        purged_ids: Set[str] = set()
         
         for f in quarantine_root.iterdir():
             if f.name == MANIFEST_NAME or not f.is_file():
                 continue
             item = item_map.get(f.name)
             if item and _is_item_purgable(f, item):
-                purged_names.add(item.item_id)
+                purged_ids.add(item.item_id)
         
-        if purged_names:
-            remaining = [i for i in items if i.item_id not in purged_names]
+        if purged_ids:
+            remaining = [i for i in items if i.item_id not in purged_ids]
             save_manifest(remaining, base)
             
-        return len(purged_names)
+        return len(purged_ids)
     except (OSError, PermissionError, UnsafePathError):
         return 0
 

@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
-- Rechazadas por tests: 29
+- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Rechazadas por tests: 28
 - Rechazadas por guardia de seguridad: 43
-- Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 214
+- Sin cambios (nada sustancial que mejorar): 11
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-06 | 128 | 20 | 28 | 7 | 125 |
-| 2026-10-07 | 80 | 9 | 15 | 3 | 89 |
+| 2026-10-06 | 126 | 19 | 27 | 7 | 125 |
+| 2026-10-07 | 81 | 9 | 16 | 4 | 90 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **48**
-- seguridad defensiva: **44**
 - legibilidad y documentación: **44**
-- robustez ante casos límite: **36**
-- rendimiento: **36**
+- seguridad defensiva: **43**
+- rendimiento: **37**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **22**
 - `healthscore.py`: **21**
-- `quarantine.py`: **21**
 - `browser.py`: **20**
 - `memory.py`: **20**
 - `diskreport.py`: **19**
 - `safety.py`: **17**
 - `assistant.py`: **16**
-- `settings.py`: **14**
 - `organizer.py`: **14**
-- `branding.py`: **13**
 - `scanner.py`: **13**
+- `settings.py`: **13**
+- `branding.py`: **12**
 - `duplicates.py`: **11**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-07T08:23:19` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto mediante una caché basada en `st_mtime` del archivo y mejoré la eficiencia del bucle de `purge_all` al utilizar un mapeo (dict) para evitar búsquedas lineales `O(N)` en cada iteración, garantizando rendimiento incluso con gran cantidad de archivos aislados.
 - `2026-10-07T08:13:22` **main.py** (rendimiento): Implementé una invalidación de caché más granular en `on_full_analysis` y optimicé el ciclo de vida de los datos del dashboard de salud para evitar recalcular métricas innecesarias si los datos base no han cambiado, mejorando la respuesta de la UI y reduciendo la carga de CPU durante el refresco.
 - `2026-10-07T08:12:26` **healthscore.py** (rendimiento): Optimicé el método `is_finite` de la clase `SystemMetrics` reemplazando la creación dinámica de una tupla en cada llamada por un atributo `_CHECK_FIELDS` precalculado, eliminando la sobrecarga de la reflexión y la creación de objetos en cada iteración del bucle de salud.
 - `2026-10-07T08:11:58` **duplicates.py** (rendimiento): Optimizé la recolección de candidatos en `_collect_candidates` sustituyendo el `stack.pop()` (DFS) por una cola FIFO (`collections.deque.popleft()`), lo que garantiza un recorrido más eficiente en profundidad y mejora la localidad de los datos durante el escaneo del sistema de archivos.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-07T07:31:53` **healthscore.py** (legibilidad y documentación): Mejoré la documentación de los métodos de cálculo y las estructuras de datos (Scorer, RecommendationRule, PipelineEntry) para clarificar la arquitectura funcional y los contratos de tipos, facilitando el mantenimiento técnico de la demo.
 - `2026-10-07T07:31:41` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings exhaustivos en funciones clave para clarificar las responsabilidades de cada etapa del pipeline de duplicados, asegurando que cualquier colaborador entienda el flujo sin ambigüedades.
 - `2026-10-07T07:31:14` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código añadiendo *docstrings* detallados en las funciones de procesamiento interno (`_collect_summary_data`, `_safe_stat`) y clarificando las estructuras de datos con *type hints* explícitos, lo que facilita el mantenimiento y la comprensión de la lógica de agregación.
-- `2026-10-07T07:30:29` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de recursión y filtrado mediante docstrings de estilo Google para explicar el "porqué" de las validaciones de seguridad y el manejo de excepciones, y se han añadido type hints más precisos para clarificar el flujo de datos.
