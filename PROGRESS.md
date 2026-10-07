@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **209** (41.5% de aceptación)
-- Rechazadas por tests: 30
+- Mejoras aceptadas: **210** (41.7% de aceptación)
+- Rechazadas por tests: 31
 - Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-05 | 57 | 6 | 10 | 3 | 66 |
+| 2026-10-05 | 57 | 6 | 10 | 3 | 62 |
 | 2026-10-06 | 147 | 24 | 34 | 8 | 137 |
-| 2026-10-07 | 5 | 0 | 1 | 0 | 6 |
+| 2026-10-07 | 6 | 1 | 1 | 0 | 8 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - robustez ante casos límite: **42**
+- seguridad defensiva: **42**
 - legibilidad y documentación: **41**
-- seguridad defensiva: **41**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
@@ -33,7 +33,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **22**
 - `diskreport.py`: **20**
 - `quarantine.py`: **20**
-- `healthscore.py`: **19**
+- `healthscore.py`: **20**
 - `browser.py`: **18**
 - `branding.py`: **17**
 - `organizer.py`: **16**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-07T00:32:41` **healthscore.py** (seguridad defensiva): Se endureció la seguridad de `_evaluate_rules` mediante la validación del tipo y contenido de las recomendaciones generadas por las `message_factory` externas, previniendo inyecciones de caracteres de control o texto malicioso en el reporte final.
 - `2026-10-07T00:23:12` **browser.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_process_file_node` y `_sum_directory_recursive` mediante la validación explícita de `is_safe_to_modify` y `is_protected_path` sobre los nodos individuales durante el recorrido, garantizando que el escáner no procese archivos que hayan podido quedar fuera de los límites de seguridad en rutas complejas.
 - `2026-10-07T00:22:12` **assistant.py** (seguridad defensiva): Se reforzó la seguridad del motor remoto validando que la URL destino no solo comience con la raíz autorizada, sino que sea estrictamente absoluta y que el proceso de deserialización JSON posterior a la respuesta cumpla con el mismo esquema de seguridad estricta que la ingesta de datos, evitando que el motor remoto inyecte estructuras anidadas peligrosas en la respuesta.
 - `2026-10-07T00:12:57` **settings.py** (robustez ante casos límite): Se mejora la robustez de `settings.py` ante fallos de I/O al implementar un manejo explícito de errores en `_is_file_secure_to_read` para prevenir el uso de descriptores de archivo cerrados o inválidos, y se añade una verificación de existencia de directorio en `settings_path` para evitar errores durante la inicialización en entornos con permisos restringidos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T14:18:37` **healthscore.py** (rendimiento): Optimicé el rendimiento del `compute_score` eliminando la recreación de funciones `lambda` en cada iteración y evitando el procesamiento redundante mediante el cacheo de las funciones `scorer` asociadas a las reglas del pipeline.
 - `2026-10-06T14:17:31` **diskreport.py** (rendimiento): Optimicé el rendimiento del escaneo en `walk_files` evitando la llamada redundante y costosa a `Path(entry.path).resolve()` dentro de `_is_excluded_path`, utilizando el atributo `entry.path` directamente para las validaciones de seguridad, reduciendo drásticamente las syscalls de resolución de rutas por cada archivo encontrado.
 - `2026-10-06T14:09:28` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` eliminando la creación innecesaria de listas mutables y mejorando la precisión del cálculo de pasos, además de reducir el gasto de memoria en el bucle principal al utilizar pre-calculado de segmentos.
-- `2026-10-06T14:08:20` **assistant.py** (rendimiento): Optimicé el buscador de manejadores en `local_answer` eliminando una redundancia lógica (se ejecutaba `findall` dos veces sobre el mismo resultado) y reemplazando la lógica de búsqueda por un acceso directo al diccionario `_TOKENS_MAP` usando el primer token encontrado, reduciendo ciclos innecesarios.

@@ -531,3 +531,40 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-10-07T00:23:12` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_process_file_node` y `_sum_directory_recursive` mediante la validación explícita de `is_safe_to_modify` y `is_protected_path` sobre los nodos individuales durante el recorrido, garantizando que el escáner no procese archivos que hayan podido quedar fuera de los límites de seguridad en rutas complejas.
 - `2026-10-07T00:23:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T00:23:12` Corrida terminada. Total usado hoy: 12.
+- `2026-10-07T00:30:59` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-10-07T00:31:46` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-10-07T00:32:14` Tests FALLARON:
+```
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_identical_files - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size - assert [] == [1, 2]
+  
+  Right contains 2 more items, first extra item: 1
+  
+  Full diff:
+  + []
+  - [
+  -     1,
+  -     2,
+  - ]
+FAILED evolve/tests/test_modules.py::test_partial_hash_only_reads_the_beginning - AssertionError: assert None != None
+ +  where None = <function hash_file at 0x7f5c04a81300>(PosixPath('/tmp/pytest-of-runner/pytest-1/test_partial_hash_only_reads_t0/a'))
+ +    where <function hash_file at 0x7f5c04a81300> = duplicates.hash_file
+ +  and   None = <function hash_file at 0x7f5c04a81300>(PosixPath('/tmp/pytest-of-runner/pytest-1/test_partial_hash_only_reads_t0/b'))
+ +    where <function hash_file at 0x7f5c04a81300> = duplicates.hash_file
+FAILED evolve/tests/test_modules.py::test_format_group_marks_which_copy_to_keep - AssertionError: assert ('conservar' in '2 copias de 0.0 MB (recuperable: 0.0 MB)\n   [inaccesible] /tmp/pytest-of-runner/pytest-1/test_format_group_marks_which_0/a.txt\n   [inaccesible] /tmp/pytest-of-runner/pytest-1/test_format_group_marks_which_0/b.txt')
+5 failed, 294 passed, 7 warnings in 1.61s
+
+```
+- `2026-10-07T00:32:14` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_collect_candidates` para evitar seguir puntos de reanálisis (reparse points) durante la recursión, utilizando `is_junction` antes de profundizar en directorios, asegurando así que el escaneo no escape de las rutas permitidas o entre en bucles infinitos de montaje de sistemas de archivos.
+- `2026-10-07T00:32:41` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se endureció la seguridad de `_evaluate_rules` mediante la validación del tipo y contenido de las recomendaciones generadas por las `message_factory` externas, previniendo inyecciones de caracteres de control o texto malicioso en el reporte final.
+- `2026-10-07T00:33:41` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-07T00:34:44` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-07T00:35:50` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-07T00:37:02` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-07T00:37:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T00:37:02` Corrida terminada. Total usado hoy: 16.

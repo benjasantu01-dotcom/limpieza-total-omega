@@ -255,6 +255,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             if rule.check(metrics, normalized_ratio):
                 raw_msg = rule.message_factory(metrics)
                 if not isinstance(raw_msg, str): continue
+                # Sanitización estricta: solo caracteres imprimibles, sin saltos de línea ni tabs
                 clean_msg = "".join(c for c in raw_msg if c.isprintable() and c not in "\r\n\t").strip()
                 if clean_msg: findings.append(clean_msg[:200])
         except Exception as e:
