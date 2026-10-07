@@ -224,7 +224,7 @@ class Scanner:
                 return False
             
             # Verificación adicional: asegurar que es un archivo regular
-            if not entry.is_file(follow_symlinks=False):
+            if not entry.is_file(follow_symlinks=False) and not entry.is_dir(follow_symlinks=False):
                 return False
                 
             real_path = Path(entry.path).resolve(strict=True)
@@ -263,10 +263,9 @@ class Scanner:
             return
 
         try:
-            is_dir = entry.is_dir(follow_symlinks=False)
-            if is_dir:
+            if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, directory_stack, current_depth)
-            elif self._is_relevant_extension(entry.name):
+            elif entry.is_file(follow_symlinks=False) and self._is_relevant_extension(entry.name):
                 path_obj = Path(entry.path)
                 self._run_file_heuristics(path_obj.resolve(), entry)
         except (OSError, PermissionError, AttributeError, RuntimeError):

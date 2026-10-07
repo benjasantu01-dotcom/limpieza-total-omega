@@ -123,8 +123,8 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
     Consulta los atributos de archivo mediante la API Win32 GetFileAttributesW.
     Permite detectar flags de sistema, ocultos o puntos de reparse.
     """
-    if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return 0
-    # Validación extra: prevenir llamadas con rutas relativas o inexistentes
+    if not isinstance(path_str, str) or not path_str: return 0
+    # Validación extra: prevenir llamadas con rutas relativas
     if not os.path.isabs(path_str): return 0
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
@@ -259,7 +259,7 @@ def is_running_as_admin() -> bool:
 
 def _is_file_owned_by_system(path_str: str) -> bool:
     """Verifica si el propietario del archivo es el grupo SYSTEM o TrustedInstaller (Windows)."""
-    if os.name != 'nt': return False
+    if os.name != 'nt' or not isinstance(path_str, str): return False
     try:
         advapi32 = ctypes.windll.advapi32
         sid_ptr = ctypes.c_void_p()
@@ -305,7 +305,7 @@ def _has_alternate_data_stream(path_name: str) -> bool:
 
 def _is_system_directory_junction(path_str: str) -> bool:
     """Verifica si la ruta apunta a un punto de reparse (junction o symlink) del sistema."""
-    if os.name != 'nt': return False
+    if os.name != 'nt' or not isinstance(path_str, str): return False
     attrs = _get_file_attrs(path_str)
     return bool(attrs & Win32Attr.REPARSE_POINT)
 
@@ -333,18 +333,13 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
 def _get_security_descriptor_cached(path_str: str) -> SecurityDescriptor:
     """
     Consulta atributos de seguridad consolidando el estado del sistema.
-    
-    Esta función abstrae las llamadas a API Win32 y pruebas de bloqueo I/O,
-    generando un `SecurityDescriptor` inmutable que los validadores utilizan
-    para decidir si es seguro proceder con la operación.
     """
-    if not os.path.isabs(path_str):
+    if not isinstance(path_str, str) or not os.path.isabs(path_str):
         return SecurityDescriptor(0, True, True, True, True)
     
     attrs = _get_file_attrs(path_str)
     
     # Flags de sistema/oculto/reparse extraídos directamente de atributos Win32.
-    # El bloqueo de archivo (is_in_use) se verifica dinámicamente mediante `CreateFileW`.
     is_protected_system = bool(attrs & (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | Win32Attr.TEMPORARY | Win32Attr.REPARSE_POINT))
     is_in_use = _is_file_locked_by_other_process(path_str) if attrs != 0xFFFFFFFF else True
     is_readonly = bool(attrs & Win32Attr.READONLY)
@@ -353,17 +348,12 @@ def _get_security_descriptor_cached(path_str: str) -> SecurityDescriptor:
     return SecurityDescriptor(attrs, is_protected_system, is_in_use, is_readonly, is_reparse)
 
 def _get_security_descriptor(path: Path) -> SecurityDescriptor:
-    """
-    Construye un descriptor de seguridad para evaluar el archivo.
-    
-    Invoca la versión cacheada con la ruta convertida a cadena para asegurar
-    la consistencia en la invalidación de la caché lru.
-    """
+    """Construye un descriptor de seguridad para evaluar el archivo."""
     return _get_security_descriptor_cached(str(path))
 
 def _is_file_in_use_by_system(path_str: str) -> bool:
     """Verifica si el archivo está siendo referenciado por módulos cargados del sistema."""
-    if os.name != 'nt': return False
+    if os.name != 'nt' or not isinstance(path_str, str): return False
     try:
         h_module = ctypes.windll.kernel32.GetModuleHandleW(path_str)
         return h_module != 0

@@ -532,10 +532,10 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
     target_path = _manifest_path(base_path)
     
     try:
-        serializable_items = [item.to_dict() for item in items]
-        encoded_content = json.dumps(serializable_items, indent=2, ensure_ascii=False).encode('utf-8')
-        
+        # Validación: Si existe, asegurar que es un archivo regular y escribible
         if target_path.exists():
+            if not target_path.is_file():
+                raise PermissionError("Manifiesto no es un archivo regular.")
             if not os.access(target_path, os.W_OK):
                 raise PermissionError("Manifiesto existente no es escribible.")
             if os.name == 'nt':
@@ -543,6 +543,9 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
                 if attrs != -1 and (attrs & 0x02 or attrs & 0x04):
                     raise PermissionError("Manifiesto con atributos restringidos.")
 
+        serializable_items = [item.to_dict() for item in items]
+        encoded_content = json.dumps(serializable_items, indent=2, ensure_ascii=False).encode('utf-8')
+        
         with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as tf:
             tf.write(encoded_content)
             tf.flush()
