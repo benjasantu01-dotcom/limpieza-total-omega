@@ -827,6 +827,14 @@ def quarantine_file(
     source_path = _validate_source_for_quarantine(p_source)
     dest_dir = quarantine_dir(base)
     
+    # Pre-chequeo de escritura en sandbox antes de iniciar I/O pesado
+    try:
+        test_file = dest_dir / f".check_{uuid.uuid4().hex}"
+        test_file.touch()
+        test_file.unlink()
+    except OSError:
+        raise OSError("El directorio de cuarentena no permite operaciones de escritura.")
+    
     if _is_within_quarantine_sandbox(source_path, dest_dir.resolve()):
         raise UnsafePathError("Archivo ya en el sandbox.")
     

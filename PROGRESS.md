@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Mejoras aceptadas: **207** (41.1% de aceptación)
 - Rechazadas por tests: 28
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-06 | 118 | 18 | 26 | 6 | 124 |
-| 2026-10-07 | 88 | 10 | 16 | 4 | 94 |
+| 2026-10-06 | 118 | 18 | 26 | 6 | 120 |
+| 2026-10-07 | 89 | 10 | 18 | 4 | 95 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **48**
 - legibilidad y documentación: **44**
-- robustez ante casos límite: **40**
+- robustez ante casos límite: **41**
 - rendimiento: **39**
 - seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **22**
 - `healthscore.py`: **21**
-- `quarantine.py`: **21**
 - `browser.py`: **19**
 - `diskreport.py`: **19**
 - `memory.py`: **19**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-07T09:04:25` **quarantine.py** (robustez ante casos límite): Se introdujo una comprobación adicional en `quarantine_file` para asegurar que el sistema de archivos de destino no sea de solo lectura (usando una prueba de escritura efímera) antes de iniciar la transferencia de datos, mejorando la robustez ante estados del disco donde la operación podría fallar a mitad del proceso.
 - `2026-10-07T08:54:31` **main.py** (robustez ante casos límite): Se reforzó la robustez del método `on_purge_quarantine` y `on_delete_reviewed` mediante la adición de una validación explícita de existencia del widget y el manejo preventivo de estados de cierre, evitando posibles excepciones `RuntimeError` o `TclError` si el usuario intenta purgar mientras el hilo de la UI está terminando.
 - `2026-10-07T08:53:18` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor de normalización ante divisores cero y valores de entrada no finitos en `create_linear_scorer` y `score_security`, evitando excepciones en el cálculo que podrían derivar en resultados de salud nulos o sesgados.
 - `2026-10-07T08:44:16` **diskreport.py** (robustez ante casos límite): Se ha mejorado `_collect_summary_data` para manejar explícitamente posibles excepciones durante la iteración y se introdujo un chequeo de integridad en `_is_excluded_path` para prevenir fallos al acceder a atributos de `DirEntry` en sistemas con permisos restrictivos, garantizando la robustez ante estados del disco inconsistentes.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-07T08:11:27` **diskreport.py** (rendimiento): Optimizé la eficiencia de `largest_folders` reduciendo la cantidad de llamadas al sistema y evitando recrear instancias de `FolderMetrics` constantemente, consolidando la lógica de acumulación en una sola iteración sobre el generador `walk_files`.
 - `2026-10-07T08:02:44` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante la eliminación de llamadas innecesarias a `is_safe_to_modify` y `path.exists()` dentro del bucle interno, reduciendo la carga de I/O al reutilizar la resolución de rutas ya normalizadas.
 - `2026-10-07T08:02:31` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` eliminando el uso de `tuple` y `zip` innecesarios dentro del bucle de generación, aprovechando la pre-computación de valores y la pre-asignación de memoria de la lista, lo cual reduce significativamente el overhead de procesamiento en el hilo principal durante el renderizado.
-- `2026-10-07T08:01:53` **assistant.py** (rendimiento): Optimicé el método `context_as_text` para evitar la serialización completa de un diccionario y posterior reconstrucción, utilizando `islice` sobre `_CONTEXT_SCHEMA` para iterar y formatear directamente sobre los datos del objeto, reduciendo la carga de procesamiento y uso de memoria en cada consulta.
