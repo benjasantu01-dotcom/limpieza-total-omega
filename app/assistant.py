@@ -514,10 +514,11 @@ def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> Syst
 def context_as_text(context: SystemContext) -> str:
     """Serializa el contexto a un formato textual seguro para el prompt del asistente."""
     if context.is_empty: return ""
+    snapshot = context.metrics_snapshot
     res = []
     for key, unit, precision in _CONTEXT_SCHEMA:
-        val = getattr(context, key, -1.0)
-        if isinstance(val, (int, float)) and val >= 0:
+        val = snapshot.get(key, -1.0)
+        if val >= 0:
             res.append(f"{key}: {val:.{precision}f}{unit}")
     return "\n".join(res)
 

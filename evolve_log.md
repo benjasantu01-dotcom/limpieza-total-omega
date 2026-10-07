@@ -592,3 +592,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-07T12:38:45` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-10-07T12:38:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T12:38:45` Corrida terminada. Total usado hoy: 294.
+- `2026-10-07T12:39:14` Arrancando corrida. Quedan hoy ~6 peticiones objetivo.
+- `2026-10-07T12:40:17` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el método `context_as_text` para utilizar `list.append` con `join` en lugar de concatenaciones de strings, y reemplacé la búsqueda de métricas por un acceso directo al diccionario `metrics_snapshot` ya cacheado, eliminando llamadas innecesarias a `getattr` y `isinstance` en cada iteración del bucle.
+- `2026-10-07T12:41:06` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se ha optimizado la generación de colores para gradientes eliminando el re-cálculo de `gradient_colors` dentro del bucle de `draw_gradient_bar`, delegando la generación a una llamada única y más eficiente, reduciendo así la carga sobre el motor de renderizado y el cache.
+- `2026-10-07T12:41:46` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé la recursión del escaneo de directorios eliminando la sobrecarga de `os.path.normcase` y `str()` innecesarios dentro de los bucles, y mejorando la reutilización de la estructura `visited_dirs` mediante una referencia persistente para evitar cálculos repetitivos en subdirectorios compartidos o visitados.
+- `2026-10-07T12:42:11` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `_is_excluded_path` para reducir el número de llamadas a `os.path.abspath` y `os.path.commonpath` (operaciones de string costosas) al sustituirlas por validaciones de `Path.is_relative_to` (o lógica equivalente de `Path`), acelerando significativamente el escaneo recursivo en directorios profundos.
+- `2026-10-07T12:42:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T12:42:11` Corrida terminada. Total usado hoy: 298.

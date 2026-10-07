@@ -143,8 +143,7 @@ def _ensure_within_base(target: str, base_norm: str) -> bool:
     """Validación de contención: comprueba que 'target' pertenezca a 'base_norm'."""
     try:
         if not target: return False
-        target_norm: str = os.path.normcase(os.path.abspath(target))
-        return target_norm.startswith(base_norm)
+        return os.path.normcase(os.path.abspath(target)).startswith(base_norm)
     except Exception:
         return False
 
@@ -169,9 +168,9 @@ def _is_excluded_file(name: Optional[str]) -> TypeGuard[str]:
     return name is not None and name.lower() in NEVER_TOUCH
 
 @safe_path_operation(False)
-def _is_system_hidden(entry_path: Optional[str], kernel32: Optional[ctypes.WinDLL]) -> bool:
+def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
     """Consulta los atributos de archivo mediante la API Win32."""
-    if kernel32 is None or not entry_path: return False
+    if kernel32 is None: return False
     attrs: int = kernel32.GetFileAttributesW(entry_path)
     return bool(attrs != 0xFFFFFFFF and (attrs & SYSTEM_HIDDEN_FLAGS))
 
@@ -182,7 +181,7 @@ def _should_skip_entry(
     base_norm: str
 ) -> bool:
     """Determina si una entrada de directorio es insegura para el escaneo."""
-    if entry.name is None or _is_excluded_file(entry.name) or is_protected_path(Path(entry.path)):
+    if _is_excluded_file(entry.name) or is_protected_path(Path(entry.path)):
         return True
     if _is_unc_path(entry.path) or len(entry.path) >= MAX_PATH_LEN:
         return True
@@ -196,18 +195,15 @@ def _should_skip_entry(
     return False
 
 @safe_path_operation(True)
-def _is_file_in_use(path_obj: Any, base_norm: str) -> bool:
+def _is_file_in_use(path_str: str, base_norm: str) -> bool:
     """Verifica si un archivo está bloqueado por el sistema operativo."""
-    if not isinstance(path_obj, Path) or not path_obj.is_file():
-        return True
-    
-    if not _ensure_within_base(str(path_obj), base_norm) or not os.access(path_obj, os.R_OK):
+    if not _ensure_within_base(path_str, base_norm) or not os.access(path_str, os.R_OK):
         return True
     
     k32 = _get_kernel32()
     if k32:
         try:
-            handle = k32.CreateFileW(str(path_obj), 0x80000000, 0x3, None, 3, 0x80, None)
+            handle = k32.CreateFileW(path_str, 0x80000000, 0x3, None, 3, 0x80, None)
             if handle == -1 or handle is None: 
                 return True
             k32.CloseHandle(handle)
@@ -218,14 +214,12 @@ def _is_file_in_use(path_obj: Any, base_norm: str) -> bool:
 
 def _process_file_node(entry: os.DirEntry, root_abs_norm: str, visited_inodes: Set[int]) -> int:
     """Calcula el tamaño de un archivo tras validar que sea único y accesible."""
-    if not entry or not entry.is_file(): return 0
-    # Validación extra: impedir que el entry procesado haya escapado del root
+    if not entry.is_file(): return 0
     if not _ensure_within_base(entry.path, root_abs_norm): return 0
     try:
         st = entry.stat(follow_symlinks=False)
-        # st.st_ino identifica un archivo único en NTFS para evitar contar hardlinks duplicados
         if st.st_ino not in visited_inodes:
-            if not _is_file_in_use(Path(entry.path), root_abs_norm):
+            if not _is_file_in_use(entry.path, root_abs_norm):
                 visited_inodes.add(st.st_ino)
                 return st.st_size
     except (OSError, PermissionError):
@@ -240,24 +234,18 @@ def _sum_directory_recursive(
     visited_dirs: VisitedDirs,
     depth: int = 0
 ) -> ScanResult:
-    """
-    Recorre jerárquicamente un directorio de caché.
-    
-    Args:
-        root_path: Ruta actual del escaneo.
-        root_abs_norm: Ruta base normalizada para prevenir escapes (Sandboxing).
-        visited_inodes: Set de inodos procesados para evitar conteo doble.
-    """
+    """Recorre jerárquicamente un directorio de caché con memorización de nodos."""
     if depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)
     
-    path_norm = os.path.normcase(str(root_path))
+    path_str = str(root_path)
+    path_norm = os.path.normcase(path_str)
     if path_norm in visited_dirs:
         return ScanResult(visited_dirs[path_norm], True)
 
     total_bytes: int = 0
     try:
-        with os.scandir(root_path) as it:
+        with os.scandir(path_str) as it:
             for entry in it:
                 if _should_skip_entry(entry, kernel32, _IS_JUNCTION_FN, root_abs_norm):
                     continue
@@ -299,9 +287,7 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
 @safe_path_operation(Path())
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Resuelve rutas absolutas a partir de la estructura predefinida."""
-    if not real_base or not rel_str: return Path()
-    parts = rel_str.split("\\")
-    target: Path = real_base.joinpath(*parts)
+    target: Path = real_base.joinpath(*rel_str.split("\\"))
     if not target.exists(): return Path()
     target_res = target.resolve(strict=True)
     if _ensure_within_base(str(target_res), os.path.normcase(str(real_base))) and \
@@ -311,11 +297,8 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
     """Pipeline principal de detección de perfiles y escaneo de cachés."""
-    if bases is not None and not isinstance(bases, (list, tuple)): return []
-    if cache_paths is not None and not isinstance(cache_paths, dict): return []
-        
-    raw_bases: List[Path] = list(bases) if bases is not None else base_directories()
-    browser_map: BrowserMap = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
+    raw_bases = list(bases) if bases is not None else base_directories()
+    browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     k32 = _get_kernel32()
     found: List[BrowserCache] = []
     visited_inodes: Set[int] = set()

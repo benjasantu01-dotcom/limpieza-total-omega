@@ -142,25 +142,20 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
 
 
-def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
+def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     """
     Filtra entradas durante el escaneo para evitar bucles o acceso a áreas restringidas.
-    
-    Verifica:
-    - Presencia de caracteres invisibles sospechosos (RTL/bidireccionales).
-    - Que la entrada esté físicamente contenida bajo la raíz de escaneo (evita escapes).
-    - Puntos de reparse (junctions/symlinks) para prevenir recursión infinita o duplicación.
-    - Listas de bloqueo de seguridad (`safety.py`).
     """
     try:
         name = entry.name
         if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
             return True
         
+        # Validar pertenencia rápida sin convertir a string absoluto innecesariamente
+        entry_path = Path(entry.path)
         try:
-            if os.path.commonpath([os.path.abspath(entry.path), root_path_str]) != root_path_str:
-                return True
-        except (ValueError, OSError):
+            entry_path.relative_to(root_path)
+        except ValueError:
             return True
 
         try:
@@ -170,7 +165,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
                 return True
         except (OSError, PermissionError, AttributeError):
             return True
-        return is_protected_path(Path(entry.path))
+        return is_protected_path(entry_path)
     except (OSError, PermissionError, AttributeError, RuntimeError, TypeError):
         return True
             
@@ -288,9 +283,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     root_path = _validate_root(directory)
     if root_path is None: return
     
-    root_path_str = str(root_path)
     visited_inodes: set[Inode] = set()
-    stack: List[str] = [root_path_str]
+    stack: List[str] = [str(root_path)]
     
     while stack:
         current_dir = stack.pop()
@@ -298,7 +292,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if skip_protected and _is_excluded_path(entry, root_path_str):
+                        if skip_protected and _is_excluded_path(entry, root_path):
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):

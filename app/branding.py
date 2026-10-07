@@ -505,6 +505,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
         cx, cy = float(canvas_x), float(canvas_y)
         if not math.isfinite(cx) or not math.isfinite(cy): return
         
+        # Generar segmentos usando la versión cacheada y una sola llamada a gradient_colors
         segments = _get_grouped_segments(gradient_colors(w_val, stops))
             
         for segment in segments:
