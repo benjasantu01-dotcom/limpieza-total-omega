@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Mejoras aceptadas: **212** (42.1% de aceptación)
 - Rechazadas por tests: 29
-- Rechazadas por guardia de seguridad: 42
-- Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 212
+- Rechazadas por guardia de seguridad: 44
+- Sin cambios (nada sustancial que mejorar): 11
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-06 | 73 | 12 | 16 | 3 | 66 |
-| 2026-10-07 | 138 | 17 | 26 | 7 | 146 |
+| 2026-10-06 | 73 | 12 | 16 | 3 | 62 |
+| 2026-10-07 | 139 | 17 | 28 | 8 | 146 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - robustez ante casos límite: **43**
 - legibilidad y documentación: **42**
+- seguridad defensiva: **41**
 - rendimiento: **40**
-- seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
@@ -36,7 +36,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **19**
 - `diskreport.py`: **19**
 - `safety.py`: **16**
-- `settings.py`: **14**
+- `settings.py`: **15**
 - `organizer.py`: **13**
 - `duplicates.py`: **12**
 - `scanner.py`: **12**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-07T14:24:13` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` y `_load_impl()` implementando una comprobación estricta para evitar Race Conditions mediante `os.fstat` antes de la escritura/lectura, asegurando que el descriptor de archivo no sea un enlace simbólico o un archivo fuera de control durante la operación.
 - `2026-10-07T14:16:29` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_safe_unlink` añadiendo una comprobación explícita de `is_protected_path` al inicio de la función para garantizar que, incluso si fallan los chequeos de inodo o hash, el archivo nunca sea eliminado si reside en una ruta protegida.
 - `2026-10-07T14:15:55` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_file_locked` para evitar falsos positivos y posibles bloqueos mediante el uso de `os.open` con flags de acceso exclusivo (`O_EXCL`), asegurando que no se intente operar sobre archivos que el sistema mantiene bloqueados activamente.
 - `2026-10-07T14:15:26` **memory.py** (seguridad defensiva): Mejoré la seguridad de la resolución de rutas en `_get_process_path` integrando explícitamente `is_protected_path` antes de cualquier validación adicional, garantizando que procesos en rutas protegidas no sean sujetos a consultas de trimado y evitando el seguimiento de enlaces simbólicos mediante `Path.resolve()` antes de la validación.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-07T13:23:04` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de E/S y corrupción de archivos al procesar grupos de duplicados, asegurando que `suggest_keeper` y `format_group` manejen de forma elegante rutas que desaparecieron o perdieron permisos durante el ciclo de vida del análisis.
 - `2026-10-07T13:22:49` **diskreport.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar que `walk_files` intente procesar rutas excesivamente largas (que superen los límites de Windows) o inválidas tras la resolución de enlaces simbólicos/reparses, mitigando posibles errores de sistema no capturados en el bucle principal.
 - `2026-10-07T13:20:58` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso en `_sum_directory_recursive` mediante un manejo explícito de `PermissionError` y `OSError` que garantiza que el recorrido continúe procesando hermanos aunque un subdirectorio sea inaccesible.
-- `2026-10-07T13:12:27` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_safe_handler_wrapper` y `local_answer` para manejar correctamente casos donde el contexto no contiene métricas legibles o el análisis falló parcialmente, evitando errores de formato en f-strings y asegurando que las respuestas sean siempre coherentes incluso ante estados internos inesperados.

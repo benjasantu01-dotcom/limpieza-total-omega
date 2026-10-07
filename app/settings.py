@@ -343,13 +343,12 @@ def _is_file_secure_to_read(file_obj: Any) -> bool:
         if file_obj.closed: return False
         st = os.fstat(file_obj.fileno())
         mode = st.st_mode
-        if not stat.S_ISREG(mode) or os.path.islink(file_obj.name): return False
+        if not stat.S_ISREG(mode): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
         if mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
         if mode & (stat.S_ISUID | stat.S_ISGID): return False
         if st.st_nlink != 1: return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-        if not os.access(file_obj.name, os.R_OK): return False
         return True
     except (OSError, PermissionError, AttributeError, ValueError):
         return False
@@ -453,9 +452,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
                 raise PermissionError("Archivo temporal inseguro")
             fcntl.flock(f.fileno(), fcntl.LOCK_UN)
         
-        if os.path.islink(temp_path) or (config_path.exists() and os.path.islink(config_path)):
-            raise PermissionError("Operación sobre enlace detectada")
-            
         if config_path.exists():
             ensure_safe_to_modify(str(bak_path.resolve()))
             try: 
@@ -464,10 +460,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         
         os.replace(temp_path, config_path)
         
-        if config_path.exists():
-            with open(config_path, "r", encoding="utf-8") as f:
-                if not _is_file_secure_to_read(f):
-                    raise IOError("Verificación post-escritura fallida")
+        with open(config_path, "r", encoding="utf-8") as f:
+            if not _is_file_secure_to_read(f):
+                raise IOError("Verificación post-escritura fallida")
         
         dir_fd = os.open(str(parent), os.O_RDONLY)
         os.fsync(dir_fd)
