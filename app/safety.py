@@ -127,6 +127,8 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
     Permite detectar flags de sistema, ocultos o puntos de reparse.
     """
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return 0
+    # Validación extra: prevenir llamadas con rutas relativas o inexistentes
+    if not os.path.isabs(path_str): return 0
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         return attrs if attrs != 0xFFFFFFFF else 0
@@ -316,7 +318,7 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
     Verifica si un archivo está en uso exclusivo mediante la API CreateFile.
     Si el handle falla con sharing violation, se considera el archivo bloqueado.
     """
-    if not isinstance(path_str, str) or os.name != 'nt': return False
+    if not isinstance(path_str, str) or os.name != 'nt' or not os.path.isabs(path_str): return False
     kernel32 = ctypes.windll.kernel32
     try:
         handle = kernel32.CreateFileW(
@@ -358,7 +360,7 @@ def _is_file_in_use_by_system(path_str: str) -> bool:
 @lru_cache(maxsize=128)
 def _is_volume_readonly(path_str: Optional[str]) -> bool:
     """Consulta los atributos de volumen mediante GetVolumeInformationW para verificar flags de solo lectura."""
-    if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
+    if os.name != 'nt' or not isinstance(path_str, str) or not path_str or not os.path.isabs(path_str): return False
     try:
         root = os.path.splitdrive(path_str)[0] + "\\"
         if not os.path.exists(root): return False
@@ -373,7 +375,7 @@ def _is_volume_readonly(path_str: Optional[str]) -> bool:
 @lru_cache(maxsize=128)
 def _is_volume_removable_media(path_str: Optional[str]) -> bool:
     """Verifica si el volumen es extraíble usando GetDriveTypeW."""
-    if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
+    if os.name != 'nt' or not isinstance(path_str, str) or not path_str or not os.path.isabs(path_str): return False
     try:
         root = os.path.splitdrive(path_str)[0] + "\\"
         if not os.path.exists(root): return False
@@ -384,7 +386,7 @@ def _is_volume_removable_media(path_str: Optional[str]) -> bool:
 @lru_cache(maxsize=128)
 def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
     """Verifica mediante GetVolumeInformationW si el volumen posee flags de compresión o cifrado."""
-    if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
+    if os.name != 'nt' or not isinstance(path_str, str) or not path_str or not os.path.isabs(path_str): return False
     try:
         root = os.path.splitdrive(path_str)[0] + "\\"
         if not os.path.exists(root): return False

@@ -516,3 +516,11 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-10-07T00:06:38` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la manipulación de archivos mediante la implementación de `os.fsync` en el directorio destino tras operaciones de borrado (`_safe_unlink`) y en la creación de archivos, asegurando la persistencia de los cambios en sistemas de archivos con journaling, evitando inconsistencias ante cortes de energía o bloqueos del SO.
 - `2026-10-07T00:06:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T00:06:38` Corrida terminada. Total usado hoy: 4.
+- `2026-10-07T00:10:42` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-10-07T00:11:04` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-07T00:11:51` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante rutas corruptas o mal formadas mediante la adición de una verificación explícita de `is_absolute()` y `exists()` en la función `_get_security_descriptor` y `_get_file_attrs`, previniendo llamadas a la API de Windows con rutas no resueltas que podrían causar errores de segmentación o comportamiento indefinido en el bucle de validación.
+- `2026-10-07T00:11:52` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-07T00:12:31` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-07T00:12:57` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se mejora la robustez de `settings.py` ante fallos de I/O al implementar un manejo explícito de errores en `_is_file_secure_to_read` para prevenir el uso de descriptores de archivo cerrados o inválidos, y se añade una verificación de existencia de directorio en `settings_path` para evitar errores durante la inicialización en entornos con permisos restringidos.
+- `2026-10-07T00:12:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T00:12:57` Corrida terminada. Total usado hoy: 8.
