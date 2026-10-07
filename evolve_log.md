@@ -618,3 +618,67 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-07T13:02:36` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimizé `is_protected_path` eliminando la llamada innecesaria a `resolve()` (que accede a disco) para la mayoría de los casos, moviendo la verificación de las raíces del sistema antes de cualquier operación de I/O y delegando la resolución pesada solo a cuando las comprobaciones rápidas de prefijo fallan.
 - `2026-10-07T13:02:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T13:02:36` Corrida terminada. Total usado hoy: 306.
+- `2026-10-07T13:09:44` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-07T13:10:17` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-10-07T13:10:18` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-07T13:10:54` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `settings.py` implementando una caché de `mtime` en el `_MANAGER` para `validate()` y `load()` (vía `_load_impl`), evitando el parseo redundante de JSON y las validaciones intensivas de seguridad en disco si el archivo no ha cambiado.
+- `2026-10-07T13:11:29` Tests FALLARON:
+```
+-1/test_entries_from_folders_read0')
+
+    def test_entries_from_folders_reads_injected_folders(tmp_path):
+        carpeta = tmp_path / "Inicio"
+        carpeta.mkdir()
+        (carpeta / "MiPrograma.lnk").write_text("x")
+        (carpeta / "Otro.lnk").write_text("y")
+        entradas = startup.entries_from_folders([carpeta])
+>       assert {e.name for e in entradas} == {"MiPrograma", "Otro"}
+E       AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+E         
+E         Extra items in the left set:
+E         'Otro.lnk'
+E         'MiPrograma.lnk'
+E         Extra items in the right set:
+E         'Otro'
+E         'MiPrograma'
+E         
+E         Full diff:
+E           {
+E         -     'MiPrograma',
+E         +     'MiPrograma.lnk',
+E         ?                ++++
+E         -     'Otro',
+E         +     'Otro.lnk',
+E         ?          ++++
+E           }
+
+evolve/tests/test_modules.py:677: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'Otro.lnk'
+  'MiPrograma.lnk'
+  Extra items in the right set:
+  'Otro'
+  'MiPrograma'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed in 1.53s
+
+```
+- `2026-10-07T13:11:29` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó el proceso de filtrado de duplicados y la consolidación de entradas en `list_startup_entries` mediante el uso de un `set` de claves procesadas en una sola pasada, evitando la creación de listas intermedias innecesarias y mejorando la eficiencia algorítmica al evitar iteraciones redundantes.
+- `2026-10-07T13:11:31` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-07T13:11:35` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-07T13:11:41` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-07T13:12:27` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_safe_handler_wrapper` y `local_answer` para manejar correctamente casos donde el contexto no contiene métricas legibles o el análisis falló parcialmente, evitando errores de formato en f-strings y asegurando que las respuestas sean siempre coherentes incluso ante estados internos inesperados.
+- `2026-10-07T13:12:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T13:12:27` Corrida terminada. Total usado hoy: 310.

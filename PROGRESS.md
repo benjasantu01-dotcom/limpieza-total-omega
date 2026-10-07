@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
-- Rechazadas por tests: 26
+- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Rechazadas por tests: 27
 - Rechazadas por guardia de seguridad: 42
-- Sin cambios (nada sustancial que mejorar): 8
-- Sin respuesta de la IA (error o límite): 222
+- Sin cambios (nada sustancial que mejorar): 9
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-06 | 83 | 12 | 17 | 3 | 83 |
-| 2026-10-07 | 123 | 14 | 25 | 5 | 139 |
+| 2026-10-06 | 79 | 12 | 17 | 3 | 83 |
+| 2026-10-07 | 124 | 15 | 25 | 6 | 140 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
-- seguridad defensiva: **43**
 - legibilidad y documentación: **42**
 - rendimiento: **40**
-- robustez ante casos límite: **35**
+- seguridad defensiva: **39**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
-- `diskreport.py`: **19**
+- `assistant.py`: **20**
 - `memory.py`: **19**
-- `assistant.py`: **19**
 - `browser.py`: **19**
-- `healthscore.py`: **18**
+- `diskreport.py`: **18**
 - `safety.py`: **17**
+- `healthscore.py`: **17**
 - `settings.py`: **14**
 - `organizer.py`: **13**
 - `scanner.py`: **13**
 - `branding.py`: **12**
-- `duplicates.py`: **11**
-- `main.py`: **10**
+- `duplicates.py`: **10**
+- `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-07T13:12:27` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_safe_handler_wrapper` y `local_answer` para manejar correctamente casos donde el contexto no contiene métricas legibles o el análisis falló parcialmente, evitando errores de formato en f-strings y asegurando que las respuestas sean siempre coherentes incluso ante estados internos inesperados.
 - `2026-10-07T13:02:36` **safety.py** (rendimiento): Optimizé `is_protected_path` eliminando la llamada innecesaria a `resolve()` (que accede a disco) para la mayoría de los casos, moviendo la verificación de las raíces del sistema antes de cualquier operación de I/O y delegando la resolución pesada solo a cuando las comprobaciones rápidas de prefijo fallan.
 - `2026-10-07T13:01:29` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` eliminando la recreación innecesaria de objetos `QuarantineItem` durante búsquedas, utilizando el caché de estado de forma más eficiente y evitando la carga completa del manifiesto cuando no es estrictamente necesario, manteniendo la integridad de las validaciones.
 - `2026-10-07T13:00:27` **organizer.py** (rendimiento): Optimicé el rendimiento del escáner reemplazando las llamadas repetitivas a `str(path)` dentro de `_is_recursive_violation` por comparaciones directas de objetos `Path`, y transformé la búsqueda en `_is_allowed_directory` usando un `set` local para garantizar acceso O(1) en cada iteración.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-07T11:58:53` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la actualización de los docstrings en las funciones `_collect_summary_data`, `walk_files` y `_is_excluded_path`, explicando claramente la lógica de filtrado de seguridad, el uso de estructuras de datos (heaps) para optimización y las garantías de integridad del escaneo, facilitando el mantenimiento técnico.
 - `2026-10-07T11:58:33` **browser.py** (legibilidad y documentación): Documenté con type hints más precisos y docstrings explicativos los parámetros y el comportamiento de las funciones de navegación de archivos, clarificando el propósito de `root_abs_norm` y `visited_inodes` para evitar confusiones en el mantenimiento futuro del bucle de escaneo.
 - `2026-10-07T11:56:58` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación de los criterios de salud y el flujo de validación en `assistant.py` mediante type hints explícitos, la adición de docstrings explicativos en métodos críticos de `SystemContext` y la mejora en la legibilidad de las estructuras de datos de configuración, facilitando el mantenimiento a futuro sin alterar el comportamiento.
-- `2026-10-07T11:47:32` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `settings.py` implementando validación de entrada anticipada en `update` para prevenir escrituras innecesarias o erróneas, y reforzando `_load_impl` para capturar errores de formato JSON más específicos, evitando así que una configuración parcialmente escrita o corrupta invalide toda la app.

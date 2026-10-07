@@ -113,8 +113,8 @@ def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Calla
             if isinstance(result, Answer) and result.text:
                 return result
             logging.error(f"Handler {func.__name__} devolvió respuesta vacía o inválida")
-        except Exception as e:
-            logging.error(f"Falla inesperada en {func.__name__}: {str(e)[:50]}")
+        except Exception:
+            logging.error(f"Falla inesperada en handler {func.__name__}")
         return Answer("Error al procesar la respuesta.")
     return wrapper
 
@@ -548,17 +548,17 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     mem_pct = ctx.get_metric("memory_available_percent", DEFAULT_RAM_PCT)
     total_gb = ctx.get_metric("memory_total_gb", 0.0)
     
-    parts = [f"Tenés {mem_pct:.0f}% de RAM disponible{f' de {total_gb:.0f} GB' if total_gb > 0 else ''}."]
+    msg = f"Tenés {mem_pct:.0f}% de RAM disponible{f' de {total_gb:.0f} GB' if total_gb > 0 else ''}."
     if mem_pct < 15:
-        parts.append("Eso es poco: Windows está usando el disco como memoria y ahí se siente la lentitud. Cerrá lo que no uses.")
+        msg += " Eso es poco: Windows está usando el disco como memoria y ahí se siente la lentitud. Cerrá lo que no uses."
     else:
-        parts.append("Eso está bien. Si la PC va lenta, el problema seguramente no es la RAM.")
+        msg += " Eso está bien. Si la PC va lenta, el problema seguramente no es la RAM."
     
-    parts.append("No busques un 'liberador de RAM': la PC queda más lenta.")
+    msg += " No busques un 'liberador de RAM': la PC queda más lenta."
     startup_count = int(ctx.get_metric("startup_count", 0))
     if startup_count > 12:
-        parts.append(f"Sí te conviene mirar los {startup_count} programas de inicio.")
-    return Answer(_validate_response_length(" ".join(parts)), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
+        msg += f" Sí te conviene mirar los {startup_count} programas de inicio."
+    return Answer(_validate_response_length(msg), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
 
 @_safe_handler_wrapper
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
@@ -649,7 +649,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         if handler := _TOKENS_MAP.get(token):
             return handler(context, question)
             
-    cuerpo = _format_problem_message(context.active_problems, context.score or "N/A")
+    cuerpo = _format_problem_message(context.active_problems, context.score if context.score is not None else "N/A")
     ans = Answer(_validate_response_length(cuerpo), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
     return ans if ans.text else Answer("No pude procesar tu consulta correctamente.")
 
