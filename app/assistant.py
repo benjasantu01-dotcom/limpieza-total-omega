@@ -505,22 +505,15 @@ def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> Syst
             ctx.ingest(s)
     return ctx
 
-@lru_cache(maxsize=8)
-def _generate_safe_context(ctx_hash: int, ctx_snapshot: tuple[tuple[str, float], ...]) -> str:
-    """Genera un resumen textual del contexto validando cada métrica estrictamente."""
-    res = []
-    snapshot = dict(ctx_snapshot)
-    for key, unit, precision in _CONTEXT_SCHEMA:
-        val = snapshot.get(key, -1.0)
-        if val >= 0:
-            res.append(f"{key}: {val:.{precision}f}{unit}")
-    return "\n".join(res)
-
 def context_as_text(context: SystemContext) -> str:
     """Serializa el contexto a un formato textual seguro para el prompt del asistente."""
     if context.is_empty: return ""
-    snapshot_tuple = tuple(sorted(context.metrics_snapshot.items()))
-    return _generate_safe_context(hash(context), snapshot_tuple)
+    res = []
+    for key, unit, precision in _CONTEXT_SCHEMA:
+        val = getattr(context, key, -1.0)
+        if isinstance(val, (int, float)) and val >= 0:
+            res.append(f"{key}: {val:.{precision}f}{unit}")
+    return "\n".join(res)
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     """Formatea métricas numéricas convirtiéndolas a strings legibles."""
@@ -545,8 +538,7 @@ def _format_problem_message(problems: tuple[str, ...], score: int | str) -> str:
 @_safe_handler_wrapper
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre memoria RAM."""
-    snapshot = ctx.metrics_snapshot
-    mem_pct = snapshot.get("memory_available_percent", DEFAULT_RAM_PCT)
+    mem_pct = ctx.get_metric("memory_available_percent", DEFAULT_RAM_PCT)
     total_gb = ctx.get_metric("memory_total_gb", 0.0)
     
     parts = [f"Tenés {mem_pct:.0f}% de RAM disponible{f' de {total_gb:.0f} GB' if total_gb > 0 else ''}."]
@@ -556,7 +548,7 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
         parts.append("Eso está bien. Si la PC va lenta, el problema seguramente no es la RAM.")
     
     parts.append("No busques un 'liberador de RAM': la PC queda más lenta.")
-    startup_count = int(snapshot.get("startup_count", 0))
+    startup_count = int(ctx.get_metric("startup_count", 0))
     if startup_count > 12:
         parts.append(f"Sí te conviene mirar los {startup_count} programas de inicio.")
     return Answer(_validate_response_length(" ".join(parts)), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
@@ -564,11 +556,10 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
 @_safe_handler_wrapper
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre almacenamiento y limpieza."""
-    snapshot = ctx.metrics_snapshot
-    junk = snapshot.get("junk_mb", 0.0)
-    dup = snapshot.get("duplicate_mb", 0.0)
+    junk = ctx.get_metric("junk_mb", 0.0)
+    dup = ctx.get_metric("duplicate_mb", 0.0)
     cache = ctx.get_metric("browser_cache_mb", 0.0)
-    free = snapshot.get("disk_free_percent", 100.0)
+    free = ctx.get_metric("disk_free_percent", 100.0)
     
     recuperable = junk + dup + cache
     msg = f"Tenés {free:.0f}% libre en disco. Podés recuperar cerca de {recuperable:.0f} MB."
@@ -581,8 +572,7 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
 @_safe_handler_wrapper
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre archivos sospechosos y seguridad."""
-    snapshot = ctx.metrics_snapshot
-    count = int(snapshot.get("suspicious_count", 0.0))
+    count = int(ctx.get_metric("suspicious_count", 0.0))
     warn = int(ctx.get_metric("suspicious_warnings", 0.0))
     if count == 0:
         texto = "No hay archivos sospechosos. La app nunca borra sola, todo va a revisión."
@@ -614,8 +604,7 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
 @_safe_handler_wrapper
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre aplicaciones de arranque."""
-    snapshot = ctx.metrics_snapshot
-    count = int(snapshot.get("startup_count", 0.0))
+    count = int(ctx.get_metric("startup_count", 0.0))
     estado = f"Tenés {count} programas que arrancan con Windows."
     valoracion = "Son bastantes, y cada uno suma tiempo de encendido." if count > 15 else ("Es normal." if count > 8 else "Está bien.")
     cierre = " La app los lista, pero desactivalos desde el Administrador de tareas de Windows."

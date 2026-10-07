@@ -346,23 +346,22 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
     if not stops or len(stops) < 2: 
         return (stops[0] if stops else C_TEXT_MUTED,) * n
     
-    rgb_stops = tuple(_hex_to_rgb(s) for s in stops)
+    rgb_stops = [list(_hex_to_rgb(s)) for s in stops]
     n_segments = len(stops) - 1
     
     res = [C_TEXT_MUTED] * n
+    div = n - 1 if n > 1 else 1
     for i in range(n):
-        ratio = i / (n - 1) if n > 1 else 0.0
-        pos = ratio * n_segments
-        idx = int(pos)
-        if idx >= n_segments: idx = n_segments - 1
+        pos = (i / div) * n_segments
+        idx = min(int(pos), n_segments - 1)
         delta = pos - idx
         
         s1, s2 = rgb_stops[idx], rgb_stops[idx + 1]
-        res[i] = _rgb_to_hex((
+        res[i] = "#{:02x}{:02x}{:02x}".format(
             int(s1[0] + (s2[0] - s1[0]) * delta),
             int(s1[1] + (s2[1] - s1[1]) * delta),
             int(s1[2] + (s2[2] - s1[2]) * delta)
-        ))
+        )
     return tuple(res)
 
 @lru_cache(maxsize=128)

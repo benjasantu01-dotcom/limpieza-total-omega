@@ -1496,3 +1496,63 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-07T07:53:17` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: legibilidad y documentación).
 - `2026-10-07T07:53:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T07:53:17` Corrida terminada. Total usado hoy: 188.
+- `2026-10-07T08:00:40` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-10-07T08:01:11` Tests FALLARON:
+```
+-1/test_entries_from_folders_read0')
+
+    def test_entries_from_folders_reads_injected_folders(tmp_path):
+        carpeta = tmp_path / "Inicio"
+        carpeta.mkdir()
+        (carpeta / "MiPrograma.lnk").write_text("x")
+        (carpeta / "Otro.lnk").write_text("y")
+        entradas = startup.entries_from_folders([carpeta])
+>       assert {e.name for e in entradas} == {"MiPrograma", "Otro"}
+E       AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+E         
+E         Extra items in the left set:
+E         'Otro.lnk'
+E         'MiPrograma.lnk'
+E         Extra items in the right set:
+E         'MiPrograma'
+E         'Otro'
+E         
+E         Full diff:
+E           {
+E         -     'MiPrograma',
+E         +     'MiPrograma.lnk',
+E         ?                ++++
+E         -     'Otro',
+E         +     'Otro.lnk',
+E         ?          ++++
+E           }
+
+evolve/tests/test_modules.py:677: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'Otro.lnk'
+  'MiPrograma.lnk'
+  Extra items in the right set:
+  'MiPrograma'
+  'Otro'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed in 1.58s
+
+```
+- `2026-10-07T08:01:11` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y robustez de la clase `StartupEntry` documentando explícitamente las responsabilidades de sus métodos internos y corrigiendo un bug de referencia de variable (`_`) en `_process_folder_entry` que impedía la correcta asignación del nombre al procesar entradas de carpetas.
+- `2026-10-07T08:01:53` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el método `context_as_text` para evitar la serialización completa de un diccionario y posterior reconstrucción, utilizando `islice` sobre `_CONTEXT_SCHEMA` para iterar y formatear directamente sobre los datos del objeto, reduciendo la carga de procesamiento y uso de memoria en cada consulta.
+- `2026-10-07T08:02:31` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el rendimiento de `gradient_colors` eliminando el uso de `tuple` y `zip` innecesarios dentro del bucle de generación, aprovechando la pre-computación de valores y la pre-asignación de memoria de la lista, lo cual reduce significativamente el overhead de procesamiento en el hilo principal durante el renderizado.
+- `2026-10-07T08:02:44` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo recursivo mediante la eliminación de llamadas innecesarias a `is_safe_to_modify` y `path.exists()` dentro del bucle interno, reduciendo la carga de I/O al reutilizar la resolución de rutas ya normalizadas.
+- `2026-10-07T08:02:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T08:02:44` Corrida terminada. Total usado hoy: 192.

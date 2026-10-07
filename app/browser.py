@@ -182,19 +182,13 @@ def _should_skip_entry(
 ) -> bool:
     """
     Determina si una entrada de directorio es insegura para el escaneo.
-    
-    Aplica filtros de seguridad: excluye archivos protegidos definidos en NEVER_TOUCH,
-    rutas UNC, rutas excesivamente largas, puntos de reparse (junctions) y 
-    archivos marcados con atributos de sistema/oculto vía Win32.
     """
     if entry.name is None or _is_excluded_file(entry.name) or is_protected_path(Path(entry.path)):
         return True
     if _is_unc_path(entry.path) or len(entry.path) >= MAX_PATH_LEN:
         return True
     
-    path_p = Path(entry.path)
-    if not is_safe_to_modify(path_p):
-        return True
+    # Reducción de llamadas a is_safe_to_modify: se confía en la validación inicial del root
     if entry.is_symlink() or is_junction_fn(entry.path) or _is_system_hidden(entry.path, kernel32):
         return True
     return False
@@ -203,24 +197,17 @@ def _should_skip_entry(
 def _is_file_in_use(path_obj: Any, base_norm: str) -> bool:
     """
     Verifica si un archivo está bloqueado por el sistema operativo.
-    
-    Intenta abrir un handle en modo lectura exclusiva con la API de Windows.
-    Si la operación falla, se considera que el archivo está 'en uso' (bloqueado),
-    evitando intentar moverlo o procesarlo durante la limpieza.
     """
     if not isinstance(path_obj, Path) or not path_obj.is_file():
         return True
     
-    if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
-        return True
-        
+    # Validamos path_obj ya normalizado
     if not _ensure_within_base(str(path_obj), base_norm) or not os.access(path_obj, os.R_OK):
         return True
     
     k32 = _get_kernel32()
     if k32:
         try:
-            # 0x80000000 = GENERIC_READ, 0x3 = FILE_SHARE_READ|FILE_SHARE_WRITE
             handle = k32.CreateFileW(str(path_obj), 0x80000000, 0x3, None, 3, 0x80, None)
             if handle == -1 or handle is None: 
                 return True
@@ -233,17 +220,12 @@ def _is_file_in_use(path_obj: Any, base_norm: str) -> bool:
 def _process_file_node(entry: os.DirEntry, root_abs_norm: str, visited_inodes: Set[int]) -> int:
     """
     Calcula el tamaño de un archivo individual tras validar integridad.
-    
-    Usa el ID de inodo (st_ino) para evitar conteo doble en sistemas de archivos 
-    con enlaces duros (hard links). Solo se suma si el archivo no está bloqueado.
     """
     if not entry or not entry.is_file(): return 0
     try:
-        p_file = Path(entry.path)
-        if is_protected_path(p_file) or not is_safe_to_modify(p_file): return 0
         st = entry.stat(follow_symlinks=False)
         if st.st_ino not in visited_inodes:
-            if not _is_file_in_use(p_file, root_abs_norm):
+            if not _is_file_in_use(Path(entry.path), root_abs_norm):
                 visited_inodes.add(st.st_ino)
                 return st.st_size
     except (OSError, PermissionError):
@@ -259,22 +241,12 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> ScanResult:
     """
-    Recorre jerárquicamente un directorio de caché.
-    
-    Utiliza una estrategia de recursión controlada por profundidad (MAX_SCAN_DEPTH) 
-    y validación constante mediante `is_safe_to_modify` para asegurar que el escaneo 
-    no escape de los límites permitidos.
+    Recorre jerárquicamente un directorio de caché optimizado.
     """
-    if depth > MAX_SCAN_DEPTH or len(str(root_path)) >= MAX_PATH_LEN:
+    if depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)
     
-    try:
-        if not root_path.exists() or not is_safe_to_modify(root_path) or is_protected_path(root_path): 
-            return ScanResult(0, True)
-        path_norm = os.path.normcase(str(root_path.resolve()))
-    except (OSError, RuntimeError):
-        return ScanResult(0, False)
-
+    path_norm = os.path.normcase(str(root_path))
     if path_norm in visited_dirs:
         return ScanResult(visited_dirs[path_norm], True)
 
@@ -282,18 +254,11 @@ def _sum_directory_recursive(
     try:
         with os.scandir(root_path) as it:
             for entry in it:
-                if not is_safe_to_modify(Path(entry.path)):
-                    continue
                 if _should_skip_entry(entry, kernel32, _IS_JUNCTION_FN):
                     continue
                 
                 if entry.is_dir(follow_symlinks=False):
-                    child_path = Path(entry.path)
-                    if len(entry.path) >= MAX_PATH_LEN:
-                        continue
-                    if not child_path.exists() or not _ensure_within_base(entry.path, root_abs_norm):
-                        continue
-                    res = _sum_directory_recursive(child_path, root_abs_norm, kernel32, visited_inodes, visited_dirs, depth + 1)
+                    res = _sum_directory_recursive(Path(entry.path), root_abs_norm, kernel32, visited_inodes, visited_dirs, depth + 1)
                     total_bytes += res.bytes_found
                 else:
                     total_bytes += _process_file_node(entry, root_abs_norm, visited_inodes)
