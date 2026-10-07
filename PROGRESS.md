@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 31
 - Rechazadas por guardia de seguridad: 45
-- Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 217
+- Sin cambios (nada sustancial que mejorar): 10
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-06 | 145 | 24 | 34 | 8 | 137 |
-| 2026-10-07 | 55 | 7 | 11 | 3 | 80 |
+| 2026-10-06 | 143 | 24 | 34 | 7 | 136 |
+| 2026-10-07 | 56 | 7 | 11 | 3 | 83 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **44**
 - robustez ante casos límite: **42**
-- legibilidad y documentación: **40**
-- manejo de errores y validación de entradas: **39**
+- manejo de errores y validación de entradas: **40**
+- legibilidad y documentación: **38**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
 - `memory.py`: **21**
-- `healthscore.py`: **20**
+- `healthscore.py`: **19**
 - `diskreport.py`: **18**
 - `browser.py`: **18**
+- `assistant.py`: **15**
 - `safety.py`: **15**
-- `assistant.py`: **14**
 - `branding.py`: **14**
 - `organizer.py`: **14**
 - `settings.py`: **14**
 - `scanner.py`: **13**
-- `duplicates.py`: **10**
+- `duplicates.py`: **9**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-07T06:43:05` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para garantizar que el asistente no procese estructuras de datos recursivas o inesperadamente grandes (DoS por inyección de JSON), asegurando que cualquier entrada externa sea validada antes de operar.
 - `2026-10-07T05:19:08` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_load_impl` y `save` sustituyendo el uso de `os.replace` (que puede ser atómico pero no garantiza consistencia en todos los sistemas de archivos ante fallos de hardware) por una validación explícita de la integridad del archivo tras la escritura y evitando operaciones sobre rutas no resueltas.
 - `2026-10-07T05:18:49` **scanner.py** (seguridad defensiva): Se reforzó `_is_safe_entry` para prevenir ataques de suplantación de identidad de archivos, asegurando que `entry.path` sea realmente un archivo regular mediante `is_file()` antes de procesarlo, evitando así que el escáner intente operar sobre dispositivos especiales o tuberías nombradas que podrían causar bloqueos o comportamientos inesperados.
 - `2026-10-07T05:18:21` **safety.py** (seguridad defensiva): Se ha añadido una protección contra el acceso a archivos de sistema mediante el uso de nombres de dispositivo lógicos (como `\\.\PhysicalDrive0`), bloqueando explícitamente el uso de `\\.\` o `\\?\` (fuera del formato normalizado) en el método `_validate_structural_safety` para prevenir ataques de bajo nivel al sistema de archivos.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-07T04:38:33` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `_get_security_descriptor` añadiendo una comprobación explícita para evitar que `is_file_locked_by_other_process` intente realizar I/O sobre directorios, lo cual puede disparar excepciones de sistema innecesarias o falsos positivos en el estado de bloqueo.
 - `2026-10-07T04:37:13` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera (Race Conditions) y fallos de I/O en `_atomic_isolate_file` implementando una validación previa de la existencia del archivo de destino con `os.open` usando `os.O_EXCL`, asegurando atomicidad a nivel de sistema operativo frente a colisiones imprevistas.
 - `2026-10-07T04:28:34` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar archivos que son accesibles pero que, por condiciones de carrera o restricciones del sistema de archivos, fallan al intentar leer un solo byte, y se ha añadido una validación de `st_nlink` para evitar mover archivos con enlaces duros (hard links) que podrían ser críticos.
-- `2026-10-07T04:28:22` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez en `_get_process_path` para evitar errores de excepciones no capturadas al lidiar con rutas de procesos inexistentes, inaccesibles o bloqueadas por permisos de sistema, asegurando que `Path.resolve(strict=True)` se ejecute dentro de un bloque seguro y verificado.

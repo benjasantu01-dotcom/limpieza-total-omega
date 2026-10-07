@@ -328,10 +328,10 @@ def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
     if depth > _MAX_NESTING_DEPTH: return True
     try:
         if isinstance(val, (list, tuple, set)):
-            if len(val) > 50: return True
+            if len(val) > _MAX_COLLECTION_SIZE: return True
             return any(_is_input_too_deep_or_complex(item, depth + 1) for item in val)
         elif isinstance(val, dict):
-            if len(val) > 50: return True
+            if len(val) > _MAX_COLLECTION_SIZE: return True
             return any(_is_input_too_deep_or_complex(k, depth + 1) or _is_input_too_deep_or_complex(v, depth + 1) for k, v in val.items())
         return False
     except Exception:
