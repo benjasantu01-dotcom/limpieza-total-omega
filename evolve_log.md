@@ -790,3 +790,13 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-07T13:54:51` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
 - `2026-10-07T13:54:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T13:54:51` Corrida terminada. Total usado hoy: 326.
+- `2026-10-07T14:01:01` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-07T14:01:05` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-07T14:02:08` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-07T14:02:47` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la restricción del acceso a archivos bloqueados, asegurando que `_is_file_in_use` también valide la existencia de la ruta antes de intentar abrir el manejador, evitando comportamientos impredecibles en el acceso a recursos del sistema.
+- `2026-10-07T14:03:16` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-10-07T14:04:16` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se mejora la robustez del chequeo `_is_file_locked` para evitar la apertura de archivos si la ruta no cumple estrictamente con `is_safe_to_modify` antes de intentar cualquier operación de E/S.
+- `2026-10-07T14:04:33` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-07T14:04:49` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al convertir la validación de `SystemMetrics` en un proceso estrictamente determinista, evitando que campos nulos o mal formados generen resultados impredecibles mediante la aplicación de valores por defecto seguros en el `__post_init__` y una validación de tipo más estricta.
+- `2026-10-07T14:04:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T14:04:49` Corrida terminada. Total usado hoy: 330.

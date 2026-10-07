@@ -172,9 +172,9 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
     if st_size <= 0:
         return False
     try:
-        return (_safe_path_check(path) and 
-                not is_system_or_hidden(path) and 
-                not _is_file_locked(path))
+        if not _safe_path_check(path):
+            return False
+        return not is_system_or_hidden(path) and not _is_file_locked(path)
     except (OSError, ValueError, TypeError, RuntimeError, AttributeError):
         return False
 

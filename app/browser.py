@@ -197,7 +197,7 @@ def _should_skip_entry(
 @safe_path_operation(True)
 def _is_file_in_use(path_str: str, base_norm: str) -> bool:
     """Verifica si un archivo está bloqueado por el sistema operativo."""
-    if not _ensure_within_base(path_str, base_norm) or not os.access(path_str, os.R_OK):
+    if not _ensure_within_base(path_str, base_norm) or not os.path.exists(path_str) or not os.access(path_str, os.R_OK):
         return True
     
     k32 = _get_kernel32()

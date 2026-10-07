@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **205** (40.7% de aceptación)
+- Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 29
 - Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-06 | 73 | 12 | 16 | 3 | 74 |
-| 2026-10-07 | 132 | 17 | 26 | 7 | 144 |
+| 2026-10-06 | 73 | 12 | 16 | 3 | 70 |
+| 2026-10-07 | 135 | 17 | 26 | 7 | 145 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,26 +25,29 @@ Este archivo se regenera solo en cada corrida a partir de
 - robustez ante casos límite: **43**
 - legibilidad y documentación: **42**
 - rendimiento: **40**
-- seguridad defensiva: **34**
+- seguridad defensiva: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
 - `assistant.py`: **21**
-- `browser.py`: **20**
+- `browser.py`: **21**
+- `healthscore.py`: **19**
 - `memory.py`: **19**
 - `diskreport.py`: **19**
-- `healthscore.py`: **18**
 - `safety.py`: **16**
 - `settings.py`: **14**
+- `duplicates.py`: **12**
 - `organizer.py`: **12**
 - `scanner.py`: **12**
 - `branding.py`: **12**
-- `duplicates.py`: **11**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-07T14:04:49` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva al convertir la validación de `SystemMetrics` en un proceso estrictamente determinista, evitando que campos nulos o mal formados generen resultados impredecibles mediante la aplicación de valores por defecto seguros en el `__post_init__` y una validación de tipo más estricta.
+- `2026-10-07T14:04:16` **duplicates.py** (seguridad defensiva): Se mejora la robustez del chequeo `_is_file_locked` para evitar la apertura de archivos si la ruta no cumple estrictamente con `is_safe_to_modify` antes de intentar cualquier operación de E/S.
+- `2026-10-07T14:02:47` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la restricción del acceso a archivos bloqueados, asegurando que `_is_file_in_use` también valide la existencia de la ruta antes de intentar abrir el manejador, evitando comportamientos impredecibles en el acceso a recursos del sistema.
 - `2026-10-07T13:53:36` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva de `SystemContext.ingest` implementando una validación de tipo más estricta durante la ingesta de datos, asegurando que no se inyecten objetos no autorizados que contengan métodos o atributos inesperados, reforzando el cumplimiento de la regla de no procesar datos externos no validados.
 - `2026-10-07T13:51:16` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `settings.py` ante errores de entrada y manipulación del sistema de archivos mediante la implementación de `os.fsync` en el directorio padre durante la creación inicial del mismo, y añadiendo comprobaciones de integridad adicionales (`st_mode` y `st_nlink`) para asegurar que el archivo de configuración no sea un punto de unión o un archivo manipulado durante el proceso de guardado.
 - `2026-10-07T13:41:17` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `purge_all` para manejar posibles errores de acceso durante la iteración del directorio de cuarentena, evitando que un único error de permiso en un archivo huérfano interrumpa el proceso de limpieza completo.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-07T13:02:36` **safety.py** (rendimiento): Optimizé `is_protected_path` eliminando la llamada innecesaria a `resolve()` (que accede a disco) para la mayoría de los casos, moviendo la verificación de las raíces del sistema antes de cualquier operación de I/O y delegando la resolución pesada solo a cuando las comprobaciones rápidas de prefijo fallan.
 - `2026-10-07T13:01:29` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` eliminando la recreación innecesaria de objetos `QuarantineItem` durante búsquedas, utilizando el caché de estado de forma más eficiente y evitando la carga completa del manifiesto cuando no es estrictamente necesario, manteniendo la integridad de las validaciones.
 - `2026-10-07T13:00:27` **organizer.py** (rendimiento): Optimicé el rendimiento del escáner reemplazando las llamadas repetitivas a `str(path)` dentro de `_is_recursive_violation` por comparaciones directas de objetos `Path`, y transformé la búsqueda en `_is_allowed_directory` usando un `set` local para garantizar acceso O(1) en cada iteración.
-- `2026-10-07T12:49:46` **duplicates.py** (rendimiento): Optimicé el proceso de recolección en `_collect_candidates` para evitar realizar `stat()` redundantes y múltiples llamadas a `is_safe_to_modify` sobre el mismo archivo, reduciendo significativamente la sobrecarga de I/O durante el escaneo de directorios.
-- `2026-10-07T12:42:11` **diskreport.py** (rendimiento): Optimizé la función `_is_excluded_path` para reducir el número de llamadas a `os.path.abspath` y `os.path.commonpath` (operaciones de string costosas) al sustituirlas por validaciones de `Path.is_relative_to` (o lógica equivalente de `Path`), acelerando significativamente el escaneo recursivo en directorios profundos.
-- `2026-10-07T12:41:46` **browser.py** (rendimiento): Optimizé la recursión del escaneo de directorios eliminando la sobrecarga de `os.path.normcase` y `str()` innecesarios dentro de los bucles, y mejorando la reutilización de la estructura `visited_dirs` mediante una referencia persistente para evitar cálculos repetitivos en subdirectorios compartidos o visitados.

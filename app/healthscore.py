@@ -199,6 +199,8 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
 def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) -> float:
     """Helper interno para sanitizar métricas numéricas entrantes."""
     try:
+        if not isinstance(value, (int, float)):
+            return default
         val = float(value)
         if not math.isfinite(val) or val < min_v or val > max_v:
             return default
@@ -284,8 +286,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         metrics = SystemMetrics()
     
     metrics.validate()
-    if not metrics.is_finite:
-        metrics = SystemMetrics()
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
