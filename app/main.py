@@ -512,7 +512,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self._initialized_tabs[name] = True
             except Exception as e:
                 logging.error("Fallo crítico en el constructor de la pestaña %s: %s", name, e)
-                self.log(f"Error cargando pestaña {name}: {type(e).__name__}", "Salud")
+                if self.winfo_exists():
+                    self.log(f"Error cargando pestaña {name}: {type(e).__name__}", "Salud")
 
     def _build_tabs_container(self) -> None:
         """Constructor: Crea el contenedor principal con pestañas."""

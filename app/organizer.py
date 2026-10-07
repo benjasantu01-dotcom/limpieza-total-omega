@@ -142,10 +142,10 @@ def _is_allowed_directory(name: str) -> bool:
 def _is_file_locked(path: Path) -> bool:
     """Valida si un archivo está bloqueado intentando abrirlo en modo lectura."""
     if not path.is_file(): return True
-    if not os.access(path, os.R_OK): return True
     try:
         with open(path, "rb") as f:
-            f.read(1)
+            chunk = f.read(1)
+            if not chunk: return False # Archivo vacío es válido si se puede abrir
             return False
     except (PermissionError, OSError, IOError, BlockingIOError):
         return True
@@ -186,6 +186,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         st = src.stat()
         if (junk_file._ino is not None and st.st_ino != junk_file._ino) or \
            (junk_file._dev is not None and st.st_dev != junk_file._dev): return False
+        # st_nlink > 1 indica hard links, que pueden ser críticos para el SO
         if not src.is_file() or st.st_nlink > 1: return False
         if src.resolve() != src: return False
         
