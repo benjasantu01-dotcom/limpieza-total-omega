@@ -402,7 +402,7 @@ class SystemContext:
         """Valida, convierte y verifica límites de un campo individual."""
         try:
             val = _get_source_value(source, key)
-            if val is None: return None
+            if val is None or isinstance(val, (dict, list, set)): return None
             
             float_val = float(val)
             if not _is_metric_within_bounds(float_val, spec): 

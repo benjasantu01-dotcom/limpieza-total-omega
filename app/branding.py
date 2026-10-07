@@ -328,6 +328,7 @@ def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
     Example: blend("#000000", "#FFFFFF", 0.5) -> "#808080"
     """
     try:
+        if not isinstance(start, str) or not isinstance(end, str): return start
         r1, g1, b1 = _hex_to_rgb(start)
         r2, g2, b2 = _hex_to_rgb(end)
         ratio = max(0.0, min(1.0, float(ratio)))
@@ -343,8 +344,8 @@ def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
     """Genera secuencia de colores para un gradiente dado el número de pasos."""
     n = max(1, int(steps))
-    if not stops or len(stops) < 2: 
-        return (stops[0] if stops else C_TEXT_MUTED,) * n
+    if not stops or not all(isinstance(s, str) for s in stops) or len(stops) < 2: 
+        return (stops[0] if (stops and isinstance(stops[0], str)) else C_TEXT_MUTED,) * n
     
     rgb_stops = [list(_hex_to_rgb(s)) for s in stops]
     n_segments = len(stops) - 1
@@ -537,5 +538,7 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=thick)
         if val > 0: 
             fill_color = fill or score_color(val)
-            canvas.create_arc(*caja, start=90, extent=-(val / 100 * 359.9), style="arc", outline=fill_color, width=thick)
+            extent = -(val / 100 * 359.9)
+            if math.isfinite(extent):
+                canvas.create_arc(*caja, start=90, extent=extent, style="arc", outline=fill_color, width=thick)
     except (ValueError, TypeError, AttributeError, OverflowError, ZeroDivisionError): pass

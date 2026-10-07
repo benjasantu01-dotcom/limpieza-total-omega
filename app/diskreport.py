@@ -388,7 +388,7 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     
     try:
         data = _collect_summary_data(root, skip_protected, limit=20)
-    except Exception:
+    except (OSError, RuntimeError, PermissionError):
         return ["Error durante el escaneo de archivos."]
         
     if data.total_files == 0: return ["Aviso: No hay archivos accesibles."]
