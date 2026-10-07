@@ -599,3 +599,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-07T12:42:11` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `_is_excluded_path` para reducir el número de llamadas a `os.path.abspath` y `os.path.commonpath` (operaciones de string costosas) al sustituirlas por validaciones de `Path.is_relative_to` (o lógica equivalente de `Path`), acelerando significativamente el escaneo recursivo en directorios profundos.
 - `2026-10-07T12:42:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T12:42:11` Corrida terminada. Total usado hoy: 298.
+- `2026-10-07T12:49:16` Arrancando corrida. Quedan hoy ~2 peticiones objetivo.
+- `2026-10-07T12:49:46` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el proceso de recolección en `_collect_candidates` para evitar realizar `stat()` redundantes y múltiples llamadas a `is_safe_to_modify` sobre el mismo archivo, reduciendo significativamente la sobrecarga de I/O durante el escaneo de directorios.
+- `2026-10-07T12:50:13` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics.is_finite, SystemMetrics.safe_get, SystemMetrics.validate
+- `2026-10-07T12:51:28` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Optimizé la gestión de la caché en `main.py` mediante una estrategia de invalidación "lazy" basada en hashes de estado para `on_full_analysis`, evitando el re-procesamiento redundante del análisis de salud (health score) y las llamadas al asistente cada vez que se cambia de pestaña o se interactúa con la interfaz.
+- `2026-10-07T12:51:47` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-10-07T12:51:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T12:51:47` Corrida terminada. Total usado hoy: 302.

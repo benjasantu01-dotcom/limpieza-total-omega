@@ -7,25 +7,25 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **205** (40.7% de aceptación)
-- Rechazadas por tests: 28
+- Rechazadas por tests: 27
 - Rechazadas por guardia de seguridad: 41
-- Sin cambios (nada sustancial que mejorar): 7
+- Sin cambios (nada sustancial que mejorar): 8
 - Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-06 | 86 | 14 | 18 | 3 | 85 |
-| 2026-10-07 | 119 | 14 | 23 | 4 | 138 |
+| 2026-10-06 | 85 | 13 | 17 | 3 | 84 |
+| 2026-10-07 | 120 | 14 | 24 | 5 | 139 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - seguridad defensiva: **45**
 - legibilidad y documentación: **42**
-- robustez ante casos límite: **36**
-- rendimiento: **36**
+- rendimiento: **37**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
@@ -36,15 +36,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **19**
 - `healthscore.py`: **18**
 - `safety.py`: **16**
-- `settings.py`: **15**
+- `settings.py`: **14**
 - `branding.py`: **13**
 - `scanner.py`: **13**
 - `organizer.py`: **12**
-- `duplicates.py`: **10**
+- `duplicates.py`: **11**
 - `main.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-07T12:49:46` **duplicates.py** (rendimiento): Optimicé el proceso de recolección en `_collect_candidates` para evitar realizar `stat()` redundantes y múltiples llamadas a `is_safe_to_modify` sobre el mismo archivo, reduciendo significativamente la sobrecarga de I/O durante el escaneo de directorios.
 - `2026-10-07T12:42:11` **diskreport.py** (rendimiento): Optimizé la función `_is_excluded_path` para reducir el número de llamadas a `os.path.abspath` y `os.path.commonpath` (operaciones de string costosas) al sustituirlas por validaciones de `Path.is_relative_to` (o lógica equivalente de `Path`), acelerando significativamente el escaneo recursivo en directorios profundos.
 - `2026-10-07T12:41:46` **browser.py** (rendimiento): Optimizé la recursión del escaneo de directorios eliminando la sobrecarga de `os.path.normcase` y `str()` innecesarios dentro de los bucles, y mejorando la reutilización de la estructura `visited_dirs` mediante una referencia persistente para evitar cálculos repetitivos en subdirectorios compartidos o visitados.
 - `2026-10-07T12:41:06` **branding.py** (rendimiento): Se ha optimizado la generación de colores para gradientes eliminando el re-cálculo de `gradient_colors` dentro del bucle de `draw_gradient_bar`, delegando la generación a una llamada única y más eficiente, reduciendo así la carga sobre el motor de renderizado y el cache.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-07T11:46:59` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_readable` y `_get_file_size` añadiendo validaciones explícitas contra `None` y tipos incorrectos, evitando que errores de resolución en tiempo de ejecución o valores inesperados provoquen excepciones no capturadas durante el escaneo.
 - `2026-10-07T11:38:07` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `quarantine.py` ante errores de entrada y de estado del sistema mediante la adición de validaciones explícitas en `_generate_safe_stored_name` y `save_manifest`, evitando así posibles excepciones silenciosas o escrituras corruptas cuando los parámetros de entrada no cumplen con las expectativas del sistema de archivos.
 - `2026-10-07T11:37:07` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_locked` para evitar falsos positivos y errores innecesarios durante el escaneo, asegurando que la función maneje adecuadamente los atributos de acceso sin romper el flujo de trabajo del usuario.
-- `2026-10-07T11:36:29` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_linux_meminfo` y `_extract_process_info` mediante la validación proactiva de datos antes de operar, reemplazando el manejo de excepciones genéricas por chequeos de tipo y estado para evitar errores en tiempo de ejecución.

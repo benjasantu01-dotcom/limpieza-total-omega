@@ -210,7 +210,7 @@ def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Recorre jerárquicamente las rutas proporcionadas usando BFS para recolectar archivos aptos,
-    usando inodos (dev, ino) para evitar procesar la misma entidad física varias veces.
+    usando inodos para evitar procesar la misma entidad física varias veces.
     """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     queue: deque[Tuple[Path, int]] = deque()
@@ -223,7 +223,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     
     while queue:
         current_dir, depth = queue.popleft()
-        
         if current_dir in visited_dirs or depth > MAX_RECURSION_DEPTH:
             continue
         visited_dirs.add(current_dir)
@@ -232,19 +231,20 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Evaluamos seguridad de ruta antes de profundizar
+                        p_entry = Path(entry.path)
+                        if not _safe_path_check(p_entry) or (skip_protected and is_protected_path(p_entry)):
+                            continue
+                        
                         if entry.is_dir(follow_symlinks=False):
-                            p_entry = Path(entry.path)
-                            if _safe_path_check(p_entry) and not (skip_protected and is_protected_path(p_entry)):
-                                queue.append((p_entry, depth + 1))
+                            queue.append((p_entry, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat()
                             if st.st_size >= min_size:
                                 inode_id = (st.st_dev, st.st_ino)
-                                if inode_id not in visited_inodes:
-                                    p_entry = Path(entry.path)
-                                    if not (skip_protected and is_protected_path(p_entry)) and _is_valid_candidate(p_entry, st.st_size):
-                                        visited_inodes.add(inode_id)
-                                        size_to_paths_map[st.st_size].append(p_entry)
+                                if inode_id not in visited_inodes and not is_system_or_hidden(p_entry) and not _is_file_locked(p_entry):
+                                    visited_inodes.add(inode_id)
+                                    size_to_paths_map[st.st_size].append(p_entry)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
