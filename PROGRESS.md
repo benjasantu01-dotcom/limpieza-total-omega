@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Mejoras aceptadas: **204** (40.5% de aceptación)
 - Rechazadas por tests: 29
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 10
 - Sin respuesta de la IA (error o límite): 217
 
@@ -16,35 +16,36 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-06 | 134 | 21 | 29 | 7 | 129 |
-| 2026-10-07 | 72 | 8 | 13 | 3 | 88 |
+| 2026-10-06 | 131 | 21 | 29 | 7 | 128 |
+| 2026-10-07 | 73 | 8 | 15 | 3 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **48**
 - seguridad defensiva: **44**
-- legibilidad y documentación: **43**
-- robustez ante casos límite: **42**
+- legibilidad y documentación: **44**
+- robustez ante casos límite: **39**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
 - `memory.py`: **21**
-- `browser.py`: **20**
 - `healthscore.py`: **20**
-- `diskreport.py`: **19**
-- `safety.py`: **16**
+- `browser.py`: **19**
+- `diskreport.py`: **18**
+- `safety.py`: **17**
 - `organizer.py`: **15**
 - `assistant.py`: **15**
 - `settings.py`: **14**
-- `branding.py`: **13**
 - `scanner.py`: **13**
+- `branding.py`: **12**
 - `duplicates.py`: **10**
 - `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-07T07:52:12` **safety.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en las funciones críticas de validación (`ensure_safe_to_modify`, `_evaluate_security_rules` y `_check_file_integrity`) y se extrajeron las constantes de error de Win32 (`ERROR_SHARING_VIOLATION = 32`, etc.) a nombres legibles para clarificar el flujo de seguridad ante auditorías de código.
 - `2026-10-07T07:42:28` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la implementación de *docstrings* detallados en las funciones de bajo nivel que gestionan la E/S y el aislamiento, clarificando el propósito técnico y las garantías de seguridad de cada operación.
 - `2026-10-07T07:41:53` **organizer.py** (legibilidad y documentación): Se introdujeron type hints más precisos (como `TypeAlias` para configuraciones complejas) y se documentó con docstrings el propósito de las constantes y funciones auxiliares en `organizer.py` para clarificar la lógica de seguridad y el filtrado de archivos, facilitando el mantenimiento a futuro sin alterar la funcionalidad.
 - `2026-10-07T07:41:17` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `memory.py` mediante la adición de docstrings estructurados, tipado explícito en funciones críticas y la clarificación de las responsabilidades de las funciones de bajo nivel, facilitando la auditoría del código conforme a los requisitos de seguridad y mantenibilidad.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-07T07:02:32` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_process_info` y `_get_process_path` mediante la validación explícita de entradas `None` y el manejo estricto de errores, evitando que valores inesperados de la API de Windows propaguen excepciones o generen estados inválidos.
 - `2026-10-07T07:02:02` **main.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta y centralizada para entradas numéricas en los campos de `Entry`, capturando excepciones de conversión y rango antes de que lleguen a la lógica de negocio, evitando así cierres inesperados.
 - `2026-10-07T06:59:46` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del cálculo en `compute_score` al capturar errores de tipo/valor al momento de invocar cada `scorer` dentro del bucle, garantizando que una falla en un módulo de métrica no interrumpa el cálculo global ni genere valores corruptos.
-- `2026-10-07T06:54:18` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas y validando los resultados de `_safe_stat` dentro del bucle de recorrido, evitando que un fallo aislado en un solo archivo detenga todo el análisis del sistema de archivos.

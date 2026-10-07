@@ -17,6 +17,11 @@ from typing import Union, Iterable, TypeAlias, Final, NamedTuple, Callable, Opti
 from functools import lru_cache
 import unicodedata
 
+# Constantes de error de Win32 API
+ERROR_SHARING_VIOLATION: Final[int] = 32
+ERROR_FILE_NOT_FOUND: Final[int] = 2
+ERROR_ACCESS_DENIED: Final[int] = 5
+
 PathLike: TypeAlias = Union[str, os.PathLike]
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
 
@@ -468,7 +473,13 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
 }
 
 def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
-    """Ejecuta el conjunto de reglas de integridad sobre un archivo dado, usando cortocircuito."""
+    """
+    Ejecuta el conjunto de reglas de integridad sobre un archivo.
+    
+    Se utiliza una estrategia de fallo rápido (fail-fast): ante la primera
+    condición detectada que comprometa la integridad, se detiene la evaluación
+    y se eleva una excepción con el contexto de seguridad correspondiente.
+    """
     try:
         sd = _get_security_descriptor(path)
         for rule in _VALIDATORS:
@@ -494,15 +505,22 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
     except (PermissionError, FileNotFoundError):
         raise UnsafePathError(f"Acceso denegado o archivo inexistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
     except OSError as e:
+        # Detectar errores específicos de Win32 para fallos de bloqueo en tiempo de ejecución
         win_err = getattr(e, 'winerror', None)
-        if win_err in (32, 1920) or e.errno == 13:
+        if win_err in (ERROR_SHARING_VIOLATION, 1920) or e.errno == 13:
              raise UnsafePathError(f"Archivo bloqueado por otro proceso: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
         raise UnsafePathError(f"Acceso fallido: {path.name}", SafetyValidationErrorCode.IO_ERROR)
     except Exception as e:
         raise UnsafePathError(f"Error inesperado al leer metadatos de {path.name}: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
-    """Previene ataques TOCTOU verificando que el archivo no haya cambiado su naturaleza."""
+    """
+    Previene ataques TOCTOU (Time-of-Check Time-of-Use) validando la estabilidad.
+    
+    Compara los descriptores de archivo obtenidos inicialmente contra los actuales.
+    Si el dispositivo (st_dev) o el número de inodo (st_ino) difieren, se aborta
+    la operación pues implica un posible reemplazo del archivo en disco.
+    """
     if not path.exists():
         raise UnsafePathError("El archivo ya no existe (TOCTOU).", SafetyValidationErrorCode.IO_ERROR)
         
@@ -760,7 +778,10 @@ def _validate_path_components(path: Path) -> None:
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
     Valida exhaustivamente una ruta para garantizar que es segura de modificar.
-    Es el punto de entrada principal para toda operación destructiva o de escritura.
+    
+    Esta función orquesta una serie de chequeos defensivos: normalización,
+    verificación de límites de sandbox, integridad de metadatos contra 
+    ataques TOCTOU y bloqueo de rutas de sistema o dispositivos críticos.
     """
     try:
         if path is None:
