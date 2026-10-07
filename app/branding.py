@@ -404,9 +404,8 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     try:
         path = Path(destination).resolve()
         
-        # Validación de seguridad: debe ser escribible y no ser un nodo de sistema
-        if not is_safe_to_modify(path):
-            return None
+        # Validación de seguridad estricta usando ensure_safe_to_modify
+        ensure_safe_to_modify(path)
             
         if path.exists() and (path.is_dir() or path.is_symlink()):
             return None

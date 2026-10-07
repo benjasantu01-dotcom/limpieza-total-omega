@@ -357,6 +357,7 @@ def _load_impl(ruta: Path) -> AppSettings:
     para evitar corrupción por accesos concurrentes y parsea el contenido.
     """
     if not ruta.is_file(): return DEFAULTS.copy()
+    if _Validators._is_reparse_point(ruta): return DEFAULTS.copy()
     try:
         resolved = ruta.resolve()
         if not is_safe_to_modify(str(resolved)): return DEFAULTS.copy()

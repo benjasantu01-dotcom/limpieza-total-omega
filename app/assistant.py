@@ -80,6 +80,7 @@ _MAX_RESPONSE_BYTES: Final[int] = 32768
 _MAX_MSG_CHUNK: Final[int] = 200
 _MAX_PROMPT_LIMIT: Final[int] = 4000
 _MAX_NESTING_DEPTH: Final[int] = 2
+_MAX_COLLECTION_SIZE: Final[int] = 20
 
 # Estructura fija para resumen de contexto: (clave_métrica, unidad_legible, precisión_decimal)
 _CONTEXT_SCHEMA: Final = (
@@ -309,14 +310,14 @@ def _validate_response_length(text: Any) -> str:
     return text[:_MAX_TEXT_LENGTH]
 
 def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
-    """Valida que los datos del payload no contengan estructuras recursivas profundas o tipos inválidos."""
+    """Valida la estructura del JSON remoto para impedir ataques de desbordamiento (Bomba JSON)."""
     if depth > _MAX_NESTING_DEPTH: return False
     try:
         if isinstance(val, (list, tuple, set)):
-            if len(val) > 20: return False
+            if len(val) > _MAX_COLLECTION_SIZE: return False
             return all(_is_safe_payload_structure(i, depth + 1) for i in val)
         if isinstance(val, dict):
-            if len(val) > 50: return False
+            if len(val) > _MAX_COLLECTION_SIZE: return False
             return all(isinstance(k, str) and _is_safe_payload_structure(v, depth + 1) for k, v in val.items())
         return isinstance(val, (str, int, float, bool, type(None)))
     except Exception:
