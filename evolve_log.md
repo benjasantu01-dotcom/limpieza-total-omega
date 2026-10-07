@@ -813,3 +813,48 @@ FAILED evolve/tests/test_modules.py::test_format_group_marks_which_copy_to_keep 
 - `2026-10-07T02:47:26` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: _ValidationResult
 - `2026-10-07T02:47:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T02:47:26` Corrida terminada. Total usado hoy: 68.
+- `2026-10-07T02:54:21` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-10-07T02:55:02` Tests FALLARON:
+```
+st_modules.py:677: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/scanner.py:158: SyntaxWarning: invalid escape sequence '\W'
+    Identifica ejecutables con nombres de procesos del sistema crítico alojados fuera de C:\Windows\System32.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'MiPrograma.lnk'
+  'Otro.lnk'
+  Extra items in the right set:
+  'MiPrograma'
+  'Otro'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed, 7 warnings in 0.89s
+
+```
+- `2026-10-07T02:55:02` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_process_folder_entry` corrigiendo una variable no definida (`_` por `entry.name`) y fortalecí `_is_valid_registry_entry` para capturar errores de tipo más explícitamente antes de procesar rutas, evitando posibles caídas del bucle de escaneo.
+- `2026-10-07T02:56:03` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-07T02:56:55` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: AreaExplanation
+- `2026-10-07T02:57:29` ➖ Sin cambios en branding.py (enfoque: legibilidad y documentación). Motivo: Se introdujeron docstrings descriptivos y type hints faltantes en las funciones de renderizado y utilidades de color para mejorar la trazabilidad del código y la legibilidad de las operaciones matemáticas complejas.
+- `2026-10-07T02:57:41` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y el tipado de las funciones recursivas de escaneo para clarificar las asunciones sobre el manejo de rutas normalizadas y el tracking de estado, facilitando el mantenimiento y evitando errores de recursión lógica.
+- `2026-10-07T02:57:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T02:57:41` Corrida terminada. Total usado hoy: 72.

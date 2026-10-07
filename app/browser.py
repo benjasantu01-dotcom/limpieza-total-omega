@@ -224,6 +224,7 @@ def _process_file_node(entry: os.DirEntry, root_abs_norm: str, visited_inodes: S
         p_file = Path(entry.path)
         if not p_file.exists() or not is_safe_to_modify(p_file) or is_protected_path(p_file): return 0
         st = entry.stat(follow_symlinks=False)
+        # st.st_ino permite identificar archivos únicos incluso con enlaces duros
         if st.st_ino not in visited_inodes:
             if not _is_file_in_use(p_file, root_abs_norm):
                 visited_inodes.add(st.st_ino)
@@ -240,7 +241,15 @@ def _sum_directory_recursive(
     visited_dirs: VisitedDirs,
     depth: int = 0
 ) -> ScanResult:
-    """Recorre jerárquicamente un directorio de caché para sumar el peso de sus archivos."""
+    """
+    Recorre jerárquicamente un directorio de caché.
+    
+    Args:
+        root_path: Path de la carpeta a escanear.
+        root_abs_norm: String normalizado del path base para validar contención.
+        visited_inodes: Set de inodos ya procesados para evitar contar duplicados.
+        visited_dirs: Cache de resultados previos por path normalizado.
+    """
     if depth > MAX_SCAN_DEPTH or len(str(root_path)) >= MAX_PATH_LEN:
         return ScanResult(0, True)
     
@@ -251,6 +260,7 @@ def _sum_directory_recursive(
     except (OSError, RuntimeError):
         return ScanResult(0, False)
 
+    # Memoización de directorios: evita re-procesar subárboles ya visitados
     if path_norm in visited_dirs:
         return ScanResult(visited_dirs[path_norm], True)
 
