@@ -387,9 +387,11 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "No se pudo acceder al proceso (posible cierre reciente)."
         
     try:
+        # EmptyWorkingSet retorna un valor distinto de cero si tiene éxito
         if psapi.EmptyWorkingSet(proc_handle) == 0:
             return False, "El sistema rechazó el trim (error de privilegios o estado)."
         return True, f"Working set liberado. {TRIM_WARNING}"
+    except (ctypes.ArgumentError, OSError, Exception):
+        return False, "Error inesperado al ejecutar el comando de trim."
     finally:
-        if proc_handle:
-            kernel32.CloseHandle(proc_handle)
+        kernel32.CloseHandle(proc_handle)

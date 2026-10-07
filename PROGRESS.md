@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
-- Rechazadas por tests: 29
-- Rechazadas por guardia de seguridad: 42
+- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Rechazadas por tests: 28
+- Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-05 | 40 | 4 | 6 | 1 | 43 |
+| 2026-10-05 | 38 | 3 | 5 | 1 | 43 |
 | 2026-10-06 | 147 | 24 | 34 | 8 | 137 |
-| 2026-10-07 | 13 | 1 | 2 | 1 | 43 |
+| 2026-10-07 | 16 | 1 | 2 | 1 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **45**
+- manejo de errores y validación de entradas: **48**
 - seguridad defensiva: **44**
 - robustez ante casos límite: **42**
-- rendimiento: **35**
-- legibilidad y documentación: **34**
+- rendimiento: **34**
+- legibilidad y documentación: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **20**
+- `memory.py`: **21**
+- `quarantine.py`: **21**
 - `healthscore.py`: **20**
-- `quarantine.py`: **20**
 - `diskreport.py`: **19**
 - `browser.py`: **17**
 - `branding.py`: **16**
-- `assistant.py`: **15**
 - `safety.py`: **15**
-- `scanner.py`: **14**
-- `organizer.py`: **14**
+- `organizer.py`: **15**
+- `assistant.py`: **14**
 - `settings.py`: **14**
+- `scanner.py`: **13**
 - `duplicates.py`: **11**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-07T02:40:07` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta de tipo y contenido en `quarantine_dir` y `_ensure_disk_space`, asegurando que cualquier entrada nula, vacía o tipo incorrecto lance una excepción descriptiva antes de realizar operaciones de I/O, siguiendo estrictamente el enfoque de validación de entradas.
+- `2026-10-07T02:39:35` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de entrada (`None`/vacío) y capturando excepciones de forma más granular para evitar que errores en un solo archivo detengan todo el proceso de limpieza o cuarentena.
+- `2026-10-07T02:39:07` **memory.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `trim_working_set` y `_get_process_path` validando explícitamente los resultados de las APIs de Windows y manejando posibles errores de conversión de tipos, evitando fallos silenciosos al procesar PIDs inválidos o manejadores de procesos nulos.
 - `2026-10-07T02:25:29` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y los `scorers` ante entradas inválidas, añadiendo una validación temprana en los scorers y asegurando que `_evaluate_rules` no ignore silenciosamente fallas de lógica en las reglas.
 - `2026-10-07T02:24:45` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `_is_excluded_path` capturando errores específicos de `os.scandir` y `os.stat` para evitar que fallos inesperados de permisos o sistemas de archivos interrumpan el escaneo de forma silenciosa o incompleta.
 - `2026-10-07T02:24:16` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_in_use` y `_process_file_node` ante entradas vacías o rutas inválidas, reemplazando chequeos implícitos por validaciones explícitas de tipo y estado para evitar excepciones innecesarias durante el escaneo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-07T00:22:12` **assistant.py** (seguridad defensiva): Se reforzó la seguridad del motor remoto validando que la URL destino no solo comience con la raíz autorizada, sino que sea estrictamente absoluta y que el proceso de deserialización JSON posterior a la respuesta cumpla con el mismo esquema de seguridad estricta que la ingesta de datos, evitando que el motor remoto inyecte estructuras anidadas peligrosas en la respuesta.
 - `2026-10-07T00:12:57` **settings.py** (robustez ante casos límite): Se mejora la robustez de `settings.py` ante fallos de I/O al implementar un manejo explícito de errores en `_is_file_secure_to_read` para prevenir el uso de descriptores de archivo cerrados o inválidos, y se añade una verificación de existencia de directorio en `settings_path` para evitar errores durante la inicialización en entornos con permisos restringidos.
 - `2026-10-07T00:11:51` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas corruptas o mal formadas mediante la adición de una verificación explícita de `is_absolute()` y `exists()` en la función `_get_security_descriptor` y `_get_file_attrs`, previniendo llamadas a la API de Windows con rutas no resueltas que podrían causar errores de segmentación o comportamiento indefinido en el bucle de validación.
-- `2026-10-07T00:06:38` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la manipulación de archivos mediante la implementación de `os.fsync` en el directorio destino tras operaciones de borrado (`_safe_unlink`) y en la creación de archivos, asegurando la persistencia de los cambios en sistemas de archivos con journaling, evitando inconsistencias ante cortes de energía o bloqueos del SO.
-- `2026-10-06T14:59:01` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del método `SystemMetrics.is_finite` añadiendo una validación explícita para evitar errores de acceso si el objeto no tiene atributos esperados o si se utilizan tipos incompatibles, asegurando que el pipeline nunca trabaje con datos corruptos.
-- `2026-10-06T14:50:18` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante rutas inexistentes o inaccesibles en `_is_file_in_use` y `_process_file_node` mediante la validación estricta de `Path.exists()` antes de cualquier operación de I/O, evitando excepciones innecesarias en sistemas con cachés parcialmente eliminadas o bloqueadas.

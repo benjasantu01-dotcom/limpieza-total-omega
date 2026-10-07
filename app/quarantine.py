@@ -363,10 +363,10 @@ def _ensure_path_ownership(path: Path) -> None:
 
 def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     """Normaliza, valida y asegura la existencia del directorio de cuarentena."""
-    if not base:
+    if not base or not str(base).strip():
         raise ValueError("El directorio base no puede estar vacío.")
     try:
-        path = Path(base).expanduser().resolve()
+        path = Path(str(base)).expanduser().resolve()
         _check_path_for_junctions(path)
         if not path.name.strip() or path == path.parent:
             raise UnsafePathError("Ruta de cuarentena inválida o es raíz.")
@@ -559,6 +559,8 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
 
 def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
     """Verifica disponibilidad real de espacio en el destino."""
+    if not isinstance(required_size, int) or required_size < 0:
+        raise ValueError("Tamaño requerido inválido.")
     if not dest_dir.exists():
         raise FileNotFoundError(f"Directorio inexistente: {dest_dir}")
     if not is_safe_to_modify(dest_dir) or not os.access(dest_dir, os.W_OK):
@@ -783,9 +785,9 @@ def _verify_transaction_integrity(item: QuarantineItem, destination: Path) -> No
 
 def _validate_input_path(source: PathLike) -> Path:
     """Valida los parámetros de entrada para operaciones públicas."""
-    if not source:
+    if not source or not str(source).strip():
         raise ValueError("Ruta de origen nula o vacía.")
-    p_source = Path(source)
+    p_source = Path(str(source))
     if not p_source.is_absolute():
         try:
             p_source = p_source.resolve(strict=True)

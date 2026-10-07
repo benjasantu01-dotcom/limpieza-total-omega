@@ -267,10 +267,8 @@ def sort_junk(files: Sequence[JunkFile], by: str = "size", ascending: bool = Tru
     return sorted(files, key=config.key_func, reverse=not bool(ascending))
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """
-    Gestiona el movimiento de archivos validados a la zona de cuarentena.
-    """
-    if not files: return None
+    """Gestiona el movimiento de archivos validados a la zona de cuarentena."""
+    if not files or not review_dir: return None
     try:
         dest_base = Path(review_dir).expanduser()
         if not dest_base.exists():
@@ -298,11 +296,12 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """Genera un nombre de archivo único en destino para evitar sobrescrituras."""
+    if not junk_file or not junk_file.path or not dest_base: return None
     try:
-        if not junk_file or not junk_file.path or not dest_base: return None
         safe_name = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
         return _generate_unique_target(dest_base / safe_name)
-    except (OSError, AttributeError, ValueError): return None
+    except (OSError, AttributeError, ValueError, OverflowError): 
+        return None
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """Elimina permanentemente archivos tras verificación de seguridad en la carpeta de cuarentena."""
