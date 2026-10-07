@@ -29,12 +29,9 @@ class SecurityDescriptor(NamedTuple):
     """
     Estado consolidado de un archivo tras consultar metadatos del sistema.
     
-    Attributes:
-        attrs: Máscara de bits con atributos de Win32 (GetFileAttributesW).
-        is_protected_system: Indica si el archivo tiene atributos de sistema, oculto o temporal.
-        is_in_use: Indica si el archivo posee un bloqueo de escritura por otro proceso.
-        is_readonly: Indica si el bit de atributo de solo lectura está activo.
-        is_reparse: Indica si el archivo es un punto de reparse (symlink, junction).
+    El descriptor se construye consultando atributos de bajo nivel (Win32 API)
+    y realizando pruebas de bloqueo (I/O) para determinar si la manipulación
+    del archivo es segura o debe ser denegada por integridad del sistema.
     """
     attrs: int
     is_protected_system: bool
@@ -332,23 +329,33 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
 
 @lru_cache(maxsize=1024)
 def _get_security_descriptor_cached(path_str: str) -> SecurityDescriptor:
-    """Consulta atributos de seguridad de forma cacheada basada en la ruta."""
-    # Validación extra: prevenir llamadas con rutas relativas
+    """
+    Consulta atributos de seguridad consolidando el estado del sistema.
+    
+    Esta función abstrae las llamadas a API Win32 y pruebas de bloqueo I/O,
+    generando un `SecurityDescriptor` inmutable que los validadores utilizan
+    para decidir si es seguro proceder con la operación.
+    """
     if not os.path.isabs(path_str):
         return SecurityDescriptor(0, True, True, True, True)
+    
     attrs = _get_file_attrs(path_str)
-    # Si la API falló (0 o 0xFFFFFFFF), los flags de uso se evalúan bajo sospecha
-    return SecurityDescriptor(
-        attrs=attrs,
-        is_protected_system=bool(attrs & (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | Win32Attr.TEMPORARY | Win32Attr.REPARSE_POINT)),
-        is_in_use=_is_file_locked_by_other_process(path_str) if attrs != 0xFFFFFFFF else True,
-        is_readonly=bool(attrs & Win32Attr.READONLY),
-        is_reparse=bool(attrs & Win32Attr.REPARSE_POINT)
-    )
+    
+    # Flags de sistema/oculto/reparse extraídos directamente de atributos Win32.
+    # El bloqueo de archivo (is_in_use) se verifica dinámicamente mediante `CreateFileW`.
+    is_protected_system = bool(attrs & (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | Win32Attr.TEMPORARY | Win32Attr.REPARSE_POINT))
+    is_in_use = _is_file_locked_by_other_process(path_str) if attrs != 0xFFFFFFFF else True
+    is_readonly = bool(attrs & Win32Attr.READONLY)
+    is_reparse = bool(attrs & Win32Attr.REPARSE_POINT)
+    
+    return SecurityDescriptor(attrs, is_protected_system, is_in_use, is_readonly, is_reparse)
 
 def _get_security_descriptor(path: Path) -> SecurityDescriptor:
     """
     Construye un descriptor de seguridad para evaluar el archivo.
+    
+    Invoca la versión cacheada con la ruta convertida a cadena para asegurar
+    la consistencia en la invalidación de la caché lru.
     """
     return _get_security_descriptor_cached(str(path))
 

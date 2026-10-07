@@ -25,10 +25,18 @@ from safety import is_protected_path
 logger: Final = logging.getLogger(__name__)
 
 class ScannerLimits(NamedTuple):
-    """Parámetros operativos críticos para limitar el alcance y evitar desbordamientos."""
+    """
+    Parámetros de configuración para el motor de escaneo.
+    
+    Attributes:
+        max_path: Longitud máxima permitida para rutas de archivos.
+        recent_hours: Ventana temporal para heurísticas de archivos recientes.
+        reparse_point_attr_mask: Máscara bitwise para detectar junctions/symlinks.
+        max_depth: Límite máximo de recursión en el árbol de directorios.
+    """
     max_path: int = 260
     recent_hours: int = 24
-    reparse_point_attr_mask: int = 0x400  # FILE_ATTRIBUTE_REPARSE_POINT
+    reparse_point_attr_mask: int = 0x400
     max_depth: int = 50
 
 SCAN_LIMITS: Final = ScannerLimits()
@@ -48,21 +56,24 @@ class Suspicion:
     severity: str
 
 class SuspicionCheck(Protocol):
-    """Protocolo para definir funciones de heurística de seguridad."""
+    """
+    Protocolo funcional para heurísticas.
+    Las funciones que cumplan este protocolo deben recibir el contexto del archivo
+    y devolver un objeto Suspicion si se detecta riesgo, o None en caso contrario.
+    """
     def __call__(self, path: Path, entry: Optional[os.DirEntry], now_ts: float) -> Optional[Suspicion]: ...
 
 ScanResult: TypeAlias = List[Suspicion]
-# Tupla de (ruta_absoluta, profundidad_actual)
 DirectoryStack: TypeAlias = List[Tuple[str, int]]
 
-# Expresiones regulares para detección de ofuscación de nombres
+# Expresiones regulares para detección de ofuscación y riesgos en nombres
 DOUBLE_EXTENSION_RE: Final[re.Pattern] = re.compile(r"\.(pdf|jpg|png|docx|xlsx|txt)\.(exe|scr|bat|cmd|js|vbs)$", re.IGNORECASE)
 RTL_CHAR_RE: Final[re.Pattern] = re.compile(r"[\u200f\u202e\u202d]")
 RESERVED_NAMES_RE: Final[re.Pattern] = re.compile(r"^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\..*)?$", re.IGNORECASE)
 INVALID_TRAILING_CHARS_RE: Final[re.Pattern] = re.compile(r"[\. ]$")
 UNC_PATH_RE: Final[re.Pattern] = re.compile(r"^\\\\[^\\\\]+\\")
 
-# Conjuntos de constantes para comparación rápida O(1)
+# Conjuntos de constantes para comparación rápida en el escáner
 SUSPICIOUS_EXECUTABLE_EXT: Final[frozenset[str]] = frozenset({".exe", ".scr", ".bat", ".cmd", ".js", ".vbs", ".ps1"})
 SUSPICIOUS_CONTENT_EXT: Final[frozenset[str]] = frozenset({".pdf"})
 SUSPICIOUS_ALL_EXTS: Final[frozenset[str]] = SUSPICIOUS_EXECUTABLE_EXT.union(SUSPICIOUS_CONTENT_EXT)
@@ -124,19 +135,13 @@ def _is_target_extension(name: str) -> bool:
     return Path(name).suffix.lower() in SUSPICIOUS_ALL_EXTS
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    HEURÍSTICA: Detecta uso de extensiones múltiples (ej: doc.pdf.exe).
-    Busca patrones donde una extensión de documento precede a una ejecutable para engañar al usuario.
-    """
+    """HEURÍSTICA: Detecta uso de extensiones múltiples (ej: doc.pdf.exe)."""
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    HEURÍSTICA: Identifica ejecutables descargados recientemente (<24h) en carpetas de alto riesgo.
-    Analiza la fecha de modificación (mtime) comparándola con el timestamp actual.
-    """
+    """HEURÍSTICA: Identifica ejecutables descargados recientemente en carpetas de riesgo."""
     try:
         if not path or not path.parent:
             return None
@@ -153,10 +158,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    HEURÍSTICA: Detección de 'Binary Planting'.
-    Identifica ejecutables con nombres de procesos del sistema crítico alojados fuera de C:\Windows\System32.
-    """
+    """HEURÍSTICA: Detección de 'Binary Planting' fuera de System32."""
     try:
         if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
             if SYSTEM32_LOWER not in str(path).lower():
@@ -166,10 +168,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    HEURÍSTICA: Identifica ejecutables de 0 bytes.
-    Los ejecutables sin contenido suelen ser marcadores de error o intentos de ocultación de funcionalidad.
-    """
+    """HEURÍSTICA: Identifica ejecutables vacíos sospechosos."""
     size = _get_file_size(path)
     if size == 0:
         return Suspicion(path, "Archivo ejecutable vacío sospechoso", "warning")
@@ -210,13 +209,7 @@ class Scanner:
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """
-        Valida que la entrada sea segura para procesar:
-        - Verifica integridad estructural.
-        - Descarta puntos de reanálisis.
-        - Confirma que la ruta reside dentro del árbol base de escaneo.
-        - Filtra rutas protegidas definidas en safety.py.
-        """
+        """Valida que la entrada sea segura para procesar."""
         if not isinstance(entry, os.DirEntry) or not entry.path:
             return False
         
@@ -254,7 +247,7 @@ class Scanner:
     @staticmethod
     @lru_cache(maxsize=1024)
     def _is_relevant_extension(name: str) -> bool:
-        """Cachea si una extensión pertenece al conjunto de archivos que requieren heurística."""
+        """Cachea si una extensión requiere heurística."""
         return _is_target_extension(name)
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
@@ -276,7 +269,7 @@ class Scanner:
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta toda la suite de heurísticas sobre el archivo indicado y captura errores aislados."""
+        """Ejecuta toda la suite de heurísticas sobre el archivo indicado."""
         if not path.is_file() or not _is_readable(path):
             return
         for check_fn in ALL_CHECKS:
@@ -307,11 +300,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
-    """
-    Inicia el escaneo recursivo de un árbol de directorios.
-    Utiliza una pila explícita en lugar de recursión nativa para evitar
-    el desbordamiento de pila en estructuras de directorios profundas.
-    """
+    """Inicia el escaneo recursivo mediante pila explícita para evitar desbordamientos."""
     if directory is None: return []
     try:
         path_str = str(directory).strip()
