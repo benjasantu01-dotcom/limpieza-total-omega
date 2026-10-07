@@ -281,9 +281,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                     yield Path(entry.path), int(st.st_size)
                             except (OSError, PermissionError):
                                 continue
-                    except (OSError, PermissionError, AttributeError, ValueError):
+                    except (OSError, PermissionError, AttributeError, ValueError, RuntimeError):
                         continue
-        except (PermissionError, OSError, FileNotFoundError): 
+        except (PermissionError, OSError, FileNotFoundError, RuntimeError): 
             continue
 
 
@@ -312,7 +312,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
-            # Aseguramos que la ruta sea relativa a root para extraer la parte superior
             rel = path.relative_to(root)
             if not rel.parts: continue
             top_folder = root / rel.parts[0]

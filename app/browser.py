@@ -196,7 +196,7 @@ def _should_skip_entry(
 @safe_path_operation(True)
 def _is_file_in_use(path_obj: Any, base_norm: str) -> bool:
     """Determina si un archivo está bloqueado, usando filtros de seguridad como precondición rápida."""
-    if not isinstance(path_obj, Path) or not path_obj.exists():
+    if not isinstance(path_obj, Path) or not path_obj.is_file():
         return True
     
     if not _ensure_within_base(str(path_obj), base_norm) or is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
@@ -219,10 +219,10 @@ def _is_file_in_use(path_obj: Any, base_norm: str) -> bool:
 
 def _process_file_node(entry: os.DirEntry, root_abs_norm: str, visited_inodes: Set[int]) -> int:
     """Extrae el tamaño de un archivo individual tras validar su seguridad e integridad."""
+    if not entry or not entry.is_file(): return 0
     try:
         p_file = Path(entry.path)
-        if not p_file.exists(): return 0
-        if not is_safe_to_modify(p_file) or is_protected_path(p_file): return 0
+        if not p_file.exists() or not is_safe_to_modify(p_file) or is_protected_path(p_file): return 0
         st = entry.stat(follow_symlinks=False)
         if st.st_ino not in visited_inodes:
             if not _is_file_in_use(p_file, root_abs_norm):
