@@ -1464,9 +1464,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             try:
                 self.set_status("Vaciando la carpeta de revisión...")
                 n = delete_reviewed()
-                self.log(f"Borrados {n} archivos de la carpeta de revisión.", "Limpieza")
+                self._safe_run_ui_callback(lambda: self.log(f"Borrados {n} archivos de la carpeta de revisión.", "Limpieza"))
             except Exception as e:
-                self.log(f"Error en borrado: {e}", "Limpieza")
+                self._safe_run_ui_callback(lambda: self.log(f"Error en borrado: {e}", "Limpieza"))
 
         self.run_async(task, target=str(Path.home()))
 
@@ -1630,9 +1630,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         def task() -> None:
             try:
                 borrados = quarantine.purge_all()
-                self.log(f"Borrados {borrados} archivo(s) de la cuarentena.", "Cuarentena")
+                self._safe_run_ui_callback(lambda: self.log(f"Borrados {borrados} archivo(s) de la cuarentena.", "Cuarentena"))
             except Exception as e:
-                self.log(f"Error en borrado: {e}", "Cuarentena")
+                self._safe_run_ui_callback(lambda: self.log(f"Error en borrado: {e}", "Cuarentena"))
 
         self.run_async(task, target=str(Path.home()))
 

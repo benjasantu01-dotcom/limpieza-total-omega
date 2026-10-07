@@ -1637,3 +1637,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-07T08:44:16` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado `_collect_summary_data` para manejar explícitamente posibles excepciones durante la iteración y se introdujo un chequeo de integridad en `_is_excluded_path` para prevenir fallos al acceder a atributos de `DirEntry` en sistemas con permisos restrictivos, garantizando la robustez ante estados del disco inconsistentes.
 - `2026-10-07T08:44:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T08:44:16` Corrida terminada. Total usado hoy: 208.
+- `2026-10-07T08:52:16` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-10-07T08:52:44` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-07T08:53:18` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del motor de normalización ante divisores cero y valores de entrada no finitos en `create_linear_scorer` y `score_security`, evitando excepciones en el cálculo que podrían derivar en resultados de salud nulos o sesgados.
+- `2026-10-07T08:54:31` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se reforzó la robustez del método `on_purge_quarantine` y `on_delete_reviewed` mediante la adición de una validación explícita de existencia del widget y el manejo preventivo de estados de cierre, evitando posibles excepciones `RuntimeError` o `TclError` si el usuario intenta purgar mientras el hilo de la UI está terminando.
+- `2026-10-07T08:54:45` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-07T08:54:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T08:54:45` Corrida terminada. Total usado hoy: 212.

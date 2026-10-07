@@ -112,8 +112,8 @@ def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float]
                  Si False, un valor mayor al límite aumenta el ratio (ej: espacio libre).
     """
     def scorer(val: float) -> NormalizedRatio:
-        if not math.isfinite(val): return 0.0
-        ratio = val / limit if limit != 0 else 0.0
+        if not math.isfinite(val) or limit <= 0.0: return 0.0
+        ratio = val / limit
         return _clamp(1.0 - ratio if inverse else ratio)
     return scorer
 
@@ -175,13 +175,10 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
     """Calcula el ratio de seguridad penalizando hallazgos (0.05 c/u) y advertencias (0.25 c/u)."""
-    try:
-        c, w = float(suspicious_count), float(warnings)
-        if not math.isfinite(c) or not math.isfinite(w): return 0.0
-        penalization = (max(0.0, c) * 0.05) + (max(0.0, w) * 0.25)
-        return _clamp(1.0 - penalization)
-    except (TypeError, ValueError):
-        return 0.0
+    c, w = float(suspicious_count), float(warnings)
+    if not math.isfinite(c) or not math.isfinite(w): return 0.0
+    penalization = (max(0.0, c) * 0.05) + (max(0.0, w) * 0.25)
+    return _clamp(1.0 - penalization)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
     return _clamp(float(available_percent) / _LIMIT_RAM_PERCENT)

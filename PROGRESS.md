@@ -7,44 +7,46 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **206** (40.9% de aceptación)
-- Rechazadas por tests: 29
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por tests: 28
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-06 | 120 | 19 | 27 | 6 | 124 |
-| 2026-10-07 | 86 | 10 | 16 | 4 | 92 |
+| 2026-10-06 | 118 | 18 | 26 | 6 | 124 |
+| 2026-10-07 | 88 | 10 | 16 | 4 | 94 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **48**
 - legibilidad y documentación: **44**
+- robustez ante casos límite: **40**
 - rendimiento: **39**
-- robustez ante casos límite: **38**
-- seguridad defensiva: **37**
+- seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
+- `healthscore.py`: **21**
 - `quarantine.py`: **21**
-- `healthscore.py`: **20**
 - `browser.py`: **19**
 - `diskreport.py`: **19**
 - `memory.py`: **19**
-- `safety.py`: **18**
 - `assistant.py`: **17**
-- `scanner.py`: **14**
+- `safety.py`: **17**
 - `organizer.py`: **13**
+- `scanner.py`: **13**
 - `settings.py`: **13**
 - `branding.py`: **13**
 - `duplicates.py`: **11**
-- `main.py`: **9**
+- `main.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-07T08:54:31` **main.py** (robustez ante casos límite): Se reforzó la robustez del método `on_purge_quarantine` y `on_delete_reviewed` mediante la adición de una validación explícita de existencia del widget y el manejo preventivo de estados de cierre, evitando posibles excepciones `RuntimeError` o `TclError` si el usuario intenta purgar mientras el hilo de la UI está terminando.
+- `2026-10-07T08:53:18` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor de normalización ante divisores cero y valores de entrada no finitos en `create_linear_scorer` y `score_security`, evitando excepciones en el cálculo que podrían derivar en resultados de salud nulos o sesgados.
 - `2026-10-07T08:44:16` **diskreport.py** (robustez ante casos límite): Se ha mejorado `_collect_summary_data` para manejar explícitamente posibles excepciones durante la iteración y se introdujo un chequeo de integridad en `_is_excluded_path` para prevenir fallos al acceder a atributos de `DirEntry` en sistemas con permisos restrictivos, garantizando la robustez ante estados del disco inconsistentes.
 - `2026-10-07T08:43:25` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` añadiendo una validación explícita para evitar intentos de escritura en rutas que resultan ser directorios existentes, además de asegurar que la creación de subdirectorios sea atómica y segura mediante la delegación al sistema de archivos tras las validaciones de `safety`.
 - `2026-10-07T08:42:49` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para manejar correctamente objetos de tipo `dict` donde las claves no sean strings, previniendo errores de ejecución inesperados al procesar configuraciones o contextos mal formados.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-07T08:02:44` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante la eliminación de llamadas innecesarias a `is_safe_to_modify` y `path.exists()` dentro del bucle interno, reduciendo la carga de I/O al reutilizar la resolución de rutas ya normalizadas.
 - `2026-10-07T08:02:31` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` eliminando el uso de `tuple` y `zip` innecesarios dentro del bucle de generación, aprovechando la pre-computación de valores y la pre-asignación de memoria de la lista, lo cual reduce significativamente el overhead de procesamiento en el hilo principal durante el renderizado.
 - `2026-10-07T08:01:53` **assistant.py** (rendimiento): Optimicé el método `context_as_text` para evitar la serialización completa de un diccionario y posterior reconstrucción, utilizando `islice` sobre `_CONTEXT_SCHEMA` para iterar y formatear directamente sobre los datos del objeto, reduciendo la carga de procesamiento y uso de memoria en cada consulta.
-- `2026-10-07T07:52:12` **safety.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en las funciones críticas de validación (`ensure_safe_to_modify`, `_evaluate_security_rules` y `_check_file_integrity`) y se extrajeron las constantes de error de Win32 (`ERROR_SHARING_VIOLATION = 32`, etc.) a nombres legibles para clarificar el flujo de seguridad ante auditorías de código.
-- `2026-10-07T07:42:28` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la implementación de *docstrings* detallados en las funciones de bajo nivel que gestionan la E/S y el aislamiento, clarificando el propósito técnico y las garantías de seguridad de cada operación.
