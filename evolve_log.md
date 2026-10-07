@@ -690,3 +690,13 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-07T13:23:04` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante errores de E/S y corrupción de archivos al procesar grupos de duplicados, asegurando que `suggest_keeper` y `format_group` manejen de forma elegante rutas que desaparecieron o perdieron permisos durante el ciclo de vida del análisis.
 - `2026-10-07T13:23:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T13:23:04` Corrida terminada. Total usado hoy: 314.
+- `2026-10-07T13:30:03` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-07T13:31:15` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `score_security` y `compute_score` ante valores de entrada malformados o inconsistentes, asegurando que el motor de puntuación nunca falle ante métricas inesperadas.
+- `2026-10-07T13:32:15` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-07T13:32:19` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-07T13:32:40` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-07T13:32:56` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-07T13:33:44` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `trim_working_set` y sus helpers asociados mediante la validación proactiva contra valores de PID fuera de rango o negativos, evitando llamadas innecesarias a la API de Windows en casos donde el PID no sea lógico, y asegurando un manejo más limpio del cierre de handles.
+- `2026-10-07T13:34:03` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-07T13:34:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T13:34:03` Corrida terminada. Total usado hoy: 318.

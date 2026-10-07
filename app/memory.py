@@ -386,6 +386,7 @@ def _get_process_path(pid: int) -> Optional[Path]:
 
 def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
     """Evalúa si un proceso es candidato para EmptyWorkingSet sin riesgos de seguridad."""
+    if pid <= 0: return False, "PID inválido."
     if _is_system_process(pid): return False, "Proceso crítico del sistema protegido."
     
     path = _get_process_path(pid)
@@ -408,6 +409,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError):
         return False, "El PID proporcionado no es un número válido."
     
+    if target_pid <= 0:
+        return False, "PID no puede ser cero o negativo."
+
     is_safe, error_msg = _is_safe_to_trim(target_pid)
     if not is_safe: return False, error_msg or "Verificación de seguridad fallida."
     

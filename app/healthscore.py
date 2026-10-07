@@ -174,11 +174,15 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
     return _JUNK_SCORER(float(junk_mb))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
-    """Calcula el ratio de seguridad penalizando hallazgos (0.05 c/u) y advertencias (0.25 c/u)."""
-    c, w = float(suspicious_count), float(warnings)
-    if not math.isfinite(c) or not math.isfinite(w): return 0.0
-    penalization = (max(0.0, c) * 0.05) + (max(0.0, w) * 0.25)
-    return _clamp(1.0 - penalization)
+    """Calcula el ratio de seguridad penalizando hallazgos y advertencias con validación."""
+    try:
+        c = float(suspicious_count) if isinstance(suspicious_count, (int, float)) else 0.0
+        w = float(warnings) if isinstance(warnings, (int, float)) else 0.0
+        if not math.isfinite(c) or not math.isfinite(w): return 0.0
+        penalization = (max(0.0, c) * 0.05) + (max(0.0, w) * 0.25)
+        return _clamp(1.0 - penalization)
+    except (ValueError, TypeError):
+        return 0.0
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
     return _clamp(float(available_percent) / _LIMIT_RAM_PERCENT)
@@ -274,15 +278,11 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
-    Calcula el puntaje global mediante la ejecución del pipeline:
-    1. Normaliza los datos crudos.
-    2. Ejecuta reglas de recomendación.
-    3. Pondera los resultados.
+    Calcula el puntaje global mediante la ejecución del pipeline con manejo estricto de errores.
     """
     if not isinstance(metrics, SystemMetrics):
         metrics = SystemMetrics()
     
-    # Asegurar integridad antes de procesar reglas
     metrics.validate()
     if not metrics.is_finite:
         metrics = SystemMetrics()
@@ -299,11 +299,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             points = area_ratio * entry.weight
             metric_breakdown[entry.area] = int(round(points))
             accumulated_score += points
-        except (TypeError, ValueError, ZeroDivisionError) as e:
-            logging.error(f"Falla en lógica de cálculo {entry.area}: {e}")
-            metric_breakdown[entry.area] = 0
         except Exception as e:
-            logging.error(f"Error inesperado procesando {entry.area}: {e}")
+            logging.error(f"Falla crítica en pipeline {entry.area}: {e}")
             metric_breakdown[entry.area] = 0
             
     if metrics.quarantined_count > 0:
