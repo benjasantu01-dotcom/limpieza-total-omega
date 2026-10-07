@@ -162,8 +162,8 @@ def _safe_int_conversion(value: Optional[str], multiplier: int = 1) -> BytesValu
     Aplica multiplicador (ej. KB a Bytes) para normalizar unidades.
     """
     if not isinstance(value, str): return BytesValue(0)
-    clean_val = "".join(filter(str.isdigit, value))
-    return BytesValue(int(clean_val) * multiplier) if clean_val else BytesValue(0)
+    digits = "".join(filter(str.isdigit, value))
+    return BytesValue(int(digits) * multiplier) if digits else BytesValue(0)
 
 _is_windows: bool = os.name == "nt"
 _linux_mem_path: Path = Path("/proc/meminfo")
@@ -176,15 +176,14 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     Parsea el contenido de /proc/meminfo mediante procesamiento lineal.
     Implementación pura: procesa el texto línea por línea para evitar dependencias.
     """
-    if not meminfo_text: return _EMPTY_SNAPSHOT
+    if not isinstance(meminfo_text, str) or not meminfo_text:
+        return _EMPTY_SNAPSHOT
+        
     metrics: Dict[str, BytesValue] = {}
     for line in meminfo_text.splitlines():
         if ":" not in line: continue
         key, _, value_part = line.partition(":")
-        try:
-            metrics[key.strip()] = _safe_int_conversion(value_part, 1024)
-        except (ValueError, TypeError):
-            continue
+        metrics[key.strip()] = _safe_int_conversion(value_part, 1024)
             
     total: BytesValue = metrics.get("MemTotal", BytesValue(0))
     if total <= 0: return _EMPTY_SNAPSHOT
@@ -197,19 +196,25 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     """Extrae y valida datos de un proceso desde una línea CSV."""
-    if not line or "," not in line: return None
+    if not isinstance(line, str) or "," not in line: 
+        return None
+        
     parts = [p.strip().strip("'\"") for p in line.split(",")]
-    if len(parts) < 3: return None
+    if len(parts) < 3: 
+        return None
     
     name, pid_str, ws_str = parts[0], parts[1], parts[2]
     
-    try:
-        pid = int("".join(filter(str.isdigit, pid_str)))
-        ws = int("".join(filter(str.isdigit, ws_str)))
-    except ValueError:
+    pid_digits = "".join(filter(str.isdigit, pid_str))
+    ws_digits = "".join(filter(str.isdigit, ws_str))
+    
+    if not pid_digits or not ws_digits:
         return None
         
-    if _is_system_process(pid) or pid <= 0: return None
+    pid, ws = int(pid_digits), int(ws_digits)
+    
+    if _is_system_process(pid) or pid <= 0: 
+        return None
     
     if 0 < ws < MAX_VALID_PROCESS_MEM:
         return ProcessMemory(name, pid, BytesValue(ws))
@@ -217,8 +222,11 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """Procesa el CSV de procesos y devuelve los N de mayor consumo."""
-    if not raw_csv_text: return []
+    if not isinstance(raw_csv_text, str) or not raw_csv_text: 
+        return []
     lines = raw_csv_text.splitlines()
+    if len(lines) < 2:
+        return []
     processes = (proc for line in lines[1:] if (proc := _extract_process_info(line)))
     return sorted(processes, key=lambda p: p.working_set, reverse=True)[:limit]
 

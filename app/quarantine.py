@@ -342,15 +342,21 @@ def _sanitize_filename(filename: str) -> str:
 
 def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
     """Genera un nombre para el archivo en cuarentena basado en su ID y nombre base."""
+    if not item_id:
+        raise ValueError("ID de ítem requerido para generar nombre seguro.")
+    
     sanitized = _sanitize_filename(original_path.name)
     if not sanitized or sanitized in (".", ".."):
         sanitized = "unknown_file"
     parts = sanitized.split('.')
     name_base = parts[0] if parts[0] else "q_file"
+    
     if name_base.upper() in WINDOWS_RESERVED_NAMES:
         name_base = f"q_{name_base}"
+        
     name_base = "".join(c for c in name_base if c.isprintable() and c not in '<>:"/\\|?*')
     extension = f".{parts[-1]}" if len(parts) > 1 else ""
+    
     candidate = f"{item_id}__{name_base[:64]}{extension}".replace(":", "_")[:128]
     return candidate
 
@@ -530,6 +536,9 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
     base_path = quarantine_dir(base)
     target_path = _manifest_path(base_path)
     
+    if not isinstance(items, list):
+        raise ValueError("El manifiesto debe ser una lista de ítems.")
+
     try:
         if target_path.exists():
             if not target_path.is_file():

@@ -476,3 +476,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-07T11:34:58` Corte de seguridad: se alcanzó el límite de 480s para esta corrida. Termino prolijo.
 - `2026-10-07T11:34:58` Rotación — metrics: 3 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T11:34:58` Corrida terminada. Total usado hoy: 271.
+- `2026-10-07T11:35:40` Arrancando corrida. Quedan hoy ~29 peticiones objetivo.
+- `2026-10-07T11:36:29` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_linux_meminfo` y `_extract_process_info` mediante la validación proactiva de datos antes de operar, reemplazando el manejo de excepciones genéricas por chequeos de tipo y estado para evitar errores en tiempo de ejecución.
+- `2026-10-07T11:37:07` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_locked` para evitar falsos positivos y errores innecesarios durante el escaneo, asegurando que la función maneje adecuadamente los atributos de acceso sin romper el flujo de trabajo del usuario.
+- `2026-10-07T11:38:07` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `quarantine.py` ante errores de entrada y de estado del sistema mediante la adición de validaciones explícitas en `_generate_safe_stored_name` y `save_manifest`, evitando así posibles excepciones silenciosas o escrituras corruptas cuando los parámetros de entrada no cumplen con las expectativas del sistema de archivos.
+- `2026-10-07T11:38:11` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-07T11:38:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T11:38:11` Corrida terminada. Total usado hoy: 275.

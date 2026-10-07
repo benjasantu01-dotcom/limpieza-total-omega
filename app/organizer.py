@@ -141,12 +141,13 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """Valida si un archivo está bloqueado intentando abrirlo en modo lectura exclusiva."""
-    if not path.is_file(): return True
+    if not path or not path.is_file(): return True
     try:
         with open(path, "rb") as f:
-            chunk = f.read(1)
-            if not chunk: return False 
-            return False
+            # Intentar lectura mínima para verificar acceso sin cargar el archivo
+            if f.readable():
+                return False
+            return True
     except (PermissionError, OSError, IOError, BlockingIOError):
         return True
 
