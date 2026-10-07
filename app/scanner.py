@@ -220,16 +220,13 @@ class Scanner:
         if not isinstance(entry, os.DirEntry) or not entry.path:
             return False
         
-        # Check cache de éxito previo
         if entry.path in self.safe_cache:
             return True
             
-        # Validación básica de estructura
         if not _is_valid_path_structure(entry.path) or self._has_invalid_name(entry.name):
             return False
             
         try:
-            # Validación de reanálisis y alcance lógico
             if self._is_reparse_point(entry) or entry.is_symlink():
                 return False
                 
@@ -237,7 +234,6 @@ class Scanner:
             if not str(real_path).lower().startswith(self.base_root_str):
                 return False
                 
-            # Validación de seguridad global
             if is_protected_path(real_path):
                 return False
                 
@@ -263,23 +259,17 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
         """Orquestador: Decide si delegar a exploración de directorios o ejecución de heurísticas."""
+        if not isinstance(entry, os.DirEntry) or not entry.path: 
+            return
+
+        if not self._is_safe_entry(entry):
+            return
+
         try:
-            if not isinstance(entry, os.DirEntry) or not entry.path: 
-                return
-
-            # Filtro de seguridad preventivo
-            if not self._is_safe_entry(entry):
-                return
-
             is_dir = entry.is_dir(follow_symlinks=False)
-            
-            # Solo procesamos directorios o archivos con extensiones relevantes
-            if not is_dir and not self._is_relevant_extension(entry.name):
-                return
-                
             if is_dir:
                 self._handle_directory(entry, directory_stack, current_depth)
-            else:
+            elif self._is_relevant_extension(entry.name):
                 path_obj = Path(entry.path)
                 self._run_file_heuristics(path_obj.resolve(), entry)
         except (OSError, PermissionError, AttributeError, RuntimeError):
@@ -287,7 +277,6 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta toda la suite de heurísticas sobre el archivo indicado y captura errores aislados."""
-        # Validación de integridad post-resolución
         if not path.is_file() or not _is_readable(path):
             return
         for check_fn in ALL_CHECKS:
@@ -341,10 +330,8 @@ def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    try:
+                    if entry is not None:
                         scanner.process_entry(entry, directory_stack, depth)
-                    except (OSError, PermissionError, AttributeError):
-                        continue
         except (PermissionError, OSError, AttributeError):
             continue
     return scanner.results

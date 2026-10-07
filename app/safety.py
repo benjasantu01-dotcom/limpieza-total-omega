@@ -333,6 +333,9 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
 @lru_cache(maxsize=1024)
 def _get_security_descriptor_cached(path_str: str) -> SecurityDescriptor:
     """Consulta atributos de seguridad de forma cacheada basada en la ruta."""
+    # Validación extra: prevenir llamadas con rutas relativas
+    if not os.path.isabs(path_str):
+        return SecurityDescriptor(0, True, True, True, True)
     attrs = _get_file_attrs(path_str)
     # Si la API falló (0 o 0xFFFFFFFF), los flags de uso se evalúan bajo sospecha
     return SecurityDescriptor(
