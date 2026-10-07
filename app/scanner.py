@@ -87,6 +87,8 @@ def _is_readable(path: Path) -> bool:
     if not isinstance(path, Path):
         return False
     try:
+        if not path.exists():
+            return False
         resolved = path.resolve(strict=True)
         return resolved.is_file() and os.access(resolved, os.R_OK)
     except (OSError, PermissionError, ValueError, AttributeError):
@@ -105,7 +107,7 @@ def _get_file_size(path: Path) -> int:
     if not isinstance(path, Path):
         return -1
     try:
-        stats = path.resolve(strict=True).stat()
+        stats = path.stat()
         return int(stats.st_size) if stats.st_size >= 0 else -1
     except (OSError, PermissionError, FileNotFoundError, AttributeError, ValueError):
         return -1

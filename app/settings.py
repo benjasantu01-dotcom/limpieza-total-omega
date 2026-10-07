@@ -369,7 +369,7 @@ def _load_impl(ruta: Path) -> AppSettings:
                 fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
                 data = json.loads(content)
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-            except (IOError, OSError, json.JSONDecodeError):
+            except (IOError, OSError, json.JSONDecodeError, ValueError):
                 return DEFAULTS.copy()
         
         if _is_dict(data):
@@ -481,6 +481,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
     """Actualiza campos específicos en la configuración y persiste solo si hay cambios."""
+    if not changes or not _is_dict(changes):
+        return load(custom_base)
+        
     current = load(custom_base)
     modified = False
     validators = _build_validator_map()

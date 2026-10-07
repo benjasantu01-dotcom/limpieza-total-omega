@@ -483,3 +483,63 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-07T11:38:11` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-07T11:38:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T11:38:11` Corrida terminada. Total usado hoy: 275.
+- `2026-10-07T11:45:51` Arrancando corrida. Quedan hoy ~25 peticiones objetivo.
+- `2026-10-07T11:46:31` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: manejo de errores y validación de entradas): el archivo se encogió al 59% del original (posible pérdida de código)
+- `2026-10-07T11:46:59` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_is_readable` y `_get_file_size` añadiendo validaciones explícitas contra `None` y tipos incorrectos, evitando que errores de resolución en tiempo de ejecución o valores inesperados provoquen excepciones no capturadas durante el escaneo.
+- `2026-10-07T11:47:32` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `settings.py` implementando validación de entrada anticipada en `update` para prevenir escrituras innecesarias o erróneas, y reforzando `_load_impl` para capturar errores de formato JSON más específicos, evitando así que una configuración parcialmente escrita o corrupta invalide toda la app.
+- `2026-10-07T11:47:46` Tests FALLARON:
+```
+-3/test_entries_from_folders_read0')
+
+    def test_entries_from_folders_reads_injected_folders(tmp_path):
+        carpeta = tmp_path / "Inicio"
+        carpeta.mkdir()
+        (carpeta / "MiPrograma.lnk").write_text("x")
+        (carpeta / "Otro.lnk").write_text("y")
+        entradas = startup.entries_from_folders([carpeta])
+>       assert {e.name for e in entradas} == {"MiPrograma", "Otro"}
+E       AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+E         
+E         Extra items in the left set:
+E         'MiPrograma.lnk'
+E         'Otro.lnk'
+E         Extra items in the right set:
+E         'MiPrograma'
+E         'Otro'
+E         
+E         Full diff:
+E           {
+E         -     'MiPrograma',
+E         +     'MiPrograma.lnk',
+E         ?                ++++
+E         -     'Otro',
+E         +     'Otro.lnk',
+E         ?          ++++
+E           }
+
+evolve/tests/test_modules.py:677: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'MiPrograma.lnk'
+  'Otro.lnk'
+  Extra items in the right set:
+  'MiPrograma'
+  'Otro'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed in 1.53s
+
+```
+- `2026-10-07T11:47:46` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_process_folder_entry` corrigiendo una variable no definida (`_`) y asegurando que `name` se derive correctamente del nombre del archivo, además de añadir validación contra valores `None` en la extracción del nombre.
+- `2026-10-07T11:47:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T11:47:46` Corrida terminada. Total usado hoy: 279.
