@@ -144,7 +144,6 @@ def _is_file_locked(path: Path) -> bool:
     if not path or not path.is_file(): return True
     try:
         with open(path, "rb") as f:
-            # Intentar lectura mínima para verificar acceso sin cargar el archivo
             if f.readable():
                 return False
             return True
@@ -172,6 +171,10 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
     if len(str(src)) > MAX_PATH_LENGTH or len(str(dest)) > MAX_PATH_LENGTH: return False
     return not (is_protected_path(src) or is_protected_path(dest))
 
+def _is_system_hidden(entry: os.DirEntry) -> bool:
+    """Determina si una entrada tiene atributos de sistema u ocultos activados."""
+    return bool(_get_win_attributes(entry) & WIN_ATTR_MASK)
+
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Auditoría de seguridad integral para operaciones de disco (movimiento).
@@ -189,14 +192,12 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         if not src.is_file() or st.st_nlink > 1: return False
         if src.resolve() != src: return False
         
-        # Validación de seguridad explícita sobre origen y destino
         if not is_safe_to_modify(src) or is_protected_path(dest) or not _validate_path_security(src, dest): return False
         
         target_dir = dest.parent if dest.exists() else dest
         if not target_dir.is_dir() or not os.access(target_dir, os.W_OK): return False
         if _is_recursive_violation(src, dest) or _is_file_locked(src): return False
         
-        # Validación de recursos con protección contra errores de sistema
         dest_st = target_dir.stat()
         if dest_st.st_dev != st.st_dev: return False
         usage = shutil.disk_usage(target_dir)
@@ -208,7 +209,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
 def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> bool:
     """Filtra directorios para escaneo basándose en heurísticas de seguridad y caché de rutas protegidas."""
     if not _is_allowed_directory(entry.name) or _is_junction(entry): return False
-    if bool(_get_win_attributes(entry) & WIN_ATTR_SYSTEM): return False
+    if _is_system_hidden(entry): return False
     if entry.path in protected_cache: return False
     if is_protected_path(Path(entry.path)):
         protected_cache.add(entry.path)
@@ -238,7 +239,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                     elif item.is_file(follow_symlinks=False):
                         stats = item.stat(follow_symlinks=False)
                         if _is_valid_junk_entry(item.name, stats, now_ts):
-                            if not (getattr(stats, 'st_file_attributes', 0) & WIN_ATTR_MASK):
+                            if not _is_system_hidden(item):
                                 found.append(JunkFile(Path(item.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
                 except (PermissionError, OSError):
                     continue

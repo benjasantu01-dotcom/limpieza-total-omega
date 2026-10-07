@@ -266,20 +266,23 @@ def read_snapshot() -> MemorySnapshot:
     return _get_cached_snapshot(int(time.time() / 5))
 
 def _get_process_memory_stats(pid: int) -> Optional[BytesValue]:
-    """Obtiene el tamaño del Working Set mediante la API PSAPI GetProcessMemoryInfo."""
+    """
+    Obtiene el tamaño del Working Set mediante la API PSAPI GetProcessMemoryInfo.
+    Utiliza un handle de lectura restringida para evitar escalada de privilegios.
+    """
     kernel32 = ctypes.windll.kernel32
     psapi = ctypes.windll.psapi
-    handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
-    if not handle:
+    process_handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+    if not process_handle:
         return None
     try:
         pmc = (ctypes.c_size_t * 6)()
-        if psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), ctypes.sizeof(pmc)):
+        if psapi.GetProcessMemoryInfo(process_handle, ctypes.byref(pmc), ctypes.sizeof(pmc)):
             return BytesValue(pmc[3])
     except (ctypes.ArgumentError, OSError, AttributeError):
         pass
     finally:
-        kernel32.CloseHandle(handle)
+        kernel32.CloseHandle(process_handle)
     return None
 
 def _get_proc_memory_by_pid(pid: int) -> Optional[ProcessMemory]:
@@ -352,16 +355,19 @@ def _is_path_safe_and_valid(path_obj: Path) -> bool:
     return attr != -1 and not (attr & FILE_ATTRIBUTE_REPARSE_POINT)
 
 def _get_process_path(pid: int) -> Optional[Path]:
-    """Resuelve la ruta absoluta del ejecutable usando PSAPI GetModuleFileNameExW."""
+    """
+    Resuelve la ruta absoluta del ejecutable usando PSAPI GetModuleFileNameExW.
+    Valida la ruta contra `is_safe_to_modify` antes de retornar.
+    """
     kernel32 = ctypes.windll.kernel32
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
-    handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
-    if not handle: return None
+    process_handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+    if not process_handle: return None
     try:
         buffer_size = 1024
         buf = ctypes.create_unicode_buffer(buffer_size)
-        length = psapi.GetModuleFileNameExW(handle, None, buf, buffer_size)
+        length = psapi.GetModuleFileNameExW(process_handle, None, buf, buffer_size)
         if 0 < length < buffer_size:
             raw_path = buf.value
             if not raw_path or raw_path.startswith("\\\\"): return None
@@ -375,7 +381,7 @@ def _get_process_path(pid: int) -> Optional[Path]:
             except OSError:
                 return None
     except (OSError, RuntimeError, ctypes.ArgumentError): pass
-    finally: kernel32.CloseHandle(handle)
+    finally: kernel32.CloseHandle(process_handle)
     return None
 
 def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:

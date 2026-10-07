@@ -625,8 +625,8 @@ def _verify_copied_data(source_stat: os.stat_result, dest_path: Path, source_has
     if not final_hash or final_hash != source_hash:
         raise OSError("Falla crítica: el hash del archivo copiado no coincide.")
 
-def _copy_with_verification(source: Path, temp_dest: Path, source_hash: str) -> None:
-    """Copia datos de 'source' a 'temp_dest' mediante streaming con validación forzada."""
+def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> None:
+    """Realiza la copia física de datos usando streaming seguro y validación de atributos."""
     flags = os.O_RDONLY
     if hasattr(os, 'O_NOFOLLOW'):
         flags |= os.O_NOFOLLOW
@@ -681,7 +681,7 @@ def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, Inode]:
     temp_dest = _create_temp_file(source, destination)
     
     try:
-        _copy_with_verification(source, temp_dest, source_hash)
+        _perform_secure_copy(source, temp_dest, source_hash)
         os.replace(temp_dest, destination)
         
         dir_fd = os.open(str(destination.parent), os.O_RDONLY)
