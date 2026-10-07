@@ -568,3 +568,11 @@ FAILED evolve/tests/test_modules.py::test_format_group_marks_which_copy_to_keep 
 - `2026-10-07T00:37:02` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-10-07T00:37:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T00:37:02` Corrida terminada. Total usado hoy: 16.
+- `2026-10-07T00:41:10` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-10-07T00:41:16` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-07T00:41:47` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-10-07T00:42:24` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-10-07T00:43:09` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se introdujo una validación de inodo (st_ino) en `_atomic_isolate_file` contra el sistema de archivos antes de la transferencia, y se reforzó `_safe_unlink` con una validación de `st_nlink` para prevenir ataques de "hard-link bombing" que podrían engañar al recolector de basura o a las comprobaciones de integridad.
+- `2026-10-07T00:44:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-07T00:44:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T00:44:07` Corrida terminada. Total usado hoy: 20.

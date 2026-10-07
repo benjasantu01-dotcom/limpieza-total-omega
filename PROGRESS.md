@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **210** (41.7% de aceptación)
+- Mejoras aceptadas: **211** (41.9% de aceptación)
 - Rechazadas por tests: 31
-- Rechazadas por guardia de seguridad: 45
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-05 | 57 | 6 | 10 | 3 | 62 |
+| 2026-10-05 | 57 | 6 | 10 | 3 | 58 |
 | 2026-10-06 | 147 | 24 | 34 | 8 | 137 |
-| 2026-10-07 | 6 | 1 | 1 | 0 | 8 |
+| 2026-10-07 | 7 | 1 | 2 | 0 | 10 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
+- seguridad defensiva: **43**
 - robustez ante casos límite: **42**
-- seguridad defensiva: **42**
 - legibilidad y documentación: **41**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **22**
+- `quarantine.py`: **21**
 - `diskreport.py`: **20**
-- `quarantine.py`: **20**
 - `healthscore.py`: **20**
 - `browser.py`: **18**
 - `branding.py`: **17**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-07T00:43:09` **quarantine.py** (seguridad defensiva): Se introdujo una validación de inodo (st_ino) en `_atomic_isolate_file` contra el sistema de archivos antes de la transferencia, y se reforzó `_safe_unlink` con una validación de `st_nlink` para prevenir ataques de "hard-link bombing" que podrían engañar al recolector de basura o a las comprobaciones de integridad.
 - `2026-10-07T00:32:41` **healthscore.py** (seguridad defensiva): Se endureció la seguridad de `_evaluate_rules` mediante la validación del tipo y contenido de las recomendaciones generadas por las `message_factory` externas, previniendo inyecciones de caracteres de control o texto malicioso en el reporte final.
 - `2026-10-07T00:23:12` **browser.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_process_file_node` y `_sum_directory_recursive` mediante la validación explícita de `is_safe_to_modify` y `is_protected_path` sobre los nodos individuales durante el recorrido, garantizando que el escáner no procese archivos que hayan podido quedar fuera de los límites de seguridad en rutas complejas.
 - `2026-10-07T00:22:12` **assistant.py** (seguridad defensiva): Se reforzó la seguridad del motor remoto validando que la URL destino no solo comience con la raíz autorizada, sino que sea estrictamente absoluta y que el proceso de deserialización JSON posterior a la respuesta cumpla con el mismo esquema de seguridad estricta que la ingesta de datos, evitando que el motor remoto inyecte estructuras anidadas peligrosas en la respuesta.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T14:27:56` **memory.py** (rendimiento): Optimizé `top_memory_processes` reemplazando la creación de una función anónima dentro del bucle por una referencia a una función local definida fuera, evitando la redefinición constante del objeto función en cada iteración sobre la lista de PIDs.
 - `2026-10-06T14:18:37` **healthscore.py** (rendimiento): Optimicé el rendimiento del `compute_score` eliminando la recreación de funciones `lambda` en cada iteración y evitando el procesamiento redundante mediante el cacheo de las funciones `scorer` asociadas a las reglas del pipeline.
 - `2026-10-06T14:17:31` **diskreport.py** (rendimiento): Optimicé el rendimiento del escaneo en `walk_files` evitando la llamada redundante y costosa a `Path(entry.path).resolve()` dentro de `_is_excluded_path`, utilizando el atributo `entry.path` directamente para las validaciones de seguridad, reduciendo drásticamente las syscalls de resolución de rutas por cada archivo encontrado.
-- `2026-10-06T14:09:28` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` eliminando la creación innecesaria de listas mutables y mejorando la precisión del cálculo de pasos, además de reducir el gasto de memoria en el bucle principal al utilizar pre-calculado de segmentos.

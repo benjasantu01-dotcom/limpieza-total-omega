@@ -286,6 +286,9 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
     
     try:
         st = path.stat()
+        # Impedir el borrado si hay enlaces físicos inesperados (ataque potencial)
+        if st.st_nlink > 1:
+            return False
         if expected_inode != 0 and st.st_ino != expected_inode:
             return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid():
@@ -683,6 +686,8 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     """Ejecuta el aislamiento atómico del archivo en el sandbox."""
     if not source.exists():
         raise FileNotFoundError("Archivo origen no existe.")
+    
+    # Validar inodo actual contra el sistema antes de iniciar copia
     stat_orig = _check_io_error_context(source.stat)
     if stat_orig.st_size != original_size:
         raise RuntimeError("El archivo cambió durante la validación inicial (TOCTOU).")
@@ -709,6 +714,7 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if not is_safe_to_modify(destination.parent):
         raise UnsafePathError("El sandbox destino ha sido invalidado.")
 
+    # Registro de inodo para asegurar que no se reintroduzca el mismo archivo
     existing_items = load_manifest(destination.parent.parent)
     if any(i.file_inode == stat_orig.st_ino for i in existing_items):
         raise RuntimeError("Colisión de inodo: el archivo parece estar ya registrado.")
