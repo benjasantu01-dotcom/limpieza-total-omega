@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Mejoras aceptadas: **198** (39.3% de aceptación)
 - Rechazadas por tests: 30
 - Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-05 | 44 | 5 | 8 | 1 | 44 |
+| 2026-10-05 | 41 | 5 | 8 | 1 | 43 |
 | 2026-10-06 | 147 | 24 | 34 | 8 | 137 |
-| 2026-10-07 | 8 | 1 | 2 | 1 | 40 |
+| 2026-10-07 | 10 | 1 | 2 | 1 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **44**
 - robustez ante casos límite: **42**
-- manejo de errores y validación de entradas: **40**
-- legibilidad y documentación: **38**
+- manejo de errores y validación de entradas: **42**
+- legibilidad y documentación: **35**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **21**
-- `healthscore.py`: **20**
+- `memory.py`: **20**
 - `quarantine.py`: **20**
+- `healthscore.py`: **19**
 - `diskreport.py`: **18**
+- `branding.py`: **16**
 - `browser.py`: **16**
 - `organizer.py`: **15**
-- `branding.py`: **15**
+- `assistant.py`: **15**
 - `safety.py`: **15**
 - `scanner.py`: **14**
-- `assistant.py`: **14**
 - `settings.py`: **14**
-- `duplicates.py`: **12**
+- `duplicates.py`: **11**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-07T02:17:27` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `draw_ring` y `draw_gradient_bar` mediante validaciones de entrada más estrictas y manejo de excepciones específicas, asegurando que valores inválidos (como `None` en `percent` o `float('inf')`) no interrumpan el renderizado del Canvas, manteniendo la estabilidad de la interfaz.
+- `2026-10-07T02:16:29` **assistant.py** (manejo de errores y validación de entradas): Mejoré `_validate_ingestion_source` y `ingest` para incluir una validación estricta de tipos mediante `isinstance` antes de realizar operaciones de acceso, evitando excepciones no capturadas al recibir objetos inesperados en la ingesta.
 - `2026-10-07T00:53:20` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en `_is_file_secure_to_read` agregando una verificación explícita de `st_nlink` y `st_uid` para prevenir que se lea un archivo que no sea el esperado (como un enlace duro o un archivo propiedad de otro usuario), blindando la carga de configuración contra ataques de tipo TOCTOU o suplantación de ficheros.
 - `2026-10-07T00:43:09` **quarantine.py** (seguridad defensiva): Se introdujo una validación de inodo (st_ino) en `_atomic_isolate_file` contra el sistema de archivos antes de la transferencia, y se reforzó `_safe_unlink` con una validación de `st_nlink` para prevenir ataques de "hard-link bombing" que podrían engañar al recolector de basura o a las comprobaciones de integridad.
 - `2026-10-07T00:32:41` **healthscore.py** (seguridad defensiva): Se endureció la seguridad de `_evaluate_rules` mediante la validación del tipo y contenido de las recomendaciones generadas por las `message_factory` externas, previniendo inyecciones de caracteres de control o texto malicioso en el reporte final.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T14:49:49` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de sistema y colisiones de rutas mediante la implementación de una verificación de estado de escritura más estricta antes de intentar cualquier operación de disco.
 - `2026-10-06T14:48:40` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_extract_text_from_gemini_json` para manejar estructuras de datos malformadas o inesperadas mediante un chequeo de tipos exhaustivo en cada nivel de acceso, evitando excepciones de `AttributeError` o `KeyError` que podrían ocurrir si la respuesta de la API no sigue el esquema esperado.
 - `2026-10-06T14:29:35` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y `list_items` convirtiendo las listas de elementos a `dict` (indexado por `stored_name` o `item_id`) para evitar recorridos O(N^2) durante la validación de archivos, manteniendo la consistencia del manifiesto.
-- `2026-10-06T14:27:56` **memory.py** (rendimiento): Optimizé `top_memory_processes` reemplazando la creación de una función anónima dentro del bucle por una referencia a una función local definida fuera, evitando la redefinición constante del objeto función en cada iteración sobre la lista de PIDs.
-- `2026-10-06T14:18:37` **healthscore.py** (rendimiento): Optimicé el rendimiento del `compute_score` eliminando la recreación de funciones `lambda` en cada iteración y evitando el procesamiento redundante mediante el cacheo de las funciones `scorer` asociadas a las reglas del pipeline.

@@ -421,6 +421,7 @@ class SystemContext:
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad estructural sobre el objeto fuente antes de procesar."""
         if source is None: return False
+        # Se restringe la ingesta a diccionarios o instancias específicas (evitando tipos primitivos)
         if not isinstance(source, (dict, object)): return False
         try:
             return not _is_input_too_deep_or_complex(source)
@@ -493,6 +494,7 @@ def _get_source_value(source: Any, key: str) -> Any:
     try:
         if isinstance(source, dict):
             return source.get(key)
+        # Verificamos hasattr antes de getattr para objetos arbitrarios
         if hasattr(source, key):
             val = getattr(source, key)
             return None if callable(val) or isinstance(val, type) else val

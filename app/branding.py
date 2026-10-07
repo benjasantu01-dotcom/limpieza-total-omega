@@ -498,7 +498,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
     """Dibuja barra decorativa con gradiente segmentado para optimizar el número de elementos Canvas."""
     try:
-        if canvas is None or stops is None: return
+        if canvas is None or not stops: return
         w_val = max(1, min(4096, int(width)))
         h_val = max(1, min(1024, int(height)))
         cx, cy = float(canvas_x), float(canvas_y)
@@ -510,7 +510,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
             canvas.create_line(cx + segment.start_index, cy, 
                                cx + segment.end_index, cy, 
                                fill=segment.hex_color, width=h_val)
-    except (TypeError, ValueError, AttributeError): pass
+    except (TypeError, ValueError, AttributeError, ZeroDivisionError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, 
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, 
@@ -538,4 +538,4 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         if val > 0: 
             fill_color = fill or score_color(val)
             canvas.create_arc(*caja, start=90, extent=-(val / 100 * 359.9), style="arc", outline=fill_color, width=thick)
-    except (ValueError, TypeError, AttributeError, OverflowError, ZeroDivisionError): return
+    except (ValueError, TypeError, AttributeError, OverflowError, ZeroDivisionError): pass
