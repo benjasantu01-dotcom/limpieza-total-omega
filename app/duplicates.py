@@ -326,6 +326,15 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     return min(candidates, key=lambda x: x[0])[1] if candidates else None
 
 
+def _get_path_label(path: Path, keeper: Optional[Path]) -> str:
+    """Determina el estado descriptivo de una ruta para la interfaz de usuario."""
+    if not path.exists():
+        return "[desaparecido]"
+    if not _safe_path_check(path):
+        return "[inaccesible]"
+    return "[conservar]" if (keeper is not None and path == keeper) else "[duplicado]"
+
+
 def format_group(group: DuplicateGroup) -> List[str]:
     """Formatea la información de un grupo para visualización en UI."""
     if not isinstance(group, DuplicateGroup) or not group.paths:
@@ -336,12 +345,8 @@ def format_group(group: DuplicateGroup) -> List[str]:
     lines = [f"{group.count} copias de {mb_t} MB (recuperable: {mb_w} MB)"]
     
     for path in group.paths:
-        if not isinstance(path, Path) or not path.exists():
-            lines.append(f"   [desaparecido] {path}")
-        elif not _safe_path_check(path):
-            lines.append(f"   [inaccesible] {path}")
-        else:
-            is_keeper = (keeper is not None and path == keeper)
-            label = 'conservar' if is_keeper else 'duplicado'
-            lines.append(f"   [{label}] {path}")
+        if not isinstance(path, Path):
+            continue
+        label = _get_path_label(path, keeper)
+        lines.append(f"   {label} {path}")
     return lines

@@ -858,3 +858,14 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-07T02:57:41` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y el tipado de las funciones recursivas de escaneo para clarificar las asunciones sobre el manejo de rutas normalizadas y el tracking de estado, facilitando el mantenimiento y evitando errores de recursión lógica.
 - `2026-10-07T02:57:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T02:57:41` Corrida terminada. Total usado hoy: 72.
+- `2026-10-07T03:04:32` Arrancando corrida. Quedan hoy ~228 peticiones objetivo.
+- `2026-10-07T03:05:34` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-07T03:06:08` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en las funciones de acumulación, la clarificación de las responsabilidades en las clases `ExtStats` y `GlobalStats`, y la mejora de la documentación interna para explicar el flujo del procesamiento de archivos.
+- `2026-10-07T03:06:34` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejora de legibilidad y robustez técnica mediante la adición de docstrings estructurados, tipado explícito en estructuras complejas y la extracción de una lógica de validación de estado en `format_group` para clarificar la distinción entre archivos desaparecidos, inaccesibles y válidos.
+- `2026-10-07T03:07:01` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y docstrings explicativos para aclarar las responsabilidades de los tipos complejos y las funciones del pipeline, mejorando la mantenibilidad sin alterar la lógica de cálculo.
+- `2026-10-07T03:08:02` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-07T03:09:05` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-07T03:10:11` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-07T03:11:24` ✅ Mejora aceptada en main.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad y mantenibilidad del archivo `main.py` mediante la implementación de `docstrings` completos y consistentes en todos los métodos, siguiendo las normas de documentación técnica, y se han extraído bloques de lógica repetitivos a funciones auxiliares claras para reducir la duplicidad y mejorar la claridad del flujo de trabajo en la UI.
+- `2026-10-07T03:11:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T03:11:24` Corrida terminada. Total usado hoy: 76.

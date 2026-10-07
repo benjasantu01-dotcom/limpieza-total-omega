@@ -291,7 +291,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _safe_run_ui_callback(self, callback: AsyncCallback) -> None:
         """Helper: Ejecuta una función en el hilo principal de forma segura."""
         if self.winfo_exists():
-            # Envoltura adicional para robustez ante interrupción de ciclo de eventos
             def safe_wrapper():
                 try:
                     callback()
@@ -330,11 +329,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _validate_disk_access(self, path: Union[str, Path]) -> Path:
         """Helper: Valida integridad de ruta absoluta y permisos de seguridad."""
         p = Path(path).resolve()
-        # Control de caracteres de control y longitud mínima
         if any(ord(c) < 32 for c in str(p)) or len(str(p)) < 3:
             raise safety.UnsafePathError("Ruta contiene caracteres inválidos o es demasiado corta")
         
-        # Verificar existencia sin disparar excepciones de sistema bloqueantes
         if not p.exists():
             raise FileNotFoundError(f"Ruta inexistente: {p}")
             
@@ -1223,14 +1220,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         startup_items = self._get_cached("startup") or []
         quarantine_items = quarantine.list_items()
         
-        # Uso de caché con tiempo para evitar lecturas bloqueantes frecuentes
         ram_snapshot = self._get_cached("ram_snapshot")
         if not ram_snapshot:
             ram_snapshot = memory_mod.read_snapshot()
             self._cache["ram_snapshot"] = ram_snapshot
             self._cache_access_times["ram_snapshot"] = time.time()
             
-        # Refrescado forzado solo si no existe información
         disk_info = self._get_home_disk_info()
             
         metrics = healthscore.SystemMetrics(
@@ -1251,7 +1246,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Callback: Realiza análisis completo de salud (salud, ram, disco)."""
         self._lazy_init_health_ui()
 
-        # Generar llave de estado para evitar re-cálculos si los datos base no cambian
         state_digest = (
             len(self._get_cached("junk") or []),
             len(self._get_cached("suspicions") or []),
@@ -1868,7 +1862,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                                 "Empezá por la pestaña Salud."], "Informe")
                 return
             
-            # Validación de integridad: sanitizar datos de entrada
             sanitized_data = {k: [str(line).replace('\x00', '') for line in v] for k, v in self.report_data.items()}
             texto = reporting.build_report(sanitized_data)
             
@@ -1897,7 +1890,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def task() -> None:
             try:
-                # Sanitizar ruta y validar integridad
                 ruta_destino = Path(destino).resolve()
                 self._ensure_path_writable_and_clean(ruta_destino.parent)
                 
@@ -1960,7 +1952,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except (tk.TclError, Exception):
                 continue
         
-        # Extracción segura de valores numéricos de la interfaz
         try:
             if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists():
                 valores["duplicados_tamano_minimo_kb"] = self._get_numeric_setting_from_widget(self.min_dup_entry, "duplicados_tamano_minimo_kb", 64)
@@ -1984,7 +1975,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         try:
             propuestos = self._collect_settings()
             
-            # Validación defensiva de rutas en configuración
             for key in ["carpeta_excluida"]:
                 if key in propuestos and propuestos[key] and not self._is_safe_disk_operation(propuestos[key]):
                     self.log(f"Error: Ruta de configuración restringida: {propuestos[key]}", "Ajustes")
@@ -2003,7 +1993,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 try:
                     self.settings = settings_mod.update(propuestos)
                     ruta = settings_mod.settings_path()
-                    # Verificamos la ruta de settings antes de reportar el guardado
                     if ruta:
                         self._safe_run_ui_callback(lambda: self.log_lines(
                             [f"Ajustes guardados en: {ruta}", ""] + settings_mod.describe(),

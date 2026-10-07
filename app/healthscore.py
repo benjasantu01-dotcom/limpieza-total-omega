@@ -54,13 +54,14 @@ class Grade(Enum):
 
 class RecommendationRule(NamedTuple):
     """
-    Define una lógica de diagnóstico que genera mensajes de usuario.
+    Define una lógica de diagnóstico que genera mensajes de usuario cuando una métrica
+    cae por debajo de un umbral específico.
     
     Attributes:
         area: Identificador del componente (ej: 'disco').
-        threshold: Valor de ratio bajo el cual la regla se dispara.
-        message_factory: Función (SystemMetrics) -> str que genera un texto descriptivo.
-        check: Predicado (SystemMetrics, NormalizedRatio) -> bool que activa la regla.
+        threshold: Valor límite (0.0-1.0) debajo del cual se activa la alerta.
+        message_factory: Callable que recibe las métricas y devuelve un mensaje legible.
+        check: Predicado (SystemMetrics, NormalizedRatio) -> bool para decidir si alertar.
     """
     area: MetricKey
     threshold: float
@@ -68,7 +69,12 @@ class RecommendationRule(NamedTuple):
     check: Callable[[SystemMetrics, NormalizedRatio], bool]
 
 class PipelineEntry(NamedTuple):
-    """Configuración de una etapa de análisis en el pipeline principal."""
+    """
+    Configuración de una etapa de análisis en el pipeline.
+    
+    Contiene la metadata necesaria para ponderar el resultado final (weight) 
+    y ejecutar el cálculo y las reglas de diagnóstico asociadas.
+    """
     area: MetricKey
     weight: int
     scorer: Scorer
@@ -102,7 +108,11 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     return max_val if value > max_val else value
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
-    """Fábrica de normalizadores lineales."""
+    """
+    Fábrica de normalizadores lineales. 
+    Si inverse es True, valores mayores al límite reducen el ratio (ej: archivos temporales).
+    Si inverse es False, valores mayores al límite aumentan el ratio (ej: espacio libre).
+    """
     def scorer(val: float) -> NormalizedRatio:
         if not math.isfinite(val): return 0.0
         ratio = val / limit if limit != 0 else 0.0
@@ -188,7 +198,7 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
     return _STARTUP_SCORER(float(startup_count))
 
 def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) -> float:
-    """Helper interno para sanitizar métricas numéricas."""
+    """Helper interno para sanitizar métricas numéricas entrantes."""
     try:
         val = float(value)
         if not math.isfinite(val) or val < min_v or val > max_v:
@@ -262,7 +272,12 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             logging.error(f"Falla en evaluación de regla {rule.area}: {e}")
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Calcula el puntaje global mediante la ejecución del pipeline completo."""
+    """
+    Calcula el puntaje global mediante la ejecución del pipeline:
+    1. Normaliza los datos crudos.
+    2. Ejecuta reglas de recomendación.
+    3. Pondera los resultados.
+    """
     if not isinstance(metrics, SystemMetrics):
         metrics = SystemMetrics()
     

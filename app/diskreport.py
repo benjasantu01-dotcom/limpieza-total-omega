@@ -60,20 +60,20 @@ class ExtStats:
         self.count: int = 0
 
     def add(self, size: int) -> None:
-        """Actualiza las métricas con el tamaño de un nuevo archivo."""
+        """Incrementa el contador total de bytes y de archivos para la extensión."""
         self.total_bytes += size
         self.count += 1
 
 
 class GlobalStats:
-    """Acumulador central para métricas durante el escaneo."""
+    """Acumulador central que orquesta las métricas durante el escaneo."""
     def __init__(self) -> None:
         self.total_bytes: int = 0
         self.total_files: int = 0
         self.ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
 
     def register_file(self, size: int, path: Path) -> None:
-        """Registra un archivo en los contadores globales y por extensión."""
+        """Registra un archivo, actualizando los totales globales y por tipo."""
         self.total_bytes += size
         self.total_files += 1
         ext = path.suffix.lower() or "(sin extensión)"
@@ -127,7 +127,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 
 def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
-    """Evalúa si un `os.DirEntry` debe ser omitido por criterios de seguridad."""
+    """Evalúa si un `os.DirEntry` debe ser omitido por criterios de seguridad o reparse points."""
     try:
         name = entry.name
         if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
@@ -333,7 +333,7 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """Recorre el sistema de archivos y consolida métricas globales usando heaps y acumuladores."""
+    """Realiza un recorrido del sistema de archivos, consolidando métricas y manteniendo los N archivos más grandes en un heap."""
     stats = GlobalStats()
     top_heap: List[Tuple[int, Path]] = [] 
     
