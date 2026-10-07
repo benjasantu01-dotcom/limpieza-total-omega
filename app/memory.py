@@ -108,15 +108,18 @@ class MemorySnapshot:
 
     @property
     def used(self) -> BytesValue:
+        """Calcula el uso físico de memoria basado en el total y disponible."""
         return BytesValue(max(0, self.total - self.available))
 
     @property
     def used_percent(self) -> float:
+        """Retorna el porcentaje de memoria en uso como valor flotante."""
         if self.total <= 0: return 0.0
         return round((float(self.used) / float(self.total)) * 100, 1)
 
     @property
     def available_percent(self) -> float:
+        """Retorna el porcentaje de memoria libre como valor flotante."""
         if self.total <= 0: return 0.0
         return round((float(self.available) / float(self.total)) * 100, 1)
 
@@ -130,13 +133,17 @@ class ProcessMemory:
 
     @property
     def working_set_mb(self) -> MegabytesValue:
+        """Retorna el valor de working set convertido a Megabytes."""
         return MegabytesValue(round(self.working_set / BYTES_IN_MB, 1))
 
     def __lt__(self, other: ProcessMemory) -> bool:
         return self.working_set < other.working_set
 
 def format_bytes(num: Optional[int | float]) -> str:
-    """Convierte un valor numérico de bytes a una cadena legible con unidad."""
+    """
+    Convierte un valor numérico de bytes a una cadena legible con unidad.
+    Maneja escalas desde Bytes hasta Terabytes de forma dinámica.
+    """
     if not isinstance(num, (int, float)) or num <= 0:
         return "0 B"
     idx: int = min(int(math.log(num, 1024)), len(BYTE_UNITS) - 1)
@@ -150,7 +157,10 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
     return mem_status
 
 def _safe_int_conversion(value: Optional[str], multiplier: int = 1) -> BytesValue:
-    """Limpia cadenas para extraer enteros y escalar el resultado."""
+    """
+    Limpia cadenas provenientes de parsers para extraer enteros.
+    Aplica multiplicador (ej. KB a Bytes) para normalizar unidades.
+    """
     if not isinstance(value, str): return BytesValue(0)
     clean_val = "".join(filter(str.isdigit, value))
     return BytesValue(int(clean_val) * multiplier) if clean_val else BytesValue(0)
@@ -162,7 +172,10 @@ _linux_available: bool = True
 
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
-    """Parsea el contenido de /proc/meminfo mediante procesamiento lineal."""
+    """
+    Parsea el contenido de /proc/meminfo mediante procesamiento lineal.
+    Implementación pura: procesa el texto línea por línea para evitar dependencias.
+    """
     if not meminfo_text: return _EMPTY_SNAPSHOT
     metrics: Dict[str, BytesValue] = {}
     for line in meminfo_text.splitlines():
@@ -183,7 +196,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     return MemorySnapshot(total=total, available=available, cached=cached)
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
-    """Extracts data from a CSV line (Format: Name,PID,WorkingSet)."""
+    """Extrae y valida datos de un proceso desde una línea CSV."""
     if not line or "," not in line: return None
     parts = [p.strip().strip("'\"") for p in line.split(",")]
     if len(parts) < 3: return None
@@ -210,7 +223,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     return sorted(processes, key=lambda p: p.working_set, reverse=True)[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Invoca la API Win32 GlobalMemoryStatusEx para el snapshot global."""
+    """Invoca la API Win32 GlobalMemoryStatusEx para obtener el estado físico."""
     kernel32 = ctypes.windll.kernel32
     if not hasattr(kernel32, "GlobalMemoryStatusEx"): return _EMPTY_SNAPSHOT
     mem_status = _create_mem_status_ex()
@@ -227,7 +240,10 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
 @lru_cache(maxsize=1)
 def _get_cached_snapshot(timestamp_bucket: int) -> MemorySnapshot:
-    """Memoiza el estado del sistema con TTL de bucket temporal."""
+    """
+    Memoiza el estado del sistema con TTL de bucket temporal.
+    Evita saturar la llamada a APIs de sistema en periodos cortos.
+    """
     if _is_windows: return _read_windows_snapshot()
     global _linux_available
     if _linux_available:
@@ -297,7 +313,7 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
     return "warning" if avail >= 10 else "danger"
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
-    """Genera un reporte legible por humanos basado en el snapshot de memoria."""
+    """Genera un reporte legible por humanos sobre el estado de la memoria."""
     if snapshot.total <= 0: return ["No se pudo leer el estado de la memoria."]
     diagnostics = {
         "ok": "Estado: holgado. La memoria ocupada por caché mejora la velocidad.",
@@ -369,7 +385,7 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Ejecuta el trim del working set para el PID indicado si es seguro hacerlo.
-    Advertencia: esta operación forza la expulsión de páginas de memoria a disco.
+    Advertencia: esta operación fuerza la expulsión de páginas de memoria a disco.
     """
     if not _is_windows: return False, "Solo soportado en Windows."
     
