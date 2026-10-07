@@ -894,3 +894,4 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-07T14:56:15` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-10-07T14:56:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T14:56:15` Corrida terminada. Total usado hoy: 350.
+- `2026-10-07T15:02:22` Presupuesto diario agotado (350 usados). Corte hasta mañana.
