@@ -1247,11 +1247,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Callback: Realiza análisis completo de salud (salud, ram, disco)."""
         self._lazy_init_health_ui()
 
+        # Generar firma de estado para evitar re-procesamiento innecesario
         state_digest = (
             len(self._get_cached("junk") or []),
             len(self._get_cached("suspicions") or []),
             len(self._get_cached("startup") or []),
-            len(quarantine.list_items())
+            len(quarantine.list_items()),
+            len(self._get_cached("dups") or [])
         )
 
         def task() -> None:
@@ -1264,7 +1266,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             metrics, snapshot, _ = self._compile_metrics()
             score_result = healthscore.compute_score(metrics)
 
-            if not hasattr(self, '_last_compilation_digest') or self._last_compilation_digest != state_digest:
+            if self._last_compilation_digest != state_digest:
                 self.assistant_context = assistant.build_context(
                     metrics=metrics, 
                     health=score_result,

@@ -94,10 +94,12 @@ class GlobalStats:
         self.ext_stats[ext].add(size)
 
 
-class FolderMetrics(NamedTuple):
-    """Acumulador inmutable para métricas de subcarpetas durante la agregación."""
-    size: int
-    file_count: int
+class FolderMetrics:
+    """Contenedor mutable para métricas de subcarpetas durante la agregación."""
+    __slots__ = ('size', 'file_count')
+    def __init__(self) -> None:
+        self.size = 0
+        self.file_count = 0
 
 
 class SummaryData(NamedTuple):
@@ -319,7 +321,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     """Calcula el peso total de las subcarpetas de primer nivel respecto a la raíz."""
     root = _validate_root(directory)
     if not root: return []
-    stats: Dict[Path, FolderMetrics] = defaultdict(lambda: FolderMetrics(0, 0))
+    stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
     
     for path, size in walk_files(root, skip_protected):
         try:
@@ -327,7 +329,8 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             if not rel.parts: continue
             top_folder = root / rel.parts[0]
             curr = stats[top_folder]
-            stats[top_folder] = FolderMetrics(curr.size + size, curr.file_count + 1)
+            curr.size += size
+            curr.file_count += 1
         except (ValueError, IndexError, RuntimeError):
             continue
 

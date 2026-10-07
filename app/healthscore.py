@@ -217,6 +217,12 @@ class SystemMetrics:
     startup_count: int = 0
     quarantined_count: int = 0
 
+    _CHECK_FIELDS: Final[Tuple[str, ...]] = (
+        "junk_mb", "suspicious_count", "suspicious_warnings", 
+        "memory_available_percent", "disk_free_percent", 
+        "duplicate_mb", "startup_count", "quarantined_count"
+    )
+
     def __post_init__(self) -> None:
         self.validate()
 
@@ -234,11 +240,7 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verifica que ninguna métrica numérica sea infinita o no-numérica."""
-        return all(math.isfinite(getattr(self, f)) for f in (
-            "junk_mb", "suspicious_count", "suspicious_warnings", 
-            "memory_available_percent", "disk_free_percent", 
-            "duplicate_mb", "startup_count", "quarantined_count"
-        ))
+        return all(math.isfinite(getattr(self, f)) for f in self._CHECK_FIELDS)
 
 @dataclass
 class HealthResult:
