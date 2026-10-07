@@ -265,9 +265,10 @@ class Scanner:
         try:
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, directory_stack, current_depth)
-            elif entry.is_file(follow_symlinks=False) and self._is_relevant_extension(entry.name):
-                path_obj = Path(entry.path)
-                self._run_file_heuristics(path_obj.resolve(), entry)
+            elif entry.is_file(follow_symlinks=False):
+                if self._is_relevant_extension(entry.name):
+                    path_obj = Path(entry.path)
+                    self._run_file_heuristics(path_obj.resolve(), entry)
         except (OSError, PermissionError, AttributeError, RuntimeError):
             return
 

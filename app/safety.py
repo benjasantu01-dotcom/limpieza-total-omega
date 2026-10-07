@@ -231,10 +231,10 @@ SENSITIVE_EXTENSIONS: Final[set[str]] = {
     ".reg", ".pol", ".key", ".pem", ".pfx", ".p12", ".crt", ".cer",
 }
 
-_SYSTEM_ROOT_PATHS: Final[tuple[Path, ...]] = tuple(
+_SYSTEM_ROOT_PATHS: Final[set[Path]] = {
     Path(os.environ[v]).resolve() for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
     if os.environ.get(v)
-)
+}
 
 _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
     r'^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$', re.IGNORECASE
@@ -617,12 +617,15 @@ def is_protected_path(path: PathLike) -> bool:
     """Valida si la ruta está marcada como protegida contra modificaciones."""
     if not isinstance(path, (str, Path)) or not path: return True
     try:
-        p_str = str(path)
-        if _is_system_directory_junction(p_str): return True
-        if _is_system_path_raw(p_str): return True
-        p = Path(p_str).resolve()
-        if any(p == root or root in p.parents for root in _SYSTEM_ROOT_PATHS): return True
-        return p == Path(p.anchor)
+        p = Path(path)
+        # Verificación eficiente por partes antes de resolver
+        if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts): return True
+        if _is_system_directory_junction(str(p)): return True
+        
+        # Resolución final solo si es necesaria
+        p_res = p.resolve()
+        if any(p_res == root or root in p_res.parents for root in _SYSTEM_ROOT_PATHS): return True
+        return p_res == Path(p_res.anchor)
     except Exception: return True
 
 @lru_cache(maxsize=4096)

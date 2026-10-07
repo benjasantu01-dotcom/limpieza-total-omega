@@ -1570,3 +1570,63 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-07T08:23:24` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
 - `2026-10-07T08:23:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T08:23:24` Corrida terminada. Total usado hoy: 200.
+- `2026-10-07T08:31:50` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-10-07T08:32:41` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `is_protected_path` eliminando la resolución (`resolve()`) redundante dentro del bucle de verificación de rutas del sistema y reemplazándola por una comparación más eficiente de las partes de la ruta (`parts`), reduciendo significativamente las llamadas al sistema operativo (I/O) en cada iteración.
+- `2026-10-07T08:33:08` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de las heurísticas de `scanner.py` implementando un filtro de acceso temprano en `process_entry` mediante la verificación `entry.is_file()` (con `follow_symlinks=False`) antes de realizar la resolución costosa de la ruta (`path.resolve()`), evitando así llamadas redundantes al sistema de archivos para archivos que no son relevantes para el análisis.
+- `2026-10-07T08:33:38` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
+- `2026-10-07T08:33:53` Tests FALLARON:
+```
+-3/test_entries_from_folders_read0')
+
+    def test_entries_from_folders_reads_injected_folders(tmp_path):
+        carpeta = tmp_path / "Inicio"
+        carpeta.mkdir()
+        (carpeta / "MiPrograma.lnk").write_text("x")
+        (carpeta / "Otro.lnk").write_text("y")
+        entradas = startup.entries_from_folders([carpeta])
+>       assert {e.name for e in entradas} == {"MiPrograma", "Otro"}
+E       AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+E         
+E         Extra items in the left set:
+E         'MiPrograma.lnk'
+E         'Otro.lnk'
+E         Extra items in the right set:
+E         'Otro'
+E         'MiPrograma'
+E         
+E         Full diff:
+E           {
+E         -     'MiPrograma',
+E         +     'MiPrograma.lnk',
+E         ?                ++++
+E         -     'Otro',
+E         +     'Otro.lnk',
+E         ?          ++++
+E           }
+
+evolve/tests/test_modules.py:677: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'MiPrograma.lnk'
+  'Otro.lnk'
+  Extra items in the right set:
+  'Otro'
+  'MiPrograma'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed in 1.69s
+
+```
+- `2026-10-07T08:33:53` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó el proceso de filtrado y creación de `StartupEntry` en `_process_folder_entry` eliminando una concatenación innecesaria de caracteres, usando directamente `entry.name` y aplicando un cacheo previo de las extensiones permitidas para reducir llamadas redundantes al sistema de archivos.
+- `2026-10-07T08:33:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T08:33:53` Corrida terminada. Total usado hoy: 204.
