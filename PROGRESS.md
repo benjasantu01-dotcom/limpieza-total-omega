@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Mejoras aceptadas: **209** (41.5% de aceptación)
 - Rechazadas por tests: 30
 - Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-05 | 57 | 6 | 10 | 3 | 70 |
+| 2026-10-05 | 57 | 6 | 10 | 3 | 66 |
 | 2026-10-06 | 147 | 24 | 34 | 8 | 137 |
-| 2026-10-07 | 3 | 0 | 1 | 0 | 4 |
+| 2026-10-07 | 5 | 0 | 1 | 0 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - robustez ante casos límite: **42**
 - legibilidad y documentación: **41**
-- seguridad defensiva: **39**
+- seguridad defensiva: **41**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
@@ -34,18 +34,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **20**
 - `quarantine.py`: **20**
 - `healthscore.py`: **19**
+- `browser.py`: **18**
 - `branding.py`: **17**
-- `browser.py`: **17**
 - `organizer.py`: **16**
 - `safety.py`: **16**
+- `assistant.py`: **15**
 - `scanner.py`: **15**
-- `assistant.py`: **14**
 - `duplicates.py`: **13**
 - `settings.py`: **13**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-07T00:23:12` **browser.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_process_file_node` y `_sum_directory_recursive` mediante la validación explícita de `is_safe_to_modify` y `is_protected_path` sobre los nodos individuales durante el recorrido, garantizando que el escáner no procese archivos que hayan podido quedar fuera de los límites de seguridad en rutas complejas.
+- `2026-10-07T00:22:12` **assistant.py** (seguridad defensiva): Se reforzó la seguridad del motor remoto validando que la URL destino no solo comience con la raíz autorizada, sino que sea estrictamente absoluta y que el proceso de deserialización JSON posterior a la respuesta cumpla con el mismo esquema de seguridad estricta que la ingesta de datos, evitando que el motor remoto inyecte estructuras anidadas peligrosas en la respuesta.
 - `2026-10-07T00:12:57` **settings.py** (robustez ante casos límite): Se mejora la robustez de `settings.py` ante fallos de I/O al implementar un manejo explícito de errores en `_is_file_secure_to_read` para prevenir el uso de descriptores de archivo cerrados o inválidos, y se añade una verificación de existencia de directorio en `settings_path` para evitar errores durante la inicialización en entornos con permisos restringidos.
 - `2026-10-07T00:11:51` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas corruptas o mal formadas mediante la adición de una verificación explícita de `is_absolute()` y `exists()` en la función `_get_security_descriptor` y `_get_file_attrs`, previniendo llamadas a la API de Windows con rutas no resueltas que podrían causar errores de segmentación o comportamiento indefinido en el bucle de validación.
 - `2026-10-07T00:06:38` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la manipulación de archivos mediante la implementación de `os.fsync` en el directorio destino tras operaciones de borrado (`_safe_unlink`) y en la creación de archivos, asegurando la persistencia de los cambios en sistemas de archivos con journaling, evitando inconsistencias ante cortes de energía o bloqueos del SO.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T14:17:31` **diskreport.py** (rendimiento): Optimicé el rendimiento del escaneo en `walk_files` evitando la llamada redundante y costosa a `Path(entry.path).resolve()` dentro de `_is_excluded_path`, utilizando el atributo `entry.path` directamente para las validaciones de seguridad, reduciendo drásticamente las syscalls de resolución de rutas por cada archivo encontrado.
 - `2026-10-06T14:09:28` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` eliminando la creación innecesaria de listas mutables y mejorando la precisión del cálculo de pasos, además de reducir el gasto de memoria en el bucle principal al utilizar pre-calculado de segmentos.
 - `2026-10-06T14:08:20` **assistant.py** (rendimiento): Optimicé el buscador de manejadores en `local_answer` eliminando una redundancia lógica (se ejecutaba `findall` dos veces sobre el mismo resultado) y reemplazando la lógica de búsqueda por un acceso directo al diccionario `_TOKENS_MAP` usando el primer token encontrado, reduciendo ciclos innecesarios.
-- `2026-10-06T13:58:44` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `_Validators` para clarificar la lógica de validación, añadiendo docstrings descriptivos que explican el "porqué" de las restricciones de seguridad en las rutas, facilitando el mantenimiento y la auditoría.
-- `2026-10-06T13:58:24` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `scanner.py` mediante la adición de docstrings detallados en los métodos de heurística y la estandarización de las anotaciones de tipo, facilitando el mantenimiento y la comprensión de las reglas de seguridad.

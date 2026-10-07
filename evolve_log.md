@@ -524,3 +524,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-10-07T00:12:57` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se mejora la robustez de `settings.py` ante fallos de I/O al implementar un manejo explícito de errores en `_is_file_secure_to_read` para prevenir el uso de descriptores de archivo cerrados o inválidos, y se añade una verificación de existencia de directorio en `settings_path` para evitar errores durante la inicialización en entornos con permisos restringidos.
 - `2026-10-07T00:12:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T00:12:57` Corrida terminada. Total usado hoy: 8.
+- `2026-10-07T00:20:50` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-10-07T00:21:20` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-10-07T00:22:12` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad del motor remoto validando que la URL destino no solo comience con la raíz autorizada, sino que sea estrictamente absoluta y que el proceso de deserialización JSON posterior a la respuesta cumpla con el mismo esquema de seguridad estricta que la ingesta de datos, evitando que el motor remoto inyecte estructuras anidadas peligrosas en la respuesta.
+- `2026-10-07T00:22:51` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-10-07T00:23:12` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_process_file_node` y `_sum_directory_recursive` mediante la validación explícita de `is_safe_to_modify` y `is_protected_path` sobre los nodos individuales durante el recorrido, garantizando que el escáner no procese archivos que hayan podido quedar fuera de los límites de seguridad en rutas complejas.
+- `2026-10-07T00:23:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T00:23:12` Corrida terminada. Total usado hoy: 12.

@@ -187,7 +187,7 @@ def _should_skip_entry(
         return True
     
     path_p = Path(entry.path)
-    if is_protected_path(path_p):
+    if is_protected_path(path_p) or not is_safe_to_modify(path_p):
         return True
     if entry.is_symlink() or is_junction_fn(entry.path) or _is_system_hidden(entry.path, kernel32):
         return True
@@ -222,9 +222,10 @@ def _process_file_node(entry: os.DirEntry, root_abs_norm: str, visited_inodes: S
     try:
         p_file = Path(entry.path)
         if not p_file.exists(): return 0
+        if not is_safe_to_modify(p_file) or is_protected_path(p_file): return 0
         st = entry.stat(follow_symlinks=False)
         if st.st_ino not in visited_inodes:
-            if is_safe_to_modify(p_file) and not _is_file_in_use(p_file, root_abs_norm):
+            if not _is_file_in_use(p_file, root_abs_norm):
                 visited_inodes.add(st.st_ino)
                 return st.st_size
     except (OSError, PermissionError):
@@ -244,7 +245,8 @@ def _sum_directory_recursive(
         return ScanResult(0, True)
     
     try:
-        if not root_path.exists() or not is_safe_to_modify(root_path): return ScanResult(0, True)
+        if not root_path.exists() or not is_safe_to_modify(root_path) or is_protected_path(root_path): 
+            return ScanResult(0, True)
         path_norm = os.path.normcase(str(root_path.resolve()))
     except (OSError, RuntimeError):
         return ScanResult(0, False)
@@ -261,7 +263,7 @@ def _sum_directory_recursive(
                 
                 if entry.is_dir(follow_symlinks=False):
                     child_path = Path(entry.path)
-                    if not child_path.exists() or not is_safe_to_modify(child_path) or is_protected_path(child_path) or not _ensure_within_base(entry.path, root_abs_norm):
+                    if not child_path.exists() or not _ensure_within_base(entry.path, root_abs_norm):
                         continue
                     res = _sum_directory_recursive(child_path, root_abs_norm, kernel32, visited_inodes, visited_dirs, depth + 1)
                     total_bytes += res.bytes_found
