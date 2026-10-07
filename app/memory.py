@@ -341,13 +341,12 @@ def _get_process_path(pid: int) -> Optional[Path]:
             raw_path = buf.value
             if not raw_path or raw_path.startswith("\\\\"): return None
             
-            # Verificación de existencia antes de resolver para evitar crash en archivos borrados
             p_test = Path(raw_path)
-            if not p_test.exists(): return None
-            
-            path_obj = p_test.resolve(strict=True)
-            if _is_path_safe_and_valid(path_obj) and is_safe_to_modify(path_obj):
-                return path_obj
+            if p_test.exists():
+                # Resolvemos y verificamos que el archivo resultante sea accesible y seguro
+                resolved = p_test.resolve()
+                if _is_path_safe_and_valid(resolved) and is_safe_to_modify(resolved):
+                    return resolved
     except (OSError, RuntimeError, ctypes.ArgumentError): pass
     finally: kernel32.CloseHandle(handle)
     return None

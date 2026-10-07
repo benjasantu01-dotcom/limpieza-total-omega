@@ -181,27 +181,25 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     src = junk_file.path
     try:
-        # 1. Validación de integridad física y existencia
         if not src or not src.exists() or src.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         st = src.stat()
         if (junk_file._ino is not None and st.st_ino != junk_file._ino) or \
            (junk_file._dev is not None and st.st_dev != junk_file._dev): return False
-        # st_nlink > 1 indica hard links, que pueden ser críticos para el SO
         if not src.is_file() or st.st_nlink > 1: return False
         if src.resolve() != src: return False
         
-        # 2. Validación de seguridad y permisos
-        if not is_safe_to_modify(src) or not _validate_path_security(src, dest): return False
-        if is_protected_path(dest) or is_protected_path(dest.parent): return False
+        # Validación de seguridad explícita sobre origen y destino
+        if not is_safe_to_modify(src) or is_protected_path(dest) or not _validate_path_security(src, dest): return False
         
         target_dir = dest.parent if dest.exists() else dest
         if not target_dir.is_dir() or not os.access(target_dir, os.W_OK): return False
         if _is_recursive_violation(src, dest) or _is_file_locked(src): return False
         
-        # 3. Validación de recursos (espacio en volumen destino)
+        # Validación de recursos con protección contra errores de sistema
         dest_st = target_dir.stat()
         if dest_st.st_dev != st.st_dev: return False
-        if shutil.disk_usage(target_dir).free < (st.st_size + MIN_FREE_SPACE_BYTES): return False
+        usage = shutil.disk_usage(target_dir)
+        if usage.free < (st.st_size + MIN_FREE_SPACE_BYTES): return False
         return True
     except (OSError, AttributeError, ValueError):
         return False

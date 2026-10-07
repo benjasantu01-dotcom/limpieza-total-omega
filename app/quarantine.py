@@ -780,6 +780,11 @@ def _validate_source_for_quarantine(source: Path) -> Path:
         raise FileNotFoundError("Archivo origen inexistente.")
     if not _is_file_exclusive(source):
         raise IOError("Archivo origen bloqueado por el sistema.")
+    
+    # NUEVA VALIDACIÓN: Asegurar que la fuente no es sistema/crítica
+    if is_protected_path(source):
+        raise UnsafePathError("La ruta origen está en una zona protegida.")
+    
     return source
 
 def _cleanup_orphaned_destination(destination: Path) -> None:
