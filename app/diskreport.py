@@ -148,8 +148,14 @@ def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
         name = entry.name
         if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
             return True
-        if not entry.path.startswith(root_path_str):
+        
+        # Validar que la ruta real está contenida dentro del root
+        try:
+            if os.path.commonpath([os.path.abspath(entry.path), root_path_str]) != root_path_str:
+                return True
+        except (ValueError, OSError):
             return True
+
         try:
             st = entry.stat(follow_symlinks=False)
             is_reparse = (st.st_file_attributes & 0x0400) if os.name == 'nt' else entry.is_symlink()

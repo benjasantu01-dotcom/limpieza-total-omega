@@ -178,30 +178,29 @@ def _is_system_hidden(entry_path: Optional[str], kernel32: Optional[ctypes.WinDL
 def _should_skip_entry(
     entry: os.DirEntry, 
     kernel32: Optional[ctypes.WinDLL], 
-    is_junction_fn: JunctionChecker
+    is_junction_fn: JunctionChecker,
+    base_norm: str
 ) -> bool:
-    """
-    Determina si una entrada de directorio es insegura para el escaneo.
-    """
+    """Determina si una entrada de directorio es insegura para el escaneo."""
     if entry.name is None or _is_excluded_file(entry.name) or is_protected_path(Path(entry.path)):
         return True
     if _is_unc_path(entry.path) or len(entry.path) >= MAX_PATH_LEN:
         return True
     
-    # Reducción de llamadas a is_safe_to_modify: se confía en la validación inicial del root
+    # Defensa contra escapes de directorio mediante enlaces fuera de la base
+    if not _ensure_within_base(entry.path, base_norm):
+        return True
+
     if entry.is_symlink() or is_junction_fn(entry.path) or _is_system_hidden(entry.path, kernel32):
         return True
     return False
 
 @safe_path_operation(True)
 def _is_file_in_use(path_obj: Any, base_norm: str) -> bool:
-    """
-    Verifica si un archivo está bloqueado por el sistema operativo.
-    """
+    """Verifica si un archivo está bloqueado por el sistema operativo."""
     if not isinstance(path_obj, Path) or not path_obj.is_file():
         return True
     
-    # Validamos path_obj ya normalizado
     if not _ensure_within_base(str(path_obj), base_norm) or not os.access(path_obj, os.R_OK):
         return True
     
@@ -218,10 +217,10 @@ def _is_file_in_use(path_obj: Any, base_norm: str) -> bool:
     return False
 
 def _process_file_node(entry: os.DirEntry, root_abs_norm: str, visited_inodes: Set[int]) -> int:
-    """
-    Calcula el tamaño de un archivo individual tras validar integridad.
-    """
+    """Calcula el tamaño de un archivo individual tras validar integridad."""
     if not entry or not entry.is_file(): return 0
+    # Validación extra: impedir que el entry procesado haya escapado del root
+    if not _ensure_within_base(entry.path, root_abs_norm): return 0
     try:
         st = entry.stat(follow_symlinks=False)
         if st.st_ino not in visited_inodes:
@@ -240,9 +239,7 @@ def _sum_directory_recursive(
     visited_dirs: VisitedDirs,
     depth: int = 0
 ) -> ScanResult:
-    """
-    Recorre jerárquicamente un directorio de caché optimizado.
-    """
+    """Recorre jerárquicamente un directorio de caché optimizado."""
     if depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)
     
@@ -254,7 +251,7 @@ def _sum_directory_recursive(
     try:
         with os.scandir(root_path) as it:
             for entry in it:
-                if _should_skip_entry(entry, kernel32, _IS_JUNCTION_FN):
+                if _should_skip_entry(entry, kernel32, _IS_JUNCTION_FN, root_abs_norm):
                     continue
                 
                 if entry.is_dir(follow_symlinks=False):
