@@ -327,7 +327,7 @@ def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
     
     if isinstance(val, dict):
         if len(val) > _MAX_COLLECTION_SIZE: return True
-        return any(_is_input_too_deep_or_complex(k, depth + 1) or _is_input_too_deep_or_complex(v, depth + 1) for k, v in val.items())
+        return any(not isinstance(k, str) or _is_input_too_deep_or_complex(k, depth + 1) or _is_input_too_deep_or_complex(v, depth + 1) for k, v in val.items())
     
     return False
 

@@ -406,15 +406,17 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         # Validación de seguridad estricta usando ensure_safe_to_modify
         ensure_safe_to_modify(path)
             
-        if path.exists() and (path.is_dir() or path.is_symlink()):
+        # Bloquear si la ruta existe y es un directorio
+        if path.is_dir():
             return None
         
+        # Crear directorios padres de forma segura antes de escribir
         if not path.parent.exists():
             path.parent.mkdir(parents=True, exist_ok=True)
             
         validated_size = max(16, min(1024, int(size)))
         path.write_text(logo_svg(validated_size), encoding="utf-8")
-        return path if path.exists() and path.is_file() else None
+        return path if path.is_file() else None
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError, AttributeError):
         return None
 

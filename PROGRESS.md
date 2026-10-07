@@ -9,42 +9,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **206** (40.9% de aceptación)
 - Rechazadas por tests: 29
 - Rechazadas por guardia de seguridad: 43
-- Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 215
+- Sin cambios (nada sustancial que mejorar): 10
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-06 | 123 | 19 | 27 | 7 | 124 |
-| 2026-10-07 | 83 | 10 | 16 | 4 | 91 |
+| 2026-10-06 | 120 | 19 | 27 | 6 | 124 |
+| 2026-10-07 | 86 | 10 | 16 | 4 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **48**
 - legibilidad y documentación: **44**
-- seguridad defensiva: **40**
 - rendimiento: **39**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **38**
+- seguridad defensiva: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
-- `memory.py`: **20**
+- `quarantine.py`: **21**
 - `healthscore.py`: **20**
 - `browser.py`: **19**
+- `diskreport.py`: **19**
+- `memory.py`: **19**
 - `safety.py`: **18**
-- `diskreport.py`: **18**
-- `assistant.py`: **16**
-- `organizer.py`: **14**
+- `assistant.py`: **17**
 - `scanner.py`: **14**
+- `organizer.py`: **13**
 - `settings.py`: **13**
-- `branding.py`: **12**
+- `branding.py`: **13**
 - `duplicates.py`: **11**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-07T08:44:16` **diskreport.py** (robustez ante casos límite): Se ha mejorado `_collect_summary_data` para manejar explícitamente posibles excepciones durante la iteración y se introdujo un chequeo de integridad en `_is_excluded_path` para prevenir fallos al acceder a atributos de `DirEntry` en sistemas con permisos restrictivos, garantizando la robustez ante estados del disco inconsistentes.
+- `2026-10-07T08:43:25` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` añadiendo una validación explícita para evitar intentos de escritura en rutas que resultan ser directorios existentes, además de asegurar que la creación de subdirectorios sea atómica y segura mediante la delegación al sistema de archivos tras las validaciones de `safety`.
+- `2026-10-07T08:42:49` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para manejar correctamente objetos de tipo `dict` donde las claves no sean strings, previniendo errores de ejecución inesperados al procesar configuraciones o contextos mal formados.
 - `2026-10-07T08:33:08` **scanner.py** (rendimiento): Optimicé el rendimiento de las heurísticas de `scanner.py` implementando un filtro de acceso temprano en `process_entry` mediante la verificación `entry.is_file()` (con `follow_symlinks=False`) antes de realizar la resolución costosa de la ruta (`path.resolve()`), evitando así llamadas redundantes al sistema de archivos para archivos que no son relevantes para el análisis.
 - `2026-10-07T08:32:41` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` eliminando la resolución (`resolve()`) redundante dentro del bucle de verificación de rutas del sistema y reemplazándola por una comparación más eficiente de las partes de la ruta (`parts`), reduciendo significativamente las llamadas al sistema operativo (I/O) en cada iteración.
 - `2026-10-07T08:23:19` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto mediante una caché basada en `st_mtime` del archivo y mejoré la eficiencia del bucle de `purge_all` al utilizar un mapeo (dict) para evitar búsquedas lineales `O(N)` en cada iteración, garantizando rendimiento incluso con gran cantidad de archivos aislados.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-07T08:01:53` **assistant.py** (rendimiento): Optimicé el método `context_as_text` para evitar la serialización completa de un diccionario y posterior reconstrucción, utilizando `islice` sobre `_CONTEXT_SCHEMA` para iterar y formatear directamente sobre los datos del objeto, reduciendo la carga de procesamiento y uso de memoria en cada consulta.
 - `2026-10-07T07:52:12` **safety.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en las funciones críticas de validación (`ensure_safe_to_modify`, `_evaluate_security_rules` y `_check_file_integrity`) y se extrajeron las constantes de error de Win32 (`ERROR_SHARING_VIOLATION = 32`, etc.) a nombres legibles para clarificar el flujo de seguridad ante auditorías de código.
 - `2026-10-07T07:42:28` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la implementación de *docstrings* detallados en las funciones de bajo nivel que gestionan la E/S y el aislamiento, clarificando el propósito técnico y las garantías de seguridad de cada operación.
-- `2026-10-07T07:41:53` **organizer.py** (legibilidad y documentación): Se introdujeron type hints más precisos (como `TypeAlias` para configuraciones complejas) y se documentó con docstrings el propósito de las constantes y funciones auxiliares en `organizer.py` para clarificar la lógica de seguridad y el filtrado de archivos, facilitando el mantenimiento a futuro sin alterar la funcionalidad.
-- `2026-10-07T07:41:17` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `memory.py` mediante la adición de docstrings estructurados, tipado explícito en funciones críticas y la clarificación de las responsabilidades de las funciones de bajo nivel, facilitando la auditoría del código conforme a los requisitos de seguridad y mantenibilidad.
-- `2026-10-07T07:31:53` **healthscore.py** (legibilidad y documentación): Mejoré la documentación de los métodos de cálculo y las estructuras de datos (Scorer, RecommendationRule, PipelineEntry) para clarificar la arquitectura funcional y los contratos de tipos, facilitando el mantenimiento técnico de la demo.

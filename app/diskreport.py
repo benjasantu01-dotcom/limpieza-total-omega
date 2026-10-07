@@ -359,15 +359,18 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     stats = GlobalStats()
     top_heap: List[Tuple[int, Path]] = [] 
     
-    for path, size_bytes in walk_files(directory, skip_protected):
-        stats.register_file(size_bytes, path)
-        
-        # Lógica de heap para mantener solo los archivos más grandes encontrados
-        if limit > 0:
-            if len(top_heap) < limit: 
-                heapq.heappush(top_heap, (size_bytes, path))
-            elif size_bytes > top_heap[0][0]: 
-                heapq.heapreplace(top_heap, (size_bytes, path))
+    try:
+        for path, size_bytes in walk_files(directory, skip_protected):
+            stats.register_file(size_bytes, path)
+            
+            # Lógica de heap para mantener solo los archivos más grandes encontrados
+            if limit > 0:
+                if len(top_heap) < limit: 
+                    heapq.heappush(top_heap, (size_bytes, path))
+                elif size_bytes > top_heap[0][0]: 
+                    heapq.heapreplace(top_heap, (size_bytes, path))
+    except (OSError, PermissionError, RuntimeError):
+        pass
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
