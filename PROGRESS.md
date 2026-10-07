@@ -5,25 +5,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **502**
-- Mejoras aceptadas: **204** (40.6% de aceptación)
-- Rechazadas por tests: 31
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **205** (40.7% de aceptación)
+- Rechazadas por tests: 30
 - Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-05 | 57 | 7 | 10 | 3 | 75 |
+| 2026-10-05 | 57 | 6 | 10 | 3 | 74 |
 | 2026-10-06 | 147 | 24 | 34 | 8 | 137 |
+| 2026-10-07 | 1 | 0 | 0 | 0 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - legibilidad y documentación: **41**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **40**
 - seguridad defensiva: **39**
 - rendimiento: **35**
 
@@ -31,7 +32,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `memory.py`: **22**
 - `diskreport.py`: **20**
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
 - `healthscore.py`: **19**
 - `branding.py`: **17**
 - `browser.py`: **17**
@@ -45,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-07T00:06:38` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la manipulación de archivos mediante la implementación de `os.fsync` en el directorio destino tras operaciones de borrado (`_safe_unlink`) y en la creación de archivos, asegurando la persistencia de los cambios en sistemas de archivos con journaling, evitando inconsistencias ante cortes de energía o bloqueos del SO.
 - `2026-10-06T14:59:01` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del método `SystemMetrics.is_finite` añadiendo una validación explícita para evitar errores de acceso si el objeto no tiene atributos esperados o si se utilizan tipos incompatibles, asegurando que el pipeline nunca trabaje con datos corruptos.
 - `2026-10-06T14:50:18` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante rutas inexistentes o inaccesibles en `_is_file_in_use` y `_process_file_node` mediante la validación estricta de `Path.exists()` antes de cualquier operación de I/O, evitando excepciones innecesarias en sistemas con cachés parcialmente eliminadas o bloqueadas.
 - `2026-10-06T14:49:49` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de sistema y colisiones de rutas mediante la implementación de una verificación de estado de escritura más estricta antes de intentar cualquier operación de disco.
@@ -59,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T13:58:24` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `scanner.py` mediante la adición de docstrings detallados en los métodos de heurística y la estandarización de las anotaciones de tipo, facilitando el mantenimiento y la comprensión de las reglas de seguridad.
 - `2026-10-06T13:57:52` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `ensure_safe_to_modify` extrayendo la lógica de validación de componentes en bucle a una función privada dedicada `_validate_path_components`, reduciendo el acoplamiento y facilitando la comprensión del flujo principal.
 - `2026-10-06T13:50:59` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` mediante la adición de docstrings detallados en funciones clave, la clarificación de constantes mediante tipos explícitos y la refactorización del bloque de validación de seguridad en `_is_safe_for_disk_op` para separar las comprobaciones de integridad física de las restricciones lógicas.
-- `2026-10-06T13:49:02` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad mediante la adición de docstrings técnicos que explican las constantes de Win32, la estandarización de type hints y la clarificación de las responsabilidades de las funciones, facilitando la comprensión del flujo de datos en las interacciones con la API nativa sin modificar la lógica operativa.

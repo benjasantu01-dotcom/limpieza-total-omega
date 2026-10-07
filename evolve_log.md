@@ -506,3 +506,13 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-10-06T23:29:35` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-06T23:39:46` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-06T23:50:04` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-10-07T00:00:12` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-10-07T00:01:14` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-07T00:02:17` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-07T00:03:23` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-07T00:04:35` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-07T00:05:31` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-07T00:06:05` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-07T00:06:38` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la manipulación de archivos mediante la implementación de `os.fsync` en el directorio destino tras operaciones de borrado (`_safe_unlink`) y en la creación de archivos, asegurando la persistencia de los cambios en sistemas de archivos con journaling, evitando inconsistencias ante cortes de energía o bloqueos del SO.
+- `2026-10-07T00:06:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T00:06:38` Corrida terminada. Total usado hoy: 4.

@@ -297,7 +297,14 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
         if _is_file_locked(path):
             return False
             
+        parent = path.parent
         _check_io_error_context(path.unlink)
+        
+        # Sincronizar directorio padre para persistir el borrado
+        dir_fd = os.open(str(parent), os.O_RDONLY)
+        try: os.fsync(dir_fd)
+        finally: os.close(dir_fd)
+        
         return True
     except (OSError, PermissionError):
         return False
@@ -535,6 +542,12 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
             temp_name = tf.name
             
         os.replace(temp_name, target_path)
+        
+        # Sincronizar directorio para persistir el renombrado atómico
+        dir_fd = os.open(str(base_path), os.O_RDONLY)
+        try: os.fsync(dir_fd)
+        finally: os.close(dir_fd)
+        
         _MANIFEST_CACHE[base_path] = items
         return target_path
     except (OSError, IOError) as e:
@@ -874,6 +887,13 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
             raise UnsafePathError("Destino no seguro.")
             
         os.replace(str(stored_file), str(destination))
+        
+        # Sincronizar directorios involucrados
+        for p in [parent, base_path]:
+            dir_fd = os.open(str(p), os.O_RDONLY)
+            try: os.fsync(dir_fd)
+            finally: os.close(dir_fd)
+            
         items = load_manifest(base, force_reload=True)
         save_manifest([i for i in items if i.item_id != item_id], base)
         return destination
