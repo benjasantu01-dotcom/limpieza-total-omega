@@ -298,8 +298,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             points = area_ratio * entry.weight
             metric_breakdown[entry.area] = int(round(points))
             accumulated_score += points
+        except (TypeError, ValueError, ZeroDivisionError) as e:
+            logging.error(f"Falla en lógica de cálculo {entry.area}: {e}")
+            metric_breakdown[entry.area] = 0
         except Exception as e:
-            logging.error(f"Falla crítica en procesamiento de {entry.area}: {e}")
+            logging.error(f"Error inesperado procesando {entry.area}: {e}")
             metric_breakdown[entry.area] = 0
             
     if metrics.quarantined_count > 0:

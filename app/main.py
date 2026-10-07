@@ -1926,10 +1926,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _get_numeric_setting_from_widget(self, widget: ctk.CTkEntry, key: str, default: int) -> int:
         """Helper privado para extraer y validar configuraciones numéricas de la UI."""
-        try:
-            return self._safe_get_entry_value(widget, default, numeric=True)
-        except Exception:
-            return default
+        return self._safe_get_entry_value(widget, default, numeric=True)
 
     def _validate_numeric_setting(self, value: Any, default: int) -> int:
         """Helper: Valida que setting numérico sea positivo."""

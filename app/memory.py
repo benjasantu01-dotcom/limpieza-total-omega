@@ -184,6 +184,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     """Extracts data from a CSV line (Format: Name,PID,WorkingSet)."""
+    if not line or "," not in line: return None
     parts = [p.strip().strip("'\"") for p in line.split(",")]
     if len(parts) < 3: return None
     
@@ -342,11 +343,13 @@ def _get_process_path(pid: int) -> Optional[Path]:
             if not raw_path or raw_path.startswith("\\\\"): return None
             
             p_test = Path(raw_path)
-            if p_test.exists():
-                # Resolvemos y verificamos que el archivo resultante sea accesible y seguro
-                resolved = p_test.resolve()
-                if _is_path_safe_and_valid(resolved) and is_safe_to_modify(resolved):
-                    return resolved
+            try:
+                if p_test.exists():
+                    resolved = p_test.resolve()
+                    if _is_path_safe_and_valid(resolved) and is_safe_to_modify(resolved):
+                        return resolved
+            except OSError:
+                return None
     except (OSError, RuntimeError, ctypes.ArgumentError): pass
     finally: kernel32.CloseHandle(handle)
     return None
