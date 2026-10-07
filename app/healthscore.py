@@ -281,8 +281,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         metrics = SystemMetrics()
     
+    # Asegurar integridad antes de procesar reglas
+    metrics.validate()
     if not metrics.is_finite:
-        metrics.validate()
+        metrics = SystemMetrics()
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}

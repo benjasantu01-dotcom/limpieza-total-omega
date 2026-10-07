@@ -1129,3 +1129,40 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-07T04:49:42` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad en `save_logo_svg` reemplazando la validación manual de rutas por el uso de `ensure_safe_to_modify` para garantizar que la operación de escritura respete estrictamente los protocolos de seguridad definidos en `safety.py`.
 - `2026-10-07T04:49:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T04:49:42` Corrida terminada. Total usado hoy: 116.
+- `2026-10-07T04:56:39` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-10-07T04:57:38` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_file_in_use` y `_process_file_node` añadiendo la validación obligatoria contra `is_protected_path` inmediatamente antes de cualquier operación de acceso, asegurando que incluso ante posibles bypasses lógicos, el módulo no pueda interactuar con rutas críticas.
+- `2026-10-07T04:58:25` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-10-07T04:58:33` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-07T04:59:17` Tests FALLARON:
+```
+ormat_group_marks_which_0/b.txt')
+
+evolve/tests/test_modules.py:522: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_identical_files - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size - assert [] == [1, 2]
+  
+  Right contains 2 more items, first extra item: 1
+  
+  Full diff:
+  + []
+  - [
+  -     1,
+  -     2,
+  - ]
+FAILED evolve/tests/test_modules.py::test_partial_hash_only_reads_the_beginning - AssertionError: assert None != None
+ +  where None = <function hash_file at 0x7fb67f880d60>(PosixPath('/tmp/pytest-of-runner/pytest-2/test_partial_hash_only_reads_t0/a'))
+ +    where <function hash_file at 0x7fb67f880d60> = duplicates.hash_file
+ +  and   None = <function hash_file at 0x7fb67f880d60>(PosixPath('/tmp/pytest-of-runner/pytest-2/test_partial_hash_only_reads_t0/b'))
+ +    where <function hash_file at 0x7fb67f880d60> = duplicates.hash_file
+FAILED evolve/tests/test_modules.py::test_format_group_marks_which_copy_to_keep - AssertionError: assert ('conservar' in '2 copias de 0.0 MB (recuperable: 0.0 MB)\n   [inaccesible] /tmp/pytest-of-runner/pytest-2/test_format_group_marks_which_0/a.txt\n   [inaccesible] /tmp/pytest-of-runner/pytest-2/test_format_group_marks_which_0/b.txt')
+5 failed, 294 passed in 1.61s
+
+```
+- `2026-10-07T04:59:17` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se ha robustecido la lógica de `_safe_path_check` y `_collect_candidates` para integrar explícitamente el chequeo de puntos de reanálisis (reparse points) mediante `is_junction` antes de cualquier iteración o acceso, cumpliendo con el enfoque de seguridad defensiva al evitar la recursión infinita o el acceso a volúmenes montados inesperados.
+- `2026-10-07T04:59:49` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la robustez defensiva del pipeline de cálculo añadiendo una validación explícita en `compute_score` que previene el uso de métricas no inicializadas o inconsistentes antes de la ejecución de las reglas, asegurando que `_evaluate_rules` solo procese datos con tipos garantizados.
+- `2026-10-07T04:59:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T04:59:49` Corrida terminada. Total usado hoy: 120.

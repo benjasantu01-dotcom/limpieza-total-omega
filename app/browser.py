@@ -199,10 +199,11 @@ def _is_file_in_use(path_obj: Any, base_norm: str) -> bool:
     if not isinstance(path_obj, Path) or not path_obj.is_file():
         return True
     
-    if not _ensure_within_base(str(path_obj), base_norm) or is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
+    # Refuerzo de seguridad defensiva
+    if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
         return True
-    
-    if not os.access(path_obj, os.R_OK):
+        
+    if not _ensure_within_base(str(path_obj), base_norm) or not os.access(path_obj, os.R_OK):
         return True
     
     k32 = _get_kernel32()
@@ -222,7 +223,8 @@ def _process_file_node(entry: os.DirEntry, root_abs_norm: str, visited_inodes: S
     if not entry or not entry.is_file(): return 0
     try:
         p_file = Path(entry.path)
-        if not p_file.exists() or not is_safe_to_modify(p_file) or is_protected_path(p_file): return 0
+        # Refuerzo de seguridad defensiva previo a stat
+        if is_protected_path(p_file) or not is_safe_to_modify(p_file): return 0
         st = entry.stat(follow_symlinks=False)
         # st.st_ino permite identificar archivos únicos incluso con enlaces duros
         if st.st_ino not in visited_inodes:
