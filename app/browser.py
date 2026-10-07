@@ -217,12 +217,13 @@ def _is_file_in_use(path_obj: Any, base_norm: str) -> bool:
     return False
 
 def _process_file_node(entry: os.DirEntry, root_abs_norm: str, visited_inodes: Set[int]) -> int:
-    """Calcula el tamaño de un archivo individual tras validar integridad."""
+    """Calcula el tamaño de un archivo tras validar que sea único y accesible."""
     if not entry or not entry.is_file(): return 0
     # Validación extra: impedir que el entry procesado haya escapado del root
     if not _ensure_within_base(entry.path, root_abs_norm): return 0
     try:
         st = entry.stat(follow_symlinks=False)
+        # st.st_ino identifica un archivo único en NTFS para evitar contar hardlinks duplicados
         if st.st_ino not in visited_inodes:
             if not _is_file_in_use(Path(entry.path), root_abs_norm):
                 visited_inodes.add(st.st_ino)
@@ -239,7 +240,14 @@ def _sum_directory_recursive(
     visited_dirs: VisitedDirs,
     depth: int = 0
 ) -> ScanResult:
-    """Recorre jerárquicamente un directorio de caché optimizado."""
+    """
+    Recorre jerárquicamente un directorio de caché.
+    
+    Args:
+        root_path: Ruta actual del escaneo.
+        root_abs_norm: Ruta base normalizada para prevenir escapes (Sandboxing).
+        visited_inodes: Set de inodos procesados para evitar conteo doble.
+    """
     if depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)
     

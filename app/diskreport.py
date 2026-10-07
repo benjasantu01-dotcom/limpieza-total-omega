@@ -143,13 +143,20 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 
 def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
-    """Evalúa si un `os.DirEntry` debe ser omitido por criterios de seguridad o reparse points."""
+    """
+    Filtra entradas durante el escaneo para evitar bucles o acceso a áreas restringidas.
+    
+    Verifica:
+    - Presencia de caracteres invisibles sospechosos (RTL/bidireccionales).
+    - Que la entrada esté físicamente contenida bajo la raíz de escaneo (evita escapes).
+    - Puntos de reparse (junctions/symlinks) para prevenir recursión infinita o duplicación.
+    - Listas de bloqueo de seguridad (`safety.py`).
+    """
     try:
         name = entry.name
         if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
             return True
         
-        # Validar que la ruta real está contenida dentro del root
         try:
             if os.path.commonpath([os.path.abspath(entry.path), root_path_str]) != root_path_str:
                 return True
@@ -272,7 +279,12 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """Recorre el árbol de directorios evitando enlaces simbólicos y errores de acceso."""
+    """
+    Recorre el sistema de archivos de forma iterativa usando una pila para evitar recursión profunda.
+    
+    Emplea un conjunto `visited_inodes` para detectar bucles (mount points / hard links) 
+    y asegura que cada archivo sea procesado una sola vez en sistemas POSIX/NTFS.
+    """
     root_path = _validate_root(directory)
     if root_path is None: return
     
@@ -354,13 +366,11 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Realiza el escaneo recursivo, procesando métricas globales y manteniendo un 
-    heap para los N archivos más grandes encontrados.
-
-    Args:
-        directory: Path base a escanear.
-        skip_protected: Si es True, ignora rutas protegidas por `safety`.
-        limit: Máximo de archivos grandes a rastrear (0 para deshabilitar).
+    Ejecuta el escaneo completo y mantiene las estadísticas requeridas.
+    
+    Usa un min-heap de tamaño fijo (`limit`) para mantener eficientemente 
+    la lista de los N archivos más grandes durante el recorrido, garantizando 
+    complejidad O(N log K) donde N es el total de archivos y K es el límite.
     """
     stats = GlobalStats()
     top_heap: List[Tuple[int, Path]] = [] 
@@ -369,7 +379,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         for path, size_bytes in walk_files(directory, skip_protected):
             stats.register_file(size_bytes, path)
             
-            # Lógica de heap para mantener solo los archivos más grandes encontrados
             if limit > 0:
                 if len(top_heap) < limit: 
                     heapq.heappush(top_heap, (size_bytes, path))

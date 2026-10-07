@@ -151,7 +151,13 @@ class MetricSpec:
 
 class ProblemCriterion(NamedTuple):
     """
-    Regla declarativa para detección de problemas basada en umbrales.
+    Regla declarativa para detección de problemas basada en umbrales de diagnóstico.
+    
+    Atributos:
+        metric_key: Nombre del atributo en SystemContext a evaluar.
+        threshold: Valor límite de comparación.
+        operator: Operador lógico ('>' o '<').
+        message_format: Plantilla f-string para formatear la advertencia.
     """
     metric_key: str
     threshold: float
