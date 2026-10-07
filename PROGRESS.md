@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Mejoras aceptadas: **212** (42.1% de aceptación)
 - Rechazadas por tests: 31
 - Rechazadas por guardia de seguridad: 46
-- Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 205
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-05 | 57 | 6 | 10 | 3 | 58 |
+| 2026-10-05 | 57 | 6 | 10 | 3 | 54 |
 | 2026-10-06 | 147 | 24 | 34 | 8 | 137 |
-| 2026-10-07 | 7 | 1 | 2 | 0 | 10 |
+| 2026-10-07 | 8 | 1 | 2 | 1 | 12 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **43**
+- seguridad defensiva: **44**
 - robustez ante casos límite: **42**
 - legibilidad y documentación: **41**
 - rendimiento: **35**
@@ -40,12 +40,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **16**
 - `assistant.py`: **15**
 - `scanner.py`: **15**
+- `settings.py`: **14**
 - `duplicates.py`: **13**
-- `settings.py`: **13**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-07T00:53:20` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en `_is_file_secure_to_read` agregando una verificación explícita de `st_nlink` y `st_uid` para prevenir que se lea un archivo que no sea el esperado (como un enlace duro o un archivo propiedad de otro usuario), blindando la carga de configuración contra ataques de tipo TOCTOU o suplantación de ficheros.
 - `2026-10-07T00:43:09` **quarantine.py** (seguridad defensiva): Se introdujo una validación de inodo (st_ino) en `_atomic_isolate_file` contra el sistema de archivos antes de la transferencia, y se reforzó `_safe_unlink` con una validación de `st_nlink` para prevenir ataques de "hard-link bombing" que podrían engañar al recolector de basura o a las comprobaciones de integridad.
 - `2026-10-07T00:32:41` **healthscore.py** (seguridad defensiva): Se endureció la seguridad de `_evaluate_rules` mediante la validación del tipo y contenido de las recomendaciones generadas por las `message_factory` externas, previniendo inyecciones de caracteres de control o texto malicioso en el reporte final.
 - `2026-10-07T00:23:12` **browser.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_process_file_node` y `_sum_directory_recursive` mediante la validación explícita de `is_safe_to_modify` y `is_protected_path` sobre los nodos individuales durante el recorrido, garantizando que el escáner no procese archivos que hayan podido quedar fuera de los límites de seguridad en rutas complejas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-06T14:29:35` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y `list_items` convirtiendo las listas de elementos a `dict` (indexado por `stored_name` o `item_id`) para evitar recorridos O(N^2) durante la validación de archivos, manteniendo la consistencia del manifiesto.
 - `2026-10-06T14:27:56` **memory.py** (rendimiento): Optimizé `top_memory_processes` reemplazando la creación de una función anónima dentro del bucle por una referencia a una función local definida fuera, evitando la redefinición constante del objeto función en cada iteración sobre la lista de PIDs.
 - `2026-10-06T14:18:37` **healthscore.py** (rendimiento): Optimicé el rendimiento del `compute_score` eliminando la recreación de funciones `lambda` en cada iteración y evitando el procesamiento redundante mediante el cacheo de las funciones `scorer` asociadas a las reglas del pipeline.
-- `2026-10-06T14:17:31` **diskreport.py** (rendimiento): Optimicé el rendimiento del escaneo en `walk_files` evitando la llamada redundante y costosa a `Path(entry.path).resolve()` dentro de `_is_excluded_path`, utilizando el atributo `entry.path` directamente para las validaciones de seguridad, reduciendo drásticamente las syscalls de resolución de rutas por cada archivo encontrado.

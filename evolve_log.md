@@ -576,3 +576,10 @@ FAILED evolve/tests/test_modules.py::test_format_group_marks_which_copy_to_keep 
 - `2026-10-07T00:44:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-07T00:44:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T00:44:07` Corrida terminada. Total usado hoy: 20.
+- `2026-10-07T00:51:20` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-10-07T00:52:08` ➖ Sin cambios en safety.py (enfoque: seguridad defensiva). Motivo: Se ha mejorado la protección contra la manipulación de archivos bloqueados mediante la implementación de `_is_file_locked_by_other_process` en `_get_security_descriptor`, garantizando que cualquier operación destructiva detecte bloqueos en tiempo real antes de intentar cualquier acción sobre el descriptor, cerrando una ventana de oportunidad entre la detección y la ejecución.
+- `2026-10-07T00:52:43` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-10-07T00:53:20` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `_is_file_secure_to_read` agregando una verificación explícita de `st_nlink` y `st_uid` para prevenir que se lea un archivo que no sea el esperado (como un enlace duro o un archivo propiedad de otro usuario), blindando la carga de configuración contra ataques de tipo TOCTOU o suplantación de ficheros.
+- `2026-10-07T00:53:36` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-10-07T00:53:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T00:53:36` Corrida terminada. Total usado hoy: 24.

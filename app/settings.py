@@ -343,6 +343,7 @@ def _is_file_secure_to_read(file_obj: Any) -> bool:
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
         if mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
         if mode & (stat.S_ISUID | stat.S_ISGID): return False
+        # Verificación contra suplantación: debe ser el único enlace y dueño actual
         if st.st_nlink != 1: return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if not os.access(file_obj.name, os.R_OK): return False
