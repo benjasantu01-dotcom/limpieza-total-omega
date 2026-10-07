@@ -425,8 +425,9 @@ class SystemContext:
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad estructural sobre el objeto fuente antes de procesar."""
         if source is None: return False
-        # Se restringe la ingesta a diccionarios o instancias específicas (evitando tipos primitivos)
-        if not isinstance(source, (dict, object)): return False
+        # Se restringe la ingesta a tipos permitidos (dict o clases simples)
+        if not (isinstance(source, dict) or (isinstance(source, object) and not isinstance(source, (str, int, float, bool)))):
+            return False
         try:
             return not _is_input_too_deep_or_complex(source)
         except Exception:

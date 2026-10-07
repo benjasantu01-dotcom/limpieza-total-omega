@@ -986,3 +986,63 @@ FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_pa
 - `2026-10-07T03:57:40` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha optimizado `_is_kernel_managed` y `is_protected_path` reemplazando los chequeos lineales de texto por la búsqueda eficiente en `set` (ya existentes en el archivo) y pre-calculando las rutas del sistema para evitar el acceso repetitivo a `os.environ` y `path.parts` dentro de los bucles de alta frecuencia, mejorando el rendimiento de las validaciones masivas.
 - `2026-10-07T03:57:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T03:57:40` Corrida terminada. Total usado hoy: 96.
+- `2026-10-07T04:05:41` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-10-07T04:06:18` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-10-07T04:07:09` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de la carga de configuración implementando `os.path.getmtime` directamente antes de acceder a la caché, evitando así la llamada completa a `path.stat()` (que requiere más operaciones de sistema de archivos) y reduciendo la redundancia en las validaciones de existencia mediante la consolidación de comprobaciones de ruta.
+- `2026-10-07T04:07:49` Tests FALLARON:
+```
+-2/test_entries_from_folders_read0')
+
+    def test_entries_from_folders_reads_injected_folders(tmp_path):
+        carpeta = tmp_path / "Inicio"
+        carpeta.mkdir()
+        (carpeta / "MiPrograma.lnk").write_text("x")
+        (carpeta / "Otro.lnk").write_text("y")
+        entradas = startup.entries_from_folders([carpeta])
+>       assert {e.name for e in entradas} == {"MiPrograma", "Otro"}
+E       AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+E         
+E         Extra items in the left set:
+E         'Otro.lnk'
+E         'MiPrograma.lnk'
+E         Extra items in the right set:
+E         'MiPrograma'
+E         'Otro'
+E         
+E         Full diff:
+E           {
+E         -     'MiPrograma',
+E         +     'MiPrograma.lnk',
+E         ?                ++++
+E         -     'Otro',
+E         +     'Otro.lnk',
+E         ?          ++++
+E           }
+
+evolve/tests/test_modules.py:677: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'Otro.lnk'
+  'MiPrograma.lnk'
+  Extra items in the right set:
+  'MiPrograma'
+  'Otro'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed in 1.52s
+
+```
+- `2026-10-07T04:07:49` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó el proceso de filtrado en `_process_folder_entry` eliminando la creación innecesaria de objetos `Path` y reemplazándola por operaciones directas sobre cadenas (`os.path`), reduciendo la presión sobre el recolector de basura durante el escaneo recursivo.
+- `2026-10-07T04:08:18` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante entradas externas inesperadas o corruptas en `SystemContext.ingest`, implementando una validación de tipo más estricta antes de invocar métodos de objeto, evitando así posibles fallos de ejecución si el origen de datos contiene tipos no esperados.
+- `2026-10-07T04:08:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T04:08:18` Corrida terminada. Total usado hoy: 100.

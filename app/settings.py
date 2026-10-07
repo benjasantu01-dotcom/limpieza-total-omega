@@ -386,14 +386,14 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     for path in [primary_path, backup_path]:
         if path.is_file():
             try:
-                st = path.stat()
+                mtime = os.path.getmtime(path)
                 cache_key = str(path)
                 cached = _MANAGER.settings_cache.get(cache_key)
-                if cached and cached[0] == st.st_mtime:
+                if cached and cached[0] == mtime:
                     return cached[1].copy()
                 
                 settings = _load_impl(path)
-                _MANAGER.settings_cache[cache_key] = (st.st_mtime, settings)
+                _MANAGER.settings_cache[cache_key] = (mtime, settings)
                 return settings.copy()
             except (OSError, PermissionError):
                 continue
