@@ -247,14 +247,17 @@ def _sum_directory_recursive(
     try:
         with os.scandir(path_str) as it:
             for entry in it:
-                if _should_skip_entry(entry, kernel32, _IS_JUNCTION_FN, root_abs_norm):
+                try:
+                    if _should_skip_entry(entry, kernel32, _IS_JUNCTION_FN, root_abs_norm):
+                        continue
+                    
+                    if entry.is_dir(follow_symlinks=False):
+                        res = _sum_directory_recursive(Path(entry.path), root_abs_norm, kernel32, visited_inodes, visited_dirs, depth + 1)
+                        total_bytes += res.bytes_found
+                    else:
+                        total_bytes += _process_file_node(entry, root_abs_norm, visited_inodes)
+                except (OSError, PermissionError):
                     continue
-                
-                if entry.is_dir(follow_symlinks=False):
-                    res = _sum_directory_recursive(Path(entry.path), root_abs_norm, kernel32, visited_inodes, visited_dirs, depth + 1)
-                    total_bytes += res.bytes_found
-                else:
-                    total_bytes += _process_file_node(entry, root_abs_norm, visited_inodes)
     except (OSError, PermissionError):
         return ScanResult(total_bytes, False)
         

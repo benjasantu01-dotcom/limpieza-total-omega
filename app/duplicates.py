@@ -231,7 +231,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Evaluamos seguridad de ruta antes de profundizar
                         p_entry = Path(entry.path)
                         if not _safe_path_check(p_entry) or (skip_protected and is_protected_path(p_entry)):
                             continue
@@ -319,7 +318,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     
     candidates: List[Tuple[Tuple[float, int], Path]] = []
     for p in group.paths:
-        if isinstance(p, Path):
+        if isinstance(p, Path) and p.exists():
             if (score := _calculate_keeper_heuristic(p)) is not None:
                 candidates.append((score, p))
             

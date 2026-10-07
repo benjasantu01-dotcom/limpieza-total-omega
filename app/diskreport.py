@@ -60,6 +60,8 @@ def _safe_stat(path: str) -> Optional[os.stat_result]:
         archivo no encontrado o rutas demasiado largas).
     """
     try:
+        if len(path) > 32767:
+            return None
         return os.stat(path, follow_symlinks=False)
     except (OSError, PermissionError, FileNotFoundError):
         return None
