@@ -1652,3 +1652,66 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-07T09:07:22` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: _CheckResult
 - `2026-10-07T09:07:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T09:07:22` Corrida terminada. Total usado hoy: 216.
+- `2026-10-07T09:12:37` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-10-07T09:13:24` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-07T09:13:41` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-07T09:13:46` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-07T09:14:43` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha añadido una validación de coherencia en el flujo de `load` para detectar si el archivo de configuración es un archivo vacío o una estructura JSON mal formada, asegurando que la aplicación no procese configuraciones parciales o corruptas que podrían causar estados inconsistentes al delegar en los valores de fábrica solo después de verificar el contenido completo.
+- `2026-10-07T09:15:39` Tests FALLARON:
+```
+-2/test_entries_from_folders_read0')
+
+    def test_entries_from_folders_reads_injected_folders(tmp_path):
+        carpeta = tmp_path / "Inicio"
+        carpeta.mkdir()
+        (carpeta / "MiPrograma.lnk").write_text("x")
+        (carpeta / "Otro.lnk").write_text("y")
+        entradas = startup.entries_from_folders([carpeta])
+>       assert {e.name for e in entradas} == {"MiPrograma", "Otro"}
+E       AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+E         
+E         Extra items in the left set:
+E         'MiPrograma.lnk'
+E         'Otro.lnk'
+E         Extra items in the right set:
+E         'MiPrograma'
+E         'Otro'
+E         
+E         Full diff:
+E           {
+E         -     'MiPrograma',
+E         +     'MiPrograma.lnk',
+E         ?                ++++
+E         -     'Otro',
+E         +     'Otro.lnk',
+E         ?          ++++
+E           }
+
+evolve/tests/test_modules.py:677: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'MiPrograma.lnk'
+  'Otro.lnk'
+  Extra items in the right set:
+  'MiPrograma'
+  'Otro'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed in 1.59s
+
+```
+- `2026-10-07T09:15:39` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se mejoró la robustez de `_process_folder_entry` corrigiendo un error de referencia a una variable inexistente (`_`) y añadiendo validaciones de tipo/valor para prevenir `OSError` o fallos de ejecución al procesar nombres de archivos en carpetas de sistema.
+- `2026-10-07T09:16:39` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-07T09:17:30` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad de la función `_call_gemini` validando que la respuesta recibida no contenga estructuras de datos excesivamente complejas ni profundas mediante `_is_safe_payload_structure` antes de procesar su contenido, previniendo así posibles ataques de "JSON bomb" o deserialización maliciosa.
+- `2026-10-07T09:17:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T09:17:30` Corrida terminada. Total usado hoy: 220.

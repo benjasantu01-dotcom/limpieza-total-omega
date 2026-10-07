@@ -370,12 +370,14 @@ def _load_impl(ruta: Path) -> AppSettings:
                 fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
                 data = json.loads(content)
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-            except (IOError, OSError):
+            except (IOError, OSError, json.JSONDecodeError):
                 return DEFAULTS.copy()
         
         if _is_dict(data):
+            # Coherencia: si tras cargar los datos el diccionario está vacío pero el archivo no, es sospechoso
+            if not data and content.strip(): return DEFAULTS.copy()
             return _coerce_and_verify(validate(data))
-    except (OSError, PermissionError, IOError, json.JSONDecodeError, UnicodeDecodeError, EOFError):
+    except (OSError, PermissionError, IOError, UnicodeDecodeError, EOFError):
         pass
     return DEFAULTS.copy()
 

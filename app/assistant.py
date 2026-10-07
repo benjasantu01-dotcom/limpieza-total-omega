@@ -749,6 +749,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             if not isinstance(raw_res, bytes) or len(raw_res) > _MAX_RESPONSE_BYTES: return None
             
             data = json.loads(raw_res.decode("utf-8"))
+            if not _is_safe_payload_structure(data): return None
             
             raw_text = _extract_text_from_gemini_json(data)
             
