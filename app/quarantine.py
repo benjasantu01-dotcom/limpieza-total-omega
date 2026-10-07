@@ -64,7 +64,7 @@ __all__: Tuple[str, ...] = (
 DEFAULT_QUARANTINE_DIR: str = "~/LimpiezaTotalOmega/_Cuarentena"
 MANIFEST_NAME: str = "manifest.json"
 CHUNK_SIZE: int = 131072  # 128KB para procesamiento de I/O
-_MANIFEST_CACHE: Dict[Path, List[QuarantineItem]] = {}
+_MANIFEST_CACHE: Dict[Path, Tuple[List[QuarantineItem], float]] = {}
 
 WINDOWS_RESERVED_NAMES: Set[str] = {
     "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", 
@@ -494,21 +494,24 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
 
 
 def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Deserializa el manifiesto, usando caché perezoso para rendimiento O(1)."""
+    """Deserializa el manifiesto, usando caché perezoso eficiente basado en mtime."""
     try:
         base_dir = quarantine_dir(base)
     except (OSError, UnsafePathError):
         return []
         
+    m_path = _manifest_path(base_dir)
+    if not m_path.exists():
+        _MANIFEST_CACHE[base_dir] = ([], 0.0)
+        return []
+
+    current_mtime = m_path.stat().st_mtime
     if not force_reload and base_dir in _MANIFEST_CACHE:
-        return _MANIFEST_CACHE[base_dir]
+        cached_items, cached_mtime = _MANIFEST_CACHE[base_dir]
+        if cached_mtime == current_mtime:
+            return cached_items
         
     try:
-        m_path = _manifest_path(base_dir)
-        if not m_path.exists() or m_path.stat().st_size == 0:
-            _MANIFEST_CACHE[base_dir] = []
-            return []
-        
         with open(m_path, "r", encoding="utf-8") as f:
             data = json.load(f)
         
@@ -516,15 +519,15 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
             raise ValueError("Formato de manifiesto inválido.")
             
         items = [i for d in data if (i := QuarantineItem.from_dict(d))]
-        _MANIFEST_CACHE[base_dir] = items
+        _MANIFEST_CACHE[base_dir] = (items, current_mtime)
         return items
     except (OSError, json.JSONDecodeError, ValueError):
-        _MANIFEST_CACHE[base_dir] = []
+        _MANIFEST_CACHE[base_dir] = ([], current_mtime)
         return []
 
 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Persiste el manifiesto usando escritura atómica y actualiza la caché."""
+    """Persiste el manifiesto usando escritura atómica y actualiza la caché con mtime."""
     base_path = quarantine_dir(base)
     target_path = _manifest_path(base_path)
     
@@ -535,7 +538,6 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         if target_path.exists():
             if not os.access(target_path, os.W_OK):
                 raise PermissionError("Manifiesto existente no es escribible.")
-            # Verificar si es un archivo de sistema o especial para evitar sobrescrituras de seguridad
             if os.name == 'nt':
                 attrs = ctypes.windll.kernel32.GetFileAttributesW(str(target_path))
                 if attrs != -1 and (attrs & 0x02 or attrs & 0x04):
@@ -554,7 +556,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         try: os.fsync(dir_fd)
         finally: os.close(dir_fd)
         
-        _MANIFEST_CACHE[base_path] = items
+        _MANIFEST_CACHE[base_path] = (items, target_path.stat().st_mtime)
         return target_path
     except (OSError, IOError) as e:
         raise RuntimeError(f"Error crítico al persistir manifiesto: {e}")

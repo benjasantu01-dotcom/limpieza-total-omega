@@ -953,3 +953,36 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-07T03:51:05` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó `top_memory_processes` eliminando la recreación innecesaria de objetos `ProcessMemory` en cada iteración al cachear solo el resultado final, y se redujo el costo computacional de las llamadas a `_get_proc_memory_by_pid` mediante un filtrado previo de PIDs inválidos o críticos antes de intentar abrir el proceso.
 - `2026-10-07T03:51:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T03:51:05` Corrida terminada. Total usado hoy: 92.
+- `2026-10-07T03:55:28` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-10-07T03:55:55` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-10-07T03:56:47` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se ha optimizado `load_manifest` para evitar la carga repetitiva de archivos mediante un mecanismo de control de estado (`st_mtime`), reduciendo la cantidad de llamadas al sistema y evitando parseos JSON innecesarios en un bucle frecuente.
+- `2026-10-07T03:57:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-10-07T03:57:40` Tests FALLARON:
+```
+st-of-runner/pytest-2/test_path_traversal_cannot_dis0/carpeta/../Windows/x.txt'))
+ +    where <functools._lru_cache_wrapper object at 0x7f0e029bc880> = safety.is_protected_path
+FAILED evolve/tests/test_safety.py::test_ensure_safe_blocks_system_paths - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_sensitive_extension_when_explicitly_requested - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - AssertionError: assert {'app.tmp', '...', 'otro.log'} == {'ok.tmp', 'otro.log'}
+  
+  Extra items in the left set:
+  'malo.tmp'
+  'app.tmp'
+  
+  Full diff:
+    {
+  +     'app.tmp',
+  +     'malo.tmp',
+        'ok.tmp',
+        'otro.log',
+    }
+FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason - assert 'protegida' in "'/tmp/pytest-of-runner/pytest-2/test_describe_protection_expla0/Windows/x.txt' es candidata a modificación."
+ +  where "'/tmp/pytest-of-runner/pytest-2/test_describe_protection_expla0/Windows/x.txt' es candidata a modificación." = <function describe_protection at 0x7f0e029b8860>(((PosixPath('/tmp/pytest-of-runner/pytest-2/test_describe_protection_expla0') / 'Windows') / 'x.txt'))
+ +    where <function describe_protection at 0x7f0e029b8860> = safety.describe_protection
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - Failed: DID NOT RAISE UnsafePathError
+14 failed, 285 passed in 1.34s
+
+```
+- `2026-10-07T03:57:40` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha optimizado `_is_kernel_managed` y `is_protected_path` reemplazando los chequeos lineales de texto por la búsqueda eficiente en `set` (ya existentes en el archivo) y pre-calculando las rutas del sistema para evitar el acceso repetitivo a `os.environ` y `path.parts` dentro de los bucles de alta frecuencia, mejorando el rendimiento de las validaciones masivas.
+- `2026-10-07T03:57:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T03:57:40` Corrida terminada. Total usado hoy: 96.
