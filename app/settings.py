@@ -343,7 +343,6 @@ def _is_file_secure_to_read(file_obj: Any) -> bool:
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
         if mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
         if mode & (stat.S_ISUID | stat.S_ISGID): return False
-        # Verificación contra suplantación: debe ser el único enlace y dueño actual
         if st.st_nlink != 1: return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if not os.access(file_obj.name, os.R_OK): return False
@@ -374,7 +373,6 @@ def _load_impl(ruta: Path) -> AppSettings:
                 return DEFAULTS.copy()
         
         if _is_dict(data):
-            # Coherencia: si tras cargar los datos el diccionario está vacío pero el archivo no, es sospechoso
             if not data and content.strip(): return DEFAULTS.copy()
             return _coerce_and_verify(validate(data))
     except (OSError, PermissionError, IOError, UnicodeDecodeError, EOFError):
@@ -428,13 +426,14 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     
     parent = config_path.parent
     try:
-        if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
+        if not parent.is_dir() or _Validators._is_reparse_point(parent): return None
         ensure_safe_to_modify(str(parent.resolve()))
         usage = shutil.disk_usage(parent)
         if usage.free < MAX_SETTINGS_SIZE * 2 or not os.access(parent, os.W_OK): return None
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
-        ensure_safe_to_modify(str(config_path.resolve()))
+        if config_path.exists():
+            ensure_safe_to_modify(str(config_path.resolve()))
     except (TypeError, ValueError, OSError, PermissionError): return None
     
     temp_path = config_path.with_suffix(".tmp")
@@ -459,7 +458,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
                 os.replace(config_path, bak_path)
             except OSError: pass
         
-        ensure_safe_to_modify(str(config_path.resolve()))
         os.replace(temp_path, config_path)
         
         if config_path.exists():

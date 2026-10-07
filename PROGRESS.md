@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **217** (43.1% de aceptación)
-- Rechazadas por tests: 30
+- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Rechazadas por tests: 31
 - Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-06 | 118 | 18 | 26 | 6 | 104 |
-| 2026-10-07 | 99 | 12 | 19 | 4 | 98 |
+| 2026-10-06 | 118 | 18 | 26 | 6 | 100 |
+| 2026-10-07 | 100 | 13 | 19 | 4 | 100 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **48**
+- seguridad defensiva: **45**
 - legibilidad y documentación: **44**
-- seguridad defensiva: **44**
 - robustez ante casos límite: **42**
 - rendimiento: **39**
 
@@ -36,8 +36,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **20**
 - `assistant.py`: **18**
 - `safety.py`: **18**
+- `settings.py`: **15**
 - `scanner.py`: **14**
-- `settings.py`: **14**
 - `organizer.py`: **13**
 - `branding.py`: **13**
 - `duplicates.py`: **12**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-07T09:54:10` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `settings.py` implementando una validación estricta de "Path Traversal" y "Ownership" durante la escritura atómica, asegurando que el directorio de configuración sea un directorio real y privado antes de realizar cualquier operación de persistencia.
 - `2026-10-07T09:46:28` **scanner.py** (seguridad defensiva): Se ha endurecido el método `_is_safe_entry` en `Scanner` para prevenir la resolución de rutas mediante enlaces simbólicos o junctions de forma más explícita antes de cualquier acceso al sistema de archivos, asegurando que la validación de seguridad ocurra antes de la resolución (`resolve`) del `Path`.
 - `2026-10-07T09:46:14` **safety.py** (seguridad defensiva): Se añadió una validación defensiva en `_is_kernel_managed` para prevenir el procesamiento de archivos críticos cuya ruta dependa de la ubicación de los perfiles de usuario (`AppData`), mitigando el riesgo de que el escáner intente manipular archivos que mantienen la sesión o la configuración del sistema bloqueados.
 - `2026-10-07T09:44:18` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_atomic_isolate_file` y `quarantine_file` al añadir una validación crítica contra ataques de "Time-of-Check to Time-of-Use" (TOCTOU) mediante la comparación estricta de inodos y la integridad del sistema de archivos después de cada operación de escritura, asegurando que el archivo no haya sido reemplazado o manipulado durante el proceso.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-07T08:54:31` **main.py** (robustez ante casos límite): Se reforzó la robustez del método `on_purge_quarantine` y `on_delete_reviewed` mediante la adición de una validación explícita de existencia del widget y el manejo preventivo de estados de cierre, evitando posibles excepciones `RuntimeError` o `TclError` si el usuario intenta purgar mientras el hilo de la UI está terminando.
 - `2026-10-07T08:53:18` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor de normalización ante divisores cero y valores de entrada no finitos en `create_linear_scorer` y `score_security`, evitando excepciones en el cálculo que podrían derivar en resultados de salud nulos o sesgados.
 - `2026-10-07T08:44:16` **diskreport.py** (robustez ante casos límite): Se ha mejorado `_collect_summary_data` para manejar explícitamente posibles excepciones durante la iteración y se introdujo un chequeo de integridad en `_is_excluded_path` para prevenir fallos al acceder a atributos de `DirEntry` en sistemas con permisos restrictivos, garantizando la robustez ante estados del disco inconsistentes.
-- `2026-10-07T08:43:25` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` añadiendo una validación explícita para evitar intentos de escritura en rutas que resultan ser directorios existentes, además de asegurar que la creación de subdirectorios sea atómica y segura mediante la delegación al sistema de archivos tras las validaciones de `safety`.
