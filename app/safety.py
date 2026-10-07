@@ -236,6 +236,8 @@ _SYSTEM_ROOT_PATHS: Final[set[Path]] = {
     if os.environ.get(v)
 }
 
+_SYSTEM_ROOT_STRS: Final[set[str]] = {str(p).lower() for p in _SYSTEM_ROOT_PATHS}
+
 _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
     r'^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$', re.IGNORECASE
 )
@@ -625,14 +627,18 @@ def is_protected_path(path: PathLike) -> bool:
     if not isinstance(path, (str, Path)) or not path: return True
     try:
         p = Path(path)
-        # Verificación eficiente por partes antes de resolver
+        # Comprobación rápida: nombre de carpeta protegida
         if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts): return True
-        if _is_system_directory_junction(str(p)): return True
         
-        # Resolución final solo si es necesaria
+        # Comprobación de prefijo sin I/O si es posible
+        p_abs = p.absolute()
+        if any(str(p_abs).lower().startswith(r) for r in _SYSTEM_ROOT_STRS): return True
+        
+        # Resolución solo necesaria si no se descartó por nombre o prefijo
         p_res = p.resolve()
-        if any(p_res == root or root in p_res.parents for root in _SYSTEM_ROOT_PATHS): return True
-        return p_res == Path(p_res.anchor)
+        if p_res == Path(p_res.anchor): return True
+        if _is_system_directory_junction(str(p_res)): return True
+        return any(p_res == root or root in p_res.parents for root in _SYSTEM_ROOT_PATHS)
     except Exception: return True
 
 @lru_cache(maxsize=4096)

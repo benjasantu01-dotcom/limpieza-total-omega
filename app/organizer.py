@@ -156,7 +156,7 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
         s = src.resolve(strict=False)
         d = dest.resolve(strict=False)
         if s == d: return True
-        return os.path.commonpath([str(s), str(d)]) == str(s)
+        return s in d.parents
     except (OSError, ValueError):
         return True
 

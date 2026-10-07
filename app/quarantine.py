@@ -999,6 +999,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 purged_ids.add(item.item_id)
         
         if purged_ids:
+            # Filtramos en lugar de recrear todo si es posible, o usamos el mapa
             remaining = [i for i in items if i.item_id not in purged_ids]
             save_manifest(remaining, base)
             
