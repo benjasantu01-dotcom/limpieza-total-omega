@@ -140,14 +140,15 @@ def _is_allowed_directory(name: str) -> bool:
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _is_file_locked(path: Path) -> bool:
-    """Valida si un archivo está bloqueado intentando abrirlo en modo lectura exclusiva."""
+    """Valida si un archivo está bloqueado mediante apertura exclusiva a nivel de OS."""
     if not path or not path.is_file(): return True
     try:
-        with open(path, "rb") as f:
-            if f.readable():
-                return False
-            return True
-    except (PermissionError, OSError, IOError, BlockingIOError):
+        # Intenta abrir sin escritura, solo lectura, para checkear acceso.
+        # En Windows esto falla si el archivo está en uso exclusivo.
+        fd = os.open(path, os.O_RDONLY)
+        os.close(fd)
+        return False
+    except (OSError, PermissionError):
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:

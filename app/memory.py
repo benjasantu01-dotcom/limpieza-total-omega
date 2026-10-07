@@ -357,7 +357,7 @@ def _is_path_safe_and_valid(path_obj: Path) -> bool:
 def _get_process_path(pid: int) -> Optional[Path]:
     """
     Resuelve la ruta absoluta del ejecutable usando PSAPI GetModuleFileNameExW.
-    Valida la ruta contra `is_safe_to_modify` antes de retornar.
+    Valida la ruta contra `is_protected_path` y `is_safe_to_modify` antes de retornar.
     """
     kernel32 = ctypes.windll.kernel32
     psapi = getattr(ctypes.windll, "psapi", None)
@@ -373,13 +373,10 @@ def _get_process_path(pid: int) -> Optional[Path]:
             if not raw_path or raw_path.startswith("\\\\"): return None
             
             p_test = Path(raw_path)
-            try:
-                if p_test.exists():
-                    resolved = p_test.resolve()
-                    if _is_path_safe_and_valid(resolved):
-                        return resolved
-            except OSError:
-                return None
+            if p_test.exists():
+                resolved = p_test.resolve()
+                if not is_protected_path(str(resolved)) and _is_path_safe_and_valid(resolved):
+                    return resolved
     except (OSError, RuntimeError, ctypes.ArgumentError): pass
     finally: kernel32.CloseHandle(process_handle)
     return None

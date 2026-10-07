@@ -282,9 +282,13 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
     Eliminación segura: requiere validación de inodo, hash y ausencia de 
     bloqueos/enlaces antes de proceder con el unlink.
     """
+    # Protección explícita adicional: NUNCA borrar nada protegido aunque falle el resto
+    if is_protected_path(path):
+        return False
+        
     if not path.exists() or not path.is_file():
         return False
-    if is_protected_path(path) or path.is_symlink():
+    if path.is_symlink():
         return False
     
     try:

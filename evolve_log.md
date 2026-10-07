@@ -800,3 +800,13 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-07T14:04:49` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al convertir la validación de `SystemMetrics` en un proceso estrictamente determinista, evitando que campos nulos o mal formados generen resultados impredecibles mediante la aplicación de valores por defecto seguros en el `__post_init__` y una validación de tipo más estricta.
 - `2026-10-07T14:04:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T14:04:49` Corrida terminada. Total usado hoy: 330.
+- `2026-10-07T14:11:16` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-07T14:12:18` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-07T14:12:22` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-07T14:13:28` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-07T14:14:40` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-07T14:15:26` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré la seguridad de la resolución de rutas en `_get_process_path` integrando explícitamente `is_protected_path` antes de cualquier validación adicional, garantizando que procesos en rutas protegidas no sean sujetos a consultas de trimado y evitando el seguimiento de enlaces simbólicos mediante `Path.resolve()` antes de la validación.
+- `2026-10-07T14:15:55` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_file_locked` para evitar falsos positivos y posibles bloqueos mediante el uso de `os.open` con flags de acceso exclusivo (`O_EXCL`), asegurando que no se intente operar sobre archivos que el sistema mantiene bloqueados activamente.
+- `2026-10-07T14:16:29` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_safe_unlink` añadiendo una comprobación explícita de `is_protected_path` al inicio de la función para garantizar que, incluso si fallan los chequeos de inodo o hash, el archivo nunca sea eliminado si reside en una ruta protegida.
+- `2026-10-07T14:16:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T14:16:29` Corrida terminada. Total usado hoy: 334.
