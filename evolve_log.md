@@ -700,3 +700,29 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-07T13:34:03` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-10-07T13:34:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-07T13:34:03` Corrida terminada. Total usado hoy: 318.
+- `2026-10-07T13:40:17` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-07T13:41:17` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `purge_all` para manejar posibles errores de acceso durante la iteración del directorio de cuarentena, evitando que un único error de permiso en un archivo huérfano interrumpa el proceso de limpieza completo.
+- `2026-10-07T13:42:17` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-07T13:43:20` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-07T13:44:27` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-07T13:45:49` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-07T13:45:54` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-07T13:47:11` Tests FALLARON:
+```
+ne_records_the_original_path_for_restoring - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-2/test_quarantine_records_the_or0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-2/test_restore_puts_the_file_bac0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-2/test_restore_into_a_system_pat0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-2/test_purge_item_cannot_delete_0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-2/test_purge_all_only_deletes_in0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-2/test_quarantine_two_files_with0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-2/test_quarantine_summary_report0/_Cuarentena
+29 failed, 270 passed in 2.00s
+
+```
+- `2026-10-07T13:47:11` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Mejoré `_get_security_descriptor_cached` para manejar el escenario donde `GetFileAttributesW` devuelve `INVALID_FILE_ATTRIBUTES` (0xFFFFFFFF) de forma explícita, evitando que atributos erróneos (como `is_in_use=True`) se propaguen incorrectamente sobre rutas inexistentes o inaccesibles, garantizando que el descriptor refleje un estado seguro (bloqueado) en lugar de uno basado en estados de bits inválidos.
+- `2026-10-07T13:47:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-07T13:47:27` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-07T13:48:08` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-07T13:48:58` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-07T13:48:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-07T13:48:58` Corrida terminada. Total usado hoy: 322.

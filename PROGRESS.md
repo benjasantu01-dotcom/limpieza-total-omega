@@ -6,30 +6,30 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **202** (40.1% de aceptación)
-- Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 41
+- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Rechazadas por tests: 28
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-06 | 73 | 12 | 16 | 3 | 82 |
-| 2026-10-07 | 129 | 15 | 25 | 7 | 142 |
+| 2026-10-06 | 73 | 12 | 16 | 3 | 78 |
+| 2026-10-07 | 130 | 16 | 26 | 7 | 143 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **42**
-- robustez ante casos límite: **41**
+- robustez ante casos límite: **42**
 - rendimiento: **40**
 - seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
+- `quarantine.py`: **22**
 - `assistant.py`: **20**
 - `browser.py`: **20**
 - `memory.py`: **19**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-07T13:41:17` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `purge_all` para manejar posibles errores de acceso durante la iteración del directorio de cuarentena, evitando que un único error de permiso en un archivo huérfano interrumpa el proceso de limpieza completo.
 - `2026-10-07T13:33:44` **memory.py** (robustez ante casos límite): Mejoré la robustez de `trim_working_set` y sus helpers asociados mediante la validación proactiva contra valores de PID fuera de rango o negativos, evitando llamadas innecesarias a la API de Windows en casos donde el PID no sea lógico, y asegurando un manejo más limpio del cierre de handles.
 - `2026-10-07T13:31:15` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `score_security` y `compute_score` ante valores de entrada malformados o inconsistentes, asegurando que el motor de puntuación nunca falle ante métricas inesperadas.
 - `2026-10-07T13:23:04` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de E/S y corrupción de archivos al procesar grupos de duplicados, asegurando que `suggest_keeper` y `format_group` manejen de forma elegante rutas que desaparecieron o perdieron permisos durante el ciclo de vida del análisis.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-07T12:41:46` **browser.py** (rendimiento): Optimizé la recursión del escaneo de directorios eliminando la sobrecarga de `os.path.normcase` y `str()` innecesarios dentro de los bucles, y mejorando la reutilización de la estructura `visited_dirs` mediante una referencia persistente para evitar cálculos repetitivos en subdirectorios compartidos o visitados.
 - `2026-10-07T12:41:06` **branding.py** (rendimiento): Se ha optimizado la generación de colores para gradientes eliminando el re-cálculo de `gradient_colors` dentro del bucle de `draw_gradient_bar`, delegando la generación a una llamada única y más eficiente, reduciendo así la carga sobre el motor de renderizado y el cache.
 - `2026-10-07T12:40:17` **assistant.py** (rendimiento): Optimicé el método `context_as_text` para utilizar `list.append` con `join` en lugar de concatenaciones de strings, y reemplacé la búsqueda de métricas por un acceso directo al diccionario `metrics_snapshot` ya cacheado, eliminando llamadas innecesarias a `getattr` y `isinstance` en cada iteración del bucle.
-- `2026-10-07T12:18:37` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_write_temp_to_final` para extraer la lógica de copiado y validación, además de añadir type hints faltantes y docstrings que clarifican la intención de las operaciones críticas de I/O y seguridad.

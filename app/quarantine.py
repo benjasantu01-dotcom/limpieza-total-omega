@@ -995,11 +995,13 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             if f.name == MANIFEST_NAME or not f.is_file():
                 continue
             item = item_map.get(f.name)
-            if item and _is_item_purgable(f, item):
-                purged_ids.add(item.item_id)
+            try:
+                if item and _is_item_purgable(f, item):
+                    purged_ids.add(item.item_id)
+            except (OSError, PermissionError):
+                continue
         
         if purged_ids:
-            # Filtramos en lugar de recrear todo si es posible, o usamos el mapa
             remaining = [i for i in items if i.item_id not in purged_ids]
             save_manifest(remaining, base)
             
