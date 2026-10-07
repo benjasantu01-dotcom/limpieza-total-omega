@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **210** (41.7% de aceptación)
+- Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 32
-- Rechazadas por guardia de seguridad: 45
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-05 | 11 | 1 | 1 | 0 | 17 |
+| 2026-10-05 | 11 | 1 | 1 | 0 | 13 |
 | 2026-10-06 | 147 | 24 | 34 | 8 | 137 |
-| 2026-10-07 | 52 | 7 | 10 | 3 | 52 |
+| 2026-10-07 | 55 | 7 | 11 | 3 | 52 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
+- seguridad defensiva: **44**
 - legibilidad y documentación: **42**
 - robustez ante casos límite: **42**
-- seguridad defensiva: **41**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
@@ -36,16 +36,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **19**
 - `browser.py`: **19**
 - `branding.py`: **16**
+- `safety.py`: **16**
 - `assistant.py`: **15**
 - `organizer.py`: **15**
-- `safety.py`: **15**
-- `settings.py`: **14**
-- `scanner.py`: **13**
+- `settings.py`: **15**
+- `scanner.py`: **14**
 - `duplicates.py`: **11**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-07T05:19:08` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_load_impl` y `save` sustituyendo el uso de `os.replace` (que puede ser atómico pero no garantiza consistencia en todos los sistemas de archivos ante fallos de hardware) por una validación explícita de la integridad del archivo tras la escritura y evitando operaciones sobre rutas no resueltas.
+- `2026-10-07T05:18:49` **scanner.py** (seguridad defensiva): Se reforzó `_is_safe_entry` para prevenir ataques de suplantación de identidad de archivos, asegurando que `entry.path` sea realmente un archivo regular mediante `is_file()` antes de procesarlo, evitando así que el escáner intente operar sobre dispositivos especiales o tuberías nombradas que podrían causar bloqueos o comportamientos inesperados.
+- `2026-10-07T05:18:21` **safety.py** (seguridad defensiva): Se ha añadido una protección contra el acceso a archivos de sistema mediante el uso de nombres de dispositivo lógicos (como `\\.\PhysicalDrive0`), bloqueando explícitamente el uso de `\\.\` o `\\?\` (fuera del formato normalizado) en el método `_validate_structural_safety` para prevenir ataques de bajo nivel al sistema de archivos.
 - `2026-10-07T05:10:22` **quarantine.py** (seguridad defensiva): Se ha añadido un chequeo de integridad adicional en `quarantine_file` que verifica que la ruta de origen no sea una ruta de sistema crítica ni un volumen montado, reforzando el filtro de seguridad antes de cualquier operación de I/O.
 - `2026-10-07T05:09:51` **organizer.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_safe_for_disk_op` añadiendo una validación explícita mediante `is_protected_path` sobre el directorio destino *antes* de cualquier operación, y se ha encapsulado el acceso a `shutil.disk_usage` con un manejo de excepciones más robusto para evitar que errores de sistema al consultar volúmenes desconectados o sin permisos aborten el proceso de limpieza.
 - `2026-10-07T05:09:23` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad en `_get_process_path` reemplazando la resolución lógica `p_test.resolve(strict=True)` por una validación estricta de la ruta resuelta contra el sistema de archivos antes de cualquier operación, mitigando riesgos de manipulación de rutas externas y asegurando que `is_safe_to_modify` reciba una ruta normalizada y verificada.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-07T04:37:13` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera (Race Conditions) y fallos de I/O en `_atomic_isolate_file` implementando una validación previa de la existencia del archivo de destino con `os.open` usando `os.O_EXCL`, asegurando atomicidad a nivel de sistema operativo frente a colisiones imprevistas.
 - `2026-10-07T04:28:34` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar archivos que son accesibles pero que, por condiciones de carrera o restricciones del sistema de archivos, fallan al intentar leer un solo byte, y se ha añadido una validación de `st_nlink` para evitar mover archivos con enlaces duros (hard links) que podrían ser críticos.
 - `2026-10-07T04:28:22` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez en `_get_process_path` para evitar errores de excepciones no capturadas al lidiar con rutas de procesos inexistentes, inaccesibles o bloqueadas por permisos de sistema, asegurando que `Path.resolve(strict=True)` se ejecute dentro de un bloque seguro y verificado.
-- `2026-10-07T04:27:53` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante errores inesperados durante la carga asíncrona de pestañas (`_tab_factory`), protegiendo al motor principal de fallos en constructores específicos mediante un manejo de excepciones localizado y validaciones de existencia de widgets.
-- `2026-10-07T04:19:05` **duplicates.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `_collect_candidates` ante casos límite en el sistema de archivos, asegurando que `os.scandir` maneje correctamente errores de acceso (como `PermissionError`) mediante un bloque `try-except` más robusto que evita la interrupción total del escaneo al encontrar carpetas inaccesibles.
-- `2026-10-07T04:18:53` **diskreport.py** (robustez ante casos límite): Introduje `_safe_stat` dentro de `diskreport.py` para centralizar la captura de errores al obtener atributos de archivo, evitando que excepciones inesperadas durante el escaneo de rutas con permisos restringidos o sistemas de archivos volátiles interrumpan el proceso completo.

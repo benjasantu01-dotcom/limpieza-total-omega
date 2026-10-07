@@ -222,6 +222,10 @@ class Scanner:
         try:
             if self._is_reparse_point(entry) or entry.is_symlink():
                 return False
+            
+            # Verificación adicional: asegurar que es un archivo regular
+            if not entry.is_file(follow_symlinks=False):
+                return False
                 
             real_path = Path(entry.path).resolve(strict=True)
             if not str(real_path).lower().startswith(self.base_root_str):

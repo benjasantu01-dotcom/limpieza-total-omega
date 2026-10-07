@@ -643,6 +643,9 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     """Realiza una validación estructural de la ruta para detectar patrones de ataque de bajo nivel."""
     if not isinstance(path_string, str):
         raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC)
+    # Bloqueo estricto de rutas de bajo nivel de Windows (Device Namespace)
+    if path_string.startswith(("\\\\.\\", "//./", "\\\\?\\")) and not path_string.startswith("\\\\?\\"):
+        raise UnsafePathError("Acceso a Namespace de dispositivos prohibido.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
     if _is_unc_path(path_string):
         raise UnsafePathError("Rutas UNC/Red bloqueadas.", SafetyValidationErrorCode.UNC_PATH)
     if ".." in path_string.split(os.sep):
