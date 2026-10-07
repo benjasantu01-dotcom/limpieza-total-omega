@@ -416,6 +416,13 @@ def _is_kernel_managed(path: Path) -> bool:
             sys_dir = Path(buf.value).resolve()
             if sys_dir in path.parents:
                 return True
+        
+        # Bloquear acceso a perfiles de usuario críticos (AppData local/roaming)
+        local_app_data = os.environ.get("LOCALAPPDATA", "")
+        app_data = os.environ.get("APPDATA", "")
+        if (local_app_data and p_str.startswith(local_app_data.lower())) or \
+           (app_data and p_str.startswith(app_data.lower())):
+             return True
                 
     return any(part.lower() in ("config.msi", "installer") for part in path.parts)
 

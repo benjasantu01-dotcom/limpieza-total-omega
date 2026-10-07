@@ -721,6 +721,10 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if not is_safe_to_modify(destination.parent):
         raise UnsafePathError("El sandbox destino ha sido invalidado.")
 
+    # Verificación de integridad final tras re-evaluación de estado
+    if source.stat().st_ino != stat_orig.st_ino:
+        raise RuntimeError("Integridad comprometida: el archivo fue reemplazado (TOCTOU).")
+
     existing_items = load_manifest(destination.parent.parent)
     if any(i.file_inode == stat_orig.st_ino for i in existing_items):
         raise RuntimeError("Colisión de inodo: el archivo parece estar ya registrado.")
@@ -847,7 +851,8 @@ def quarantine_file(
     try:
         file_hash, file_inode = _atomic_isolate_file(source_path, destination, st_info.st_size)
         
-        if not destination.exists() or _get_sha256(destination) != file_hash:
+        # Doble verificación: comprobar que el inodo actual del destino sea consistente con la operación realizada
+        if not destination.exists() or destination.stat().st_ino != file_inode or _get_sha256(destination) != file_hash:
             raise RuntimeError("Falla crítica: el destino no es coherente tras la copia.")
             
         if source_path.exists():

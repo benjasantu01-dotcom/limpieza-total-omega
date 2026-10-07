@@ -220,10 +220,11 @@ class Scanner:
             return False
             
         try:
-            if self._is_reparse_point(entry) or entry.is_symlink():
+            # Validación estricta anti-reparse points ANTES de intentar resolver la ruta
+            if entry.is_symlink() or self._is_reparse_point(entry):
                 return False
             
-            # Verificación adicional: asegurar que es un archivo regular
+            # Verificación estructural mínima antes de resolve()
             if not entry.is_file(follow_symlinks=False) and not entry.is_dir(follow_symlinks=False):
                 return False
                 
