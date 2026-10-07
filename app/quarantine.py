@@ -433,8 +433,11 @@ def _check_device_consistency(source: Path, target_dir: Path) -> None:
     except OSError:
         raise UnsafePathError("No se pudo verificar la consistencia del dispositivo.")
 
-def _validate_isolation_constraints(source_path: Path, dest_dir: Path) -> None:
-    """Valida jerarquías de seguridad y evitar recursividad en el movimiento."""
+def _verify_quarantine_preconditions(source_path: Path, dest_dir: Path) -> None:
+    """
+    Realiza las verificaciones de seguridad jerárquicas antes de iniciar
+    la transferencia de aislamiento al sandbox.
+    """
     resolved_source = source_path.resolve(strict=True)
     resolved_dest_dir = dest_dir.resolve()
     
@@ -466,7 +469,7 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
     if os.path.samefile(resolved_source, resolved_dest_dir):
         raise UnsafePathError("Operación circular detectada.")
         
-    _validate_isolation_constraints(resolved_source, resolved_dest_dir)
+    _verify_quarantine_preconditions(resolved_source, resolved_dest_dir)
     ensure_safe_to_modify(resolved_source, allow_sensitive=True)
     if not _is_file_exclusive(resolved_source):
         raise IOError("Archivo en uso.")

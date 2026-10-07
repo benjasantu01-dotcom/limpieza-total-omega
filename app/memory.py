@@ -150,10 +150,7 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
     return mem_status
 
 def _safe_int_conversion(value: Optional[str], multiplier: int = 1) -> BytesValue:
-    """
-    Limpia cadenas de texto de archivos de sistema para extraer valores numéricos
-    y aplicarlos a una escala específica.
-    """
+    """Limpia cadenas para extraer enteros y escalar el resultado."""
     if not isinstance(value, str): return BytesValue(0)
     clean_val = "".join(filter(str.isdigit, value))
     return BytesValue(int(clean_val) * multiplier) if clean_val else BytesValue(0)
@@ -165,7 +162,7 @@ _linux_available: bool = True
 
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
-    """Parsea el contenido de /proc/meminfo mediante procesamiento lineal de texto."""
+    """Parsea el contenido de /proc/meminfo mediante procesamiento lineal."""
     if not meminfo_text: return _EMPTY_SNAPSHOT
     metrics: Dict[str, BytesValue] = {}
     for line in meminfo_text.splitlines():
@@ -186,7 +183,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     return MemorySnapshot(total=total, available=available, cached=cached)
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
-    """Valida y extrae datos de una línea CSV proveniente de la shell de Windows."""
+    """Extrae datos de una línea CSV (Formato esperado: Nombre,PID,WorkingSet)."""
     parts = [p.strip().strip("'\"") for p in line.split(",")]
     if len(parts) < 3: return None
     
@@ -205,14 +202,14 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     return None
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
-    """Procesa el CSV de procesos y devuelve una lista ordenada por uso de memoria."""
+    """Procesa el CSV de procesos y devuelve los N de mayor consumo."""
     if not raw_csv_text: return []
     lines = raw_csv_text.splitlines()
     processes = (proc for line in lines[1:] if (proc := _extract_process_info(line)))
     return sorted(processes, key=lambda p: p.working_set, reverse=True)[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Interroga a la API GlobalMemoryStatusEx para obtener el estado físico actual."""
+    """Invoca la API Win32 GlobalMemoryStatusEx para el snapshot global."""
     kernel32 = ctypes.windll.kernel32
     if not hasattr(kernel32, "GlobalMemoryStatusEx"): return _EMPTY_SNAPSHOT
     mem_status = _create_mem_status_ex()
@@ -229,7 +226,7 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
 @lru_cache(maxsize=1)
 def _get_cached_snapshot(timestamp_bucket: int) -> MemorySnapshot:
-    """Memoiza el estado del sistema para evitar lecturas de disco/API innecesarias."""
+    """Memoiza el estado del sistema con TTL de bucket temporal."""
     if _is_windows: return _read_windows_snapshot()
     global _linux_available
     if _linux_available:
@@ -240,11 +237,11 @@ def _get_cached_snapshot(timestamp_bucket: int) -> MemorySnapshot:
     return _EMPTY_SNAPSHOT
 
 def read_snapshot() -> MemorySnapshot:
-    """Interfaz pública: retorna un snapshot del estado de memoria actual (TTL 5s)."""
+    """Interfaz pública: retorna un snapshot del estado de memoria actual."""
     return _get_cached_snapshot(int(time.time() / 5))
 
 def _get_process_memory_stats(pid: int) -> Optional[BytesValue]:
-    """Extrae el Working Set de un proceso mediante PSAPI, retornando None si falla."""
+    """Obtiene el tamaño del Working Set mediante la API PSAPI GetProcessMemoryInfo."""
     kernel32 = ctypes.windll.kernel32
     psapi = ctypes.windll.psapi
     handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
@@ -261,13 +258,13 @@ def _get_process_memory_stats(pid: int) -> Optional[BytesValue]:
     return None
 
 def _get_proc_memory_by_pid(pid: int) -> Optional[ProcessMemory]:
-    """Helper para top_memory_processes que encapsula la lógica de filtrado y extracción."""
+    """Helper para top_memory_processes que filtra procesos críticos."""
     if _is_system_process(pid): return None
     ws = _get_process_memory_stats(pid)
     return ProcessMemory(f"PID {pid}", pid, ws) if ws and 0 < ws < MAX_VALID_PROCESS_MEM else None
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Obtiene los N procesos de mayor consumo usando la API nativa psapi."""
+    """Obtiene los procesos más pesados mediante enumeración de PIDs de Windows."""
     if not hasattr(top_memory_processes, "_cache"):
         top_memory_processes._cache = (0.0, [])
     
@@ -299,7 +296,7 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
     return "warning" if avail >= 10 else "danger"
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
-    """Genera un reporte descriptivo para el usuario basado en el estado actual."""
+    """Genera un reporte legible por humanos basado en el snapshot de memoria."""
     if snapshot.total <= 0: return ["No se pudo leer el estado de la memoria."]
     diagnostics = {
         "ok": "Estado: holgado. La memoria ocupada por caché mejora la velocidad.",
@@ -318,11 +315,11 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def _is_system_process(pid: int) -> bool:
-    """Filtra PIDs críticos del kernel o del propio proceso de la app."""
+    """Filtra PIDs críticos (kernel) o el proceso actual para evitar manipulación."""
     return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
 
 def _is_path_safe_and_valid(path_obj: Path) -> bool:
-    """Verifica si una ruta es un archivo ejecutable legítimo y no un reparse point."""
+    """Valida integridad de seguridad: no seguir reparse points ni rutas protegidas."""
     kernel32 = ctypes.windll.kernel32
     if is_protected_path(str(path_obj)) or not is_safe_to_modify(path_obj):
         return False
@@ -330,7 +327,7 @@ def _is_path_safe_and_valid(path_obj: Path) -> bool:
     return attr != -1 and not (attr & FILE_ATTRIBUTE_REPARSE_POINT)
 
 def _get_process_path(pid: int) -> Optional[Path]:
-    """Resuelve la ruta absoluta del ejecutable usando la API Win32 PSAPI."""
+    """Resuelve la ruta absoluta del ejecutable usando PSAPI GetModuleFileNameExW."""
     kernel32 = ctypes.windll.kernel32
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
@@ -355,7 +352,7 @@ def _get_process_path(pid: int) -> Optional[Path]:
     return None
 
 def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
-    """Evalúa si el proceso es candidato a la operación de trim sin riesgos operativos."""
+    """Evalúa si un proceso es candidato para EmptyWorkingSet sin riesgos de seguridad."""
     if _is_system_process(pid): return False, "Proceso crítico del sistema protegido."
     
     path = _get_process_path(pid)
@@ -367,7 +364,10 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Solicita al sistema la reducción del working set de un proceso específico."""
+    """
+    Ejecuta el trim del working set para el PID indicado si es seguro hacerlo.
+    Advertencia: esta operación forza la expulsión de páginas de memoria a disco.
+    """
     if not _is_windows: return False, "Solo soportado en Windows."
     
     try:
