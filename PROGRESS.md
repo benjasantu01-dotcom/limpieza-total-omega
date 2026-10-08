@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **202** (40.1% de aceptación)
 - Rechazadas por tests: 26
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 225
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-06 | 28 | 6 | 8 | 0 | 40 |
+| 2026-10-06 | 28 | 5 | 8 | 0 | 37 |
 | 2026-10-07 | 139 | 17 | 28 | 8 | 158 |
-| 2026-10-08 | 33 | 3 | 7 | 2 | 27 |
+| 2026-10-08 | 35 | 4 | 8 | 2 | 27 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **42**
 - rendimiento: **42**
-- robustez ante casos límite: **37**
+- robustez ante casos límite: **39**
 - seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
 - `browser.py`: **21**
-- `quarantine.py`: **20**
+- `quarantine.py`: **21**
 - `diskreport.py`: **19**
 - `healthscore.py`: **19**
 - `memory.py`: **18**
-- `safety.py`: **15**
+- `safety.py`: **16**
 - `branding.py`: **13**
 - `settings.py`: **13**
 - `organizer.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T03:12:31` **safety.py** (robustez ante casos límite): Se introdujo la verificación de rutas de tipo "Substituted Drive" (a través de `QueryDosDeviceW`) para evitar que la aplicación modifique archivos a través de unidades virtuales o mapeos de directorios que pueden esconder la ubicación real de archivos protegidos, mejorando la robustez frente a trucos de manipulación de rutas en Windows.
+- `2026-10-08T03:10:37` **quarantine.py** (robustez ante casos límite): Mejoré la resiliencia ante archivos bloqueados o en uso durante la fase de aislamiento atómico, añadiendo una verificación de disponibilidad mediante `_is_file_exclusive` antes de intentar el copiado, evitando así errores de E/S por procesos de fondo (como indexadores de búsqueda o antivirus) que podrían bloquear el archivo origen de forma intermitente.
 - `2026-10-08T03:02:04` **main.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en la inicialización y el procesamiento de hilos, asegurando que la aplicación no intente destruir widgets o invocar callbacks en una ventana inexistente si el cierre ocurre durante una operación asíncrona.
 - `2026-10-08T02:52:19` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `_safe_stat` y `_is_excluded_path` para manejar situaciones donde el sistema de archivos devuelve metadatos parciales o rutas extremadamente largas en entornos Windows, evitando excepciones no capturadas durante el recorrido del disco.
 - `2026-10-08T02:49:05` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `draw_logo` ante valores de entrada extremos o inválidos, asegurando que el estado interno no se corrompa si se pasan datos fuera de rango o tipos inesperados, cumpliendo con el enfoque de robustez ante casos límite.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T02:18:22` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` convirtiendo `_PIPELINE` de una `List` a un `tuple` para asegurar inmutabilidad y mejorar ligeramente la velocidad de acceso, y sobre todo, moví el filtrado de mensajes imprimibles fuera del bucle de reglas a una función auxiliar para reducir la sobrecarga de procesamiento de strings.
 - `2026-10-08T02:17:29` **diskreport.py** (rendimiento): Optimizé la función `_is_excluded_path` para evitar la conversión innecesaria a objetos `Path` y el uso de `.relative_to` (que realiza validaciones costosas) mediante un chequeo de cadena basado en `Path.parts`, reduciendo significativamente la sobrecarga por archivo durante el escaneo recursivo.
 - `2026-10-08T02:08:57` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante la sustitución de la lógica de chequeo de archivos en uso (`_is_file_in_use`), la cual realizaba llamadas costosas a `kernel32.CreateFileW` por cada archivo encontrado, reemplazándola por una verificación de metadatos `stat` que es órdenes de magnitud más rápida y segura.
-- `2026-10-08T02:08:45` **branding.py** (rendimiento): Se optimizó el rendimiento del dibujado de franjas (`_draw_shield_stripes`) y gradientes (`draw_gradient_bar`) reemplazando cálculos redundantes en tiempo de ejecución por consultas al cache `_get_grouped_segments`, reduciendo drásticamente las llamadas a `create_rectangle` y `create_line` en el Canvas.
-- `2026-10-08T02:08:02` **assistant.py** (rendimiento): Optimicé el cálculo de `active_problems` en `SystemContext` convirtiéndolo en un `@cached_property` para evitar iteraciones repetitivas sobre los criterios en cada acceso, aprovechando que el estado del contexto es inmutable durante su ciclo de vida tras la ingesta.

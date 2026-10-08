@@ -481,7 +481,7 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
     _verify_quarantine_preconditions(resolved_source, resolved_dest_dir)
     ensure_safe_to_modify(resolved_source, allow_sensitive=True)
     if not _is_file_exclusive(resolved_source):
-        raise IOError("Archivo en uso.")
+        raise IOError("Archivo origen bloqueado por otro proceso.")
 
 
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:

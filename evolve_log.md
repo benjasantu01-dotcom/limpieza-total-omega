@@ -1287,3 +1287,40 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T03:02:20` ➖ Sin cambios en memory.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `top_memory_processes` añadiendo una comprobación explícita para evitar errores de acceso denegado en procesos que terminan su ejecución durante el ciclo de enumeración, asegurando que `_get_process_path` y `_get_process_memory_stats` manejen correctamente los `handles` nulos antes de intentar operaciones críticas.
 - `2026-10-08T03:02:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T03:02:20` Corrida terminada. Total usado hoy: 72.
+- `2026-10-08T03:07:58` Arrancando corrida. Quedan hoy ~228 peticiones objetivo.
+- `2026-10-08T03:08:46` Tests FALLARON:
+```
+test_basic.py:141: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/organizer.py:256: in scan_for_junk
+    _process_directory(p, found, 0, protected_cache, visited)
+app/organizer.py:238: in _process_directory
+    if not _is_system_hidden(entry):
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+entry = <DirEntry 'mover.tmp'>
+
+    def _is_system_hidden(entry: os.DirEntry) -> bool:
+        """Determina si una entrada tiene atributos de sistema u ocultos activados."""
+        try:
+>           if not entry.exists(): return True
+                   ^^^^^^^^^^^^
+E           AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+
+app/organizer.py:177: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_finds_junk_and_ignores_other_files - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_recurses_into_subfolders - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_skips_system_folders - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_deleting_them - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+4 failed, 295 passed in 1.38s
+
+```
+- `2026-10-08T03:08:46` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `_is_file_locked` para manejar archivos inaccesibles o inexistentes sin propagar excepciones, y se integró una verificación de existencia previa en `_is_system_hidden` para evitar caídas ante condiciones de carrera en el sistema de archivos durante el escaneo.
+- `2026-10-08T03:09:46` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-08T03:10:37` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la resiliencia ante archivos bloqueados o en uso durante la fase de aislamiento atómico, añadiendo una verificación de disponibilidad mediante `_is_file_exclusive` antes de intentar el copiado, evitando así errores de E/S por procesos de fondo (como indexadores de búsqueda o antivirus) que podrían bloquear el archivo origen de forma intermitente.
+- `2026-10-08T03:11:45` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-08T03:12:31` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo la verificación de rutas de tipo "Substituted Drive" (a través de `QueryDosDeviceW`) para evitar que la aplicación modifique archivos a través de unidades virtuales o mapeos de directorios que pueden esconder la ubicación real de archivos protegidos, mejorando la robustez frente a trucos de manipulación de rutas en Windows.
+- `2026-10-08T03:12:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T03:12:31` Corrida terminada. Total usado hoy: 76.

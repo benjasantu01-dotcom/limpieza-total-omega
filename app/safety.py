@@ -21,6 +21,7 @@ import unicodedata
 ERROR_SHARING_VIOLATION: Final[int] = 32
 ERROR_FILE_NOT_FOUND: Final[int] = 2
 ERROR_ACCESS_DENIED: Final[int] = 5
+ERROR_INSUFFICIENT_BUFFER: Final[int] = 122
 
 PathLike: TypeAlias = Union[str, os.PathLike]
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
@@ -170,6 +171,7 @@ class SafetyValidationErrorCode(IntEnum):
     VOLUME_RESTRICTED = 30
     PATH_TOO_DEEP = 31
     SYSTEM_OWNER_PROTECTION = 32
+    VIRTUAL_DRIVE_DETECTED = 33
 
 class UnsafePathError(Exception):
     """Excepción lanzada cuando una ruta no supera los filtros de seguridad."""
@@ -204,6 +206,7 @@ class ProtectionReason(Enum):
     DEVICE_FILE = auto()
     VOLUME_RESTRICTED = auto()
     SYSTEM_OWNER = auto()
+    VIRTUAL_DRIVE = auto()
 
 class ValidationContext(Enum):
     """Contexto de la validación: Estructural (nombres) o Integridad (disco)."""
@@ -261,6 +264,19 @@ def is_running_as_admin() -> bool:
         return bool(shell32.IsUserAnAdmin())
     except (AttributeError, OSError, ctypes.ArgumentError):
         return False
+
+def _is_virtual_drive(path_str: str) -> bool:
+    """Verifica si el volumen raíz es un mapeo virtual (SUBST) que oculta la ruta real."""
+    if os.name != 'nt' or not isinstance(path_str, str) or not os.path.isabs(path_str): return False
+    drive = os.path.splitdrive(path_str)[0]
+    if not drive: return False
+    kernel32 = ctypes.windll.kernel32
+    buf = ctypes.create_unicode_buffer(512)
+    res = kernel32.QueryDosDeviceW(drive, buf, 512)
+    if res > 0:
+        device_path = buf.value
+        return device_path.startswith("\\DosDevices\\") or device_path.startswith("\\??\\")
+    return False
 
 def _is_file_owned_by_system(path_str: str) -> bool:
     """Verifica si el propietario del archivo es el grupo SYSTEM o TrustedInstaller (Windows)."""
@@ -457,6 +473,7 @@ def _check_size(p, st, __): return p.is_file() and st.st_size > MAX_FILE_SIZE
 def _check_mount(p, _, __): return os.path.ismount(p)
 def _check_type(_, st, __): return not (stat.S_ISREG(st.st_mode) or stat.S_ISDIR(st.st_mode))
 def _check_owner(p, _, __): return _is_file_owned_by_system(str(p))
+def _check_virtual(p, _, __): return _is_virtual_drive(str(p))
 
 # Lista de validadores de integridad aplicada secuencialmente para garantizar la seguridad
 _VALIDATORS: Final[list[_IntegrityCheck]] = [
@@ -479,6 +496,7 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _rule(ProtectionReason.MOUNT_POINT, _check_mount),
     _rule(ProtectionReason.INVALID_TYPE, _check_type),
     _rule(ProtectionReason.SYSTEM_OWNER, _check_owner),
+    _rule(ProtectionReason.VIRTUAL_DRIVE, _check_virtual),
 ]
 
 _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
@@ -499,7 +517,8 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
     ProtectionReason.SPARSE_FILE: SafetyValidationErrorCode.SPARSE_FILE_DETECTED,
     ProtectionReason.EMPTY_FILE: SafetyValidationErrorCode.EMPTY_FILE,
     ProtectionReason.READ_ONLY: SafetyValidationErrorCode.WRITE_ACCESS_DENIED,
-    ProtectionReason.SYSTEM_OWNER: SafetyValidationErrorCode.SYSTEM_OWNER_PROTECTION
+    ProtectionReason.SYSTEM_OWNER: SafetyValidationErrorCode.SYSTEM_OWNER_PROTECTION,
+    ProtectionReason.VIRTUAL_DRIVE: SafetyValidationErrorCode.VIRTUAL_DRIVE_DETECTED,
 }
 
 def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
@@ -743,6 +762,8 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
                      raise UnsafePathError("Volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY)
                 if _is_volume_compressed_or_encrypted(str(target_path)):
                      raise UnsafePathError("Volumen cifrado o comprimido.", SafetyValidationErrorCode.VOLUME_RESTRICTED)
+                if _is_virtual_drive(str(target_path)):
+                     raise UnsafePathError("Unidad virtual bloqueada.", SafetyValidationErrorCode.VIRTUAL_DRIVE_DETECTED)
         except (OSError, AttributeError, ctypes.ArgumentError):
              pass
     
@@ -827,8 +848,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         if _is_kernel_managed(str(p)):
             raise UnsafePathError(f"Archivo de sistema crítico: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
         
-        if os.name == 'nt' and (_is_volume_readonly(str(p)) or _is_volume_compressed_or_encrypted(str(p))):
-            raise UnsafePathError(f"Volumen restringido/solo lectura: {p.anchor}", SafetyValidationErrorCode.VOLUME_READ_ONLY)
+        if os.name == 'nt' and (_is_volume_readonly(str(p)) or _is_volume_compressed_or_encrypted(str(p)) or _is_virtual_drive(str(p))):
+            raise UnsafePathError(f"Volumen restringido/solo lectura/virtual: {p.anchor}", SafetyValidationErrorCode.VOLUME_READ_ONLY)
 
         if not allow_sensitive and is_sensitive_file(p):
             raise UnsafePathError(f"Extensión bloqueada '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION)
@@ -892,6 +913,7 @@ def describe_protection(path: PathLike) -> str:
             if p.is_symlink(): return f"'{p}' es un enlace simbólico."
             if _is_system_directory_junction(str(p)): return f"'{p}' es un punto de reparse (Junction/Symlink)."
             if os.path.ismount(p): return f"'{p}' es un punto de montaje."
+            if _is_virtual_drive(str(p)): return f"'{p}' es una unidad virtual mapeada (SUBST)."
             if sd.is_readonly: return f"'{p}' tiene atributo de solo lectura activo."
             if _is_readonly(str(p)): return f"'{p}' es solo lectura (permisos)."
             if _is_volume_readonly(str(p)): return f"'{p}' pertenece a un volumen de solo lectura."
