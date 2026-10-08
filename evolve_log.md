@@ -978,3 +978,66 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T12:11:00` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: robustez ante casos límite).
 - `2026-10-08T12:11:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T12:11:00` Corrida terminada. Total usado hoy: 288.
+- `2026-10-08T12:19:13` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-10-08T12:19:56` Tests FALLARON:
+```
+-1/test_entries_from_folders_read0')
+
+    def test_entries_from_folders_reads_injected_folders(tmp_path):
+        carpeta = tmp_path / "Inicio"
+        carpeta.mkdir()
+        (carpeta / "MiPrograma.lnk").write_text("x")
+        (carpeta / "Otro.lnk").write_text("y")
+        entradas = startup.entries_from_folders([carpeta])
+>       assert {e.name for e in entradas} == {"MiPrograma", "Otro"}
+E       AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+E         
+E         Extra items in the left set:
+E         'Otro.lnk'
+E         'MiPrograma.lnk'
+E         Extra items in the right set:
+E         'Otro'
+E         'MiPrograma'
+E         
+E         Full diff:
+E           {
+E         -     'MiPrograma',
+E         +     'MiPrograma.lnk',
+E         ?                ++++
+E         -     'Otro',
+E         +     'Otro.lnk',
+E         ?          ++++
+E           }
+
+evolve/tests/test_modules.py:677: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'Otro.lnk'
+  'MiPrograma.lnk'
+  Extra items in the right set:
+  'Otro'
+  'MiPrograma'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed in 1.56s
+
+```
+- `2026-10-08T12:19:56` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se mejoró la robustez de `_process_folder_entry` al agregar una validación contra el uso de `os.DirEntry.path`, asegurando que si la ruta es un punto de reparse (junction) no se intente procesar como archivo, y se corrigió un error de variable no definida al limpiar el nombre.
+- `2026-10-08T12:20:22` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-08T12:21:25` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-08T12:22:31` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-08T12:23:43` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-08T12:24:36` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-10-08T12:24:48` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se endureció la seguridad defensiva en `_should_skip_entry` y `_process_file_node` para verificar explícitamente que cada ruta procesada sea un archivo o directorio real y no un dispositivo lógico (como volúmenes montados o pipes), añadiendo una capa de validación adicional con `is_file()` / `is_dir()` antes de realizar operaciones de IO.
+- `2026-10-08T12:24:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T12:24:48` Corrida terminada. Total usado hoy: 292.

@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **205** (40.7% de aceptación)
-- Rechazadas por tests: 26
+- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Rechazadas por tests: 27
 - Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 84 | 10 | 17 | 5 | 100 |
-| 2026-10-08 | 121 | 16 | 25 | 12 | 114 |
+| 2026-10-07 | 84 | 10 | 17 | 5 | 96 |
+| 2026-10-08 | 122 | 17 | 25 | 12 | 116 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - rendimiento: **45**
 - legibilidad y documentación: **42**
-- seguridad defensiva: **36**
+- seguridad defensiva: **37**
 - robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
+- `browser.py`: **21**
 - `assistant.py`: **20**
-- `browser.py`: **20**
 - `quarantine.py`: **20**
 - `safety.py`: **18**
 - `healthscore.py`: **17**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T12:24:48` **browser.py** (seguridad defensiva): Se endureció la seguridad defensiva en `_should_skip_entry` y `_process_file_node` para verificar explícitamente que cada ruta procesada sea un archivo o directorio real y no un dispositivo lógico (como volúmenes montados o pipes), añadiendo una capa de validación adicional con `is_file()` / `is_dir()` antes de realizar operaciones de IO.
 - `2026-10-08T12:10:17` **safety.py** (robustez ante casos límite): Se ha añadido una validación de seguridad contra rutas que contienen caracteres no imprimibles o de control (vía `_has_invalid_chars`) dentro de la función `ensure_safe_to_modify`, cerrando un posible vector de ataque donde nombres de archivo maliciosos podrían evadir filtros básicos o causar comportamiento inesperado al ser normalizados o procesados por la API de Windows.
 - `2026-10-08T12:05:26` **quarantine.py** (robustez ante casos límite): Se mejoró la robustez ante casos de error en `_safe_unlink` asegurando que la llamada a `os.fsync` sobre el directorio padre sea condicional a la existencia del mismo, evitando excepciones en escenarios donde la estructura de directorios pudo haber cambiado inesperadamente.
 - `2026-10-08T12:04:55` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `is_safe_to_modify` ante posibles fallos de resolución de rutas (paths inexistentes o con errores de permisos durante el chequeo) y añadí un chequeo explícito de profundidad de recursión en `scan_for_junk` para prevenir desbordamientos por enlaces simbólicos cíclicos.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T11:09:49` **diskreport.py** (rendimiento): Optimizé `walk_files` y `_collect_summary_data` eliminando llamadas redundantes a `Path.resolve()` y `Path.exists()` dentro del bucle principal, reduciendo drásticamente las llamadas al sistema operativo (I/O) durante el recorrido del árbol de directorios.
 - `2026-10-08T11:08:50` **browser.py** (rendimiento): Optimizé el rendimiento del escaneo recursivo mediante la validación de `os.scandir` y la eliminación de llamadas redundantes a `os.path.normcase` dentro del bucle interno, reduciendo la carga de E/S.
 - `2026-10-08T11:07:59` **branding.py** (rendimiento): Se optimizó el cálculo y renderizado de franjas decorativas mediante la eliminación de una tupla intermedia redundante en `_get_stripe_params` y el uso directo de valores pre-calculados, reduciendo la presión sobre el recolector de basura durante el pintado del Canvas.
-- `2026-10-08T10:59:29` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` utilizando `set` para la detección de tokens y reduciendo el costo de búsqueda de handlers, además de eliminar la regeneración de `active_problems` al acceder repetidamente a la misma propiedad dentro del motor local.
