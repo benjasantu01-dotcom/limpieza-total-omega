@@ -436,27 +436,48 @@ def _rule(reason: ProtectionReason, predicate: ViolationPredicate) -> _Integrity
     """Helper de fábrica para definir una nueva regla de integridad."""
     return _IntegrityCheck(reason, predicate)
 
+# Predicados de regla específicos para mejorar legibilidad
+def _check_symlink(p, _, __): return p.is_symlink()
+def _check_reparse(p, _, sd): return sd.is_reparse or _is_system_directory_junction(str(p))
+def _check_kernel_locked(p, _, __): return _is_kernel_managed(p)
+def _check_read_only(p, st, sd): return not bool(st.st_mode & stat.S_IWRITE) or sd.is_readonly
+def _check_vol_read_only(p, _, __): return _is_volume_readonly(str(p))
+def _check_vol_removable(p, _, __): return _is_volume_removable_media(str(p))
+def _check_vol_restricted(p, _, __): return _is_volume_compressed_or_encrypted(str(p))
+def _check_in_use(_, __, sd): return sd.is_in_use
+def _check_sys_hidden(_, __, sd): return sd.is_protected_system
+def _check_offline(_, __, sd): return sd.has_flag(Win32Attr.OFFLINE)
+def _check_enc_comp(_, __, sd): return bool(sd.attrs & (Win32Attr.COMPRESSED | Win32Attr.ENCRYPTED))
+def _check_sparse(_, __, sd): return sd.has_flag(Win32Attr.SPARSE_FILE)
+def _check_hard_link(p, st, __): return p.is_file() and st.st_nlink > 1
+def _check_ads(p, _, __): return _has_alternate_data_stream(p.name)
+def _check_empty(p, st, __): return p.is_file() and st.st_size == 0
+def _check_size(p, st, __): return p.is_file() and st.st_size > MAX_FILE_SIZE
+def _check_mount(p, _, __): return os.path.ismount(p)
+def _check_type(_, st, __): return not (stat.S_ISREG(st.st_mode) or stat.S_ISDIR(st.st_mode))
+def _check_owner(p, _, __): return _is_file_owned_by_system(str(p))
+
 # Lista de validadores de integridad aplicada secuencialmente para garantizar la seguridad
 _VALIDATORS: Final[list[_IntegrityCheck]] = [
-    _rule(ProtectionReason.SYMLINK, lambda p, _, __: p.is_symlink()),
-    _rule(ProtectionReason.REPARSE_POINT, lambda p, _, sd: sd.is_reparse or _is_system_directory_junction(str(p))),
-    _rule(ProtectionReason.KERNEL_LOCKED, lambda p, _, __: _is_kernel_managed(p)),
-    _rule(ProtectionReason.READ_ONLY, lambda _, st, sd: not bool(st.st_mode & stat.S_IWRITE) or sd.is_readonly),
-    _rule(ProtectionReason.VOLUME_READ_ONLY, lambda p, _, __: _is_volume_readonly(str(p))),
-    _rule(ProtectionReason.REMOVABLE_DRIVE, lambda p, _, __: _is_volume_removable_media(str(p))),
-    _rule(ProtectionReason.VOLUME_RESTRICTED, lambda p, _, __: _is_volume_compressed_or_encrypted(str(p))),
-    _rule(ProtectionReason.IN_USE, lambda _, __, sd: sd.is_in_use),
-    _rule(ProtectionReason.SYSTEM_HIDDEN, lambda _, __, sd: sd.is_protected_system),
-    _rule(ProtectionReason.OFFLINE, lambda _, __, sd: sd.has_flag(Win32Attr.OFFLINE)),
-    _rule(ProtectionReason.ENCRYPTED_OR_COMPRESSED, lambda _, __, sd: bool(sd.attrs & (Win32Attr.COMPRESSED | Win32Attr.ENCRYPTED))),
-    _rule(ProtectionReason.SPARSE_FILE, lambda _, __, sd: sd.has_flag(Win32Attr.SPARSE_FILE)),
-    _rule(ProtectionReason.HARD_LINK, lambda p, st, __: p.is_file() and st.st_nlink > 1),
-    _rule(ProtectionReason.ADS, lambda p, _, __: _has_alternate_data_stream(p.name)),
-    _rule(ProtectionReason.EMPTY_FILE, lambda p, st, __: p.is_file() and st.st_size == 0),
-    _rule(ProtectionReason.EXCESSIVE_SIZE, lambda p, st, __: p.is_file() and st.st_size > MAX_FILE_SIZE),
-    _rule(ProtectionReason.MOUNT_POINT, lambda p, _, __: os.path.ismount(p)),
-    _rule(ProtectionReason.INVALID_TYPE, lambda _, st, __: not (stat.S_ISREG(st.st_mode) or stat.S_ISDIR(st.st_mode))),
-    _rule(ProtectionReason.SYSTEM_OWNER, lambda p, _, __: _is_file_owned_by_system(str(p))),
+    _rule(ProtectionReason.SYMLINK, _check_symlink),
+    _rule(ProtectionReason.REPARSE_POINT, _check_reparse),
+    _rule(ProtectionReason.KERNEL_LOCKED, _check_kernel_locked),
+    _rule(ProtectionReason.READ_ONLY, _check_read_only),
+    _rule(ProtectionReason.VOLUME_READ_ONLY, _check_vol_read_only),
+    _rule(ProtectionReason.REMOVABLE_DRIVE, _check_vol_removable),
+    _rule(ProtectionReason.VOLUME_RESTRICTED, _check_vol_restricted),
+    _rule(ProtectionReason.IN_USE, _check_in_use),
+    _rule(ProtectionReason.SYSTEM_HIDDEN, _check_sys_hidden),
+    _rule(ProtectionReason.OFFLINE, _check_offline),
+    _rule(ProtectionReason.ENCRYPTED_OR_COMPRESSED, _check_enc_comp),
+    _rule(ProtectionReason.SPARSE_FILE, _check_sparse),
+    _rule(ProtectionReason.HARD_LINK, _check_hard_link),
+    _rule(ProtectionReason.ADS, _check_ads),
+    _rule(ProtectionReason.EMPTY_FILE, _check_empty),
+    _rule(ProtectionReason.EXCESSIVE_SIZE, _check_size),
+    _rule(ProtectionReason.MOUNT_POINT, _check_mount),
+    _rule(ProtectionReason.INVALID_TYPE, _check_type),
+    _rule(ProtectionReason.SYSTEM_OWNER, _check_owner),
 ]
 
 _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {

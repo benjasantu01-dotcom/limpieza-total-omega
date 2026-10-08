@@ -259,7 +259,12 @@ class Scanner:
         return _is_target_extension(name)
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        """Orquestador: Decide si delegar a exploración de directorios o ejecución de heurísticas."""
+        """
+        Orquestador de procesamiento de entradas.
+        
+        Decide si la entrada debe explorarse (carpeta) o evaluarse (archivo).
+        Utiliza una pila para evitar la recursión profunda.
+        """
         if not isinstance(entry, os.DirEntry) or not entry.path: 
             return
 
@@ -277,7 +282,11 @@ class Scanner:
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta toda la suite de heurísticas sobre el archivo indicado."""
+        """
+        Ejecuta la suite de heurísticas sobre el archivo detectado.
+        
+        Itera sobre ALL_CHECKS aplicando validaciones de seguridad básicas.
+        """
         if not path.is_file() or not _is_readable(path):
             return
         for check_fn in ALL_CHECKS:

@@ -1161,3 +1161,30 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T01:50:18` ➖ Sin cambios en quarantine.py (enfoque: legibilidad y documentación). Motivo: Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados en funciones críticas que carecían de ellos, clarificando las precondiciones de seguridad y el flujo de los mecanismos de aislamiento (TOCTOU, validación de inodos y sincronización de I/O) para facilitar el mantenimiento futuro.
 - `2026-10-08T01:50:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T01:50:18` Corrida terminada. Total usado hoy: 44.
+- `2026-10-08T01:56:41` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-10-08T01:57:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-08T01:58:03` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad del motor de reglas de `safety.py` sustituyendo las funciones lambda anónimas por funciones con nombre dentro de `_VALIDATORS`. Esto permite que, ante una traza de error o un log de auditoría, sea evidente qué lógica de validación falló, facilitando el mantenimiento y la depuración sin alterar el comportamiento.
+- `2026-10-08T01:58:32` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints faltantes en el orquestador principal (`Scanner`) y sus métodos auxiliares, mejorando la legibilidad técnica sin alterar la lógica de escaneo.
+- `2026-10-08T01:58:49` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+_______________ ERROR collecting evolve/tests/test_assistant.py ________________
+evolve/tests/test_assistant.py:25: in <module>
+    import assistant  # noqa: E402
+    ^^^^^^^^^^^^^^^^
+app/assistant.py:55: in <module>
+    import settings
+app/settings.py:27: in <module>
+    ValidatorMap: TypeAlias = MappingProxyType[ConfigKey, _ValidatorEntry]
+                                               ^^^^^^^^^
+E   NameError: name 'ConfigKey' is not defined
+=========================== short test summary info ============================
+ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not defined
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.32s
+
+```
+- `2026-10-08T01:58:49` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se introdujo un `TypeAlias` específico para el mapa de validadores y se documentaron con mayor claridad las funciones internas de validación mediante `docstrings` extendidos para mejorar la mantenibilidad y legibilidad del motor de configuración.
+- `2026-10-08T01:58:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T01:58:49` Corrida terminada. Total usado hoy: 48.

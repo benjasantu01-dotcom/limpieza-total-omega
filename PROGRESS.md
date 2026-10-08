@@ -7,45 +7,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **200** (39.7% de aceptación)
-- Rechazadas por tests: 26
-- Rechazadas por guardia de seguridad: 41
+- Rechazadas por tests: 27
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 228
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-06 | 45 | 8 | 11 | 0 | 46 |
+| 2026-10-06 | 43 | 8 | 11 | 0 | 44 |
 | 2026-10-07 | 139 | 17 | 28 | 8 | 158 |
-| 2026-10-08 | 16 | 1 | 2 | 1 | 24 |
+| 2026-10-08 | 18 | 2 | 3 | 1 | 24 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
-- robustez ante casos límite: **42**
+- legibilidad y documentación: **42**
 - seguridad defensiva: **41**
-- legibilidad y documentación: **40**
+- robustez ante casos límite: **40**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **21**
 - `quarantine.py`: **21**
-- `diskreport.py`: **19**
+- `browser.py`: **20**
 - `memory.py`: **19**
 - `assistant.py`: **19**
+- `diskreport.py`: **18**
 - `healthscore.py`: **18**
-- `safety.py`: **15**
+- `safety.py`: **16**
 - `settings.py`: **14**
 - `organizer.py`: **12**
+- `scanner.py`: **12**
 - `branding.py`: **12**
-- `scanner.py`: **11**
 - `duplicates.py`: **10**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T01:58:32` **scanner.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el orquestador principal (`Scanner`) y sus métodos auxiliares, mejorando la legibilidad técnica sin alterar la lógica de escaneo.
+- `2026-10-08T01:58:03` **safety.py** (legibilidad y documentación): Se ha mejorado la legibilidad del motor de reglas de `safety.py` sustituyendo las funciones lambda anónimas por funciones con nombre dentro de `_VALIDATORS`. Esto permite que, ante una traza de error o un log de auditoría, sea evidente qué lógica de validación falló, facilitando el mantenimiento y la depuración sin alterar el comportamiento.
 - `2026-10-08T01:49:49` **organizer.py** (legibilidad y documentación): Se introdujeron type hints en funciones críticas, se reemplazaron nombres ambiguos (ej. `s`, `d`, `st`) por descriptivos (ej. `src_resolved`, `dest_resolved`, `stat_result`) y se añadió un docstring detallado a la lógica de validación recursiva para clarificar por qué una operación de movimiento podría ser peligrosa.
 - `2026-10-08T01:49:21` **memory.py** (legibilidad y documentación): He mejorado la documentación técnica del módulo mediante docstrings explicativos en las estructuras de datos y funciones críticas, además de clarificar la lógica de filtrado de procesos con comentarios descriptivos que facilitan el mantenimiento sin alterar la funcionalidad.
 - `2026-10-08T01:48:50` **main.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `main.py` mediante la refactorización de `_build_health_area_bars` y `_build_single_health_bar`, extrayendo la lógica de construcción de componentes a métodos con docstrings claros y tipado explícito, alineándose con el enfoque de legibilidad sin alterar el comportamiento.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T01:16:57` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` añadiendo una validación explícita para evitar la corrupción por escritura parcial, asegurando que la lista de ítems sea procesable antes de intentar la serialización y persistencia.
 - `2026-10-08T01:12:11` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `top_memory_processes` añadiendo validación explícita para evitar errores de tipo al procesar los resultados de `EnumProcesses` y garantizando que los cálculos de memoria sean seguros frente a valores inesperados del sistema.
 - `2026-10-08T01:06:56` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `compute_score` y `_evaluate_rules` integrando un chequeo explícito de la integridad del objeto `metrics` mediante la propiedad `is_finite` antes de procesar el pipeline, evitando cálculos con estados inconsistentes.
-- `2026-10-08T00:57:06` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo validaciones específicas para manejar rutas inaccesibles o inconsistencias en `scandir` sin romper el flujo del escaneo, además de asegurar que los parámetros de entrada se filtren correctamente antes de operar.
-- `2026-10-08T00:56:33` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_in_use` agregando un manejo explícito para el cierre de `handle` mediante `finally`, asegurando que no queden identificadores de archivo abiertos si ocurre una excepción inesperada durante la operación de la API Win32.
