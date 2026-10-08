@@ -409,6 +409,9 @@ class SystemContext:
             val = _get_source_value(source, key)
             if val is None or isinstance(val, (dict, list, set, type)): return None
             
+            # Verificación de tipo estricta para prevenir inyecciones
+            if not isinstance(val, (int, float, str)): return None
+            
             float_val = float(val)
             if not _is_metric_within_bounds(float_val, spec): 
                 return None

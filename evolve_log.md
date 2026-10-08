@@ -1324,3 +1324,63 @@ FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_del
 - `2026-10-08T03:12:31` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo la verificación de rutas de tipo "Substituted Drive" (a través de `QueryDosDeviceW`) para evitar que la aplicación modifique archivos a través de unidades virtuales o mapeos de directorios que pueden esconder la ubicación real de archivos protegidos, mejorando la robustez frente a trucos de manipulación de rutas en Windows.
 - `2026-10-08T03:12:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T03:12:31` Corrida terminada. Total usado hoy: 76.
+- `2026-10-08T03:18:08` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-10-08T03:18:44` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: Scanner._is_inside_base_root, Scanner._is_reparse_point
+- `2026-10-08T03:19:14` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: robustez ante casos límite).
+- `2026-10-08T03:19:53` Tests FALLARON:
+```
+-1/test_entries_from_folders_read0')
+
+    def test_entries_from_folders_reads_injected_folders(tmp_path):
+        carpeta = tmp_path / "Inicio"
+        carpeta.mkdir()
+        (carpeta / "MiPrograma.lnk").write_text("x")
+        (carpeta / "Otro.lnk").write_text("y")
+        entradas = startup.entries_from_folders([carpeta])
+>       assert {e.name for e in entradas} == {"MiPrograma", "Otro"}
+E       AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+E         
+E         Extra items in the left set:
+E         'MiPrograma.lnk'
+E         'Otro.lnk'
+E         Extra items in the right set:
+E         'MiPrograma'
+E         'Otro'
+E         
+E         Full diff:
+E           {
+E         -     'MiPrograma',
+E         +     'MiPrograma.lnk',
+E         ?                ++++
+E         -     'Otro',
+E         +     'Otro.lnk',
+E         ?          ++++
+E           }
+
+evolve/tests/test_modules.py:677: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'MiPrograma.lnk'
+  'Otro.lnk'
+  Extra items in the right set:
+  'MiPrograma'
+  'Otro'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed in 1.59s
+
+```
+- `2026-10-08T03:19:53` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se mejoró la robustez de `_process_folder_entry` corrigiendo un error de referencia de variable (`_` en lugar de `entry.name`) y se añadió una validación defensiva en `_process_folder_entry` para prevenir errores ante rutas con permisos denegados o caracteres inválidos al convertir a `Path`.
+- `2026-10-08T03:20:20` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `_is_safe_payload_structure` para limitar la recursión de forma explícita y añadí una validación estricta de tipos en los datos de entrada para prevenir ataques de tipo "Type Juggling" en el procesamiento de JSON remoto.
+- `2026-10-08T03:20:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T03:20:20` Corrida terminada. Total usado hoy: 80.

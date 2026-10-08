@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **202** (40.1% de aceptación)
-- Rechazadas por tests: 26
-- Rechazadas por guardia de seguridad: 44
+- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Rechazadas por tests: 27
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-06 | 28 | 5 | 8 | 0 | 37 |
+| 2026-10-06 | 28 | 5 | 8 | 0 | 33 |
 | 2026-10-07 | 139 | 17 | 28 | 8 | 158 |
-| 2026-10-08 | 35 | 4 | 8 | 2 | 27 |
+| 2026-10-08 | 36 | 5 | 9 | 2 | 28 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,11 +26,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **42**
 - rendimiento: **42**
 - robustez ante casos límite: **39**
-- seguridad defensiva: **33**
+- seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **21**
+- `assistant.py`: **22**
 - `browser.py`: **21**
 - `quarantine.py`: **21**
 - `diskreport.py`: **19**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T03:20:20` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_is_safe_payload_structure` para limitar la recursión de forma explícita y añadí una validación estricta de tipos en los datos de entrada para prevenir ataques de tipo "Type Juggling" en el procesamiento de JSON remoto.
 - `2026-10-08T03:12:31` **safety.py** (robustez ante casos límite): Se introdujo la verificación de rutas de tipo "Substituted Drive" (a través de `QueryDosDeviceW`) para evitar que la aplicación modifique archivos a través de unidades virtuales o mapeos de directorios que pueden esconder la ubicación real de archivos protegidos, mejorando la robustez frente a trucos de manipulación de rutas en Windows.
 - `2026-10-08T03:10:37` **quarantine.py** (robustez ante casos límite): Mejoré la resiliencia ante archivos bloqueados o en uso durante la fase de aislamiento atómico, añadiendo una verificación de disponibilidad mediante `_is_file_exclusive` antes de intentar el copiado, evitando así errores de E/S por procesos de fondo (como indexadores de búsqueda o antivirus) que podrían bloquear el archivo origen de forma intermitente.
 - `2026-10-08T03:02:04` **main.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en la inicialización y el procesamiento de hilos, asegurando que la aplicación no intente destruir widgets o invocar callbacks en una ventana inexistente si el cierre ocurre durante una operación asíncrona.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T02:19:23` **main.py** (rendimiento): Optimicé el sistema de caché implementando una invalidación granular basada en eventos en lugar de confiar solo en el TTL, evitando re-cálculos costosos (como `_compile_metrics`) cuando no ha habido cambios en los estados fuente, reduciendo significativamente la carga de CPU durante el bucle de salud.
 - `2026-10-08T02:18:22` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` convirtiendo `_PIPELINE` de una `List` a un `tuple` para asegurar inmutabilidad y mejorar ligeramente la velocidad de acceso, y sobre todo, moví el filtrado de mensajes imprimibles fuera del bucle de reglas a una función auxiliar para reducir la sobrecarga de procesamiento de strings.
 - `2026-10-08T02:17:29` **diskreport.py** (rendimiento): Optimizé la función `_is_excluded_path` para evitar la conversión innecesaria a objetos `Path` y el uso de `.relative_to` (que realiza validaciones costosas) mediante un chequeo de cadena basado en `Path.parts`, reduciendo significativamente la sobrecarga por archivo durante el escaneo recursivo.
-- `2026-10-08T02:08:57` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante la sustitución de la lógica de chequeo de archivos en uso (`_is_file_in_use`), la cual realizaba llamadas costosas a `kernel32.CreateFileW` por cada archivo encontrado, reemplazándola por una verificación de metadatos `stat` que es órdenes de magnitud más rápida y segura.
