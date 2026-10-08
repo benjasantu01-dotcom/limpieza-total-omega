@@ -137,7 +137,7 @@ _JUNK_SCORER = create_linear_scorer(_LIMIT_JUNK_MB, inverse=True)
 _DUP_SCORER = create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)
 _STARTUP_SCORER = create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inverse=True)
 
-_PIPELINE: Final[List[PipelineEntry]] = [
+_PIPELINE: Final[Tuple[PipelineEntry, ...]] = (
     PipelineEntry(
         "seguridad", 30, 
         lambda m: score_security(m.suspicious_count, m.suspicious_warnings), 
@@ -168,7 +168,7 @@ _PIPELINE: Final[List[PipelineEntry]] = [
         lambda m: score_startup(m.startup_count), 
         (RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),)
     ),
-]
+)
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
     return _JUNK_SCORER(float(junk_mb))
@@ -264,6 +264,10 @@ class HealthResult:
 def grade_for_score(score: float | int) -> str: 
     return Grade.from_score(score)
 
+def _sanitize_msg(msg: str) -> str:
+    """Elimina caracteres no imprimibles y trunca el mensaje."""
+    return "".join(c for c in msg if c.isprintable() and c not in "\r\n\t").strip()[:200]
+
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio, findings: List[str]) -> None:
     """Ejecuta las reglas de diagnóstico y sanitiza el texto de los resultados."""
     for rule in rules:
@@ -273,8 +277,8 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
                 if not isinstance(raw_msg, str): 
                     logging.warning(f"Regla en {rule.area} devolvió tipo inesperado: {type(raw_msg)}")
                     continue
-                clean_msg = "".join(c for c in raw_msg if c.isprintable() and c not in "\r\n\t").strip()
-                if clean_msg: findings.append(clean_msg[:200])
+                clean_msg = _sanitize_msg(raw_msg)
+                if clean_msg: findings.append(clean_msg)
         except Exception as e:
             logging.error(f"Falla en evaluación de regla {rule.area}: {e}")
 

@@ -38,6 +38,7 @@ Se optimiza la recolección de basura mediante procesamiento por generadores.
 Se optimiza el volcado de reportes mediante inserción de bloques de texto únicos.
 Se implementa memoización de contexto para evitar re-cálculos en el asistente.
 Optimización de caché mediante marcas de tiempo para reducir re-cálculos de UI.
+Invalidación inteligente mediante digests de estado para evitar re-compilaciones.
 
 Instalar dependencias:
     pip install customtkinter

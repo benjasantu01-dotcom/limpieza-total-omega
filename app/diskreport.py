@@ -165,11 +165,9 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
             return True
         
-        # Validar pertenencia rápida sin convertir a string absoluto innecesariamente
-        entry_path = Path(entry.path)
-        try:
-            entry_path.relative_to(root_path)
-        except ValueError:
+        # Validar pertenencia rápida comparando partes de la ruta
+        path_parts = Path(entry.path).parts
+        if len(path_parts) < len(root_path.parts) or path_parts[:len(root_path.parts)] != root_path.parts:
             return True
 
         try:
@@ -179,7 +177,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
                 return True
         except (OSError, PermissionError, AttributeError):
             return True
-        return is_protected_path(entry_path)
+        return is_protected_path(Path(entry.path))
     except (OSError, PermissionError, AttributeError, RuntimeError, TypeError):
         return True
             
