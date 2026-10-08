@@ -318,7 +318,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     
     candidates: List[Tuple[Tuple[float, int], Path]] = []
     for p in group.paths:
-        if isinstance(p, Path) and p.exists():
+        if isinstance(p, Path) and p.is_file():
             if (score := _calculate_keeper_heuristic(p)) is not None:
                 candidates.append((score, p))
             
@@ -328,7 +328,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 def _get_path_label(path: Path, keeper: Optional[Path]) -> str:
     """Retorna una etiqueta descriptiva para la interfaz de usuario según el rol del archivo."""
-    if not isinstance(path, Path) or not path.exists():
+    if not isinstance(path, Path) or not path.is_file():
         return "[desaparecido]"
     if not _safe_path_check(path):
         return "[inaccesible]"

@@ -294,10 +294,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     metric_breakdown: Dict[MetricKey, int] = {}
     accumulated_score: float = 0.0
     
-    # Pipeline estático; pre-resolución de nombres optimizada
     for entry in _PIPELINE:
         try:
-            area_ratio = _clamp(entry.scorer(metrics))
+            area_ratio = _clamp(float(entry.scorer(metrics)))
             if entry.rules:
                 _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             points = area_ratio * entry.weight

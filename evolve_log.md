@@ -1886,3 +1886,13 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T07:14:38` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
 - `2026-10-08T07:14:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T07:14:38` Corrida terminada. Total usado hoy: 172.
+- `2026-10-08T07:22:49` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-10-08T07:23:20` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `_is_excluded_path` para manejar situaciones donde el acceso a un archivo o carpeta falla debido a condiciones de carrera (Race Condition) o archivos bloqueados por el sistema, asegurando que el iterador no se detenga ante errores transitorios de E/S.
+- `2026-10-08T07:23:47` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante archivos inexistentes o con rutas malformadas en `suggest_keeper` y `_get_path_label` mediante una verificación de existencia más resiliente antes de intentar acceder a sus metadatos.
+- `2026-10-08T07:24:28` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `compute_score` ante posibles excepciones inesperadas en las funciones `scorer` personalizadas y se blindó `_render_bar` contra entradas inválidas mediante validación de tipos, garantizando que el pipeline de salud no colapse si una métrica entrega un dato corrupto.
+- `2026-10-08T07:25:28` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-08T07:26:31` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-08T07:27:37` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-08T07:28:49` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-08T07:28:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T07:28:49` Corrida terminada. Total usado hoy: 176.

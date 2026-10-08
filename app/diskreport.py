@@ -178,14 +178,12 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
 
         # Detección de puntos de reparse (Windows) o enlaces simbólicos (Unix)
         try:
-            st = entry.stat(follow_symlinks=False)
-            if not hasattr(st, 'st_file_attributes'): # Fallback para sistemas sin atributos extendidos
-                 is_reparse = entry.is_symlink()
-            else:
-                 is_reparse = (st.st_file_attributes & 0x0400) if os.name == 'nt' else entry.is_symlink()
-            
-            if is_reparse:
+            if entry.is_symlink():
                 return True
+            st = entry.stat(follow_symlinks=False)
+            if hasattr(st, 'st_file_attributes') and os.name == 'nt':
+                 if (st.st_file_attributes & 0x0400): # FILE_ATTRIBUTE_REPARSE_POINT
+                     return True
         except (OSError, PermissionError, AttributeError):
             return True
             
