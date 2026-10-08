@@ -392,14 +392,17 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     
     try:
         for path, size_bytes in walk_files(directory, skip_protected):
-            stats.register_file(size_bytes, path)
-            
-            # Si se requiere mantener top N, gestionar el heap
-            if limit > 0:
-                if len(top_heap) < limit: 
-                    heapq.heappush(top_heap, (size_bytes, path))
-                elif size_bytes > top_heap[0][0]: 
-                    heapq.heapreplace(top_heap, (size_bytes, path))
+            try:
+                stats.register_file(size_bytes, path)
+                
+                # Si se requiere mantener top N, gestionar el heap
+                if limit > 0:
+                    if len(top_heap) < limit: 
+                        heapq.heappush(top_heap, (size_bytes, path))
+                    elif size_bytes > top_heap[0][0]: 
+                        heapq.heapreplace(top_heap, (size_bytes, path))
+            except (OSError, PermissionError, RuntimeError):
+                continue
     except (OSError, PermissionError, RuntimeError):
         pass
                 

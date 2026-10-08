@@ -104,7 +104,7 @@ def _is_file_locked(path: Path) -> bool:
         with open(path, "rb") as f:
             f.peek(1)
             return False
-    except (PermissionError, OSError, ValueError):
+    except (PermissionError, OSError, ValueError, io.UnsupportedOperation):
         return True
 
 
@@ -305,6 +305,9 @@ def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     if not isinstance(path, Path):
         return None
     try:
+        # Validación de que el archivo sigue existiendo antes de statear
+        if not path.is_file():
+            return None
         stat = path.stat()
         return float(stat.st_mtime), len(str(path))
     except (OSError, PermissionError, ValueError, AttributeError):
@@ -318,7 +321,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     
     candidates: List[Tuple[Tuple[float, int], Path]] = []
     for p in group.paths:
-        if isinstance(p, Path) and p.is_file():
+        if isinstance(p, Path):
             if (score := _calculate_keeper_heuristic(p)) is not None:
                 candidates.append((score, p))
             

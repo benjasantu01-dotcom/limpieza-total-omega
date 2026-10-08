@@ -1679,35 +1679,34 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @ensure_safety
     def on_trim_process(self) -> None:
         """Callback: Liberar working set (trim) de proceso."""
-        pid_raw = self._safe_get_entry_value(getattr(self, 'pid_entry', None), None, numeric=True)
-        if pid_raw is None:
-            self.log("Error: PID inválido o vacío.", "Memoria")
+        pid_val = self._safe_get_entry_value(getattr(self, 'pid_entry', None), None, numeric=True)
+        
+        # Validar explicitamente que el PID exista y sea coherente
+        if pid_val is None or int(pid_val) < 0:
+            self.log("Error: PID inválido.", "Memoria")
             return
         
-        try:
-            pid = int(pid_raw)
-            if pid < 100:
-                self.log(f"Error: El proceso {pid} es crítico del sistema.", "Memoria")
-                return
-            
-            if not memory_mod.process_exists(pid):
-                self.log(f"Error: El proceso {pid} no está activo.", "Memoria")
-                return
+        pid = int(pid_val)
+        if pid < 100:
+            self.log(f"Error: El proceso {pid} es crítico del sistema.", "Memoria")
+            return
+        
+        if not memory_mod.process_exists(pid):
+            self.log(f"Error: El proceso {pid} no está activo.", "Memoria")
+            return
 
-            if not self._confirm("Liberar working set", memory_mod.TRIM_WARNING + "\n\n¿Seguimos?"):
-                return
+        if not self._confirm("Liberar working set", memory_mod.TRIM_WARNING + "\n\n¿Seguimos?"):
+            return
 
-            def task() -> None:
-                try:
-                    safety.ensure_safe_to_modify(Path.home())
-                    ok, mensaje = memory_mod.trim_working_set(pid)
-                    self._safe_run_ui_callback(lambda: self.log(("OK: " if ok else "Sin efecto: ") + mensaje, "Memoria"))
-                except Exception as e:
-                    self._safe_run_ui_callback(lambda: self.log(f"Error al intentar liberar proceso: {e}", "Memoria"))
+        def task() -> None:
+            try:
+                safety.ensure_safe_to_modify(Path.home())
+                ok, mensaje = memory_mod.trim_working_set(pid)
+                self._safe_run_ui_callback(lambda: self.log(("OK: " if ok else "Sin efecto: ") + mensaje, "Memoria"))
+            except Exception as e:
+                self._safe_run_ui_callback(lambda: self.log(f"Error al intentar liberar proceso: {e}", "Memoria"))
 
-            self.run_async(task, target=str(Path.home()))
-        except ValueError:
-            self.log("Error: PID debe ser numérico.", "Memoria")
+        self.run_async(task, target=str(Path.home()))
 
     @validated_ui_operation
     def on_drives_report(self) -> None:
@@ -1798,7 +1797,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         a_mover = []
         for grupo in dups:
             conservar = duplicates_mod.suggest_keeper(grupo)
-            a_mover.extend([p for p in grupo.paths if p != conservar])
+            if conservar:
+                a_mover.extend([p for p in grupo.paths if p != conservar])
 
         aptos = [r for r in a_mover if self._is_safe_path(r)]
         
@@ -2010,7 +2010,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task)
 
     @validated_ui_operation
-    @ensure_safety
     def on_reset_settings(self) -> None:
         """Callback: Reset de fábrica."""
         if not self._confirm(

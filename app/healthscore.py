@@ -302,11 +302,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             points = area_ratio * entry.weight
             metric_breakdown[entry.area] = int(round(points))
             accumulated_score += points
-        except Exception as e:
+        except (Exception, ValueError, TypeError) as e:
             logging.error(f"Falla crítica en pipeline {entry.area}: {e}")
             metric_breakdown[entry.area] = 0
             
-    if metrics.quarantined_count > 0:
+    if hasattr(metrics, "quarantined_count") and metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena.")
     
     final_score = int(round(_clamp(accumulated_score, 0.0, 100.0)))
