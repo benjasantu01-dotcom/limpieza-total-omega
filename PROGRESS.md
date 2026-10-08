@@ -6,45 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Mejoras aceptadas: **204** (40.5% de aceptación)
 - Rechazadas por tests: 25
-- Rechazadas por guardia de seguridad: 41
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 137 | 17 | 27 | 8 | 155 |
-| 2026-10-08 | 66 | 8 | 14 | 6 | 66 |
+| 2026-10-07 | 135 | 17 | 27 | 8 | 153 |
+| 2026-10-08 | 69 | 8 | 15 | 6 | 66 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **43**
-- seguridad defensiva: **42**
-- rendimiento: **39**
-- robustez ante casos límite: **33**
+- rendimiento: **42**
+- seguridad defensiva: **41**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **21**
+- `quarantine.py`: **22**
 - `browser.py`: **21**
-- `quarantine.py`: **21**
+- `assistant.py`: **20**
 - `diskreport.py`: **20**
 - `healthscore.py`: **18**
-- `memory.py`: **16**
+- `memory.py`: **17**
 - `safety.py`: **15**
 - `branding.py`: **14**
-- `settings.py`: **13**
-- `organizer.py`: **12**
+- `organizer.py`: **13**
+- `settings.py`: **12**
 - `scanner.py`: **12**
 - `duplicates.py`: **11**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T06:57:20` **quarantine.py** (rendimiento): Se optimizó la función `purge_all` para evitar lecturas de disco redundantes mediante el uso de `set` para búsquedas O(1) y se eliminó la iteración doble sobre los elementos, mejorando significativamente la eficiencia durante la limpieza masiva.
+- `2026-10-08T06:56:38` **organizer.py** (rendimiento): Optimizé el proceso de escaneo de archivos utilizando un `set` local para la caché de extensiones y evitando la creación redundante de objetos `Path` y llamadas a `resolve()` innecesarias dentro del bucle principal de `os.scandir`, reduciendo significativamente la sobrecarga de I/O por iteración.
+- `2026-10-08T06:56:10` **memory.py** (rendimiento): Optimicé `top_memory_processes` reemplazando la creación de una lista temporal completa por un generador y limitando las llamadas a la API de procesos, reduciendo el consumo de CPU y la carga de memoria durante el escaneo de procesos.
 - `2026-10-08T06:43:30` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` mediante la pre-validación de `_PIPELINE` y el uso de un diccionario de métricas local para evitar múltiples accesos a atributos mediante `getattr` o llamadas recursivas durante la iteración del bucle, minimizando el costo de resolución de nombres en tiempo de ejecución.
 - `2026-10-08T06:33:53` **branding.py** (rendimiento): Se introdujo una cache de nivel superior para los resultados de `_get_grouped_segments` dentro de `gradient_colors`, evitando la ejecución redundante de la lógica de segmentación durante el renderizado repetitivo de elementos UI con los mismos parámetros.
 - `2026-10-08T06:33:33` **assistant.py** (rendimiento): Se optimizó el acceso a métricas en `SystemContext` mediante la pre-compilación de la lógica de evaluación en `active_problems` y el uso de un diccionario de acceso directo en el `ingest`, eliminando la re-iteración sobre `_VALIDATORS` para cada campo y mejorando la eficiencia al evitar llamados repetidos a `getattr`.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T06:02:36` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las funciones críticas de escaneo (`_sum_directory_recursive` y `_should_skip_entry`) mediante la adición de Type Hints más precisos, docstrings que explican las decisiones de seguridad, y la clarificación de la lógica de recursión.
 - `2026-10-08T06:02:09` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos con parámetros y retornos a las funciones que carecían de ellos, y se ha estandarizado la nomenclatura interna de las constantes de colores (prefijo `C_`) para mejorar la legibilidad y mantenibilidad del archivo.
 - `2026-10-08T05:53:26` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y la seguridad del módulo `assistant.py` mediante la refactorización de `_ensure_safe_text`, extrayendo la lógica de filtrado de patrones de seguridad a una función auxiliar explícita (`_contains_forbidden_patterns`), lo que clarifica la intención del chequeo y facilita futuras auditorías de seguridad sin alterar el comportamiento.
-- `2026-10-08T05:52:15` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` capturando explícitamente `PermissionError` y `OSError` al realizar operaciones críticas de sistema de archivos (`os.replace` y `os.fsync`), evitando que una falla de permisos durante el reemplazo atómico deje el archivo en un estado inconsistente o silencie el error.
-- `2026-10-08T05:51:38` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas centralizando la captura de excepciones y validando inputs críticos en `check_recent_executable_in_downloads` y `check_system_lookalike`, evitando errores silenciosos al procesar rutas o atributos de archivos inexistentes o bloqueados.
-- `2026-10-08T05:44:47` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_owned_by_system` implementando un manejo de errores más preciso en la invocación de `advapi32.GetNamedSecurityInfoW`, asegurando la liberación de recursos (SID) mediante `LocalFree` para prevenir fugas de memoria, tal como requiere una implementación de bajo nivel en Python usando `ctypes`.

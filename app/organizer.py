@@ -78,8 +78,6 @@ class JunkFile:
 
     def __post_init__(self) -> None:
         try:
-            if isinstance(self.path, Path) and self.path.is_absolute():
-                self.path = self.path.resolve()
             stat_result = self.path.stat()
             if self._ino is None:
                 self._ino = stat_result.st_ino
@@ -217,6 +215,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
         if resolved_dir in visited: return
         visited.add(resolved_dir)
         now_ts: float = datetime.now().timestamp()
+        junk_exts = JUNK_EXT_TUPLE
         
         with os.scandir(current_dir) as iterator:
             for entry in iterator:
@@ -225,11 +224,11 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False):
-                        stats = entry.stat(follow_symlinks=False)
-                        if (0 <= stats.st_size < MAX_FILE_SIZE_BYTES and 
-                            stats.st_mtime <= now_ts + 3600 and
-                            entry.name.lower().endswith(JUNK_EXT_TUPLE)):
-                            if not _is_system_hidden(entry):
+                        if entry.name.lower().endswith(junk_exts):
+                            stats = entry.stat(follow_symlinks=False)
+                            if (0 <= stats.st_size < MAX_FILE_SIZE_BYTES and 
+                                stats.st_mtime <= now_ts + 3600 and
+                                not _is_system_hidden(entry)):
                                 found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
                 except (PermissionError, OSError):
                     continue

@@ -145,7 +145,7 @@ class QuarantineItem:
         if not isinstance(self.item_id, str) or not self.item_id:
             raise ValueError("ID de ítem vacío o inválido")
         if not isinstance(self.reason, str) or not self.reason:
-            self.reason = "Sin motivo especificado"
+            raise ValueError("Motivo no especificado")
 
     @property
     def size_mb(self) -> float:
@@ -282,7 +282,6 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
     Eliminación segura: requiere validación de inodo, hash y ausencia de 
     bloqueos/enlaces antes de proceder con el unlink.
     """
-    # Protección explícita adicional: NUNCA borrar nada protegido aunque falle el resto
     if is_protected_path(path):
         return False
         
@@ -309,7 +308,6 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
         parent = path.parent
         _check_io_error_context(path.unlink)
         
-        # Sincronizar directorio padre para persistir el cambio en el sistema de archivos
         dir_fd = os.open(str(parent), os.O_RDONLY)
         try: os.fsync(dir_fd)
         finally: os.close(dir_fd)
@@ -543,7 +541,6 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista de ítems.")
 
-    # Validar que todos los ítems sean serializables antes de iniciar E/S
     try:
         serializable_items = [item.to_dict() for item in items]
         encoded_content = json.dumps(serializable_items, indent=2, ensure_ascii=False).encode('utf-8')
@@ -655,7 +652,6 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
             if not is_safe_to_modify(temp_dest.parent):
                 raise UnsafePathError("Directorio de destino no seguro.")
             
-            # Asegurar exclusividad y evitar sobreescritura mediante O_EXCL
             dest_fd = os.open(str(temp_dest), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
             try:
                 with os.fdopen(dest_fd, "wb") as dest_handle:
@@ -738,7 +734,6 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if not is_safe_to_modify(destination.parent):
         raise UnsafePathError("El sandbox destino ha sido invalidado.")
 
-    # Verificación de integridad final tras re-evaluación de estado
     if source.stat().st_ino != stat_orig.st_ino:
         raise RuntimeError("Integridad comprometida: el archivo fue reemplazado (TOCTOU).")
 
@@ -845,13 +840,11 @@ def quarantine_file(
         
     source_path = _validate_source_for_quarantine(p_source)
     
-    # Verificación proactiva de bloqueo antes de iniciar
     if _is_file_in_use_by_system(source_path):
         raise IOError("Archivo origen bloqueado por el sistema: operación abortada por seguridad.")
         
     dest_dir = quarantine_dir(base)
     
-    # Pre-chequeo de escritura en sandbox antes de iniciar I/O pesado
     try:
         test_file = dest_dir / f".check_{uuid.uuid4().hex}"
         test_file.touch()
@@ -871,7 +864,6 @@ def quarantine_file(
     try:
         file_hash, file_inode = _atomic_isolate_file(source_path, destination, st_info.st_size)
         
-        # Doble verificación: comprobar que el inodo actual del destino sea consistente con la operación realizada
         if not destination.exists() or destination.stat().st_ino != file_inode or _get_sha256(destination) != file_hash:
             raise RuntimeError("Falla crítica: el destino no es coherente tras la copia.")
             
@@ -982,7 +974,6 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem) -> bool:
     """Valida los requisitos de seguridad antes de proceder con el borrado."""
     if _is_file_in_use_by_system(file_path):
         return False
-    # Verificación de existencia previa antes de llamar a integridad
     if not file_path.exists():
         return True
     return (
@@ -1001,23 +992,18 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         if not items:
             return 0
         
-        # Mapeo eficiente O(1) para lookups de metadatos
         item_map = {i.stored_name: i for i in items}
         purged_ids: Set[str] = set()
         
-        # Iterar una sola vez sobre el directorio
         for f in quarantine_root.iterdir():
             if f.name == MANIFEST_NAME or not f.is_file():
                 continue
             item = item_map.get(f.name)
-            # Si el ítem existe en manifiesto pero no en disco, lo marcamos para limpiar del manifiesto
-            if item and not f.exists():
-                purged_ids.add(item.item_id)
-            elif item and _is_item_purgable(f, item):
-                purged_ids.add(item.item_id)
+            if item:
+                if not f.exists() or _is_item_purgable(f, item):
+                    purged_ids.add(item.item_id)
         
         if purged_ids:
-            # Filtro eficiente para actualizar manifiesto
             remaining = [i for i in items if i.item_id not in purged_ids]
             save_manifest(remaining, base)
             
