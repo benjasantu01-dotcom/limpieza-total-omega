@@ -139,12 +139,12 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """Valida si un archivo está bloqueado mediante apertura exclusiva a nivel de OS."""
-    if not path or not path.is_file(): return True
+    if not path: return True
     try:
-        fd = os.open(path, os.O_RDONLY)
-        os.close(fd)
-        return False
-    except (OSError, PermissionError):
+        # Intenta abrir con permiso de lectura para verificar disponibilidad sin bloquear
+        with open(path, "rb"):
+            return False
+    except (OSError, PermissionError, FileNotFoundError):
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
@@ -195,7 +195,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         usage = shutil.disk_usage(target_dir)
         if usage.free < (stat_result.st_size + MIN_FREE_SPACE_BYTES): return False
         return True
-    except (OSError, AttributeError, ValueError):
+    except (OSError, AttributeError, ValueError, FileNotFoundError):
         return False
 
 def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> bool:

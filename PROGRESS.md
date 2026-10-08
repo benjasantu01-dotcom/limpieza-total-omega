@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **205** (40.7% de aceptación)
-- Rechazadas por tests: 27
+- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Rechazadas por tests: 26
 - Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 112 | 15 | 22 | 6 | 113 |
-| 2026-10-08 | 93 | 12 | 19 | 8 | 104 |
+| 2026-10-07 | 111 | 14 | 21 | 6 | 112 |
+| 2026-10-08 | 96 | 12 | 20 | 8 | 104 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **46**
-- rendimiento: **44**
-- manejo de errores y validación de entradas: **42**
+- manejo de errores y validación de entradas: **45**
+- rendimiento: **43**
 - robustez ante casos límite: **39**
 - legibilidad y documentación: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **21**
+- `quarantine.py`: **22**
 - `diskreport.py`: **21**
-- `quarantine.py`: **21**
 - `browser.py`: **20**
+- `assistant.py`: **20**
 - `healthscore.py`: **17**
-- `memory.py`: **16**
+- `memory.py`: **17**
 - `safety.py`: **16**
 - `branding.py`: **14**
-- `organizer.py`: **13**
+- `organizer.py`: **14**
 - `settings.py`: **12**
 - `duplicates.py`: **12**
 - `scanner.py`: **12**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T10:07:50` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` mediante la captura explícita de `OSError` al intentar leer el archivo, previniendo cierres inesperados de la aplicación ante problemas de permisos transitorios o archivos en uso durante el arranque, garantizando que el sistema siempre devuelva un estado coherente (lista vacía) en lugar de propagar excepciones que bloquean la interfaz.
+- `2026-10-08T10:07:05` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de entrada en `_is_file_locked`, `_is_recursive_violation` y `_is_safe_for_disk_op` para capturar excepciones específicas (como `FileNotFoundError` o `PermissionError`) y evitar el uso de `path.exists()` como única validación, previniendo errores en condiciones de carrera (TOCTOU).
+- `2026-10-08T10:06:37` **memory.py** (manejo de errores y validación de entradas): Se mejora la robustez del manejo de memoria mediante la validación estricta de parámetros en `trim_working_set` y `_get_proc_memory_by_pid`, evitando el uso de valores `None` o potencialmente corruptos en operaciones críticas de bajo nivel.
 - `2026-10-08T09:58:13` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de los callbacks de la interfaz gráfica implementando una validación centralizada de estados y excepciones en `on_trim_process` y `on_quarantine_duplicates`, asegurando que ninguna operación crítica proceda con parámetros nulos o malformados sin previo aviso al usuario.
 - `2026-10-08T09:57:13` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `compute_score` y `summarize` implementando chequeos defensivos adicionales sobre las entradas y estados intermedios para prevenir excepciones no capturadas durante la generación del reporte.
 - `2026-10-08T09:56:46` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_file_locked` y `_calculate_keeper_heuristic` mediante la captura explícita de `OSError` y validación de tipos, evitando que errores de acceso al sistema de archivos durante la iteración aborten el procesamiento de grupos enteros.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T08:14:21` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` añadiendo una validación explícita de `is_protected_path` sobre el directorio padre final de destino, asegurando que no se pueda mover archivos a rutas que, aunque no existan aún, sean subdirectorios de rutas protegidas del sistema.
 - `2026-10-08T08:06:02` **memory.py** (seguridad defensiva): Se ha mejorado la robustez de las verificaciones de seguridad en `_get_process_path` y `_is_path_safe_and_valid` para prevenir vulnerabilidades por TOCTOU (Time-of-Check to Time-of-Use) y asegurar que las rutas UNC o malformadas no sean procesadas, centralizando la validación antes de realizar cualquier operación sobre el proceso.
 - `2026-10-08T08:05:44` **main.py** (seguridad defensiva): He refactorizado `on_full_analysis` para eliminar la dependencia de la caché `junk` en el `state_digest`, asegurando que el análisis de salud siempre utilice datos frescos y validados, mientras se protege el proceso contra la inyección de estados inconsistentes.
-- `2026-10-08T07:55:30` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` y `_is_excluded_path` al asegurar que el manejo de errores ante nombres de archivos o rutas mal formadas (como caracteres nulos o rutas truncadas) ocurra de forma temprana, evitando excepciones innecesarias durante la iteración sobre el sistema de archivos.
-- `2026-10-08T07:55:16` **browser.py** (seguridad defensiva): Se endureció la validación de seguridad en `_process_file_node` y `_sum_directory_recursive` para garantizar que, incluso durante la lectura del tamaño de archivos, se verifique explícitamente que la ruta final no sea un vínculo simbólico o un reparse point, evitando ataques de tipo "symlink traversal" hacia rutas protegidas.
-- `2026-10-08T07:54:48` **branding.py** (seguridad defensiva): Se reforzó `save_logo_svg` para prevenir el "Time-of-check to time-of-use" (TOCTOU) y garantizar que la validación de seguridad ocurra inmediatamente antes de la escritura, asegurando que `ensure_safe_to_modify` se utilice correctamente según las reglas, evitando el uso de condiciones booleanas riesgosas.

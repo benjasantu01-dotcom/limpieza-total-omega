@@ -269,7 +269,8 @@ def _get_process_memory_stats(pid: int) -> Optional[BytesValue]:
     try:
         pmc = (ctypes.c_size_t * 6)()
         if psapi.GetProcessMemoryInfo(process_handle, ctypes.byref(pmc), ctypes.sizeof(pmc)):
-            return BytesValue(pmc[3])
+            val = pmc[3]
+            return BytesValue(val) if 0 < val < MAX_VALID_PROCESS_MEM else None
     except (ctypes.ArgumentError, OSError, AttributeError):
         pass
     finally:
@@ -279,7 +280,8 @@ def _get_process_memory_stats(pid: int) -> Optional[BytesValue]:
 def _get_proc_memory_by_pid(pid: int) -> Optional[ProcessMemory]:
     """Helper para crear una instancia ProcessMemory validando el PID."""
     ws = _get_process_memory_stats(pid)
-    return ProcessMemory(f"PID {pid}", pid, ws) if ws and 0 < ws < MAX_VALID_PROCESS_MEM else None
+    if ws is None: return None
+    return ProcessMemory(f"PID {pid}", pid, ws)
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Enumeración y ordenamiento de procesos según su consumo de memoria RAM."""
@@ -385,10 +387,14 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """Realiza la operación manual de vaciado de memoria WorkingSet para un PID dado."""
     if not _is_windows: return False, "Solo soportado en Windows."
+    
     try:
         target_pid = int(pid)
     except (ValueError, TypeError):
-        return False, "PID inválido."
+        return False, "PID no numérico."
+    
+    if target_pid <= 0:
+        return False, "PID debe ser un entero positivo."
     
     is_safe, error_msg = _is_safe_to_trim(target_pid)
     if not is_safe: return False, error_msg or "Verificación de seguridad fallida."
@@ -406,6 +412,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, "El sistema rechazó la operación."
         return True, f"Working set liberado. {TRIM_WARNING}"
     except (ctypes.ArgumentError, OSError, Exception):
-        return False, "Error inesperado."
+        return False, "Error inesperado al liberar memoria."
     finally:
         kernel32.CloseHandle(proc_handle)

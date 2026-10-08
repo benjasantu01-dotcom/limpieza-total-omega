@@ -522,7 +522,11 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         _MANIFEST_CACHE[base_dir] = ([], 0.0)
         return []
 
-    current_mtime = m_path.stat().st_mtime
+    try:
+        current_mtime = m_path.stat().st_mtime
+    except OSError:
+        return []
+
     if not force_reload and base_dir in _MANIFEST_CACHE:
         cached_items, cached_mtime = _MANIFEST_CACHE[base_dir]
         if cached_mtime == current_mtime:
