@@ -1399,3 +1399,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T03:41:57` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha añadido un chequeo explícito en `stage_for_review` para impedir que el usuario intente mover archivos hacia una ubicación que sea un ancestro de sí misma o que esté contenida en un subdirectorio propio (evitando la recursión lógica antes de invocar `shutil.move`), reforzando la seguridad defensiva contra manipulaciones de rutas maliciosas.
 - `2026-10-08T03:41:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T03:41:57` Corrida terminada. Total usado hoy: 88.
+- `2026-10-08T03:48:45` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-10-08T03:49:36` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se introdujo una validación de seguridad proactiva en `quarantine_file` que verifica mediante `_is_file_in_use_by_system` que el archivo no esté bloqueado por un proceso externo justo antes de iniciar la operación, previniendo condiciones de carrera donde el archivo podría ser modificado o bloqueado durante la transición.
+- `2026-10-08T03:49:54` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-08T03:50:41` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-10-08T03:50:58` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_safe_entry` y `process_entry` al reforzar la validación de archivos mediante la resolución previa de rutas (`resolve`) y un chequeo explícito de existencia antes de cualquier acceso, previniendo condiciones de carrera al interactuar con el sistema de archivos mientras se escanea.
+- `2026-10-08T03:50:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T03:50:58` Corrida terminada. Total usado hoy: 92.

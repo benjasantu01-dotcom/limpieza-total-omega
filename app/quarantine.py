@@ -796,8 +796,6 @@ def _validate_source_for_quarantine(source: Path) -> Path:
         raise UnsafePathError("Aislamiento de directorios no permitido.")
     if not source.is_file():
         raise FileNotFoundError("Archivo origen inexistente.")
-    if not _is_file_exclusive(source):
-        raise IOError("Archivo origen bloqueado por el sistema.")
     
     if is_protected_path(source):
         raise UnsafePathError("La ruta origen está en una zona protegida.")
@@ -846,6 +844,11 @@ def quarantine_file(
         raise RuntimeError(f"Falla al verificar estado del archivo origen: {e}")
         
     source_path = _validate_source_for_quarantine(p_source)
+    
+    # Verificación proactiva de bloqueo antes de iniciar
+    if _is_file_in_use_by_system(source_path):
+        raise IOError("Archivo origen bloqueado por el sistema: operación abortada por seguridad.")
+        
     dest_dir = quarantine_dir(base)
     
     # Pre-chequeo de escritura en sandbox antes de iniciar I/O pesado

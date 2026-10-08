@@ -88,9 +88,7 @@ def _is_readable(path: Path) -> bool:
         return False
     try:
         # Validación de estado previo para evitar excepciones innecesarias en sistemas volátiles
-        if not path.is_file():
-            return False
-        return os.access(path, os.R_OK)
+        return path.is_file() and os.access(path, os.R_OK)
     except (OSError, PermissionError, ValueError, AttributeError):
         return False
 
@@ -226,13 +224,9 @@ class Scanner:
             # Validación estricta anti-reparse points ANTES de intentar resolver la ruta
             if entry.is_symlink() or self._is_reparse_point(entry):
                 return False
-            
-            # Verificación estructural mínima antes de resolve()
-            if not entry.is_file(follow_symlinks=False) and not entry.is_dir(follow_symlinks=False):
-                return False
                 
             real_path = Path(entry.path).resolve(strict=True)
-            if not str(real_path).lower().startswith(self.base_root_str):
+            if not real_path.exists() or not str(real_path).lower().startswith(self.base_root_str):
                 return False
                 
             if is_protected_path(real_path):
@@ -265,19 +259,18 @@ class Scanner:
         Decide si la entrada debe explorarse (carpeta) o evaluarse (archivo).
         Utiliza una pila para evitar la recursión profunda.
         """
-        if not isinstance(entry, os.DirEntry) or not entry.path: 
-            return
-
-        if not self._is_safe_entry(entry):
+        if not isinstance(entry, os.DirEntry) or not entry.path or not self._is_safe_entry(entry): 
             return
 
         try:
+            # Verificación de existencia real antes de delegar el procesamiento
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, directory_stack, current_depth)
             elif entry.is_file(follow_symlinks=False):
                 if self._is_relevant_extension(entry.name):
-                    path_obj = Path(entry.path)
-                    self._run_file_heuristics(path_obj.resolve(), entry)
+                    path_obj = Path(entry.path).resolve()
+                    if path_obj.is_file():
+                        self._run_file_heuristics(path_obj, entry)
         except (OSError, PermissionError, AttributeError, RuntimeError):
             return
 
@@ -287,7 +280,7 @@ class Scanner:
         
         Itera sobre ALL_CHECKS aplicando validaciones de seguridad básicas.
         """
-        if not path.is_file() or not _is_readable(path):
+        if not _is_readable(path):
             return
         for check_fn in ALL_CHECKS:
             try:
