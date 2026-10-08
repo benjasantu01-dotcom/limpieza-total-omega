@@ -80,11 +80,11 @@ class JunkFile:
         try:
             if isinstance(self.path, Path) and self.path.is_absolute():
                 self.path = self.path.resolve()
-            st = self.path.stat()
+            stat_result = self.path.stat()
             if self._ino is None:
-                self._ino = st.st_ino
+                self._ino = stat_result.st_ino
             if self._dev is None:
-                self._dev = st.st_dev
+                self._dev = stat_result.st_dev
         except (OSError, RuntimeError):
             pass
 
@@ -152,12 +152,17 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
-    """Comprueba que el directorio destino no contenga o sea igual al origen."""
+    """
+    Comprueba si la operación de movimiento induce una recursión infinita.
+    
+    Verifica que el destino no sea el mismo origen o un directorio padre del
+    origen, lo cual corrompería la estructura del sistema de archivos al mover.
+    """
     try:
-        s = src.resolve(strict=False)
-        d = dest.resolve(strict=False)
-        if s == d: return True
-        return s in d.parents
+        src_resolved = src.resolve(strict=False)
+        dest_resolved = dest.resolve(strict=False)
+        if src_resolved == dest_resolved: return True
+        return src_resolved in dest_resolved.parents
     except (OSError, ValueError):
         return True
 
@@ -187,10 +192,10 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     src = junk_file.path
     try:
         if not src or not src.exists() or src.name.lower() in SYSTEM_CRITICAL_NAMES: return False
-        st = src.stat()
-        if (junk_file._ino is not None and st.st_ino != junk_file._ino) or \
-           (junk_file._dev is not None and st.st_dev != junk_file._dev): return False
-        if not src.is_file() or st.st_nlink > 1: return False
+        stat_result = src.stat()
+        if (junk_file._ino is not None and stat_result.st_ino != junk_file._ino) or \
+           (junk_file._dev is not None and stat_result.st_dev != junk_file._dev): return False
+        if not src.is_file() or stat_result.st_nlink > 1: return False
         if src.resolve() != src: return False
         
         if not is_safe_to_modify(src) or is_protected_path(dest) or not _validate_path_security(src, dest): return False
@@ -200,9 +205,9 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         if _is_recursive_violation(src, dest) or _is_file_locked(src): return False
         
         dest_st = target_dir.stat()
-        if dest_st.st_dev != st.st_dev: return False
+        if dest_st.st_dev != stat_result.st_dev: return False
         usage = shutil.disk_usage(target_dir)
-        if usage.free < (st.st_size + MIN_FREE_SPACE_BYTES): return False
+        if usage.free < (stat_result.st_size + MIN_FREE_SPACE_BYTES): return False
         return True
     except (OSError, AttributeError, ValueError):
         return False
@@ -230,7 +235,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
         resolved_dir = current_dir.resolve()
         if resolved_dir in visited: return
         visited.add(resolved_dir)
-        now_ts = datetime.now().timestamp()
+        now_ts: float = datetime.now().timestamp()
         with os.scandir(current_dir) as iterator:
             for item in iterator:
                 try:

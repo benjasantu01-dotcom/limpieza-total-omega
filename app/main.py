@@ -654,11 +654,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         area_container = ctk.CTkFrame(parent, fg_color="transparent")
         area_container.grid(row=0, column=1, sticky="ew")
         area_container.grid_columnconfigure(1, weight=1)
+        
         for row_idx, (clave, etiqueta) in enumerate(HEALTH_AREAS):
             self._build_single_health_bar(area_container, clave, etiqueta, row_idx)
 
     def _build_single_health_bar(self, container: ctk.CTkFrame, clave: str, etiqueta: str, row_idx: int) -> None:
-        """Constructor: Renderiza barra de progreso individual."""
+        """Constructor: Renderiza una fila de barra de progreso y su etiqueta."""
         self._create_styled_label(container, etiqueta, "body", anchor="w", width=150).grid(row=row_idx, column=0, sticky="w", pady=4)
         
         barra = ctk.CTkProgressBar(
