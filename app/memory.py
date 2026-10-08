@@ -341,12 +341,13 @@ def _is_system_process(pid: int) -> bool:
     return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
 
 def _is_path_safe_and_valid(path_obj: Path) -> bool:
-    """Valida que la ruta de un ejecutable no sea un enlace simbólico o un área protegida."""
-    kernel32 = ctypes.windll.kernel32
+    """Valida que la ruta de un ejecutable sea segura y no un reparse point."""
     if is_protected_path(str(path_obj)) or not is_safe_to_modify(path_obj):
         return False
+    kernel32 = ctypes.windll.kernel32
     attr = kernel32.GetFileAttributesW(str(path_obj))
-    return attr != -1 and not (attr & FILE_ATTRIBUTE_REPARSE_POINT)
+    if attr == -1: return False
+    return not (attr & FILE_ATTRIBUTE_REPARSE_POINT)
 
 def _get_process_path(pid: int) -> Optional[Path]:
     """Resuelve la ruta absoluta del ejecutable tras validar permisos y seguridad."""
@@ -361,62 +362,50 @@ def _get_process_path(pid: int) -> Optional[Path]:
         length = psapi.GetModuleFileNameExW(process_handle, None, buf, buffer_size)
         if 0 < length < buffer_size:
             raw_path = buf.value
+            # Bloqueo estricto para rutas UNC o externas potencialmente inseguras
             if not raw_path or raw_path.startswith("\\\\"): return None
             
             p_test = Path(raw_path)
-            if p_test.exists():
+            if p_test.is_absolute() and p_test.exists():
                 resolved = p_test.resolve()
-                if not is_protected_path(str(resolved)) and _is_path_safe_and_valid(resolved):
+                if _is_path_safe_and_valid(resolved):
                     return resolved
     except (OSError, RuntimeError, ctypes.ArgumentError): pass
     finally: kernel32.CloseHandle(process_handle)
     return None
 
 def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
-    """
-    Verifica si el proceso es candidato a la optimización de Working Set.
-    Aplica controles de seguridad contra procesos del sistema y rutas restringidas.
-    """
+    """Verifica si el proceso es candidato a optimización según seguridad."""
     if pid <= 0: return False, "PID inválido."
-    if _is_system_process(pid): return False, "Proceso crítico del sistema protegido."
-    
+    if _is_system_process(pid): return False, "Proceso protegido."
     path = _get_process_path(pid)
-    if path is None: return False, "Ruta del proceso inaccesible o restringida por seguridad."
-    
-    if not is_safe_to_modify(path):
-        return False, "La ruta del proceso está protegida por la política de seguridad."
-        
+    if path is None: return False, "Acceso a ruta de proceso restringido."
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """Realiza la operación manual de vaciado de memoria WorkingSet para un PID dado."""
     if not _is_windows: return False, "Solo soportado en Windows."
-    
     try:
         target_pid = int(pid)
     except (ValueError, TypeError):
-        return False, "El PID proporcionado no es un número válido."
+        return False, "PID inválido."
     
-    if target_pid <= 0:
-        return False, "PID no puede ser cero o negativo."
-
     is_safe, error_msg = _is_safe_to_trim(target_pid)
     if not is_safe: return False, error_msg or "Verificación de seguridad fallida."
     
     psapi = getattr(ctypes.windll, "psapi", None)
-    if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "API de gestión de memoria no disponible."
+    if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "API no disponible."
     
     kernel32 = ctypes.windll.kernel32
     proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
     if not proc_handle:
-        return False, "No se pudo acceder al proceso (posible cierre reciente)."
+        return False, "No se pudo acceder al proceso."
         
     try:
-        # EmptyWorkingSet retorna un valor distinto de cero si tiene éxito
         if psapi.EmptyWorkingSet(proc_handle) == 0:
-            return False, "El sistema rechazó el trim (error de privilegios o estado)."
+            return False, "El sistema rechazó la operación."
         return True, f"Working set liberado. {TRIM_WARNING}"
     except (ctypes.ArgumentError, OSError, Exception):
-        return False, "Error inesperado al ejecutar el comando de trim."
+        return False, "Error inesperado."
     finally:
         kernel32.CloseHandle(proc_handle)

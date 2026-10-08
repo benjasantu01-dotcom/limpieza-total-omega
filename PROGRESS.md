@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **212** (42.1% de aceptación)
+- Mejoras aceptadas: **214** (42.5% de aceptación)
 - Rechazadas por tests: 27
 - Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 131 | 16 | 26 | 7 | 136 |
-| 2026-10-08 | 81 | 11 | 17 | 8 | 71 |
+| 2026-10-07 | 131 | 16 | 26 | 7 | 132 |
+| 2026-10-08 | 83 | 11 | 17 | 8 | 73 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - rendimiento: **44**
 - legibilidad y documentación: **43**
-- seguridad defensiva: **40**
+- seguridad defensiva: **42**
 - robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
@@ -34,17 +34,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **21**
 - `browser.py`: **21**
 - `healthscore.py`: **18**
-- `memory.py`: **17**
+- `memory.py`: **18**
 - `safety.py`: **17**
 - `branding.py`: **15**
 - `scanner.py`: **14**
 - `organizer.py`: **13**
 - `duplicates.py`: **12**
 - `settings.py`: **11**
-- `main.py`: **9**
+- `main.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T08:06:02` **memory.py** (seguridad defensiva): Se ha mejorado la robustez de las verificaciones de seguridad en `_get_process_path` y `_is_path_safe_and_valid` para prevenir vulnerabilidades por TOCTOU (Time-of-Check to Time-of-Use) y asegurar que las rutas UNC o malformadas no sean procesadas, centralizando la validación antes de realizar cualquier operación sobre el proceso.
+- `2026-10-08T08:05:44` **main.py** (seguridad defensiva): He refactorizado `on_full_analysis` para eliminar la dependencia de la caché `junk` en el `state_digest`, asegurando que el análisis de salud siempre utilice datos frescos y validados, mientras se protege el proceso contra la inyección de estados inconsistentes.
 - `2026-10-08T07:55:30` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` y `_is_excluded_path` al asegurar que el manejo de errores ante nombres de archivos o rutas mal formadas (como caracteres nulos o rutas truncadas) ocurra de forma temprana, evitando excepciones innecesarias durante la iteración sobre el sistema de archivos.
 - `2026-10-08T07:55:16` **browser.py** (seguridad defensiva): Se endureció la validación de seguridad en `_process_file_node` y `_sum_directory_recursive` para garantizar que, incluso durante la lectura del tamaño de archivos, se verifique explícitamente que la ruta final no sea un vínculo simbólico o un reparse point, evitando ataques de tipo "symlink traversal" hacia rutas protegidas.
 - `2026-10-08T07:54:48` **branding.py** (seguridad defensiva): Se reforzó `save_logo_svg` para prevenir el "Time-of-check to time-of-use" (TOCTOU) y garantizar que la validación de seguridad ocurra inmediatamente antes de la escritura, asegurando que `ensure_safe_to_modify` se utilice correctamente según las reglas, evitando el uso de condiciones booleanas riesgosas.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T07:04:06` **scanner.py** (rendimiento): Optimicé el rendimiento del escaneo centralizado implementando un filtro de extensiones en `process_entry` que evita la resolución de rutas mediante `Path().resolve()` y las llamadas a `is_file()` para archivos que no son ejecutables ni documentos críticos, reduciendo drásticamente las syscalls innecesarias durante el recorrido del sistema de archivos.
 - `2026-10-08T07:03:36` **safety.py** (rendimiento): Se ha optimizado `_get_security_descriptor_cached` para reducir llamadas redundantes al kernel y evitar I/O innecesario, implementando una lógica de cortocircuito (short-circuiting) que utiliza el caché de atributos existente antes de intentar realizar consultas de estado de bloqueo (I/O intensivo) innecesarias para archivos que ya sabemos que son protegidos por sistema.
 - `2026-10-08T06:57:20` **quarantine.py** (rendimiento): Se optimizó la función `purge_all` para evitar lecturas de disco redundantes mediante el uso de `set` para búsquedas O(1) y se eliminó la iteración doble sobre los elementos, mejorando significativamente la eficiencia durante la limpieza masiva.
-- `2026-10-08T06:56:38` **organizer.py** (rendimiento): Optimizé el proceso de escaneo de archivos utilizando un `set` local para la caché de extensiones y evitando la creación redundante de objetos `Path` y llamadas a `resolve()` innecesarias dentro del bucle principal de `os.scandir`, reduciendo significativamente la sobrecarga de I/O por iteración.
-- `2026-10-08T06:56:10` **memory.py** (rendimiento): Optimicé `top_memory_processes` reemplazando la creación de una lista temporal completa por un generador y limitando las llamadas a la API de procesos, reduciendo el consumo de CPU y la carga de memoria durante el escaneo de procesos.
