@@ -319,12 +319,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 
 def _render_bar(points: int, max_val: int) -> str:
     """Representación visual: barra de caracteres ASCII para la interfaz."""
+    if not isinstance(max_val, int) or max_val <= 0:
+        return ".........."
     try:
-        limit = max(1, int(max_val))
-        p = max(0, min(int(points), limit))
-        return "#" * p + "." * (limit - p)
+        p = max(0, min(int(points), max_val))
+        return "#" * p + "." * (max_val - p)
     except (ValueError, TypeError):
-        return "." * max(1, max_val)
+        return "." * max_val
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera una lista de cadenas legible para el informe de estado final."""
@@ -335,8 +336,9 @@ def summarize(result: HealthResult | None) -> List[str]:
     bd = result.breakdown
     for area, maximo in WEIGHTS.items():
         points = bd.get(area, 0)
-        lines.append(f"  {area.capitalize():<12} {points:>2}/{maximo:<2} [{_render_bar(points, maximo)}]")
+        bar = _render_bar(points, maximo)
+        lines.append(f"  {area.capitalize():<12} {points:>2}/{maximo:<2} [{bar}]")
     
-    recs = result.recommendations if result.recommendations else ["Sin recomendaciones."]
-    lines.extend(("", "Recomendaciones:", *(f"  - {r}" for r in recs)))
+    recs = result.recommendations if isinstance(result.recommendations, list) else ["Sin recomendaciones."]
+    lines.extend(("", "Recomendaciones:", *(f"  - {r}" for r in recs if isinstance(r, str))))
     return lines

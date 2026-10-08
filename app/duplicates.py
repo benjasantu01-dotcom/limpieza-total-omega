@@ -327,11 +327,13 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 def _get_path_label(path: Path, keeper: Optional[Path]) -> str:
     """Retorna una etiqueta descriptiva para la interfaz de usuario según el rol del archivo."""
-    if not path.exists():
+    if not isinstance(path, Path) or not path.exists():
         return "[desaparecido]"
     if not _safe_path_check(path):
         return "[inaccesible]"
-    return "[conservar]" if (keeper is not None and path == keeper) else "[duplicado]"
+    if keeper is not None and path == keeper:
+        return "[conservar]"
+    return "[duplicado]"
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
