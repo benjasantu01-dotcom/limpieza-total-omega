@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **210** (41.7% de aceptación)
+- Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 27
 - Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 84 | 10 | 17 | 5 | 88 |
-| 2026-10-08 | 126 | 17 | 27 | 12 | 118 |
+| 2026-10-07 | 84 | 10 | 17 | 5 | 84 |
+| 2026-10-08 | 129 | 17 | 27 | 12 | 119 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - rendimiento: **45**
+- seguridad defensiva: **44**
 - legibilidad y documentación: **42**
-- seguridad defensiva: **41**
 - robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
@@ -33,18 +33,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **21**
 - `quarantine.py`: **21**
 - `assistant.py`: **20**
+- `safety.py`: **19**
 - `healthscore.py`: **18**
-- `safety.py`: **18**
 - `memory.py`: **17**
 - `organizer.py`: **15**
-- `scanner.py`: **13**
+- `scanner.py`: **14**
 - `branding.py`: **13**
 - `duplicates.py`: **12**
-- `settings.py`: **10**
+- `settings.py`: **11**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T12:52:03` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `settings_path` al evitar la expansión del usuario mediante `os.path.expanduser` (que puede ser manipulado en ciertos entornos) y reemplazándolo por una validación de ruta estricta utilizando la resolución absoluta de `pathlib` antes de crear directorios.
+- `2026-10-08T12:51:24` **scanner.py** (seguridad defensiva): Se ha restringido el acceso a metadatos de archivos en `_safe_stat` para prevenir la resolución de accesos a archivos con múltiples enlaces físicos (`st_nlink > 1`), evitando el análisis de archivos que podrían ser puntos de unión de datos o enlaces a flujos de datos alternativos (ADS) del sistema de archivos NTFS.
+- `2026-10-08T12:50:46` **safety.py** (seguridad defensiva): Se ha mejorado `safety.py` añadiendo un chequeo explícito de integridad para evitar el seguimiento de puntos de reparse (Reparse Points) durante la normalización de rutas, previniendo que la lógica de validación sea engañada por redirecciones al sistema de archivos ocultas.
 - `2026-10-08T12:43:39` **quarantine.py** (seguridad defensiva): Reforcé la seguridad en `purge_all` y `_is_item_purgable` para garantizar que solo se eliminen archivos que coincidan exactamente con su registro de manifiesto (integridad de hash e inodo) y evitar errores de lógica en la limpieza masiva.
 - `2026-10-08T12:42:24` **memory.py** (seguridad defensiva): Se ha robustecido la seguridad defensiva en `_get_process_path` validando que la ruta del ejecutable no solo exista, sino que se encuentre dentro de volúmenes locales definidos (excluyendo rutas de red/UNC o unidades extraíbles mediante `GetDriveTypeW`) antes de intentar cualquier operación, evitando riesgos por punteros a recursos externos maliciosos.
 - `2026-10-08T12:30:53` **healthscore.py** (seguridad defensiva): He mejorado la robustez defensiva del pipeline de evaluación incorporando un manejo estricto de tipos y validación de datos en `_evaluate_rules` y `compute_score`, asegurando que cualquier entrada inesperada (como valores `None` o estructuras de datos inyectadas maliciosamente) sea neutralizada antes de procesarse, manteniendo el principio de no confiar en la integridad del objeto `metrics` recibido.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T11:49:18` **diskreport.py** (robustez ante casos límite): Se mejora la resiliencia ante errores de sistema de archivos en `largest_folders` al envolver el cálculo del peso de archivos en un bloque `try-except` más robusto, evitando que archivos bloqueados por el SO o con rutas excesivamente largas interrumpan el cálculo de métricas de carpetas.
 - `2026-10-08T11:48:52` **browser.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar ciclos de recursión infinita en el escaneo de directorios mediante el seguimiento de identificadores de dispositivo y número de nodo (`st_dev`, `st_ino`), mitigando así posibles casos límite de estructuras de archivos circulares o inusuales.
 - `2026-10-08T11:40:23` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_get_source_value` para manejar situaciones donde el objeto fuente sea inesperadamente complejo o malicioso, evitando que `getattr` o iteraciones sobre tipos inesperados provoquen excepciones o filtración de información no intencionada, reforzando la integridad del bucle de ingesta.
-- `2026-10-08T11:30:19` **safety.py** (rendimiento): Optimicé el rendimiento de `_get_security_descriptor_cached` introduciendo un caché de tipo `lru_cache` sobre la función de bajo nivel `_get_file_attrs` y simplificando el flujo lógico para evitar consultas redundantes a la API de Windows en archivos que ya han sido marcados como protegidos.
-- `2026-10-08T11:20:03` **organizer.py** (rendimiento): Se optimizó el rendimiento de `_process_directory` eliminando la llamada repetitiva a `entry.name.lower()` y `endswith` dentro del bucle mediante el uso de la constante pre-compilada `JUNK_EXT_TUPLE`, y se introdujo un filtro previo de `JUNK_EXT_TUPLE` para evitar accesos innecesarios a `stat()` en archivos que no cumplen con los criterios de extensión.
-- `2026-10-08T11:19:44` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` evitando la reconstrucción de la lista de procesos en cada llamada, reemplazando la lógica de caché basada en el tiempo por una variable de estado persistente vinculada al objeto función y reduciendo la cantidad de llamadas a la API de Windows mediante un filtrado previo más eficiente.

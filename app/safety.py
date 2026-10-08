@@ -639,7 +639,8 @@ def normalize(path: PathLike) -> Path:
         for part in p.parts:
             if part in (os.sep, os.altsep): continue
             current_subpath = current_subpath / part
-            if os.path.exists(str(current_subpath)) and _is_system_directory_junction(str(current_subpath)):
+            # Refuerzo: Validar recursivamente puntos de reparse durante la normalización
+            if current_subpath.exists() and _is_system_directory_junction(str(current_subpath)):
                 raise UnsafePathError("Segmento de ruta contiene punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         
         if _is_device_file(p): raise UnsafePathError("Acceso a dispositivo bloqueado.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)

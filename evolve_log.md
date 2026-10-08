@@ -1060,3 +1060,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T12:46:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-08T12:46:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T12:46:43` Corrida terminada. Total usado hoy: 300.
+- `2026-10-08T12:49:49` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-08T12:50:46` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado `safety.py` añadiendo un chequeo explícito de integridad para evitar el seguimiento de puntos de reparse (Reparse Points) durante la normalización de rutas, previniendo que la lógica de validación sea engañada por redirecciones al sistema de archivos ocultas.
+- `2026-10-08T12:51:24` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha restringido el acceso a metadatos de archivos en `_safe_stat` para prevenir la resolución de accesos a archivos con múltiples enlaces físicos (`st_nlink > 1`), evitando el análisis de archivos que podrían ser puntos de unión de datos o enlaces a flujos de datos alternativos (ADS) del sistema de archivos NTFS.
+- `2026-10-08T12:52:03` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `settings_path` al evitar la expansión del usuario mediante `os.path.expanduser` (que puede ser manipulado en ciertos entornos) y reemplazándolo por una validación de ruta estricta utilizando la resolución absoluta de `pathlib` antes de crear directorios.
+- `2026-10-08T12:52:37` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-10-08T12:52:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T12:52:37` Corrida terminada. Total usado hoy: 304.

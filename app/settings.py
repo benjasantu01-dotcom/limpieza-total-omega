@@ -97,7 +97,7 @@ __all__ = [
 def _get_default_settings_dir() -> Path:
     """Calcula el directorio base de configuración en el home del usuario."""
     try:
-        return Path("~/LimpiezaTotalOmega").expanduser().resolve()
+        return Path.home() / "LimpiezaTotalOmega"
     except (OSError, RuntimeError):
         return Path(os.getcwd()) / "LimpiezaTotalOmega"
 
@@ -152,9 +152,7 @@ class _SettingsManager:
     y rutas de configuración. Evita lecturas redundantes de disco.
     """
     def __init__(self) -> None:
-        # Cache de configuraciones cargadas con timestamp para evitar lecturas stale
         self.settings_cache: dict[str, tuple[float, AppSettings]] = {}
-        # Cache de rutas resueltas a partir de bases personalizadas
         self.path_cache: dict[Optional[str], Path] = {}
 
     def clear(self) -> None:
@@ -290,15 +288,12 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     if cache_key in _MANAGER.path_cache:
         return _MANAGER.path_cache[cache_key]
     
-    base_path = Path(custom_base).expanduser().resolve() if custom_base else SETTINGS_DIR
+    base_path = (Path(custom_base).resolve() if custom_base else SETTINGS_DIR)
     
     try:
         if _Validators._is_safe_path(str(base_path)) and not _Validators._is_reparse_point(base_path):
             if not base_path.exists():
                 base_path.mkdir(parents=True, exist_ok=True)
-                dir_fd = os.open(str(base_path.parent), os.O_RDONLY)
-                try: os.fsync(dir_fd)
-                finally: os.close(dir_fd)
             if base_path.is_dir() and os.access(base_path, os.R_OK | os.W_OK):
                 full_path = base_path / SETTINGS_FILE
                 _MANAGER.path_cache[cache_key] = full_path
