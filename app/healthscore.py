@@ -60,7 +60,7 @@ class RecommendationRule(NamedTuple):
         area: Identificador de la métrica (ej: 'disco').
         threshold: Límite inferior de salud para activar la sugerencia.
         message_factory: Función que genera un mensaje contextual al usuario.
-        check: Predicado booleano que evalúa si la métrica actual requiere atención.
+        check: Predicado (SystemMetrics, NormalizedRatio) -> bool para decidir si alertar.
     """
     area: MetricKey
     threshold: float
@@ -73,7 +73,7 @@ class PipelineEntry(NamedTuple):
     """
     area: MetricKey
     weight: int
-    scorer: Scorer
+    scorer: Callable[[SystemMetrics], NormalizedRatio]
     rules: Tuple[RecommendationRule, ...]
 
 __all__ = [
@@ -174,7 +174,7 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
     return _JUNK_SCORER(float(junk_mb))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
-    """Calcula el ratio de seguridad penalizando hallazgos y advertencias con validación."""
+    """Calcula el ratio de seguridad penalizando hallazgos y advertencias."""
     try:
         c = float(suspicious_count) if isinstance(suspicious_count, (int, float)) else 0.0
         w = float(warnings) if isinstance(warnings, (int, float)) else 0.0
@@ -197,7 +197,7 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
     return _STARTUP_SCORER(float(startup_count))
 
 def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) -> float:
-    """Helper interno para sanitizar métricas numéricas entrantes."""
+    """Helper para sanitizar métricas numéricas entrantes y evitar valores fuera de rango."""
     try:
         if not isinstance(value, (int, float)):
             return default
@@ -234,7 +234,7 @@ class SystemMetrics:
         return getattr(self, field_name, default)
 
     def validate(self) -> None:
-        """Asegura que los datos recibidos tengan tipos y rangos válidos de forma defensiva."""
+        """Asegura que los datos recibidos tengan tipos y rangos válidos."""
         self.junk_mb = _validate_numeric(self.junk_mb, 0.0, 0.0, 1e9)
         self.duplicate_mb = _validate_numeric(self.duplicate_mb, 0.0, 0.0, 1e9)
         self.suspicious_count = int(_validate_numeric(self.suspicious_count, 0, 0, 1e6))
@@ -246,7 +246,7 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
-        """Verifica que ninguna métrica numérica sea infinita o no-numérica."""
+        """Verifica que ninguna métrica numérica sea infinita o NaN."""
         return all(math.isfinite(getattr(self, f)) for f in self._CHECK_FIELDS)
 
 @dataclass
@@ -265,7 +265,7 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio, findings: List[str]) -> None:
-    """Ejecuta las reglas asociadas a una métrica y sanitiza el texto de los resultados."""
+    """Ejecuta las reglas de diagnóstico y sanitiza el texto de los resultados."""
     for rule in rules:
         try:
             if rule.check(metrics, normalized_ratio):

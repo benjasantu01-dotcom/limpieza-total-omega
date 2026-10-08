@@ -82,7 +82,10 @@ class ExtStats:
 
 
 class GlobalStats:
-    """Acumulador central que orquesta las métricas durante el escaneo."""
+    """
+    Acumulador central que orquesta las métricas durante el escaneo.
+    Centraliza el conteo global y la desagregación por tipo de archivo.
+    """
     def __init__(self) -> None:
         self.total_bytes: int = 0
         self.total_files: int = 0
@@ -97,7 +100,10 @@ class GlobalStats:
 
 
 class FolderMetrics:
-    """Contenedor mutable para métricas de subcarpetas durante la agregación."""
+    """
+    Contenedor mutable utilizado para realizar agregaciones temporales 
+    de peso por subcarpeta durante el proceso de escaneo.
+    """
     __slots__ = ('size', 'file_count')
     def __init__(self) -> None:
         self.size = 0
@@ -105,7 +111,12 @@ class FolderMetrics:
 
 
 class SummaryData(NamedTuple):
-    """Estructura consolidada de un escaneo completo de archivos."""
+    """
+    Estructura consolidada que agrupa los resultados de una pasada de escaneo:
+    - total_bytes/total_files: Métricas globales.
+    - ext_stats: Diccionario de acumuladores por tipo.
+    - top_files: Heap de archivos encontrados (ordenados por tamaño).
+    """
     total_bytes: int
     total_files: int
     ext_stats: Dict[str, ExtStats]
@@ -147,6 +158,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     """
     Filtra entradas durante el escaneo para evitar bucles o acceso a áreas restringidas.
+    Realiza chequeos de seguridad basados en la ruta y en metadatos del inodo.
     """
     try:
         name = entry.name
@@ -278,6 +290,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre el sistema de archivos de forma iterativa usando una pila para evitar recursión profunda.
+    Mantiene un conjunto de inodos visitados para evitar ciclos en enlaces simbólicos a directorios.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -329,7 +342,10 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """Calcula el peso total de las subcarpetas de primer nivel respecto a la raíz."""
+    """
+    Calcula el peso total de las subcarpetas de primer nivel respecto a la raíz.
+    Agrupa recursivamente los tamaños de los archivos encontrados bajo cada directorio directo.
+    """
     root = _validate_root(directory)
     if not root: return []
     stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
@@ -359,7 +375,10 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """Ejecuta el escaneo completo manteniendo las estadísticas requeridas."""
+    """
+    Ejecuta el escaneo completo manteniendo las estadísticas requeridas.
+    Utiliza un heap para mantener de forma eficiente los 'top archivos' encontrados.
+    """
     stats = GlobalStats()
     top_heap: List[Tuple[int, Path]] = [] 
     

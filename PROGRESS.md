@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 8
-- Sin respuesta de la IA (error o límite): 230
+- Sin respuesta de la IA (error o límite): 229
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-06 | 49 | 9 | 12 | 0 | 48 |
+| 2026-10-06 | 47 | 9 | 11 | 0 | 47 |
 | 2026-10-07 | 139 | 17 | 28 | 8 | 158 |
-| 2026-10-08 | 9 | 1 | 2 | 0 | 24 |
+| 2026-10-08 | 13 | 1 | 2 | 0 | 24 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - robustez ante casos límite: **43**
 - seguridad defensiva: **41**
-- rendimiento: **34**
-- legibilidad y documentación: **33**
+- legibilidad y documentación: **37**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
+- `browser.py`: **21**
+- `quarantine.py`: **21**
 - `assistant.py`: **20**
-- `browser.py`: **20**
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `memory.py`: **18**
-- `healthscore.py`: **17**
-- `safety.py`: **16**
+- `healthscore.py`: **18**
 - `settings.py`: **15**
+- `safety.py`: **15**
 - `branding.py`: **12**
 - `organizer.py`: **11**
 - `scanner.py`: **11**
-- `duplicates.py`: **9**
+- `duplicates.py`: **10**
 - `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T01:38:00` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en el pipeline y refinando los docstrings para clarificar el flujo funcional de los escorers, facilitando el mantenimiento de futuras reglas.
+- `2026-10-08T01:37:48` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `duplicates.py` mediante la implementación de Type Hints en parámetros anteriormente ambiguos, la adición de docstrings detallados en funciones internas para clarificar el propósito de las heurísticas, y la estandarización de las firmas de funciones para reflejar mejor el manejo de rutas bajo condiciones de seguridad.
+- `2026-10-08T01:37:21` **diskreport.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando la intención de los tipos de datos complejos con docstrings detallados y aclarando la lógica de las funciones internas que operan sobre estructuras de datos, facilitando la comprensión del flujo de información en los escaneos de disco.
+- `2026-10-08T01:36:49` **browser.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con las secciones "Args", "Returns" y "Raises" en funciones clave de procesamiento recursivo para clarificar la lógica de exclusión y gestión de errores, facilitando el mantenimiento y la auditoría de seguridad.
 - `2026-10-08T01:28:12` **branding.py** (legibilidad y documentación): Se introdujeron type hints explícitos en los métodos de `CanvasElement` y se añadieron docstrings con ejemplos concretos de uso (doctests teóricos) a funciones complejas como `blend` y `draw_ring` para mejorar la mantenibilidad y documentación, manteniendo estrictamente la funcionalidad existente.
 - `2026-10-08T01:18:24` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_readable` y `_safe_stat` al añadir un chequeo explícito de `path.is_file()` previo a cualquier operación de acceso, evitando excepciones innecesarias en nodos que desaparecen o cambian de tipo durante la iteración, y consolidando el manejo de errores ante cambios de estado concurrentes del sistema de archivos.
 - `2026-10-08T01:18:08` **safety.py** (manejo de errores y validación de entradas): Se mejora la robustez de `_get_file_attrs` y `_is_kernel_managed` para prevenir errores de tipo `NoneType` y mejorar el manejo de rutas inexistentes mediante chequeos explícitos, evitando que la lógica falle ante entradas malformadas.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T00:49:08` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para capturar explícitamente valores `None` y evitar recursiones infinitas ante estructuras de datos no estándar, asegurando que la validación de entrada sea consistente y segura.
 - `2026-10-07T14:24:13` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` y `_load_impl()` implementando una comprobación estricta para evitar Race Conditions mediante `os.fstat` antes de la escritura/lectura, asegurando que el descriptor de archivo no sea un enlace simbólico o un archivo fuera de control durante la operación.
 - `2026-10-07T14:16:29` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_safe_unlink` añadiendo una comprobación explícita de `is_protected_path` al inicio de la función para garantizar que, incluso si fallan los chequeos de inodo o hash, el archivo nunca sea eliminado si reside en una ruta protegida.
-- `2026-10-07T14:15:55` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_file_locked` para evitar falsos positivos y posibles bloqueos mediante el uso de `os.open` con flags de acceso exclusivo (`O_EXCL`), asegurando que no se intente operar sobre archivos que el sistema mantiene bloqueados activamente.
-- `2026-10-07T14:15:26` **memory.py** (seguridad defensiva): Mejoré la seguridad de la resolución de rutas en `_get_process_path` integrando explícitamente `is_protected_path` antes de cualquier validación adicional, garantizando que procesos en rutas protegidas no sean sujetos a consultas de trimado y evitando el seguimiento de enlaces simbólicos mediante `Path.resolve()` antes de la validación.
-- `2026-10-07T14:04:49` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva al convertir la validación de `SystemMetrics` en un proceso estrictamente determinista, evitando que campos nulos o mal formados generen resultados impredecibles mediante la aplicación de valores por defecto seguros en el `__post_init__` y una validación de tipo más estricta.
-- `2026-10-07T14:04:16` **duplicates.py** (seguridad defensiva): Se mejora la robustez del chequeo `_is_file_locked` para evitar la apertura de archivos si la ruta no cumple estrictamente con `is_safe_to_modify` antes de intentar cualquier operación de E/S.
