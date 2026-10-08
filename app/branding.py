@@ -322,6 +322,19 @@ def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
         ))
     except (TypeError, ValueError): return start
 
+@lru_cache(maxsize=128)
+def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, ...]:
+    """Optimización: agrupa colores idénticos para reducir llamadas al Canvas."""
+    if not colors: return ()
+    segments = []
+    current_color, start = colors[0], 0
+    for i in range(1, len(colors)):
+        if colors[i] != current_color:
+            segments.append(ColorSegment(current_color, start, i))
+            current_color, start = colors[i], i
+    segments.append(ColorSegment(current_color, start, len(colors)))
+    return tuple(segments)
+
 @lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
     """Genera una secuencia de colores interpolados para crear un gradiente."""
@@ -347,18 +360,10 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
         )
     return tuple(res)
 
-@lru_cache(maxsize=128)
-def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, ...]:
-    """Optimización: agrupa colores idénticos para reducir llamadas al Canvas."""
-    if not colors: return ()
-    segments = []
-    current_color, start = colors[0], 0
-    for i in range(1, len(colors)):
-        if colors[i] != current_color:
-            segments.append(ColorSegment(current_color, start, i))
-            current_color, start = colors[i], i
-    segments.append(ColorSegment(current_color, start, len(colors)))
-    return tuple(segments)
+@lru_cache(maxsize=32)
+def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorSegment, ...]:
+    """Combina generación de gradiente y segmentación con cache."""
+    return _get_grouped_segments(gradient_colors(steps, stops))
 
 # Coordenadas relativas del icono principal (Escudo)
 SHIELD_BASE_COORDS: Final[Tuple[float, ...]] = (64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
@@ -417,7 +422,7 @@ def _get_stripe_params(scale: float, franjas_count: int) -> Tuple[Tuple[float, f
 @lru_cache(maxsize=128)
 def _get_cached_stripe_data(scale: float, franjas_count: int) -> Tuple[Tuple[Tuple[float, float, float], ...], Tuple[ColorSegment, ...]]:
     """Cachea parámetros de franjas y segmentos de color."""
-    return _get_stripe_params(scale, franjas_count), _get_grouped_segments(gradient_colors(franjas_count))
+    return _get_stripe_params(scale, franjas_count), get_gradient_segments(franjas_count)
 
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     """Renderiza las franjas geométricas internas del escudo."""
@@ -482,7 +487,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
         cx, cy = float(canvas_x), float(canvas_y)
         if not math.isfinite(cx) or not math.isfinite(cy): return
         
-        segments = _get_grouped_segments(gradient_colors(w_val, stops))
+        segments = get_gradient_segments(w_val, stops)
             
         for seg in segments:
             canvas.create_line(cx + seg.start_index, cy, 

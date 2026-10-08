@@ -267,15 +267,15 @@ class _Validators:
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
         return _Validators._validate_enum_str(text, key)
 
-BOOL_KEYS: Final = {
+BOOL_KEYS: Final[frozenset[ConfigKey]] = frozenset((
     ConfigKey.MOSTRAR_BARRAS, ConfigKey.ANIMACIONES, ConfigKey.CONFIRMAR_SIEMPRE,
     ConfigKey.RECORDAR_ULTIMA_CARPETA, ConfigKey.ANALISIS_EN_PARALELO,
     ConfigKey.ASISTENTE_ACTIVADO, ConfigKey.ASISTENTE_ENVIAR_METRICAS
-}
+))
 
-INT_KEYS: Final = {
+INT_KEYS: Final[frozenset[ConfigKey]] = frozenset((
     ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB, ConfigKey.TOP_ARCHIVOS, ConfigKey.TOP_PROCESOS
-}
+))
 
 def _determine_validator(key: ConfigKey) -> Callable[[ConfigKey, Any], Any]:
     """Asigna la función de validación adecuada según el tipo de clave."""

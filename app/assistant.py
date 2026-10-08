@@ -366,20 +366,14 @@ class SystemContext:
     @cached_property
     def metrics_snapshot(self) -> dict[str, float]:
         """Snapshot cacheado de las métricas numéricas."""
-        return {key: float(getattr(self, key)) for key, _, _ in _CONTEXT_SCHEMA if hasattr(self, key) and _check_metric_integrity(getattr(self, key))}
+        return {key: float(getattr(self, key)) for key in _VALIDATORS if hasattr(self, key) and _check_metric_integrity(getattr(self, key))}
 
     @cached_property
     def active_problems(self) -> tuple[str, ...]:
         """Evalúa los criterios de salud contra los datos actuales y retorna los problemas activos."""
         if not self.analyzed: return ()
         snapshot = self.metrics_snapshot
-        
-        results = []
-        for c in _CRITERIOS_SALUD:
-            val = snapshot.get(c.metric_key, DEFAULT_METRIC_VAL)
-            if (msg := c.format_if_triggered(val)) is not None:
-                results.append(msg)
-        return tuple(results)
+        return tuple(msg for c in _CRITERIOS_SALUD if (msg := c.format_if_triggered(snapshot.get(c.metric_key, -1.0))) is not None)
 
     def get_metric(self, key: str, default: float) -> float:
         """Retorna una métrica numérica validada o el valor por defecto si falla."""
@@ -407,10 +401,7 @@ class SystemContext:
         """Valida, convierte y verifica límites de un campo individual."""
         try:
             val = _get_source_value(source, key)
-            if val is None or isinstance(val, (dict, list, set, type)): return None
-            
-            # Verificación de tipo estricta para prevenir inyecciones
-            if not isinstance(val, (int, float, str)): return None
+            if val is None or not isinstance(val, (int, float, str)): return None
             
             float_val = float(val)
             if not _is_metric_within_bounds(float_val, spec): 
@@ -445,18 +436,17 @@ class SystemContext:
         try:
             for key, spec in _VALIDATORS.items():
                 res = self._apply_field(source, key, spec)
-                if res is not None:
+                if res is not None and res != getattr(self, key):
                     object.__setattr__(self, key, res)
                     has_updates = True
             
             grade_val = self._clean_grade(_get_source_value(source, "grade"))
-            if grade_val:
+            if grade_val and grade_val != self.grade:
                 object.__setattr__(self, 'grade', grade_val)
                 has_updates = True
             
             if has_updates:
                 object.__setattr__(self, 'analyzed', True)
-                # Invalida las caches tras un cambio de datos
                 for cache_attr in ('metrics_snapshot', 'active_problems'):
                     if cache_attr in self.__dict__: del self.__dict__[cache_attr]
                 return True
