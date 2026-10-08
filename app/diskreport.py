@@ -175,14 +175,16 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         except (ValueError, TypeError):
             return True
 
+        # Detección de puntos de reparse (Windows) o enlaces simbólicos (Unix)
         try:
             st = entry.stat(follow_symlinks=False)
-            # Detección de puntos de reparse (Windows) o enlaces simbólicos (Unix)
             is_reparse = (st.st_file_attributes & 0x0400) if os.name == 'nt' else entry.is_symlink()
             if is_reparse:
                 return True
         except (OSError, PermissionError, AttributeError):
+            # Si no podemos leer los atributos, asumimos inseguro por precaución
             return True
+            
         return is_protected_path(Path(entry.path))
     except (OSError, PermissionError, AttributeError, RuntimeError, TypeError):
         return True

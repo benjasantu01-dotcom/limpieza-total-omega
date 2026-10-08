@@ -1384,3 +1384,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T03:20:20` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `_is_safe_payload_structure` para limitar la recursión de forma explícita y añadí una validación estricta de tipos en los datos de entrada para prevenir ataques de tipo "Type Juggling" en el procesamiento de JSON remoto.
 - `2026-10-08T03:20:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T03:20:20` Corrida terminada. Total usado hoy: 80.
+- `2026-10-08T03:28:21` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-10-08T03:29:01` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado `save_logo_svg` para prevenir el uso de rutas no seguras y la creación de directorios en ubicaciones protegidas, integrando `is_protected_path` como una barrera preventiva antes de cualquier operación de I/O.
+- `2026-10-08T03:29:29` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_process_file_node` añadiendo una validación explícita mediante `is_safe_to_modify` antes de procesar cualquier archivo, garantizando que el escáner no acceda a ubicaciones que hayan sido restringidas externamente por la política de seguridad del proyecto.
+- `2026-10-08T03:29:57` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la robustez de `_is_excluded_path` asegurando que cualquier error durante la obtención de atributos de archivo en sistemas de archivos complejos sea tratado de forma segura, evitando que una excepción inesperada en el acceso a metadatos de un nodo interrumpa prematuramente el proceso de escaneo.
+- `2026-10-08T03:30:07` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-10-08T03:30:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T03:30:07` Corrida terminada. Total usado hoy: 84.

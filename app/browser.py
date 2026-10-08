@@ -211,6 +211,8 @@ def _process_file_node(entry: os.DirEntry, root_abs_norm: str, visited_inodes: S
     """
     if not entry.is_file(): return 0
     if not _ensure_within_base(entry.path, root_abs_norm): return 0
+    # Validación defensiva extra: asegurar que el nodo individual no sea restringido
+    if not is_safe_to_modify(Path(entry.path)): return 0
     try:
         st = entry.stat(follow_symlinks=False)
         # Solo procesamos si no fue contado y el sistema permite lectura
