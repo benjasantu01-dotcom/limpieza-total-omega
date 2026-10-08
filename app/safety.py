@@ -537,6 +537,8 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
     condición detectada que comprometa la integridad, se detiene la evaluación
     y se eleva una excepción con el contexto de seguridad correspondiente.
     """
+    if not path.exists():
+         raise UnsafePathError("Archivo eliminado antes de la validación.", SafetyValidationErrorCode.IO_ERROR)
     try:
         sd = _get_security_descriptor(path)
         for rule in _VALIDATORS:

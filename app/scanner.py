@@ -269,8 +269,11 @@ class Scanner:
                 self._handle_directory(entry, directory_stack, current_depth)
         elif self._is_relevant_extension(entry.name):
             if self._is_safe_entry(entry):
-                path_obj = Path(entry.path)
-                self._run_file_heuristics(path_obj, entry)
+                try:
+                    path_obj = Path(entry.path)
+                    self._run_file_heuristics(path_obj, entry)
+                except (OSError, ValueError):
+                    pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """

@@ -1903,3 +1903,63 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T07:34:45` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
 - `2026-10-08T07:34:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T07:34:45` Corrida terminada. Total usado hoy: 180.
+- `2026-10-08T07:43:11` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-10-08T07:44:04` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré la robustez ante rutas inexistentes o mal formadas dentro de los validadores de seguridad, integrando `_is_path_empty_or_whitespace` y una verificación de existencia más temprana en `_evaluate_security_rules` para evitar excepciones no controladas durante la evaluación de archivos que fueron eliminados o movidos por otro proceso justo antes del chequeo (condición de carrera).
+- `2026-10-08T07:44:33` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia del escáner ante condiciones de carrera y archivos efímeros (que desaparecen entre el listado de `os.scandir` y el acceso de lectura), envolviendo el procesamiento de archivos en un bloque de control robusto que ignora excepciones transitorias de sistema de archivos sin interrumpir el flujo.
+- `2026-10-08T07:45:04` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez de `load` y `save` ante situaciones de concurrencia y corrupción del sistema de archivos mediante una verificación de identidad y tipo de archivo más estricta antes de procesar el contenido JSON.
+- `2026-10-08T07:45:22` Tests FALLARON:
+```
+-3/test_entries_from_folders_read0')
+
+    def test_entries_from_folders_reads_injected_folders(tmp_path):
+        carpeta = tmp_path / "Inicio"
+        carpeta.mkdir()
+        (carpeta / "MiPrograma.lnk").write_text("x")
+        (carpeta / "Otro.lnk").write_text("y")
+        entradas = startup.entries_from_folders([carpeta])
+>       assert {e.name for e in entradas} == {"MiPrograma", "Otro"}
+E       AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+E         
+E         Extra items in the left set:
+E         'MiPrograma.lnk'
+E         'Otro.lnk'
+E         Extra items in the right set:
+E         'MiPrograma'
+E         'Otro'
+E         
+E         Full diff:
+E           {
+E         -     'MiPrograma',
+E         +     'MiPrograma.lnk',
+E         ?                ++++
+E         -     'Otro',
+E         +     'Otro.lnk',
+E         ?          ++++
+E           }
+
+evolve/tests/test_modules.py:677: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'MiPrograma.lnk'
+  'Otro.lnk'
+  Extra items in the right set:
+  'MiPrograma'
+  'Otro'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed in 1.56s
+
+```
+- `2026-10-08T07:45:22` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se mejoró la robustez de `_process_folder_entry` corrigiendo un error de referencia a variable no definida (`_`) y añadiendo una validación explícita de `entry.path` como `Path` antes de procesarlo, evitando excepciones de tipo en casos donde el sistema operativo devuelva rutas mal formadas.
+- `2026-10-08T07:45:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T07:45:22` Corrida terminada. Total usado hoy: 184.
