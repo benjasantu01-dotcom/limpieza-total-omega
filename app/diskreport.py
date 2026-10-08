@@ -297,8 +297,11 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre el sistema de archivos de forma iterativa usando una pila para evitar recursión profunda.
-    Mantiene un conjunto de inodos visitados para evitar ciclos en enlaces simbólicos a directorios.
+    Recorre recursivamente el sistema de archivos de forma iterativa (stack-based).
+    
+    Usa una pila (stack) en lugar de recursión para evitar el desbordamiento de pila 
+    en estructuras profundas. Mantiene un registro de 'visited_inodes' (ID dispositivo + 
+    ID inodo) para detectar y detener bucles causados por enlaces simbólicos o junctions.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -384,8 +387,11 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Ejecuta el escaneo completo manteniendo las estadísticas globales y el heap de archivos.
-    El límite define cuántos archivos mayores se conservan.
+    Orquesta el escaneo completo agregando métricas globales y rastreando archivos pesados.
+    
+    Utiliza un Min-Heap de tamaño fijo (limit) para identificar los archivos más grandes 
+    eficientemente O(N log K), minimizando el uso de memoria RAM al no cargar la lista 
+    completa de archivos en el heap.
     """
     stats = GlobalStats()
     top_heap: List[Tuple[int, Path]] = [] 
@@ -395,7 +401,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             try:
                 stats.register_file(size_bytes, path)
                 
-                # Si se requiere mantener top N, gestionar el heap
+                # Gestión del Min-Heap para mantener solo los K archivos más grandes
                 if limit > 0:
                     if len(top_heap) < limit: 
                         heapq.heappush(top_heap, (size_bytes, path))

@@ -140,7 +140,10 @@ def _is_unc_path(path_str: Optional[str]) -> TypeGuard[str]:
     return isinstance(path_str, str) and (path_str.startswith(r"\\") or path_str.startswith("//"))
 
 def _ensure_within_base(target: str, base_norm: str) -> bool:
-    """Validación de contención: comprueba que 'target' pertenezca a 'base_norm'."""
+    """
+    Validación de contención estricta: previene ataques de 'path traversal' 
+    asegurando que la ruta destino no escape del directorio base permitido.
+    """
     try:
         if not target: return False
         return os.path.normcase(os.path.abspath(target)).startswith(base_norm)
@@ -181,7 +184,9 @@ def _should_skip_entry(
     base_norm: str
 ) -> bool:
     """
-    Determina si una entrada de directorio debe ser ignorada por seguridad.
+    Determina si una entrada de directorio debe ser ignorada.
+    Incluye chequeos de seguridad contra junctions/symlinks para evitar
+    recursión infinita o escalada de privilegios a rutas fuera del scope.
     """
     if _is_excluded_file(entry.name) or is_protected_path(Path(entry.path)):
         return True
@@ -218,7 +223,10 @@ def _sum_directory_recursive(
     visited_dirs: VisitedDirs,
     depth: int = 0
 ) -> ScanResult:
-    """Recorre jerárquicamente un directorio de caché con límites de seguridad."""
+    """
+    Recorre el árbol de archivos con profundidad limitada y memoización de directorios.
+    Usa 'visited_inodes' para evitar contabilizar archivos enlazados múltiples veces.
+    """
     if depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)
     
@@ -236,7 +244,7 @@ def _sum_directory_recursive(
                         continue
                     
                     if entry.is_dir(follow_symlinks=False):
-                        res = _sum_directory_recursive(
+                        res: ScanResult = _sum_directory_recursive(
                             Path(entry.path), root_abs_norm, kernel32, 
                             visited_inodes, visited_dirs, depth + 1
                         )
