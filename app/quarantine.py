@@ -84,13 +84,11 @@ def _check_path_for_junctions(path: Path) -> None:
         pass
 
 def _is_filesystem_read_only(path: Path) -> bool:
-    """Detecta si un sistema de archivos está montado en modo solo lectura."""
+    """Detecta si un sistema de archivos está montado en modo solo lectura de forma segura."""
     try:
-        test_file = path / f".test_{uuid.uuid4().hex}"
-        test_file.touch()
-        test_file.unlink()
-        return False
-    except OSError:
+        with tempfile.NamedTemporaryFile(dir=path, delete=True) as tf:
+            return False
+    except (OSError, PermissionError):
         return True
 
 def _check_io_error_context(func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:

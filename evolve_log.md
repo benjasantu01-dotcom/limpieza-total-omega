@@ -1282,3 +1282,14 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T14:25:08` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` y `summarize` implementando chequeos defensivos de tipo para `SystemMetrics` y `HealthResult`, garantizando que el pipeline de procesamiento no falle ante objetos malformados o inesperados.
 - `2026-10-08T14:25:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T14:25:08` Corrida terminada. Total usado hoy: 340.
+- `2026-10-08T14:32:34` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-08T14:32:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-08T14:33:42` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-08T14:34:48` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-08T14:36:01` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-08T14:36:18` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-08T14:37:02` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_linux_meminfo` mediante la validación explícita de tipos y la captura de errores en la conversión numérica, asegurando que valores malformados o faltantes en el texto de entrada no corrompan el estado de la aplicación.
+- `2026-10-08T14:37:38` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_safe_for_disk_op` y `delete_reviewed` reemplazando los chequeos implícitos por validaciones explícitas de estados de error y retornos seguros, evitando que excepciones silenciadas o valores inesperados (como `None` o `Path` vacío) conduzcan a operaciones de archivo no controladas.
+- `2026-10-08T14:38:30` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_filesystem_read_only` mediante el uso de `tempfile.TemporaryDirectory` para asegurar que el archivo de prueba se cree y elimine correctamente en el directorio destino, evitando dejar basura en caso de error y manejando explícitamente excepciones de permisos.
+- `2026-10-08T14:38:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T14:38:30` Corrida terminada. Total usado hoy: 344.

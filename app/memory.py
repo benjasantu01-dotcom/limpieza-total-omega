@@ -158,7 +158,10 @@ def _safe_int_conversion(value: Optional[str], multiplier: int = 1) -> BytesValu
     """Limpia cadenas provenientes de parsers de texto y aplica factor de escala."""
     if not isinstance(value, str): return BytesValue(0)
     digits = "".join(filter(str.isdigit, value))
-    return BytesValue(int(digits) * multiplier) if digits else BytesValue(0)
+    try:
+        return BytesValue(int(digits) * multiplier) if digits else BytesValue(0)
+    except (ValueError, OverflowError):
+        return BytesValue(0)
 
 _is_windows: bool = os.name == "nt"
 _linux_mem_path: Path = Path("/proc/meminfo")
@@ -175,6 +178,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     for line in meminfo_text.splitlines():
         if ":" not in line: continue
         key, _, value_part = line.partition(":")
+        if not key.strip(): continue
         metrics[key.strip()] = _safe_int_conversion(value_part, 1024)
             
     total: BytesValue = metrics.get("MemTotal", BytesValue(0))
@@ -205,9 +209,12 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     
     if not pid_digits or not ws_digits:
         return None
-        
-    pid, ws = int(pid_digits), int(ws_digits)
     
+    try:
+        pid, ws = int(pid_digits), int(ws_digits)
+    except ValueError:
+        return None
+        
     if _is_system_process(pid) or pid <= 0: 
         return None
     

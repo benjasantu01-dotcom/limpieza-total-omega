@@ -139,7 +139,7 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """Valida si un archivo está bloqueado mediante apertura exclusiva a nivel de OS."""
-    if not path: return True
+    if not path or not path.exists(): return True
     try:
         with open(path, "rb"):
             return False
@@ -173,15 +173,15 @@ def _is_system_hidden(entry: os.DirEntry) -> bool:
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """Auditoría de seguridad integral para operaciones de disco (movimiento)."""
+    if not junk_file or not isinstance(junk_file.path, Path): return False
     src = junk_file.path
     try:
-        if not src or not src.exists() or src.name.lower() in SYSTEM_CRITICAL_NAMES: return False
+        if not src.exists() or src.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         stat_result = src.stat()
         if (junk_file._ino is not None and stat_result.st_ino != junk_file._ino) or \
            (junk_file._dev is not None and stat_result.st_dev != junk_file._dev): return False
         if not src.is_file() or stat_result.st_nlink > 1: return False
         
-        # Validación robusta de resolución de ruta
         try:
             if src.resolve(strict=True) != src: return False
         except (OSError, RuntimeError):
@@ -193,8 +193,6 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         if not target_dir.is_dir() or not os.access(target_dir, os.W_OK): return False
         if _is_recursive_violation(src, dest) or _is_file_locked(src): return False
         
-        dest_st = target_dir.stat()
-        if dest_st.st_dev != stat_result.st_dev: return False
         usage = shutil.disk_usage(target_dir)
         if usage.free < (stat_result.st_size + MIN_FREE_SPACE_BYTES): return False
         return True
@@ -309,6 +307,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         dest = Path(review_dir).expanduser().resolve(strict=False)
         if not dest.exists() or not dest.is_dir(): return 0
         if is_protected_path(dest) or not is_safe_to_modify(dest): return 0
+        
         count = 0
         for item in dest.iterdir():
             try:
