@@ -971,3 +971,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T12:05:26` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se mejoró la robustez ante casos de error en `_safe_unlink` asegurando que la llamada a `os.fsync` sobre el directorio padre sea condicional a la existencia del mismo, evitando excepciones en escenarios donde la estructura de directorios pudo haber cambiado inesperadamente.
 - `2026-10-08T12:05:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T12:05:26` Corrida terminada. Total usado hoy: 284.
+- `2026-10-08T12:09:00` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-10-08T12:09:21` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 112): unterminated string literal (detected at line 112)
+- `2026-10-08T12:10:17` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una validación de seguridad contra rutas que contienen caracteres no imprimibles o de control (vía `_has_invalid_chars`) dentro de la función `ensure_safe_to_modify`, cerrando un posible vector de ataque donde nombres de archivo maliciosos podrían evadir filtros básicos o causar comportamiento inesperado al ser normalizados o procesados por la API de Windows.
+- `2026-10-08T12:10:42` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-08T12:11:00` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: robustez ante casos límite).
+- `2026-10-08T12:11:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T12:11:00` Corrida terminada. Total usado hoy: 288.

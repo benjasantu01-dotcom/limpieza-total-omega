@@ -851,6 +851,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         if not isinstance(path, (str, Path, os.PathLike)):
             raise UnsafePathError(f"Tipo de ruta no soportado: {type(path).__name__}", SafetyValidationErrorCode.GENERIC)
         
+        # Validar caracteres prohibidos antes de normalizar
+        if _has_invalid_chars(str(path)):
+            raise UnsafePathError("Caracteres inválidos detectados.", SafetyValidationErrorCode.INVALID_CHARS)
+        
         p = normalize(path)
         
         _validate_path_components(p)
