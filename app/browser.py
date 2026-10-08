@@ -202,6 +202,8 @@ def _should_skip_entry(
 def _process_file_node(entry: os.DirEntry, root_abs_norm: str, visited_inodes: Set[int]) -> int:
     """Calcula el tamaño de un archivo individual tras validar accesibilidad y unicidad de inodo."""
     if not entry.is_file(): return 0
+    # Seguridad reforzada: verificar explícitamente symlink antes de acceder
+    if entry.is_symlink(): return 0
     if not _ensure_within_base(entry.path, root_abs_norm): return 0
     if not is_safe_to_modify(Path(entry.path)): return 0
     try:
@@ -230,6 +232,11 @@ def _sum_directory_recursive(
         return ScanResult(0, True)
     
     path_str = str(root_path)
+    # Bloqueo adicional para evitar recursión en puntos de reparse detectados tardíamente
+    if path_str.endswith(os.path.sep): path_str = path_str[:-1]
+    if os.path.islink(path_str) or _IS_JUNCTION_FN(path_str):
+        return ScanResult(0, True)
+    
     path_norm = os.path.normcase(path_str)
     if path_norm in visited_dirs:
         return ScanResult(visited_dirs[path_norm], True)

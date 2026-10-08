@@ -168,12 +168,12 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
             return True
         
-        # Validación de integridad de ruta
+        # Validación de integridad de ruta frente a la raíz
         try:
-            entry_path = Path(entry.path)
-            if not str(entry_path).startswith(str(root_path)):
+            entry_path = Path(entry.path).resolve()
+            if not str(entry_path).startswith(str(root_path.resolve())):
                 return True
-        except (ValueError, TypeError):
+        except (ValueError, TypeError, OSError):
             return True
 
         # Detección de puntos de reparse (Windows) o enlaces simbólicos (Unix)
@@ -312,6 +312,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Filtrado preventivo de seguridad
                         if skip_protected and _is_excluded_path(entry, root_path):
                             continue
                         

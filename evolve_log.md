@@ -1963,3 +1963,26 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T07:45:22` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se mejoró la robustez de `_process_folder_entry` corrigiendo un error de referencia a variable no definida (`_`) y añadiendo una validación explícita de `entry.path` como `Path` antes de procesarlo, evitando excepciones de tipo en casos donde el sistema operativo devuelva rutas mal formadas.
 - `2026-10-08T07:45:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T07:45:22` Corrida terminada. Total usado hoy: 184.
+- `2026-10-08T07:53:24` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-10-08T07:54:10` Tests FALLARON:
+```
+D evolve/tests/test_assistant.py::test_ram_question_debunks_the_ram_cleaner_myth - NameError: name '_TOKEN_MAP' is not defined
+FAILED evolve/tests/test_assistant.py::test_low_disk_is_reported_as_the_top_priority - NameError: name '_TOKEN_MAP' is not defined
+FAILED evolve/tests/test_assistant.py::test_space_question_adds_up_what_can_be_recovered - NameError: name '_TOKEN_MAP' is not defined
+FAILED evolve/tests/test_assistant.py::test_security_question_without_findings_is_reassuring - NameError: name '_TOKEN_MAP' is not defined
+FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_explains_they_are_signals - NameError: name '_TOKEN_MAP' is not defined
+FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer - NameError: name '_TOKEN_MAP' is not defined
+FAILED evolve/tests/test_assistant.py::test_local_answer_always_says_it_did_not_send_anything - NameError: name '_TOKEN_MAP' is not defined
+FAILED evolve/tests/test_assistant.py::test_ask_stays_local_when_the_assistant_is_off - NameError: name '_TOKEN_MAP' is not defined
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - NameError: name '_TOKEN_MAP' is not defined
+FAILED evolve/tests/test_assistant.py::test_online_failure_falls_back_to_local - NameError: name '_TOKEN_MAP' is not defined
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - NameError: name '_TOKEN_MAP' is not defined
+13 failed, 286 passed in 1.80s
+
+```
+- `2026-10-08T07:54:10` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se endureció la validación de seguridad en `_ensure_safe_text` y sus dependientes al evitar el procesamiento recursivo peligroso y mejorar la detección de inyecciones en cadenas de caracteres mediante una verificación más estricta de caracteres de control y secuencias de escape no permitidas, alineándose con el enfoque defensivo requerido.
+- `2026-10-08T07:54:48` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó `save_logo_svg` para prevenir el "Time-of-check to time-of-use" (TOCTOU) y garantizar que la validación de seguridad ocurra inmediatamente antes de la escritura, asegurando que `ensure_safe_to_modify` se utilice correctamente según las reglas, evitando el uso de condiciones booleanas riesgosas.
+- `2026-10-08T07:55:16` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se endureció la validación de seguridad en `_process_file_node` y `_sum_directory_recursive` para garantizar que, incluso durante la lectura del tamaño de archivos, se verifique explícitamente que la ruta final no sea un vínculo simbólico o un reparse point, evitando ataques de tipo "symlink traversal" hacia rutas protegidas.
+- `2026-10-08T07:55:30` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `walk_files` y `_is_excluded_path` al asegurar que el manejo de errores ante nombres de archivos o rutas mal formadas (como caracteres nulos o rutas truncadas) ocurra de forma temprana, evitando excepciones innecesarias durante la iteración sobre el sistema de archivos.
+- `2026-10-08T07:55:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T07:55:30` Corrida terminada. Total usado hoy: 188.
