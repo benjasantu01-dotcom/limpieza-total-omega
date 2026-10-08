@@ -312,6 +312,7 @@ def _validate_response_length(text: Any) -> str:
 def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
     """Valida la estructura del JSON remoto para impedir ataques de desbordamiento (Bomba JSON)."""
     if depth > _MAX_NESTING_DEPTH: return False
+    if val is None: return True
     try:
         if isinstance(val, (list, tuple, set)):
             if len(val) > _MAX_COLLECTION_SIZE: return False
@@ -319,13 +320,14 @@ def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
         if isinstance(val, dict):
             if len(val) > _MAX_COLLECTION_SIZE: return False
             return all(isinstance(k, str) and _is_safe_payload_structure(v, depth + 1) for k, v in val.items())
-        return isinstance(val, (str, int, float, bool, type(None)))
+        return isinstance(val, (str, int, float, bool))
     except Exception:
         return False
 
 def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
     """Detecta si una estructura de datos excede los límites de seguridad."""
     if depth > _MAX_NESTING_DEPTH: return True
+    if val is None: return False
     
     if isinstance(val, (list, tuple, set)):
         if len(val) > _MAX_COLLECTION_SIZE: return True
