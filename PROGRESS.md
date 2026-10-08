@@ -8,30 +8,30 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **207** (41.1% de aceptación)
 - Rechazadas por tests: 25
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 132 | 16 | 26 | 7 | 147 |
-| 2026-10-08 | 75 | 9 | 16 | 7 | 69 |
+| 2026-10-07 | 131 | 16 | 26 | 7 | 144 |
+| 2026-10-08 | 76 | 9 | 17 | 7 | 71 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - rendimiento: **44**
 - legibilidad y documentación: **43**
-- seguridad defensiva: **38**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **37**
+- seguridad defensiva: **37**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **22**
 - `assistant.py`: **21**
 - `diskreport.py`: **21**
-- `quarantine.py`: **21**
 - `browser.py`: **20**
 - `healthscore.py`: **18**
 - `memory.py`: **17**
@@ -39,12 +39,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `branding.py`: **14**
 - `organizer.py`: **13**
 - `scanner.py`: **13**
-- `settings.py`: **12**
 - `duplicates.py`: **12**
+- `settings.py`: **11**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T07:34:41` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes mediante la implementación de `_is_filesystem_read_only` en el bucle de purga, evitando operaciones fallidas en volúmenes montados como solo lectura que anteriormente podían dejar el manifiesto desincronizado.
 - `2026-10-08T07:24:28` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `compute_score` ante posibles excepciones inesperadas en las funciones `scorer` personalizadas y se blindó `_render_bar` contra entradas inválidas mediante validación de tipos, garantizando que el pipeline de salud no colapse si una métrica entrega un dato corrupto.
 - `2026-10-08T07:23:47` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos inexistentes o con rutas malformadas en `suggest_keeper` y `_get_path_label` mediante una verificación de existencia más resiliente antes de intentar acceder a sus metadatos.
 - `2026-10-08T07:23:20` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_is_excluded_path` para manejar situaciones donde el acceso a un archivo o carpeta falla debido a condiciones de carrera (Race Condition) o archivos bloqueados por el sistema, asegurando que el iterador no se detenga ante errores transitorios de E/S.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T06:33:33` **assistant.py** (rendimiento): Se optimizó el acceso a métricas en `SystemContext` mediante la pre-compilación de la lógica de evaluación en `active_problems` y el uso de un diccionario de acceso directo en el `ingest`, eliminando la re-iteración sobre `_VALIDATORS` para cada campo y mejorando la eficiencia al evitar llamados repetidos a `getattr`.
 - `2026-10-08T06:32:25` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `settings.py` documentando los métodos de validación y convirtiendo los diccionarios de mapeo (`BOOL_KEYS`, `INT_KEYS`) en `frozenset` para garantizar inmutabilidad y mayor claridad semántica, alineado con el enfoque de documentación técnica.
 - `2026-10-08T06:23:51` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del flujo en `scanner.py` mediante type hints más precisos (específicamente en la pila de directorios) y docstrings extendidos que detallan las precondiciones necesarias para que cada heurística sea válida.
-- `2026-10-08T06:23:38` **safety.py** (legibilidad y documentación): Se han documentado las clases de datos `SecurityDescriptor` y `FileMetadata` con sus respectivos propósitos funcionales y el origen de la información para mejorar la claridad sobre cómo `safety.py` interactúa con las APIs del SO.

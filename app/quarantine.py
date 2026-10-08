@@ -83,6 +83,16 @@ def _check_path_for_junctions(path: Path) -> None:
     except (OSError, AttributeError):
         pass
 
+def _is_filesystem_read_only(path: Path) -> bool:
+    """Detecta si un sistema de archivos está montado en modo solo lectura."""
+    try:
+        test_file = path / f".test_{uuid.uuid4().hex}"
+        test_file.touch()
+        test_file.unlink()
+        return False
+    except OSError:
+        return True
+
 def _check_io_error_context(func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
     """
     Ejecuta una función de E/S con reintentos exponenciales para manejar
@@ -584,12 +594,10 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
         raise FileNotFoundError(f"Directorio inexistente: {dest_dir}")
     if not is_safe_to_modify(dest_dir) or not os.access(dest_dir, os.W_OK):
         raise PermissionError(f"Sin permisos de escritura seguros: {dest_dir}")
-    test_file = dest_dir / f".test_{uuid.uuid4().hex}"
-    try:
-        test_file.touch()
-        _check_io_error_context(test_file.unlink)
-    except OSError:
+    
+    if _is_filesystem_read_only(dest_dir):
         raise OSError("Sistema de archivos del destino marcado como solo lectura.")
+        
     usage = shutil.disk_usage(dest_dir)
     margin = max(int(required_size * 0.05), 5 * 1024 * 1024)
     if usage.free < (required_size + margin):
@@ -845,11 +853,7 @@ def quarantine_file(
         
     dest_dir = quarantine_dir(base)
     
-    try:
-        test_file = dest_dir / f".check_{uuid.uuid4().hex}"
-        test_file.touch()
-        test_file.unlink()
-    except OSError:
+    if _is_filesystem_read_only(dest_dir):
         raise OSError("El directorio de cuarentena no permite operaciones de escritura.")
     
     if _is_within_quarantine_sandbox(source_path, dest_dir.resolve()):
@@ -988,6 +992,9 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     """Limpia todos los archivos verificados de la cuarentena eficientemente."""
     try:
         quarantine_root = quarantine_dir(base)
+        if _is_filesystem_read_only(quarantine_root):
+            return 0
+            
         items = load_manifest(base)
         if not items:
             return 0
