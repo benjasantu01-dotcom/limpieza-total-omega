@@ -191,7 +191,6 @@ def _should_skip_entry(
     if _is_excluded_file(entry.name) or is_protected_path(Path(entry.path)):
         return True
     
-    # Optimizamos evitando llamadas a len() y normcase si es posible
     if _is_unc_path(entry.path) or len(entry.path) >= MAX_PATH_LEN:
         return True
     
@@ -202,30 +201,29 @@ def _should_skip_entry(
         return True
     return False
 
-def _process_file_node(entry: os.DirEntry, root_abs_norm: str, visited_inodes: Set[int]) -> int:
-    """Calcula el tamaño de un archivo individual tras validar accesibilidad y unicidad de inodo."""
-    if not entry.is_file(): return 0
-    # Omitimos is_symlink() redundante si ya filtramos en scandir
+def _process_file_node(entry: os.DirEntry, visited_files: Set[tuple[int, int]]) -> int:
+    """Calcula el tamaño de un archivo individual tras validar accesibilidad y unicidad mediante inodo."""
     try:
         st = entry.stat(follow_symlinks=False)
-        if st.st_ino not in visited_inodes and os.access(entry.path, os.R_OK):
-            visited_inodes.add(st.st_ino)
-            return st.st_size
+        file_id = (st.st_dev, st.st_ino)
+        if file_id in visited_files or not os.access(entry.path, os.R_OK):
+            return 0
+        visited_files.add(file_id)
+        return st.st_size
     except (OSError, PermissionError):
-        pass
-    return 0
+        return 0
 
 def _sum_directory_recursive(
     root_path: Path, 
     root_abs_norm: str,
     kernel32: Optional[ctypes.WinDLL],
-    visited_inodes: Set[int],
+    visited_files: Set[tuple[int, int]],
     visited_dirs: VisitedDirs,
     depth: int = 0
 ) -> ScanResult:
     """
     Recorre el árbol de archivos con profundidad limitada y memoización de directorios.
-    Usa 'visited_inodes' para evitar contabilizar archivos enlazados múltiples veces.
+    Usa 'visited_files' (dev/ino) para evitar duplicados y recursión infinita.
     """
     if depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)
@@ -246,11 +244,11 @@ def _sum_directory_recursive(
                     if entry.is_dir(follow_symlinks=False):
                         res: ScanResult = _sum_directory_recursive(
                             Path(entry.path), root_abs_norm, kernel32, 
-                            visited_inodes, visited_dirs, depth + 1
+                            visited_files, visited_dirs, depth + 1
                         )
                         total_bytes += res.bytes_found
                     else:
-                        total_bytes += _process_file_node(entry, root_abs_norm, visited_inodes)
+                        total_bytes += _process_file_node(entry, visited_files)
                 except (OSError, PermissionError):
                     continue
         visited_dirs[path_norm] = total_bytes
@@ -301,7 +299,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     k32 = _get_kernel32()
     found: List[BrowserCache] = []
-    visited_inodes: Set[int] = set()
+    visited_files: Set[tuple[int, int]] = set()
     visited_dirs: VisitedDirs = {}
     
     for base in raw_bases:
@@ -314,7 +312,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
                 if candidate != Path() and _is_valid_cache_path(candidate, real_base_str):
                     scan_res = _sum_directory_recursive(
                         candidate, os.path.normcase(str(candidate)), 
-                        k32, visited_inodes, visited_dirs, 0
+                        k32, visited_files, visited_dirs, 0
                     )
                     if scan_res.bytes_found > 0:
                         found.append(BrowserCache(str(browser_name), candidate, scan_res.bytes_found))

@@ -285,7 +285,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
     Calcula el puntaje global mediante la ejecución del pipeline con manejo estricto de errores.
     """
-    # Cache local de métricas validadas para evitar re-validación en cada iteración del pipeline
     m = metrics if (isinstance(metrics, SystemMetrics) and metrics.is_finite) else SystemMetrics()
     m.validate()
     
@@ -295,11 +294,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for entry in _PIPELINE:
         try:
+            # Forzamos la validación del ratio resultante para evitar valores no finitos en el breakdown
             area_ratio = _clamp(float(entry.scorer(m)))
             if entry.rules:
                 _evaluate_rules(m, entry.rules, area_ratio, recommendations)
             points = area_ratio * entry.weight
-            metric_breakdown[entry.area] = int(round(points))
+            metric_breakdown[entry.area] = int(round(_clamp(points, 0.0, float(entry.weight))))
             accumulated_score += points
         except (Exception, ValueError, TypeError) as e:
             logging.error(f"Falla crítica en pipeline {entry.area}: {e}")

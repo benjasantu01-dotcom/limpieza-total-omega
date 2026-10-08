@@ -952,3 +952,12 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T11:40:54` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-10-08T11:40:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T11:40:54` Corrida terminada. Total usado hoy: 276.
+- `2026-10-08T11:48:00` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-10-08T11:48:52` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para evitar ciclos de recursión infinita en el escaneo de directorios mediante el seguimiento de identificadores de dispositivo y número de nodo (`st_dev`, `st_ino`), mitigando así posibles casos límite de estructuras de archivos circulares o inusuales.
+- `2026-10-08T11:49:18` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se mejora la resiliencia ante errores de sistema de archivos en `largest_folders` al envolver el cálculo del peso de archivos en un bloque `try-except` más robusto, evitando que archivos bloqueados por el SO o con rutas excesivamente largas interrumpan el cálculo de métricas de carpetas.
+- `2026-10-08T11:50:19` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-08T11:51:22` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-08T11:52:20` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-08T11:52:32` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del motor ante entradas de métricas `NaN` o `inf` durante la ejecución del pipeline, asegurando que `_clamp` se utilice sistemáticamente dentro de `compute_score` antes de asignar valores a `metric_breakdown` para evitar contaminar el cálculo final con valores no finitos.
+- `2026-10-08T11:52:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T11:52:32` Corrida terminada. Total usado hoy: 280.

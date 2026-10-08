@@ -8,36 +8,36 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **204** (40.5% de aceptación)
 - Rechazadas por tests: 26
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 89 | 10 | 18 | 5 | 106 |
-| 2026-10-08 | 115 | 16 | 24 | 12 | 109 |
+| 2026-10-07 | 86 | 10 | 17 | 5 | 106 |
+| 2026-10-08 | 118 | 16 | 24 | 12 | 110 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - rendimiento: **45**
 - legibilidad y documentación: **42**
-- seguridad defensiva: **41**
-- robustez ante casos límite: **29**
+- seguridad defensiva: **38**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
-- `quarantine.py`: **20**
+- `diskreport.py`: **22**
 - `assistant.py`: **20**
-- `browser.py`: **19**
-- `safety.py`: **18**
-- `healthscore.py`: **16**
+- `browser.py`: **20**
+- `quarantine.py`: **19**
+- `healthscore.py`: **17**
+- `safety.py`: **17**
 - `memory.py`: **16**
-- `organizer.py`: **15**
 - `scanner.py`: **14**
+- `organizer.py`: **14**
 - `branding.py`: **13**
 - `duplicates.py`: **12**
 - `settings.py`: **11**
@@ -45,6 +45,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T11:52:32` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor ante entradas de métricas `NaN` o `inf` durante la ejecución del pipeline, asegurando que `_clamp` se utilice sistemáticamente dentro de `compute_score` antes de asignar valores a `metric_breakdown` para evitar contaminar el cálculo final con valores no finitos.
+- `2026-10-08T11:49:18` **diskreport.py** (robustez ante casos límite): Se mejora la resiliencia ante errores de sistema de archivos en `largest_folders` al envolver el cálculo del peso de archivos en un bloque `try-except` más robusto, evitando que archivos bloqueados por el SO o con rutas excesivamente largas interrumpan el cálculo de métricas de carpetas.
+- `2026-10-08T11:48:52` **browser.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar ciclos de recursión infinita en el escaneo de directorios mediante el seguimiento de identificadores de dispositivo y número de nodo (`st_dev`, `st_ino`), mitigando así posibles casos límite de estructuras de archivos circulares o inusuales.
 - `2026-10-08T11:40:23` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_get_source_value` para manejar situaciones donde el objeto fuente sea inesperadamente complejo o malicioso, evitando que `getattr` o iteraciones sobre tipos inesperados provoquen excepciones o filtración de información no intencionada, reforzando la integridad del bucle de ingesta.
 - `2026-10-08T11:30:19` **safety.py** (rendimiento): Optimicé el rendimiento de `_get_security_descriptor_cached` introduciendo un caché de tipo `lru_cache` sobre la función de bajo nivel `_get_file_attrs` y simplificando el flujo lógico para evitar consultas redundantes a la API de Windows en archivos que ya han sido marcados como protegidos.
 - `2026-10-08T11:20:03` **organizer.py** (rendimiento): Se optimizó el rendimiento de `_process_directory` eliminando la llamada repetitiva a `entry.name.lower()` y `endswith` dentro del bucle mediante el uso de la constante pre-compilada `JUNK_EXT_TUPLE`, y se introdujo un filtro previo de `JUNK_EXT_TUPLE` para evitar accesos innecesarios a `stat()` en archivos que no cumplen con los criterios de extensión.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T10:58:12` **settings.py** (legibilidad y documentación): Se añadió documentación tipo docstring a los validadores privados en la clase `_Validators` para clarificar la lógica de filtrado de seguridad, y se mejoró la legibilidad de la clase `_SettingsManager` mediante la adición de tipos claros en la caché, facilitando el mantenimiento a futuro.
 - `2026-10-08T10:57:38` **scanner.py** (legibilidad y documentación): Mejoré la documentación de los tipos, docstrings y la claridad de la clase `Scanner` para garantizar que el modelo de recursión y las validaciones de seguridad sean inequívocos, eliminando ambigüedades en la delegación de responsabilidades entre el escáner y las funciones de heurística.
 - `2026-10-08T10:49:01` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `safety.py` mediante la adición de docstrings estructuradas en los predicados de validación interna y se ha extraído la lógica dispersa de los `_check_*` en una sección claramente delimitada, facilitando la auditoría de reglas de seguridad por parte del equipo.
-- `2026-10-08T10:47:16` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la lógica de escaneo mediante la extracción de la condición de filtrado de archivos en `_process_directory` a una función con nombre explícito (`_is_candidate_junk`), cumpliendo con el enfoque de legibilidad y documentación sin alterar el comportamiento.
-- `2026-10-08T10:42:33` **memory.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando la estructura `MEMORYSTATUSEX` con tipos explícitos para sus campos de Win32 y añadiendo type hints faltantes en funciones críticas, lo cual ayuda a prevenir errores de mapeo en llamadas de `ctypes` y aclara la intención del código.
-- `2026-10-08T10:37:11` **duplicates.py** (legibilidad y documentación): Documenté con Type Hints, docstrings detallados y refinamiento de variables los métodos de bajo nivel de acceso a disco (`is_junction`, `is_system_or_hidden`, `_is_file_locked`) para clarificar su rol crítico en la seguridad del escaneo.
