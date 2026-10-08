@@ -22,6 +22,7 @@ ERROR_SHARING_VIOLATION: Final[int] = 32
 ERROR_FILE_NOT_FOUND: Final[int] = 2
 ERROR_ACCESS_DENIED: Final[int] = 5
 ERROR_INSUFFICIENT_BUFFER: Final[int] = 122
+ERROR_INVALID_NAME: Final[int] = 123
 
 PathLike: TypeAlias = Union[str, os.PathLike]
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
@@ -130,11 +131,12 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
     Consulta los atributos de archivo mediante la API Win32 GetFileAttributesW.
     Permite detectar flags de sistema, ocultos o puntos de reparse.
     """
-    if not isinstance(path_str, str) or not path_str or not os.path.isabs(path_str): return 0
+    if not isinstance(path_str, str) or not path_str or not os.path.isabs(path_str): 
+        return 0
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         return attrs if attrs != 0xFFFFFFFF else 0
-    except (AttributeError, OSError, ctypes.ArgumentError):
+    except (AttributeError, ctypes.ArgumentError):
         return 0
 
 class SafetyValidationErrorCode(IntEnum):

@@ -413,7 +413,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     
     parent = config_path.parent
     try:
-        if not parent.is_dir() or _Validators._is_reparse_point(parent) or is_protected_path(str(parent.resolve())): return None
+        if not parent.exists() or not parent.is_dir() or _Validators._is_reparse_point(parent) or is_protected_path(str(parent.resolve())): return None
         ensure_safe_to_modify(str(parent.resolve()))
         usage = shutil.disk_usage(parent)
         if usage.free < MAX_SETTINGS_SIZE * 2 or not os.access(parent, os.W_OK): return None
@@ -421,7 +421,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
         if config_path.exists():
             ensure_safe_to_modify(str(config_path.resolve()))
-    except (TypeError, ValueError, OSError, PermissionError): return None
+    except (TypeError, ValueError, OSError, PermissionError, AttributeError): return None
     
     temp_path = config_path.with_suffix(".tmp")
     bak_path = config_path.with_suffix(".bak")
