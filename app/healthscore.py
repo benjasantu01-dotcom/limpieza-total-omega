@@ -282,7 +282,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
     Calcula el puntaje global mediante la ejecución del pipeline con manejo estricto de errores.
     """
-    if not isinstance(metrics, SystemMetrics):
+    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         metrics = SystemMetrics()
     
     metrics.validate()

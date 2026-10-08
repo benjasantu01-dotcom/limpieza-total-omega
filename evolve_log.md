@@ -1069,3 +1069,13 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T00:57:17` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-08T00:57:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T00:57:17` Corrida terminada. Total usado hoy: 24.
+- `2026-10-08T01:05:40` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-10-08T01:06:56` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `compute_score` y `_evaluate_rules` integrando un chequeo explícito de la integridad del objeto `metrics` mediante la propiedad `is_finite` antes de procesar el pipeline, evitando cálculos con estados inconsistentes.
+- `2026-10-08T01:07:56` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-08T01:08:59` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-08T01:10:05` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-08T01:11:17` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-08T01:12:11` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `top_memory_processes` añadiendo validación explícita para evitar errores de tipo al procesar los resultados de `EnumProcesses` y garantizando que los cálculos de memoria sean seguros frente a valores inesperados del sistema.
+- `2026-10-08T01:12:22` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-08T01:12:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T01:12:22` Corrida terminada. Total usado hoy: 28.

@@ -308,8 +308,15 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         
         if psapi.EnumProcesses(ctypes.byref(pids), cb, ctypes.byref(cb_needed)):
             count = cb_needed.value // ctypes.sizeof(ctypes.c_ulong)
-            processes = [p for pid in pids[:count] if not _is_system_process(pid) and (p := _get_proc_memory_by_pid(pid))]
-            cache_data = sorted(processes, key=lambda p: p.working_set, reverse=True)[:limit]
+            valid_processes = []
+            for i in range(min(count, 4096)):
+                pid = pids[i]
+                if not _is_system_process(pid):
+                    proc = _get_proc_memory_by_pid(pid)
+                    if proc:
+                        valid_processes.append(proc)
+            
+            cache_data = sorted(valid_processes, key=lambda p: p.working_set, reverse=True)[:limit]
             top_memory_processes._cache = (now, cache_data)
             
     return cache_data
