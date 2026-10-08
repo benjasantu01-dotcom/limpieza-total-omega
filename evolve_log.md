@@ -409,3 +409,68 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-10-08T08:16:00` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación preventiva contra enlaces simbólicos y puntos de reparse en `_validate_path_components` para evitar el seguimiento recursivo de rutas que podrían escapar del sandbox antes de llegar a `ensure_safe_to_modify`, reforzando la seguridad frente a manipulaciones del sistema de archivos.
 - `2026-10-08T08:16:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T08:16:00` Corrida terminada. Total usado hoy: 196.
+- `2026-10-08T08:23:59` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-10-08T08:24:40` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: Scanner._is_inside_base_root
+- `2026-10-08T08:25:15` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_load_impl` y `save` al integrar explícitamente `is_protected_path` junto con la verificación de reparse points, asegurando que los archivos de configuración nunca residan en rutas críticas del sistema antes de abrir el `file descriptor`.
+- `2026-10-08T08:25:47` Tests FALLARON:
+```
+-2/test_entries_from_folders_read0')
+
+    def test_entries_from_folders_reads_injected_folders(tmp_path):
+        carpeta = tmp_path / "Inicio"
+        carpeta.mkdir()
+        (carpeta / "MiPrograma.lnk").write_text("x")
+        (carpeta / "Otro.lnk").write_text("y")
+        entradas = startup.entries_from_folders([carpeta])
+>       assert {e.name for e in entradas} == {"MiPrograma", "Otro"}
+E       AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+E         
+E         Extra items in the left set:
+E         'Otro.lnk'
+E         'MiPrograma.lnk'
+E         Extra items in the right set:
+E         'MiPrograma'
+E         'Otro'
+E         
+E         Full diff:
+E           {
+E         -     'MiPrograma',
+E         +     'MiPrograma.lnk',
+E         ?                ++++
+E         -     'Otro',
+E         +     'Otro.lnk',
+E         ?          ++++
+E           }
+
+evolve/tests/test_modules.py:677: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'Otro.lnk'
+  'MiPrograma.lnk'
+  Extra items in the right set:
+  'MiPrograma'
+  'Otro'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed in 1.36s
+
+```
+- `2026-10-08T08:25:47` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `_process_folder_entry` al reemplazar la lógica de creación de nombres mediante `_` (que era un error de referencia a una variable inexistente y potencialmente insegura) por una extracción limpia basada en `entry.name`, garantizando además que los archivos procesados sean validados individualmente mediante `is_safe_to_modify` antes de ser instanciados.
+- `2026-10-08T08:25:47` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-08T08:25:47` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-08T08:26:07` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-08T08:26:07` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-08T08:26:37` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-08T08:26:37` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-08T08:26:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T08:26:37` Corrida terminada. Total usado hoy: 200.

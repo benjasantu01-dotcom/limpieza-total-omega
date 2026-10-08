@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **217** (43.1% de aceptación)
-- Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 44
+- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Rechazadas por tests: 28
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 198
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 131 | 16 | 26 | 7 | 128 |
-| 2026-10-08 | 86 | 11 | 18 | 8 | 73 |
+| 2026-10-07 | 131 | 16 | 26 | 7 | 124 |
+| 2026-10-08 | 87 | 12 | 19 | 8 | 74 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
-- seguridad defensiva: **45**
+- seguridad defensiva: **46**
 - rendimiento: **44**
 - legibilidad y documentación: **43**
 - robustez ante casos límite: **39**
@@ -40,11 +40,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `organizer.py`: **14**
 - `scanner.py`: **14**
 - `duplicates.py`: **12**
-- `settings.py`: **11**
+- `settings.py`: **12**
 - `main.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T08:25:15` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_load_impl` y `save` al integrar explícitamente `is_protected_path` junto con la verificación de reparse points, asegurando que los archivos de configuración nunca residan en rutas críticas del sistema antes de abrir el `file descriptor`.
 - `2026-10-08T08:16:00` **safety.py** (seguridad defensiva): Se ha añadido una validación preventiva contra enlaces simbólicos y puntos de reparse en `_validate_path_components` para evitar el seguimiento recursivo de rutas que podrían escapar del sandbox antes de llegar a `ensure_safe_to_modify`, reforzando la seguridad frente a manipulaciones del sistema de archivos.
 - `2026-10-08T08:15:06` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad en `purge_all` implementando una validación estricta de la ruta del archivo mediante `is_within_directory` antes de cualquier operación, asegurando que el proceso de limpieza no pueda ser engañado para borrar archivos fuera del sandbox de cuarentena, incluso si el sistema de archivos tuviera anomalías.
 - `2026-10-08T08:14:21` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` añadiendo una validación explícita de `is_protected_path` sobre el directorio padre final de destino, asegurando que no se pueda mover archivos a rutas que, aunque no existan aún, sean subdirectorios de rutas protegidas del sistema.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T07:24:28` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `compute_score` ante posibles excepciones inesperadas en las funciones `scorer` personalizadas y se blindó `_render_bar` contra entradas inválidas mediante validación de tipos, garantizando que el pipeline de salud no colapse si una métrica entrega un dato corrupto.
 - `2026-10-08T07:23:47` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos inexistentes o con rutas malformadas en `suggest_keeper` y `_get_path_label` mediante una verificación de existencia más resiliente antes de intentar acceder a sus metadatos.
 - `2026-10-08T07:23:20` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_is_excluded_path` para manejar situaciones donde el acceso a un archivo o carpeta falla debido a condiciones de carrera (Race Condition) o archivos bloqueados por el sistema, asegurando que el iterador no se detenga ante errores transitorios de E/S.
-- `2026-10-08T07:13:54` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_get_source_value` y la ingesta de `SystemContext` para manejar fallos de tipos inesperados, iterables vacíos y desbordamientos en la conversión de métricas, evitando errores durante el procesamiento de datos de entrada.

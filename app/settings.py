@@ -362,7 +362,7 @@ def _load_impl(ruta: Path) -> AppSettings:
     if _Validators._is_reparse_point(ruta): return DEFAULTS.copy()
     try:
         resolved = ruta.resolve()
-        if not is_safe_to_modify(str(resolved)): return DEFAULTS.copy()
+        if not is_safe_to_modify(str(resolved)) or is_protected_path(str(resolved)): return DEFAULTS.copy()
         with open(resolved, "r", encoding="utf-8") as f:
             if not _is_file_secure_to_read(f): return DEFAULTS.copy()
             try:
@@ -426,7 +426,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     
     parent = config_path.parent
     try:
-        if not parent.is_dir() or _Validators._is_reparse_point(parent): return None
+        if not parent.is_dir() or _Validators._is_reparse_point(parent) or is_protected_path(str(parent.resolve())): return None
         ensure_safe_to_modify(str(parent.resolve()))
         usage = shutil.disk_usage(parent)
         if usage.free < MAX_SETTINGS_SIZE * 2 or not os.access(parent, os.W_OK): return None
