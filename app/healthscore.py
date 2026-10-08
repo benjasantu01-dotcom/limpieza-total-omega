@@ -275,7 +275,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             if rule.check(metrics, normalized_ratio):
                 raw_msg = rule.message_factory(metrics)
                 if not isinstance(raw_msg, str): 
-                    logging.warning(f"Regla en {rule.area} devolvió tipo inesperado: {type(raw_msg)}")
                     continue
                 clean_msg = _sanitize_msg(raw_msg)
                 if clean_msg: findings.append(clean_msg)

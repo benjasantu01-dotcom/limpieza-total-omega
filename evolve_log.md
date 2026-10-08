@@ -1391,3 +1391,11 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T03:30:07` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
 - `2026-10-08T03:30:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T03:30:07` Corrida terminada. Total usado hoy: 84.
+- `2026-10-08T03:38:30` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-10-08T03:38:59` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la robustez del motor de cómputo ante fallos inesperados en `message_factory` y `check` de las reglas, asegurando que cualquier excepción en la lógica del usuario no propague errores y manteniendo la integridad del pipeline mediante un manejo defensivo de los tipos de datos.
+- `2026-10-08T03:39:59` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-08T03:41:17` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `main.py` añadiendo un filtro `is_safe_to_modify` en `on_save_settings` para validar preventivamente que cualquier ruta de configuración guardada (como `carpeta_excluida`) no apunte a un directorio protegido, evitando que configuraciones malintencionadas o errores de usuario comprometan la integridad del sistema al iniciar.
+- `2026-10-08T03:41:44` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-10-08T03:41:57` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha añadido un chequeo explícito en `stage_for_review` para impedir que el usuario intente mover archivos hacia una ubicación que sea un ancestro de sí misma o que esté contenida en un subdirectorio propio (evitando la recursión lógica antes de invocar `shutil.move`), reforzando la seguridad defensiva contra manipulaciones de rutas maliciosas.
+- `2026-10-08T03:41:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T03:41:57` Corrida terminada. Total usado hoy: 88.

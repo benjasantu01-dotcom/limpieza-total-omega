@@ -277,6 +277,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         if not junk_file or not isinstance(junk_file.path, Path): continue
         try:
             if not _is_safe_for_disk_op(junk_file, dest_res): continue
+            if _is_recursive_violation(junk_file.path, dest_res): continue
             target_path = _can_move_file(junk_file, dest_res)
             if target_path:
                 ensure_safe_to_modify(junk_file.path)
