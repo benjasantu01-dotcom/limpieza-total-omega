@@ -182,7 +182,9 @@ def _should_skip_entry(
     base_norm: str
 ) -> bool:
     """
-    Determina si una entrada de directorio es insegura para el escaneo.
+    Determina si una entrada de directorio debe ser ignorada por seguridad.
+    Verifica protección contra acceso a archivos críticos, rutas UNC, y 
+    puntos de reparse (junctions/links) que podrían causar bucles infinitos.
     """
     if _is_excluded_file(entry.name) or is_protected_path(Path(entry.path)):
         return True
@@ -192,12 +194,13 @@ def _should_skip_entry(
     if not _ensure_within_base(entry.path, base_norm):
         return True
 
+    # Los puntos de reparse (symlinks/junctions) no se siguen para evitar escapes del sandbox
     if entry.is_symlink() or is_junction_fn(entry.path) or _is_system_hidden(entry.path, kernel32):
         return True
     return False
 
 def _process_file_node(entry: os.DirEntry, root_abs_norm: str, visited_inodes: Set[int]) -> int:
-    """Calcula el tamaño de un archivo individual tras validar accesibilidad."""
+    """Calcula el tamaño de un archivo individual tras validar accesibilidad y unicidad de inodo."""
     if not entry.is_file(): return 0
     if not _ensure_within_base(entry.path, root_abs_norm): return 0
     if not is_safe_to_modify(Path(entry.path)): return 0
@@ -218,7 +221,11 @@ def _sum_directory_recursive(
     visited_dirs: VisitedDirs,
     depth: int = 0
 ) -> ScanResult:
-    """Recorre jerárquicamente un directorio de caché con memorización de nodos."""
+    """
+    Recorre jerárquicamente un directorio de caché.
+    Utiliza memorización (visited_dirs) para evitar redundancias y profundidad 
+    controlada (MAX_SCAN_DEPTH) para prevenir desbordamiento de stack.
+    """
     if depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)
     
@@ -236,7 +243,10 @@ def _sum_directory_recursive(
                         continue
                     
                     if entry.is_dir(follow_symlinks=False):
-                        res = _sum_directory_recursive(Path(entry.path), root_abs_norm, kernel32, visited_inodes, visited_dirs, depth + 1)
+                        res = _sum_directory_recursive(
+                            Path(entry.path), root_abs_norm, kernel32, 
+                            visited_inodes, visited_dirs, depth + 1
+                        )
                         total_bytes += res.bytes_found
                     else:
                         total_bytes += _process_file_node(entry, root_abs_norm, visited_inodes)
@@ -300,7 +310,10 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             for browser_name, rel_str in browser_map.items():
                 candidate = _resolve_browser_path(real_base, rel_str)
                 if candidate != Path() and _is_valid_cache_path(candidate, real_base_str):
-                    scan_res = _sum_directory_recursive(candidate, os.path.normcase(str(candidate)), k32, visited_inodes, visited_dirs, 0)
+                    scan_res = _sum_directory_recursive(
+                        candidate, os.path.normcase(str(candidate)), 
+                        k32, visited_inodes, visited_dirs, 0
+                    )
                     if scan_res.bytes_found > 0:
                         found.append(BrowserCache(str(browser_name), candidate, scan_res.bytes_found))
         except (OSError, RuntimeError):

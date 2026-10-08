@@ -300,7 +300,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     """
     Calcula una métrica de 'originalidad' basada en la antigüedad (mtime) y longitud de ruta.
-    Retorna un puntaje que favorece archivos más antiguos como candidatos a conservar.
+    Retorna un puntaje (mtime, longitud_path) que se usa para elegir el original.
     """
     if not isinstance(path, Path):
         return None
@@ -322,6 +322,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
             if (score := _calculate_keeper_heuristic(p)) is not None:
                 candidates.append((score, p))
             
+    # Elegimos el más antiguo (menor mtime) como original/keeper
     return min(candidates, key=lambda x: x[0])[1] if candidates else None
 
 

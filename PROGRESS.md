@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **202** (40.1% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 40
+- Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 225
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-06 | 6 | 2 | 1 | 0 | 5 |
+| 2026-10-06 | 4 | 2 | 0 | 0 | 4 |
 | 2026-10-07 | 139 | 17 | 28 | 8 | 158 |
-| 2026-10-08 | 55 | 8 | 11 | 4 | 62 |
+| 2026-10-08 | 59 | 8 | 11 | 4 | 62 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - seguridad defensiva: **42**
 - robustez ante casos límite: **39**
-- rendimiento: **38**
-- legibilidad y documentación: **35**
+- legibilidad y documentación: **39**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **23**
+- `browser.py`: **22**
+- `quarantine.py`: **22**
 - `assistant.py`: **21**
-- `browser.py`: **21**
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
 - `healthscore.py`: **18**
-- `memory.py`: **16**
 - `safety.py`: **15**
-- `branding.py`: **13**
+- `memory.py`: **15**
+- `branding.py`: **14**
 - `settings.py`: **12**
 - `organizer.py`: **12**
 - `scanner.py`: **11**
-- `duplicates.py`: **10**
+- `duplicates.py`: **11**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T06:03:14` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante docstrings más precisos, se han añadido type hints en retornos de funciones (como `_collect_candidates` y `_group_paths_by_hash`) y se ha extraído la lógica de comparación de heurística de `suggest_keeper` para facilitar su legibilidad.
+- `2026-10-08T06:03:03` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento mediante la adición de Type Hints detallados en las funciones de procesamiento de datos y la refactorización de `_collect_summary_data` para clarificar la lógica de acumulación, facilitando la comprensión del flujo de datos sin alterar la funcionalidad.
+- `2026-10-08T06:02:36` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las funciones críticas de escaneo (`_sum_directory_recursive` y `_should_skip_entry`) mediante la adición de Type Hints más precisos, docstrings que explican las decisiones de seguridad, y la clarificación de la lógica de recursión.
+- `2026-10-08T06:02:09` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos con parámetros y retornos a las funciones que carecían de ellos, y se ha estandarizado la nomenclatura interna de las constantes de colores (prefijo `C_`) para mejorar la legibilidad y mantenibilidad del archivo.
 - `2026-10-08T05:53:26` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y la seguridad del módulo `assistant.py` mediante la refactorización de `_ensure_safe_text`, extrayendo la lógica de filtrado de patrones de seguridad a una función auxiliar explícita (`_contains_forbidden_patterns`), lo que clarifica la intención del chequeo y facilita futuras auditorías de seguridad sin alterar el comportamiento.
 - `2026-10-08T05:52:15` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` capturando explícitamente `PermissionError` y `OSError` al realizar operaciones críticas de sistema de archivos (`os.replace` y `os.fsync`), evitando que una falla de permisos durante el reemplazo atómico deje el archivo en un estado inconsistente o silencie el error.
 - `2026-10-08T05:51:38` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas centralizando la captura de excepciones y validando inputs críticos en `check_recent_executable_in_downloads` y `check_system_lookalike`, evitando errores silenciosos al procesar rutas o atributos de archivos inexistentes o bloqueados.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T05:22:58` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_stat` y `walk_files` para manejar casos de rutas inexistentes o permisos denegados de forma explícita, evitando la propagación de excepciones que podrían interrumpir el escaneo, y agregué una validación de `path` en `_is_excluded_path` para prevenir `AttributeError` en entornos con metadatos corrompidos.
 - `2026-10-08T05:22:39` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `base_directories` y `_resolve_browser_path` añadiendo validaciones específicas para detectar valores None, tipos incorrectos o rutas inexistentes antes de realizar operaciones de resolución, evitando excepciones innecesarias en el bucle de escaneo.
 - `2026-10-08T05:22:08` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `draw_ring` mediante la validación explícita de `size` y `thickness` antes del cálculo de `max_thick` para evitar errores matemáticos, y se reemplazó el acceso directo a `SEVERITY_STYLES` por `get()` en `severity_label` para evitar `KeyError` ante severidades inesperadas.
-- `2026-10-08T03:50:58` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_entry` y `process_entry` al reforzar la validación de archivos mediante la resolución previa de rutas (`resolve`) y un chequeo explícito de existencia antes de cualquier acceso, previniendo condiciones de carrera al interactuar con el sistema de archivos mientras se escanea.
-- `2026-10-08T03:49:36` **quarantine.py** (seguridad defensiva): Se introdujo una validación de seguridad proactiva en `quarantine_file` que verifica mediante `_is_file_in_use_by_system` que el archivo no esté bloqueado por un proceso externo justo antes de iniciar la operación, previniendo condiciones de carrera donde el archivo podría ser modificado o bloqueado durante la transición.
-- `2026-10-08T03:41:57` **organizer.py** (seguridad defensiva): Se ha añadido un chequeo explícito en `stage_for_review` para impedir que el usuario intente mover archivos hacia una ubicación que sea un ancestro de sí misma o que esté contenida en un subdirectorio propio (evitando la recursión lógica antes de invocar `shutil.move`), reforzando la seguridad defensiva contra manipulaciones de rutas maliciosas.
-- `2026-10-08T03:41:17` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` añadiendo un filtro `is_safe_to_modify` en `on_save_settings` para validar preventivamente que cualquier ruta de configuración guardada (como `carpeta_excluida`) no apunte a un directorio protegido, evitando que configuraciones malintencionadas o errores de usuario comprometan la integridad del sistema al iniciar.

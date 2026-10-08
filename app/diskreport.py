@@ -109,8 +109,8 @@ class FolderMetrics:
     """
     __slots__ = ('size', 'file_count')
     def __init__(self) -> None:
-        self.size = 0
-        self.file_count = 0
+        self.size: int = 0
+        self.file_count: int = 0
 
 
 class SummaryData(NamedTuple):
@@ -385,8 +385,8 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Ejecuta el escaneo completo manteniendo las estadísticas requeridas.
-    Utiliza un heap para mantener de forma eficiente los 'top archivos' encontrados.
+    Ejecuta el escaneo completo manteniendo las estadísticas globales y el heap de archivos.
+    El límite define cuántos archivos mayores se conservan.
     """
     stats = GlobalStats()
     top_heap: List[Tuple[int, Path]] = [] 
@@ -395,6 +395,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         for path, size_bytes in walk_files(directory, skip_protected):
             stats.register_file(size_bytes, path)
             
+            # Si se requiere mantener top N, gestionar el heap
             if limit > 0:
                 if len(top_heap) < limit: 
                     heapq.heappush(top_heap, (size_bytes, path))
