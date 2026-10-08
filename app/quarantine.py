@@ -988,6 +988,7 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem, base_dir: Path) -> 
         return False
     if not file_path.exists():
         return True
+    # Solo purgamos si el archivo coincide físicamente con el registro del manifiesto
     return (
         file_path.is_file() and 
         not file_path.is_symlink() and
@@ -1013,10 +1014,14 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         for f in quarantine_root.iterdir():
             if f.name == MANIFEST_NAME or not f.is_file():
                 continue
+            
             item = item_map.get(f.name)
-            if item:
-                if not f.exists() or _is_item_purgable(f, item, quarantine_root):
-                    purged_ids.add(item.item_id)
+            # Solo procedemos si existe un ítem vinculado y pasa la validación de integridad
+            if item and _is_item_purgable(f, item, quarantine_root):
+                purged_ids.add(item.item_id)
+            elif item is None:
+                # Archivo huérfano sin registro, omitir por seguridad
+                continue
         
         if purged_ids:
             remaining = [i for i in items if i.item_id not in purged_ids]

@@ -56,6 +56,7 @@ MAX_VALID_PROCESS_MEM: Final[int] = 128 * 1024 * BYTES_IN_MB
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x0400
 FILE_ATTRIBUTE_REPARSE_POINT: Final[int] = 0x0400
+DRIVE_FIXED: Final[int] = 3
 
 # TRIM_ACCESS_MASK combina Query para validar estado y SetQuota para ejecutar EmptyWorkingSet.
 TRIM_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
@@ -346,12 +347,16 @@ def _is_system_process(pid: int) -> bool:
     return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
 
 def _is_path_safe_and_valid(path_obj: Path) -> bool:
-    """Valida que la ruta de un ejecutable sea segura y no un reparse point."""
+    """Valida que la ruta de un ejecutable sea segura, local y no un reparse point."""
     if is_protected_path(str(path_obj)) or not is_safe_to_modify(path_obj):
         return False
     kernel32 = ctypes.windll.kernel32
     attr = kernel32.GetFileAttributesW(str(path_obj))
     if attr == -1: return False
+    
+    drive = str(path_obj.anchor)
+    if kernel32.GetDriveTypeW(drive) != DRIVE_FIXED: return False
+    
     return not (attr & FILE_ATTRIBUTE_REPARSE_POINT)
 
 def _get_process_path(pid: int) -> Optional[Path]:
@@ -367,7 +372,7 @@ def _get_process_path(pid: int) -> Optional[Path]:
         length = psapi.GetModuleFileNameExW(process_handle, None, buf, buffer_size)
         if 0 < length < buffer_size:
             raw_path = buf.value
-            # Bloqueo estricto para rutas UNC o externas potencialmente inseguras
+            # Bloqueo estricto para rutas UNC
             if not raw_path or raw_path.startswith("\\\\"): return None
             
             p_test = Path(raw_path)

@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
+- Mejoras aceptadas: **210** (41.7% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 84 | 10 | 17 | 5 | 92 |
-| 2026-10-08 | 124 | 17 | 26 | 12 | 117 |
+| 2026-10-07 | 84 | 10 | 17 | 5 | 88 |
+| 2026-10-08 | 126 | 17 | 27 | 12 | 118 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - rendimiento: **45**
 - legibilidad y documentación: **42**
-- seguridad defensiva: **39**
+- seguridad defensiva: **41**
 - robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **23**
 - `browser.py`: **21**
+- `quarantine.py`: **21**
 - `assistant.py`: **20**
-- `quarantine.py`: **20**
 - `healthscore.py`: **18**
 - `safety.py`: **18**
-- `memory.py`: **16**
+- `memory.py`: **17**
 - `organizer.py`: **15**
 - `scanner.py`: **13**
 - `branding.py`: **13**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T12:43:39` **quarantine.py** (seguridad defensiva): Reforcé la seguridad en `purge_all` y `_is_item_purgable` para garantizar que solo se eliminen archivos que coincidan exactamente con su registro de manifiesto (integridad de hash e inodo) y evitar errores de lógica en la limpieza masiva.
+- `2026-10-08T12:42:24` **memory.py** (seguridad defensiva): Se ha robustecido la seguridad defensiva en `_get_process_path` validando que la ruta del ejecutable no solo exista, sino que se encuentre dentro de volúmenes locales definidos (excluyendo rutas de red/UNC o unidades extraíbles mediante `GetDriveTypeW`) antes de intentar cualquier operación, evitando riesgos por punteros a recursos externos maliciosos.
 - `2026-10-08T12:30:53` **healthscore.py** (seguridad defensiva): He mejorado la robustez defensiva del pipeline de evaluación incorporando un manejo estricto de tipos y validación de datos en `_evaluate_rules` y `compute_score`, asegurando que cualquier entrada inesperada (como valores `None` o estructuras de datos inyectadas maliciosamente) sea neutralizada antes de procesarse, manteniendo el principio de no confiar en la integridad del objeto `metrics` recibido.
 - `2026-10-08T12:29:54` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_validate_root` para prevenir casos de "Path Traversal" accidental y garantizar que la ruta resuelta se mantenga dentro de los límites esperados mediante una verificación explícita de `is_protected_path` sobre la ruta resuelta canónicamente.
 - `2026-10-08T12:24:48` **browser.py** (seguridad defensiva): Se endureció la seguridad defensiva en `_should_skip_entry` y `_process_file_node` para verificar explícitamente que cada ruta procesada sea un archivo o directorio real y no un dispositivo lógico (como volúmenes montados o pipes), añadiendo una capa de validación adicional con `is_file()` / `is_dir()` antes de realizar operaciones de IO.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T11:30:19` **safety.py** (rendimiento): Optimicé el rendimiento de `_get_security_descriptor_cached` introduciendo un caché de tipo `lru_cache` sobre la función de bajo nivel `_get_file_attrs` y simplificando el flujo lógico para evitar consultas redundantes a la API de Windows en archivos que ya han sido marcados como protegidos.
 - `2026-10-08T11:20:03` **organizer.py** (rendimiento): Se optimizó el rendimiento de `_process_directory` eliminando la llamada repetitiva a `entry.name.lower()` y `endswith` dentro del bucle mediante el uso de la constante pre-compilada `JUNK_EXT_TUPLE`, y se introdujo un filtro previo de `JUNK_EXT_TUPLE` para evitar accesos innecesarios a `stat()` en archivos que no cumplen con los criterios de extensión.
 - `2026-10-08T11:19:44` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` evitando la reconstrucción de la lista de procesos en cada llamada, reemplazando la lógica de caché basada en el tiempo por una variable de estado persistente vinculada al objeto función y reduciendo la cantidad de llamadas a la API de Windows mediante un filtrado previo más eficiente.
-- `2026-10-08T11:18:00` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global en `compute_score` cacheando las métricas en una variable local para evitar llamadas repetitivas a `getattr` y `validate` dentro del bucle del pipeline, mejorando la eficiencia del ciclo de evaluación.
-- `2026-10-08T11:09:49` **diskreport.py** (rendimiento): Optimizé `walk_files` y `_collect_summary_data` eliminando llamadas redundantes a `Path.resolve()` y `Path.exists()` dentro del bucle principal, reduciendo drásticamente las llamadas al sistema operativo (I/O) durante el recorrido del árbol de directorios.
