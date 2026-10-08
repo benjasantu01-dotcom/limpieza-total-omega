@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **202** (40.1% de aceptación)
+- Mejoras aceptadas: **200** (39.7% de aceptación)
 - Rechazadas por tests: 26
 - Rechazadas por guardia de seguridad: 43
-- Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 224
+- Sin cambios (nada sustancial que mejorar): 10
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-06 | 31 | 6 | 9 | 0 | 40 |
+| 2026-10-06 | 28 | 6 | 8 | 0 | 40 |
 | 2026-10-07 | 139 | 17 | 28 | 8 | 158 |
-| 2026-10-08 | 32 | 3 | 6 | 1 | 26 |
+| 2026-10-08 | 33 | 3 | 7 | 2 | 27 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **42**
 - rendimiento: **42**
-- seguridad defensiva: **36**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **37**
+- seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
@@ -36,16 +36,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **19**
 - `healthscore.py`: **19**
 - `memory.py`: **18**
-- `safety.py`: **16**
-- `settings.py`: **14**
+- `safety.py`: **15**
 - `branding.py`: **13**
+- `settings.py`: **13**
 - `organizer.py`: **12**
-- `scanner.py`: **11**
 - `duplicates.py`: **10**
-- `main.py`: **8**
+- `scanner.py`: **10**
+- `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T03:02:04` **main.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en la inicialización y el procesamiento de hilos, asegurando que la aplicación no intente destruir widgets o invocar callbacks en una ventana inexistente si el cierre ocurre durante una operación asíncrona.
 - `2026-10-08T02:52:19` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `_safe_stat` y `_is_excluded_path` para manejar situaciones donde el sistema de archivos devuelve metadatos parciales o rutas extremadamente largas en entornos Windows, evitando excepciones no capturadas durante el recorrido del disco.
 - `2026-10-08T02:49:05` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `draw_logo` ante valores de entrada extremos o inválidos, asegurando que el estado interno no se corrompa si se pasan datos fuera de rango o tipos inesperados, cumpliendo con el enfoque de robustez ante casos límite.
 - `2026-10-08T02:48:20` **assistant.py** (robustez ante casos límite): Se mejora la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` añadiendo una comprobación explícita para evitar errores de `RecursionError` o evaluaciones infinitas ante estructuras cíclicas o excesivamente profundas, integrando una cota superior estricta en la profundidad de la recursión.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T02:08:57` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante la sustitución de la lógica de chequeo de archivos en uso (`_is_file_in_use`), la cual realizaba llamadas costosas a `kernel32.CreateFileW` por cada archivo encontrado, reemplazándola por una verificación de metadatos `stat` que es órdenes de magnitud más rápida y segura.
 - `2026-10-08T02:08:45` **branding.py** (rendimiento): Se optimizó el rendimiento del dibujado de franjas (`_draw_shield_stripes`) y gradientes (`draw_gradient_bar`) reemplazando cálculos redundantes en tiempo de ejecución por consultas al cache `_get_grouped_segments`, reduciendo drásticamente las llamadas a `create_rectangle` y `create_line` en el Canvas.
 - `2026-10-08T02:08:02` **assistant.py** (rendimiento): Optimicé el cálculo de `active_problems` en `SystemContext` convirtiéndolo en un `@cached_property` para evitar iteraciones repetitivas sobre los criterios en cada acceso, aprovechando que el estado del contexto es inmutable durante su ciclo de vida tras la ingesta.
-- `2026-10-08T01:58:32` **scanner.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el orquestador principal (`Scanner`) y sus métodos auxiliares, mejorando la legibilidad técnica sin alterar la lógica de escaneo.

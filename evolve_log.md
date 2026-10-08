@@ -1278,3 +1278,12 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T02:52:19` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_safe_stat` y `_is_excluded_path` para manejar situaciones donde el sistema de archivos devuelve metadatos parciales o rutas extremadamente largas en entornos Windows, evitando excepciones no capturadas durante el recorrido del disco.
 - `2026-10-08T02:52:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T02:52:19` Corrida terminada. Total usado hoy: 68.
+- `2026-10-08T02:57:44` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-10-08T02:58:13` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-08T02:58:39` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: SystemMetrics.safe_get
+- `2026-10-08T02:59:40` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-08T03:00:43` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-08T03:02:04` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante casos límite en la inicialización y el procesamiento de hilos, asegurando que la aplicación no intente destruir widgets o invocar callbacks en una ventana inexistente si el cierre ocurre durante una operación asíncrona.
+- `2026-10-08T03:02:20` ➖ Sin cambios en memory.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `top_memory_processes` añadiendo una comprobación explícita para evitar errores de acceso denegado en procesos que terminan su ejecución durante el ciclo de enumeración, asegurando que `_get_process_path` y `_get_process_memory_stats` manejen correctamente los `handles` nulos antes de intentar operaciones críticas.
+- `2026-10-08T03:02:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T03:02:20` Corrida terminada. Total usado hoy: 72.

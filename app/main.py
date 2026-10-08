@@ -169,9 +169,7 @@ def validated_ui_operation(func: Callable) -> Callable:
     @wraps(func)
     def wrapper(self: Any, *args: Any, **kwargs: Any) -> Optional[Any]:
         # Si la app se está cerrando, ignorar nuevas peticiones de UI
-        if getattr(self, '_closing', False):
-            return None
-        if not hasattr(self, 'winfo_exists') or not self.winfo_exists():
+        if getattr(self, '_closing', False) or not self.winfo_exists():
             return None
         try:
             return func(self, *args, **kwargs)
@@ -291,13 +289,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @safe_ui_operation
     def _safe_run_ui_callback(self, callback: AsyncCallback) -> None:
         """Helper: Ejecuta una función en el hilo principal de forma segura."""
-        if self.winfo_exists():
-            def safe_wrapper():
-                try:
-                    callback()
-                except (tk.TclError, RuntimeError):
-                    pass
-            self.after_idle(safe_wrapper)
+        self.after_idle(callback)
 
     def _validate_environment(self) -> None:
         """Verifica que el entorno de ejecución cumpla las reglas de seguridad."""
