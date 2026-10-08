@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 84 | 10 | 17 | 5 | 96 |
-| 2026-10-08 | 122 | 17 | 25 | 12 | 116 |
+| 2026-10-07 | 84 | 10 | 17 | 5 | 92 |
+| 2026-10-08 | 124 | 17 | 26 | 12 | 117 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - rendimiento: **45**
 - legibilidad y documentación: **42**
-- seguridad defensiva: **37**
+- seguridad defensiva: **39**
 - robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **23**
 - `browser.py`: **21**
 - `assistant.py`: **20**
 - `quarantine.py`: **20**
+- `healthscore.py`: **18**
 - `safety.py`: **18**
-- `healthscore.py`: **17**
 - `memory.py`: **16**
 - `organizer.py`: **15**
 - `scanner.py`: **13**
@@ -45,6 +45,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T12:30:53` **healthscore.py** (seguridad defensiva): He mejorado la robustez defensiva del pipeline de evaluación incorporando un manejo estricto de tipos y validación de datos en `_evaluate_rules` y `compute_score`, asegurando que cualquier entrada inesperada (como valores `None` o estructuras de datos inyectadas maliciosamente) sea neutralizada antes de procesarse, manteniendo el principio de no confiar en la integridad del objeto `metrics` recibido.
+- `2026-10-08T12:29:54` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_validate_root` para prevenir casos de "Path Traversal" accidental y garantizar que la ruta resuelta se mantenga dentro de los límites esperados mediante una verificación explícita de `is_protected_path` sobre la ruta resuelta canónicamente.
 - `2026-10-08T12:24:48` **browser.py** (seguridad defensiva): Se endureció la seguridad defensiva en `_should_skip_entry` y `_process_file_node` para verificar explícitamente que cada ruta procesada sea un archivo o directorio real y no un dispositivo lógico (como volúmenes montados o pipes), añadiendo una capa de validación adicional con `is_file()` / `is_dir()` antes de realizar operaciones de IO.
 - `2026-10-08T12:10:17` **safety.py** (robustez ante casos límite): Se ha añadido una validación de seguridad contra rutas que contienen caracteres no imprimibles o de control (vía `_has_invalid_chars`) dentro de la función `ensure_safe_to_modify`, cerrando un posible vector de ataque donde nombres de archivo maliciosos podrían evadir filtros básicos o causar comportamiento inesperado al ser normalizados o procesados por la API de Windows.
 - `2026-10-08T12:05:26` **quarantine.py** (robustez ante casos límite): Se mejoró la robustez ante casos de error en `_safe_unlink` asegurando que la llamada a `os.fsync` sobre el directorio padre sea condicional a la existencia del mismo, evitando excepciones en escenarios donde la estructura de directorios pudo haber cambiado inesperadamente.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T11:19:44` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` evitando la reconstrucción de la lista de procesos en cada llamada, reemplazando la lógica de caché basada en el tiempo por una variable de estado persistente vinculada al objeto función y reduciendo la cantidad de llamadas a la API de Windows mediante un filtrado previo más eficiente.
 - `2026-10-08T11:18:00` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global en `compute_score` cacheando las métricas en una variable local para evitar llamadas repetitivas a `getattr` y `validate` dentro del bucle del pipeline, mejorando la eficiencia del ciclo de evaluación.
 - `2026-10-08T11:09:49` **diskreport.py** (rendimiento): Optimizé `walk_files` y `_collect_summary_data` eliminando llamadas redundantes a `Path.resolve()` y `Path.exists()` dentro del bucle principal, reduciendo drásticamente las llamadas al sistema operativo (I/O) durante el recorrido del árbol de directorios.
-- `2026-10-08T11:08:50` **browser.py** (rendimiento): Optimizé el rendimiento del escaneo recursivo mediante la validación de `os.scandir` y la eliminación de llamadas redundantes a `os.path.normcase` dentro del bucle interno, reduciendo la carga de E/S.
-- `2026-10-08T11:07:59` **branding.py** (rendimiento): Se optimizó el cálculo y renderizado de franjas decorativas mediante la eliminación de una tupla intermedia redundante en `_get_stripe_params` y el uso directo de valores pre-calculados, reduciendo la presión sobre el recolector de basura durante el pintado del Canvas.

@@ -137,7 +137,8 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     if directory is None:
         return None
     try:
-        p = Path(directory).expanduser().resolve()
+        p = Path(directory).expanduser().resolve(strict=True)
+        # Verificación doble para asegurar que la ruta resuelta no está en la blacklist
         if not p.is_dir() or is_protected_path(p) or not os.access(p, os.R_OK):
             return None
         return p
@@ -271,7 +272,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     
     visited_inodes: set[Inode] = set()
     stack: List[str] = [str(root_path)]
-    root_path_str = str(root_path)
     
     while stack:
         current_dir = stack.pop()
@@ -279,7 +279,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if skip_protected and _is_excluded_path(entry, root_path_str):
+                        if skip_protected and _is_excluded_path(entry, str(root_path)):
                             continue
                         
                         if entry.is_dir():

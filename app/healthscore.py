@@ -247,7 +247,7 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verifica que ninguna métrica numérica sea infinita o NaN."""
-        return all(math.isfinite(getattr(self, f)) for f in self._CHECK_FIELDS)
+        return all(isinstance(getattr(self, f), (int, float)) and math.isfinite(getattr(self, f)) for f in self._CHECK_FIELDS)
 
 @dataclass
 class HealthResult:
@@ -270,23 +270,23 @@ def _sanitize_msg(msg: str) -> str:
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio, findings: List[str]) -> None:
     """Ejecuta las reglas de diagnóstico y sanitiza el texto de los resultados."""
+    if not isinstance(rules, tuple): return
     for rule in rules:
         try:
+            if not isinstance(rule, RecommendationRule): continue
             if rule.check(metrics, normalized_ratio):
                 raw_msg = rule.message_factory(metrics)
-                if not isinstance(raw_msg, str): 
-                    continue
+                if not isinstance(raw_msg, str): continue
                 clean_msg = _sanitize_msg(raw_msg)
                 if clean_msg: findings.append(clean_msg)
         except Exception as e:
-            logging.error(f"Falla en evaluación de regla {rule.area}: {e}")
+            logging.error(f"Falla en evaluación de regla {getattr(rule, 'area', 'desconocida')}: {e}")
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
     Calcula el puntaje global mediante la ejecución del pipeline con manejo estricto de errores.
     """
     m = metrics if (isinstance(metrics, SystemMetrics) and metrics.is_finite) else SystemMetrics()
-    m.validate()
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -294,10 +294,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for entry in _PIPELINE:
         try:
-            # Forzamos la validación del ratio resultante para evitar valores no finitos en el breakdown
             area_ratio = _clamp(float(entry.scorer(m)))
-            if entry.rules:
-                _evaluate_rules(m, entry.rules, area_ratio, recommendations)
+            _evaluate_rules(m, entry.rules, area_ratio, recommendations)
             points = area_ratio * entry.weight
             metric_breakdown[entry.area] = int(round(_clamp(points, 0.0, float(entry.weight))))
             accumulated_score += points
