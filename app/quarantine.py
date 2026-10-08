@@ -995,21 +995,20 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         if not items:
             return 0
         
-        # Mapeo eficiente O(1) para lookups
+        # Mapeo eficiente O(1) para lookups de metadatos
         item_map = {i.stored_name: i for i in items}
         purged_ids: Set[str] = set()
         
+        # Iterar una sola vez sobre el directorio
         for f in quarantine_root.iterdir():
             if f.name == MANIFEST_NAME or not f.is_file():
                 continue
             item = item_map.get(f.name)
-            try:
-                if item and _is_item_purgable(f, item):
-                    purged_ids.add(item.item_id)
-            except (OSError, PermissionError):
-                continue
+            if item and _is_item_purgable(f, item):
+                purged_ids.add(item.item_id)
         
         if purged_ids:
+            # Filtro eficiente para actualizar manifiesto
             remaining = [i for i in items if i.item_id not in purged_ids]
             save_manifest(remaining, base)
             

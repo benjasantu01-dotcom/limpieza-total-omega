@@ -273,7 +273,6 @@ def _get_process_memory_stats(pid: int) -> Optional[BytesValue]:
 
 def _get_proc_memory_by_pid(pid: int) -> Optional[ProcessMemory]:
     """Helper para crear una instancia ProcessMemory validando el PID."""
-    if _is_system_process(pid): return None
     ws = _get_process_memory_stats(pid)
     return ProcessMemory(f"PID {pid}", pid, ws) if ws and 0 < ws < MAX_VALID_PROCESS_MEM else None
 
