@@ -202,14 +202,15 @@ def _is_file_in_use(path_str: str, base_norm: str) -> bool:
     
     k32 = _get_kernel32()
     if k32:
+        handle = -1
         try:
             handle = k32.CreateFileW(path_str, 0x80000000, 0x3, None, 3, 0x80, None)
-            if handle == -1 or handle is None: 
-                return True
-            k32.CloseHandle(handle)
-            return False
+            return bool(handle == -1 or handle is None)
         except OSError:
             return True
+        finally:
+            if handle not in (-1, None):
+                k32.CloseHandle(handle)
     return False
 
 def _process_file_node(entry: os.DirEntry, root_abs_norm: str, visited_inodes: Set[int]) -> int:

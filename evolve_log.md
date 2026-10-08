@@ -1062,3 +1062,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T00:49:08` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para capturar explícitamente valores `None` y evitar recursiones infinitas ante estructuras de datos no estándar, asegurando que la validación de entrada sea consistente y segura.
 - `2026-10-08T00:49:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T00:49:08` Corrida terminada. Total usado hoy: 20.
+- `2026-10-08T00:55:29` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-10-08T00:56:07` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-08T00:56:33` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_in_use` agregando un manejo explícito para el cierre de `handle` mediante `finally`, asegurando que no queden identificadores de archivo abiertos si ocurre una excepción inesperada durante la operación de la API Win32.
+- `2026-10-08T00:57:06` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `largest_folders` añadiendo validaciones específicas para manejar rutas inaccesibles o inconsistencias en `scandir` sin romper el flujo del escaneo, además de asegurar que los parámetros de entrada se filtren correctamente antes de operar.
+- `2026-10-08T00:57:17` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-08T00:57:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T00:57:17` Corrida terminada. Total usado hoy: 24.

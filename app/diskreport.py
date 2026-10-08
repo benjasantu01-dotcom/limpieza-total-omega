@@ -278,9 +278,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre el sistema de archivos de forma iterativa usando una pila para evitar recursión profunda.
-    
-    Emplea un conjunto `visited_inodes` para detectar bucles (mount points / hard links) 
-    y asegura que cada archivo sea procesado una sola vez en sistemas POSIX/NTFS.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -340,12 +337,13 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     for path, size in walk_files(root, skip_protected):
         try:
             rel = path.relative_to(root)
+            # Manejo defensivo: si path es igual a root o no tiene partes, omitir
             if not rel.parts: continue
             top_folder = root / rel.parts[0]
             curr = stats[top_folder]
             curr.size += size
             curr.file_count += 1
-        except (ValueError, IndexError, RuntimeError):
+        except (ValueError, IndexError, RuntimeError, TypeError):
             continue
 
     results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items()]
@@ -361,13 +359,7 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """
-    Ejecuta el escaneo completo y mantiene las estadísticas requeridas.
-    
-    Usa un min-heap de tamaño fijo (`limit`) para mantener eficientemente 
-    la lista de los N archivos más grandes durante el recorrido, garantizando 
-    complejidad O(N log K) donde N es el total de archivos y K es el límite.
-    """
+    """Ejecuta el escaneo completo manteniendo las estadísticas requeridas."""
     stats = GlobalStats()
     top_heap: List[Tuple[int, Path]] = [] 
     
