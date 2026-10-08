@@ -690,3 +690,92 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T10:07:54` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-10-08T10:07:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T10:07:54` Corrida terminada. Total usado hoy: 240.
+- `2026-10-08T10:16:13` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-10-08T10:17:10` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez de `_get_security_descriptor_cached` añadiendo manejo de errores específico frente a excepciones de la API de Windows, evitando que un fallo en la consulta de atributos bloquee indefinidamente la validación de archivos mediante la asignación de un estado de "máxima protección" por defecto en caso de error.
+- `2026-10-08T10:17:38` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las heurísticas `check_recent_executable_in_downloads` y `check_system_lookalike` añadiendo validaciones explícitas para evitar errores en llamadas a `path.parent` o acceso a atributos de rutas potencialmente inválidas, evitando que una excepción en un archivo puntual interrumpa el escaneo del directorio.
+- `2026-10-08T10:18:09` Tests FALLARON:
+```
+........................... [ 24%]
+........................................................................ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________ test_a_protected_folder_is_never_remembered __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_a_protected_folder_is_nev0')
+
+    def test_a_protected_folder_is_never_remembered(tmp_path):
+        """Una preferencia mal puesta no puede terminar en un borrado en el sistema."""
+        peligrosa = str(tmp_path / "Windows" / "System32")
+        resultado = settings.validate({"ultima_carpeta": peligrosa})
+>       assert resultado["ultima_carpeta"] == ""
+E       AssertionError: assert '/tmp/pytest-...dows/System32' == ''
+E         
+E         + /tmp/pytest-of-runner/pytest-3/test_a_protected_folder_is_nev0/Windows/System32
+
+evolve/tests/test_assistant.py:119: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_a_protected_folder_is_never_remembered - AssertionError: assert '/tmp/pytest-...dows/System32' == ''
+  
+  + /tmp/pytest-of-runner/pytest-3/test_a_protected_folder_is_nev0/Windows/System32
+1 failed, 298 passed in 0.92s
+
+```
+- `2026-10-08T10:18:09` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_Validators.path` y `_run_safety_checks` para evitar excepciones no controladas durante la resolución de rutas complejas o inválidas, asegurando que el sistema de settings siempre retorne un valor seguro incluso ante entradas corruptas.
+- `2026-10-08T10:18:41` Tests FALLARON:
+```
+-4/test_entries_from_folders_read0')
+
+    def test_entries_from_folders_reads_injected_folders(tmp_path):
+        carpeta = tmp_path / "Inicio"
+        carpeta.mkdir()
+        (carpeta / "MiPrograma.lnk").write_text("x")
+        (carpeta / "Otro.lnk").write_text("y")
+        entradas = startup.entries_from_folders([carpeta])
+>       assert {e.name for e in entradas} == {"MiPrograma", "Otro"}
+E       AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+E         
+E         Extra items in the left set:
+E         'Otro.lnk'
+E         'MiPrograma.lnk'
+E         Extra items in the right set:
+E         'Otro'
+E         'MiPrograma'
+E         
+E         Full diff:
+E           {
+E         -     'MiPrograma',
+E         +     'MiPrograma.lnk',
+E         ?                ++++
+E         -     'Otro',
+E         +     'Otro.lnk',
+E         ?          ++++
+E           }
+
+evolve/tests/test_modules.py:677: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'Otro.lnk'
+  'MiPrograma.lnk'
+  Extra items in the right set:
+  'Otro'
+  'MiPrograma'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed in 0.91s
+
+```
+- `2026-10-08T10:18:41` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Corregí un error lógico grave en `_process_folder_entry` donde el nombre del archivo se asignaba usando una variable indefinida `_` en lugar del nombre del archivo real, y mejoré la robustez de `_sanitize_command` para manejar entradas nulas de forma segura antes de procesarlas.
+- `2026-10-08T10:18:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T10:18:41` Corrida terminada. Total usado hoy: 244.

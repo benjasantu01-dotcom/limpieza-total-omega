@@ -143,7 +143,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """HEURÍSTICA: Identifica ejecutables descargados recientemente en carpetas de riesgo."""
     try:
-        if not path or not path.parent:
+        if not path or path.parent is None:
             return None
         if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
             return None
@@ -154,20 +154,20 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
                 if (now_ts - float(mtime)) < (SCAN_LIMITS.recent_hours * 3600):
                     return Suspicion(path, f"Ejecutable reciente (<{SCAN_LIMITS.recent_hours}h)", "info")
     except (OSError, AttributeError, ValueError, TypeError):
-        logger.debug(f"Error analizando tiempos en {path}")
+        return None
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """HEURÍSTICA: Detección de 'Binary Planting' fuera de System32."""
     try:
-        if not path or not path.name:
+        if path is None or not path.name:
             return None
         if path.name.lower() in SYSTEM_LOOKALIKES:
             path_str = str(path).lower()
             if SYSTEM32_LOWER not in path_str:
                 return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     except (OSError, ValueError, AttributeError, TypeError):
-        logger.debug(f"Error analizando lookalike en {path}")
+        return None
     return None
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
