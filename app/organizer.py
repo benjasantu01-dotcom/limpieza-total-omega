@@ -225,7 +225,6 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False):
-                        # Aprovechamos el stat() de la entrada para evitar syscalls extra
                         stats = entry.stat(follow_symlinks=False)
                         if (0 <= stats.st_size < MAX_FILE_SIZE_BYTES and 
                             stats.st_mtime <= now_ts + 3600 and
@@ -234,8 +233,8 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                                 found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
                 except (PermissionError, OSError):
                     continue
-    except (PermissionError, OSError, RuntimeError):
-        pass
+    except (PermissionError, OSError, RuntimeError) as e:
+        logger.debug(f"Acceso denegado o error en {current_dir}: {e}")
 
 def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[JunkFile]:
     """Escanea directorios en busca de basura, aplicando validaciones de seguridad previas."""

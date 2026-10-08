@@ -283,16 +283,20 @@ def _is_file_owned_by_system(path_str: str) -> bool:
     if os.name != 'nt' or not isinstance(path_str, str): return False
     try:
         advapi32 = ctypes.windll.advapi32
+        kernel32 = ctypes.windll.kernel32
         sid_ptr = ctypes.c_void_p()
         # SE_FILE_OBJECT = 1
         res = advapi32.GetNamedSecurityInfoW(
             path_str, 1, 0x00000001, ctypes.byref(sid_ptr), None, None, None, None
         )
         if res == 0:
-            sid_str = ctypes.create_unicode_buffer(128)
-            advapi32.ConvertSidToStringSidW(sid_ptr, ctypes.byref(sid_str))
-            sid_val = sid_str.value
-            return sid_val.startswith("S-1-5-18") or sid_val.startswith("S-1-5-80")
+            try:
+                sid_str = ctypes.create_unicode_buffer(128)
+                if advapi32.ConvertSidToStringSidW(sid_ptr, ctypes.byref(sid_str)):
+                    sid_val = sid_str.value
+                    return sid_val.startswith("S-1-5-18") or sid_val.startswith("S-1-5-80")
+            finally:
+                kernel32.LocalFree(sid_ptr)
     except (AttributeError, OSError, ctypes.ArgumentError): pass
     return False
 

@@ -982,6 +982,9 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem) -> bool:
     """Valida los requisitos de seguridad antes de proceder con el borrado."""
     if _is_file_in_use_by_system(file_path):
         return False
+    # Verificación de existencia previa antes de llamar a integridad
+    if not file_path.exists():
+        return True
     return (
         file_path.is_file() and 
         not file_path.is_symlink() and
@@ -1007,7 +1010,10 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             if f.name == MANIFEST_NAME or not f.is_file():
                 continue
             item = item_map.get(f.name)
-            if item and _is_item_purgable(f, item):
+            # Si el ítem existe en manifiesto pero no en disco, lo marcamos para limpiar del manifiesto
+            if item and not f.exists():
+                purged_ids.add(item.item_id)
+            elif item and _is_item_purgable(f, item):
                 purged_ids.add(item.item_id)
         
         if purged_ids:
