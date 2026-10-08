@@ -18,6 +18,7 @@ o `is_protected_path` para garantizar que no se interactúe con zonas críticas.
 from __future__ import annotations
 import hashlib
 import os
+import io
 import ctypes
 from collections import defaultdict, deque
 from collections.abc import Sequence, Iterable
@@ -50,7 +51,11 @@ MAX_PATH_LIMIT: int = 260
 
 
 def is_junction(path: Path) -> bool:
-    """Verifica mediante atributos de Windows si una ruta es un punto de reanálisis (Junction/Symlink)."""
+    """
+    Verifica mediante la API de Windows si una ruta es un punto de reanálisis.
+    Los puntos de reanálisis (Junctions/Symlinks) se ignoran para prevenir
+    recursión infinita o escaneo de unidades externas montadas.
+    """
     if not isinstance(path, Path) or not is_safe_to_modify(path):
         return False
     try:
@@ -61,7 +66,11 @@ def is_junction(path: Path) -> bool:
 
 
 def is_system_or_hidden(path: Path) -> bool:
-    """Verifica si un archivo posee atributos de sistema u oculto en Windows mediante WinAPI."""
+    """
+    Determina si un archivo tiene atributos de sistema u oculto en Windows.
+    El escaneo debe evitar estos archivos para no comprometer la estabilidad
+    del sistema operativo ni alterar archivos de configuración críticos.
+    """
     if not isinstance(path, Path) or not is_safe_to_modify(path):
         return True
     try:
@@ -87,7 +96,7 @@ class DuplicateGroup:
 
     @property
     def wasted_bytes(self) -> int:
-        """Calcula el espacio total que se liberaría si se conservara solo uno (N-1)."""
+        """Calcula el espacio total que se liberaría si se conservara solo uno (N-1 archivos)."""
         if not self.paths or self.count <= 1 or self.size_bytes < 0:
             return 0
         return (self.count - 1) * self.size_bytes
@@ -95,8 +104,9 @@ class DuplicateGroup:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Intenta abrir el archivo en modo lectura para verificar si está bloqueado por otro proceso.
-    Retorna True si el archivo está inaccesible o en uso exclusivo (bloqueo de escritura).
+    Verifica si un archivo está bloqueado intentando una lectura no destructiva.
+    Si el archivo está abierto en modo exclusivo por otro proceso (ej: sistema),
+    se considera bloqueado y se excluye del análisis para evitar errores de E/S.
     """
     if not isinstance(path, Path) or not is_safe_to_modify(path):
         return True

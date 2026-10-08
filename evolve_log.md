@@ -786,3 +786,13 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T10:30:08` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de los métodos de escaneo (específicamente `walk_files` y `_collect_summary_data`) aclarando la estrategia de uso de memoria y la lógica de filtrado de inodos, proporcionando una comprensión más clara del flujo de datos para futuros colaboradores.
 - `2026-10-08T10:30:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T10:30:08` Corrida terminada. Total usado hoy: 248.
+- `2026-10-08T10:36:38` Arrancando corrida. Quedan hoy ~52 peticiones objetivo.
+- `2026-10-08T10:37:11` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Documenté con Type Hints, docstrings detallados y refinamiento de variables los métodos de bajo nivel de acceso a disco (`is_junction`, `is_system_or_hidden`, `_is_file_locked`) para clarificar su rol crítico en la seguridad del escaneo.
+- `2026-10-08T10:37:43` ➖ Sin cambios en healthscore.py (enfoque: legibilidad y documentación). Motivo: Se introdujeron type hints más precisos y se extrajo la lógica de normalización de las puntuaciones individuales para mejorar la claridad de la arquitectura del pipeline, facilitando la comprensión del flujo de datos sin alterar el comportamiento.
+- `2026-10-08T10:38:43` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-08T10:39:46` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-08T10:40:52` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-08T10:42:04` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-08T10:42:33` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). He mejorado la legibilidad y mantenibilidad del archivo documentando la estructura `MEMORYSTATUSEX` con tipos explícitos para sus campos de Win32 y añadiendo type hints faltantes en funciones críticas, lo cual ayuda a prevenir errores de mapeo en llamadas de `ctypes` y aclara la intención del código.
+- `2026-10-08T10:42:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T10:42:33` Corrida terminada. Total usado hoy: 252.

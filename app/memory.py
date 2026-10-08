@@ -90,12 +90,12 @@ class MEMORYSTATUSEX(ctypes.Structure):
     _fields_: List[Tuple[str, type]] = [
         ("dwLength", ctypes.c_ulong),            # Tamaño de la estructura en bytes
         ("dwMemoryLoad", ctypes.c_ulong),        # Porcentaje de uso de memoria (0-100)
-        ("ullTotalPhys", ctypes.c_ulonglong),    # Memoria física total
-        ("ullAvailPhys", ctypes.c_ulonglong),    # Memoria física disponible
-        ("ullTotalPageFile", ctypes.c_ulonglong),# Límite del archivo de paginación
-        ("ullAvailPageFile", ctypes.c_ulonglong),# Disponible en archivo de paginación
-        ("ullTotalVirtual", ctypes.c_ulonglong), # Espacio virtual total
-        ("ullAvailVirtual", ctypes.c_ulonglong), # Espacio virtual disponible
+        ("ullTotalPhys", ctypes.c_ulonglong),    # Memoria física total (bytes)
+        ("ullAvailPhys", ctypes.c_ulonglong),    # Memoria física disponible (bytes)
+        ("ullTotalPageFile", ctypes.c_ulonglong),# Límite del archivo de paginación (bytes)
+        ("ullAvailPageFile", ctypes.c_ulonglong),# Disponible en archivo de paginación (bytes)
+        ("ullTotalVirtual", ctypes.c_ulonglong), # Espacio virtual total (bytes)
+        ("ullAvailVirtual", ctypes.c_ulonglong), # Espacio virtual disponible (bytes)
         ("ullAvailExtendedVirtual", ctypes.c_ulonglong), # Siempre 0 (reservado)
     ]
 
@@ -267,6 +267,7 @@ def _get_process_memory_stats(pid: int) -> Optional[BytesValue]:
     if not process_handle:
         return None
     try:
+        # Estructura de tamaño fijo para obtener contadores de memoria
         pmc = (ctypes.c_size_t * 6)()
         if psapi.GetProcessMemoryInfo(process_handle, ctypes.byref(pmc), ctypes.sizeof(pmc)):
             val = pmc[3]
