@@ -154,7 +154,6 @@ def base_directories() -> List[Path]:
         return []
     
     p = Path(local_env)
-    # Verificación extra de existencia antes de resolve()
     if p.exists() and p.is_dir():
         try:
             path_local: Path = p.resolve(strict=True)
@@ -183,8 +182,6 @@ def _should_skip_entry(
 ) -> bool:
     """
     Determina si una entrada de directorio debe ser ignorada por seguridad.
-    Verifica protección contra acceso a archivos críticos, rutas UNC, y 
-    puntos de reparse (junctions/links) que podrían causar bucles infinitos.
     """
     if _is_excluded_file(entry.name) or is_protected_path(Path(entry.path)):
         return True
@@ -194,7 +191,6 @@ def _should_skip_entry(
     if not _ensure_within_base(entry.path, base_norm):
         return True
 
-    # Los puntos de reparse (symlinks/junctions) no se siguen para evitar escapes del sandbox
     if entry.is_symlink() or is_junction_fn(entry.path) or _is_system_hidden(entry.path, kernel32):
         return True
     return False
@@ -202,7 +198,6 @@ def _should_skip_entry(
 def _process_file_node(entry: os.DirEntry, root_abs_norm: str, visited_inodes: Set[int]) -> int:
     """Calcula el tamaño de un archivo individual tras validar accesibilidad y unicidad de inodo."""
     if not entry.is_file(): return 0
-    # Seguridad reforzada: verificar explícitamente symlink antes de acceder
     if entry.is_symlink(): return 0
     if not _ensure_within_base(entry.path, root_abs_norm): return 0
     if not is_safe_to_modify(Path(entry.path)): return 0
@@ -223,26 +218,17 @@ def _sum_directory_recursive(
     visited_dirs: VisitedDirs,
     depth: int = 0
 ) -> ScanResult:
-    """
-    Recorre jerárquicamente un directorio de caché.
-    Utiliza memorización (visited_dirs) para evitar redundancias y profundidad 
-    controlada (MAX_SCAN_DEPTH) para prevenir desbordamiento de stack.
-    """
+    """Recorre jerárquicamente un directorio de caché con límites de seguridad."""
     if depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)
     
-    path_str = str(root_path)
-    # Bloqueo adicional para evitar recursión en puntos de reparse detectados tardíamente
-    if path_str.endswith(os.path.sep): path_str = path_str[:-1]
-    if os.path.islink(path_str) or _IS_JUNCTION_FN(path_str):
-        return ScanResult(0, True)
-    
-    path_norm = os.path.normcase(path_str)
-    if path_norm in visited_dirs:
-        return ScanResult(visited_dirs[path_norm], True)
-
-    total_bytes: int = 0
     try:
+        path_str = str(root_path)
+        path_norm = os.path.normcase(path_str)
+        if path_norm in visited_dirs:
+            return ScanResult(visited_dirs[path_norm], True)
+
+        total_bytes: int = 0
         with os.scandir(path_str) as it:
             for entry in it:
                 try:
@@ -259,28 +245,29 @@ def _sum_directory_recursive(
                         total_bytes += _process_file_node(entry, root_abs_norm, visited_inodes)
                 except (OSError, PermissionError):
                     continue
-    except (OSError, PermissionError):
-        return ScanResult(total_bytes, False)
-        
-    visited_dirs[path_norm] = total_bytes
-    return ScanResult(total_bytes, True)
+        visited_dirs[path_norm] = total_bytes
+        return ScanResult(total_bytes, True)
+    except (OSError, PermissionError, ValueError):
+        return ScanResult(0, False)
 
 @safe_path_operation(0)
 def directory_size(path: Optional[OSPath]) -> int:
     """Interfaz pública para calcular el tamaño total de un directorio de caché."""
-    if path is None: return 0
+    if not isinstance(path, (str, Path)): return 0
     path_obj: Path = Path(path)
     if not path_obj.exists(): return 0
+    
     resolved_p: Path = path_obj.resolve(strict=True)
     if not resolved_p.is_dir() or not is_safe_to_modify(resolved_p) or is_protected_path(resolved_p):
         return 0
+    
     norm_root: str = os.path.normcase(str(resolved_p))
     return _sum_directory_recursive(resolved_p, norm_root, _get_kernel32(), set(), {}, 0).bytes_found
 
 @safe_path_operation(False)
 def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
     """Valida la integridad de la ruta candidata antes de iniciar el escaneo."""
-    if not candidate or not candidate.exists(): return False
+    if not isinstance(candidate, Path) or not candidate.exists(): return False
     real: Path = candidate.resolve(strict=True)
     if not real.is_dir() or not _ensure_within_base(str(real), os.path.normcase(base_abs_str)):
         return False
@@ -291,7 +278,7 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
 @safe_path_operation(Path())
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Resuelve rutas absolutas a partir de la estructura predefinida."""
-    if not isinstance(real_base, Path) or not rel_str: return Path()
+    if not isinstance(real_base, Path) or not isinstance(rel_str, str) or not rel_str: return Path()
     target: Path = real_base.joinpath(*rel_str.split("\\"))
     if not target.exists(): return Path()
     target_res = target.resolve(strict=True)
