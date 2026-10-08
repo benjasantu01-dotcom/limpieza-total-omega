@@ -286,7 +286,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
     Calcula el puntaje global mediante la ejecución del pipeline con manejo estricto de errores.
     """
-    m = metrics if (isinstance(metrics, SystemMetrics) and metrics.is_finite) else SystemMetrics()
+    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
+        m = SystemMetrics()
+    else:
+        m = metrics
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -333,6 +336,7 @@ def summarize(result: HealthResult | None) -> List[str]:
     bd = result.breakdown
     for area, maximo in WEIGHTS.items():
         points = bd.get(area, 0)
+        if not isinstance(points, int): points = 0
         bar = _render_bar(points, maximo)
         lines.append(f"  {area.capitalize():<12} {points:>2}/{maximo:<2} [{bar}]")
     

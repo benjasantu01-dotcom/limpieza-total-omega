@@ -148,23 +148,26 @@ def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Calcula el hash SHA256 completo del archivo tras verificar su integridad y acceso."""
     p: Optional[Path] = _validate_and_resolve_path(path)
-    if not p:
+    if p is None:
         return None
             
     try:
         digest = hashlib.sha256()
         with open(p, "rb") as f:
-            while (chunk := f.read(chunk_size)):
+            while True:
+                chunk = f.read(chunk_size)
+                if not chunk:
+                    break
                 digest.update(chunk)
         return digest.hexdigest()
-    except (OSError, PermissionError, EOFError, MemoryError):
+    except (OSError, PermissionError, MemoryError):
         return None
 
 
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Genera un hash SHA256 de los primeros N bytes para optimizar el filtrado de candidatos."""
     p: Optional[Path] = _validate_and_resolve_path(path)
-    if not p:
+    if p is None:
         return None
 
     try:
@@ -173,7 +176,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
             if not content: 
                 return None
             return hashlib.sha256(content).hexdigest()
-    except (OSError, PermissionError, EOFError):
+    except (OSError, PermissionError):
         return None
 
 
@@ -315,7 +318,6 @@ def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     if not isinstance(path, Path):
         return None
     try:
-        # Validación de que el archivo sigue existiendo antes de statear
         if not path.is_file():
             return None
         stat = path.stat()
@@ -335,7 +337,6 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
             if (score := _calculate_keeper_heuristic(p)) is not None:
                 candidates.append((score, p))
             
-    # Elegimos el más antiguo (menor mtime) como original/keeper
     return min(candidates, key=lambda x: x[0])[1] if candidates else None
 
 

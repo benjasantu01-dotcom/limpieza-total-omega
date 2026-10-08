@@ -1274,3 +1274,11 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T14:16:58` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-08T14:16:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T14:16:58` Corrida terminada. Total usado hoy: 336.
+- `2026-10-08T14:22:22` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-08T14:23:01` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-08T14:23:05` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-08T14:23:45` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó el manejo de errores en `walk_files` y `largest_folders` para capturar excepciones específicas (como `PermissionError`) durante la iteración y el acceso a rutas, evitando fallos silenciosos o interrupciones prematuras y asegurando que las operaciones de recolección de datos sean resilientes.
+- `2026-10-08T14:24:21` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `hash_file` y `partial_hash` capturando errores de lectura de forma específica y validando el estado del archivo antes y durante el acceso para prevenir excepciones inesperadas que podrían detener el escaneo, asegurando además que no se intente procesar contenido None.
+- `2026-10-08T14:25:08` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` y `summarize` implementando chequeos defensivos de tipo para `SystemMetrics` y `HealthResult`, garantizando que el pipeline de procesamiento no falle ante objetos malformados o inesperados.
+- `2026-10-08T14:25:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T14:25:08` Corrida terminada. Total usado hoy: 340.
