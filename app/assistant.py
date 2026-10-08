@@ -495,9 +495,12 @@ def _get_source_value(source: Any, key: str) -> Any:
     try:
         if isinstance(source, dict):
             return source.get(key)
+        # Solo acceder a atributos si no son colecciones (listas, dicts, etc) para evitar inyecciones complejas
         if hasattr(source, key):
             val = getattr(source, key)
-            return None if callable(val) or isinstance(val, (type, list, dict, set)) else val
+            if callable(val) or isinstance(val, (type, list, dict, set, tuple)):
+                return None
+            return val
     except (AttributeError, ValueError, TypeError):
         pass
     return None
