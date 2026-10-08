@@ -285,10 +285,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
     Calcula el puntaje global mediante la ejecución del pipeline con manejo estricto de errores.
     """
-    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
-        metrics = SystemMetrics()
-    
-    metrics.validate()
+    # Cache local de métricas validadas para evitar re-validación en cada iteración del pipeline
+    m = metrics if (isinstance(metrics, SystemMetrics) and metrics.is_finite) else SystemMetrics()
+    m.validate()
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -296,9 +295,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for entry in _PIPELINE:
         try:
-            area_ratio = _clamp(float(entry.scorer(metrics)))
+            area_ratio = _clamp(float(entry.scorer(m)))
             if entry.rules:
-                _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
+                _evaluate_rules(m, entry.rules, area_ratio, recommendations)
             points = area_ratio * entry.weight
             metric_breakdown[entry.area] = int(round(points))
             accumulated_score += points
@@ -306,8 +305,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             logging.error(f"Falla crítica en pipeline {entry.area}: {e}")
             metric_breakdown[entry.area] = 0
             
-    if hasattr(metrics, "quarantined_count") and metrics.quarantined_count > 0:
-        recommendations.append(f"Tenés {int(metrics.quarantined_count)} archivo(s) en cuarentena.")
+    if m.quarantined_count > 0:
+        recommendations.append(f"Tenés {int(m.quarantined_count)} archivo(s) en cuarentena.")
     
     final_score = int(round(_clamp(accumulated_score, 0.0, 100.0)))
     return HealthResult(

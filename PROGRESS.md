@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
-- Rechazadas por tests: 27
+- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Rechazadas por tests: 26
 - Rechazadas por guardia de seguridad: 40
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 215
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 96 | 12 | 19 | 5 | 108 |
-| 2026-10-08 | 110 | 15 | 21 | 11 | 107 |
+| 2026-10-07 | 94 | 11 | 19 | 5 | 107 |
+| 2026-10-08 | 113 | 15 | 21 | 12 | 107 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - seguridad defensiva: **46**
+- rendimiento: **44**
 - legibilidad y documentación: **42**
-- rendimiento: **41**
-- robustez ante casos límite: **30**
+- robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,18 +33,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **20**
 - `browser.py`: **20**
 - `quarantine.py`: **20**
-- `safety.py`: **18**
-- `healthscore.py`: **16**
-- `memory.py`: **16**
+- `healthscore.py`: **17**
+- `memory.py`: **17**
+- `safety.py`: **17**
+- `organizer.py`: **15**
 - `branding.py`: **14**
-- `organizer.py`: **14**
 - `scanner.py`: **14**
-- `settings.py`: **12**
 - `duplicates.py`: **12**
+- `settings.py`: **11**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T11:20:03` **organizer.py** (rendimiento): Se optimizó el rendimiento de `_process_directory` eliminando la llamada repetitiva a `entry.name.lower()` y `endswith` dentro del bucle mediante el uso de la constante pre-compilada `JUNK_EXT_TUPLE`, y se introdujo un filtro previo de `JUNK_EXT_TUPLE` para evitar accesos innecesarios a `stat()` en archivos que no cumplen con los criterios de extensión.
+- `2026-10-08T11:19:44` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` evitando la reconstrucción de la lista de procesos en cada llamada, reemplazando la lógica de caché basada en el tiempo por una variable de estado persistente vinculada al objeto función y reduciendo la cantidad de llamadas a la API de Windows mediante un filtrado previo más eficiente.
+- `2026-10-08T11:18:00` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global en `compute_score` cacheando las métricas en una variable local para evitar llamadas repetitivas a `getattr` y `validate` dentro del bucle del pipeline, mejorando la eficiencia del ciclo de evaluación.
 - `2026-10-08T11:09:49` **diskreport.py** (rendimiento): Optimizé `walk_files` y `_collect_summary_data` eliminando llamadas redundantes a `Path.resolve()` y `Path.exists()` dentro del bucle principal, reduciendo drásticamente las llamadas al sistema operativo (I/O) durante el recorrido del árbol de directorios.
 - `2026-10-08T11:08:50` **browser.py** (rendimiento): Optimizé el rendimiento del escaneo recursivo mediante la validación de `os.scandir` y la eliminación de llamadas redundantes a `os.path.normcase` dentro del bucle interno, reduciendo la carga de E/S.
 - `2026-10-08T11:07:59` **branding.py** (rendimiento): Se optimizó el cálculo y renderizado de franjas decorativas mediante la eliminación de una tupla intermedia redundante en `_get_stripe_params` y el uso directo de valores pre-calculados, reduciendo la presión sobre el recolector de basura durante el pintado del Canvas.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T10:37:11` **duplicates.py** (legibilidad y documentación): Documenté con Type Hints, docstrings detallados y refinamiento de variables los métodos de bajo nivel de acceso a disco (`is_junction`, `is_system_or_hidden`, `_is_file_locked`) para clarificar su rol crítico en la seguridad del escaneo.
 - `2026-10-08T10:30:08` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de escaneo (específicamente `walk_files` y `_collect_summary_data`) aclarando la estrategia de uso de memoria y la lógica de filtrado de inodos, proporcionando una comprensión más clara del flujo de datos para futuros colaboradores.
 - `2026-10-08T10:29:24` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el "porqué" de las validaciones de seguridad (como la contención de rutas y el manejo de junctions) y añadí tipado explícito en `_sum_directory_recursive` para aclarar el flujo de los estados acumulados.
-- `2026-10-08T10:17:38` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas `check_recent_executable_in_downloads` y `check_system_lookalike` añadiendo validaciones explícitas para evitar errores en llamadas a `path.parent` o acceso a atributos de rutas potencialmente inválidas, evitando que una excepción en un archivo puntual interrumpa el escaneo del directorio.
-- `2026-10-08T10:17:10` **safety.py** (manejo de errores y validación de entradas): Se mejora la robustez de `_get_security_descriptor_cached` añadiendo manejo de errores específico frente a excepciones de la API de Windows, evitando que un fallo en la consulta de atributos bloquee indefinidamente la validación de archivos mediante la asignación de un estado de "máxima protección" por defecto en caso de error.
-- `2026-10-08T10:07:50` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` mediante la captura explícita de `OSError` al intentar leer el archivo, previniendo cierres inesperados de la aplicación ante problemas de permisos transitorios o archivos en uso durante el arranque, garantizando que el sistema siempre devuelva un estado coherente (lista vacía) en lugar de propagar excepciones que bloquean la interfaz.
