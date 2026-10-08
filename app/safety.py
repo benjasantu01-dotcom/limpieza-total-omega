@@ -366,12 +366,15 @@ def _get_security_descriptor_cached(path_str: str) -> SecurityDescriptor:
     attrs = _get_file_attrs(path_str)
     
     # Flags de sistema/oculto/reparse extraídos directamente de atributos Win32.
-    is_protected_system = bool(attrs & (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | Win32Attr.TEMPORARY | Win32Attr.REPARSE_POINT))
-    is_in_use = _is_file_locked_by_other_process(path_str) if attrs != 0xFFFFFFFF else True
+    is_protected = bool(attrs & (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | Win32Attr.TEMPORARY | Win32Attr.REPARSE_POINT))
+    
+    # Cortocircuito: si ya es protegido, no realizar I/O intensivo de verificación de bloqueo
+    is_in_use = is_protected or (_is_file_locked_by_other_process(path_str) if attrs != 0xFFFFFFFF else True)
+    
     is_readonly = bool(attrs & Win32Attr.READONLY)
     is_reparse = bool(attrs & Win32Attr.REPARSE_POINT)
     
-    return SecurityDescriptor(attrs, is_protected_system, is_in_use, is_readonly, is_reparse)
+    return SecurityDescriptor(attrs, is_protected, is_in_use, is_readonly, is_reparse)
 
 def _get_security_descriptor(path: Path) -> SecurityDescriptor:
     """Construye un descriptor de seguridad para evaluar el archivo."""

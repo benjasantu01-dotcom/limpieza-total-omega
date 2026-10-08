@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **204** (40.5% de aceptación)
-- Rechazadas por tests: 25
-- Rechazadas por guardia de seguridad: 42
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 219
+- Mejoras aceptadas: **205** (40.7% de aceptación)
+- Rechazadas por tests: 24
+- Rechazadas por guardia de seguridad: 43
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 135 | 17 | 27 | 8 | 153 |
-| 2026-10-08 | 69 | 8 | 15 | 6 | 66 |
+| 2026-10-07 | 134 | 16 | 27 | 8 | 151 |
+| 2026-10-08 | 71 | 8 | 16 | 7 | 66 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
+- rendimiento: **44**
 - legibilidad y documentación: **43**
-- rendimiento: **42**
-- seguridad defensiva: **41**
+- seguridad defensiva: **40**
 - robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
-- `browser.py`: **21**
 - `assistant.py`: **20**
+- `browser.py`: **20**
 - `diskreport.py`: **20**
 - `healthscore.py`: **18**
 - `memory.py`: **17**
-- `safety.py`: **15**
+- `safety.py`: **16**
 - `branding.py`: **14**
 - `organizer.py`: **13**
+- `scanner.py`: **13**
 - `settings.py`: **12**
-- `scanner.py`: **12**
 - `duplicates.py`: **11**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T07:04:06` **scanner.py** (rendimiento): Optimicé el rendimiento del escaneo centralizado implementando un filtro de extensiones en `process_entry` que evita la resolución de rutas mediante `Path().resolve()` y las llamadas a `is_file()` para archivos que no son ejecutables ni documentos críticos, reduciendo drásticamente las syscalls innecesarias durante el recorrido del sistema de archivos.
+- `2026-10-08T07:03:36` **safety.py** (rendimiento): Se ha optimizado `_get_security_descriptor_cached` para reducir llamadas redundantes al kernel y evitar I/O innecesario, implementando una lógica de cortocircuito (short-circuiting) que utiliza el caché de atributos existente antes de intentar realizar consultas de estado de bloqueo (I/O intensivo) innecesarias para archivos que ya sabemos que son protegidos por sistema.
 - `2026-10-08T06:57:20` **quarantine.py** (rendimiento): Se optimizó la función `purge_all` para evitar lecturas de disco redundantes mediante el uso de `set` para búsquedas O(1) y se eliminó la iteración doble sobre los elementos, mejorando significativamente la eficiencia durante la limpieza masiva.
 - `2026-10-08T06:56:38` **organizer.py** (rendimiento): Optimizé el proceso de escaneo de archivos utilizando un `set` local para la caché de extensiones y evitando la creación redundante de objetos `Path` y llamadas a `resolve()` innecesarias dentro del bucle principal de `os.scandir`, reduciendo significativamente la sobrecarga de I/O por iteración.
 - `2026-10-08T06:56:10` **memory.py** (rendimiento): Optimicé `top_memory_processes` reemplazando la creación de una lista temporal completa por un generador y limitando las llamadas a la API de procesos, reduciendo el consumo de CPU y la carga de memoria durante el escaneo de procesos.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T06:03:14` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante docstrings más precisos, se han añadido type hints en retornos de funciones (como `_collect_candidates` y `_group_paths_by_hash`) y se ha extraído la lógica de comparación de heurística de `suggest_keeper` para facilitar su legibilidad.
 - `2026-10-08T06:03:03` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento mediante la adición de Type Hints detallados en las funciones de procesamiento de datos y la refactorización de `_collect_summary_data` para clarificar la lógica de acumulación, facilitando la comprensión del flujo de datos sin alterar la funcionalidad.
 - `2026-10-08T06:02:36` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las funciones críticas de escaneo (`_sum_directory_recursive` y `_should_skip_entry`) mediante la adición de Type Hints más precisos, docstrings que explican las decisiones de seguridad, y la clarificación de la lógica de recursión.
-- `2026-10-08T06:02:09` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos con parámetros y retornos a las funciones que carecían de ellos, y se ha estandarizado la nomenclatura interna de las constantes de colores (prefijo `C_`) para mejorar la legibilidad y mantenibilidad del archivo.
-- `2026-10-08T05:53:26` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y la seguridad del módulo `assistant.py` mediante la refactorización de `_ensure_safe_text`, extrayendo la lógica de filtrado de patrones de seguridad a una función auxiliar explícita (`_contains_forbidden_patterns`), lo que clarifica la intención del chequeo y facilita futuras auditorías de seguridad sin alterar el comportamiento.

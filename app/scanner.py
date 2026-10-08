@@ -260,19 +260,17 @@ class Scanner:
         Decide si la entrada debe explorarse (carpeta) o evaluarse (archivo).
         Utiliza una pila para evitar la recursión profunda.
         """
-        if not isinstance(entry, os.DirEntry) or not entry.path or not self._is_safe_entry(entry): 
+        if not isinstance(entry, os.DirEntry) or not entry.path:
             return
-
-        try:
-            if entry.is_dir(follow_symlinks=False):
+            
+        # Optimization: solo procesar directorios o extensiones sospechosas
+        if entry.is_dir(follow_symlinks=False):
+            if self._is_safe_entry(entry):
                 self._handle_directory(entry, directory_stack, current_depth)
-            elif entry.is_file(follow_symlinks=False):
-                if self._is_relevant_extension(entry.name):
-                    path_obj = Path(entry.path).resolve()
-                    if path_obj.is_file():
-                        self._run_file_heuristics(path_obj, entry)
-        except (OSError, PermissionError, AttributeError, RuntimeError):
-            return
+        elif self._is_relevant_extension(entry.name):
+            if self._is_safe_entry(entry):
+                path_obj = Path(entry.path)
+                self._run_file_heuristics(path_obj, entry)
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """
