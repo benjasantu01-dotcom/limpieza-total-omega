@@ -87,10 +87,10 @@ def _is_readable(path: Path) -> bool:
     if not isinstance(path, Path):
         return False
     try:
-        if not path.exists():
+        # Validación de estado previo para evitar excepciones innecesarias en sistemas volátiles
+        if not path.is_file():
             return False
-        resolved = path.resolve(strict=True)
-        return resolved.is_file() and os.access(resolved, os.R_OK)
+        return os.access(path, os.R_OK)
     except (OSError, PermissionError, ValueError, AttributeError):
         return False
 
@@ -117,7 +117,8 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     if not isinstance(entry, os.DirEntry):
         return None
     try:
-        if entry.is_symlink() or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask):
+        # Validación de tipo antes de stat para evitar condiciones de carrera
+        if not entry.is_file(follow_symlinks=False) or entry.is_symlink() or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask):
             return None
         stats = entry.stat(follow_symlinks=False)
         return stats if getattr(stats, "st_nlink", 1) <= 1 else None

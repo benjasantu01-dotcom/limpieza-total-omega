@@ -128,9 +128,7 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
     Consulta los atributos de archivo mediante la API Win32 GetFileAttributesW.
     Permite detectar flags de sistema, ocultos o puntos de reparse.
     """
-    if not isinstance(path_str, str) or not path_str: return 0
-    # Validación extra: prevenir llamadas con rutas relativas
-    if not os.path.isabs(path_str): return 0
+    if not isinstance(path_str, str) or not path_str or not os.path.isabs(path_str): return 0
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         return attrs if attrs != 0xFFFFFFFF else 0
@@ -408,6 +406,7 @@ def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
 @lru_cache(maxsize=1024)
 def _is_kernel_managed(path: Path) -> bool:
     """Identifica archivos del núcleo o del sistema bloqueados permanentemente por el SO."""
+    if not path or not path.exists(): return False
     p_str = str(path).lower()
     if any(blocked in p_str for blocked in ("pagefile.sys", "hiberfil.sys", "swapfile.sys", "dumpstack.log.tmp", "memory.dmp")):
         return True

@@ -1079,3 +1079,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T01:12:22` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-08T01:12:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T01:12:22` Corrida terminada. Total usado hoy: 28.
+- `2026-10-08T01:15:55` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-10-08T01:16:57` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_manifest` añadiendo una validación explícita para evitar la corrupción por escritura parcial, asegurando que la lista de ítems sea procesable antes de intentar la serialización y persistencia.
+- `2026-10-08T01:17:18` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-08T01:18:08` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez de `_get_file_attrs` y `_is_kernel_managed` para prevenir errores de tipo `NoneType` y mejorar el manejo de rutas inexistentes mediante chequeos explícitos, evitando que la lógica falle ante entradas malformadas.
+- `2026-10-08T01:18:24` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_readable` y `_safe_stat` al añadir un chequeo explícito de `path.is_file()` previo a cualquier operación de acceso, evitando excepciones innecesarias en nodos que desaparecen o cambian de tipo durante la iteración, y consolidando el manejo de errores ante cambios de estado concurrentes del sistema de archivos.
+- `2026-10-08T01:18:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T01:18:24` Corrida terminada. Total usado hoy: 32.

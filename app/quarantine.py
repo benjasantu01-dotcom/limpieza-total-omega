@@ -543,6 +543,13 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista de ítems.")
 
+    # Validar que todos los ítems sean serializables antes de iniciar E/S
+    try:
+        serializable_items = [item.to_dict() for item in items]
+        encoded_content = json.dumps(serializable_items, indent=2, ensure_ascii=False).encode('utf-8')
+    except (TypeError, ValueError) as e:
+        raise RuntimeError(f"Falla de serialización: {e}")
+
     try:
         if target_path.exists():
             if not target_path.is_file():
@@ -554,9 +561,6 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
                 if attrs != -1 and (attrs & 0x02 or attrs & 0x04):
                     raise PermissionError("Manifiesto con atributos restringidos.")
 
-        serializable_items = [item.to_dict() for item in items]
-        encoded_content = json.dumps(serializable_items, indent=2, ensure_ascii=False).encode('utf-8')
-        
         with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as tf:
             tf.write(encoded_content)
             tf.flush()
