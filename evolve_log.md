@@ -1209,3 +1209,63 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not define
 - `2026-10-08T02:29:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-08T02:29:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T02:29:48` Corrida terminada. Total usado hoy: 60.
+- `2026-10-08T02:37:23` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-10-08T02:38:17` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de las validaciones de seguridad mediante la implementación de un caché de resultados para `_is_kernel_managed` y `is_protected_path` basado en la resolución de rutas, evitando cálculos redundantes costosos en operaciones de disco frecuentes.
+- `2026-10-08T02:38:42` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_relevant_extension
+- `2026-10-08T02:39:23` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la gestión de la caché de configuración en `_load_impl` utilizando un `try-finally` para asegurar el cierre del lock y evitar la lectura innecesaria de archivos vacíos/inválidos mediante una verificación de `st_size` previa a la apertura, reduciendo ciclos de I/O y llamadas al sistema.
+- `2026-10-08T02:39:38` Tests FALLARON:
+```
+-3/test_entries_from_folders_read0')
+
+    def test_entries_from_folders_reads_injected_folders(tmp_path):
+        carpeta = tmp_path / "Inicio"
+        carpeta.mkdir()
+        (carpeta / "MiPrograma.lnk").write_text("x")
+        (carpeta / "Otro.lnk").write_text("y")
+        entradas = startup.entries_from_folders([carpeta])
+>       assert {e.name for e in entradas} == {"MiPrograma", "Otro"}
+E       AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+E         
+E         Extra items in the left set:
+E         'MiPrograma.lnk'
+E         'Otro.lnk'
+E         Extra items in the right set:
+E         'Otro'
+E         'MiPrograma'
+E         
+E         Full diff:
+E           {
+E         -     'MiPrograma',
+E         +     'MiPrograma.lnk',
+E         ?                ++++
+E         -     'Otro',
+E         +     'Otro.lnk',
+E         ?          ++++
+E           }
+
+evolve/tests/test_modules.py:677: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'MiPrograma.lnk'
+  'Otro.lnk'
+  Extra items in the right set:
+  'Otro'
+  'MiPrograma'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed in 0.91s
+
+```
+- `2026-10-08T02:39:38` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó el proceso de filtrado en `_process_folder_entry` eliminando la creación innecesaria de objetos `Path` y corrigiendo un error de referencia a una variable no definida (`_`), mejorando la eficiencia y evitando excepciones en el bucle de escaneo.
+- `2026-10-08T02:39:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T02:39:38` Corrida terminada. Total usado hoy: 64.

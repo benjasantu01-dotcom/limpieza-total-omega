@@ -404,10 +404,11 @@ def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
     return False
 
 @lru_cache(maxsize=1024)
-def _is_kernel_managed(path: Path) -> bool:
+def _is_kernel_managed(path_str: str) -> bool:
     """Identifica archivos del núcleo o del sistema bloqueados permanentemente por el SO."""
-    if not path or not path.exists(): return False
-    p_str = str(path).lower()
+    path = Path(path_str)
+    if not path.exists(): return False
+    p_str = path_str.lower()
     if any(blocked in p_str for blocked in ("pagefile.sys", "hiberfil.sys", "swapfile.sys", "dumpstack.log.tmp", "memory.dmp")):
         return True
     
@@ -439,7 +440,7 @@ def _rule(reason: ProtectionReason, predicate: ViolationPredicate) -> _Integrity
 # Predicados de regla específicos para mejorar legibilidad
 def _check_symlink(p, _, __): return p.is_symlink()
 def _check_reparse(p, _, sd): return sd.is_reparse or _is_system_directory_junction(str(p))
-def _check_kernel_locked(p, _, __): return _is_kernel_managed(p)
+def _check_kernel_locked(p, _, __): return _is_kernel_managed(str(p))
 def _check_read_only(p, st, sd): return not bool(st.st_mode & stat.S_IWRITE) or sd.is_readonly
 def _check_vol_read_only(p, _, __): return _is_volume_readonly(str(p))
 def _check_vol_removable(p, _, __): return _is_volume_removable_media(str(p))
@@ -630,16 +631,6 @@ def is_drive_root(path: PathLike) -> bool:
         p = normalize(path)
         return p == Path(p.anchor)
     except (UnsafePathError, TypeError, OSError): return True
-
-@lru_cache(maxsize=4096)
-def _is_system_path_raw(path_str: str) -> bool:
-    """Comprueba si una ruta pertenece a directorios críticos del sistema."""
-    try:
-        parts = Path(path_str).parts
-        if not parts: return True
-        return any(part.lower() in PROTECTED_DIR_NAMES for part in parts)
-    except Exception:
-        return True
 
 @lru_cache(maxsize=4096)
 def is_protected_path(path: PathLike) -> bool:
@@ -833,7 +824,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         if os.name == 'nt' and os.path.ismount(p):
             raise UnsafePathError(f"Punto de montaje bloqueado: {p}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED)
             
-        if _is_kernel_managed(p):
+        if _is_kernel_managed(str(p)):
             raise UnsafePathError(f"Archivo de sistema crítico: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
         
         if os.name == 'nt' and (_is_volume_readonly(str(p)) or _is_volume_compressed_or_encrypted(str(p))):

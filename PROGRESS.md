@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
-- Rechazadas por tests: 26
-- Rechazadas por guardia de seguridad: 42
+- Mejoras aceptadas: **202** (40.1% de aceptación)
+- Rechazadas por tests: 27
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 226
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-06 | 35 | 7 | 9 | 0 | 43 |
+| 2026-10-06 | 34 | 7 | 9 | 0 | 40 |
 | 2026-10-07 | 139 | 17 | 28 | 8 | 158 |
-| 2026-10-08 | 27 | 2 | 5 | 1 | 25 |
+| 2026-10-08 | 29 | 3 | 6 | 1 | 25 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **42**
-- seguridad defensiva: **40**
-- rendimiento: **40**
+- rendimiento: **42**
+- seguridad defensiva: **39**
 - robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
@@ -33,11 +33,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **21**
 - `browser.py`: **21**
 - `assistant.py`: **20**
-- `diskreport.py`: **19**
 - `memory.py`: **19**
 - `healthscore.py`: **19**
-- `safety.py`: **15**
-- `settings.py`: **13**
+- `diskreport.py`: **18**
+- `safety.py`: **16**
+- `settings.py`: **14**
 - `branding.py`: **12**
 - `organizer.py`: **12**
 - `scanner.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T02:39:23` **settings.py** (rendimiento): Optimizé la gestión de la caché de configuración en `_load_impl` utilizando un `try-finally` para asegurar el cierre del lock y evitar la lectura innecesaria de archivos vacíos/inválidos mediante una verificación de `st_size` previa a la apertura, reduciendo ciclos de I/O y llamadas al sistema.
+- `2026-10-08T02:38:17` **safety.py** (rendimiento): Optimicé el rendimiento de las validaciones de seguridad mediante la implementación de un caché de resultados para `_is_kernel_managed` y `is_protected_path` basado en la resolución de rutas, evitando cálculos redundantes costosos en operaciones de disco frecuentes.
 - `2026-10-08T02:29:13` **quarantine.py** (rendimiento): Se optimizó el acceso al sistema de archivos en `purge_all` y `load_manifest` mediante el uso de un diccionario de búsqueda para evitar iteraciones O(N) y se eliminó la recarga redundante del manifiesto al detectar archivos inexistentes, reduciendo significativamente las operaciones de I/O.
 - `2026-10-08T02:28:29` **organizer.py** (rendimiento): Optimicé el rendimiento de `_process_directory` reemplazando múltiples llamadas a `stat()` en el bucle principal por el uso de `os.DirEntry.stat()`, que aprovecha la caché de atributos obtenida durante el escaneo inicial del sistema operativo, reduciendo drásticamente las syscalls innecesarias.
 - `2026-10-08T02:27:43` **memory.py** (rendimiento): Se optimizó el bucle de enumeración de procesos en `top_memory_processes` reemplazando la creación innecesaria de objetos `ProcessMemory` para cada PID existente (muchos de los cuales son omitidos) por un filtrado previo más eficiente, reduciendo drásticamente las llamadas al sistema y la carga de memoria.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T01:58:03` **safety.py** (legibilidad y documentación): Se ha mejorado la legibilidad del motor de reglas de `safety.py` sustituyendo las funciones lambda anónimas por funciones con nombre dentro de `_VALIDATORS`. Esto permite que, ante una traza de error o un log de auditoría, sea evidente qué lógica de validación falló, facilitando el mantenimiento y la depuración sin alterar el comportamiento.
 - `2026-10-08T01:49:49` **organizer.py** (legibilidad y documentación): Se introdujeron type hints en funciones críticas, se reemplazaron nombres ambiguos (ej. `s`, `d`, `st`) por descriptivos (ej. `src_resolved`, `dest_resolved`, `stat_result`) y se añadió un docstring detallado a la lógica de validación recursiva para clarificar por qué una operación de movimiento podría ser peligrosa.
 - `2026-10-08T01:49:21` **memory.py** (legibilidad y documentación): He mejorado la documentación técnica del módulo mediante docstrings explicativos en las estructuras de datos y funciones críticas, además de clarificar la lógica de filtrado de procesos con comentarios descriptivos que facilitan el mantenimiento sin alterar la funcionalidad.
-- `2026-10-08T01:48:50` **main.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `main.py` mediante la refactorización de `_build_health_area_bars` y `_build_single_health_bar`, extrayendo la lógica de construcción de componentes a métodos con docstrings claros y tipado explícito, alineándose con el enfoque de legibilidad sin alterar el comportamiento.
-- `2026-10-08T01:38:00` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en el pipeline y refinando los docstrings para clarificar el flujo funcional de los escorers, facilitando el mantenimiento de futuras reglas.

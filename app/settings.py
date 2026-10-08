@@ -358,27 +358,24 @@ def _load_impl(ruta: Path) -> AppSettings:
     Implementación de carga: valida seguridad, utiliza locks advisory (flock) 
     para evitar corrupción por accesos concurrentes y parsea el contenido.
     """
-    if not ruta.is_file(): return DEFAULTS.copy()
+    if not ruta.is_file() or ruta.stat().st_size == 0: return DEFAULTS.copy()
     if _Validators._is_reparse_point(ruta): return DEFAULTS.copy()
     try:
         resolved = ruta.resolve()
         if not is_safe_to_modify(str(resolved)): return DEFAULTS.copy()
         with open(resolved, "r", encoding="utf-8") as f:
             if not _is_file_secure_to_read(f): return DEFAULTS.copy()
-            content = f.read(MAX_SETTINGS_SIZE + 1)
-            if not content or content.strip() == "": return DEFAULTS.copy()
-            
             try:
                 fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
+                content = f.read(MAX_SETTINGS_SIZE + 1)
+                if not content: return DEFAULTS.copy()
                 data = json.loads(content)
+            finally:
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-            except (IOError, OSError, json.JSONDecodeError, ValueError):
-                return DEFAULTS.copy()
         
         if _is_dict(data):
-            if not data and content.strip(): return DEFAULTS.copy()
             return _coerce_and_verify(validate(data))
-    except (OSError, PermissionError, IOError, UnicodeDecodeError, EOFError):
+    except (OSError, PermissionError, IOError, UnicodeDecodeError, EOFError, json.JSONDecodeError, ValueError):
         pass
     return DEFAULTS.copy()
 
