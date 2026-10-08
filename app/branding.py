@@ -67,12 +67,12 @@ _SVG_TEMPLATE: Final[str] = """<svg xmlns="http://www.w3.org/2000/svg" width="{s
 
 class CanvasElement(Protocol):
     """Protocolo de interfaz para componentes de dibujo (Canvas) compatibles."""
-    def create_rectangle(self, x0: float, y0: float, x1: float, y1: float, *, fill: str = "", outline: str = "", width: int = 1) -> int: ...
-    def create_polygon(self, *args: float, fill: str = "", outline: str = "") -> int: ...
-    def create_oval(self, x0: float, y0: float, x1: float, y1: float, *, fill: str = "", outline: str = "") -> int: ...
-    def create_line(self, x0: float, y0: float, x1: float, y1: float, *, fill: str = "", width: int = 1, capstyle: str = "butt") -> int: ...
-    def create_text(self, x: float, y: float, *, text: str, fill: str = "", font: tuple[str, int, str] | str = "", text_anchor: str = "center") -> int: ...
-    def create_arc(self, x0: float, y0: float, x1: float, y1: float, *, start: float, extent: float, style: str = "arc", outline: str = "", width: int = 1) -> int: ...
+    def create_rectangle(self, x0: float, y0: float, x1: float, y1: float, *, fill: str = ..., outline: str = ..., width: int = ...) -> int: ...
+    def create_polygon(self, *args: float, fill: str = ..., outline: str = ...) -> int: ...
+    def create_oval(self, x0: float, y0: float, x1: float, y1: float, *, fill: str = ..., outline: str = ...) -> int: ...
+    def create_line(self, x0: float, y0: float, x1: float, y1: float, *, fill: str = ..., width: int = ..., capstyle: str = ...) -> int: ...
+    def create_text(self, x: float, y: float, *, text: str, fill: str = ..., font: tuple[str, int, str] | str = ..., text_anchor: str = ...) -> int: ...
+    def create_arc(self, x0: float, y0: float, x1: float, y1: float, *, start: float, extent: float, style: str = ..., outline: str = ..., width: int = ...) -> int: ...
 
 class ColorSegment(NamedTuple):
     """Representa un rango continuo de píxeles que comparten un mismo color."""
@@ -274,7 +274,7 @@ def grade_color(grade: Optional[str]) -> ColorHex:
 def score_color(score: Union[float, int, None]) -> ColorHex:
     """
     Calcula el color del score (0-100) según umbrales definidos.
-    Example: score_color(95.0) -> "#22e39a" (Success)
+    Ejemplo: score_color(95.0) -> "#22e39a" (Success)
     """
     if score is None: 
         return C_TEXT_MUTED
@@ -293,7 +293,7 @@ def bar(percent: Union[float, int, None], width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
     """
     Crea una representación en texto plano de una barra de progreso.
-    Example: bar(50, width=4) -> "██░░"
+    Ejemplo: bar(50, width=4) -> "██░░"
     """
     try:
         valor = float(percent) if percent is not None else 0.0
@@ -325,7 +325,7 @@ def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
     """
     Interpolación lineal entre dos colores.
-    Example: blend("#000000", "#FFFFFF", 0.5) -> "#808080"
+    Ejemplo: blend("#000000", "#FFFFFF", 0.5) -> "#808080"
     """
     try:
         if not isinstance(start, str) or not isinstance(end, str): return start
@@ -519,7 +519,7 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
               track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
     """
     Dibuja indicador circular de progreso (anillo de carga) con validación de límites.
-    Example: draw_ring(canvas, 75, size=100) -> Dibuja un arco de 75%
+    Ejemplo: draw_ring(canvas, 75, size=100) -> Dibuja un arco de 75%
     """
     try:
         if canvas is None: return

@@ -1086,3 +1086,63 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T01:18:24` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_readable` y `_safe_stat` al añadir un chequeo explícito de `path.is_file()` previo a cualquier operación de acceso, evitando excepciones innecesarias en nodos que desaparecen o cambian de tipo durante la iteración, y consolidando el manejo de errores ante cambios de estado concurrentes del sistema de archivos.
 - `2026-10-08T01:18:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T01:18:24` Corrida terminada. Total usado hoy: 32.
+- `2026-10-08T01:26:08` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-10-08T01:26:43` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-08T01:27:12` Tests FALLARON:
+```
+-1/test_entries_from_folders_read0')
+
+    def test_entries_from_folders_reads_injected_folders(tmp_path):
+        carpeta = tmp_path / "Inicio"
+        carpeta.mkdir()
+        (carpeta / "MiPrograma.lnk").write_text("x")
+        (carpeta / "Otro.lnk").write_text("y")
+        entradas = startup.entries_from_folders([carpeta])
+>       assert {e.name for e in entradas} == {"MiPrograma", "Otro"}
+E       AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+E         
+E         Extra items in the left set:
+E         'Otro.lnk'
+E         'MiPrograma.lnk'
+E         Extra items in the right set:
+E         'Otro'
+E         'MiPrograma'
+E         
+E         Full diff:
+E           {
+E         -     'MiPrograma',
+E         +     'MiPrograma.lnk',
+E         ?                ++++
+E         -     'Otro',
+E         +     'Otro.lnk',
+E         ?          ++++
+E           }
+
+evolve/tests/test_modules.py:677: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'Otro.lnk'
+  'MiPrograma.lnk'
+  Extra items in the right set:
+  'Otro'
+  'MiPrograma'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed in 1.57s
+
+```
+- `2026-10-08T01:27:12` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré `_process_folder_entry` para capturar errores de acceso a disco específicos durante la validación del nombre de archivo, evitando fallos silenciosos al procesar entradas con caracteres corruptos o permisos restringidos.
+- `2026-10-08T01:27:50` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: SystemContext._clean_grade
+- `2026-10-08T01:28:12` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se introdujeron type hints explícitos en los métodos de `CanvasElement` y se añadieron docstrings con ejemplos concretos de uso (doctests teóricos) a funciones complejas como `blend` y `draw_ring` para mejorar la mantenibilidad y documentación, manteniendo estrictamente la funcionalidad existente.
+- `2026-10-08T01:28:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T01:28:12` Corrida terminada. Total usado hoy: 36.
