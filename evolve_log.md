@@ -1269,3 +1269,12 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T02:39:38` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó el proceso de filtrado en `_process_folder_entry` eliminando la creación innecesaria de objetos `Path` y corrigiendo un error de referencia a una variable no definida (`_`), mejorando la eficiencia y evitando excepciones en el bucle de escaneo.
 - `2026-10-08T02:39:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T02:39:38` Corrida terminada. Total usado hoy: 64.
+- `2026-10-08T02:47:33` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-10-08T02:48:20` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` añadiendo una comprobación explícita para evitar errores de `RecursionError` o evaluaciones infinitas ante estructuras cíclicas o excesivamente profundas, integrando una cota superior estricta en la profundidad de la recursión.
+- `2026-10-08T02:49:05` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` y `draw_logo` ante valores de entrada extremos o inválidos, asegurando que el estado interno no se corrompa si se pasan datos fuera de rango o tipos inesperados, cumpliendo con el enfoque de robustez ante casos límite.
+- `2026-10-08T02:50:05` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-08T02:51:03` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-10-08T02:52:03` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-08T02:52:19` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_safe_stat` y `_is_excluded_path` para manejar situaciones donde el sistema de archivos devuelve metadatos parciales o rutas extremadamente largas en entornos Windows, evitando excepciones no capturadas durante el recorrido del disco.
+- `2026-10-08T02:52:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T02:52:19` Corrida terminada. Total usado hoy: 68.

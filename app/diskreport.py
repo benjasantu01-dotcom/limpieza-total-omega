@@ -57,13 +57,15 @@ def _safe_stat(path: str) -> Optional[os.stat_result]:
     
     Returns:
         os.stat_result si es accesible, None en caso de error de acceso (permisos, 
-        archivo no encontrado o rutas demasiado largas).
+        archivo no encontrado, rutas demasiado largas o bloqueos del sistema).
     """
     try:
+        # Longitud máxima para rutas en Windows es 260, superado eso se requiere \\?\
+        # Aquí limitamos por seguridad para evitar excepciones de SO.
         if len(path) > 32767:
             return None
         return os.stat(path, follow_symlinks=False)
-    except (OSError, PermissionError, FileNotFoundError):
+    except (OSError, PermissionError, FileNotFoundError, ValueError):
         return None
 
 
@@ -165,13 +167,17 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
             return True
         
-        # Validar pertenencia rápida comparando partes de la ruta
-        path_parts = Path(entry.path).parts
-        if len(path_parts) < len(root_path.parts) or path_parts[:len(root_path.parts)] != root_path.parts:
+        # Validación de integridad de ruta
+        try:
+            entry_path = Path(entry.path)
+            if not str(entry_path).startswith(str(root_path)):
+                return True
+        except (ValueError, TypeError):
             return True
 
         try:
             st = entry.stat(follow_symlinks=False)
+            # Detección de puntos de reparse (Windows) o enlaces simbólicos (Unix)
             is_reparse = (st.st_file_attributes & 0x0400) if os.name == 'nt' else entry.is_symlink()
             if is_reparse:
                 return True

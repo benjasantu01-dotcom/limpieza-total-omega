@@ -482,8 +482,8 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     """Renderiza el escudo corporativo compuesto (Polígono, franjas y glifo)."""
     try:
         if canvas is None: return
-        s = float(size)
-        cx, cy = float(canvas_x), float(canvas_y)
+        s = float(size) if size is not None else 56.0
+        cx, cy = float(canvas_x) if canvas_x is not None else 0.0, float(canvas_y) if canvas_y is not None else 0.0
         if not math.isfinite(s) or s <= 0 or not math.isfinite(cx) or not math.isfinite(cy): return
         scale = max(0.1, min(10.0, s / 128.0))
         
