@@ -318,9 +318,10 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
         parent = path.parent
         _check_io_error_context(path.unlink)
         
-        dir_fd = os.open(str(parent), os.O_RDONLY)
-        try: os.fsync(dir_fd)
-        finally: os.close(dir_fd)
+        if parent.exists():
+            dir_fd = os.open(str(parent), os.O_RDONLY)
+            try: os.fsync(dir_fd)
+            finally: os.close(dir_fd)
         
         return True
     except (OSError, PermissionError):
@@ -940,9 +941,10 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         os.replace(str(stored_file), str(destination))
         
         for p in [parent, base_path]:
-            dir_fd = os.open(str(p), os.O_RDONLY)
-            try: os.fsync(dir_fd)
-            finally: os.close(dir_fd)
+            if p.exists():
+                dir_fd = os.open(str(p), os.O_RDONLY)
+                try: os.fsync(dir_fd)
+                finally: os.close(dir_fd)
             
         items = load_manifest(base, force_reload=True)
         save_manifest([i for i in items if i.item_id != item_id], base)

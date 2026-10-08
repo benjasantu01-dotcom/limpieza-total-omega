@@ -141,7 +141,6 @@ def _is_file_locked(path: Path) -> bool:
     """Valida si un archivo está bloqueado mediante apertura exclusiva a nivel de OS."""
     if not path: return True
     try:
-        # Intenta abrir con permiso de lectura para verificar disponibilidad sin bloquear
         with open(path, "rb"):
             return False
     except (OSError, PermissionError, FileNotFoundError):
@@ -154,7 +153,7 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
         dest_resolved = dest.resolve(strict=False)
         if src_resolved == dest_resolved: return True
         return src_resolved in dest_resolved.parents
-    except (OSError, ValueError):
+    except (OSError, ValueError, RuntimeError):
         return True
 
 def _has_forbidden_chars(path: Path) -> bool:
@@ -181,9 +180,13 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         if (junk_file._ino is not None and stat_result.st_ino != junk_file._ino) or \
            (junk_file._dev is not None and stat_result.st_dev != junk_file._dev): return False
         if not src.is_file() or stat_result.st_nlink > 1: return False
-        if src.resolve() != src: return False
         
-        # Verificar protección tanto en archivo como en el padre donde residirá
+        # Validación robusta de resolución de ruta
+        try:
+            if src.resolve(strict=True) != src: return False
+        except (OSError, RuntimeError):
+            return False
+        
         if not is_safe_to_modify(src) or is_protected_path(dest) or is_protected_path(dest.parent) or not _validate_path_security(src, dest): return False
         
         target_dir = dest.parent if dest.exists() else dest
@@ -203,8 +206,11 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> boo
     if not _is_allowed_directory(entry.name) or _is_junction(entry): return False
     if _is_system_hidden(entry): return False
     if entry.path in protected_cache: return False
-    if is_protected_path(Path(entry.path)):
-        protected_cache.add(entry.path)
+    try:
+        if is_protected_path(Path(entry.path)):
+            protected_cache.add(entry.path)
+            return False
+    except (OSError, RuntimeError):
         return False
     return True
 
@@ -218,7 +224,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
     """Realiza un recorrido recursivo eficiente usando caché de DirEntry."""
     if depth > 50: return
     try:
-        resolved_dir = current_dir.resolve()
+        resolved_dir = current_dir.resolve(strict=False)
         if resolved_dir in visited: return
         visited.add(resolved_dir)
         now_ts: float = datetime.now().timestamp()
@@ -230,15 +236,14 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False):
-                        # Optimizacion: Chequeo de extension antes de hacer stat
                         if entry.name.lower().endswith(JUNK_EXT_TUPLE):
                             stats = entry.stat(follow_symlinks=False)
                             if _is_candidate_junk(stats, entry, now_ts):
                                 found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
                 except (PermissionError, OSError):
                     continue
-    except (PermissionError, OSError, RuntimeError) as e:
-        logger.debug(f"Acceso denegado o error en {current_dir}: {e}")
+    except (PermissionError, OSError, RuntimeError):
+        pass
 
 def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[JunkFile]:
     """Escanea directorios en busca de basura, aplicando validaciones de seguridad previas."""
@@ -268,12 +273,11 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         dest_base = Path(review_dir).expanduser()
         if not dest_base.exists():
             dest_base.mkdir(parents=True, exist_ok=True)
-        dest_res = dest_base.resolve()
+        dest_res = dest_base.resolve(strict=False)
         
         if is_protected_path(dest_res): return None
         ensure_safe_to_modify(dest_res)
-    except (OSError, RuntimeError, PermissionError) as e:
-        logger.error(f"Fallo en inicialización de carpeta de revisión: {e}")
+    except (OSError, RuntimeError, PermissionError):
         return None
     
     for junk_file in files:
@@ -285,8 +289,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             if target_path:
                 ensure_safe_to_modify(junk_file.path)
                 shutil.move(str(junk_file.path), str(target_path))
-        except (OSError, shutil.Error, PermissionError) as e:
-            logger.error(f"Error moviendo {junk_file.path}: {e}")
+        except (OSError, shutil.Error, PermissionError):
             continue
     return dest_res
 
@@ -303,7 +306,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     """Elimina permanentemente archivos tras verificación de seguridad."""
     if not review_dir: return 0
     try:
-        dest = Path(review_dir).expanduser().resolve()
+        dest = Path(review_dir).expanduser().resolve(strict=False)
         if not dest.exists() or not dest.is_dir(): return 0
         if is_protected_path(dest) or not is_safe_to_modify(dest): return 0
         count = 0
@@ -313,10 +316,8 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                     ensure_safe_to_modify(item)
                     item.unlink()
                     count += 1
-            except (OSError, PermissionError) as e:
-                logger.warning(f"No se pudo eliminar {item}: {e}")
+            except (OSError, PermissionError):
                 continue
         return count
-    except (OSError, PermissionError, RuntimeError) as e:
-        logger.error(f"Error accediendo a directorio de revisión: {e}")
+    except (OSError, PermissionError, RuntimeError):
         return 0

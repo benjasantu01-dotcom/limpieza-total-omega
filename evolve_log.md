@@ -961,3 +961,13 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T11:52:32` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del motor ante entradas de métricas `NaN` o `inf` durante la ejecución del pipeline, asegurando que `_clamp` se utilice sistemáticamente dentro de `compute_score` antes de asignar valores a `metric_breakdown` para evitar contaminar el cálculo final con valores no finitos.
 - `2026-10-08T11:52:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T11:52:32` Corrida terminada. Total usado hoy: 280.
+- `2026-10-08T11:58:50` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-10-08T11:59:52` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-08T12:00:55` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-08T12:02:01` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-08T12:03:13` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-08T12:04:22` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-08T12:04:55` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `is_safe_to_modify` ante posibles fallos de resolución de rutas (paths inexistentes o con errores de permisos durante el chequeo) y añadí un chequeo explícito de profundidad de recursión en `scan_for_junk` para prevenir desbordamientos por enlaces simbólicos cíclicos.
+- `2026-10-08T12:05:26` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se mejoró la robustez ante casos de error en `_safe_unlink` asegurando que la llamada a `os.fsync` sobre el directorio padre sea condicional a la existencia del mismo, evitando excepciones en escenarios donde la estructura de directorios pudo haber cambiado inesperadamente.
+- `2026-10-08T12:05:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T12:05:26` Corrida terminada. Total usado hoy: 284.
