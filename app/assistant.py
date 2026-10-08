@@ -109,7 +109,7 @@ def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Calla
         if not isinstance(ctx, SystemContext) or ctx.is_empty: 
             return Answer("Primero analizá el sistema.")
         try:
-            result = func(ctx, q)
+            result: Answer = func(ctx, q)
             if isinstance(result, Answer) and result.text:
                 return result
             logging.error(f"Handler {func.__name__} devolvió respuesta vacía o inválida")

@@ -1305,3 +1305,64 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T14:47:36` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` capturando excepciones específicas en la validación inicial y agregando verificaciones de estado críticas (como `parent.exists()`) para evitar fallos silenciosos durante la escritura atómica.
 - `2026-10-08T14:47:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T14:47:36` Corrida terminada. Total usado hoy: 348.
+- `2026-10-08T14:53:00` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-08T14:53:03` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-08T14:54:09` Tests FALLARON:
+```
+-1/test_entries_from_folders_read0')
+
+    def test_entries_from_folders_reads_injected_folders(tmp_path):
+        carpeta = tmp_path / "Inicio"
+        carpeta.mkdir()
+        (carpeta / "MiPrograma.lnk").write_text("x")
+        (carpeta / "Otro.lnk").write_text("y")
+        entradas = startup.entries_from_folders([carpeta])
+>       assert {e.name for e in entradas} == {"MiPrograma", "Otro"}
+E       AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+E         
+E         Extra items in the left set:
+E         'Otro.lnk'
+E         'MiPrograma.lnk'
+E         Extra items in the right set:
+E         'MiPrograma'
+E         'Otro'
+E         
+E         Full diff:
+E           {
+E         -     'MiPrograma',
+E         +     'MiPrograma.lnk',
+E         ?                ++++
+E         -     'Otro',
+E         +     'Otro.lnk',
+E         ?          ++++
+E           }
+
+evolve/tests/test_modules.py:677: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'Otro.lnk'
+  'MiPrograma.lnk'
+  Extra items in the right set:
+  'MiPrograma'
+  'Otro'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed in 1.56s
+
+```
+- `2026-10-08T14:54:09` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Corregí una variable indefinida (`_`) dentro de `_process_folder_entry` que causaba una `NameError` al intentar procesar nombres de archivos en carpetas de inicio, sustituyéndola por `entry.name`.
+- `2026-10-08T14:54:37` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-08T14:55:24` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos en los decoradores y funciones de validación, clarificando las expectativas de tipos para el desarrollador, y se ha reemplazado el uso de `getattr` directo por acceso seguro en `handle_startup` para mantener la consistencia con el estilo defensivo del módulo.
+- `2026-10-08T14:55:24` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-10-08T14:55:24` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T14:55:24` Corrida terminada. Total usado hoy: 350.

@@ -5,46 +5,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
-- Rechazadas por tests: 25
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **198** (39.4% de aceptación)
+- Rechazadas por tests: 26
 - Rechazadas por guardia de seguridad: 41
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 222
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 61 | 8 | 13 | 5 | 69 |
-| 2026-10-08 | 138 | 17 | 28 | 12 | 153 |
+| 2026-10-07 | 59 | 8 | 13 | 4 | 68 |
+| 2026-10-08 | 139 | 18 | 28 | 12 | 153 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - seguridad defensiva: **44**
-- rendimiento: **40**
+- rendimiento: **38**
 - robustez ante casos límite: **35**
-- legibilidad y documentación: **33**
+- legibilidad y documentación: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `quarantine.py`: **20**
+- `assistant.py`: **19**
 - `safety.py`: **18**
-- `assistant.py`: **18**
 - `browser.py`: **18**
-- `healthscore.py`: **17**
+- `healthscore.py`: **16**
 - `memory.py`: **16**
 - `organizer.py`: **15**
 - `scanner.py`: **13**
 - `branding.py`: **12**
 - `settings.py`: **12**
 - `duplicates.py`: **11**
-- `main.py`: **8**
+- `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T14:55:24` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos en los decoradores y funciones de validación, clarificando las expectativas de tipos para el desarrollador, y se ha reemplazado el uso de `getattr` directo por acceso seguro en `handle_startup` para mantener la consistencia con el estilo defensivo del módulo.
 - `2026-10-08T14:47:36` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` capturando excepciones específicas en la validación inicial y agregando verificaciones de estado críticas (como `parent.exists()`) para evitar fallos silenciosos durante la escritura atómica.
 - `2026-10-08T14:44:34` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de la función `_get_file_attrs` en `safety.py` al reemplazar la captura de excepciones genéricas por un manejo explícito de errores de la API Win32, asegurando que ante un fallo de acceso o ruta inexistente, se retorne un estado neutro (0) en lugar de propagar un error potencialmente disruptivo para los bucles de escaneo.
 - `2026-10-08T14:38:30` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_filesystem_read_only` mediante el uso de `tempfile.TemporaryDirectory` para asegurar que el archivo de prueba se cree y elimine correctamente en el directorio destino, evitando dejar basura en caso de error y manejando explícitamente excepciones de permisos.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T12:50:46` **safety.py** (seguridad defensiva): Se ha mejorado `safety.py` añadiendo un chequeo explícito de integridad para evitar el seguimiento de puntos de reparse (Reparse Points) durante la normalización de rutas, previniendo que la lógica de validación sea engañada por redirecciones al sistema de archivos ocultas.
 - `2026-10-08T12:43:39` **quarantine.py** (seguridad defensiva): Reforcé la seguridad en `purge_all` y `_is_item_purgable` para garantizar que solo se eliminen archivos que coincidan exactamente con su registro de manifiesto (integridad de hash e inodo) y evitar errores de lógica en la limpieza masiva.
 - `2026-10-08T12:42:24` **memory.py** (seguridad defensiva): Se ha robustecido la seguridad defensiva en `_get_process_path` validando que la ruta del ejecutable no solo exista, sino que se encuentre dentro de volúmenes locales definidos (excluyendo rutas de red/UNC o unidades extraíbles mediante `GetDriveTypeW`) antes de intentar cualquier operación, evitando riesgos por punteros a recursos externos maliciosos.
-- `2026-10-08T12:30:53` **healthscore.py** (seguridad defensiva): He mejorado la robustez defensiva del pipeline de evaluación incorporando un manejo estricto de tipos y validación de datos en `_evaluate_rules` y `compute_score`, asegurando que cualquier entrada inesperada (como valores `None` o estructuras de datos inyectadas maliciosamente) sea neutralizada antes de procesarse, manteniendo el principio de no confiar en la integridad del objeto `metrics` recibido.
