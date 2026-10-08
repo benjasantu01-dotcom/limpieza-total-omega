@@ -152,7 +152,9 @@ class _SettingsManager:
     y rutas de configuración. Evita lecturas redundantes de disco.
     """
     def __init__(self) -> None:
+        # Cache de configuraciones cargadas con timestamp para evitar lecturas stale
         self.settings_cache: dict[str, tuple[float, AppSettings]] = {}
+        # Cache de rutas resueltas a partir de bases personalizadas
         self.path_cache: dict[Optional[str], Path] = {}
 
     def clear(self) -> None:
@@ -175,10 +177,7 @@ class _Validators:
 
     @staticmethod
     def _is_reparse_point(path: Path) -> bool:
-        """
-        Detecta enlaces simbólicos o junctions para prevenir ataques de traversal 
-        fuera de las carpetas de usuario esperadas.
-        """
+        """Detecta si la ruta es un punto de reparse (symlink o junction) para evitar traversal."""
         try:
             return path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction())
         except (OSError, PermissionError):
@@ -187,11 +186,7 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=128)
     def _run_safety_checks(path_str: str) -> bool:
-        """
-        Verifica la integridad de cada segmento de la ruta.
-        No confiamos en rutas que contengan puntos de reparse, ya que podrían
-        apuntar a directorios protegidos del sistema.
-        """
+        """Verifica que una cadena de ruta sea segura, resolviéndola y aplicando chequeos de `safety.py`."""
         try:
             p = Path(path_str).expanduser()
             if not p.is_absolute(): return False
@@ -205,15 +200,12 @@ class _Validators:
 
     @staticmethod
     def _check_path_safety(p: Path) -> bool:
-        """Valida que la ruta sea absoluta y supere las reglas de seguridad definidas en safety.py."""
+        """Wrapper que valida la absoluta y los chequeos de seguridad de `safety.py`."""
         return p.is_absolute() and _Validators._run_safety_checks(str(p))
 
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
-        """
-        Filtra rutas mediante comprobaciones de sintaxis (bloqueo de NUL bytes/UNC)
-        y validaciones de acceso contra `safety.py`.
-        """
+        """Valida que la cadena de ruta no sea maliciosa (caracteres especiales, UNC) y sea segura."""
         if not path_str or len(path_str) > 2048 or any(c in path_str for c in ("\0", "^", "\033")): return False
         if path_str.startswith(("\\\\", "//")): return False
         try:
@@ -223,7 +215,7 @@ class _Validators:
 
     @staticmethod
     def bool(key: ConfigKey, val: Any) -> Optional[bool]:
-        """Convierte entradas de usuario (bool, str) a un valor booleano canonizado."""
+        """Normaliza valores a booleano, permitiendo varias formas de representación (ej. "si", "false")."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
@@ -234,7 +226,7 @@ class _Validators:
     @staticmethod
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
-        """Convierte a entero y asegura que el valor esté dentro del rango definido en _NUMERIC_LIMITS."""
+        """Convierte a entero y asegura que esté dentro de los rangos definidos en _NUMERIC_LIMITS."""
         if val is None: return None
         parsed_value = int(val)
         limit = _NUMERIC_LIMITS.get(key)
@@ -243,7 +235,7 @@ class _Validators:
 
     @staticmethod
     def path(key: ConfigKey, val: Any) -> Optional[str]:
-        """Valida que la cadena de ruta sea segura para ser utilizada por el motor de organización."""
+        """Valida que una ruta sea un string seguro para el motor de organización."""
         if val == "": return ""
         if not isinstance(val, str): return None
         path_string = val.strip()
@@ -252,7 +244,7 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
-        """Restringe strings a un conjunto predefinido de valores permitidos (enums de UI)."""
+        """Verifica que el string pertenezca al conjunto de valores permitidos para campos con opciones fijas."""
         val = text.lower()
         allowed = _ENUM_VALS.get(key)
         if allowed: return val if val in allowed else None
@@ -261,7 +253,7 @@ class _Validators:
     @staticmethod
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
-        """Limpia cadenas de texto: previene inyección de caracteres de control y directorios padres."""
+        """Limpia cadenas de texto, evitando caracteres de control o directorios padre '..'."""
         if val is None: return None
         text = str(val).strip()
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None

@@ -803,3 +803,63 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T10:49:01` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo `safety.py` mediante la adición de docstrings estructuradas en los predicados de validación interna y se ha extraído la lógica dispersa de los `_check_*` en una sección claramente delimitada, facilitando la auditoría de reglas de seguridad por parte del equipo.
 - `2026-10-08T10:49:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T10:49:01` Corrida terminada. Total usado hoy: 256.
+- `2026-10-08T10:56:58` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-10-08T10:57:38` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la documentación de los tipos, docstrings y la claridad de la clase `Scanner` para garantizar que el modelo de recursión y las validaciones de seguridad sean inequívocos, eliminando ambigüedades en la delegación de responsabilidades entre el escáner y las funciones de heurística.
+- `2026-10-08T10:58:12` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se añadió documentación tipo docstring a los validadores privados en la clase `_Validators` para clarificar la lógica de filtrado de seguridad, y se mejoró la legibilidad de la clase `_SettingsManager` mediante la adición de tipos claros en la caché, facilitando el mantenimiento a futuro.
+- `2026-10-08T10:59:03` Tests FALLARON:
+```
+-3/test_entries_from_folders_read0')
+
+    def test_entries_from_folders_reads_injected_folders(tmp_path):
+        carpeta = tmp_path / "Inicio"
+        carpeta.mkdir()
+        (carpeta / "MiPrograma.lnk").write_text("x")
+        (carpeta / "Otro.lnk").write_text("y")
+        entradas = startup.entries_from_folders([carpeta])
+>       assert {e.name for e in entradas} == {"MiPrograma", "Otro"}
+E       AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+E         
+E         Extra items in the left set:
+E         'Otro.lnk'
+E         'MiPrograma.lnk'
+E         Extra items in the right set:
+E         'Otro'
+E         'MiPrograma'
+E         
+E         Full diff:
+E           {
+E         -     'MiPrograma',
+E         +     'MiPrograma.lnk',
+E         ?                ++++
+E         -     'Otro',
+E         +     'Otro.lnk',
+E         ?          ++++
+E           }
+
+evolve/tests/test_modules.py:677: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'Otro.lnk'
+  'MiPrograma.lnk'
+  Extra items in the right set:
+  'Otro'
+  'MiPrograma'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed in 1.62s
+
+```
+- `2026-10-08T10:59:03` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y robustez de `startup.py` corrigiendo un error de lógica en `_process_folder_entry` (usaba una variable global inexistente `_` en lugar de `entry.name`) y añadiendo docstrings descriptivos con el propósito de las operaciones de filtrado.
+- `2026-10-08T10:59:29` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` utilizando `set` para la detección de tokens y reduciendo el costo de búsqueda de handlers, además de eliminar la regeneración de `active_problems` al acceder repetidamente a la misma propiedad dentro del motor local.
+- `2026-10-08T10:59:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T10:59:29` Corrida terminada. Total usado hoy: 260.

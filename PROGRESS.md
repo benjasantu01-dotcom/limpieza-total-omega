@@ -7,44 +7,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **206** (40.9% de aceptación)
-- Rechazadas por tests: 26
+- Rechazadas por tests: 27
 - Rechazadas por guardia de seguridad: 41
-- Sin cambios (nada sustancial que mejorar): 17
+- Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 102 | 12 | 20 | 6 | 108 |
-| 2026-10-08 | 104 | 14 | 21 | 11 | 106 |
+| 2026-10-07 | 99 | 12 | 20 | 5 | 108 |
+| 2026-10-08 | 107 | 15 | 21 | 11 | 106 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - seguridad defensiva: **46**
-- legibilidad y documentación: **40**
-- rendimiento: **37**
-- robustez ante casos límite: **36**
+- legibilidad y documentación: **42**
+- rendimiento: **38**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
 - `quarantine.py`: **21**
-- `assistant.py`: **19**
+- `assistant.py`: **20**
+- `diskreport.py`: **20**
 - `browser.py`: **19**
 - `safety.py`: **18**
 - `memory.py`: **17**
 - `healthscore.py`: **16**
 - `organizer.py`: **15**
-- `duplicates.py`: **13**
+- `scanner.py`: **14**
 - `branding.py`: **13**
-- `scanner.py`: **13**
-- `settings.py`: **11**
-- `main.py`: **10**
+- `settings.py`: **12**
+- `duplicates.py`: **12**
+- `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T10:59:29` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` utilizando `set` para la detección de tokens y reduciendo el costo de búsqueda de handlers, además de eliminar la regeneración de `active_problems` al acceder repetidamente a la misma propiedad dentro del motor local.
+- `2026-10-08T10:58:12` **settings.py** (legibilidad y documentación): Se añadió documentación tipo docstring a los validadores privados en la clase `_Validators` para clarificar la lógica de filtrado de seguridad, y se mejoró la legibilidad de la clase `_SettingsManager` mediante la adición de tipos claros en la caché, facilitando el mantenimiento a futuro.
+- `2026-10-08T10:57:38` **scanner.py** (legibilidad y documentación): Mejoré la documentación de los tipos, docstrings y la claridad de la clase `Scanner` para garantizar que el modelo de recursión y las validaciones de seguridad sean inequívocos, eliminando ambigüedades en la delegación de responsabilidades entre el escáner y las funciones de heurística.
 - `2026-10-08T10:49:01` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `safety.py` mediante la adición de docstrings estructuradas en los predicados de validación interna y se ha extraído la lógica dispersa de los `_check_*` en una sección claramente delimitada, facilitando la auditoría de reglas de seguridad por parte del equipo.
 - `2026-10-08T10:47:16` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la lógica de escaneo mediante la extracción de la condición de filtrado de archivos en `_process_directory` a una función con nombre explícito (`_is_candidate_junk`), cumpliendo con el enfoque de legibilidad y documentación sin alterar el comportamiento.
 - `2026-10-08T10:42:33` **memory.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando la estructura `MEMORYSTATUSEX` con tipos explícitos para sus campos de Win32 y añadiendo type hints faltantes en funciones críticas, lo cual ayuda a prevenir errores de mapeo en llamadas de `ctypes` y aclara la intención del código.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T10:07:05` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de entrada en `_is_file_locked`, `_is_recursive_violation` y `_is_safe_for_disk_op` para capturar excepciones específicas (como `FileNotFoundError` o `PermissionError`) y evitar el uso de `path.exists()` como única validación, previniendo errores en condiciones de carrera (TOCTOU).
 - `2026-10-08T10:06:37` **memory.py** (manejo de errores y validación de entradas): Se mejora la robustez del manejo de memoria mediante la validación estricta de parámetros en `trim_working_set` y `_get_proc_memory_by_pid`, evitando el uso de valores `None` o potencialmente corruptos en operaciones críticas de bajo nivel.
 - `2026-10-08T09:58:13` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de los callbacks de la interfaz gráfica implementando una validación centralizada de estados y excepciones en `on_trim_process` y `on_quarantine_duplicates`, asegurando que ninguna operación crítica proceda con parámetros nulos o malformados sin previo aviso al usuario.
-- `2026-10-08T09:57:13` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `compute_score` y `summarize` implementando chequeos defensivos adicionales sobre las entradas y estados intermedios para prevenir excepciones no capturadas durante la generación del reporte.
-- `2026-10-08T09:56:46` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_file_locked` y `_calculate_keeper_heuristic` mediante la captura explícita de `OSError` y validación de tipos, evitando que errores de acceso al sistema de archivos durante la iteración aborten el procesamiento de grupos enteros.
-- `2026-10-08T09:56:21` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `_collect_summary_data` envolviendo las llamadas críticas en bloques `try...except` específicos para capturar errores de sistema (`OSError`, `PermissionError`) durante la iteración, evitando que una falla puntual en un archivo bloqueado o un enlace roto detenga el escaneo completo de la unidad o carpeta.

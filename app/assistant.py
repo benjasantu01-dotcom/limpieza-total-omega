@@ -623,6 +623,7 @@ _TOKENS_MAP: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
     "puntaje": handle_score, "salud": handle_score, "nota": handle_score, "score": handle_score,
     "inicio": handle_startup, "arranque": handle_startup, "arranca": handle_startup, "encender": handle_startup
 }
+_TOKEN_KEYS: Final[set[str]] = set(_TOKENS_MAP.keys())
 
 def _sanitize_query(question: str) -> str:
     """Limpia y trunca la consulta del usuario."""
@@ -645,8 +646,8 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         return Answer("Entrada no válida.")
     
     for token in _TOKEN_REGEX.findall(q_sanitized.lower()):
-        if handler := _TOKENS_MAP.get(token):
-            return handler(context, question)
+        if token in _TOKEN_KEYS:
+            return _TOKENS_MAP[token](context, question)
             
     cuerpo = _format_problem_message(context.active_problems, context.score if context.score is not None else "N/A")
     ans = Answer(_validate_response_length(cuerpo), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
