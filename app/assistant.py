@@ -371,14 +371,7 @@ class SystemContext:
         """Snapshot cacheado de las métricas numéricas."""
         return {key: float(getattr(self, key)) for key, _, _ in _CONTEXT_SCHEMA if hasattr(self, key) and _check_metric_integrity(getattr(self, key))}
 
-    def get_metric(self, key: str, default: float) -> float:
-        """Retorna una métrica numérica validada o el valor por defecto si falla."""
-        val = getattr(self, key, None)
-        if not _check_metric_integrity(val):
-            return default
-        return float(val)
-
-    @property
+    @cached_property
     def active_problems(self) -> tuple[str, ...]:
         """Evalúa los criterios de salud contra los datos actuales y retorna los problemas activos."""
         if not self.analyzed: return ()
@@ -390,6 +383,13 @@ class SystemContext:
             if (msg := c.format_if_triggered(val)) is not None:
                 results.append(msg)
         return tuple(results)
+
+    def get_metric(self, key: str, default: float) -> float:
+        """Retorna una métrica numérica validada o el valor por defecto si falla."""
+        val = getattr(self, key, None)
+        if not _check_metric_integrity(val):
+            return default
+        return float(val)
 
     @property
     def is_empty(self) -> bool:
@@ -456,7 +456,9 @@ class SystemContext:
             
             if has_updates:
                 object.__setattr__(self, 'analyzed', True)
-                if 'metrics_snapshot' in self.__dict__: del self.__dict__['metrics_snapshot']
+                # Invalida las caches tras un cambio de datos
+                for cache_attr in ('metrics_snapshot', 'active_problems'):
+                    if cache_attr in self.__dict__: del self.__dict__[cache_attr]
                 return True
         except (Exception, OverflowError):
             logging.warning("Fallo durante la ingesta de datos.")

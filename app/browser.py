@@ -205,45 +205,18 @@ def _should_skip_entry(
         return True
     return False
 
-@safe_path_operation(True)
-def _is_file_in_use(path_str: str, base_norm: str) -> bool:
-    """Verifica si un archivo está bloqueado por el sistema operativo."""
-    if not _ensure_within_base(path_str, base_norm) or not os.path.exists(path_str) or not os.access(path_str, os.R_OK):
-        return True
-    
-    k32 = _get_kernel32()
-    if k32:
-        handle = -1
-        try:
-            handle = k32.CreateFileW(path_str, 0x80000000, 0x3, None, 3, 0x80, None)
-            return bool(handle == -1 or handle is None)
-        except OSError:
-            return True
-        finally:
-            if handle not in (-1, None):
-                k32.CloseHandle(handle)
-    return False
-
 def _process_file_node(entry: os.DirEntry, root_abs_norm: str, visited_inodes: Set[int]) -> int:
     """
-    Calcula el tamaño de un archivo individual tras validar accesibilidad y unicidad.
-    
-    Args:
-        entry: Entrada de archivo a procesar.
-        root_abs_norm: Raíz absoluta normalizada para validación de contención.
-        visited_inodes: Set de inodos procesados para evitar conteo doble.
-        
-    Returns:
-        Tamaño en bytes si es válido y accesible, 0 en caso contrario.
+    Calcula el tamaño de un archivo individual tras validar accesibilidad y unicidad mediante stat.
     """
     if not entry.is_file(): return 0
     if not _ensure_within_base(entry.path, root_abs_norm): return 0
     try:
         st = entry.stat(follow_symlinks=False)
-        if st.st_ino not in visited_inodes:
-            if not _is_file_in_use(entry.path, root_abs_norm):
-                visited_inodes.add(st.st_ino)
-                return st.st_size
+        # Solo procesamos si no fue contado y el sistema permite lectura
+        if st.st_ino not in visited_inodes and os.access(entry.path, os.R_OK):
+            visited_inodes.add(st.st_ino)
+            return st.st_size
     except (OSError, PermissionError):
         pass
     return 0
@@ -258,17 +231,6 @@ def _sum_directory_recursive(
 ) -> ScanResult:
     """
     Recorre jerárquicamente un directorio de caché con memorización de nodos.
-    
-    Args:
-        root_path: Objeto Path del directorio a escanear.
-        root_abs_norm: Ruta base para validación de escapes de directorio.
-        kernel32: Instancia opcional de kernel32 para chequeos de atributos.
-        visited_inodes: Set compartido para seguimiento de inodos.
-        visited_dirs: Dict para cachear resultados de subcarpetas (evita ciclos/repetidos).
-        depth: Profundidad actual de recursión para prevenir stack overflow.
-    
-    Returns:
-        Objeto ScanResult con bytes totales encontrados y flag de éxito.
     """
     if depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)

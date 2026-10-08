@@ -438,24 +438,25 @@ def _get_stripe_params(scale: float, franjas_count: int) -> Tuple[Tuple[float, f
                   (i + 1) * (STRIPE_THICKNESS_SCALE * scale / franjas_count)) for i in range(franjas_count))
 
 @lru_cache(maxsize=128)
-def _get_cached_stripe_data(scale: float, franjas_count: int) -> Tuple[Tuple[Tuple[float, float, float], ...], Tuple[ColorHex, ...]]:
-    """Cachea parámetros de franjas y sus colores correspondientes."""
-    return _get_stripe_params(scale, franjas_count), gradient_colors(franjas_count)
+def _get_cached_stripe_data(scale: float, franjas_count: int) -> Tuple[Tuple[Tuple[float, float, float], ...], Tuple[ColorSegment, ...]]:
+    """Cachea parámetros de franjas y sus segmentos de color correspondientes."""
+    return _get_stripe_params(scale, franjas_count), _get_grouped_segments(gradient_colors(franjas_count))
 
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Renderiza las franjas internas geométricas del escudo."""
+    """Renderiza las franjas internas geométricas del escudo usando segmentos agrupados."""
     try:
         if canvas is None or not math.isfinite(scale) or scale <= 0 or not math.isfinite(canvas_x) or not math.isfinite(canvas_y): return
         franjas_count = max(6, int(STRIPE_COUNT_FACTOR * scale))
         base_y = canvas_y + STRIPE_BASE_Y_OFFSET * scale
         center_x = canvas_x + 64 * scale
-        params, colors = _get_cached_stripe_data(scale, franjas_count)
+        params, segments = _get_cached_stripe_data(scale, franjas_count)
         
-        for i, hex_color in enumerate(colors):
-            w, y_start, y_end = params[i]
-            canvas.create_rectangle(center_x - w, base_y + y_start, 
-                                    center_x + w, base_y + y_end, 
-                                    fill=hex_color, outline="")
+        for seg in segments:
+            # Dibujar un solo bloque para el rango de franjas que comparten color
+            y_start = base_y + params[seg.start_index][1]
+            y_end = base_y + params[seg.end_index - 1][2]
+            w = params[seg.start_index][0]
+            canvas.create_rectangle(center_x - w, y_start, center_x + w, y_end, fill=seg.hex_color, outline="")
     except (TypeError, ValueError, ZeroDivisionError, IndexError, AttributeError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
@@ -505,13 +506,13 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
         cx, cy = float(canvas_x), float(canvas_y)
         if not math.isfinite(cx) or not math.isfinite(cy): return
         
-        # Generar segmentos usando la versión cacheada y una sola llamada a gradient_colors
+        # Generar segmentos agrupados para minimizar llamadas a create_line
         segments = _get_grouped_segments(gradient_colors(w_val, stops))
             
-        for segment in segments:
-            canvas.create_line(cx + segment.start_index, cy, 
-                               cx + segment.end_index, cy, 
-                               fill=segment.hex_color, width=h_val)
+        for seg in segments:
+            canvas.create_line(cx + seg.start_index, cy, 
+                               cx + seg.end_index, cy, 
+                               fill=seg.hex_color, width=h_val)
     except (TypeError, ValueError, AttributeError, ZeroDivisionError, IndexError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, 
