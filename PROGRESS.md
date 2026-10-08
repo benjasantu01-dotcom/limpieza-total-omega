@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **202** (40.1% de aceptación)
-- Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 39
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 224
+- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Rechazadas por tests: 26
+- Rechazadas por guardia de seguridad: 40
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-06 | 4 | 2 | 0 | 0 | 4 |
+| 2026-10-06 | 4 | 1 | 0 | 0 | 1 |
 | 2026-10-07 | 139 | 17 | 28 | 8 | 158 |
-| 2026-10-08 | 59 | 8 | 11 | 4 | 62 |
+| 2026-10-08 | 60 | 8 | 12 | 5 | 63 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - seguridad defensiva: **42**
+- legibilidad y documentación: **40**
 - robustez ante casos límite: **39**
-- legibilidad y documentación: **39**
 - rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
@@ -35,8 +35,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **21**
 - `diskreport.py`: **20**
 - `healthscore.py`: **18**
+- `memory.py`: **16**
 - `safety.py`: **15**
-- `memory.py`: **15**
 - `branding.py`: **14**
 - `settings.py`: **12**
 - `organizer.py`: **12**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T06:16:37` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de Type Hints explícitos en las funciones críticas y se han añadido docstrings detallados en las funciones de bajo nivel (`_get_process_memory_stats`, `_extract_process_info`, `_is_safe_to_trim`) para clarificar el propósito de las llamadas a la API de Win32 y los criterios de seguridad aplicados.
 - `2026-10-08T06:03:14` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante docstrings más precisos, se han añadido type hints en retornos de funciones (como `_collect_candidates` y `_group_paths_by_hash`) y se ha extraído la lógica de comparación de heurística de `suggest_keeper` para facilitar su legibilidad.
 - `2026-10-08T06:03:03` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento mediante la adición de Type Hints detallados en las funciones de procesamiento de datos y la refactorización de `_collect_summary_data` para clarificar la lógica de acumulación, facilitando la comprensión del flujo de datos sin alterar la funcionalidad.
 - `2026-10-08T06:02:36` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las funciones críticas de escaneo (`_sum_directory_recursive` y `_should_skip_entry`) mediante la adición de Type Hints más precisos, docstrings que explican las decisiones de seguridad, y la clarificación de la lógica de recursión.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T05:31:19` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` añadiendo validaciones de entrada más estrictas y manejando explícitamente el caso donde `suggest_keeper` podría retornar `None` (evitando errores al comparar `path == keeper`), alineándose con el enfoque de validación defensiva de parámetros.
 - `2026-10-08T05:22:58` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_stat` y `walk_files` para manejar casos de rutas inexistentes o permisos denegados de forma explícita, evitando la propagación de excepciones que podrían interrumpir el escaneo, y agregué una validación de `path` en `_is_excluded_path` para prevenir `AttributeError` en entornos con metadatos corrompidos.
 - `2026-10-08T05:22:39` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `base_directories` y `_resolve_browser_path` añadiendo validaciones específicas para detectar valores None, tipos incorrectos o rutas inexistentes antes de realizar operaciones de resolución, evitando excepciones innecesarias en el bucle de escaneo.
-- `2026-10-08T05:22:08` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `draw_ring` mediante la validación explícita de `size` y `thickness` antes del cálculo de `max_thick` para evitar errores matemáticos, y se reemplazó el acceso directo a `SEVERITY_STYLES` por `get()` en `severity_label` para evitar `KeyError` ante severidades inesperadas.

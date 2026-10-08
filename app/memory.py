@@ -186,7 +186,10 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     return MemorySnapshot(total=total, available=available, cached=cached)
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
-    """Valida y convierte una línea CSV cruda a una instancia de ProcessMemory."""
+    """
+    Parsea una línea CSV proveniente de herramientas externas.
+    Espera formato: "Nombre, PID, WorkingSetBytes".
+    """
     if not isinstance(line, str) or "," not in line: 
         return None
         
@@ -204,7 +207,6 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         
     pid, ws = int(pid_digits), int(ws_digits)
     
-    # Excluye procesos del kernel o PID nulo antes de procesar valores
     if _is_system_process(pid) or pid <= 0: 
         return None
     
@@ -255,7 +257,10 @@ def read_snapshot() -> MemorySnapshot:
     return _get_cached_snapshot(int(time.time() / 5))
 
 def _get_process_memory_stats(pid: int) -> Optional[BytesValue]:
-    """Lee el Working Set de un PID específico mediante PSAPI."""
+    """
+    Consulta la API PSAPI GetProcessMemoryInfo.
+    El índice 3 de PROCESS_MEMORY_COUNTERS corresponde a WorkingSetSize.
+    """
     kernel32 = ctypes.windll.kernel32
     psapi = ctypes.windll.psapi
     process_handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
@@ -371,7 +376,10 @@ def _get_process_path(pid: int) -> Optional[Path]:
     return None
 
 def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
-    """Evalúa si un proceso es apto para una liberación manual de memoria (trim)."""
+    """
+    Verifica si el proceso es candidato a la optimización de Working Set.
+    Aplica controles de seguridad contra procesos del sistema y rutas restringidas.
+    """
     if pid <= 0: return False, "PID inválido."
     if _is_system_process(pid): return False, "Proceso crítico del sistema protegido."
     
