@@ -184,7 +184,6 @@ class ProblemCriterion(NamedTuple):
             return None
             
         try:
-            # Capturamos TypeError específicamente si el formato falla por tipo inesperado
             msg: str = str(self.message_format.format(val))[:_MAX_MSG_CHUNK]
             return msg if _ensure_safe_text(msg) else None
         except (ValueError, TypeError, KeyError):

@@ -6,45 +6,46 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 26
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 72 | 9 | 16 | 5 | 70 |
-| 2026-10-08 | 129 | 17 | 27 | 12 | 147 |
+| 2026-10-07 | 69 | 9 | 15 | 5 | 70 |
+| 2026-10-08 | 130 | 17 | 27 | 12 | 150 |
 
 ## Mejoras aceptadas por enfoque
 
 - rendimiento: **45**
 - seguridad defensiva: **44**
-- legibilidad y documentación: **39**
-- manejo de errores y validación de entradas: **38**
+- manejo de errores y validación de entradas: **39**
+- legibilidad y documentación: **36**
 - robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `quarantine.py`: **20**
+- `assistant.py`: **19**
 - `browser.py`: **19**
 - `safety.py`: **18**
-- `assistant.py`: **18**
-- `healthscore.py`: **17**
-- `memory.py`: **16**
+- `healthscore.py`: **16**
 - `organizer.py`: **15**
+- `memory.py`: **15**
 - `branding.py`: **13**
 - `scanner.py`: **13**
-- `duplicates.py`: **12**
+- `duplicates.py`: **11**
 - `settings.py`: **11**
 - `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T14:16:07` **assistant.py** (manejo de errores y validación de entradas): Se mejora la robustez de la ingesta de datos en `SystemContext` capturando excepciones granulares durante la conversión de tipos en `ingest` y `_apply_field`, evitando que un valor de configuración malformado o un tipo inesperado interrumpa el proceso de diagnóstico de la app.
 - `2026-10-08T12:52:03` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `settings_path` al evitar la expansión del usuario mediante `os.path.expanduser` (que puede ser manipulado en ciertos entornos) y reemplazándolo por una validación de ruta estricta utilizando la resolución absoluta de `pathlib` antes de crear directorios.
 - `2026-10-08T12:51:24` **scanner.py** (seguridad defensiva): Se ha restringido el acceso a metadatos de archivos en `_safe_stat` para prevenir la resolución de accesos a archivos con múltiples enlaces físicos (`st_nlink > 1`), evitando el análisis de archivos que podrían ser puntos de unión de datos o enlaces a flujos de datos alternativos (ADS) del sistema de archivos NTFS.
 - `2026-10-08T12:50:46` **safety.py** (seguridad defensiva): Se ha mejorado `safety.py` añadiendo un chequeo explícito de integridad para evitar el seguimiento de puntos de reparse (Reparse Points) durante la normalización de rutas, previniendo que la lógica de validación sea engañada por redirecciones al sistema de archivos ocultas.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T11:52:32` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor ante entradas de métricas `NaN` o `inf` durante la ejecución del pipeline, asegurando que `_clamp` se utilice sistemáticamente dentro de `compute_score` antes de asignar valores a `metric_breakdown` para evitar contaminar el cálculo final con valores no finitos.
 - `2026-10-08T11:49:18` **diskreport.py** (robustez ante casos límite): Se mejora la resiliencia ante errores de sistema de archivos en `largest_folders` al envolver el cálculo del peso de archivos en un bloque `try-except` más robusto, evitando que archivos bloqueados por el SO o con rutas excesivamente largas interrumpan el cálculo de métricas de carpetas.
 - `2026-10-08T11:48:52` **browser.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar ciclos de recursión infinita en el escaneo de directorios mediante el seguimiento de identificadores de dispositivo y número de nodo (`st_dev`, `st_ino`), mitigando así posibles casos límite de estructuras de archivos circulares o inusuales.
-- `2026-10-08T11:40:23` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_get_source_value` para manejar situaciones donde el objeto fuente sea inesperadamente complejo o malicioso, evitando que `getattr` o iteraciones sobre tipos inesperados provoquen excepciones o filtración de información no intencionada, reforzando la integridad del bucle de ingesta.
