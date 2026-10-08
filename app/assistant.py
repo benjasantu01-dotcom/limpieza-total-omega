@@ -401,7 +401,7 @@ class SystemContext:
         """Valida, convierte y verifica límites de un campo individual."""
         try:
             val = _get_source_value(source, key)
-            if val is None or not isinstance(val, (int, float, str)): return None
+            if val is None: return None
             
             float_val = float(val)
             if not _is_metric_within_bounds(float_val, spec): 
@@ -496,8 +496,8 @@ def _get_source_value(source: Any, key: str) -> Any:
             return source.get(key)
         if hasattr(source, key):
             val = getattr(source, key)
-            return None if callable(val) or isinstance(val, type) else val
-    except Exception:
+            return None if callable(val) or isinstance(val, (type, list, dict, set)) else val
+    except (AttributeError, ValueError, TypeError):
         pass
     return None
 
