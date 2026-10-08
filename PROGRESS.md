@@ -6,45 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
-- Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 40
-- Sin cambios (nada sustancial que mejorar): 16
+- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Rechazadas por tests: 26
+- Rechazadas por guardia de seguridad: 41
+- Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 105 | 13 | 20 | 6 | 108 |
-| 2026-10-08 | 102 | 14 | 20 | 10 | 106 |
+| 2026-10-07 | 102 | 12 | 20 | 6 | 108 |
+| 2026-10-08 | 104 | 14 | 21 | 11 | 106 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - seguridad defensiva: **46**
-- robustez ante casos límite: **39**
-- legibilidad y documentación: **38**
+- legibilidad y documentación: **40**
 - rendimiento: **37**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `quarantine.py`: **21**
-- `assistant.py`: **20**
-- `browser.py`: **20**
+- `assistant.py`: **19**
+- `browser.py`: **19**
+- `safety.py`: **18**
 - `memory.py`: **17**
-- `safety.py`: **17**
 - `healthscore.py`: **16**
-- `branding.py`: **14**
-- `organizer.py`: **14**
+- `organizer.py`: **15**
 - `duplicates.py`: **13**
+- `branding.py`: **13**
 - `scanner.py`: **13**
 - `settings.py`: **11**
 - `main.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T10:49:01` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `safety.py` mediante la adición de docstrings estructuradas en los predicados de validación interna y se ha extraído la lógica dispersa de los `_check_*` en una sección claramente delimitada, facilitando la auditoría de reglas de seguridad por parte del equipo.
+- `2026-10-08T10:47:16` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de la lógica de escaneo mediante la extracción de la condición de filtrado de archivos en `_process_directory` a una función con nombre explícito (`_is_candidate_junk`), cumpliendo con el enfoque de legibilidad y documentación sin alterar el comportamiento.
 - `2026-10-08T10:42:33` **memory.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando la estructura `MEMORYSTATUSEX` con tipos explícitos para sus campos de Win32 y añadiendo type hints faltantes en funciones críticas, lo cual ayuda a prevenir errores de mapeo en llamadas de `ctypes` y aclara la intención del código.
 - `2026-10-08T10:37:11` **duplicates.py** (legibilidad y documentación): Documenté con Type Hints, docstrings detallados y refinamiento de variables los métodos de bajo nivel de acceso a disco (`is_junction`, `is_system_or_hidden`, `_is_file_locked`) para clarificar su rol crítico en la seguridad del escaneo.
 - `2026-10-08T10:30:08` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de escaneo (específicamente `walk_files` y `_collect_summary_data`) aclarando la estrategia de uso de memoria y la lógica de filtrado de inodos, proporcionando una comprensión más clara del flujo de datos para futuros colaboradores.
@@ -58,5 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T09:57:13` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `compute_score` y `summarize` implementando chequeos defensivos adicionales sobre las entradas y estados intermedios para prevenir excepciones no capturadas durante la generación del reporte.
 - `2026-10-08T09:56:46` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_file_locked` y `_calculate_keeper_heuristic` mediante la captura explícita de `OSError` y validación de tipos, evitando que errores de acceso al sistema de archivos durante la iteración aborten el procesamiento de grupos enteros.
 - `2026-10-08T09:56:21` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `_collect_summary_data` envolviendo las llamadas críticas en bloques `try...except` específicos para capturar errores de sistema (`OSError`, `PermissionError`) durante la iteración, evitando que una falla puntual en un archivo bloqueado o un enlace roto detenga el escaneo completo de la unidad o carpeta.
-- `2026-10-08T09:49:42` **browser.py** (manejo de errores y validación de entradas): Reforcé la robustez de `directory_size` y `detect_profiles` añadiendo validaciones de tipo explícitas y chequeos de integridad de rutas mediante `strict=True` para prevenir excepciones por accesos concurrentes o errores de IO durante el escaneo, cumpliendo con el enfoque de manejo de errores y validación.
-- `2026-10-08T09:47:37` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la ingesta de datos en `SystemContext.ingest` y `ProblemCriterion.format_if_triggered` mediante la captura explícita de errores de formato y la validación de tipos, evitando que valores malformados (como strings no numéricos) interrumpan la ejecución de los análisis.

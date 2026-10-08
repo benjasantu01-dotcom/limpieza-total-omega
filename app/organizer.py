@@ -208,6 +208,12 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> boo
         return False
     return True
 
+def _is_candidate_junk(stats: os.stat_result, entry: os.DirEntry, now_ts: float) -> bool:
+    """Evalúa si un archivo cumple los criterios para ser considerado basura."""
+    return (0 <= stats.st_size < MAX_FILE_SIZE_BYTES and 
+            stats.st_mtime <= now_ts + 3600 and
+            not _is_system_hidden(entry))
+
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
     """Realiza un recorrido recursivo eficiente usando caché de DirEntry."""
     if depth > 50: return
@@ -216,7 +222,6 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
         if resolved_dir in visited: return
         visited.add(resolved_dir)
         now_ts: float = datetime.now().timestamp()
-        junk_exts = JUNK_EXT_TUPLE
         
         with os.scandir(current_dir) as iterator:
             for entry in iterator:
@@ -225,11 +230,9 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False):
-                        if entry.name.lower().endswith(junk_exts):
+                        if entry.name.lower().endswith(JUNK_EXT_TUPLE):
                             stats = entry.stat(follow_symlinks=False)
-                            if (0 <= stats.st_size < MAX_FILE_SIZE_BYTES and 
-                                stats.st_mtime <= now_ts + 3600 and
-                                not _is_system_hidden(entry)):
+                            if _is_candidate_junk(stats, entry, now_ts):
                                 found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
                 except (PermissionError, OSError):
                     continue
