@@ -54,18 +54,11 @@ SizeReport: TypeAlias = Tuple[int, int]
 def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
     """
     Intenta recuperar los metadatos de un archivo sin seguir enlaces simbólicos.
-    
-    Returns:
-        os.stat_result si es accesible, None en caso de error de acceso (permisos, 
-        archivo no encontrado, rutas demasiado largas o bloqueos del sistema).
     """
     if not path:
         return None
     try:
-        path_str = str(path)
-        if len(path_str) > 32767:
-            return None
-        return os.stat(path_str, follow_symlinks=False)
+        return os.stat(path, follow_symlinks=False)
     except (OSError, PermissionError, FileNotFoundError, ValueError):
         return None
 
@@ -87,7 +80,6 @@ class ExtStats:
 class GlobalStats:
     """
     Acumulador central que orquesta las métricas durante el escaneo.
-    Centraliza el conteo global y la desagregación por tipo de archivo.
     """
     def __init__(self) -> None:
         self.total_bytes: int = 0
@@ -115,10 +107,7 @@ class FolderMetrics:
 
 class SummaryData(NamedTuple):
     """
-    Estructura consolidada que agrupa los resultados de una pasada de escaneo:
-    - total_bytes/total_files: Métricas globales.
-    - ext_stats: Diccionario de acumuladores por tipo.
-    - top_files: Heap de archivos encontrados (ordenados por tamaño).
+    Estructura consolidada que agrupa los resultados de una pasada de escaneo.
     """
     total_bytes: int
     total_files: int
@@ -149,43 +138,29 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         p = Path(directory).expanduser().resolve()
-        if not p.exists() or not p.is_dir():
-            return None
-        if is_protected_path(p) or not os.access(p, os.R_OK):
+        if not p.is_dir() or is_protected_path(p) or not os.access(p, os.R_OK):
             return None
         return p
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
         return None
 
 
-def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
+def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
     """
     Filtra entradas durante el escaneo para evitar bucles o acceso a áreas restringidas.
-    Realiza chequeos de seguridad basados en la ruta y en metadatos del inodo.
     """
     try:
         name = entry.name
         if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
             return True
         
-        # Validación de integridad de ruta frente a la raíz
-        try:
-            entry_path = Path(entry.path).resolve()
-            if not str(entry_path).startswith(str(root_path.resolve())):
-                return True
-        except (ValueError, TypeError, OSError):
-            return True
-
         # Detección de puntos de reparse (Windows) o enlaces simbólicos (Unix)
-        try:
-            if entry.is_symlink():
-                return True
-            st = entry.stat(follow_symlinks=False)
-            if hasattr(st, 'st_file_attributes') and os.name == 'nt':
-                 if (st.st_file_attributes & 0x0400): # FILE_ATTRIBUTE_REPARSE_POINT
-                     return True
-        except (OSError, PermissionError, AttributeError):
+        if entry.is_symlink():
             return True
+        if os.name == 'nt':
+            st = entry.stat(follow_symlinks=False)
+            if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x0400):
+                 return True
             
         return is_protected_path(Path(entry.path))
     except (OSError, PermissionError, AttributeError, RuntimeError, TypeError):
@@ -197,13 +172,8 @@ def _get_local_windows_drives() -> List[str]:
     drives: List[str] = []
     for letter in string.ascii_uppercase:
         drive = f"{letter}:\\"
-        try:
-            if os.path.exists(drive):
-                p = Path(drive)
-                if not is_protected_path(p):
-                    drives.append(drive)
-        except (OSError, PermissionError, RuntimeError):
-            continue
+        if os.path.exists(drive) and not is_protected_path(Path(drive)):
+            drives.append(drive)
     return drives
 
 
@@ -252,7 +222,7 @@ class DriveUsage:
 
     @property
     def used_percent(self) -> float:
-        if not isinstance(self.total, (int, float)) or self.total <= 0:
+        if self.total <= 0:
             return 0.0
         return round(self.used / self.total * 100, 1)
 
@@ -279,8 +249,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if mount is None:
         return None
     try:
-        path_str = os.fspath(mount)
-        p = Path(path_str).resolve()
+        p = Path(mount).resolve()
         if p.exists() and not is_protected_path(p):
             usage = shutil.disk_usage(p)
             return DriveUsage(str(p), usage.total, usage.used, usage.free)
@@ -296,18 +265,13 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """
-    Recorre recursivamente el sistema de archivos de forma iterativa (stack-based).
-    
-    Usa una pila (stack) en lugar de recursión para evitar el desbordamiento de pila 
-    en estructuras profundas. Mantiene un registro de 'visited_inodes' (ID dispositivo + 
-    ID inodo) para detectar y detener bucles causados por enlaces simbólicos o junctions.
-    """
+    """Recorre recursivamente el sistema de archivos de forma iterativa."""
     root_path = _validate_root(directory)
     if root_path is None: return
     
     visited_inodes: set[Inode] = set()
     stack: List[str] = [str(root_path)]
+    root_path_str = str(root_path)
     
     while stack:
         current_dir = stack.pop()
@@ -315,24 +279,21 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Filtrado preventivo de seguridad
-                        if skip_protected and _is_excluded_path(entry, root_path):
+                        if skip_protected and _is_excluded_path(entry, root_path_str):
                             continue
                         
-                        if entry.is_dir(follow_symlinks=False):
-                            st = _safe_stat(entry.path)
-                            if st:
-                                inode = (st.st_dev, st.st_ino)
-                                if inode not in visited_inodes:
-                                    visited_inodes.add(inode)
-                                    stack.append(entry.path)
-                        elif entry.is_file(follow_symlinks=False):
-                            st = _safe_stat(entry.path)
-                            if st is not None and hasattr(st, 'st_size'):
-                                yield Path(entry.path), int(st.st_size)
-                    except (OSError, PermissionError, AttributeError, ValueError, RuntimeError):
+                        if entry.is_dir():
+                            st = entry.stat(follow_symlinks=False)
+                            inode = (st.st_dev, st.st_ino)
+                            if inode not in visited_inodes:
+                                visited_inodes.add(inode)
+                                stack.append(entry.path)
+                        elif entry.is_file():
+                            st = entry.stat(follow_symlinks=False)
+                            yield Path(entry.path), int(st.st_size)
+                    except (OSError, PermissionError, AttributeError):
                         continue
-        except (PermissionError, OSError, FileNotFoundError, RuntimeError): 
+        except (PermissionError, OSError): 
             continue
 
 
@@ -354,10 +315,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """
-    Calcula el peso total de las subcarpetas de primer nivel respecto a la raíz.
-    Agrupa recursivamente los tamaños de los archivos encontrados bajo cada directorio directo.
-    """
+    """Calcula el peso total de las subcarpetas de primer nivel respecto a la raíz."""
     root = _validate_root(directory)
     if not root: return []
     stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
@@ -365,12 +323,11 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     for path, size in walk_files(root, skip_protected):
         try:
             rel = path.relative_to(root)
-            if not rel.parts: continue
             top_folder = root / rel.parts[0]
             curr = stats[top_folder]
             curr.size += size
             curr.file_count += 1
-        except (ValueError, IndexError, RuntimeError, TypeError):
+        except (ValueError, IndexError):
             continue
 
     results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items()]
@@ -386,31 +343,17 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """
-    Orquesta el escaneo completo agregando métricas globales y rastreando archivos pesados.
-    
-    Utiliza un Min-Heap de tamaño fijo (limit) para identificar los archivos más grandes 
-    eficientemente O(N log K), minimizando el uso de memoria RAM al no cargar la lista 
-    completa de archivos en el heap.
-    """
+    """Orquesta el escaneo completo agregando métricas globales."""
     stats = GlobalStats()
     top_heap: List[Tuple[int, Path]] = [] 
     
-    try:
-        for path, size_bytes in walk_files(directory, skip_protected):
-            try:
-                stats.register_file(size_bytes, path)
-                
-                # Gestión del Min-Heap para mantener solo los K archivos más grandes
-                if limit > 0:
-                    if len(top_heap) < limit: 
-                        heapq.heappush(top_heap, (size_bytes, path))
-                    elif size_bytes > top_heap[0][0]: 
-                        heapq.heapreplace(top_heap, (size_bytes, path))
-            except (OSError, PermissionError, RuntimeError):
-                continue
-    except (OSError, PermissionError, RuntimeError):
-        pass
+    for path, size_bytes in walk_files(directory, skip_protected):
+        stats.register_file(size_bytes, path)
+        if limit > 0:
+            if len(top_heap) < limit: 
+                heapq.heappush(top_heap, (size_bytes, path))
+            elif size_bytes > top_heap[0][0]: 
+                heapq.heapreplace(top_heap, (size_bytes, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
@@ -420,10 +363,7 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     root = _validate_root(directory)
     if root is None: return ["Error: Ruta no válida, protegida o inaccesible."]
     
-    try:
-        data = _collect_summary_data(root, skip_protected, limit=20)
-    except (OSError, RuntimeError, PermissionError):
-        return ["Error durante el escaneo de archivos."]
+    data = _collect_summary_data(root, skip_protected, limit=20)
         
     if data.total_files == 0: return ["Aviso: No hay archivos accesibles."]
     

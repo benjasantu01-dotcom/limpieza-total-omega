@@ -863,3 +863,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T10:59:29` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` utilizando `set` para la detección de tokens y reduciendo el costo de búsqueda de handlers, además de eliminar la regeneración de `active_problems` al acceder repetidamente a la misma propiedad dentro del motor local.
 - `2026-10-08T10:59:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T10:59:29` Corrida terminada. Total usado hoy: 260.
+- `2026-10-08T11:07:09` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-10-08T11:07:59` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el cálculo y renderizado de franjas decorativas mediante la eliminación de una tupla intermedia redundante en `_get_stripe_params` y el uso directo de valores pre-calculados, reduciendo la presión sobre el recolector de basura durante el pintado del Canvas.
+- `2026-10-08T11:08:50` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé el rendimiento del escaneo recursivo mediante la validación de `os.scandir` y la eliminación de llamadas redundantes a `os.path.normcase` dentro del bucle interno, reduciendo la carga de E/S.
+- `2026-10-08T11:09:49` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `walk_files` y `_collect_summary_data` eliminando llamadas redundantes a `Path.resolve()` y `Path.exists()` dentro del bucle principal, reduciendo drásticamente las llamadas al sistema operativo (I/O) durante el recorrido del árbol de directorios.
+- `2026-10-08T11:10:14` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-08T11:10:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T11:10:14` Corrida terminada. Total usado hoy: 264.

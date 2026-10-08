@@ -416,9 +416,10 @@ STRIPE_BASE_Y_OFFSET: Final[float] = 18.0
 @lru_cache(maxsize=16)
 def _get_stripe_params(scale: float, franjas_count: int) -> Tuple[Tuple[float, float, float], ...]:
     """Calcula dimensiones de franjas decorativas basadas en escala."""
-    return tuple((STRIPE_THICKNESS_SCALE * scale * (1.0 if (i / (franjas_count - 1)) < 0.55 else 1.0 - (((i / (franjas_count - 1)) - 0.55) * 1.9)),
-                  i * (STRIPE_THICKNESS_SCALE * scale / franjas_count),
-                  (i + 1) * (STRIPE_THICKNESS_SCALE * scale / franjas_count)) for i in range(franjas_count))
+    thickness_factor = STRIPE_THICKNESS_SCALE * scale
+    return tuple((thickness_factor * (1.0 if (i / (franjas_count - 1)) < 0.55 else 1.0 - (((i / (franjas_count - 1)) - 0.55) * 1.9)),
+                  i * (thickness_factor / franjas_count),
+                  (i + 1) * (thickness_factor / franjas_count)) for i in range(franjas_count))
 
 @lru_cache(maxsize=128)
 def _get_cached_stripe_data(scale: float, franjas_count: int) -> Tuple[Tuple[Tuple[float, float, float], ...], Tuple[ColorSegment, ...]]:
@@ -435,6 +436,7 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
         params, segments = _get_cached_stripe_data(scale, franjas_count)
         
         for seg in segments:
+            # Obtener datos de los parámetros calculados y cacheados
             y_start = base_y + params[seg.start_index][1]
             y_end = base_y + params[seg.end_index - 1][2]
             w = params[seg.start_index][0]

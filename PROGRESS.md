@@ -8,43 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **206** (40.9% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 41
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 99 | 12 | 20 | 5 | 108 |
-| 2026-10-08 | 107 | 15 | 21 | 11 | 106 |
+| 2026-10-07 | 96 | 12 | 19 | 5 | 108 |
+| 2026-10-08 | 110 | 15 | 21 | 11 | 107 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - seguridad defensiva: **46**
 - legibilidad y documentación: **42**
-- rendimiento: **38**
-- robustez ante casos límite: **33**
+- rendimiento: **41**
+- robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
+- `diskreport.py`: **21**
 - `assistant.py`: **20**
-- `diskreport.py`: **20**
-- `browser.py`: **19**
+- `browser.py`: **20**
+- `quarantine.py`: **20**
 - `safety.py`: **18**
-- `memory.py`: **17**
 - `healthscore.py`: **16**
-- `organizer.py`: **15**
+- `memory.py`: **16**
+- `branding.py`: **14**
+- `organizer.py`: **14**
 - `scanner.py`: **14**
-- `branding.py`: **13**
 - `settings.py`: **12**
 - `duplicates.py`: **12**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T11:09:49` **diskreport.py** (rendimiento): Optimizé `walk_files` y `_collect_summary_data` eliminando llamadas redundantes a `Path.resolve()` y `Path.exists()` dentro del bucle principal, reduciendo drásticamente las llamadas al sistema operativo (I/O) durante el recorrido del árbol de directorios.
+- `2026-10-08T11:08:50` **browser.py** (rendimiento): Optimizé el rendimiento del escaneo recursivo mediante la validación de `os.scandir` y la eliminación de llamadas redundantes a `os.path.normcase` dentro del bucle interno, reduciendo la carga de E/S.
+- `2026-10-08T11:07:59` **branding.py** (rendimiento): Se optimizó el cálculo y renderizado de franjas decorativas mediante la eliminación de una tupla intermedia redundante en `_get_stripe_params` y el uso directo de valores pre-calculados, reduciendo la presión sobre el recolector de basura durante el pintado del Canvas.
 - `2026-10-08T10:59:29` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` utilizando `set` para la detección de tokens y reduciendo el costo de búsqueda de handlers, además de eliminar la regeneración de `active_problems` al acceder repetidamente a la misma propiedad dentro del motor local.
 - `2026-10-08T10:58:12` **settings.py** (legibilidad y documentación): Se añadió documentación tipo docstring a los validadores privados en la clase `_Validators` para clarificar la lógica de filtrado de seguridad, y se mejoró la legibilidad de la clase `_SettingsManager` mediante la adición de tipos claros en la caché, facilitando el mantenimiento a futuro.
 - `2026-10-08T10:57:38` **scanner.py** (legibilidad y documentación): Mejoré la documentación de los tipos, docstrings y la claridad de la clase `Scanner` para garantizar que el modelo de recursión y las validaciones de seguridad sean inequívocos, eliminando ambigüedades en la delegación de responsabilidades entre el escáner y las funciones de heurística.
@@ -57,6 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T10:17:38` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas `check_recent_executable_in_downloads` y `check_system_lookalike` añadiendo validaciones explícitas para evitar errores en llamadas a `path.parent` o acceso a atributos de rutas potencialmente inválidas, evitando que una excepción en un archivo puntual interrumpa el escaneo del directorio.
 - `2026-10-08T10:17:10` **safety.py** (manejo de errores y validación de entradas): Se mejora la robustez de `_get_security_descriptor_cached` añadiendo manejo de errores específico frente a excepciones de la API de Windows, evitando que un fallo en la consulta de atributos bloquee indefinidamente la validación de archivos mediante la asignación de un estado de "máxima protección" por defecto en caso de error.
 - `2026-10-08T10:07:50` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` mediante la captura explícita de `OSError` al intentar leer el archivo, previniendo cierres inesperados de la aplicación ante problemas de permisos transitorios o archivos en uso durante el arranque, garantizando que el sistema siempre devuelva un estado coherente (lista vacía) en lugar de propagar excepciones que bloquean la interfaz.
-- `2026-10-08T10:07:05` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de entrada en `_is_file_locked`, `_is_recursive_violation` y `_is_safe_for_disk_op` para capturar excepciones específicas (como `FileNotFoundError` o `PermissionError`) y evitar el uso de `path.exists()` como única validación, previniendo errores en condiciones de carrera (TOCTOU).
-- `2026-10-08T10:06:37` **memory.py** (manejo de errores y validación de entradas): Se mejora la robustez del manejo de memoria mediante la validación estricta de parámetros en `trim_working_set` y `_get_proc_memory_by_pid`, evitando el uso de valores `None` o potencialmente corruptos en operaciones críticas de bajo nivel.
-- `2026-10-08T09:58:13` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de los callbacks de la interfaz gráfica implementando una validación centralizada de estados y excepciones en `on_trim_process` y `on_quarantine_duplicates`, asegurando que ninguna operación crítica proceda con parámetros nulos o malformados sin previo aviso al usuario.

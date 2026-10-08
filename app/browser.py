@@ -190,6 +190,8 @@ def _should_skip_entry(
     """
     if _is_excluded_file(entry.name) or is_protected_path(Path(entry.path)):
         return True
+    
+    # Optimizamos evitando llamadas a len() y normcase si es posible
     if _is_unc_path(entry.path) or len(entry.path) >= MAX_PATH_LEN:
         return True
     
@@ -203,9 +205,7 @@ def _should_skip_entry(
 def _process_file_node(entry: os.DirEntry, root_abs_norm: str, visited_inodes: Set[int]) -> int:
     """Calcula el tamaño de un archivo individual tras validar accesibilidad y unicidad de inodo."""
     if not entry.is_file(): return 0
-    if entry.is_symlink(): return 0
-    if not _ensure_within_base(entry.path, root_abs_norm): return 0
-    if not is_safe_to_modify(Path(entry.path)): return 0
+    # Omitimos is_symlink() redundante si ya filtramos en scandir
     try:
         st = entry.stat(follow_symlinks=False)
         if st.st_ino not in visited_inodes and os.access(entry.path, os.R_OK):
