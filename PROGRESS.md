@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 26
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 11
 - Sin respuesta de la IA (error o límite): 226
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-06 | 15 | 3 | 5 | 0 | 7 |
+| 2026-10-06 | 13 | 2 | 4 | 0 | 7 |
 | 2026-10-07 | 139 | 17 | 28 | 8 | 158 |
-| 2026-10-08 | 44 | 6 | 10 | 3 | 61 |
+| 2026-10-08 | 47 | 7 | 10 | 3 | 61 |
 
 ## Mejoras aceptadas por enfoque
 
 - rendimiento: **42**
 - seguridad defensiva: **42**
-- legibilidad y documentación: **39**
 - robustez ante casos límite: **39**
-- manejo de errores y validación de entradas: **36**
+- manejo de errores y validación de entradas: **39**
+- legibilidad y documentación: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
 - `assistant.py`: **21**
-- `browser.py`: **20**
-- `diskreport.py`: **19**
+- `browser.py`: **21**
+- `diskreport.py`: **20**
 - `healthscore.py`: **18**
-- `memory.py`: **17**
+- `memory.py`: **16**
 - `safety.py`: **15**
-- `branding.py`: **13**
-- `organizer.py`: **12**
+- `branding.py`: **14**
 - `settings.py`: **12**
 - `scanner.py`: **11**
+- `organizer.py`: **11**
 - `duplicates.py`: **9**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T05:22:58` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_stat` y `walk_files` para manejar casos de rutas inexistentes o permisos denegados de forma explícita, evitando la propagación de excepciones que podrían interrumpir el escaneo, y agregué una validación de `path` en `_is_excluded_path` para prevenir `AttributeError` en entornos con metadatos corrompidos.
+- `2026-10-08T05:22:39` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `base_directories` y `_resolve_browser_path` añadiendo validaciones específicas para detectar valores None, tipos incorrectos o rutas inexistentes antes de realizar operaciones de resolución, evitando excepciones innecesarias en el bucle de escaneo.
+- `2026-10-08T05:22:08` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `draw_ring` mediante la validación explícita de `size` y `thickness` antes del cálculo de `max_thick` para evitar errores matemáticos, y se reemplazó el acceso directo a `SEVERITY_STYLES` por `get()` en `severity_label` para evitar `KeyError` ante severidades inesperadas.
 - `2026-10-08T03:50:58` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_entry` y `process_entry` al reforzar la validación de archivos mediante la resolución previa de rutas (`resolve`) y un chequeo explícito de existencia antes de cualquier acceso, previniendo condiciones de carrera al interactuar con el sistema de archivos mientras se escanea.
 - `2026-10-08T03:49:36` **quarantine.py** (seguridad defensiva): Se introdujo una validación de seguridad proactiva en `quarantine_file` que verifica mediante `_is_file_in_use_by_system` que el archivo no esté bloqueado por un proceso externo justo antes de iniciar la operación, previniendo condiciones de carrera donde el archivo podría ser modificado o bloqueado durante la transición.
 - `2026-10-08T03:41:57` **organizer.py** (seguridad defensiva): Se ha añadido un chequeo explícito en `stage_for_review` para impedir que el usuario intente mover archivos hacia una ubicación que sea un ancestro de sí misma o que esté contenida en un subdirectorio propio (evitando la recursión lógica antes de invocar `shutil.move`), reforzando la seguridad defensiva contra manipulaciones de rutas maliciosas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T03:12:31` **safety.py** (robustez ante casos límite): Se introdujo la verificación de rutas de tipo "Substituted Drive" (a través de `QueryDosDeviceW`) para evitar que la aplicación modifique archivos a través de unidades virtuales o mapeos de directorios que pueden esconder la ubicación real de archivos protegidos, mejorando la robustez frente a trucos de manipulación de rutas en Windows.
 - `2026-10-08T03:10:37` **quarantine.py** (robustez ante casos límite): Mejoré la resiliencia ante archivos bloqueados o en uso durante la fase de aislamiento atómico, añadiendo una verificación de disponibilidad mediante `_is_file_exclusive` antes de intentar el copiado, evitando así errores de E/S por procesos de fondo (como indexadores de búsqueda o antivirus) que podrían bloquear el archivo origen de forma intermitente.
 - `2026-10-08T03:02:04` **main.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en la inicialización y el procesamiento de hilos, asegurando que la aplicación no intente destruir widgets o invocar callbacks en una ventana inexistente si el cierre ocurre durante una operación asíncrona.
-- `2026-10-08T02:52:19` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `_safe_stat` y `_is_excluded_path` para manejar situaciones donde el sistema de archivos devuelve metadatos parciales o rutas extremadamente largas en entornos Windows, evitando excepciones no capturadas durante el recorrido del disco.
-- `2026-10-08T02:49:05` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `draw_logo` ante valores de entrada extremos o inválidos, asegurando que el estado interno no se corrompa si se pasan datos fuera de rango o tipos inesperados, cumpliendo con el enfoque de robustez ante casos límite.
-- `2026-10-08T02:48:20` **assistant.py** (robustez ante casos límite): Se mejora la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` añadiendo una comprobación explícita para evitar errores de `RecursionError` o evaluaciones infinitas ante estructuras cíclicas o excesivamente profundas, integrando una cota superior estricta en la profundidad de la recursión.

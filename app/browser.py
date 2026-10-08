@@ -154,6 +154,7 @@ def base_directories() -> List[Path]:
         return []
     
     p = Path(local_env)
+    # Verificación extra de existencia antes de resolve()
     if p.exists() and p.is_dir():
         try:
             path_local: Path = p.resolve(strict=True)
@@ -182,22 +183,12 @@ def _should_skip_entry(
 ) -> bool:
     """
     Determina si una entrada de directorio es insegura para el escaneo.
-    
-    Args:
-        entry: Objeto de entrada de directorio (os.DirEntry).
-        kernel32: Instancia de WinDLL para chequeos de atributos.
-        is_junction_fn: Función para detectar enlaces simbólicos/junctions.
-        base_norm: Ruta base normalizada para prevenir 'path traversal'.
-    
-    Returns:
-        True si la entrada debe ser omitida, False en caso contrario.
     """
     if _is_excluded_file(entry.name) or is_protected_path(Path(entry.path)):
         return True
     if _is_unc_path(entry.path) or len(entry.path) >= MAX_PATH_LEN:
         return True
     
-    # Defensa contra escapes de directorio mediante enlaces fuera de la base
     if not _ensure_within_base(entry.path, base_norm):
         return True
 
@@ -206,16 +197,12 @@ def _should_skip_entry(
     return False
 
 def _process_file_node(entry: os.DirEntry, root_abs_norm: str, visited_inodes: Set[int]) -> int:
-    """
-    Calcula el tamaño de un archivo individual tras validar accesibilidad y unicidad mediante stat.
-    """
+    """Calcula el tamaño de un archivo individual tras validar accesibilidad."""
     if not entry.is_file(): return 0
     if not _ensure_within_base(entry.path, root_abs_norm): return 0
-    # Validación defensiva extra: asegurar que el nodo individual no sea restringido
     if not is_safe_to_modify(Path(entry.path)): return 0
     try:
         st = entry.stat(follow_symlinks=False)
-        # Solo procesamos si no fue contado y el sistema permite lectura
         if st.st_ino not in visited_inodes and os.access(entry.path, os.R_OK):
             visited_inodes.add(st.st_ino)
             return st.st_size
@@ -231,9 +218,7 @@ def _sum_directory_recursive(
     visited_dirs: VisitedDirs,
     depth: int = 0
 ) -> ScanResult:
-    """
-    Recorre jerárquicamente un directorio de caché con memorización de nodos.
-    """
+    """Recorre jerárquicamente un directorio de caché con memorización de nodos."""
     if depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)
     
@@ -289,6 +274,7 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
 @safe_path_operation(Path())
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Resuelve rutas absolutas a partir de la estructura predefinida."""
+    if not isinstance(real_base, Path) or not rel_str: return Path()
     target: Path = real_base.joinpath(*rel_str.split("\\"))
     if not target.exists(): return Path()
     target_res = target.resolve(strict=True)

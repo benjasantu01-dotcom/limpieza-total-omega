@@ -255,8 +255,9 @@ def severity_color(severity: Optional[str]) -> ColorHex:
 def severity_label(severity: Optional[str]) -> str:
     """Retorna la etiqueta legible para una severidad."""
     sev = _parse_severity(severity)
-    if sev:
-        return SEVERITY_STYLES[sev][1]
+    style = SEVERITY_STYLES.get(sev)
+    if style:
+        return style[1]
     return severity.capitalize() if isinstance(severity, str) else "Desconocido"
 
 def severity_icon(severity: Optional[str]) -> str:
@@ -533,8 +534,7 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         val = max(0.0, min(100.0, val))
         
         diam = max(20, min(2048, int(size)))
-        max_thick = (diam // 2) - 1
-        thick = max(2, min(int(thickness), max_thick))
+        thick = max(2, min(int(thickness), (diam // 2) - 1))
         
         cx, cy = float(canvas_x), float(canvas_y)
         if not math.isfinite(cx) or not math.isfinite(cy): return

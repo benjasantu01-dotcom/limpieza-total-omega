@@ -51,7 +51,7 @@ Inode: TypeAlias = Tuple[int, int]
 SizeReport: TypeAlias = Tuple[int, int]
 
 
-def _safe_stat(path: str) -> Optional[os.stat_result]:
+def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
     """
     Intenta recuperar los metadatos de un archivo sin seguir enlaces simbólicos.
     
@@ -59,12 +59,13 @@ def _safe_stat(path: str) -> Optional[os.stat_result]:
         os.stat_result si es accesible, None en caso de error de acceso (permisos, 
         archivo no encontrado, rutas demasiado largas o bloqueos del sistema).
     """
+    if not path:
+        return None
     try:
-        # Longitud máxima para rutas en Windows es 260, superado eso se requiere \\?\
-        # Aquí limitamos por seguridad para evitar excepciones de SO.
-        if len(path) > 32767:
+        path_str = str(path)
+        if len(path_str) > 32767:
             return None
-        return os.stat(path, follow_symlinks=False)
+        return os.stat(path_str, follow_symlinks=False)
     except (OSError, PermissionError, FileNotFoundError, ValueError):
         return None
 
@@ -178,11 +179,14 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         # Detección de puntos de reparse (Windows) o enlaces simbólicos (Unix)
         try:
             st = entry.stat(follow_symlinks=False)
-            is_reparse = (st.st_file_attributes & 0x0400) if os.name == 'nt' else entry.is_symlink()
+            if not hasattr(st, 'st_file_attributes'): # Fallback para sistemas sin atributos extendidos
+                 is_reparse = entry.is_symlink()
+            else:
+                 is_reparse = (st.st_file_attributes & 0x0400) if os.name == 'nt' else entry.is_symlink()
+            
             if is_reparse:
                 return True
         except (OSError, PermissionError, AttributeError):
-            # Si no podemos leer los atributos, asumimos inseguro por precaución
             return True
             
         return is_protected_path(Path(entry.path))
@@ -359,7 +363,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     for path, size in walk_files(root, skip_protected):
         try:
             rel = path.relative_to(root)
-            # Manejo defensivo: si path es igual a root o no tiene partes, omitir
             if not rel.parts: continue
             top_folder = root / rel.parts[0]
             curr = stats[top_folder]

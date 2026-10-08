@@ -1665,3 +1665,32 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T05:14:34` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-10-08T05:14:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T05:14:34` Corrida terminada. Total usado hoy: 124.
+- `2026-10-08T05:20:33` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-10-08T05:21:22` Tests FALLARON:
+```
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False)
+source = <test_assistant.test_build_context_reads_fields_one_by_one.<locals>.MetricasConRuta object at 0x7f75d330b920>
+
+    def _validate_ingestion_source(self, source: Any) -> bool:
+        """Realiza comprobaciones de seguridad sobre el objeto fuente."""
+        if source is None: return False
+        # Aceptamos diccionarios o instancias de clase (objetos), excluyendo tipos simples o nulos
+>       if not (isinstance(source, dict) or (isinstance(source, object) and not isinstance(source, (str, int, float, bool, type(None)) and not isinstance(source, (list, tuple))))):
+                                                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union
+
+app/assistant.py:432: TypeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_one - TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union
+1 failed, 298 passed in 1.58s
+
+```
+- `2026-10-08T05:21:22` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `SystemContext.ingest` y `_apply_field` para manejar entradas malformadas de forma defensiva, evitando que una entrada inesperada (como `None` o tipos incompatibles) cause comportamientos indefinidos durante la ingesta de datos.
+- `2026-10-08T05:22:08` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `draw_ring` mediante la validación explícita de `size` y `thickness` antes del cálculo de `max_thick` para evitar errores matemáticos, y se reemplazó el acceso directo a `SEVERITY_STYLES` por `get()` en `severity_label` para evitar `KeyError` ante severidades inesperadas.
+- `2026-10-08T05:22:39` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `base_directories` y `_resolve_browser_path` añadiendo validaciones específicas para detectar valores None, tipos incorrectos o rutas inexistentes antes de realizar operaciones de resolución, evitando excepciones innecesarias en el bucle de escaneo.
+- `2026-10-08T05:22:58` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_safe_stat` y `walk_files` para manejar casos de rutas inexistentes o permisos denegados de forma explícita, evitando la propagación de excepciones que podrían interrumpir el escaneo, y agregué una validación de `path` en `_is_excluded_path` para prevenir `AttributeError` en entornos con metadatos corrompidos.
+- `2026-10-08T05:22:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T05:22:58` Corrida terminada. Total usado hoy: 128.
