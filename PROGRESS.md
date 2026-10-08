@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 25
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 139 | 17 | 28 | 8 | 156 |
-| 2026-10-08 | 65 | 8 | 14 | 6 | 63 |
+| 2026-10-07 | 137 | 17 | 27 | 8 | 155 |
+| 2026-10-08 | 66 | 8 | 14 | 6 | 66 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **43**
 - seguridad defensiva: **42**
-- rendimiento: **38**
-- robustez ante casos límite: **35**
+- rendimiento: **39**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **22**
 - `assistant.py`: **21**
 - `browser.py`: **21**
+- `quarantine.py`: **21**
 - `diskreport.py`: **20**
-- `healthscore.py`: **17**
-- `safety.py`: **16**
+- `healthscore.py`: **18**
 - `memory.py`: **16**
+- `safety.py`: **15**
 - `branding.py`: **14**
 - `settings.py`: **13**
 - `organizer.py`: **12**
@@ -45,6 +45,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T06:43:30` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` mediante la pre-validación de `_PIPELINE` y el uso de un diccionario de métricas local para evitar múltiples accesos a atributos mediante `getattr` o llamadas recursivas durante la iteración del bucle, minimizando el costo de resolución de nombres en tiempo de ejecución.
 - `2026-10-08T06:33:53` **branding.py** (rendimiento): Se introdujo una cache de nivel superior para los resultados de `_get_grouped_segments` dentro de `gradient_colors`, evitando la ejecución redundante de la lógica de segmentación durante el renderizado repetitivo de elementos UI con los mismos parámetros.
 - `2026-10-08T06:33:33` **assistant.py** (rendimiento): Se optimizó el acceso a métricas en `SystemContext` mediante la pre-compilación de la lógica de evaluación en `active_problems` y el uso de un diccionario de acceso directo en el `ingest`, eliminando la re-iteración sobre `_VALIDATORS` para cada campo y mejorando la eficiencia al evitar llamados repetidos a `getattr`.
 - `2026-10-08T06:32:25` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `settings.py` documentando los métodos de validación y convirtiendo los diccionarios de mapeo (`BOOL_KEYS`, `INT_KEYS`) en `frozenset` para garantizar inmutabilidad y mayor claridad semántica, alineado con el enfoque de documentación técnica.
@@ -59,4 +60,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T05:52:15` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` capturando explícitamente `PermissionError` y `OSError` al realizar operaciones críticas de sistema de archivos (`os.replace` y `os.fsync`), evitando que una falla de permisos durante el reemplazo atómico deje el archivo en un estado inconsistente o silencie el error.
 - `2026-10-08T05:51:38` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas centralizando la captura de excepciones y validando inputs críticos en `check_recent_executable_in_downloads` y `check_system_lookalike`, evitando errores silenciosos al procesar rutas o atributos de archivos inexistentes o bloqueados.
 - `2026-10-08T05:44:47` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_owned_by_system` implementando un manejo de errores más preciso en la invocación de `advapi32.GetNamedSecurityInfoW`, asegurando la liberación de recursos (SID) mediante `LocalFree` para prevenir fugas de memoria, tal como requiere una implementación de bajo nivel en Python usando `ctypes`.
-- `2026-10-08T05:42:23` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `purge_all` añadiendo una validación explícita para evitar que `purge_item` (llamado indirectamente vía `_is_item_purgable`) falle ante archivos que ya fueron eliminados externamente, asegurando que la limpieza del manifiesto siempre sea consistente.

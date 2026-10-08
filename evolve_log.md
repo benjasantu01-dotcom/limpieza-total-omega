@@ -1803,3 +1803,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-08T06:33:53` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se introdujo una cache de nivel superior para los resultados de `_get_grouped_segments` dentro de `gradient_colors`, evitando la ejecución redundante de la lógica de segmentación durante el renderizado repetitivo de elementos UI con los mismos parámetros.
 - `2026-10-08T06:33:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T06:33:53` Corrida terminada. Total usado hoy: 156.
+- `2026-10-08T06:42:02` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-10-08T06:42:28` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-10-08T06:42:54` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-10-08T06:43:18` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-08T06:43:30` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento de `compute_score` mediante la pre-validación de `_PIPELINE` y el uso de un diccionario de métricas local para evitar múltiples accesos a atributos mediante `getattr` o llamadas recursivas durante la iteración del bucle, minimizando el costo de resolución de nombres en tiempo de ejecución.
+- `2026-10-08T06:43:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T06:43:30` Corrida terminada. Total usado hoy: 160.
