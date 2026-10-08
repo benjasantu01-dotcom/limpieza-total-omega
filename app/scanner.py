@@ -146,6 +146,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     try:
         if not path or not path.parent:
             return None
+        # Validación de padre antes de comparación
         if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
             return None
         stats = _safe_stat(entry) if entry else None
@@ -154,18 +155,22 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
             if isinstance(mtime, (int, float)) and mtime > 0:
                 if (now_ts - float(mtime)) < (SCAN_LIMITS.recent_hours * 3600):
                     return Suspicion(path, f"Ejecutable reciente (<{SCAN_LIMITS.recent_hours}h)", "info")
-    except (OSError, AttributeError, ValueError):
-        pass
+    except (OSError, AttributeError, ValueError, TypeError):
+        logger.debug(f"Error analizando tiempos en {path}")
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """HEURÍSTICA: Detección de 'Binary Planting' fuera de System32."""
     try:
-        if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
-            if SYSTEM32_LOWER not in str(path).lower():
+        if not path or not path.name:
+            return None
+        if path.name.lower() in SYSTEM_LOOKALIKES:
+            # Uso de resguardo para obtener el path string de forma segura
+            path_str = str(path).lower()
+            if SYSTEM32_LOWER not in path_str:
                 return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
-    except (OSError, ValueError, AttributeError):
-        pass
+    except (OSError, ValueError, AttributeError, TypeError):
+        logger.debug(f"Error analizando lookalike en {path}")
     return None
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:

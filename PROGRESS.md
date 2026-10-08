@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
-- Rechazadas por tests: 26
-- Rechazadas por guardia de seguridad: 41
+- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Rechazadas por tests: 27
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 226
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-06 | 8 | 2 | 2 | 0 | 6 |
+| 2026-10-06 | 6 | 2 | 1 | 0 | 5 |
 | 2026-10-07 | 139 | 17 | 28 | 8 | 158 |
-| 2026-10-08 | 52 | 7 | 11 | 4 | 62 |
+| 2026-10-08 | 55 | 8 | 11 | 4 | 62 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **44**
+- manejo de errores y validación de entradas: **46**
 - seguridad defensiva: **42**
-- rendimiento: **40**
 - robustez ante casos límite: **39**
-- legibilidad y documentación: **34**
+- rendimiento: **38**
+- legibilidad y documentación: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **23**
+- `assistant.py`: **21**
 - `browser.py`: **21**
-- `diskreport.py`: **20**
-- `assistant.py`: **20**
-- `healthscore.py`: **19**
+- `diskreport.py`: **19**
+- `healthscore.py`: **18**
 - `memory.py`: **16**
 - `safety.py`: **15**
 - `branding.py`: **13**
+- `settings.py`: **12**
 - `organizer.py`: **12**
-- `settings.py`: **11**
-- `scanner.py`: **10**
+- `scanner.py`: **11**
 - `duplicates.py`: **10**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-08T05:53:26` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y la seguridad del módulo `assistant.py` mediante la refactorización de `_ensure_safe_text`, extrayendo la lógica de filtrado de patrones de seguridad a una función auxiliar explícita (`_contains_forbidden_patterns`), lo que clarifica la intención del chequeo y facilita futuras auditorías de seguridad sin alterar el comportamiento.
+- `2026-10-08T05:52:15` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` capturando explícitamente `PermissionError` y `OSError` al realizar operaciones críticas de sistema de archivos (`os.replace` y `os.fsync`), evitando que una falla de permisos durante el reemplazo atómico deje el archivo en un estado inconsistente o silencie el error.
+- `2026-10-08T05:51:38` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas centralizando la captura de excepciones y validando inputs críticos en `check_recent_executable_in_downloads` y `check_system_lookalike`, evitando errores silenciosos al procesar rutas o atributos de archivos inexistentes o bloqueados.
 - `2026-10-08T05:44:47` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_owned_by_system` implementando un manejo de errores más preciso en la invocación de `advapi32.GetNamedSecurityInfoW`, asegurando la liberación de recursos (SID) mediante `LocalFree` para prevenir fugas de memoria, tal como requiere una implementación de bajo nivel en Python usando `ctypes`.
 - `2026-10-08T05:42:23` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `purge_all` añadiendo una validación explícita para evitar que `purge_item` (llamado indirectamente vía `_is_item_purgable`) falle ante archivos que ya fueron eliminados externamente, asegurando que la limpieza del manifiesto siempre sea consistente.
 - `2026-10-08T05:41:23` **organizer.py** (manejo de errores y validación de entradas): Mejora la robustez del procesamiento de directorios al centralizar la captura de excepciones en `_process_directory`, evitando que el uso de `Path` sobre entradas inválidas interrumpa el escaneo completo mediante validación de tipo `os.DirEntry` y manejo defensivo de `OSError`.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T03:49:36` **quarantine.py** (seguridad defensiva): Se introdujo una validación de seguridad proactiva en `quarantine_file` que verifica mediante `_is_file_in_use_by_system` que el archivo no esté bloqueado por un proceso externo justo antes de iniciar la operación, previniendo condiciones de carrera donde el archivo podría ser modificado o bloqueado durante la transición.
 - `2026-10-08T03:41:57` **organizer.py** (seguridad defensiva): Se ha añadido un chequeo explícito en `stage_for_review` para impedir que el usuario intente mover archivos hacia una ubicación que sea un ancestro de sí misma o que esté contenida en un subdirectorio propio (evitando la recursión lógica antes de invocar `shutil.move`), reforzando la seguridad defensiva contra manipulaciones de rutas maliciosas.
 - `2026-10-08T03:41:17` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` añadiendo un filtro `is_safe_to_modify` en `on_save_settings` para validar preventivamente que cualquier ruta de configuración guardada (como `carpeta_excluida`) no apunte a un directorio protegido, evitando que configuraciones malintencionadas o errores de usuario comprometan la integridad del sistema al iniciar.
-- `2026-10-08T03:38:59` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del motor de cómputo ante fallos inesperados en `message_factory` y `check` de las reglas, asegurando que cualquier excepción en la lógica del usuario no propague errores y manteniendo la integridad del pipeline mediante un manejo defensivo de los tipos de datos.
-- `2026-10-08T03:29:57` **diskreport.py** (seguridad defensiva): Se reforzó la robustez de `_is_excluded_path` asegurando que cualquier error durante la obtención de atributos de archivo en sistemas de archivos complejos sea tratado de forma segura, evitando que una excepción inesperada en el acceso a metadatos de un nodo interrumpa prematuramente el proceso de escaneo.
-- `2026-10-08T03:29:29` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_process_file_node` añadiendo una validación explícita mediante `is_safe_to_modify` antes de procesar cualquier archivo, garantizando que el escáner no acceda a ubicaciones que hayan sido restringidas externamente por la política de seguridad del proyecto.

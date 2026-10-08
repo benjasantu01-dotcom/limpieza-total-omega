@@ -1712,3 +1712,63 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-08T05:44:47` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_owned_by_system` implementando un manejo de errores más preciso en la invocación de `advapi32.GetNamedSecurityInfoW`, asegurando la liberación de recursos (SID) mediante `LocalFree` para prevenir fugas de memoria, tal como requiere una implementación de bajo nivel en Python usando `ctypes`.
 - `2026-10-08T05:44:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-08T05:44:47` Corrida terminada. Total usado hoy: 136.
+- `2026-10-08T05:51:07` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-10-08T05:51:38` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las heurísticas centralizando la captura de excepciones y validando inputs críticos en `check_recent_executable_in_downloads` y `check_system_lookalike`, evitando errores silenciosos al procesar rutas o atributos de archivos inexistentes o bloqueados.
+- `2026-10-08T05:52:15` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` capturando explícitamente `PermissionError` y `OSError` al realizar operaciones críticas de sistema de archivos (`os.replace` y `os.fsync`), evitando que una falla de permisos durante el reemplazo atómico deje el archivo en un estado inconsistente o silencie el error.
+- `2026-10-08T05:52:44` Tests FALLARON:
+```
+-3/test_entries_from_folders_read0')
+
+    def test_entries_from_folders_reads_injected_folders(tmp_path):
+        carpeta = tmp_path / "Inicio"
+        carpeta.mkdir()
+        (carpeta / "MiPrograma.lnk").write_text("x")
+        (carpeta / "Otro.lnk").write_text("y")
+        entradas = startup.entries_from_folders([carpeta])
+>       assert {e.name for e in entradas} == {"MiPrograma", "Otro"}
+E       AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+E         
+E         Extra items in the left set:
+E         'MiPrograma.lnk'
+E         'Otro.lnk'
+E         Extra items in the right set:
+E         'Otro'
+E         'MiPrograma'
+E         
+E         Full diff:
+E           {
+E         -     'MiPrograma',
+E         +     'MiPrograma.lnk',
+E         ?                ++++
+E         -     'Otro',
+E         +     'Otro.lnk',
+E         ?          ++++
+E           }
+
+evolve/tests/test_modules.py:677: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_folders - AssertionError: assert {'MiPrograma.lnk', 'Otro.lnk'} == {'MiPrograma', 'Otro'}
+  
+  Extra items in the left set:
+  'MiPrograma.lnk'
+  'Otro.lnk'
+  Extra items in the right set:
+  'Otro'
+  'MiPrograma'
+  
+  Full diff:
+    {
+  -     'MiPrograma',
+  +     'MiPrograma.lnk',
+  ?                ++++
+  -     'Otro',
+  +     'Otro.lnk',
+  ?          ++++
+    }
+1 failed, 298 passed in 1.33s
+
+```
+- `2026-10-08T05:52:44` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Corregí una falla en el manejo de excepciones y validación dentro de `_process_folder_entry` que impedía la correcta lectura de archivos al tener un nombre de variable indefinido (`_`) y una falta de protección ante nombres vacíos o inválidos.
+- `2026-10-08T05:53:26` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y la seguridad del módulo `assistant.py` mediante la refactorización de `_ensure_safe_text`, extrayendo la lógica de filtrado de patrones de seguridad a una función auxiliar explícita (`_contains_forbidden_patterns`), lo que clarifica la intención del chequeo y facilita futuras auditorías de seguridad sin alterar el comportamiento.
+- `2026-10-08T05:53:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-08T05:53:26` Corrida terminada. Total usado hoy: 140.

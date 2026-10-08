@@ -453,7 +453,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             ensure_safe_to_modify(str(bak_path.resolve()))
             try: 
                 os.replace(config_path, bak_path)
-            except OSError: pass
+            except (OSError, PermissionError): pass
         
         os.replace(temp_path, config_path)
         

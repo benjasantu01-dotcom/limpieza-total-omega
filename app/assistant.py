@@ -482,6 +482,10 @@ def _is_safe_path_input(text: str) -> bool:
     if _REGEX_ANSI_ESCAPE.search(text) or _REGEX_CONTROL_CHARS.search(text): return True
     return bool(_REGEX_STRUCTURE_INJECTION.search(text) or _REGEX_PATH_TRAVERSAL.search(text) or _REGEX_SYSTEM_PATHS.search(text))
 
+def _contains_forbidden_patterns(text: str) -> bool:
+    """Verifica si el texto contiene patrones de seguridad prohibidos."""
+    return any(pattern.search(text) for pattern in SECURITY_PATTERNS)
+
 def _ensure_safe_text(text: Any) -> bool:
     """Realiza una desinfección estricta sobre cadenas."""
     if not isinstance(text, str) or not text or len(text) > _MAX_TEXT_LENGTH:
@@ -492,7 +496,7 @@ def _ensure_safe_text(text: Any) -> bool:
     if _is_safe_path_input(text):
         return False
     
-    return not any(pattern.search(text) for pattern in SECURITY_PATTERNS)
+    return not _contains_forbidden_patterns(text)
 
 def _get_source_value(source: Any, key: str) -> Any:
     """Acceso seguro a atributos evitando recursión, inyecciones de clase y acceso a métodos."""
