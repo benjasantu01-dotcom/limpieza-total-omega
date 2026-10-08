@@ -974,8 +974,10 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
     return False
 
 
-def _is_item_purgable(file_path: Path, item: QuarantineItem) -> bool:
+def _is_item_purgable(file_path: Path, item: QuarantineItem, base_dir: Path) -> bool:
     """Valida los requisitos de seguridad antes de proceder con el borrado."""
+    if not is_within_directory(file_path, base_dir):
+        return False
     if _is_file_in_use_by_system(file_path):
         return False
     if not file_path.exists():
@@ -1007,7 +1009,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 continue
             item = item_map.get(f.name)
             if item:
-                if not f.exists() or _is_item_purgable(f, item):
+                if not f.exists() or _is_item_purgable(f, item, quarantine_root):
                     purged_ids.add(item.item_id)
         
         if purged_ids:

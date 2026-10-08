@@ -183,7 +183,8 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         if not src.is_file() or stat_result.st_nlink > 1: return False
         if src.resolve() != src: return False
         
-        if not is_safe_to_modify(src) or is_protected_path(dest) or not _validate_path_security(src, dest): return False
+        # Verificar protección tanto en archivo como en el padre donde residirá
+        if not is_safe_to_modify(src) or is_protected_path(dest) or is_protected_path(dest.parent) or not _validate_path_security(src, dest): return False
         
         target_dir = dest.parent if dest.exists() else dest
         if not target_dir.is_dir() or not os.access(target_dir, os.W_OK): return False

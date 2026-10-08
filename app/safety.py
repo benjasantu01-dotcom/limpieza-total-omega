@@ -830,8 +830,9 @@ def _validate_path_components(path: Path) -> None:
     for part in path.parts:
         if part in (os.sep, os.altsep): continue
         current_check = current_check / part
-        if current_check.exists() and _is_system_directory_junction(str(current_check)):
-            raise UnsafePathError(f"Punto de reparse detectado en el camino: {current_check}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+        if current_check.exists():
+            if current_check.is_symlink() or _is_system_directory_junction(str(current_check)):
+                raise UnsafePathError(f"Punto de reparse detectado en el camino: {current_check}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
