@@ -64,6 +64,7 @@ class SuspicionCheck(Protocol):
     def __call__(self, path: Path, entry: Optional[os.DirEntry], now_ts: float) -> Optional[Suspicion]: ...
 
 ScanResult: TypeAlias = List[Suspicion]
+# Tupla: (Ruta absoluta del directorio, Profundidad actual de recursión)
 DirectoryStack: TypeAlias = List[Tuple[str, int]]
 
 # Expresiones regulares para detección de ofuscación y riesgos en nombres
@@ -87,7 +88,6 @@ def _is_readable(path: Path) -> bool:
     if not isinstance(path, Path):
         return False
     try:
-        # Validación de estado previo para evitar excepciones innecesarias en sistemas volátiles
         return path.is_file() and os.access(path, os.R_OK)
     except (OSError, PermissionError, ValueError, AttributeError):
         return False
@@ -115,7 +115,6 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     if not isinstance(entry, os.DirEntry):
         return None
     try:
-        # Validación de tipo antes de stat para evitar condiciones de carrera
         if not entry.is_file(follow_symlinks=False) or entry.is_symlink() or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask):
             return None
         stats = entry.stat(follow_symlinks=False)
@@ -146,7 +145,6 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     try:
         if not path or not path.parent:
             return None
-        # Validación de padre antes de comparación
         if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
             return None
         stats = _safe_stat(entry) if entry else None
@@ -165,7 +163,6 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
         if not path or not path.name:
             return None
         if path.name.lower() in SYSTEM_LOOKALIKES:
-            # Uso de resguardo para obtener el path string de forma segura
             path_str = str(path).lower()
             if SYSTEM32_LOWER not in path_str:
                 return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
@@ -226,7 +223,6 @@ class Scanner:
             return False
             
         try:
-            # Validación estricta anti-reparse points ANTES de intentar resolver la ruta
             if entry.is_symlink() or self._is_reparse_point(entry):
                 return False
                 
@@ -268,7 +264,6 @@ class Scanner:
             return
 
         try:
-            # Verificación de existencia real antes de delegar el procesamiento
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, directory_stack, current_depth)
             elif entry.is_file(follow_symlinks=False):
@@ -283,7 +278,8 @@ class Scanner:
         """
         Ejecuta la suite de heurísticas sobre el archivo detectado.
         
-        Itera sobre ALL_CHECKS aplicando validaciones de seguridad básicas.
+        Requiere que el path sea legible. Itera sobre ALL_CHECKS aplicando 
+        validaciones de seguridad básicas.
         """
         if not _is_readable(path):
             return

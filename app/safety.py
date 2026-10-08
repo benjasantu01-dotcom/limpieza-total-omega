@@ -33,11 +33,11 @@ class SafetyAction(Enum):
 
 class SecurityDescriptor(NamedTuple):
     """
-    Estado consolidado de un archivo tras consultar metadatos del sistema.
+    Representa el estado de seguridad consolidado de una ruta tras auditar 
+    sus metadatos de sistema (Win32 Attributes) y su estado de bloqueo (I/O).
     
-    El descriptor se construye consultando atributos de bajo nivel (Win32 API)
-    y realizando pruebas de bloqueo (I/O) para determinar si la manipulación
-    del archivo es segura o debe ser denegada por integridad del sistema.
+    Esta estructura actúa como caché intermedia para evitar consultas redundantes 
+    a kernel32.dll durante la validación recursiva de directorios.
     """
     attrs: int
     is_protected_system: bool
@@ -46,15 +46,16 @@ class SecurityDescriptor(NamedTuple):
     is_reparse: bool
     
     def has_flag(self, flag: Win32Attr) -> bool:
-        """Verifica si un atributo específico está presente en el descriptor."""
+        """Verifica si un bit específico de los atributos Win32 está activo."""
         return bool(self.attrs & flag)
 
 class FileMetadata(TypedDict):
     """
-    Representación de los atributos clave para auditoría de integridad.
+    Estructura de datos simplificada para exportar el perfil de seguridad de un archivo.
     
-    Utilizado por módulos externos para decidir si un archivo cumple
-    con los criterios de limpieza o escaneo seguros.
+    Es el contrato utilizado por módulos externos para decidir si un objeto de 
+    sistema es apto para operaciones de limpieza o indexación sin llamar 
+    directamente a la capa de seguridad.
     """
     is_reparse: bool
     is_system_hidden: bool
