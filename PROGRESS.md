@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 25
-- Rechazadas por guardia de seguridad: 40
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 217
 
@@ -16,37 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 48 | 6 | 10 | 4 | 62 |
+| 2026-10-07 | 45 | 6 | 10 | 4 | 61 |
 | 2026-10-08 | 139 | 18 | 28 | 12 | 153 |
-| 2026-10-09 | 16 | 1 | 2 | 3 | 2 |
+| 2026-10-09 | 17 | 1 | 4 | 3 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
-- seguridad defensiva: **43**
-- rendimiento: **43**
+- rendimiento: **44**
 - legibilidad y documentación: **42**
+- seguridad defensiva: **40**
 - robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
-- `browser.py`: **20**
+- `diskreport.py`: **21**
 - `quarantine.py`: **20**
+- `browser.py`: **19**
+- `safety.py`: **18**
 - `healthscore.py`: **17**
 - `memory.py`: **17**
-- `safety.py`: **17**
 - `assistant.py`: **17**
 - `organizer.py`: **16**
 - `scanner.py`: **13**
 - `branding.py`: **13**
-- `duplicates.py`: **12**
 - `settings.py`: **11**
+- `duplicates.py`: **11**
 - `main.py`: **7**
 - `startup.py`: **1**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-09T01:09:36` **safety.py** (rendimiento): Se optimizó el rendimiento del módulo `safety.py` sustituyendo las consultas repetitivas de atributos mediante `ctypes.windll.kernel32` en el bucle de validación de componentes de ruta por una búsqueda eficiente en caché, aprovechando el decorador `lru_cache` existente para minimizar el acceso a disco.
 - `2026-10-09T01:00:52` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y la carga de manifiestos evitando iteraciones redundantes y centralizando la gestión de caché, reemplazando búsquedas lineales `O(N)` por `O(1)` mediante diccionarios y utilizando `set` para la exclusión de ítems.
 - `2026-10-09T00:59:56` **memory.py** (rendimiento): Se optimizó el rendimiento de `top_memory_processes` reemplazando la consulta secuencial y potencialmente lenta de cada proceso mediante `_get_proc_memory_by_pid` (que abre y cierra handles de kernel 4096 veces en el peor caso) por una recolección selectiva que primero filtra la lista de PIDs mediante el manejo interno de la caché, reduciendo drásticamente las llamadas al sistema.
 - `2026-10-09T00:59:26` **main.py** (rendimiento): Se implementó un sistema de "lazy-initialization" en la recolección de métricas de `on_full_analysis` para evitar el cálculo de snapshots de memoria y consultas al sistema si los datos ya están en caché, reduciendo drásticamente la carga de CPU y disco al refrescar la pestaña de Salud.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-09T00:20:22` **organizer.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `organizer.py` mediante la adición de Type Hints más precisos, unificación de criterios de validación de rutas y una mejor documentación mediante docstrings que explican las decisiones de diseño para las operaciones de disco.
 - `2026-10-09T00:18:03` **healthscore.py** (legibilidad y documentación): Mejora la documentación técnica y legibilidad del motor de scoring mediante el uso de Type Hints más precisos, la extracción de una lógica de validación de pesos en `WEIGHTS` hacia una función explícita y la aclaración de las responsabilidades de los tipos `SystemMetrics` y `HealthResult`.
 - `2026-10-09T00:09:15` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en las funciones de soporte (`_safe_stat`, `_bytes_to_mb`, `_validate_limit`) y la clarificación de tipos en las colecciones de datos, facilitando la comprensión del flujo de métricas sin alterar la lógica de escaneo.
-- `2026-10-09T00:08:49` **browser.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se reemplazaron los comentarios vagos por docstrings explicativos que aclaran el propósito de cada función y los límites de seguridad en las operaciones de escaneo.

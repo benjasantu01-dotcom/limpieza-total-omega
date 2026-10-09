@@ -125,7 +125,7 @@ def _is_path_too_long(path_str: str) -> bool:
     """Verifica si la longitud de la cadena excede el estándar MAX_PATH."""
     return len(path_str) > MAX_PATH_LENGTH
 
-@lru_cache(maxsize=2048)
+@lru_cache(maxsize=4096)
 def _get_file_attrs(path_str: Optional[str]) -> int:
     """
     Consulta los atributos de archivo mediante la API Win32 GetFileAttributesW.
@@ -835,6 +835,7 @@ def _validate_path_components(path: Path) -> None:
     for part in path.parts:
         if part in (os.sep, os.altsep): continue
         current_check = current_check / part
+        # Uso de cache: _is_system_directory_junction llama internamente a _get_file_attrs(cacheada)
         if current_check.exists():
             if current_check.is_symlink() or _is_system_directory_junction(str(current_check)):
                 raise UnsafePathError(f"Punto de reparse detectado en el camino: {current_check}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
