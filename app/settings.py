@@ -391,17 +391,14 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """
     Asegura consistencia de tipos y reglas de negocio, revertiendo a defaults ante inconsistencias.
     """
-    final: AppSettings = DEFAULTS.copy() # type: ignore
-    try:
-        for key, expected_val in DEFAULTS.items():
-            if key in settings and isinstance(settings[key], type(expected_val)):
-                final[key] = settings[key] # type: ignore
+    final: AppSettings = DEFAULTS.copy()
+    for key, val in settings.items():
+        if key in DEFAULTS and isinstance(val, type(DEFAULTS[key])):
+            final[key] = val # type: ignore
         
-        if final["asistente_activado"] and not (final["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
-            final["asistente_activado"] = False
-        return final
-    except (ValueError, TypeError, AttributeError):
-        return DEFAULTS.copy()
+    if final["asistente_activado"] and not (final["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
+        final["asistente_activado"] = False
+    return final
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     """

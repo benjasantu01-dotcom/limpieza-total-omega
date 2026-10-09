@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **202** (40.1% de aceptación)
-- Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 44
+- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Rechazadas por tests: 25
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 22 | 3 | 5 | 4 | 20 |
+| 2026-10-07 | 19 | 3 | 4 | 4 | 20 |
 | 2026-10-08 | 139 | 18 | 28 | 12 | 153 |
-| 2026-10-09 | 41 | 2 | 11 | 7 | 39 |
+| 2026-10-09 | 42 | 4 | 11 | 7 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **44**
-- rendimiento: **42**
+- manejo de errores y validación de entradas: **45**
 - seguridad defensiva: **42**
+- rendimiento: **39**
 - robustez ante casos límite: **38**
 - legibilidad y documentación: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **21**
 - `quarantine.py`: **20**
 - `safety.py`: **19**
-- `browser.py`: **17**
 - `organizer.py`: **17**
 - `healthscore.py`: **17**
 - `memory.py`: **17**
 - `assistant.py`: **16**
+- `browser.py`: **16**
 - `branding.py`: **13**
-- `duplicates.py`: **12**
+- `settings.py`: **12**
 - `scanner.py`: **12**
-- `settings.py`: **11**
+- `duplicates.py`: **11**
 - `main.py`: **7**
 - `startup.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-09T04:23:47` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_coerce_and_verify` reemplazando la lógica de comparación de tipos frágil por una validación estricta basada en el esquema de `DEFAULTS`, asegurando que cualquier valor corrupto o mal tipado en el JSON sea reemplazado por su valor de fábrica, evitando errores en tiempo de ejecución.
 - `2026-10-09T04:13:21` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una gestión de errores más robusta en `save_manifest` y `load_manifest` para prevenir la corrupción del estado del manifiesto, asegurando que las excepciones durante la serialización o escritura atómica no dejen al usuario en un estado inconsistente y aportando mensajes de error más informativos.
 - `2026-10-09T04:12:42` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando una validación explícita de `is_safe_to_modify` como medida de defensa en profundidad antes de realizar operaciones de disco, evitando que excepciones inesperadas o estados inconsistentes de `Path` interrumpan la ejecución.
 - `2026-10-09T04:12:18` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de parseo en `memory.py` mediante la validación estricta de tipos y la captura de errores específicos (`ValueError`, `OverflowError`, `TypeError`) en los puntos de entrada de datos externos, garantizando que el módulo no falle ante entradas malformadas o inesperadas.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-09T02:01:20` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_excluded_path` asegurando que la validación de rutas no solo dependa de `is_protected_path`, sino que realice un chequeo estricto de la ruta física mediante `resolve()` para evitar ataques de manipulación de rutas simbólicas (path traversal).
 - `2026-10-09T02:00:43` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `save_logo_svg` validando la existencia de la ruta padre antes de proceder, asegurando que la operación de escritura sea robusta y evitando errores de sistema innecesarios.
 - `2026-10-09T02:00:07` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_build_payload` y `_call_gemini` para prevenir la construcción de rutas arbitrarias o ataques de inyección mediante la validación explícita de `model` y `api_key` contra el entorno, asegurando que `urllib` solo interactúe con el endpoint esperado.
-- `2026-10-09T01:51:26` **startup.py** (robustez ante casos límite): Mejoré la robustez de `_is_reserved_device_name` y `_resolve_and_cache_path` añadiendo un manejo explícito para rutas con prefijos de dispositivo (ej. `\\.\` o `\\?\`) que pueden causar bloqueos o comportamientos impredecibles al interactuar con `pathlib` en Windows, asegurando que el motor de escaneo no falle ante rutas inválidas o dispositivos del sistema.

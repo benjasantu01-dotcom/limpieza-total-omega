@@ -402,3 +402,52 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-09T04:13:29` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-10-09T04:13:29` Rotación — log: 1414 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T04:13:29` Corrida terminada. Total usado hoy: 100.
+- `2026-10-09T04:22:07` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-10-09T04:22:51` Tests FALLARON:
+```
+ne_records_the_original_path_for_restoring - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-1/test_quarantine_records_the_or0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-1/test_restore_puts_the_file_bac0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-1/test_restore_into_a_system_pat0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-1/test_purge_item_cannot_delete_0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-1/test_purge_all_only_deletes_in0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-1/test_quarantine_two_files_with0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-1/test_quarantine_summary_report0/_Cuarentena
+26 failed, 273 passed in 1.90s
+
+```
+- `2026-10-09T04:22:51` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Mejoré el manejo de errores en `_get_security_descriptor_cached` y `ensure_safe_to_modify` implementando validaciones de tipo explícitas y capturando excepciones de `ctypes` para evitar que la validación colapse ante estados de sistema inesperados o cambios repentinos en el FS.
+- `2026-10-09T04:23:17` Tests FALLARON:
+```
+____
+
+    def test_scanner_flags_system_lookalike_outside_system32():
+        # Se usa PureWindowsPath a propósito: los tests corren en Linux (GitHub
+        # Actions) y ahí un Path normal no reconoce las barras invertidas, así
+        # que `.name` devolvería la ruta entera y el test fallaría siempre.
+        result = scanner.check_system_lookalike(PureWindowsPath(r"C:\Users\test\Downloads\svchost.exe"))
+>       assert result is not None
+E       assert None is not None
+
+evolve/tests/test_basic.py:201: AssertionError
+________________ test_scanner_lookalike_logic_is_os_independent ________________
+
+    def test_scanner_lookalike_logic_is_os_independent():
+        # La misma heurística tiene que valer con rutas estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+        flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+>       assert flagged is not None and flagged.severity == "warning"
+E       assert (None is not None)
+
+evolve/tests/test_basic.py:213: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_double_extension_detection - assert None is not None
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - assert None is not None
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - assert (None is not None)
+3 failed, 296 passed in 1.54s
+
+```
+- `2026-10-09T04:23:17` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de las heurísticas centralizando la validación de archivos mediante la función `_is_readable`, asegurando que todas las funciones de análisis verifiquen la existencia y accesibilidad antes de operar, evitando capturas genéricas y reforzando el manejo de errores en tiempo de ejecución.
+- `2026-10-09T04:23:47` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_coerce_and_verify` reemplazando la lógica de comparación de tipos frágil por una validación estricta basada en el esquema de `DEFAULTS`, asegurando que cualquier valor corrupto o mal tipado en el JSON sea reemplazado por su valor de fábrica, evitando errores en tiempo de ejecución.
+- `2026-10-09T04:23:57` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-09T04:23:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T04:23:57` Corrida terminada. Total usado hoy: 104.
