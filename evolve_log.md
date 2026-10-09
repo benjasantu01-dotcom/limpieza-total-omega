@@ -505,3 +505,44 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-09T05:36:47` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._handle_directory, Scanner._is_inside_base_root, Scanner._is_relevant_extension, Scanner._is_reparse_point
 - `2026-10-09T05:36:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T05:36:47` Corrida terminada. Total usado hoy: 132.
+- `2026-10-09T05:44:10` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-10-09T05:44:39` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _Validators._check_path_safety, _Validators._run_safety_checks
+- `2026-10-09T05:45:05` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.05s
+
+```
+- `2026-10-09T05:45:05` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó `_resolve_and_cache_path` mediante la validación temprana de `is_protected_path` y la consolidación de los estados de caché, evitando llamadas redundantes a `Path.resolve()` y al sistema de archivos para rutas ya descartadas o resueltas previamente.
+- `2026-10-09T05:46:13` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_safe_handler_wrapper` y `SystemContext.ingest` para manejar casos donde el contexto podría estar parcialmente corrompido o ser inaccesible debido a estados inconsistentes, evitando que errores de acceso a memoria o atributos mal formados interrumpan el flujo de la aplicación.
+- `2026-10-09T05:47:08` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó `save_logo_svg` para prevenir la creación inadvertida de archivos en rutas de sistema o directorios protegidos mediante una verificación previa explícita utilizando `is_protected_path` y `is_safe_to_modify`, además de añadir una comprobación de existencia y permisos antes de la escritura.
+- `2026-10-09T05:47:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T05:47:08` Corrida terminada. Total usado hoy: 136.

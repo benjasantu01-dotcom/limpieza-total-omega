@@ -106,15 +106,17 @@ def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Calla
     """
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
-        if not isinstance(ctx, SystemContext) or ctx.is_empty: 
-            return Answer("Primero analizá el sistema.")
+        if not isinstance(ctx, SystemContext): 
+            return Answer("Error de contexto.")
         try:
+            if ctx.is_empty:
+                return Answer("Primero analizá el sistema.")
             result: Answer = func(ctx, q)
             if isinstance(result, Answer) and result.text:
                 return result
-            logging.error(f"Handler {func.__name__} devolvió respuesta vacía o inválida")
-        except Exception:
-            logging.error(f"Falla inesperada en handler {func.__name__}")
+            logging.error(f"Handler {func.__name__} devolvió respuesta vacía")
+        except Exception as e:
+            logging.error(f"Falla inesperada en handler {func.__name__}: {e}")
         return Answer("Error al procesar la respuesta.")
     return wrapper
 
@@ -377,10 +379,13 @@ class SystemContext:
 
     def get_metric(self, key: str, default: float) -> float:
         """Retorna una métrica numérica validada o el valor por defecto si falla."""
-        val = getattr(self, key, None)
-        if not _check_metric_integrity(val):
+        try:
+            val = getattr(self, key, None)
+            if not _check_metric_integrity(val):
+                return default
+            return float(val)
+        except AttributeError:
             return default
-        return float(val)
 
     @property
     def is_empty(self) -> bool:

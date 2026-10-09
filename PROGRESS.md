@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
-- Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 52
+- Mejoras aceptadas: **202** (40.1% de aceptación)
+- Rechazadas por tests: 23
+- Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 6 | 0 | 2 | 1 | 13 |
+| 2026-10-07 | 3 | 0 | 2 | 1 | 12 |
 | 2026-10-08 | 139 | 18 | 28 | 12 | 153 |
-| 2026-10-09 | 58 | 4 | 22 | 7 | 41 |
+| 2026-10-09 | 60 | 5 | 23 | 7 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **45**
 - rendimiento: **43**
-- seguridad defensiva: **40**
-- robustez ante casos límite: **30**
+- seguridad defensiva: **37**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `quarantine.py`: **20**
-- `memory.py`: **18**
 - `safety.py`: **18**
 - `organizer.py`: **17**
-- `healthscore.py`: **16**
+- `memory.py`: **17**
+- `assistant.py`: **16**
 - `browser.py`: **16**
-- `assistant.py`: **15**
-- `branding.py`: **15**
+- `branding.py`: **16**
+- `healthscore.py`: **15**
 - `scanner.py`: **13**
-- `duplicates.py`: **12**
 - `settings.py`: **11**
+- `duplicates.py`: **11**
 - `main.py`: **8**
 - `startup.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-09T05:47:08` **branding.py** (robustez ante casos límite): Se reforzó `save_logo_svg` para prevenir la creación inadvertida de archivos en rutas de sistema o directorios protegidos mediante una verificación previa explícita utilizando `is_protected_path` y `is_safe_to_modify`, además de añadir una comprobación de existencia y permisos antes de la escritura.
+- `2026-10-09T05:46:13` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_safe_handler_wrapper` y `SystemContext.ingest` para manejar casos donde el contexto podría estar parcialmente corrompido o ser inaccesible debido a estados inconsistentes, evitando que errores de acceso a memoria o atributos mal formados interrumpan el flujo de la aplicación.
 - `2026-10-09T05:34:43` **quarantine.py** (rendimiento): Optimicé el método `purge_all` para evitar lecturas innecesarias del disco y mejorar la complejidad algorítmica al iterar una sola vez sobre los archivos del directorio, utilizando un conjunto (set) para los IDs purgados.
 - `2026-10-09T05:25:19` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la creación de listas intermedias y el filtrado redundante mediante un generador eficiente, además de reducir el uso innecesario de memoria al evitar cargar todos los procesos en memoria antes de ordenarlos.
 - `2026-10-09T05:14:50` **duplicates.py** (rendimiento): Optimizé el rendimiento de la fase de recolección de candidatos en `_collect_candidates` eliminando llamadas redundantes a `stat()` y `is_valid_candidate` mediante la reutilización de los datos obtenidos durante el escaneo con `os.scandir`.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-09T04:45:14` **memory.py** (legibilidad y documentación): Se introdujeron type hints faltantes en funciones críticas, se renombró `_get_process_memory_stats` a `_query_working_set_bytes` para reflejar con precisión su propósito, y se mejoró la documentación interna mediante docstrings que explican el contexto de seguridad y el comportamiento de las APIs de Windows utilizadas.
 - `2026-10-09T04:44:52` **main.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del archivo `main.py` mediante la implementación de `docstrings` descriptivos en los métodos de la clase `LimpiezaTotalOmegaApp` y la estandarización de la terminología en los comentarios, facilitando la comprensión de las responsabilidades de cada componente en la arquitectura.
 - `2026-10-09T04:43:10` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `duplicates.py` mediante la adición de docstrings técnicos detallados en funciones clave, la estandarización de type hints y la consolidación de la lógica de validación de archivos para evitar redundancias.
-- `2026-10-09T04:35:12` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` añadiendo docstrings detallados en clases y métodos clave, y clarifiqué la lógica del recolector `_collect_summary_data` para mejorar la mantenibilidad.
-- `2026-10-09T04:34:32` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la lógica de escaneo mediante la reestructuración de los parámetros en `_sum_directory_recursive` y `_should_skip_entry` usando un objeto `ScanContext` (data class), eliminando el paso de múltiples argumentos individuales que complicaban la firma de las funciones.
