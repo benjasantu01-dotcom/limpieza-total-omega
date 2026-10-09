@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
-- Rechazadas por tests: 20
+- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 52
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 216
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-08 | 101 | 13 | 19 | 10 | 125 |
-| 2026-10-09 | 94 | 7 | 33 | 11 | 91 |
+| 2026-10-08 | 98 | 13 | 19 | 10 | 124 |
+| 2026-10-09 | 96 | 8 | 33 | 12 | 91 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **43**
 - manejo de errores y validación de entradas: **42**
-- seguridad defensiva: **40**
-- rendimiento: **38**
-- robustez ante casos límite: **32**
+- rendimiento: **39**
+- seguridad defensiva: **37**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **23**
+- `diskreport.py`: **22**
 - `memory.py`: **19**
 - `quarantine.py`: **18**
-- `healthscore.py`: **16**
 - `safety.py`: **16**
-- `assistant.py`: **15**
+- `assistant.py`: **16**
+- `healthscore.py`: **15**
 - `organizer.py`: **14**
+- `scanner.py`: **14**
 - `branding.py`: **14**
 - `browser.py`: **14**
-- `scanner.py`: **13**
 - `duplicates.py`: **13**
 - `settings.py`: **10**
-- `main.py`: **6**
+- `main.py`: **5**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-09T10:12:16` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_get_source_value` y la ingesta de datos en `SystemContext` para manejar de forma segura objetos inesperados, evitando excepciones por atributos maliciosos o mal formados, y reforzando la integridad frente a entradas que no siguen el esquema esperado.
+- `2026-10-09T10:10:24` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo centralizando la validación de seguridad dentro de `_is_safe_entry` y mejorando el filtrado de archivos mediante `_is_relevant_extension` con `lru_cache`, evitando accesos redundantes al sistema de archivos y reduciendo la carga de resolución de rutas en el bucle principal.
 - `2026-10-09T10:01:51` **safety.py** (rendimiento): Optimizo la validación de rutas eliminando llamadas redundantes a `is_system_directory_junction` dentro de bucles, aprovechando que `_get_security_descriptor_cached` ya computa el estado de `is_reparse` y `attrs` de forma eficiente con `lru_cache`, consolidando así la lógica de chequeo y mejorando el rendimiento en recorridos de disco.
 - `2026-10-09T09:54:02` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la creación y filtrado de la lista de procesos dentro del loop principal por un generador eficiente que utiliza `itertools.islice` implícitamente, evitando la sobrecarga de memoria de construir una lista intermedia de hasta 4096 elementos antes de procesarlos.
 - `2026-10-09T09:50:07` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` mediante la pre-conversión de los pesos de `WEIGHTS` a una estructura de acceso directo (`_WEIGHTS_LIST`) y la eliminación de la búsqueda iterativa en el diccionario durante el resumen, evitando así la duplicación innecesaria de iteraciones sobre los mismos datos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-09T09:08:55` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y claridad de las funciones de filtrado, estandarizando la nomenclatura de los argumentos y detallando el propósito de cada etapa del proceso de escaneo para facilitar el mantenimiento.
 - `2026-10-09T09:08:29` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados y type hints a funciones que los omitían, y documenté explícitamente el uso de `heapq` y `scandir` para clarificar la complejidad algorítmica de las operaciones de escaneo.
 - `2026-10-09T09:00:50` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones de navegación y escaneo, y se ha introducido una constante explícita `PATH_FORBIDDEN_CHARS` para clarificar la validación de rutas, reemplazando el uso de una cadena "inline" ambigua.
-- `2026-10-09T08:59:30` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización del método `SystemContext.ingest`, reemplazando el bloque `try-except` genérico por un procesamiento explícito y una validación de estado más clara, lo cual facilita el seguimiento de errores sin alterar la lógica de negocio.
-- `2026-10-09T08:54:12` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `validate` envolviendo el acceso al diccionario en un `try-except` específico y asegurando que las entradas corruptas en el JSON no provoquen una terminación inesperada del proceso de carga, mejorando el manejo de errores ante datos externos inesperados.

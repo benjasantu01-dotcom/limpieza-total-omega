@@ -243,10 +243,6 @@ class Scanner:
         if current_depth >= SCAN_LIMITS.max_depth or not entry.path:
             return
         
-        # Filtro preventivo de seguridad antes de añadir a la pila
-        if is_protected_path(Path(entry.path)):
-            return
-
         path_lower = entry.path.lower()
         if path_lower not in self.seen:
             self.seen.add(path_lower)

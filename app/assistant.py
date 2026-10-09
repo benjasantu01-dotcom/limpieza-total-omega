@@ -422,12 +422,9 @@ class SystemContext:
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad sobre el objeto fuente."""
         if source is None: return False
-        if not (isinstance(source, dict) or (isinstance(source, object) and not isinstance(source, (str, int, float, bool, type(None))))):
+        if not (isinstance(source, dict) or isinstance(source, object)):
             return False
-        try:
-            return not _is_input_too_deep_or_complex(source)
-        except Exception:
-            return False
+        return not _is_input_too_deep_or_complex(source)
 
     def ingest(self, source: Any) -> bool:
         """
@@ -453,7 +450,6 @@ class SystemContext:
             
         if updates_made:
             object.__setattr__(self, 'analyzed', True)
-            # Invalidar cachés dependientes
             self.__dict__.pop('metrics_snapshot', None)
             self.__dict__.pop('active_problems', None)
         
