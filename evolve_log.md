@@ -918,3 +918,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-09T09:00:50` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante docstrings detallados en las funciones de navegación y escaneo, y se ha introducido una constante explícita `PATH_FORBIDDEN_CHARS` para clarificar la validación de rutas, reemplazando el uso de una cadena "inline" ambigua.
 - `2026-10-09T09:00:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T09:00:50` Corrida terminada. Total usado hoy: 212.
+- `2026-10-09T09:07:58` Arrancando corrida. Quedan hoy ~88 peticiones objetivo.
+- `2026-10-09T09:08:29` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados y type hints a funciones que los omitían, y documenté explícitamente el uso de `heapq` y `scandir` para clarificar la complejidad algorítmica de las operaciones de escaneo.
+- `2026-10-09T09:08:55` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y claridad de las funciones de filtrado, estandarizando la nomenclatura de los argumentos y detallando el propósito de cada etapa del proceso de escaneo para facilitar el mantenimiento.
+- `2026-10-09T09:09:23` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y el tipado de las funciones de puntuación (`score_*`) mediante docstrings descriptivos, reforzando la claridad del propósito de cada métrica y asegurando que las firmas de tipo sean consistentes para facilitar el mantenimiento.
+- `2026-10-09T09:09:40` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): el archivo se encogió al 20% del original (posible pérdida de código)
+- `2026-10-09T09:09:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T09:09:40` Corrida terminada. Total usado hoy: 216.

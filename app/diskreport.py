@@ -282,7 +282,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre el sistema de archivos de manera iterativa (evitando recursión profunda).
-    Utiliza inodos para detectar bucles simbólicos y no seguir enlaces.
+    Utiliza un stack para DFS y inodos para detectar bucles simbólicos.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -296,7 +296,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Doble verificación: existencia antes de procesar
                         if not os.path.exists(entry.path):
                             continue
 
@@ -343,7 +342,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
-            # Asegurar que el path esté dentro de la raíz y sea descendiente inmediato
             relative = path.relative_to(root)
             if not relative.parts: continue
             top_folder = root / relative.parts[0]
@@ -369,7 +367,8 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Ejecuta el escaneo completo de disco y agrega las métricas necesarias.
-    Mantiene un heap de tamaño 'limit' para rastrear los archivos más grandes de forma eficiente.
+    Utiliza un heap (min-heap de tamaño fijo 'limit') para mantener los N archivos más grandes
+    con una complejidad temporal de O(N log L) donde L es el límite.
     """
     stats = GlobalStats()
     top_heap: List[Tuple[int, Path]] = [] 
@@ -378,14 +377,13 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         for path, size_bytes in walk_files(directory, skip_protected):
             stats.register_file(size_bytes, path)
             
-            # Mantenimiento del heap para tracking de archivos top
             if limit > 0:
                 if len(top_heap) < limit: 
                     heapq.heappush(top_heap, (size_bytes, path))
                 elif size_bytes > top_heap[0][0]: 
                     heapq.heapreplace(top_heap, (size_bytes, path))
     except (OSError, PermissionError, RuntimeError):
-        pass # Registro parcial ante errores de lectura durante el escaneo
+        pass
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 

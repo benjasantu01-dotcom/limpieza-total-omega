@@ -150,17 +150,17 @@ def _safe_path_check(path: Path) -> bool:
         return False
 
 
-def _validate_and_resolve_path(path: PathLike) -> Optional[Path]:
+def _validate_and_resolve_path(path_input: PathLike) -> Optional[Path]:
     """
     Normaliza una ruta y valida su integridad para procesamiento posterior.
     
     Realiza una resolución de ruta absoluta y chequea que el archivo exista,
     sea accesible, no esté bloqueado y tenga un tamaño mayor a 0 bytes.
     """
-    if not path:
+    if not path_input:
         return None
     try:
-        p: Path = Path(path).resolve()
+        p: Path = Path(path_input).resolve()
         if p.is_file() and _safe_path_check(p) and not _is_file_locked(p):
             if p.stat().st_size > 0:
                 return p
@@ -215,7 +215,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
 
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
-    """Filtro de pre-selección para archivos candidatos a duplicados."""
+    """Filtro de pre-selección para asegurar que un archivo es candidato a duplicado."""
     if st_size <= 0:
         return False
     try:
@@ -242,11 +242,11 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     return groups
 
 
-def _resolve_and_verify_root(item: PathLike) -> Optional[Path]:
+def _resolve_and_verify_root(directory_path: PathLike) -> Optional[Path]:
     """Verifica que una ruta sea un directorio válido y seguro para ser analizado."""
-    if not item: return None
+    if not directory_path: return None
     try:
-        root = Path(item).resolve()
+        root = Path(directory_path).resolve()
         if root.is_dir() and _safe_path_check(root):
             return root
     except (OSError, ValueError, RuntimeError, TypeError):
@@ -300,17 +300,19 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Helper para agrupar rutas según el resultado de una función de hashing."""
+    """Helper genérico para agrupar una lista de rutas según una función de hash."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        # Validación defensiva extra antes de calcular el hash
         if is_safe_to_modify(path) and (digest := hash_func(path)):
             groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
-    """Ejecuta un proceso de filtrado de dos niveles: primero hash parcial, luego hash completo."""
+    """
+    Ejecuta un proceso de filtrado de dos niveles: 
+    primero reduce con hash parcial, luego confirma con hash completo.
+    """
     partial_groups = _group_paths_by_hash(paths, partial_hash)
     final_results: Dict[str, List[Path]] = {}
     for candidate_subset in partial_groups.values():

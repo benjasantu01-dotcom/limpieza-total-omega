@@ -175,10 +175,11 @@ _PIPELINE: Final[Tuple[PipelineEntry, ...]] = (
 )
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
+    """Calcula la salud del sistema basada en el volumen de archivos basura acumulados."""
     return _JUNK_SCORER(float(junk_mb))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
-    """Calcula el ratio de seguridad penalizando hallazgos y advertencias."""
+    """Calcula el ratio de seguridad penalizando hallazgos críticos y advertencias sospechosas."""
     try:
         c = float(suspicious_count) if isinstance(suspicious_count, (int, float)) else 0.0
         w = float(warnings) if isinstance(warnings, (int, float)) else 0.0
@@ -189,15 +190,19 @@ def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
         return 0.0
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
+    """Normaliza el porcentaje de memoria disponible respecto al umbral crítico."""
     return _clamp(float(available_percent) / _LIMIT_RAM_PERCENT)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
+    """Normaliza el espacio en disco disponible respecto al límite de advertencia."""
     return _clamp(float(free_percent) / _LIMIT_DISK_PERCENT)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
+    """Evalúa la salud respecto a archivos duplicados redundantes que ocupan espacio."""
     return _DUP_SCORER(float(duplicate_mb))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
+    """Calcula la puntuación basada en la cantidad de elementos de inicio configurados."""
     return _STARTUP_SCORER(float(startup_count))
 
 def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) -> float:
