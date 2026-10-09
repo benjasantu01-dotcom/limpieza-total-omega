@@ -260,6 +260,7 @@ class Scanner:
                 if self._is_safe_entry(entry):
                     self._handle_directory(entry, directory_stack, current_depth)
             elif self._is_relevant_extension(entry.name):
+                # Validamos seguridad SOLO tras verificar que es una extensión relevante
                 if self._is_safe_entry(entry):
                     path_obj = Path(entry.path)
                     self._run_file_heuristics(path_obj, entry)

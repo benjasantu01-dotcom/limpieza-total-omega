@@ -252,6 +252,12 @@ _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
     r'^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$', re.IGNORECASE
 )
 
+_KERNEL_BLOCKED_FILES: Final[frozenset[str]] = frozenset(
+    ("pagefile.sys", "hiberfil.sys", "swapfile.sys", "dumpstack.log.tmp", "memory.dmp")
+)
+
+_KERNEL_BLOCKED_DIRS: Final[frozenset[str]] = frozenset(("config.msi", "installer"))
+
 class _IntegrityCheck(NamedTuple):
     """Regla de seguridad que vincula un motivo de protección a un predicado evaluable."""
     reason: ProtectionReason
@@ -440,9 +446,9 @@ def _is_kernel_managed(path_str: str) -> bool:
     """Identifica archivos del núcleo o del sistema bloqueados permanentemente por el SO."""
     path = Path(path_str)
     if not path.exists(): return False
-    p_str = path_str.lower()
-    if any(blocked in p_str for blocked in ("pagefile.sys", "hiberfil.sys", "swapfile.sys", "dumpstack.log.tmp", "memory.dmp")):
-        return True
+    
+    # Check nombre de archivo en O(1)
+    if path.name.lower() in _KERNEL_BLOCKED_FILES: return True
     
     if os.name == 'nt':
         buf = ctypes.create_unicode_buffer(512)
@@ -454,11 +460,12 @@ def _is_kernel_managed(path_str: str) -> bool:
         # Bloquear acceso a perfiles de usuario críticos (AppData local/roaming)
         local_app_data = os.environ.get("LOCALAPPDATA", "")
         app_data = os.environ.get("APPDATA", "")
+        p_str = path_str.lower()
         if (local_app_data and p_str.startswith(local_app_data.lower())) or \
            (app_data and p_str.startswith(app_data.lower())):
              return True
                 
-    return any(part.lower() in ("config.msi", "installer") for part in path.parts)
+    return any(part.lower() in _KERNEL_BLOCKED_DIRS for part in path.parts)
 
 @lru_cache(maxsize=1024)
 def _is_sensitive_extension(ext: str) -> bool:

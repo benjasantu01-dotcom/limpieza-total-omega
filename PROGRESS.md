@@ -9,43 +9,45 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **195** (38.7% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 52
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 217
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-08 | 60 | 7 | 11 | 4 | 82 |
-| 2026-10-09 | 135 | 13 | 41 | 16 | 135 |
+| 2026-10-08 | 58 | 7 | 11 | 4 | 80 |
+| 2026-10-09 | 137 | 13 | 41 | 17 | 136 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **41**
 - legibilidad y documentación: **41**
-- rendimiento: **38**
+- rendimiento: **40**
+- seguridad defensiva: **39**
 - robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **23**
+- `diskreport.py`: **22**
 - `memory.py`: **20**
 - `quarantine.py`: **18**
+- `safety.py`: **16**
 - `healthscore.py`: **16**
-- `safety.py`: **15**
 - `assistant.py`: **15**
 - `branding.py`: **15**
-- `browser.py`: **14**
 - `organizer.py`: **13**
+- `browser.py`: **13**
+- `scanner.py`: **13**
 - `duplicates.py`: **12**
-- `scanner.py`: **12**
 - `settings.py`: **10**
 - `main.py`: **8**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-09T14:36:08` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner moviendo la validación de seguridad `_is_safe_entry` (que es costosa debido al `resolve()` y `is_protected_path`) para que ocurra solo después de filtrar por extensión, evitando llamadas redundantes a disco para archivos que no son de interés.
+- `2026-10-09T14:35:39` **safety.py** (rendimiento): Se optimizó `_is_kernel_managed` y `is_protected_path` reemplazando búsquedas repetitivas de cadenas por el uso de `set` y `frozenset` para realizar consultas de membresía en tiempo constante O(1), mejorando el rendimiento en recorridos masivos de disco.
 - `2026-10-09T14:26:34` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` introduciendo una lógica de invalidación basada en el tamaño del archivo además del `mtime` y mejoré `purge_all` para evitar lecturas redundantes del disco y procesar la eliminación de forma más eficiente.
 - `2026-10-09T14:25:19` **memory.py** (rendimiento): Optimizé el rendimiento de `top_memory_processes` reemplazando la consulta secuencial e individual de cada proceso por un uso más eficiente de `EnumProcesses` y validaciones previas para reducir el número de llamadas al sistema (syscalls) innecesarias, evitando la recreación constante de objetos en cada ciclo.
 - `2026-10-09T14:15:50` **healthscore.py** (rendimiento): Se optimizó el acceso a los datos dentro de `compute_score` eliminando la llamada redundante a `getattr` y `isinstance` dentro del bucle de procesamiento del pipeline, aprovechando que `SystemMetrics` ya garantiza datos limpios y finitos mediante su `__post_init__`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-09T13:35:00` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings más precisos, actualicé las anotaciones de tipo para mayor claridad en el flujo de datos (`Union[Path, str]` vs `PathLike`) y renombré variables internas poco claras (ej. `r` por `directory_root`) para facilitar la auditoría del código bajo las reglas de seguridad.
 - `2026-10-09T13:34:33` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` agregando type hints consistentes en los atributos de clase y documentando explícitamente el propósito de las estructuras de datos (dataclasses/NamedTuples) mediante docstrings claros, facilitando la comprensión del flujo de datos.
 - `2026-10-09T13:25:02` **branding.py** (legibilidad y documentación): Se han añadido docstrings técnicos detallados en los métodos de utilidad de color, conversión y renderizado para documentar las asunciones de diseño y las estrategias de mitigación de errores (robustez ante entradas nulas o tipos inesperados), mejorando la mantenibilidad y claridad del contrato de cada función.
-- `2026-10-09T13:24:43` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `SystemContext.ingest`, reemplazando el bucle manual de `object.__setattr__` con un enfoque declarativo basado en la validación de diccionarios, y añadiendo type hints faltantes en funciones críticas para asegurar la consistencia del flujo de datos.
-- `2026-10-09T13:15:13` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_directory` y `_is_safe_entry` reemplazando los chequeos implícitos por validaciones explícitas de estados `None` y capturando excepciones de sistema que podrían interrumpir el escaneo, cumpliendo con el enfoque de validación de entradas.

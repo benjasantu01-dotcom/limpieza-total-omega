@@ -1492,3 +1492,10 @@ ERROR evolve/tests/test_assistant.py - ValueError: 'score' in __slots__ conflict
 - `2026-10-09T14:26:58` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
 - `2026-10-09T14:26:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T14:26:58` Corrida terminada. Total usado hoy: 340.
+- `2026-10-09T14:34:52` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-09T14:35:39` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó `_is_kernel_managed` y `is_protected_path` reemplazando búsquedas repetitivas de cadenas por el uso de `set` y `frozenset` para realizar consultas de membresía en tiempo constante O(1), mejorando el rendimiento en recorridos masivos de disco.
+- `2026-10-09T14:36:08` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escáner moviendo la validación de seguridad `_is_safe_entry` (que es costosa debido al `resolve()` y `is_protected_path`) para que ocurra solo después de filtrar por extensión, evitando llamadas redundantes a disco para archivos que no son de interés.
+- `2026-10-09T14:36:52` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Se optimizó la lectura de `settings.py` implementando una validación de `mtime` previa a la carga del archivo JSON, evitando deserializaciones redundantes en llamadas frecuentes.
+- `2026-10-09T14:37:15` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-10-09T14:37:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T14:37:15` Corrida terminada. Total usado hoy: 344.
