@@ -261,7 +261,11 @@ def directory_size(path: Optional[OSPath]) -> int:
 def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
     """Valida que una ruta cumpla con los requisitos de seguridad antes de ser escaneada."""
     if not isinstance(candidate, Path) or not candidate.exists() or not candidate.is_dir(): return False
-    real: Path = candidate.resolve(strict=True)
+    try:
+        real: Path = candidate.resolve(strict=True)
+    except (OSError, RuntimeError):
+        return False
+        
     if not _ensure_within_base(os.path.normcase(str(real)), os.path.normcase(base_abs_str)):
         return False
     if not is_safe_to_modify(real) or is_protected_path(real):
@@ -272,9 +276,17 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Resuelve rutas relativas a absolutas dentro del contexto del perfil de usuario."""
     if not isinstance(real_base, Path) or not isinstance(rel_str, str) or not rel_str: return Path()
+    # Evitar caracteres ilegales en la construcción de la ruta
+    if any(c in rel_str for c in ('*', '?', '<', '>', '|')): return Path()
+    
     target: Path = real_base.joinpath(*rel_str.split("\\"))
     if not target.exists() or not target.is_dir(): return Path()
-    target_res = target.resolve(strict=True)
+    
+    try:
+        target_res = target.resolve(strict=True)
+    except (OSError, RuntimeError):
+        return Path()
+        
     if _ensure_within_base(os.path.normcase(str(target_res)), os.path.normcase(str(real_base))) and \
        is_safe_to_modify(target_res) and not is_protected_path(target_res):
         return target_res

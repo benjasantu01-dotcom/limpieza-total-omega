@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 23
 - Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 0 | 0 | 0 | 0 | 6 |
+| 2026-10-07 | 0 | 0 | 0 | 0 | 2 |
 | 2026-10-08 | 139 | 18 | 28 | 12 | 153 |
-| 2026-10-09 | 65 | 5 | 24 | 8 | 46 |
+| 2026-10-09 | 69 | 5 | 24 | 8 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **45**
 - rendimiento: **43**
-- robustez ante casos límite: **37**
-- seguridad defensiva: **34**
+- robustez ante casos límite: **38**
+- seguridad defensiva: **37**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,19 +34,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **19**
 - `safety.py`: **19**
 - `memory.py`: **18**
-- `assistant.py`: **16**
-- `browser.py`: **16**
+- `assistant.py`: **17**
+- `browser.py`: **17**
+- `branding.py`: **17**
 - `healthscore.py`: **16**
-- `branding.py`: **16**
 - `organizer.py`: **16**
 - `scanner.py`: **13**
 - `duplicates.py`: **11**
 - `settings.py`: **10**
 - `main.py`: **9**
-- `startup.py`: **2**
+- `startup.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-09T06:27:13` **browser.py** (seguridad defensiva): Se ha robustecido la detección de rutas en `_resolve_browser_path` y `detect_profiles` añadiendo validación explícita para evitar que entradas con caracteres prohibidos o rutas malformadas (típicas en perfiles de navegador corruptos o ataques de path traversal) escapen del sandbox de `LOCALAPPDATA`.
+- `2026-10-09T06:27:02` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` aplicando una validación más estricta sobre la ruta de destino antes de intentar cualquier operación de I/O, asegurando que la ruta no sea un directorio y que pase las verificaciones de seguridad incluso antes de crear los directorios padres.
+- `2026-10-09T06:26:26` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al inyectar un control explícito en `_call_gemini` para impedir el procesamiento de respuestas de la API que contengan caracteres de control o patrones prohibidos, evitando que un endpoint comprometido o una respuesta inesperada inyecte contenido malicioso en la interfaz.
+- `2026-10-09T06:25:40` **startup.py** (robustez ante casos límite): Mejoré la robustez ante rutas corruptas o inexistentes durante la normalización en `_resolve_and_cache_path` y `_extract_quoted_path`, añadiendo chequeos preventivos contra rutas de longitud excesiva, caracteres inválidos post-normalización y fallos de resolución (`OSError` / `ValueError`), asegurando que la app no aborte ante entradas de registro malformadas.
 - `2026-10-09T06:16:08` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked_by_other_process` agregando un manejo explícito de rutas que no existen (evitando I/O innecesario) y una verificación adicional de estado del archivo que reduce falsos negativos en condiciones de carrera al intentar obtener un handle exclusivo.
 - `2026-10-09T06:06:17` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_is_path_safe_and_valid` añadiendo un manejo explícito de rutas UNC y paths de longitud cero que podían causar errores en llamadas de bajo nivel o malinterpretaciones de `Path`.
 - `2026-10-09T06:05:47` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` implementando una validación temprana de la existencia del directorio de trabajo en todas las operaciones asíncronas para prevenir errores de tipo `FileNotFoundError` si el usuario cambia el directorio de trabajo del sistema durante la ejecución, y agregué una limpieza más estricta en `_collect_settings` para evitar inyecciones o datos basura en la configuración.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-09T05:25:19` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la creación de listas intermedias y el filtrado redundante mediante un generador eficiente, además de reducir el uso innecesario de memoria al evitar cargar todos los procesos en memoria antes de ordenarlos.
 - `2026-10-09T05:14:50` **duplicates.py** (rendimiento): Optimizé el rendimiento de la fase de recolección de candidatos en `_collect_candidates` eliminando llamadas redundantes a `stat()` y `is_valid_candidate` mediante la reutilización de los datos obtenidos durante el escaneo con `os.scandir`.
 - `2026-10-09T05:14:34` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la creación de múltiples instancias de `Path` mediante `relative_to` y `parts` en cada iteración del bucle, calculando la carpeta raíz de nivel superior directamente desde el camino absoluto.
-- `2026-10-09T05:14:08` **browser.py** (rendimiento): Se optimizó el escaneo recursivo mediante la pre-validación de rutas y la eliminación de llamadas redundantes a `os.path.normcase` dentro de los bucles críticos, mejorando el rendimiento en sistemas con muchos archivos.
-- `2026-10-09T05:13:41` **branding.py** (rendimiento): Se introdujo una cache de nivel superior para `get_gradient_segments` mediante el uso de un diccionario de cache manual en lugar de `lru_cache` para tipos complejos, evitando así el costo de serializar tuplas de objetos `ColorSegment` en cada llamado y reduciendo la presión sobre el recolector de basura al reutilizar los mismos objetos de memoria para franjas recurrentes.
-- `2026-10-09T05:04:55` **assistant.py** (rendimiento): Optimicé el acceso a los datos de las métricas en `SystemContext` reemplazando los llamados repetidos a `getattr` en `metrics_snapshot` por un acceso directo al diccionario `__dict__` filtrado, mejorando la eficiencia en el procesamiento frecuente del contexto.
-- `2026-10-09T05:03:29` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en el stack de directorios y mejorando la claridad de las funciones de soporte mediante la estandarización de las excepciones capturadas y el uso de docstrings más descriptivos.

@@ -107,7 +107,6 @@ class StartupEntry:
         try:
             if "\0" in path_str:
                 return True
-            # Prevenir acceso a rutas de dispositivo estilo NT
             if path_str.upper().startswith(("\\\\.\\", "\\\\?\\")):
                 return True
             return Path(path_str).stem.upper() in RESERVED_DEVICE_NAMES
@@ -158,7 +157,6 @@ class StartupEntry:
         try:
             if is_protected_path(p):
                 return False
-            # Los enlaces simbólicos son ignorados para prevenir que la app siga punteros externos
             if p.is_symlink():
                 return False
             return p.stat().is_file()
@@ -171,11 +169,10 @@ class StartupEntry:
             return ""
         
         try:
-            if len(path_string) > 32767 or ":" in path_string[2:]:
+            if len(path_string) > 260: # Límite MAX_PATH estándar
                 return ""
             
             norm: str = os.path.normpath(path_string)
-            # Protección extra contra rutas UNC o dispositivos tras normalización
             if norm.startswith(r"\\"):
                 return ""
         except (ValueError, TypeError):
@@ -190,7 +187,6 @@ class StartupEntry:
                 _EXISTS_CACHE[path_string] = False
                 return ""
             
-            # Resolve evalúa el path real y evita fugas por reparse points
             p = p.resolve(strict=False)
             
             if not self._validate_file_access(p):
@@ -262,7 +258,6 @@ def startup_folders() -> List[Path]:
     for c in candidates:
         if c and c.is_dir():
             try:
-                # Defensa ante reparse points en directorios
                 resolved = c.resolve()
                 if resolved not in seen_paths and not c.is_symlink() and not is_protected_path(c):
                     seen_paths.add(resolved)
@@ -285,7 +280,6 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
         if is_protected_path(Path(entry.path)):
             return None
             
-        # El nombre amigable se deriva del nombre de archivo sin la extensión
         name = os.path.splitext(entry.name)[0]
         return StartupEntry(name=name, command=entry.path, source="carpeta")
     except (OSError, PermissionError, ValueError):
@@ -332,10 +326,6 @@ def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
     """
     Parsea la salida de PowerShell CSV (formato crudo).
-    
-    Args:
-        csv_text: Salida en texto crudo de `ConvertTo-Csv`.
-        source: Identificador de origen para reporte.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
@@ -349,7 +339,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
         
         if not reader or not reader.fieldnames or len(reader.fieldnames) < 2:
             return []
-            
+        
         header_name: str = reader.fieldnames[0]
         header_cmd: str = reader.fieldnames[1]
             

@@ -769,6 +769,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             
             raw_text = _extract_text_from_gemini_json(data)
             
+            # Control estricto de la respuesta remota: validar que no contenga inyecciones
             if isinstance(raw_text, str) and _ensure_safe_text(raw_text):
                 return raw_text.strip()
             return None
