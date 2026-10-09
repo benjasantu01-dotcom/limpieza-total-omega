@@ -1215,6 +1215,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         startup_items = self._get_cached("startup") or []
         quarantine_items = quarantine.list_items()
         
+        # Lazy load de snapshot de memoria: solo si no está en caché o forzado
         ram_snapshot = self._get_cached("ram_snapshot")
         if not ram_snapshot:
             ram_snapshot = memory_mod.read_snapshot()
@@ -1254,6 +1255,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.clear("Salud")
             self.log("Analizando... esto no modifica nada.", "Salud")
 
+            # Invalidación selectiva de caché de memoria: forzamos lectura fresca
             self._invalidate_cache("ram_snapshot")
             
             metrics, snapshot, _ = self._compile_metrics()

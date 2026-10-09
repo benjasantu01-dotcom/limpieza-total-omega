@@ -994,6 +994,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         if not items:
             return 0
         
+        # Mapeo O(1) para lookups de metadatos durante iteración
         item_map = {i.stored_name: i for i in items}
         purged_ids: Set[str] = set()
         
@@ -1004,8 +1005,6 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             item = item_map.get(f.name)
             if item and _is_item_purgable(f, item, quarantine_root):
                 purged_ids.add(item.item_id)
-            elif item is None:
-                continue
         
         if purged_ids:
             remaining = [i for i in items if i.item_id not in purged_ids]

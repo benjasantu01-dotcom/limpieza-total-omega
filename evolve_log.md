@@ -1499,3 +1499,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-10-09T00:49:34` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el bucle de cálculo en `compute_score` eliminando el uso de `getattr` dentro de la validación crítica de `SystemMetrics` mediante la pre-compilación de los campos en una tupla de constantes, reduciendo la sobrecarga de reflexión en cada ciclo de ejecución.
 - `2026-10-09T00:49:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T00:49:34` Corrida terminada. Total usado hoy: 20.
+- `2026-10-09T00:58:12` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-10-09T00:59:26` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un sistema de "lazy-initialization" en la recolección de métricas de `on_full_analysis` para evitar el cálculo de snapshots de memoria y consultas al sistema si los datos ya están en caché, reduciendo drásticamente la carga de CPU y disco al refrescar la pestaña de Salud.
+- `2026-10-09T00:59:56` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el rendimiento de `top_memory_processes` reemplazando la consulta secuencial y potencialmente lenta de cada proceso mediante `_get_proc_memory_by_pid` (que abre y cierra handles de kernel 4096 veces en el peor caso) por una recolección selectiva que primero filtra la lista de PIDs mediante el manejo interno de la caché, reduciendo drásticamente las llamadas al sistema.
+- `2026-10-09T01:00:22` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-10-09T01:00:52` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `purge_all` y la carga de manifiestos evitando iteraciones redundantes y centralizando la gestión de caché, reemplazando búsquedas lineales `O(N)` por `O(1)` mediante diccionarios y utilizando `set` para la exclusión de ítems.
+- `2026-10-09T01:00:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T01:00:52` Corrida terminada. Total usado hoy: 24.
