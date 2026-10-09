@@ -953,3 +953,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-09T09:48:46` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `_is_excluded_path` para evitar llamadas redundantes a `Path.resolve()` (una operación costosa de sistema de archivos) durante el escaneo recursivo, moviendo el chequeo de rutas protegidas a una lógica que aprovecha el `entry.path` ya obtenido por `os.scandir`.
 - `2026-10-09T09:48:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T09:48:46` Corrida terminada. Total usado hoy: 228.
+- `2026-10-09T09:49:03` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-10-09T09:49:37` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el rendimiento de `_collect_candidates` mediante el uso de un `set` para `size_to_paths_map` y la eliminación de llamadas innecesarias a `is_safe_to_modify` dentro del loop crítico, ya que `is_valid_candidate` realiza esta validación de forma consolidada.
+- `2026-10-09T09:50:07` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento de `compute_score` mediante la pre-conversión de los pesos de `WEIGHTS` a una estructura de acceso directo (`_WEIGHTS_LIST`) y la eliminación de la búsqueda iterativa en el diccionario durante el resumen, evitando así la duplicación innecesaria de iteraciones sobre los mismos datos.
+- `2026-10-09T09:51:07` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-09T09:52:10` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-09T09:52:22` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-09T09:53:21` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): el archivo se encogió al 56% del original (posible pérdida de código)
+- `2026-10-09T09:53:45` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-09T09:54:02` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `top_memory_processes` reemplazando la creación y filtrado de la lista de procesos dentro del loop principal por un generador eficiente que utiliza `itertools.islice` implícitamente, evitando la sobrecarga de memoria de construir una lista intermedia de hasta 4096 elementos antes de procesarlos.
+- `2026-10-09T09:54:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T09:54:02` Corrida terminada. Total usado hoy: 232.

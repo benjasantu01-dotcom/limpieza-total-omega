@@ -257,9 +257,6 @@ def _resolve_and_verify_root(directory_path: PathLike) -> Optional[Path]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Recorre jerárquicamente las rutas usando BFS (Breadth-First Search).
-    
-    Implementa control de ciclos mediante 'visited_inodes' (dev, ino) para evitar
-    el procesamiento redundante de duplicados en el árbol de archivos.
     """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     queue: deque[Tuple[Path, int]] = deque()
@@ -282,7 +279,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                     try:
                         if entry.is_dir(follow_symlinks=False):
                             p_entry = Path(entry.path)
-                            if _safe_path_check(p_entry) and not (skip_protected and is_protected_path(p_entry)):
+                            if not (skip_protected and is_protected_path(p_entry)):
                                 queue.append((p_entry, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat()

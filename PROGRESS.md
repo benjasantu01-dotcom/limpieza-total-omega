@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 52
+- Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-08 | 105 | 14 | 21 | 10 | 126 |
-| 2026-10-09 | 90 | 7 | 31 | 10 | 90 |
+| 2026-10-08 | 104 | 14 | 19 | 10 | 125 |
+| 2026-10-09 | 93 | 7 | 32 | 10 | 90 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **43**
 - legibilidad y documentación: **43**
 - manejo de errores y validación de entradas: **42**
-- rendimiento: **34**
-- robustez ante casos límite: **33**
+- rendimiento: **37**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **23**
+- `memory.py`: **19**
 - `quarantine.py`: **18**
-- `memory.py`: **18**
-- `safety.py`: **16**
 - `assistant.py`: **16**
+- `healthscore.py`: **16**
 - `branding.py`: **15**
 - `browser.py`: **15**
-- `healthscore.py`: **15**
+- `safety.py`: **15**
 - `organizer.py`: **14**
 - `scanner.py`: **13**
-- `duplicates.py`: **12**
+- `duplicates.py`: **13**
 - `settings.py`: **10**
 - `main.py`: **6**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-09T09:54:02` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la creación y filtrado de la lista de procesos dentro del loop principal por un generador eficiente que utiliza `itertools.islice` implícitamente, evitando la sobrecarga de memoria de construir una lista intermedia de hasta 4096 elementos antes de procesarlos.
+- `2026-10-09T09:50:07` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` mediante la pre-conversión de los pesos de `WEIGHTS` a una estructura de acceso directo (`_WEIGHTS_LIST`) y la eliminación de la búsqueda iterativa en el diccionario durante el resumen, evitando así la duplicación innecesaria de iteraciones sobre los mismos datos.
+- `2026-10-09T09:49:37` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` mediante el uso de un `set` para `size_to_paths_map` y la eliminación de llamadas innecesarias a `is_safe_to_modify` dentro del loop crítico, ya que `is_valid_candidate` realiza esta validación de forma consolidada.
 - `2026-10-09T09:48:46` **diskreport.py** (rendimiento): Optimizé la función `_is_excluded_path` para evitar llamadas redundantes a `Path.resolve()` (una operación costosa de sistema de archivos) durante el escaneo recursivo, moviendo el chequeo de rutas protegidas a una lógica que aprovecha el `entry.path` ya obtenido por `os.scandir`.
 - `2026-10-09T09:44:46` **branding.py** (rendimiento): Optimicé el manejo de la memoria y la velocidad de acceso mediante la implementación de `functools.lru_cache` en funciones de transformación de color que se llamaban repetidamente durante el renderizado, eliminando la creación de objetos redundantes.
 - `2026-10-09T09:31:15` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de Type Hints detallados para las estructuras de datos complejas (`StartupEntries`, `RegistryKeySet`) y documenté la lógica de resolución de rutas en `StartupEntry` para aclarar el comportamiento de las cachés y la validación de seguridad.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-09T08:59:30` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización del método `SystemContext.ingest`, reemplazando el bloque `try-except` genérico por un procesamiento explícito y una validación de estado más clara, lo cual facilita el seguimiento de errores sin alterar la lógica de negocio.
 - `2026-10-09T08:54:12` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `validate` envolviendo el acceso al diccionario en un `try-except` específico y asegurando que las entradas corruptas en el JSON no provoquen una terminación inesperada del proceso de carga, mejorando el manejo de errores ante datos externos inesperados.
 - `2026-10-09T08:39:58` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` añadiendo un manejo de errores más específico para evitar que un archivo de manifiesto corrupto o mal formado (ej. JSON truncado) impida la carga de otros componentes, garantizando que siempre se devuelva una lista válida.
-- `2026-10-09T08:38:28` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de entrada y conversión de datos en `memory.py` para prevenir errores de ejecución ante entradas malformadas o inesperadas, centralizando la validación de valores numéricos en `_safe_int_conversion` y añadiendo chequeos de integridad en las funciones de parsing.
-- `2026-10-09T08:28:54` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de alto nivel (`largest_files`, `usage_by_extension`, `largest_folders`, `total_size` y `summarize`) capturando excepciones específicas dentro de `_collect_summary_data` y centralizando la lógica de validación para evitar que errores inesperados en el recorrido de archivos interrumpan la generación del reporte, cumpliendo con el enfoque de validación de entradas y manejo de errores.
-- `2026-10-09T08:20:06` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` implementando una validación recursiva de tipos más estricta que evita inyecciones de datos complejos o profundos, y añadí validación de tipos explícita en `_apply_field` para asegurar que el contenido ingerido sea coherente antes de actualizar el estado del `SystemContext`.

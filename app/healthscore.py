@@ -130,6 +130,8 @@ WEIGHTS: Final[Dict[MetricKey, int]] = {
     "arranque": 8,
 }
 
+_WEIGHTS_LIST: Final[Tuple[Tuple[MetricKey, int], ...]] = tuple(WEIGHTS.items())
+
 def _verify_weights(weights: Dict[str, int]) -> None:
     """Valida la integridad de la configuración de pesos."""
     if sum(weights.values()) != 100:
@@ -347,7 +349,7 @@ def summarize(result: HealthResult | None) -> List[str]:
     bd = getattr(result, 'breakdown', {})
     if not isinstance(bd, dict): bd = {}
     
-    for area, maximo in WEIGHTS.items():
+    for area, maximo in _WEIGHTS_LIST:
         points = bd.get(area, 0)
         p = points if isinstance(points, int) else 0
         bar = _render_bar(p, maximo)
