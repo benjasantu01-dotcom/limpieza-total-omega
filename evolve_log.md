@@ -877,3 +877,13 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-10-09T08:39:58` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `load_manifest` añadiendo un manejo de errores más específico para evitar que un archivo de manifiesto corrupto o mal formado (ej. JSON truncado) impida la carga de otros componentes, garantizando que siempre se devuelva una lista válida.
 - `2026-10-09T08:39:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T08:39:58` Corrida terminada. Total usado hoy: 204.
+- `2026-10-09T08:47:39` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-10-09T08:48:30` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-09T08:49:19` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-09T08:50:19` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-09T08:51:22` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-09T08:52:29` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-09T08:53:41` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-09T08:54:12` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la función `validate` envolviendo el acceso al diccionario en un `try-except` específico y asegurando que las entradas corruptas en el JSON no provoquen una terminación inesperada del proceso de carga, mejorando el manejo de errores ante datos externos inesperados.
+- `2026-10-09T08:54:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T08:54:12` Corrida terminada. Total usado hoy: 208.

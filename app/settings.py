@@ -311,13 +311,13 @@ def validate(raw_values: Any) -> AppSettings:
     validators = _build_validator_map()
     
     for key_str, raw_val in raw_values.items():
-        if (key_enum := _KEY_TO_ENUM.get(key_str)):
-            try:
+        try:
+            if (key_enum := _KEY_TO_ENUM.get(key_str)):
                 validated_val = validators[key_enum].func(key_enum, raw_val)
                 if validated_val is not None:
                     config[key_enum.value] = validated_val
-            except Exception:
-                continue
+        except (AttributeError, KeyError, Exception):
+            continue
     return config # type: ignore
 
 def _is_file_secure_to_read(file_obj: Any) -> bool:
