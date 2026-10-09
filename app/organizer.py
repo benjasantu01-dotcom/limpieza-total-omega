@@ -184,7 +184,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         stat_result = src.stat()
         if (junk_file._ino is not None and stat_result.st_ino != junk_file._ino) or \
            (junk_file._dev is not None and stat_result.st_dev != junk_file._dev): return False
-        # Seguridad extra: rechazar si es un enlace simbólico o punto de reparse
+        
         if not src.is_file() or src.is_symlink(): return False
         
         try:
@@ -278,7 +278,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             dest_base.mkdir(parents=True, exist_ok=True)
         dest_res = dest_base.resolve(strict=False)
         
-        if is_protected_path(dest_res): return None
+        if not is_safe_to_modify(dest_res) or is_protected_path(dest_res): return None
         ensure_safe_to_modify(dest_res)
     except (OSError, RuntimeError, PermissionError):
         return None
@@ -289,7 +289,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             if not _is_safe_for_disk_op(junk_file, dest_res): continue
             if _is_recursive_violation(junk_file.path, dest_res): continue
             target_path = _can_move_file(junk_file, dest_res)
-            if target_path:
+            if target_path and is_safe_to_modify(junk_file.path):
                 ensure_safe_to_modify(junk_file.path)
                 shutil.move(str(junk_file.path), str(target_path))
         except (OSError, shutil.Error, PermissionError):
@@ -310,8 +310,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     if not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser().resolve(strict=False)
-        if not dest.exists() or not dest.is_dir(): return 0
-        if is_protected_path(dest) or not is_safe_to_modify(dest): return 0
+        if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest) or is_protected_path(dest): return 0
         
         count = 0
         for item in dest.iterdir():

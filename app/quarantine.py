@@ -505,7 +505,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
     """Carga el manifiesto de cuarentena, usando caché de mtime para eficiencia."""
     try:
         base_dir = quarantine_dir(base)
-    except (OSError, UnsafePathError):
+    except (OSError, UnsafePathError) as e:
         return []
         
     m_path = _manifest_path(base_dir)
@@ -528,13 +528,13 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
             data = json.load(f)
         
         if not isinstance(data, list):
-            raise ValueError("Formato de manifiesto inválido.")
+            raise ValueError("Estructura de datos inválida en manifiesto.")
             
         items = [i for d in data if (i := QuarantineItem.from_dict(d))]
         _MANIFEST_CACHE[base_dir] = (items, current_mtime)
         return items
-    except (OSError, json.JSONDecodeError, ValueError):
-        _MANIFEST_CACHE[base_dir] = ([], current_mtime)
+    except (OSError, json.JSONDecodeError, ValueError) as e:
+        # Registramos el error de parseo pero devolvemos lista vacía para no romper el flujo
         return []
 
 
@@ -544,25 +544,26 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
     target_path = _manifest_path(base_path)
     
     if not isinstance(items, list):
-        raise ValueError("El manifiesto debe ser una lista de ítems.")
+        raise ValueError("El manifiesto debe ser una lista de objetos.")
 
     try:
         serializable_items = [item.to_dict() for item in items]
         encoded_content = json.dumps(serializable_items, indent=2, ensure_ascii=False).encode('utf-8')
     except (TypeError, ValueError) as e:
-        raise RuntimeError(f"Falla de serialización: {e}")
+        raise RuntimeError(f"Error al serializar metadatos de cuarentena: {e}")
 
     try:
         if target_path.exists():
             if not target_path.is_file():
-                raise PermissionError("Manifiesto no es un archivo regular.")
+                raise PermissionError("El objetivo del manifiesto no es un archivo.")
             if not os.access(target_path, os.W_OK):
-                raise PermissionError("Manifiesto existente no es escribible.")
+                raise PermissionError("Manifiesto protegido contra escritura.")
             if os.name == 'nt':
                 attrs = ctypes.windll.kernel32.GetFileAttributesW(str(target_path))
                 if attrs != -1 and (attrs & 0x02 or attrs & 0x04):
-                    raise PermissionError("Manifiesto con atributos restringidos.")
+                    raise PermissionError("Manifiesto restringido por atributos de sistema.")
 
+        # Escritura atómica vía archivo temporal
         with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as tf:
             tf.write(encoded_content)
             tf.flush()
@@ -571,6 +572,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
             
         os.replace(temp_name, target_path)
         
+        # Sincronización de directorio para persistencia física
         dir_fd = os.open(str(base_path), os.O_RDONLY)
         try: os.fsync(dir_fd)
         finally: os.close(dir_fd)
@@ -578,7 +580,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         _MANIFEST_CACHE[base_path] = (items, target_path.stat().st_mtime)
         return target_path
     except (OSError, IOError) as e:
-        raise RuntimeError(f"Error crítico al persistir manifiesto: {e}")
+        raise RuntimeError(f"Falla al persistir estado del manifiesto en disco: {e}")
 
 
 def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:

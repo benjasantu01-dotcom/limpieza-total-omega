@@ -142,11 +142,16 @@ class ProcessMemory:
 
 def format_bytes(num: Optional[int | float]) -> str:
     """Convierte bytes crudos a una cadena formateada con su unidad (KB, MB, GB, etc)."""
-    if not isinstance(num, (int, float)) or num <= 0:
+    if not isinstance(num, (int, float)) or num < 0:
         return "0 B"
-    idx: int = min(int(math.log(num, 1024)), len(BYTE_UNITS) - 1)
-    val: float = num / (1024 ** idx)
-    return f"{val:.{0 if idx == 0 else 1}f} {BYTE_UNITS[idx]}"
+    if num == 0:
+        return "0 B"
+    try:
+        idx: int = min(int(math.log(num, 1024)), len(BYTE_UNITS) - 1)
+        val: float = num / (1024 ** idx)
+        return f"{val:.{0 if idx == 0 else 1}f} {BYTE_UNITS[idx]}"
+    except (ValueError, ZeroDivisionError):
+        return "0 B"
 
 def _create_mem_status_ex() -> MEMORYSTATUSEX:
     """Inicializa la estructura MEMORYSTATUSEX con el tamaño de bytes requerido por Win32."""
@@ -204,21 +209,15 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     
     name, pid_str, ws_str = parts[0], parts[1], parts[2]
     
-    pid_digits = "".join(filter(str.isdigit, pid_str))
-    ws_digits = "".join(filter(str.isdigit, ws_str))
-    
-    if not pid_digits or not ws_digits:
-        return None
-    
     try:
-        pid, ws = int(pid_digits), int(ws_digits)
-    except ValueError:
+        pid = int("".join(filter(str.isdigit, pid_str)))
+        ws = int("".join(filter(str.isdigit, ws_str)))
+    except (ValueError, TypeError):
         return None
         
     if _is_system_process(pid) or pid <= 0: 
         return None
     
-    # Validación extra de coherencia: ws no puede superar límites de direccionamiento lógico.
     if 0 < ws < MAX_VALID_PROCESS_MEM:
         return ProcessMemory(name, pid, BytesValue(ws))
     return None
@@ -278,7 +277,6 @@ def _get_process_memory_stats(pid: int) -> Optional[BytesValue]:
     if not process_handle:
         return None
     try:
-        # Estructura de tamaño fijo para obtener contadores de memoria
         pmc = (ctypes.c_size_t * 6)()
         if psapi.GetProcessMemoryInfo(process_handle, ctypes.byref(pmc), ctypes.sizeof(pmc)):
             val = pmc[3]
@@ -314,7 +312,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         
         if psapi.EnumProcesses(ctypes.byref(pids), cb, ctypes.byref(cb_needed)):
             count = cb_needed.value // ctypes.sizeof(ctypes.c_ulong)
-            # Solo procesar PIDs no críticos para evitar abusar de OpenProcess
             valid_processes = [
                 proc for pid in (pids[i] for i in range(min(count, 4096)))
                 if not _is_system_process(pid) and (proc := _get_proc_memory_by_pid(pid))
@@ -354,7 +351,10 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 def _is_system_process(pid: int) -> bool:
     """Verifica si un PID pertenece al núcleo del sistema o es la propia aplicación."""
-    return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
+    try:
+        return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
+    except Exception:
+        return True
 
 def _is_path_safe_and_valid(path_obj: Path) -> bool:
     """Valida que la ruta de un ejecutable sea segura, local y no un reparse point."""
@@ -382,7 +382,6 @@ def _get_process_path(pid: int) -> Optional[Path]:
         length = psapi.GetModuleFileNameExW(process_handle, None, buf, buffer_size)
         if 0 < length < buffer_size:
             raw_path = buf.value
-            # Bloqueo estricto para rutas UNC
             if not raw_path or raw_path.startswith("\\\\"): return None
             
             p_test = Path(raw_path)
@@ -399,7 +398,6 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
     if pid <= 0: return False, "PID inválido."
     if _is_system_process(pid): return False, "Proceso protegido."
     
-    # Validación extra: prevenir PID reuse confirmando la ruta antes de actuar
     path = _get_process_path(pid)
     if path is None: return False, "Acceso a ruta de proceso restringido."
     return True, None
@@ -428,7 +426,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "No se pudo acceder al proceso."
         
     try:
-        # Re-confirmar el proceso mediante su HANDLE para cerrar la ventana de tiempo de PID reuse
         if psapi.EmptyWorkingSet(proc_handle) == 0:
             return False, "El sistema rechazó la operación."
         return True, f"Working set liberado. {TRIM_WARNING}"
