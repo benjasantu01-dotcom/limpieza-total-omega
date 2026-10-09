@@ -404,7 +404,6 @@ class SystemContext:
         try:
             val = _get_source_value(source, key)
             if val is None: return None
-            # Validar integridad inicial
             if not _check_metric_integrity(val): return None
             float_val = float(val)
             if not _is_metric_within_bounds(float_val, spec): 
@@ -427,33 +426,28 @@ class SystemContext:
         return not _is_input_too_deep_or_complex(source)
 
     def ingest(self, source: Any) -> bool:
-        """
-        Normaliza e importa datos externos al contexto de manera transaccional.
-        """
+        """Normaliza e importa datos externos al contexto de manera transaccional."""
         if not self._validate_ingestion_source(source):
             return False
         
-        updates_made = False
-        
-        # Procesar métricas numéricas según especificaciones
+        updates: dict[str, Any] = {}
         for key, spec in _VALIDATORS.items():
             value = self._apply_field(source, key, spec)
             if value is not None and value != getattr(self, key):
-                object.__setattr__(self, key, value)
-                updates_made = True
+                updates[key] = value
         
-        # Procesar campo de calificación (texto)
-        grade_value = self._clean_grade(_get_source_value(source, "grade"))
-        if grade_value and grade_value != self.grade:
-            object.__setattr__(self, 'grade', grade_value)
-            updates_made = True
+        grade_val = self._clean_grade(_get_source_value(source, "grade"))
+        if grade_val and grade_val != self.grade:
+            updates["grade"] = grade_val
             
-        if updates_made:
+        if updates:
+            for k, v in updates.items():
+                object.__setattr__(self, k, v)
             object.__setattr__(self, 'analyzed', True)
             self.__dict__.pop('metrics_snapshot', None)
             self.__dict__.pop('active_problems', None)
-        
-        return updates_made
+            return True
+        return False
 
 @dataclass
 class Answer:
@@ -495,7 +489,6 @@ def _get_source_value(source: Any, key: str) -> Any:
     try:
         if isinstance(source, dict):
             return source.get(key)
-        # Solo acceder a atributos si no son colecciones (listas, dicts, etc) para evitar inyecciones complejas
         if hasattr(source, key):
             val = getattr(source, key)
             if callable(val) or isinstance(val, (type, list, dict, set, tuple)):
@@ -741,7 +734,6 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     if not payload: return None
     
     target_url = _ENDPOINT_BASE.format(model=model)
-    # Validar que la URL solo apunte a los hosts permitidos
     if not target_url.startswith(_API_HOST_ROOT) or re.search(r"[<>\s]", target_url):
         return None
         
@@ -764,7 +756,6 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             
             raw_text = _extract_text_from_gemini_json(data)
             
-            # Control estricto de la respuesta remota: validar que no contenga inyecciones
             if isinstance(raw_text, str) and _ensure_safe_text(raw_text):
                 return raw_text.strip()
             return None
