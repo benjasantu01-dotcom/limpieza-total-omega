@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **202** (40.1% de aceptación)
 - Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 52
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 208
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-08 | 95 | 12 | 18 | 9 | 110 |
-| 2026-10-09 | 105 | 10 | 34 | 13 | 98 |
+| 2026-10-08 | 95 | 12 | 18 | 9 | 106 |
+| 2026-10-09 | 107 | 10 | 34 | 14 | 99 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,14 +25,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **42**
 - rendimiento: **39**
 - robustez ante casos límite: **39**
-- seguridad defensiva: **37**
+- seguridad defensiva: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **23**
 - `memory.py`: **20**
+- `quarantine.py`: **18**
 - `healthscore.py`: **17**
-- `quarantine.py`: **17**
 - `safety.py`: **17**
 - `branding.py`: **16**
 - `assistant.py`: **16**
@@ -41,11 +41,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `organizer.py`: **13**
 - `scanner.py`: **13**
 - `settings.py`: **11**
-- `main.py`: **6**
+- `main.py`: **7**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-09T11:13:04` **quarantine.py** (seguridad defensiva): He mejorado `_atomic_isolate_file` para implementar una validación de inodo previa a la escritura, evitando así condiciones de carrera (TOCTOU) adicionales donde un atacante podría reemplazar el archivo origen con un enlace simbólico o un archivo de sistema justo después de la validación inicial, asegurando que el archivo que se lee es exactamente el mismo que se validó.
+- `2026-10-09T11:11:49` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante una validación explícita de "path traversal" en la selección de archivos de los métodos `on_disk_analysis`, `on_find_duplicates` y la inicialización de `scan_target`, asegurando que ninguna entrada del usuario pueda escapar del directorio raíz o acceder a rutas prohibidas antes de ser procesada por el motor de análisis.
 - `2026-10-09T11:02:19` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del sistema contra entradas de datos maliciosas o corruptas en `SystemMetrics` mediante la implementación de una validación defensiva estricta en el método `validate`, asegurando que cualquier valor atípico sea forzado a un estado seguro antes de que llegue al motor de cálculo.
 - `2026-10-09T11:01:37` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` al añadir una verificación explícita contra *symlinks* y *junctions* mediante `lstat` y `is_symlink`, evitando así que `resolve()` pueda seguir punteros fuera de la ruta esperada antes de confirmar su legitimidad.
 - `2026-10-09T10:53:11` **branding.py** (seguridad defensiva): Se ha mejorado la robustez de `save_logo_svg` implementando un chequeo preventivo más estricto sobre el tipo de la ruta y validando la existencia del directorio padre antes de realizar operaciones, garantizando que el manejo de errores sea consistente con los protocolos de seguridad.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-09T10:10:24` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo centralizando la validación de seguridad dentro de `_is_safe_entry` y mejorando el filtrado de archivos mediante `_is_relevant_extension` con `lru_cache`, evitando accesos redundantes al sistema de archivos y reduciendo la carga de resolución de rutas en el bucle principal.
 - `2026-10-09T10:01:51` **safety.py** (rendimiento): Optimizo la validación de rutas eliminando llamadas redundantes a `is_system_directory_junction` dentro de bucles, aprovechando que `_get_security_descriptor_cached` ya computa el estado de `is_reparse` y `attrs` de forma eficiente con `lru_cache`, consolidando así la lógica de chequeo y mejorando el rendimiento en recorridos de disco.
 - `2026-10-09T09:54:02` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la creación y filtrado de la lista de procesos dentro del loop principal por un generador eficiente que utiliza `itertools.islice` implícitamente, evitando la sobrecarga de memoria de construir una lista intermedia de hasta 4096 elementos antes de procesarlos.
-- `2026-10-09T09:50:07` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` mediante la pre-conversión de los pesos de `WEIGHTS` a una estructura de acceso directo (`_WEIGHTS_LIST`) y la eliminación de la búsqueda iterativa en el diccionario durante el resumen, evitando así la duplicación innecesaria de iteraciones sobre los mismos datos.
-- `2026-10-09T09:49:37` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` mediante el uso de un `set` para `size_to_paths_map` y la eliminación de llamadas innecesarias a `is_safe_to_modify` dentro del loop crítico, ya que `is_valid_candidate` realiza esta validación de forma consolidada.

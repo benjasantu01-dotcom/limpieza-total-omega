@@ -736,8 +736,15 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if not source.exists():
         raise FileNotFoundError("Archivo origen no existe.")
     
+    # Doble validación de inodo para asegurar que no se haya reemplazado el archivo
+    # tras el chequeo de permisos iniciales.
+    try:
+        pre_stat = source.stat()
+    except OSError:
+        raise RuntimeError("No se pudo obtener estado de archivo.")
+        
     stat_orig = _check_io_error_context(source.stat)
-    if stat_orig.st_size != original_size:
+    if stat_orig.st_size != original_size or stat_orig.st_ino != pre_stat.st_ino:
         raise RuntimeError("El archivo cambió durante la validación inicial (TOCTOU).")
     
     IsolationManager.validate_atomicity(source, stat_orig, destination)
