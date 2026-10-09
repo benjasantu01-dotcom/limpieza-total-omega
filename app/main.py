@@ -165,7 +165,7 @@ def validated_ui_operation(func: Callable) -> Callable:
     """
     @wraps(func)
     def wrapper(self: Any, *args: Any, **kwargs: Any) -> Optional[Any]:
-        if getattr(self, '_closing', False) or not self.winfo_exists():
+        if getattr(self, '_closing', False) or (hasattr(self, 'winfo_exists') and not self.winfo_exists()):
             return None
         try:
             return func(self, *args, **kwargs)
@@ -257,10 +257,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self._init_state()
             self._build_layout()
             self.protocol("WM_DELETE_WINDOW", self._on_closing)
-        except (RuntimeError, Exception) as e:
+        except Exception as e:
             logging.critical("Error fatal al inicializar la aplicación: %s", e)
-            if self.winfo_exists():
-                messagebox.showerror("Error de inicio", "La aplicación no pudo inicializarse correctamente.")
+            if hasattr(self, 'winfo_exists') and self.winfo_exists():
+                messagebox.showerror("Error de inicio", "La aplicación no pudo inicializarse.")
                 self.destroy()
             else:
                 raise
@@ -500,26 +500,29 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _build_tabs_container(self) -> None:
         """Configura el componente contenedor de pestañas."""
-        self.tabview = ctk.CTkTabview(
-            self,
-            fg_color=branding.color("surface"),
-            segmented_button_fg_color=branding.color("surface_alt"),
-            segmented_button_selected_color=branding.color("accent"),
-            segmented_button_selected_hover_color=branding.color("accent_hover"),
-            segmented_button_unselected_color=branding.color("surface_alt"),
-            segmented_button_unselected_hover_color=branding.color("surface_hover"),
-            text_color=branding.color("text"),
-            corner_radius=12,
-            border_width=1,
-            border_color=branding.color("border"),
-            command=self._on_tab_change
-        )
-        self.tabview.pack(fill="both", expand=True, padx=18, pady=(4, 8))
+        try:
+            self.tabview = ctk.CTkTabview(
+                self,
+                fg_color=branding.color("surface"),
+                segmented_button_fg_color=branding.color("surface_alt"),
+                segmented_button_selected_color=branding.color("accent"),
+                segmented_button_selected_hover_color=branding.color("accent_hover"),
+                segmented_button_unselected_color=branding.color("surface_alt"),
+                segmented_button_unselected_hover_color=branding.color("surface_hover"),
+                text_color=branding.color("text"),
+                corner_radius=12,
+                border_width=1,
+                border_color=branding.color("border"),
+                command=self._on_tab_change
+            )
+            self.tabview.pack(fill="both", expand=True, padx=18, pady=(4, 8))
 
-        for name in TABS:
-            self.tabview.add(branding.tab_label(name))
-            
-        self._tab_factory(TABS[0])
+            for name in TABS:
+                self.tabview.add(branding.tab_label(name))
+                
+            self._tab_factory(TABS[0])
+        except Exception as e:
+            logging.error("Error al construir tabview: %s", e)
 
     @validated_ui_operation
     def _on_tab_change(self, tab_label: str) -> None:

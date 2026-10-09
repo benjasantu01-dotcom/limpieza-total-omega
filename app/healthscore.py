@@ -297,10 +297,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
     Calcula el puntaje global mediante la ejecución del pipeline con manejo estricto de errores.
     """
-    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
-        m = SystemMetrics()
-    else:
-        m = metrics
+    m = metrics if isinstance(metrics, SystemMetrics) and metrics.is_finite else SystemMetrics()
     
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -314,7 +311,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             val = int(round(_clamp(points, 0.0, float(entry.weight))))
             metric_breakdown[entry.area] = val
             accumulated_score += float(val)
-        except (Exception, ValueError, TypeError) as e:
+        except Exception as e:
             logging.error(f"Falla crítica en pipeline {entry.area}: {e}")
             metric_breakdown[entry.area] = 0
             
@@ -346,8 +343,7 @@ def summarize(result: HealthResult | None) -> List[str]:
         return ["Error: Informe de salud no disponible."]
         
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
-    bd = getattr(result, 'breakdown', {})
-    if not isinstance(bd, dict): bd = {}
+    bd = result.breakdown if isinstance(result.breakdown, dict) else {}
     
     for area, maximo in _WEIGHTS_LIST:
         points = bd.get(area, 0)
@@ -355,7 +351,6 @@ def summarize(result: HealthResult | None) -> List[str]:
         bar = _render_bar(p, maximo)
         lines.append(f"  {area.capitalize():<12} {p:>2}/{maximo:<2} [{bar}]")
     
-    recs = getattr(result, 'recommendations', [])
-    recs_list = recs if isinstance(recs, list) else ["Sin recomendaciones."]
-    lines.extend(("", "Recomendaciones:", *(f"  - {r}" for r in recs_list if isinstance(r, str))))
+    recs = result.recommendations if isinstance(result.recommendations, list) else ["Sin recomendaciones."]
+    lines.extend(("", "Recomendaciones:", *(f"  - {r}" for r in recs if isinstance(r, str))))
     return lines

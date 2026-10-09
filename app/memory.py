@@ -32,7 +32,7 @@ from pathlib import Path
 from functools import lru_cache
 from dataclasses import dataclass, field
 from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, Final, Set, NewType
-from safety import is_protected_path, is_safe_to_modify
+from safety import is_protected_path
 
 if TYPE_CHECKING:
     from ctypes import wintypes
@@ -342,52 +342,26 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
         report.extend(f"  Mayor consumo: {p.name} (PID {p.pid}) — {p.working_set_mb} MB" for p in processes[:3])
     return report
 
-def _is_path_safe_and_valid(path_obj: Path) -> bool:
-    """Verifica si una ruta es segura para ser inspeccionada en contexto de memoria."""
-    path_str = str(path_obj)
-    if not path_str or path_str.startswith("\\\\"): return False
-    
-    if is_protected_path(path_str) or not is_safe_to_modify(path_obj):
-        return False
-    
-    kernel32 = ctypes.windll.kernel32
-    attr = kernel32.GetFileAttributesW(path_str)
-    if attr == -1: return False
-    
-    drive = str(path_obj.anchor)
-    if not drive or kernel32.GetDriveTypeW(drive) != DRIVE_FIXED: return False
-    
-    return not (attr & FILE_ATTRIBUTE_REPARSE_POINT)
-
-def _get_process_path(pid: int) -> Optional[Path]:
+def _is_process_executable_safe(pid: int) -> bool:
+    """Verifica si la ruta del ejecutable es segura para interactuar."""
     kernel32 = ctypes.windll.kernel32
     psapi = getattr(ctypes.windll, "psapi", None)
-    if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
-    process_handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
-    if not process_handle: return None
+    if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return False
+    
+    handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+    if not handle: return False
     try:
-        buffer_size = 1024
-        buf = ctypes.create_unicode_buffer(buffer_size)
-        length = psapi.GetModuleFileNameExW(process_handle, None, buf, buffer_size)
-        if 0 < length < buffer_size:
-            raw_path = buf.value
-            if not isinstance(raw_path, str) or not raw_path: return None
-            
-            p_test = Path(raw_path)
-            if p_test.is_absolute() and p_test.exists():
-                resolved = p_test.resolve()
-                if _is_path_safe_and_valid(resolved):
-                    return resolved
-    except (OSError, RuntimeError, ctypes.ArgumentError): pass
-    finally: kernel32.CloseHandle(process_handle)
-    return None
+        buf = ctypes.create_unicode_buffer(1024)
+        if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
+            return not is_protected_path(buf.value)
+    finally:
+        kernel32.CloseHandle(handle)
+    return False
 
 def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
     if pid <= 0: return False, "PID inválido."
     if _is_system_process(pid): return False, "Proceso protegido."
-    
-    path = _get_process_path(pid)
-    if path is None: return False, "Acceso a ruta de proceso restringido."
+    if not _is_process_executable_safe(pid): return False, "Ruta de proceso restringida."
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
@@ -398,9 +372,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError):
         return False, "PID no numérico."
     
-    if target_pid <= 0:
-        return False, "PID debe ser un entero positivo."
-    
     is_safe, error_msg = _is_safe_to_trim(target_pid)
     if not is_safe: return False, error_msg or "Verificación de seguridad fallida."
     
@@ -410,7 +381,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     kernel32 = ctypes.windll.kernel32
     proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
     if not proc_handle:
-        return False, "No se pudo acceder al proceso."
+        return False, "No se pudo acceder al proceso (requiere privilegios)."
         
     try:
         if psapi.EmptyWorkingSet(proc_handle) == 0:

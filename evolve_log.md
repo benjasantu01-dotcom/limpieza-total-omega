@@ -1023,3 +1023,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-09T10:26:08` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-10-09T10:26:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T10:26:08` Corrida terminada. Total usado hoy: 244.
+- `2026-10-09T10:29:49` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-10-09T10:30:19` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `compute_score` y `summarize` implementando una defensa estricta contra entradas de `metrics` parcialmente corruptas o que violan los tipos esperados, asegurando que `_render_bar` y los iteradores del pipeline no fallen ante diccionarios o métricas inesperadas.
+- `2026-10-09T10:31:28` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante errores de ejecución durante la inicialización de la interfaz en `_setup_application` y `_build_tabs_container`, asegurando que cualquier fallo en la creación de componentes UI sea capturado y manejado correctamente antes de intentar acceder a `winfo_exists()`, evitando cierres inesperados por excepciones de ciclo de vida de Tkinter.
+- `2026-10-09T10:32:30` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `trim_working_set` y sus ayudantes al corregir una inconsistencia lógica donde se validaba la seguridad mediante `is_safe_to_modify` (que está diseñada para archivos de disco) sobre rutas de procesos, reemplazándolo por un chequeo estricto del PID y el estado del handle, evitando bloqueos innecesarios en procesos legítimos pero no "modificables" según la política de archivos.
+- `2026-10-09T10:32:39` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-09T10:32:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T10:32:39` Corrida terminada. Total usado hoy: 248.
