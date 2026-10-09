@@ -327,15 +327,12 @@ def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
     """Detecta si una estructura de datos excede los límites de seguridad."""
     if depth > _MAX_NESTING_DEPTH: return True
     if val is None: return False
-    
     if isinstance(val, (list, tuple, set)):
         if len(val) > _MAX_COLLECTION_SIZE: return True
         return any(_is_input_too_deep_or_complex(item, depth + 1) for item in val)
-    
     if isinstance(val, dict):
         if len(val) > _MAX_COLLECTION_SIZE: return True
         return any(not isinstance(k, str) or _is_input_too_deep_or_complex(k, depth + 1) or _is_input_too_deep_or_complex(v, depth + 1) for k, v in val.items())
-    
     return False
 
 def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
@@ -407,6 +404,8 @@ class SystemContext:
         try:
             val = _get_source_value(source, key)
             if val is None: return None
+            # Asegurar tipo compatible antes de pasar al chequeo de límites
+            if not isinstance(val, (int, float)): return None
             float_val = float(val)
             if not _is_metric_within_bounds(float_val, spec): 
                 return None
