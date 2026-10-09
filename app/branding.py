@@ -289,7 +289,7 @@ def bar(percent: Union[float, int, None], width: int = 24,
     except (TypeError, ValueError):
         return empty * max(1, int(width))
 
-@lru_cache(maxsize=256)
+@lru_cache(maxsize=512)
 def _hex_to_rgb(value: ColorHex) -> RGBTuple:
     """Transforma una cadena HEX a una tupla RGB (r, g, b)."""
     if isinstance(value, str) and len(value) == 7 and value.startswith('#'):
@@ -300,13 +300,13 @@ def _hex_to_rgb(value: ColorHex) -> RGBTuple:
             pass
     return (0, 0, 0)
 
-@lru_cache(maxsize=256)
+@lru_cache(maxsize=512)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
     """Transforma una tupla RGB (r, g, b) a una cadena de formato HEX."""
     r, g, b = [max(0, min(255, int(c))) for c in rgb]
     return "#{:02x}{:02x}{:02x}".format(r, g, b)
 
-@lru_cache(maxsize=128)
+@lru_cache(maxsize=256)
 def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
     """Interpola linealmente entre dos colores HEX."""
     try:

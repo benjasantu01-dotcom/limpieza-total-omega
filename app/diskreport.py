@@ -156,19 +156,21 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
 
 
-def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
+def _is_excluded_path(entry: os.DirEntry) -> bool:
     """
     Determina si una entrada del sistema de archivos debe ser excluida del escaneo.
     Aplica filtros de seguridad contra caracteres maliciosos y rutas de sistema.
     """
     try:
-        name = entry.name
-        if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
+        if not entry.name or '\0' in entry.name or any(c in entry.name for c in SUSPICIOUS_CHARS):
             return True
         
-        target_path = Path(entry.path).resolve()
         if entry.is_symlink():
             return True
+            
+        if is_protected_path(Path(entry.path)):
+            return True
+
         if os.name == 'nt':
             try:
                 st = entry.stat(follow_symlinks=False)
@@ -177,7 +179,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
             except OSError:
                 return True
             
-        return is_protected_path(target_path)
+        return False
     except (OSError, PermissionError, AttributeError, RuntimeError, TypeError):
         return True
             
@@ -296,10 +298,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if not os.path.exists(entry.path):
-                            continue
-
-                        if skip_protected and _is_excluded_path(entry, str(root_path)):
+                        if skip_protected and _is_excluded_path(entry):
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
