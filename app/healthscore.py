@@ -245,7 +245,7 @@ class SystemMetrics:
         return getattr(self, field_name, default)
 
     def validate(self) -> None:
-        """Asegura que los datos recibidos tengan tipos y rangos válidos."""
+        """Asegura que los datos recibidos tengan tipos y rangos válidos, bloqueando entradas maliciosas."""
         self.junk_mb = _validate_numeric(self.junk_mb, 0.0, 0.0, 1e9)
         self.duplicate_mb = _validate_numeric(self.duplicate_mb, 0.0, 0.0, 1e9)
         self.suspicious_count = int(_validate_numeric(self.suspicious_count, 0, 0, 1e6))

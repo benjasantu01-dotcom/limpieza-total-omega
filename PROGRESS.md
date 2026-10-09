@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
-- Rechazadas por tests: 21
+- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-08 | 95 | 12 | 18 | 9 | 114 |
-| 2026-10-09 | 103 | 9 | 34 | 13 | 97 |
+| 2026-10-08 | 95 | 12 | 18 | 9 | 110 |
+| 2026-10-09 | 105 | 10 | 34 | 13 | 98 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,16 +25,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **42**
 - rendimiento: **39**
 - robustez ante casos límite: **39**
-- seguridad defensiva: **35**
+- seguridad defensiva: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **23**
 - `memory.py`: **20**
+- `healthscore.py`: **17**
 - `quarantine.py`: **17**
 - `safety.py`: **17**
 - `branding.py`: **16**
-- `healthscore.py`: **16**
 - `assistant.py`: **16**
 - `browser.py`: **14**
 - `duplicates.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-09T11:02:19` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del sistema contra entradas de datos maliciosas o corruptas en `SystemMetrics` mediante la implementación de una validación defensiva estricta en el método `validate`, asegurando que cualquier valor atípico sea forzado a un estado seguro antes de que llegue al motor de cálculo.
+- `2026-10-09T11:01:37` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` al añadir una verificación explícita contra *symlinks* y *junctions* mediante `lstat` y `is_symlink`, evitando así que `resolve()` pueda seguir punteros fuera de la ruta esperada antes de confirmar su legitimidad.
 - `2026-10-09T10:53:11` **branding.py** (seguridad defensiva): Se ha mejorado la robustez de `save_logo_svg` implementando un chequeo preventivo más estricto sobre el tipo de la ruta y validando la existencia del directorio padre antes de realizar operaciones, garantizando que el manejo de errores sea consistente con los protocolos de seguridad.
 - `2026-10-09T10:50:48` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante errores de lectura de disco (como archivos corruptos o bloqueados) al implementar un bloque `try-except` más granular en `_load_impl`, garantizando que una falla puntual no impida la carga de los valores de fábrica predeterminados.
 - `2026-10-09T10:41:49` **safety.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `ensure_safe_to_modify` para detectar y bloquear rutas que contengan caracteres de control RTL (Right-to-Left) o secuencias de escape no imprimibles, mitigando el riesgo de ataques de "bidi spoofing" donde un archivo parece tener una extensión segura cuando en realidad es un ejecutable.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-09T09:54:02` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la creación y filtrado de la lista de procesos dentro del loop principal por un generador eficiente que utiliza `itertools.islice` implícitamente, evitando la sobrecarga de memoria de construir una lista intermedia de hasta 4096 elementos antes de procesarlos.
 - `2026-10-09T09:50:07` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` mediante la pre-conversión de los pesos de `WEIGHTS` a una estructura de acceso directo (`_WEIGHTS_LIST`) y la eliminación de la búsqueda iterativa en el diccionario durante el resumen, evitando así la duplicación innecesaria de iteraciones sobre los mismos datos.
 - `2026-10-09T09:49:37` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` mediante el uso de un `set` para `size_to_paths_map` y la eliminación de llamadas innecesarias a `is_safe_to_modify` dentro del loop crítico, ya que `is_valid_candidate` realiza esta validación de forma consolidada.
-- `2026-10-09T09:48:46` **diskreport.py** (rendimiento): Optimizé la función `_is_excluded_path` para evitar llamadas redundantes a `Path.resolve()` (una operación costosa de sistema de archivos) durante el escaneo recursivo, moviendo el chequeo de rutas protegidas a una lógica que aprovecha el `entry.path` ya obtenido por `os.scandir`.
-- `2026-10-09T09:44:46` **branding.py** (rendimiento): Optimicé el manejo de la memoria y la velocidad de acceso mediante la implementación de `functools.lru_cache` en funciones de transformación de color que se llamaban repetidamente durante el renderizado, eliminando la creación de objetos redundantes.

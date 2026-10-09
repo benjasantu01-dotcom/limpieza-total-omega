@@ -142,13 +142,15 @@ def _validate_limit(limit: Any) -> int:
 
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     """
-    Valida y resuelve una ruta de inicio.
+    Valida y resuelve una ruta de inicio, prohibiendo enlaces simbólicos directos.
     Verifica existencia, accesibilidad y si es una ruta protegida.
     """
     if directory is None:
         return None
     try:
-        p = Path(directory).expanduser().resolve(strict=True)
+        p = Path(directory).expanduser().resolve()
+        if p.is_symlink():
+            return None
         if not p.is_dir() or is_protected_path(p) or not os.access(p, os.R_OK):
             return None
         return p

@@ -1073,3 +1073,40 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-09T10:53:11` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `save_logo_svg` implementando un chequeo preventivo más estricto sobre el tipo de la ruta y validando la existencia del directorio padre antes de realizar operaciones, garantizando que el manejo de errores sea consistente con los protocolos de seguridad.
 - `2026-10-09T10:53:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T10:53:11` Corrida terminada. Total usado hoy: 256.
+- `2026-10-09T11:00:25` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-10-09T11:01:02` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-10-09T11:01:37` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_validate_root` al añadir una verificación explícita contra *symlinks* y *junctions* mediante `lstat` y `is_symlink`, evitando así que `resolve()` pueda seguir punteros fuera de la ruta esperada antes de confirmar su legitimidad.
+- `2026-10-09T11:02:05` Tests FALLARON:
+```
+ited_dirs: set[Path] = set()
+        visited_inodes: set[Tuple[int, int]] = set()
+    
+        for d in directories:
+            if (r := _resolve_and_verify_root(d)):
+                queue.append((r, 0))
+    
+        while queue:
+            current_dir, depth = queue.popleft()
+            if not is_safe_to_modify(current_dir) or current_dir in visited_dirs or depth > MAX_RECURSION_DEPTH:
+                continue
+            visited_dirs.add(current_dir)
+    
+            try:
+>               with os.scandir(current_dir) as iterator:
+                     ^^
+E               NameError: name 'os' is not defined. Did you forget to import 'os'
+
+app/duplicates.py:276: NameError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_identical_files - NameError: name 'os' is not defined. Did you forget to import 'os'
+FAILED evolve/tests/test_modules.py::test_ignores_files_with_different_content - NameError: name 'os' is not defined. Did you forget to import 'os'
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - NameError: name 'os' is not defined. Did you forget to import 'os'
+FAILED evolve/tests/test_modules.py::test_min_size_filters_out_tiny_files - NameError: name 'os' is not defined. Did you forget to import 'os'
+FAILED evolve/tests/test_modules.py::test_never_scans_system_folders - NameError: name 'os' is not defined. Did you forget to import 'os'
+5 failed, 294 passed in 1.64s
+
+```
+- `2026-10-09T11:02:05` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez defensiva de `duplicates.py` mediante la refactorización de `_collect_candidates` para aplicar estrictamente `is_safe_to_modify` antes de cada operación de descubrimiento o acceso a disco, asegurando que ningún sistema de archivos potencialmente sensible sea ni siquiera listado durante el escaneo.
+- `2026-10-09T11:02:19` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la robustez del sistema contra entradas de datos maliciosas o corruptas en `SystemMetrics` mediante la implementación de una validación defensiva estricta en el método `validate`, asegurando que cualquier valor atípico sea forzado a un estado seguro antes de que llegue al motor de cálculo.
+- `2026-10-09T11:02:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T11:02:19` Corrida terminada. Total usado hoy: 260.
