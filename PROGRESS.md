@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 24
 - Rechazadas por guardia de seguridad: 42
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 218
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 43 | 5 | 10 | 4 | 60 |
+| 2026-10-07 | 40 | 5 | 9 | 4 | 60 |
 | 2026-10-08 | 139 | 18 | 28 | 12 | 153 |
-| 2026-10-09 | 19 | 1 | 4 | 3 | 5 |
+| 2026-10-09 | 20 | 1 | 5 | 4 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - rendimiento: **44**
 - legibilidad y documentación: **42**
-- seguridad defensiva: **38**
-- robustez ante casos límite: **30**
+- seguridad defensiva: **35**
+- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
-- `quarantine.py`: **20**
+- `diskreport.py`: **22**
 - `browser.py`: **19**
-- `safety.py`: **18**
+- `quarantine.py`: **19**
 - `assistant.py`: **18**
+- `safety.py`: **17**
 - `memory.py`: **16**
 - `organizer.py`: **16**
 - `healthscore.py`: **16**
 - `branding.py`: **14**
-- `scanner.py`: **13**
+- `scanner.py`: **12**
 - `settings.py`: **11**
 - `duplicates.py`: **11**
 - `main.py`: **7**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-09T01:29:25` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_is_excluded_path` para manejar situaciones donde el acceso a un archivo o carpeta falla debido a condiciones de carrera (ej. el archivo desaparece justo después de ser detectado), evitando que el bucle se interrumpa y garantizando que las métricas finales sean más precisas ante entornos dinámicos.
 - `2026-10-09T01:20:33` **branding.py** (robustez ante casos límite): Mejoré la robustez de `draw_ring` ante desbordamientos y cálculos inválidos, asegurando que `extent` sea un número finito y que el cálculo del ángulo base no resulte en una división por cero u otras excepciones matemáticas inesperadas en el objeto `Canvas`.
 - `2026-10-09T01:19:55` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del sistema de ingesta en `SystemContext.ingest` y `_apply_field` para manejar de forma segura entradas mal formadas o tipos inesperados, evitando excepciones que detengan el flujo del asistente ante datos corruptos.
 - `2026-10-09T01:09:36` **safety.py** (rendimiento): Se optimizó el rendimiento del módulo `safety.py` sustituyendo las consultas repetitivas de atributos mediante `ctypes.windll.kernel32` en el bucle de validación de componentes de ruta por una búsqueda eficiente en caché, aprovechando el decorador `lru_cache` existente para minimizar el acceso a disco.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-09T00:39:08` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `startup.py` incorporando docstrings detallados en funciones clave y corrigiendo un bug menor en `_process_folder_entry` (donde la variable de nombre no estaba definida correctamente) para asegurar la integridad del código.
 - `2026-10-09T00:29:45` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos (usando `TypeAlias` y `Annotated`), se añadieron docstrings explicativos en funciones críticas y se refactorizó la lógica de los chequeos para mejorar la legibilidad y mantenimiento, aclarando el propósito de cada etapa del pipeline de escaneo.
 - `2026-10-09T00:28:22` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones de bajo nivel (`_internal`), explicitando los contratos de seguridad y precondiciones, para facilitar el mantenimiento y auditoría del módulo ante la complejidad de las operaciones con el sistema de archivos.
-- `2026-10-09T00:20:22` **organizer.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `organizer.py` mediante la adición de Type Hints más precisos, unificación de criterios de validación de rutas y una mejor documentación mediante docstrings que explican las decisiones de diseño para las operaciones de disco.

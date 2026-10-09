@@ -1520,3 +1520,11 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-10-09T01:21:09` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
 - `2026-10-09T01:21:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T01:21:09` Corrida terminada. Total usado hoy: 32.
+- `2026-10-09T01:28:51` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-10-09T01:29:25` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `_is_excluded_path` para manejar situaciones donde el acceso a un archivo o carpeta falla debido a condiciones de carrera (ej. el archivo desaparece justo después de ser detectado), evitando que el bucle se interrumpa y garantizando que las métricas finales sean más precisas ante entornos dinámicos.
+- `2026-10-09T01:29:56` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-09T01:30:20` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: SystemMetrics.safe_get
+- `2026-10-09T01:31:20` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-09T01:32:18` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Mejora la robustez ante casos límite en la inicialización y el ciclo de vida de los componentes UI agregando una validación de existencia para `self.tabview` y `self.activity` antes de intentar operaciones críticas, evitando cierres inesperados por `TclError` si la app intenta actualizarse durante un cierre asíncrono.
+- `2026-10-09T01:32:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T01:32:18` Corrida terminada. Total usado hoy: 36.
