@@ -369,7 +369,7 @@ def _get_security_descriptor_cached(path_str: str) -> SecurityDescriptor:
     """
     Consulta atributos de seguridad consolidando el estado del sistema.
     """
-    if not isinstance(path_str, str) or not os.path.isabs(path_str):
+    if not isinstance(path_str, str) or not os.path.isabs(path_str) or path_str.upper().startswith("\\\\.\\"):
         return SecurityDescriptor(0, True, True, True, True)
     
     attrs = _get_file_attrs(path_str)

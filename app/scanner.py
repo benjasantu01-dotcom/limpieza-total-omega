@@ -223,11 +223,12 @@ class Scanner:
             return False
             
         try:
+            # Chequeo defensivo inicial antes de resolver
             if entry.is_symlink() or self._is_reparse_point(entry):
                 return False
                 
             real_path = Path(entry.path).resolve(strict=True)
-            if not real_path.exists() or not str(real_path).lower().startswith(self.base_root_str):
+            if real_path.is_symlink() or not str(real_path).lower().startswith(self.base_root_str):
                 return False
                 
             if is_protected_path(real_path):
@@ -287,7 +288,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     if not isinstance(path, Path): return []
     try:
         resolved = path.resolve(strict=True)
-        if not _is_readable(resolved) or is_protected_path(resolved): 
+        if not _is_readable(resolved) or is_protected_path(resolved) or resolved.is_symlink(): 
             return []
     except (OSError, RuntimeError):
         return []

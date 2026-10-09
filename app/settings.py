@@ -340,6 +340,15 @@ def _is_file_secure_to_read(file_obj: Any) -> bool:
     except (OSError, PermissionError, AttributeError, ValueError):
         return False
 
+def _is_dir_safe(path: Path) -> bool:
+    """Verifica seguridad básica del directorio padre antes de operaciones de escritura."""
+    try:
+        st = path.stat()
+        if not stat.S_ISDIR(st.st_mode): return False
+        if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
+        return True
+    except OSError: return False
+
 def _load_impl(ruta: Path) -> AppSettings:
     """
     Implementación de carga: valida seguridad, utiliza locks advisory (flock) 
@@ -412,7 +421,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     
     parent = config_path.parent
     try:
-        if not parent.exists() or not parent.is_dir() or _Validators._is_reparse_point(parent) or is_protected_path(str(parent.resolve())): return None
+        if not _is_dir_safe(parent) or _Validators._is_reparse_point(parent) or is_protected_path(str(parent.resolve())): return None
         ensure_safe_to_modify(str(parent.resolve()))
         usage = shutil.disk_usage(parent)
         if usage.free < MAX_SETTINGS_SIZE * 2 or not os.access(parent, os.W_OK): return None
