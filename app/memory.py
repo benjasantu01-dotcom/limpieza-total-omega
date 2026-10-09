@@ -51,8 +51,6 @@ BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 MAX_VALID_PROCESS_MEM: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
 # Máscaras de acceso Win32 para interactuar con la memoria de procesos ajenos.
-# PROCESS_QUERY_LIMITED_INFORMATION: Permite obtener metadatos básicos del proceso.
-# PROCESS_SET_QUOTA: Necesario para modificar límites de working set.
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x0400
 FILE_ATTRIBUTE_REPARSE_POINT: Final[int] = 0x0400
@@ -157,7 +155,6 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
 def _safe_int_conversion(value: Optional[str], multiplier: int = 1) -> BytesValue:
     """Convierte cadenas con posibles caracteres no numéricos a BytesValue."""
     if not isinstance(value, str): return BytesValue(0)
-    # Extraer solo dígitos decimales para limpiar basura de strings
     digits = "".join(filter(str.isdigit, value))
     try:
         if not digits: return BytesValue(0)
@@ -193,6 +190,13 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     
     return MemorySnapshot(total=total, available=available, cached=cached)
 
+def _is_system_process(pid: int) -> bool:
+    """Evalúa si un proceso pertenece al núcleo o es el proceso propio de la aplicación."""
+    try:
+        return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
+    except Exception:
+        return True
+
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     """Parsea una línea CSV proveniente de herramientas externas con validación de tipos."""
     if not isinstance(line, str) or "," not in line: 
@@ -203,14 +207,14 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         return None
     
     name, pid_str, ws_str = parts[0], parts[1], parts[2]
-    pid = _safe_int_conversion(pid_str)
+    pid = int(_safe_int_conversion(pid_str))
     ws = _safe_int_conversion(ws_str)
         
     if _is_system_process(pid) or pid <= 0: 
         return None
     
     if 0 < ws < MAX_VALID_PROCESS_MEM:
-        return ProcessMemory(name, int(pid), BytesValue(ws))
+        return ProcessMemory(name, pid, BytesValue(ws))
     return None
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
@@ -220,7 +224,6 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     lines = raw_csv_text.splitlines()
     if len(lines) < 2:
         return []
-    # Usar generador con validación explícita para evitar None en la lista final
     processes = []
     for line in lines[1:]:
         proc = _extract_process_info(line)
@@ -340,14 +343,8 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
         report.extend(f"  Mayor consumo: {p.name} (PID {p.pid}) — {p.working_set_mb} MB" for p in processes[:3])
     return report
 
-def _is_system_process(pid: int) -> bool:
-    try:
-        return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
-    except Exception:
-        return True
-
 def _is_path_safe_and_valid(path_obj: Path) -> bool:
-    # Validaciones defensivas contra casos límite de rutas
+    """Verifica si una ruta es segura para ser inspeccionada en contexto de memoria."""
     path_str = str(path_obj)
     if not path_str or path_str.startswith("\\\\"): return False
     
@@ -358,7 +355,6 @@ def _is_path_safe_and_valid(path_obj: Path) -> bool:
     attr = kernel32.GetFileAttributesW(path_str)
     if attr == -1: return False
     
-    # Validar unidad física fija para evitar comportamientos inesperados en red/virtual
     drive = str(path_obj.anchor)
     if not drive or kernel32.GetDriveTypeW(drive) != DRIVE_FIXED: return False
     

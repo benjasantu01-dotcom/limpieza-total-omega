@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
-- Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 52
+- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Rechazadas por tests: 22
+- Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-08 | 111 | 16 | 22 | 11 | 128 |
-| 2026-10-09 | 85 | 7 | 30 | 8 | 86 |
+| 2026-10-08 | 108 | 15 | 22 | 11 | 128 |
+| 2026-10-09 | 86 | 7 | 31 | 8 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **42**
-- legibilidad y documentación: **40**
-- robustez ante casos límite: **38**
-- rendimiento: **33**
+- legibilidad y documentación: **41**
+- robustez ante casos límite: **36**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **23**
 - `quarantine.py`: **19**
-- `assistant.py`: **17**
-- `memory.py`: **17**
+- `memory.py`: **18**
 - `safety.py`: **16**
-- `branding.py`: **15**
+- `assistant.py`: **16**
 - `browser.py`: **15**
 - `healthscore.py`: **15**
+- `branding.py`: **14**
 - `organizer.py`: **14**
 - `scanner.py`: **12**
 - `duplicates.py`: **12**
-- `settings.py`: **11**
+- `settings.py`: **10**
 - `main.py`: **7**
 - `startup.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-09T09:18:45` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones críticas, se han añadido type hints faltantes y se ha extraído la lógica de validación de procesos del sistema a una función descriptiva, facilitando la auditoría del código conforme a las reglas de seguridad.
 - `2026-10-09T09:09:23` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de las funciones de puntuación (`score_*`) mediante docstrings descriptivos, reforzando la claridad del propósito de cada métrica y asegurando que las firmas de tipo sean consistentes para facilitar el mantenimiento.
 - `2026-10-09T09:08:55` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y claridad de las funciones de filtrado, estandarizando la nomenclatura de los argumentos y detallando el propósito de cada etapa del proceso de escaneo para facilitar el mantenimiento.
 - `2026-10-09T09:08:29` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados y type hints a funciones que los omitían, y documenté explícitamente el uso de `heapq` y `scandir` para clarificar la complejidad algorítmica de las operaciones de escaneo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-09T06:47:05` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_file_exclusive` añadiendo un cierre explícito del handle de Windows mediante `ctypes` en caso de error, evitando fugas de recursos (leaks) que podrían bloquear el sistema de archivos del usuario.
 - `2026-10-09T06:45:50` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `memory.py` refinando la lógica de `_get_process_path` para garantizar que el `buffer` de la API de Win32 sea tratado como una cadena Unicode validada antes de intentar cualquier operación de resolución de rutas, evitando el riesgo de desbordamiento o manipulación de rutas maliciosas.
 - `2026-10-09T06:37:01` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del motor de salud implementando un acceso más robusto a los datos mediante el uso estricto de `getattr` con validación de tipo en `summarize` y `compute_score`, asegurando que el sistema sea resiliente ante métricas inesperadas o corrompidas sin interrumpir el flujo.
-- `2026-10-09T06:36:22` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva integrando `is_safe_to_modify` como medida preventiva dentro de los bucles de iteración de archivos en `_collect_candidates` y `_group_paths_by_hash`, asegurando que no se procesen rutas que hayan cambiado su estado de seguridad durante la ejecución del escaneo.
