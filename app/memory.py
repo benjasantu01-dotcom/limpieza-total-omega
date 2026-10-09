@@ -89,15 +89,15 @@ TRIM_WARNING: Final[str] = (
 class MEMORYSTATUSEX(ctypes.Structure):
     """Estructura Win32 mapeada para la API GlobalMemoryStatusEx."""
     _fields_: List[Tuple[str, type]] = [
-        ("dwLength", ctypes.c_ulong),            # Tamaño de la estructura en bytes
-        ("dwMemoryLoad", ctypes.c_ulong),        # Porcentaje de uso de memoria (0-100)
-        ("ullTotalPhys", ctypes.c_ulonglong),    # Memoria física total (bytes)
-        ("ullAvailPhys", ctypes.c_ulonglong),    # Memoria física disponible (bytes)
-        ("ullTotalPageFile", ctypes.c_ulonglong),# Límite del archivo de paginación (bytes)
-        ("ullAvailPageFile", ctypes.c_ulonglong),# Disponible en archivo de paginación (bytes)
-        ("ullTotalVirtual", ctypes.c_ulonglong), # Espacio virtual total (bytes)
-        ("ullAvailVirtual", ctypes.c_ulonglong), # Espacio virtual disponible (bytes)
-        ("ullAvailExtendedVirtual", ctypes.c_ulonglong), # Siempre 0 (reservado)
+        ("dwLength", ctypes.c_ulong),            
+        ("dwMemoryLoad", ctypes.c_ulong),        
+        ("ullTotalPhys", ctypes.c_ulonglong),    
+        ("ullAvailPhys", ctypes.c_ulonglong),    
+        ("ullTotalPageFile", ctypes.c_ulonglong),
+        ("ullAvailPageFile", ctypes.c_ulonglong),
+        ("ullTotalVirtual", ctypes.c_ulonglong), 
+        ("ullAvailVirtual", ctypes.c_ulonglong), 
+        ("ullAvailExtendedVirtual", ctypes.c_ulonglong), 
     ]
 
 @dataclass(frozen=True)
@@ -109,18 +109,15 @@ class MemorySnapshot:
 
     @property
     def used(self) -> BytesValue:
-        """Calcula el uso físico de memoria basado en el total y disponible."""
         return BytesValue(max(0, self.total - self.available))
 
     @property
     def used_percent(self) -> float:
-        """Calcula el porcentaje de memoria ocupada respecto al total físico."""
         if self.total <= 0: return 0.0
         return round((float(self.used) / float(self.total)) * 100, 1)
 
     @property
     def available_percent(self) -> float:
-        """Calcula el porcentaje de memoria libre respecto al total físico."""
         if self.total <= 0: return 0.0
         return round((float(self.available) / float(self.total)) * 100, 1)
 
@@ -134,7 +131,6 @@ class ProcessMemory:
 
     @property
     def working_set_mb(self) -> MegabytesValue:
-        """Convierte bytes de memoria ocupada a Megabytes para visualización."""
         return MegabytesValue(round(self.working_set / BYTES_IN_MB, 1))
 
     def __lt__(self, other: ProcessMemory) -> bool:
@@ -154,13 +150,11 @@ def format_bytes(num: Optional[int | float]) -> str:
         return "0 B"
 
 def _create_mem_status_ex() -> MEMORYSTATUSEX:
-    """Inicializa la estructura MEMORYSTATUSEX con el tamaño de bytes requerido por Win32."""
     mem_status = MEMORYSTATUSEX()
     mem_status.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return mem_status
 
 def _safe_int_conversion(value: Optional[str], multiplier: int = 1) -> BytesValue:
-    """Limpia cadenas provenientes de parsers de texto y aplica factor de escala."""
     if not isinstance(value, str): return BytesValue(0)
     digits = "".join(filter(str.isdigit, value))
     try:
@@ -196,10 +190,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     return MemorySnapshot(total=total, available=available, cached=cached)
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
-    """
-    Parsea una línea CSV proveniente de herramientas externas.
-    Espera formato: "Nombre, PID, WorkingSetBytes".
-    """
+    """Parsea una línea CSV proveniente de herramientas externas."""
     if not isinstance(line, str) or "," not in line: 
         return None
         
@@ -250,7 +241,6 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
 @lru_cache(maxsize=1)
 def _get_cached_snapshot(timestamp_bucket: int) -> MemorySnapshot:
-    """Implementa TTL para evitar saturar las APIs del sistema con llamadas frecuentes."""
     if _is_windows: return _read_windows_snapshot()
     global _linux_available
     if _linux_available:
@@ -261,10 +251,9 @@ def _get_cached_snapshot(timestamp_bucket: int) -> MemorySnapshot:
     return _EMPTY_SNAPSHOT
 
 def read_snapshot() -> MemorySnapshot:
-    """Interfaz principal: retorna una lectura actualizada del estado de memoria."""
     return _get_cached_snapshot(int(time.time() / 5))
 
-def _get_process_memory_stats(pid: int) -> Optional[BytesValue]:
+def _query_working_set_bytes(pid: int) -> Optional[BytesValue]:
     """
     Consulta la API PSAPI GetProcessMemoryInfo.
     El índice 3 de PROCESS_MEMORY_COUNTERS corresponde a WorkingSetSize.
@@ -288,13 +277,11 @@ def _get_process_memory_stats(pid: int) -> Optional[BytesValue]:
     return None
 
 def _get_proc_memory_by_pid(pid: int) -> Optional[ProcessMemory]:
-    """Helper para crear una instancia ProcessMemory validando el PID."""
-    ws = _get_process_memory_stats(pid)
+    ws = _query_working_set_bytes(pid)
     if ws is None: return None
     return ProcessMemory(f"PID {pid}", pid, ws)
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Enumeración y ordenamiento de procesos según su consumo de memoria RAM."""
     if not hasattr(top_memory_processes, "_cache"):
         top_memory_processes._cache = (0.0, [])
     
@@ -323,7 +310,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 
 @lru_cache(maxsize=8)
 def pressure_level(snapshot: MemorySnapshot) -> str:
-    """Define el nivel de riesgo de memoria según umbrales de uso del sistema."""
     if snapshot.total <= 0: return "info"
     avail = snapshot.available_percent
     if avail >= 35: return "ok"
@@ -331,7 +317,6 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
     return "warning" if avail >= 10 else "danger"
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
-    """Crea un informe textual descriptivo del uso actual de memoria."""
     if snapshot.total <= 0: return ["No se pudo leer el estado de la memoria."]
     diagnostics = {
         "ok": "Estado: holgado. La memoria ocupada por caché mejora la velocidad.",
@@ -350,14 +335,12 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def _is_system_process(pid: int) -> bool:
-    """Verifica si un PID pertenece al núcleo del sistema o es la propia aplicación."""
     try:
         return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
     except Exception:
         return True
 
 def _is_path_safe_and_valid(path_obj: Path) -> bool:
-    """Valida que la ruta de un ejecutable sea segura, local y no un reparse point."""
     if is_protected_path(str(path_obj)) or not is_safe_to_modify(path_obj):
         return False
     kernel32 = ctypes.windll.kernel32
@@ -370,7 +353,6 @@ def _is_path_safe_and_valid(path_obj: Path) -> bool:
     return not (attr & FILE_ATTRIBUTE_REPARSE_POINT)
 
 def _get_process_path(pid: int) -> Optional[Path]:
-    """Resuelve la ruta absoluta del ejecutable tras validar permisos y seguridad."""
     kernel32 = ctypes.windll.kernel32
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return None
@@ -394,7 +376,6 @@ def _get_process_path(pid: int) -> Optional[Path]:
     return None
 
 def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
-    """Verifica si el proceso es candidato a optimización según seguridad."""
     if pid <= 0: return False, "PID inválido."
     if _is_system_process(pid): return False, "Proceso protegido."
     
@@ -403,7 +384,6 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Realiza la operación manual de vaciado de memoria WorkingSet para un PID dado."""
     if not _is_windows: return False, "Solo soportado en Windows."
     
     try:

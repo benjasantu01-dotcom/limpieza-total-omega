@@ -458,3 +458,12 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-09T04:35:12` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `diskreport.py` añadiendo docstrings detallados en clases y métodos clave, y clarifiqué la lógica del recolector `_collect_summary_data` para mejorar la mantenibilidad.
 - `2026-10-09T04:35:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T04:35:12` Corrida terminada. Total usado hoy: 108.
+- `2026-10-09T04:42:28` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-10-09T04:42:30` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-09T04:42:36` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-09T04:43:10` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del módulo `duplicates.py` mediante la adición de docstrings técnicos detallados en funciones clave, la estandarización de type hints y la consolidación de la lógica de validación de archivos para evitar redundancias.
+- `2026-10-09T04:43:38` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: SystemMetrics.safe_get
+- `2026-10-09T04:44:52` ✅ Mejora aceptada en main.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad y mantenibilidad del archivo `main.py` mediante la implementación de `docstrings` descriptivos en los métodos de la clase `LimpiezaTotalOmegaApp` y la estandarización de la terminología en los comentarios, facilitando la comprensión de las responsabilidades de cada componente en la arquitectura.
+- `2026-10-09T04:45:14` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se introdujeron type hints faltantes en funciones críticas, se renombró `_get_process_memory_stats` a `_query_working_set_bytes` para reflejar con precisión su propósito, y se mejoró la documentación interna mediante docstrings que explican el contexto de seguridad y el comportamiento de las APIs de Windows utilizadas.
+- `2026-10-09T04:45:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T04:45:14` Corrida terminada. Total usado hoy: 112.
