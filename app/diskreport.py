@@ -296,6 +296,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Doble verificación: existencia antes de procesar
+                        if not os.path.exists(entry.path):
+                            continue
+
                         if skip_protected and _is_excluded_path(entry, str(root_path)):
                             continue
                         

@@ -275,7 +275,7 @@ def _sanitize_msg(msg: str) -> str:
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio, findings: List[str]) -> None:
     """Ejecuta las reglas de diagnóstico y sanitiza el texto de los resultados."""
-    if not isinstance(rules, tuple): return
+    if not isinstance(rules, (tuple, list)): return
     for rule in rules:
         try:
             if not isinstance(rule, RecommendationRule): continue
