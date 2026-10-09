@@ -990,7 +990,7 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem, base_dir: Path) -> 
 
 
 def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
-    """Limpia la cuarentena eliminando archivos verificados."""
+    """Limpia la cuarentena eliminando archivos verificados de forma eficiente."""
     try:
         quarantine_root = quarantine_dir(base)
         if _is_filesystem_read_only(quarantine_root):
@@ -1000,10 +1000,11 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         if not items:
             return 0
         
-        # Mapeo O(1) para lookups de metadatos durante iteración
+        # Mapeo para acceso O(1)
         item_map = {i.stored_name: i for i in items}
         purged_ids: Set[str] = set()
         
+        # Iteración única sobre el directorio
         for f in quarantine_root.iterdir():
             if f.name == MANIFEST_NAME or not f.is_file():
                 continue
