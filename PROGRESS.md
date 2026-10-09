@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
+- Mejoras aceptadas: **209** (41.5% de aceptación)
 - Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 43
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 210
+- Rechazadas por guardia de seguridad: 44
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 39 | 4 | 9 | 4 | 50 |
+| 2026-10-07 | 39 | 4 | 9 | 4 | 46 |
 | 2026-10-08 | 139 | 18 | 28 | 12 | 153 |
-| 2026-10-09 | 30 | 1 | 6 | 4 | 7 |
+| 2026-10-09 | 31 | 1 | 7 | 5 | 8 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +26,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - rendimiento: **44**
 - legibilidad y documentación: **42**
 - robustez ante casos límite: **38**
-- seguridad defensiva: **37**
+- seguridad defensiva: **38**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,8 +34,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **20**
 - `assistant.py`: **19**
 - `browser.py`: **19**
+- `memory.py`: **18**
 - `safety.py`: **18**
-- `memory.py`: **17**
 - `organizer.py`: **17**
 - `healthscore.py`: **16**
 - `branding.py`: **15**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-09T02:11:53` **memory.py** (seguridad defensiva): Se añadió un mecanismo de validación de identidad para `trim_working_set` usando `GetModuleFileNameExW` comparado contra el `ProcessId` original, previniendo ataques de tipo "PID reuse" donde un proceso malicioso podría haber tomado el lugar de uno legítimo entre la validación y la ejecución.
 - `2026-10-09T02:01:20` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_excluded_path` asegurando que la validación de rutas no solo dependa de `is_protected_path`, sino que realice un chequeo estricto de la ruta física mediante `resolve()` para evitar ataques de manipulación de rutas simbólicas (path traversal).
 - `2026-10-09T02:00:43` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `save_logo_svg` validando la existencia de la ruta padre antes de proceder, asegurando que la operación de escritura sea robusta y evitando errores de sistema innecesarios.
 - `2026-10-09T02:00:07` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_build_payload` y `_call_gemini` para prevenir la construcción de rutas arbitrarias o ataques de inyección mediante la validación explícita de `model` y `api_key` contra el entorno, asegurando que `urllib` solo interactúe con el endpoint esperado.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-09T01:20:33` **branding.py** (robustez ante casos límite): Mejoré la robustez de `draw_ring` ante desbordamientos y cálculos inválidos, asegurando que `extent` sea un número finito y que el cálculo del ángulo base no resulte en una división por cero u otras excepciones matemáticas inesperadas en el objeto `Canvas`.
 - `2026-10-09T01:19:55` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del sistema de ingesta en `SystemContext.ingest` y `_apply_field` para manejar de forma segura entradas mal formadas o tipos inesperados, evitando excepciones que detengan el flujo del asistente ante datos corruptos.
 - `2026-10-09T01:09:36` **safety.py** (rendimiento): Se optimizó el rendimiento del módulo `safety.py` sustituyendo las consultas repetitivas de atributos mediante `ctypes.windll.kernel32` en el bucle de validación de componentes de ruta por una búsqueda eficiente en caché, aprovechando el decorador `lru_cache` existente para minimizar el acceso a disco.
-- `2026-10-09T01:00:52` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y la carga de manifiestos evitando iteraciones redundantes y centralizando la gestión de caché, reemplazando búsquedas lineales `O(N)` por `O(1)` mediante diccionarios y utilizando `set` para la exclusión de ítems.

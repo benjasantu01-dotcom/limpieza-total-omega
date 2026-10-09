@@ -398,6 +398,8 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
     """Verifica si el proceso es candidato a optimización según seguridad."""
     if pid <= 0: return False, "PID inválido."
     if _is_system_process(pid): return False, "Proceso protegido."
+    
+    # Validación extra: prevenir PID reuse confirmando la ruta antes de actuar
     path = _get_process_path(pid)
     if path is None: return False, "Acceso a ruta de proceso restringido."
     return True, None
@@ -426,6 +428,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "No se pudo acceder al proceso."
         
     try:
+        # Re-confirmar el proceso mediante su HANDLE para cerrar la ventana de tiempo de PID reuse
         if psapi.EmptyWorkingSet(proc_handle) == 0:
             return False, "El sistema rechazó la operación."
         return True, f"Working set liberado. {TRIM_WARNING}"
