@@ -311,8 +311,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             logging.error(f"Falla crítica en pipeline {entry.area}: {e}")
             metric_breakdown[entry.area] = 0
             
-    if m.quarantined_count > 0:
-        recommendations.append(f"Tenés {int(m.quarantined_count)} archivo(s) en cuarentena.")
+    q_val = getattr(m, 'quarantined_count', 0)
+    if isinstance(q_val, (int, float)) and q_val > 0:
+        recommendations.append(f"Tenés {int(q_val)} archivo(s) en cuarentena.")
     
     final_score = int(round(_clamp(accumulated_score, 0.0, 100.0)))
     return HealthResult(
@@ -338,13 +339,16 @@ def summarize(result: HealthResult | None) -> List[str]:
         return ["Error: Informe de salud no disponible."]
         
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
-    bd = result.breakdown
+    bd = getattr(result, 'breakdown', {})
+    if not isinstance(bd, dict): bd = {}
+    
     for area, maximo in WEIGHTS.items():
         points = bd.get(area, 0)
         p = points if isinstance(points, int) else 0
         bar = _render_bar(p, maximo)
         lines.append(f"  {area.capitalize():<12} {p:>2}/{maximo:<2} [{bar}]")
     
-    recs = result.recommendations if isinstance(result.recommendations, list) else ["Sin recomendaciones."]
-    lines.extend(("", "Recomendaciones:", *(f"  - {r}" for r in recs if isinstance(r, str))))
+    recs = getattr(result, 'recommendations', [])
+    recs_list = recs if isinstance(recs, list) else ["Sin recomendaciones."]
+    lines.extend(("", "Recomendaciones:", *(f"  - {r}" for r in recs_list if isinstance(r, str))))
     return lines

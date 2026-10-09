@@ -288,8 +288,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                             st = entry.stat()
                             if st.st_size >= min_size and (st.st_dev, st.st_ino) not in visited_inodes:
                                 p_entry = Path(entry.path)
-                                # Validación simplificada: evitamos re-llamar stat
-                                if _safe_path_check(p_entry) and not is_system_or_hidden(p_entry) and not _is_file_locked(p_entry):
+                                if _is_valid_candidate(p_entry, st.st_size):
                                     visited_inodes.add((st.st_dev, st.st_ino))
                                     size_to_paths_map[st.st_size].append(p_entry)
                     except (OSError, PermissionError):
@@ -304,7 +303,8 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Helper para agrupar rutas según el resultado de una función de hashing."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if (digest := hash_func(path)):
+        # Validación defensiva extra antes de calcular el hash
+        if is_safe_to_modify(path) and (digest := hash_func(path)):
             groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
