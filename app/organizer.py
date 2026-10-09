@@ -147,7 +147,7 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
-    """Verifica recursión infinita en movimientos de carpetas."""
+    """Verifica si el destino es un subdirectorio del origen para evitar recursión infinita."""
     try:
         src_resolved = src.resolve(strict=False)
         dest_resolved = dest.resolve(strict=False)
@@ -157,7 +157,7 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
         return True
 
 def _has_forbidden_chars(path: Path) -> bool:
-    """Valida la ausencia de caracteres reservados de NTFS/FAT que impiden rutas válidas."""
+    """Valida la ausencia de caracteres reservados de NTFS que impiden rutas válidas."""
     path_str = str(path).lower()
     return any(c in path_str for c in ["<", ">", "|", "\0"])
 
@@ -172,7 +172,11 @@ def _is_system_hidden(entry: os.DirEntry) -> bool:
     return bool(_get_win_attributes(entry) & WIN_ATTR_MASK)
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
-    """Auditoría de seguridad integral para operaciones de disco (movimiento)."""
+    """
+    Auditoría de seguridad integral para operaciones de disco.
+    Realiza validaciones de integridad del archivo (inode/dev), permisos y 
+    verificaciones de seguridad de ruta (safety.py) antes de proceder con el movimiento.
+    """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     src = junk_file.path
     try:
@@ -213,7 +217,7 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> boo
     return True
 
 def _is_candidate_junk(stats: os.stat_result, entry: os.DirEntry, now_ts: float) -> bool:
-    """Evalúa si un archivo cumple los criterios para ser considerado basura."""
+    """Evalúa si un archivo cumple los criterios de tamaño y fecha para ser considerado basura."""
     return (0 <= stats.st_size < MAX_FILE_SIZE_BYTES and 
             stats.st_mtime <= now_ts + 3600 and
             not _is_system_hidden(entry))
@@ -292,7 +296,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     return dest_res
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
-    """Genera un nombre de archivo único en destino."""
+    """Genera un nombre de archivo único en destino evitando colisiones."""
     if not junk_file or not junk_file.path or not dest_base: return None
     try:
         safe_name = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
@@ -301,7 +305,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         return None
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Elimina permanentemente archivos tras verificación de seguridad."""
+    """Elimina permanentemente archivos tras verificación de seguridad obligatoria."""
     if not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser().resolve(strict=False)

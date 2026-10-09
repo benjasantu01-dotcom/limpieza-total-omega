@@ -7,26 +7,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **200** (39.7% de aceptación)
-- Rechazadas por tests: 26
-- Rechazadas por guardia de seguridad: 40
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 222
+- Rechazadas por tests: 25
+- Rechazadas por guardia de seguridad: 41
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 58 | 8 | 12 | 4 | 68 |
+| 2026-10-07 | 56 | 7 | 12 | 4 | 67 |
 | 2026-10-08 | 139 | 18 | 28 | 12 | 153 |
-| 2026-10-09 | 3 | 0 | 0 | 0 | 1 |
+| 2026-10-09 | 5 | 0 | 1 | 1 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
 - seguridad defensiva: **44**
-- rendimiento: **37**
-- legibilidad y documentación: **37**
+- legibilidad y documentación: **39**
 - robustez ante casos límite: **35**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,18 +34,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **19**
 - `quarantine.py`: **19**
 - `browser.py`: **19**
-- `safety.py`: **18**
-- `healthscore.py`: **16**
+- `healthscore.py`: **17**
+- `safety.py`: **17**
 - `memory.py`: **16**
-- `organizer.py`: **15**
-- `scanner.py`: **13**
+- `organizer.py`: **16**
 - `branding.py`: **13**
 - `settings.py`: **12**
+- `scanner.py`: **12**
 - `duplicates.py`: **11**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-09T00:20:22` **organizer.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `organizer.py` mediante la adición de Type Hints más precisos, unificación de criterios de validación de rutas y una mejor documentación mediante docstrings que explican las decisiones de diseño para las operaciones de disco.
+- `2026-10-09T00:18:03` **healthscore.py** (legibilidad y documentación): Mejora la documentación técnica y legibilidad del motor de scoring mediante el uso de Type Hints más precisos, la extracción de una lógica de validación de pesos en `WEIGHTS` hacia una función explícita y la aclaración de las responsabilidades de los tipos `SystemMetrics` y `HealthResult`.
 - `2026-10-09T00:09:15` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en las funciones de soporte (`_safe_stat`, `_bytes_to_mb`, `_validate_limit`) y la clarificación de tipos en las colecciones de datos, facilitando la comprensión del flujo de métricas sin alterar la lógica de escaneo.
 - `2026-10-09T00:08:49` **browser.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se reemplazaron los comentarios vagos por docstrings explicativos que aclaran el propósito de cada función y los límites de seguridad en las operaciones de escaneo.
 - `2026-10-09T00:07:52` **branding.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento mediante la adición de docstrings estructurados (con secciones Args/Returns) en las funciones críticas de renderizado, y clarificación de variables ambiguas en `_draw_shield_stripes`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-08T14:24:21` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` capturando errores de lectura de forma específica y validando el estado del archivo antes y durante el acceso para prevenir excepciones inesperadas que podrían detener el escaneo, asegurando además que no se intente procesar contenido None.
 - `2026-10-08T14:23:45` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `walk_files` y `largest_folders` para capturar excepciones específicas (como `PermissionError`) durante la iteración y el acceso a rutas, evitando fallos silenciosos o interrupciones prematuras y asegurando que las operaciones de recolección de datos sean resilientes.
 - `2026-10-08T14:16:07` **assistant.py** (manejo de errores y validación de entradas): Se mejora la robustez de la ingesta de datos en `SystemContext` capturando excepciones granulares durante la conversión de tipos en `ingest` y `_apply_field`, evitando que un valor de configuración malformado o un tipo inesperado interrumpa el proceso de diagnóstico de la app.
-- `2026-10-08T12:52:03` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `settings_path` al evitar la expansión del usuario mediante `os.path.expanduser` (que puede ser manipulado en ciertos entornos) y reemplazándolo por una validación de ruta estricta utilizando la resolución absoluta de `pathlib` antes de crear directorios.
-- `2026-10-08T12:51:24` **scanner.py** (seguridad defensiva): Se ha restringido el acceso a metadatos de archivos en `_safe_stat` para prevenir la resolución de accesos a archivos con múltiples enlaces físicos (`st_nlink > 1`), evitando el análisis de archivos que podrían ser puntos de unión de datos o enlaces a flujos de datos alternativos (ADS) del sistema de archivos NTFS.

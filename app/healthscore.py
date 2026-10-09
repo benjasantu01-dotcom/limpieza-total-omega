@@ -130,8 +130,12 @@ WEIGHTS: Final[Dict[MetricKey, int]] = {
     "arranque": 8,
 }
 
-if sum(WEIGHTS.values()) != 100:
-    raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
+def _verify_weights(weights: Dict[str, int]) -> None:
+    """Valida la integridad de la configuración de pesos."""
+    if sum(weights.values()) != 100:
+        raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
+
+_verify_weights(WEIGHTS)
 
 _JUNK_SCORER = create_linear_scorer(_LIMIT_JUNK_MB, inverse=True)
 _DUP_SCORER = create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)
