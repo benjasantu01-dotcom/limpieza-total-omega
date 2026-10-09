@@ -1012,3 +1012,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-09T10:12:16` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_get_source_value` y la ingesta de datos en `SystemContext` para manejar de forma segura objetos inesperados, evitando excepciones por atributos maliciosos o mal formados, y reforzando la integridad frente a entradas que no siguen el esquema esperado.
 - `2026-10-09T10:12:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T10:12:16` Corrida terminada. Total usado hoy: 240.
+- `2026-10-09T10:19:39` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-10-09T10:20:41` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-09T10:21:29` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de sistema de archivos (como discos de solo lectura o permisos denegados) mediante un manejo de excepciones más granular y se eliminó la posible recursión infinita en la validación de `path`.
+- `2026-10-09T10:22:29` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-09T10:23:32` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-09T10:24:38` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-09T10:25:24` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-10-09T10:25:54` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-10-09T10:26:08` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-09T10:26:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T10:26:08` Corrida terminada. Total usado hoy: 244.
