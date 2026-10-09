@@ -660,12 +660,11 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
                     os.fsync(dest_fd)
             except Exception:
                 os.close(dest_fd)
+                if temp_dest.exists():
+                    _check_io_error_context(temp_dest.unlink)
                 raise
         _verify_copied_data(stat_src, temp_dest, source_hash)
     except (OSError, IOError) as e:
-        if temp_dest.exists():
-            try: _check_io_error_context(temp_dest.unlink)
-            except OSError: pass
         raise OSError(f"Falla durante operación I/O de copia: {e}")
 
 

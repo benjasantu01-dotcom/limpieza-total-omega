@@ -218,6 +218,7 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     if _is_system_process(pid) or pid <= 0: 
         return None
     
+    # Validación extra de coherencia: ws no puede superar límites de direccionamiento lógico.
     if 0 < ws < MAX_VALID_PROCESS_MEM:
         return ProcessMemory(name, pid, BytesValue(ws))
     return None
@@ -270,7 +271,9 @@ def _get_process_memory_stats(pid: int) -> Optional[BytesValue]:
     El índice 3 de PROCESS_MEMORY_COUNTERS corresponde a WorkingSetSize.
     """
     kernel32 = ctypes.windll.kernel32
-    psapi = ctypes.windll.psapi
+    psapi = getattr(ctypes.windll, "psapi", None)
+    if not psapi: return None
+    
     process_handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
     if not process_handle:
         return None
@@ -302,7 +305,9 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     cache_time, cache_data = top_memory_processes._cache
     
     if (now - cache_time) > 60:
-        psapi = ctypes.windll.psapi
+        psapi = getattr(ctypes.windll, "psapi", None)
+        if not psapi: return []
+        
         pids = (ctypes.c_ulong * 4096)()
         cb = ctypes.sizeof(pids)
         cb_needed = ctypes.c_ulong()

@@ -139,7 +139,7 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """Valida si un archivo está bloqueado mediante apertura exclusiva a nivel de OS."""
-    if not path or not path.exists(): return True
+    if not path or not path.is_file(): return True
     try:
         with open(path, "rb"):
             return False
