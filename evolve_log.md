@@ -887,3 +887,34 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-10-09T08:54:12` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la función `validate` envolviendo el acceso al diccionario en un `try-except` específico y asegurando que las entradas corruptas en el JSON no provoquen una terminación inesperada del proceso de carga, mejorando el manejo de errores ante datos externos inesperados.
 - `2026-10-09T08:54:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T08:54:12` Corrida terminada. Total usado hoy: 208.
+- `2026-10-09T08:57:48` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-10-09T08:58:32` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.02s
+
+```
+- `2026-10-09T08:58:32` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry._extract_quoted_path` y `_resolve_and_cache_path` mediante la validación explícita de `None` y tipos, asegurando que las operaciones de `Path` no fallen ante entradas malformadas o inesperadas, centralizando la protección contra el desbordamiento de rutas (`MAX_PATH`) y evitando la propagación de excepciones en el flujo de ejecución.
+- `2026-10-09T08:59:30` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización del método `SystemContext.ingest`, reemplazando el bloque `try-except` genérico por un procesamiento explícito y una validación de estado más clara, lo cual facilita el seguimiento de errores sin alterar la lógica de negocio.
+- `2026-10-09T09:00:02` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-10-09T09:00:50` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante docstrings detallados en las funciones de navegación y escaneo, y se ha introducido una constante explícita `PATH_FORBIDDEN_CHARS` para clarificar la validación de rutas, reemplazando el uso de una cadena "inline" ambigua.
+- `2026-10-09T09:00:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T09:00:50` Corrida terminada. Total usado hoy: 212.

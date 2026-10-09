@@ -46,6 +46,9 @@ BrowserMap: TypeAlias = Dict[str, str]
 OSPath: TypeAlias = Union[str, Path]
 VisitedDirs: TypeAlias = Dict[str, int]
 
+# Caracteres no permitidos en rutas de Windows según especificación técnica
+PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|'}
+
 @dataclass(frozen=True)
 class ScanContext:
     """Contenedor de estado para el escaneo recursivo de directorios."""
@@ -74,6 +77,8 @@ def safe_path_operation(default: Any) -> Callable:
 class ScanResult(NamedTuple):
     """
     Representa el resultado consolidado de una operación de escaneo recursivo.
+    bytes_found: Total acumulado de bytes detectados.
+    success: Booleano indicando si la operación finalizó sin errores críticos.
     """
     bytes_found: int
     success: bool
@@ -180,14 +185,13 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
     return bool(attrs != 0xFFFFFFFF and (attrs & SYSTEM_HIDDEN_FLAGS))
 
 def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
-    """Aplica las reglas de filtrado de seguridad para ignorar archivos o carpetas no deseados."""
+    """Aplica reglas de filtrado de seguridad para ignorar archivos según políticas de protección."""
     if _is_excluded_file(entry.name) or is_protected_path(Path(entry.path)):
         return True
     
     if _is_unc_path(entry.path) or len(entry.path) >= MAX_PATH_LEN:
         return True
     
-    # Se usa la normalización previa para evitar recalcular en cada iteración
     if not _ensure_within_base(os.path.normcase(entry.path), ctx.base_norm):
         return True
 
@@ -196,7 +200,7 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     return False
 
 def _process_file_node(entry: os.DirEntry, visited_files: Set[tuple[int, int]]) -> int:
-    """Calcula el tamaño del archivo usando su identificador único (inodo) para evitar conteo doble."""
+    """Calcula el tamaño del archivo usando identificadores de inodo/dev para evitar conteo doble."""
     try:
         st = entry.stat(follow_symlinks=False)
         file_id = (st.st_dev, st.st_ino)
@@ -213,7 +217,8 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> ScanResult:
     """
-    Recorre jerárquicamente directorios limitando la profundidad.
+    Recorre jerárquicamente directorios limitando la profundidad máxima.
+    Utiliza un mapa de directorios visitados para evitar ciclos infinitos.
     """
     if depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)
@@ -244,7 +249,7 @@ def _sum_directory_recursive(
 
 @safe_path_operation(0)
 def directory_size(path: Optional[OSPath]) -> int:
-    """Punto de entrada para obtener el peso en bytes de un directorio."""
+    """Punto de entrada seguro para obtener el peso en bytes de un directorio."""
     if not isinstance(path, (str, Path)): return 0
     path_obj: Path = Path(path)
     if not path_obj.exists() or not path_obj.is_dir(): return 0
@@ -276,8 +281,9 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Resuelve rutas relativas a absolutas dentro del contexto del perfil de usuario."""
     if not isinstance(real_base, Path) or not isinstance(rel_str, str) or not rel_str: return Path()
-    # Evitar caracteres ilegales en la construcción de la ruta
-    if any(c in rel_str for c in ('*', '?', '<', '>', '|')): return Path()
+    
+    # Validar caracteres prohibidos en la ruta relativa
+    if any(char in rel_str for char in PATH_FORBIDDEN_CHARS): return Path()
     
     target: Path = real_base.joinpath(*rel_str.split("\\"))
     if not target.exists() or not target.is_dir(): return Path()
@@ -305,7 +311,6 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             real_base: Path = base.resolve(strict=True)
             real_base_str: str = str(real_base)
             
-            # Actualizar el contexto para la base actual
             ctx = ScanContext(os.path.normcase(real_base_str), _get_kernel32(), _IS_JUNCTION_FN, set(), {})
             
             for browser_name, rel_str in browser_map.items():
@@ -321,11 +326,11 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     return found
 
 def total_cache_bytes(caches: Optional[Iterable[BrowserCache]] = None) -> int:
-    """Suma total de bytes de una colección de cachés."""
+    """Suma total de bytes de una colección de objetos BrowserCache."""
     return sum(c.size_bytes for c in caches) if caches else 0
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
-    """Genera una representación textual del estado actual de las cachés encontradas."""
+    """Genera un informe textual legible del estado actual de las cachés encontradas."""
     current_caches = caches if isinstance(caches, list) else detect_profiles()
     if not current_caches:
         return ["No se detectaron cachés de navegador en este sistema."]

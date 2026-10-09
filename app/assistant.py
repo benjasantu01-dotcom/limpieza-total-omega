@@ -433,31 +433,31 @@ class SystemContext:
         """
         Normaliza e importa datos externos al contexto de manera transaccional.
         """
-        if not self._validate_ingestion_source(source): return False
-        has_updates = False
-        try:
-            for key, spec in _VALIDATORS.items():
-                res = self._apply_field(source, key, spec)
-                if res is not None:
-                    try:
-                        if res != getattr(self, key):
-                            object.__setattr__(self, key, res)
-                            has_updates = True
-                    except Exception: continue
+        if not self._validate_ingestion_source(source):
+            return False
+        
+        updates_made = False
+        
+        # Procesar métricas numéricas según especificaciones
+        for key, spec in _VALIDATORS.items():
+            value = self._apply_field(source, key, spec)
+            if value is not None and value != getattr(self, key):
+                object.__setattr__(self, key, value)
+                updates_made = True
+        
+        # Procesar campo de calificación (texto)
+        grade_value = self._clean_grade(_get_source_value(source, "grade"))
+        if grade_value and grade_value != self.grade:
+            object.__setattr__(self, 'grade', grade_value)
+            updates_made = True
             
-            grade_val = self._clean_grade(_get_source_value(source, "grade"))
-            if grade_val and grade_val != self.grade:
-                object.__setattr__(self, 'grade', grade_val)
-                has_updates = True
-            
-            if has_updates:
-                object.__setattr__(self, 'analyzed', True)
-                for cache_attr in ('metrics_snapshot', 'active_problems'):
-                    if cache_attr in self.__dict__: del self.__dict__[cache_attr]
-                return True
-        except (Exception):
-            pass
-        return False
+        if updates_made:
+            object.__setattr__(self, 'analyzed', True)
+            # Invalidar cachés dependientes
+            self.__dict__.pop('metrics_snapshot', None)
+            self.__dict__.pop('active_problems', None)
+        
+        return updates_made
 
 @dataclass
 class Answer:
