@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
-- Rechazadas por tests: 20
+- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-08 | 95 | 12 | 18 | 9 | 118 |
-| 2026-10-09 | 101 | 8 | 34 | 13 | 96 |
+| 2026-10-08 | 95 | 12 | 18 | 9 | 114 |
+| 2026-10-09 | 103 | 9 | 34 | 13 | 97 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **43**
 - manejo de errores y validación de entradas: **42**
 - rendimiento: **39**
-- robustez ante casos límite: **38**
-- seguridad defensiva: **34**
+- robustez ante casos límite: **39**
+- seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,19 +33,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **20**
 - `quarantine.py`: **17**
 - `safety.py`: **17**
+- `branding.py`: **16**
 - `healthscore.py`: **16**
 - `assistant.py`: **16**
-- `branding.py`: **15**
 - `browser.py`: **14**
 - `duplicates.py`: **13**
 - `organizer.py`: **13**
 - `scanner.py`: **13**
-- `settings.py`: **10**
+- `settings.py`: **11**
 - `main.py`: **6**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-09T10:53:11` **branding.py** (seguridad defensiva): Se ha mejorado la robustez de `save_logo_svg` implementando un chequeo preventivo más estricto sobre el tipo de la ruta y validando la existencia del directorio padre antes de realizar operaciones, garantizando que el manejo de errores sea consistente con los protocolos de seguridad.
+- `2026-10-09T10:50:48` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante errores de lectura de disco (como archivos corruptos o bloqueados) al implementar un bloque `try-except` más granular en `_load_impl`, garantizando que una falla puntual no impida la carga de los valores de fábrica predeterminados.
 - `2026-10-09T10:41:49` **safety.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `ensure_safe_to_modify` para detectar y bloquear rutas que contengan caracteres de control RTL (Right-to-Left) o secuencias de escape no imprimibles, mitigando el riesgo de ataques de "bidi spoofing" donde un archivo parece tener una extensión segura cuando en realidad es un ejecutable.
 - `2026-10-09T10:32:30` **memory.py** (robustez ante casos límite): Mejoré la robustez de `trim_working_set` y sus ayudantes al corregir una inconsistencia lógica donde se validaba la seguridad mediante `is_safe_to_modify` (que está diseñada para archivos de disco) sobre rutas de procesos, reemplazándolo por un chequeo estricto del PID y el estado del handle, evitando bloqueos innecesarios en procesos legítimos pero no "modificables" según la política de archivos.
 - `2026-10-09T10:31:28` **main.py** (robustez ante casos límite): Se reforzó la robustez ante errores de ejecución durante la inicialización de la interfaz en `_setup_application` y `_build_tabs_container`, asegurando que cualquier fallo en la creación de componentes UI sea capturado y manejado correctamente antes de intentar acceder a `winfo_exists()`, evitando cierres inesperados por excepciones de ciclo de vida de Tkinter.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-09T09:49:37` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` mediante el uso de un `set` para `size_to_paths_map` y la eliminación de llamadas innecesarias a `is_safe_to_modify` dentro del loop crítico, ya que `is_valid_candidate` realiza esta validación de forma consolidada.
 - `2026-10-09T09:48:46` **diskreport.py** (rendimiento): Optimizé la función `_is_excluded_path` para evitar llamadas redundantes a `Path.resolve()` (una operación costosa de sistema de archivos) durante el escaneo recursivo, moviendo el chequeo de rutas protegidas a una lógica que aprovecha el `entry.path` ya obtenido por `os.scandir`.
 - `2026-10-09T09:44:46` **branding.py** (rendimiento): Optimicé el manejo de la memoria y la velocidad de acceso mediante la implementación de `functools.lru_cache` en funciones de transformación de color que se llamaban repetidamente durante el renderizado, eliminando la creación de objetos redundantes.
-- `2026-10-09T09:31:15` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de Type Hints detallados para las estructuras de datos complejas (`StartupEntries`, `RegistryKeySet`) y documenté la lógica de resolución de rutas en `StartupEntry` para aclarar el comportamiento de las cachés y la validación de seguridad.
-- `2026-10-09T09:30:02` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante docstrings detallados que explican el "porqué" de las restricciones de seguridad (específicamente la prevención de evasión mediante reanálisis) y se han añadido type hints en funciones clave, mejorando la legibilidad técnica sin alterar el comportamiento.

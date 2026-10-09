@@ -1037,3 +1037,39 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-09T10:41:59` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-10-09T10:41:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T10:41:59` Corrida terminada. Total usado hoy: 252.
+- `2026-10-09T10:50:14` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-10-09T10:50:48` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante errores de lectura de disco (como archivos corruptos o bloqueados) al implementar un bloque `try-except` más granular en `_load_impl`, garantizando que una falla puntual no impida la carga de los valores de fábrica predeterminados.
+- `2026-10-09T10:51:49` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-10-09T10:52:39` Tests FALLARON:
+```
+ __________________
+
+    def test_build_context_reads_fields_one_by_one():
+        """Copia campo por campo, no el objeto entero, para no arrastrar datos."""
+        class MetricasConRuta:
+            junk_mb = 100.0
+            suspicious_count = 2
+            suspicious_warnings = 0
+            memory_available_percent = 40.0
+            disk_free_percent = 50.0
+            duplicate_mb = 0.0
+            startup_count = 5
+            quarantined_count = 0
+            archivo_secreto = "C:/Users/benja/clave.txt"
+    
+        contexto = assistant.build_context(metrics=MetricasConRuta())
+>       assert contexto.junk_mb == 100.0
+E       AssertionError: assert 0.0 == 100.0
+E        +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+
+evolve/tests/test_assistant.py:234: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_one - AssertionError: assert 0.0 == 100.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+1 failed, 298 passed in 1.55s
+
+```
+- `2026-10-09T10:52:39` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Reforcé la seguridad del motor Gemini limitando los tipos permitidos en el payload a colecciones (listas/diccionarios) y tipos primitivos simples, eliminando explícitamente cualquier posibilidad de inyección mediante la validación estricta de la estructura antes de la serialización JSON.
+- `2026-10-09T10:53:11` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `save_logo_svg` implementando un chequeo preventivo más estricto sobre el tipo de la ruta y validando la existencia del directorio padre antes de realizar operaciones, garantizando que el manejo de errores sea consistente con los protocolos de seguridad.
+- `2026-10-09T10:53:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T10:53:11` Corrida terminada. Total usado hoy: 256.

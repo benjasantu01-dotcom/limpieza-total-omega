@@ -347,6 +347,7 @@ def _load_impl(ruta: Path) -> AppSettings:
     """
     if not ruta.is_file() or ruta.stat().st_size == 0: return DEFAULTS.copy()
     if _Validators._is_reparse_point(ruta): return DEFAULTS.copy()
+    
     try:
         resolved = ruta.resolve()
         ensure_safe_to_modify(str(resolved))
@@ -358,12 +359,13 @@ def _load_impl(ruta: Path) -> AppSettings:
                 if not content: return DEFAULTS.copy()
                 data = json.loads(content)
             finally:
-                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                try: fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                except (OSError, IOError): pass
         
         if _is_dict(data):
             return _coerce_and_verify(validate(data))
     except (OSError, PermissionError, IOError, UnicodeDecodeError, EOFError, json.JSONDecodeError, ValueError):
-        pass
+        return DEFAULTS.copy()
     return DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:

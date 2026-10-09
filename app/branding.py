@@ -386,16 +386,12 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optional[Path]:
     """Guarda el logo en disco usando validaciones de seguridad atómicas."""
-    if destination is None: return None
+    if not isinstance(destination, (str, Path)): return None
     try:
         path = Path(destination).resolve()
         
         # Validaciones de seguridad pre-operativas
-        if path.is_dir() or is_protected_path(path):
-            return None
-        
-        # Verificamos seguridad sin recursividad infinita
-        if not is_safe_to_modify(path):
+        if path.is_dir() or is_protected_path(path) or not is_safe_to_modify(path):
             return None
         
         ensure_safe_to_modify(path)
