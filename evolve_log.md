@@ -559,3 +559,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-09T06:02:46` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Reforcé la robustez del pipeline de cálculo ante métricas inválidas, asegurando que `_evaluate_rules` y `compute_score` manejen adecuadamente objetos de métricas parcialmente corruptos sin detener el análisis.
 - `2026-10-09T06:02:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T06:02:46` Corrida terminada. Total usado hoy: 140.
+- `2026-10-09T06:04:31` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-10-09T06:05:47` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de `main.py` implementando una validación temprana de la existencia del directorio de trabajo en todas las operaciones asíncronas para prevenir errores de tipo `FileNotFoundError` si el usuario cambia el directorio de trabajo del sistema durante la ejecución, y agregué una limpieza más estricta en `_collect_settings` para evitar inyecciones o datos basura en la configuración.
+- `2026-10-09T06:06:17` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_path_safe_and_valid` añadiendo un manejo explícito de rutas UNC y paths de longitud cero que podían causar errores en llamadas de bajo nivel o malinterpretaciones de `Path`.
+- `2026-10-09T06:06:18` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-09T06:07:01` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-09T06:07:02` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-09T06:07:43` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Se ha añadido `_is_filesystem_read_only` y una verificación de espacio antes de proceder con el aislamiento en `quarantine_file`, mitigando errores de I/O en volúmenes de solo lectura o llenos, y se ha fortalecido la validación de integridad post-copia para evitar estados inconsistentes ante fallos de disco.
+- `2026-10-09T06:07:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T06:07:43` Corrida terminada. Total usado hoy: 144.

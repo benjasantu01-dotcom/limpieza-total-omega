@@ -1131,7 +1131,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Wrapper seguro para la ejecución de tareas con manejo de errores."""
         if self._closing: return
         try:
-            fn()
+            if Path.cwd().exists():
+                fn()
+            else:
+                raise RuntimeError("Directorio de trabajo actual eliminado o inaccesible.")
         except Exception as e:
             if not self._closing:
                 self._validate_and_log_error(e, tab)
@@ -1942,7 +1945,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if hasattr(self, 'api_key_entry') and self.api_key_entry.winfo_exists():
                 clave_raw = self._safe_get_entry_value(self.api_key_entry, "")
                 if clave_raw:
-                    valores["asistente_clave_api"] = "".join(c for c in clave_raw if c.isprintable())
+                    valores["asistente_clave_api"] = "".join(c for c in clave_raw if c.isprintable() and len(c) < 128)
         except Exception as e:
             logging.error("Fallo durante recolección segura de parámetros UI: %s", e)
             
