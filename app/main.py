@@ -422,8 +422,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         else:
             fondo, hover, texto = ("accent", "accent_hover", "background")
 
+        @safe_ui_operation
+        def safe_cmd():
+            if self._closing: return
+            command()
+
         button = ctk.CTkButton(
-            parent, text=text, command=command,
+            parent, text=text, command=safe_cmd,
             fg_color=branding.color(fondo),
             hover_color=branding.color(hover),
             text_color=branding.color(texto),

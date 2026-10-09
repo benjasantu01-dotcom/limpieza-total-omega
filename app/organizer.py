@@ -175,12 +175,6 @@ def _is_system_hidden(entry: os.DirEntry) -> bool:
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Auditoría de seguridad integral para operaciones de disco.
-    
-    Verifica:
-    1. Identidad mediante Inodes/Device ID para evitar race conditions (TOCTOU).
-    2. Integridad de ruta (evitar archivos críticos o protegidos).
-    3. Espacio en disco (asegurar que la operación no cause denegación de servicio).
-    4. Estado de bloqueo exclusivo del archivo.
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     src = junk_file.path
@@ -223,11 +217,7 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> boo
     return True
 
 def _is_candidate_junk(stats: os.stat_result, entry: os.DirEntry, now_ts: float) -> bool:
-    """
-    Evalúa criterios heurísticos para marcar un archivo como basura.
-    Considera umbrales de tamaño (MAX_FILE_SIZE_BYTES) y omite archivos 
-    con atributos de sistema/ocultos para prevenir riesgos operativos.
-    """
+    """Evalúa criterios heurísticos para marcar un archivo como basura."""
     return (0 <= stats.st_size < MAX_FILE_SIZE_BYTES and 
             stats.st_mtime <= now_ts + 3600 and
             not _is_system_hidden(entry))
@@ -287,7 +277,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             dest_base.mkdir(parents=True, exist_ok=True)
         dest_res = dest_base.resolve(strict=False)
         
-        if not is_safe_to_modify(dest_res) or is_protected_path(dest_res): return None
+        if not dest_res.is_dir() or not is_safe_to_modify(dest_res) or is_protected_path(dest_res): return None
         ensure_safe_to_modify(dest_res)
     except (OSError, RuntimeError, PermissionError):
         return None
@@ -328,7 +318,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                     ensure_safe_to_modify(item)
                     item.unlink()
                     count += 1
-            except (OSError, PermissionError):
+            except (OSError, PermissionError, FileNotFoundError):
                 continue
         return count
     except (OSError, PermissionError, RuntimeError):

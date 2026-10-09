@@ -328,14 +328,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     )
 
 def _render_bar(points: int, max_val: int) -> str:
-    """Representación visual: barra de caracteres ASCII para la interfaz."""
+    """Representación visual: barra de caracteres ASCII para la interfaz con manejo de errores."""
     if not isinstance(max_val, int) or max_val <= 0:
         return ".........."
-    try:
-        p = max(0, min(int(points), max_val))
-        return "#" * p + "." * (max_val - p)
-    except (ValueError, TypeError):
-        return "." * max_val
+    p = max(0, min(int(points), max_val))
+    return "#" * p + "." * (max_val - p)
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera una lista de cadenas legible para el informe de estado final."""
@@ -347,7 +344,7 @@ def summarize(result: HealthResult | None) -> List[str]:
     
     for area, maximo in _WEIGHTS_LIST:
         points = bd.get(area, 0)
-        p = points if isinstance(points, int) else 0
+        p = int(points) if isinstance(points, (int, float)) else 0
         bar = _render_bar(p, maximo)
         lines.append(f"  {area.capitalize():<12} {p:>2}/{maximo:<2} [{bar}]")
     
