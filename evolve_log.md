@@ -603,3 +603,56 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-09T06:47:21` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-09T06:47:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T06:47:21` Corrida terminada. Total usado hoy: 160.
+- `2026-10-09T06:55:31` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-10-09T06:56:33` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-09T06:57:29` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-09T06:58:04` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: seguridad defensiva): el archivo se encogió al 23% del original (posible pérdida de código)
+- `2026-10-09T06:58:32` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de la lógica de seguridad del escáner implementando un filtrado preventivo mediante `is_protected_path` directamente en la pila de directorios, evitando que el escaneo siquiera considere entrar en jerarquías bloqueadas, reforzando la defensa antes de realizar cualquier operación sobre el disco.
+- `2026-10-09T06:59:03` Tests FALLARON:
+```
+"Se puede usar el asistente sin mandar ni una métrica."""
+        monkeypatch.setenv(settings.API_KEY_ENV_VAR, "clave")
+        settings.save({**settings.DEFAULTS, "asistente_activado": True,
+                       "asistente_enviar_metricas": False}, tmp_path)
+    
+        enviado = {}
+    
+        def espia(question, context_text, api_key, model):
+            enviado["texto"] = context_text
+            return "ok"
+    
+        monkeypatch.setattr(assistant, "_call_gemini", espia)
+        assistant.ask("¿qué hago?", _contexto_lleno(), tmp_path)
+>       assert "2400" not in enviado["texto"]
+E       AssertionError: assert '2400' not in 'score: 61\n...up_count: 19'
+E         
+E         '2400' is contained here:
+E           score: 61
+E           junk_mb: 2400 MB
+E         ?          ++++
+E           suspicious_count: 3
+E           memory_available_percent: 11%
+E           disk_free_percent: 6%
+E           duplicate_mb: 900 MB
+E           startup_count: 19
+
+evolve/tests/test_assistant.py:418: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert '2400' not in 'score: 61\n...up_count: 19'
+  
+  '2400' is contained here:
+    score: 61
+    junk_mb: 2400 MB
+  ?          ++++
+    suspicious_count: 3
+    memory_available_percent: 11%
+    disk_free_percent: 6%
+    duplicate_mb: 900 MB
+    startup_count: 19
+1 failed, 298 passed in 1.54s
+
+```
+- `2026-10-09T06:59:03` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la seguridad defensiva en `_is_file_secure_to_read` añadiendo una comprobación explícita para evitar archivos con permisos excesivos (escritura global o de grupo), alineándolo con las mejores prácticas de protección de datos sensibles en el sistema de archivos.
+- `2026-10-09T06:59:14` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-10-09T06:59:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T06:59:14` Corrida terminada. Total usado hoy: 164.

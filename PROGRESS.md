@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
-- Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 53
+- Mejoras aceptadas: **214** (42.5% de aceptación)
+- Rechazadas por tests: 24
+- Rechazadas por guardia de seguridad: 54
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 195
+- Sin respuesta de la IA (error o límite): 192
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-08 | 139 | 18 | 28 | 12 | 147 |
-| 2026-10-09 | 74 | 5 | 25 | 8 | 48 |
+| 2026-10-08 | 139 | 18 | 28 | 12 | 143 |
+| 2026-10-09 | 75 | 6 | 26 | 8 | 49 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
 - legibilidad y documentación: **45**
 - rendimiento: **43**
-- seguridad defensiva: **42**
+- seguridad defensiva: **43**
 - robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
@@ -38,7 +38,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **17**
 - `branding.py`: **17**
 - `organizer.py`: **16**
-- `scanner.py`: **13**
+- `scanner.py`: **14**
 - `duplicates.py`: **12**
 - `settings.py`: **10**
 - `main.py`: **9**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-09T06:58:32` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez de la lógica de seguridad del escáner implementando un filtrado preventivo mediante `is_protected_path` directamente en la pila de directorios, evitando que el escaneo siquiera considere entrar en jerarquías bloqueadas, reforzando la defensa antes de realizar cualquier operación sobre el disco.
 - `2026-10-09T06:47:05` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_file_exclusive` añadiendo un cierre explícito del handle de Windows mediante `ctypes` en caso de error, evitando fugas de recursos (leaks) que podrían bloquear el sistema de archivos del usuario.
 - `2026-10-09T06:45:50` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `memory.py` refinando la lógica de `_get_process_path` para garantizar que el `buffer` de la API de Win32 sea tratado como una cadena Unicode validada antes de intentar cualquier operación de resolución de rutas, evitando el riesgo de desbordamiento o manipulación de rutas maliciosas.
 - `2026-10-09T06:37:01` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del motor de salud implementando un acceso más robusto a los datos mediante el uso estricto de `getattr` con validación de tipo en `summarize` y `compute_score`, asegurando que el sistema sea resiliente ante métricas inesperadas o corrompidas sin interrumpir el flujo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-09T06:05:47` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` implementando una validación temprana de la existencia del directorio de trabajo en todas las operaciones asíncronas para prevenir errores de tipo `FileNotFoundError` si el usuario cambia el directorio de trabajo del sistema durante la ejecución, y agregué una limpieza más estricta en `_collect_settings` para evitar inyecciones o datos basura en la configuración.
 - `2026-10-09T06:02:46` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del pipeline de cálculo ante métricas inválidas, asegurando que `_evaluate_rules` y `compute_score` manejen adecuadamente objetos de métricas parcialmente corruptos sin detener el análisis.
 - `2026-10-09T05:58:34` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia previo mediante `os.path.exists()` dentro de `walk_files` para prevenir `FileNotFoundError` en archivos que se eliminan o desplazan durante la ejecución, mejorando la resiliencia ante la concurrencia del sistema de archivos.
-- `2026-10-09T05:47:08` **branding.py** (robustez ante casos límite): Se reforzó `save_logo_svg` para prevenir la creación inadvertida de archivos en rutas de sistema o directorios protegidos mediante una verificación previa explícita utilizando `is_protected_path` y `is_safe_to_modify`, además de añadir una comprobación de existencia y permisos antes de la escritura.
