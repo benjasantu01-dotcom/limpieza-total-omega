@@ -349,7 +349,7 @@ def _load_impl(ruta: Path) -> AppSettings:
     if _Validators._is_reparse_point(ruta): return DEFAULTS.copy()
     try:
         resolved = ruta.resolve()
-        if not is_safe_to_modify(str(resolved)) or is_protected_path(str(resolved)): return DEFAULTS.copy()
+        ensure_safe_to_modify(str(resolved))
         with open(resolved, "r", encoding="utf-8") as f:
             if not _is_file_secure_to_read(f): return DEFAULTS.copy()
             try:

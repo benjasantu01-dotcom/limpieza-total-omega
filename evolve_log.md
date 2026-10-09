@@ -1563,3 +1563,39 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-10-09T02:21:43` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha implementado `_check_hard_link_security` en `ensure_safe_to_modify` para detectar y bloquear la modificación de archivos que posean múltiples enlaces físicos (hard links) hacia el mismo inodo, previniendo así daños colaterales accidentales en otros puntos del sistema de archivos donde el mismo contenido pueda ser referenciado.
 - `2026-10-09T02:21:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T02:21:43` Corrida terminada. Total usado hoy: 56.
+- `2026-10-09T02:29:57` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-10-09T02:30:23` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: Scanner._is_inside_base_root
+- `2026-10-09T02:30:54` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_load_impl` y `save` al integrar explícitamente `ensure_safe_to_modify` como una barrera de validación adicional, garantizando que ninguna operación de lectura o escritura ocurra si la ruta, tras ser resuelta, incumple las políticas de seguridad del sistema antes de manipular el descriptor de archivo.
+- `2026-10-09T02:31:24` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 0.89s
+
+```
+- `2026-10-09T02:31:24` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha restringido el acceso de `_resolve_and_cache_path` para evitar que la aplicación intente resolver rutas que residan fuera de unidades locales (validando que comiencen con una letra de unidad), mitigando riesgos de interacción con rutas UNC o dispositivos de red durante la inspección del registro.
+- `2026-10-09T02:31:24` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-09T02:31:24` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-09T02:31:44` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-09T02:31:44` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-09T02:32:14` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-09T02:32:14` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-09T02:32:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T02:32:14` Corrida terminada. Total usado hoy: 60.
