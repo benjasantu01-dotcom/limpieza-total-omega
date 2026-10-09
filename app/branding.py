@@ -66,7 +66,7 @@ _SVG_TEMPLATE: Final[str] = """<svg xmlns="http://www.w3.org/2000/svg" width="{s
 </svg>"""
 
 class CanvasElement(Protocol):
-    """Protocolo de interfaz para componentes de dibujo (Canvas) compatibles."""
+    """Interfaz abstracta para los métodos de dibujo esperados de un objeto Canvas."""
     def create_rectangle(self, x0: float, y0: float, x1: float, y1: float, *, fill: str = ..., outline: str = ..., width: int = ...) -> int: ...
     def create_polygon(self, *args: float, fill: str = ..., outline: str = ...) -> int: ...
     def create_oval(self, x0: float, y0: float, x1: float, y1: float, *, fill: str = ..., outline: str = ...) -> int: ...
@@ -75,13 +75,13 @@ class CanvasElement(Protocol):
     def create_arc(self, x0: float, y0: float, x1: float, y1: float, *, start: float, extent: float, style: str = ..., outline: str = ..., width: int = ...) -> int: ...
 
 class ColorSegment(NamedTuple):
-    """Representa un rango continuo de píxeles que comparten un mismo color."""
+    """Define una sección contigua de colores para optimizar el dibujo de gradientes."""
     hex_color: ColorHex
     start_index: int
     end_index: int
 
 class PaletteDict(TypedDict):
-    """Esquema de colores centralizado."""
+    """Estructura de datos para la configuración cromática del sistema."""
     background: ColorHex
     surface: ColorHex
     surface_alt: ColorHex
@@ -105,7 +105,7 @@ class PaletteDict(TypedDict):
     glow: ColorHex
 
 class FontSizesDict(TypedDict):
-    """Jerarquía de tamaños tipográficos."""
+    """Jerarquía de tamaños tipográficos disponibles en la interfaz."""
     display: int
     title: int
     subtitle: int
