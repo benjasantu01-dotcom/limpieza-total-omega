@@ -73,7 +73,10 @@ WINDOWS_RESERVED_NAMES: Set[str] = {
 }
 
 def _check_path_for_junctions(path: Path) -> None:
-    """Valida que la ruta no sea un punto de reparse/junction (solo NT)."""
+    """
+    Verifica mediante la API de Windows que una ruta no sea un punto de reparse
+    o junction point, previniendo el seguimiento de enlaces a rutas del sistema.
+    """
     if os.name != 'nt':
         return
     try:
@@ -92,7 +95,10 @@ def _is_filesystem_read_only(path: Path) -> bool:
         return True
 
 def _check_io_error_context(func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
-    """Ejecuta operaciones I/O con reintentos para mitigar bloqueos temporales de AV/Indexadores."""
+    """
+    Ejecuta operaciones I/O con reintentos exponenciales para mitigar bloqueos 
+    temporales causados por antivirus o indexadores de búsqueda (índices de Windows).
+    """
     max_retries = 3
     for i in range(max_retries):
         try:
@@ -103,7 +109,11 @@ def _check_io_error_context(func: Callable[..., Any], *args: Any, **kwargs: Any)
             time.sleep(0.1 * (2 ** i))
 
 def _is_file_exclusive(path: Path) -> bool:
-    """Verifica si el archivo permite acceso exclusivo (lock) según el SO."""
+    """
+    Verifica si un archivo está bloqueado por otro proceso. En Windows utiliza 
+    CreateFileW con acceso exclusivo; en POSIX emplea flock para intentar 
+    adquirir un lock de exclusión.
+    """
     if os.name == 'nt':
         k32 = ctypes.windll.kernel32
         handle = k32.CreateFileW(str(path), 0x80000000 | 0x40000000, 0, None, 3, 0x00000080, None)
@@ -190,7 +200,10 @@ class QuarantineItem:
             return None
 
     def _validate_integrity(self, stored_path: Path) -> bool:
-        """Verificación interna de atributos físicos para evitar manipulación del sandbox."""
+        """
+        Verificación física de atributos del archivo en el sandbox para evitar 
+        manipulación externa o ataques de reemplazo.
+        """
         if not stored_path.exists(): return False
         try:
             _check_path_for_junctions(stored_path)
@@ -253,7 +266,7 @@ def _get_sha256(path: Path) -> str:
 
 
 def _is_file_in_use_by_system(path: Path) -> bool:
-    """Verifica bloqueos sistémicos o enlaces múltiples (nlink)."""
+    """Verifica bloqueos sistémicos o enlaces múltiples (nlink) antes de operaciones."""
     if not path.exists():
         return False
     
@@ -273,13 +286,14 @@ def _is_file_in_use_by_system(path: Path) -> bool:
     return not _is_file_exclusive(path)
 
 def _is_file_locked(path: Path) -> bool:
-    """Wrapper para chequeo de bloqueos."""
+    """Wrapper de conveniencia para chequeo de bloqueos."""
     return _is_file_in_use_by_system(path)
 
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0) -> bool:
     """
-    Eliminación segura post-validación. Requisito indispensable: cumplir con
-    la integridad física (hash/inodo) antes de la llamada a unlink.
+    Eliminación de archivos con verificación previa de integridad. 
+    Asegura que el archivo en disco sea el esperado antes de eliminar, 
+    evitando borrados accidentales tras condiciones de carrera.
     """
     if is_protected_path(path):
         return False
@@ -339,7 +353,7 @@ def _check_path_syntax_integrity(path: Path) -> None:
 
 
 def _sanitize_filename(filename: str) -> str:
-    """Genera nombre seguro filtrando caracteres peligrosos."""
+    """Genera nombre seguro filtrando caracteres peligrosos para el filesystem."""
     return "".join(c for c in filename if c.isalnum() or c in "._-")
 
 def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
@@ -716,7 +730,10 @@ class IsolationManager:
     """
     @staticmethod
     def validate_atomicity(source: Path, original_stat: os.stat_result, dest: Path) -> None:
-        """Verifica que el archivo no haya sido modificado durante la validación."""
+        """
+        Verifica que el archivo no haya sido modificado durante la validación 
+        usando identificadores de inodo para asegurar coherencia.
+        """
         if not source.exists():
             raise FileNotFoundError("Archivo origen eliminado antes del aislamiento.")
         if source.stat().st_ino != original_stat.st_ino:

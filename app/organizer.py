@@ -174,7 +174,10 @@ def _is_system_hidden(entry: os.DirEntry) -> bool:
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
-    Auditoría de seguridad integral para operaciones de disco.
+    Realiza una auditoría de seguridad multietapa antes de cualquier operación física:
+    1. Valida existencia y consistencia de inodos para evitar race conditions.
+    2. Aplica filtros de seguridad de `safety.py`.
+    3. Asegura espacio en disco suficiente y previene recursión de directorios.
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     src = junk_file.path
@@ -223,7 +226,11 @@ def _is_candidate_junk(stats: os.stat_result, entry: os.DirEntry, now_ts: float)
             not _is_system_hidden(entry))
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
-    """Realiza un recorrido recursivo eficiente usando caché de DirEntry."""
+    """
+    Recorre recursivamente directorios para recolectar archivos candidatos.
+    Implementa control de profundidad máxima y caché de rutas visitadas para
+    evitar bucles infinitos y optimizar el rendimiento en estructuras profundas.
+    """
     if depth > 50: return
     try:
         resolved_dir = current_dir.resolve(strict=False)
