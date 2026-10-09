@@ -427,24 +427,43 @@ def _get_cached_stripe_data(scale: float, franjas_count: int) -> Tuple[Tuple[Tup
     return _get_stripe_params(scale, franjas_count), get_gradient_segments(franjas_count)
 
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Renderiza las franjas geométricas internas del escudo."""
+    """
+    Renderiza las franjas geométricas internas del escudo.
+    Args:
+        canvas: Objeto Canvas donde dibujar.
+        canvas_x, canvas_y: Coordenadas base del escudo.
+        scale: Factor de escala aplicado al dibujo.
+    """
     try:
         if canvas is None or not math.isfinite(scale) or scale <= 0 or not math.isfinite(canvas_x) or not math.isfinite(canvas_y): return
-        franjas_count = max(6, int(STRIPE_COUNT_FACTOR * scale))
-        base_y = canvas_y + STRIPE_BASE_Y_OFFSET * scale
-        center_x = canvas_x + 64 * scale
-        params, segments = _get_cached_stripe_data(scale, franjas_count)
         
-        for seg in segments:
-            # Obtener datos de los parámetros calculados y cacheados
-            y_start = base_y + params[seg.start_index][1]
-            y_end = base_y + params[seg.end_index - 1][2]
-            w = params[seg.start_index][0]
-            canvas.create_rectangle(center_x - w, y_start, center_x + w, y_end, fill=seg.hex_color, outline="")
+        franjas_count = max(6, int(STRIPE_COUNT_FACTOR * scale))
+        base_y_coord = canvas_y + STRIPE_BASE_Y_OFFSET * scale
+        center_x_coord = canvas_x + 64 * scale
+        
+        stripe_dims, color_segments = _get_cached_stripe_data(scale, franjas_count)
+        
+        for seg in color_segments:
+            # Calcular límites de la franja basados en los segmentos de color
+            start_y = base_y_coord + stripe_dims[seg.start_index][1]
+            end_y = base_y_coord + stripe_dims[seg.end_index - 1][2]
+            half_width = stripe_dims[seg.start_index][0]
+            
+            canvas.create_rectangle(
+                center_x_coord - half_width, start_y, 
+                center_x_coord + half_width, end_y, 
+                fill=seg.hex_color, outline=""
+            )
     except (TypeError, ValueError, ZeroDivisionError, IndexError, AttributeError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Renderiza glifo y detalles de superficie sobre el escudo."""
+    """
+    Renderiza glifo y detalles de superficie sobre el escudo.
+    Args:
+        canvas: Objeto Canvas.
+        canvas_x, canvas_y: Coordenadas base.
+        scale: Factor de escala.
+    """
     try:
         if canvas is None or not math.isfinite(scale) or scale <= 0: return
         
@@ -463,7 +482,13 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Renderiza el escudo corporativo compuesto (Polígono, franjas y glifo)."""
+    """
+    Renderiza el escudo corporativo compuesto (Polígono, franjas y glifo).
+    Args:
+        canvas: Objeto Canvas de destino.
+        size: Tamaño total en píxeles.
+        canvas_x, canvas_y: Offset de posición.
+    """
     try:
         if canvas is None: return
         s = float(size) if size is not None else 56.0

@@ -53,7 +53,8 @@ SizeReport: TypeAlias = Tuple[int, int]
 
 def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
     """
-    Intenta recuperar los metadatos de un archivo sin seguir enlaces simbólicos.
+    Intenta obtener metadatos sin seguir enlaces simbólicos (evita bucles y acceso externo).
+    Retorna None si la ruta es inaccesible o si fallan los permisos.
     """
     if not path:
         return None
@@ -116,7 +117,10 @@ class SummaryData(NamedTuple):
 
 
 def _bytes_to_mb(size_bytes: int | float | None) -> float:
-    """Convierte bytes a MB con precisión de dos decimales."""
+    """
+    Convierte bytes a Megabytes (float) con precisión de dos decimales.
+    Valida la entrada para evitar errores de tipo o valores negativos.
+    """
     if not isinstance(size_bytes, (int, float)) or size_bytes < 0:
         return 0.0
     try:
@@ -126,7 +130,10 @@ def _bytes_to_mb(size_bytes: int | float | None) -> float:
 
 
 def _validate_limit(limit: Any) -> int:
-    """Normaliza un límite de resultados asegurando un entero no negativo."""
+    """
+    Normaliza un límite numérico para asegurar resultados no negativos en las funciones de ranking.
+    Descarta explícitamente valores booleanos que podrían malinterpretarse como enteros.
+    """
     if isinstance(limit, int) and not isinstance(limit, bool):
         return max(0, limit)
     return 0
@@ -149,6 +156,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
     """
     Filtra entradas durante el escaneo para evitar bucles o acceso a áreas restringidas.
+    Verifica caracteres especiales y puntos de reparse en entornos Windows.
     """
     try:
         name = entry.name
