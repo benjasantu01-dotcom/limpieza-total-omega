@@ -476,3 +476,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-09T04:56:39` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _CheckResult
 - `2026-10-09T04:56:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T04:56:39` Corrida terminada. Total usado hoy: 116.
+- `2026-10-09T05:02:53` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-10-09T05:03:29` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en el stack de directorios y mejorando la claridad de las funciones de soporte mediante la estandarización de las excepciones capturadas y el uso de docstrings más descriptivos.
+- `2026-10-09T05:04:00` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-09T05:04:28` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_path_suspicious, StartupEntry._is_valid_executable
+- `2026-10-09T05:04:55` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el acceso a los datos de las métricas en `SystemContext` reemplazando los llamados repetidos a `getattr` en `metrics_snapshot` por un acceso directo al diccionario `__dict__` filtrado, mejorando la eficiencia en el procesamiento frecuente del contexto.
+- `2026-10-09T05:04:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T05:04:55` Corrida terminada. Total usado hoy: 120.

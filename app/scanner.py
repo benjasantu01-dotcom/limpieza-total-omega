@@ -77,11 +77,10 @@ TARGETED_DOWNLOAD_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp
 SYSTEM32_LOWER: Final[str] = "system32"
 
 def _is_readable(path: Path) -> bool:
-    """Valida si el archivo es accesible físicamente para lectura."""
+    """Valida si el archivo es accesible físicamente para lectura mediante permisos de SO."""
     if not isinstance(path, Path):
         return False
     try:
-        # Usamos os.access sobre la ruta resuelta para evitar bloqueos por descriptores de archivo abiertos
         return path.is_file() and os.access(path, os.R_OK)
     except (OSError, PermissionError, ValueError, AttributeError):
         return False
@@ -99,7 +98,6 @@ def _get_file_size(path: Path) -> int:
     if not isinstance(path, Path):
         return -1
     try:
-        # Evitamos abrir el descriptor usando stat directo sobre la ruta
         return int(path.stat().st_size)
     except (OSError, PermissionError, FileNotFoundError, AttributeError, ValueError):
         return -1
