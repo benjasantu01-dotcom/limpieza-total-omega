@@ -105,16 +105,18 @@ def _check_io_error_context(func: Callable[..., Any], *args: Any, **kwargs: Any)
 def _is_file_exclusive(path: Path) -> bool:
     """Verifica si el archivo permite acceso exclusivo (lock) según el SO."""
     if os.name == 'nt':
+        k32 = ctypes.windll.kernel32
+        handle = k32.CreateFileW(str(path), 0x80000000 | 0x40000000, 0, None, 3, 0x00000080, None)
+        if handle == -1: return False
         try:
-            k32 = ctypes.windll.kernel32
-            handle = k32.CreateFileW(str(path), 0x80000000 | 0x40000000, 0, None, 3, 0x00000080, None)
-            if handle == -1: return False
             overlapped = ctypes.create_string_buffer(20)
             locked = k32.LockFileEx(handle, 2, 0, 1, 0, overlapped)
             if locked: k32.UnlockFileEx(handle, 0, 1, 0, overlapped)
-            k32.CloseHandle(handle)
             return bool(locked)
-        except (OSError, AttributeError, ValueError): return False
+        except (OSError, AttributeError, ValueError):
+            return False
+        finally:
+            k32.CloseHandle(handle)
     
     try:
         fd = os.open(path, os.O_RDONLY) 

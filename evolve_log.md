@@ -596,3 +596,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-09T06:41:22` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-10-09T06:41:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T06:41:22` Corrida terminada. Total usado hoy: 156.
+- `2026-10-09T06:45:19` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-10-09T06:45:50` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `memory.py` refinando la lógica de `_get_process_path` para garantizar que el `buffer` de la API de Win32 sea tratado como una cadena Unicode validada antes de intentar cualquier operación de resolución de rutas, evitando el riesgo de desbordamiento o manipulación de rutas maliciosas.
+- `2026-10-09T06:46:19` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-10-09T06:47:05` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_file_exclusive` añadiendo un cierre explícito del handle de Windows mediante `ctypes` en caso de error, evitando fugas de recursos (leaks) que podrían bloquear el sistema de archivos del usuario.
+- `2026-10-09T06:47:21` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-09T06:47:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T06:47:21` Corrida terminada. Total usado hoy: 160.

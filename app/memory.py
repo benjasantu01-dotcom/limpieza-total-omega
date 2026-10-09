@@ -371,7 +371,7 @@ def _get_process_path(pid: int) -> Optional[Path]:
         length = psapi.GetModuleFileNameExW(process_handle, None, buf, buffer_size)
         if 0 < length < buffer_size:
             raw_path = buf.value
-            if not raw_path: return None
+            if not isinstance(raw_path, str) or not raw_path: return None
             
             p_test = Path(raw_path)
             if p_test.is_absolute() and p_test.exists():
