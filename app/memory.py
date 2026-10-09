@@ -146,7 +146,7 @@ def format_bytes(num: Optional[int | float]) -> str:
         idx: int = min(int(math.log(num, 1024)), len(BYTE_UNITS) - 1)
         val: float = num / (1024 ** idx)
         return f"{val:.{0 if idx == 0 else 1}f} {BYTE_UNITS[idx]}"
-    except (ValueError, ZeroDivisionError):
+    except (ValueError, ZeroDivisionError, OverflowError):
         return "0 B"
 
 def _create_mem_status_ex() -> MEMORYSTATUSEX:
@@ -155,10 +155,13 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
     return mem_status
 
 def _safe_int_conversion(value: Optional[str], multiplier: int = 1) -> BytesValue:
+    """Convierte cadenas con posibles caracteres no numéricos a BytesValue."""
     if not isinstance(value, str): return BytesValue(0)
+    # Extraer solo dígitos decimales para limpiar basura de strings
     digits = "".join(filter(str.isdigit, value))
     try:
-        return BytesValue(int(digits) * multiplier) if digits else BytesValue(0)
+        if not digits: return BytesValue(0)
+        return BytesValue(int(digits) * multiplier)
     except (ValueError, OverflowError):
         return BytesValue(0)
 
@@ -177,8 +180,9 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     for line in meminfo_text.splitlines():
         if ":" not in line: continue
         key, _, value_part = line.partition(":")
-        if not key.strip(): continue
-        metrics[key.strip()] = _safe_int_conversion(value_part, 1024)
+        key_stripped = key.strip()
+        if not key_stripped: continue
+        metrics[key_stripped] = _safe_int_conversion(value_part, 1024)
             
     total: BytesValue = metrics.get("MemTotal", BytesValue(0))
     if total <= 0: return _EMPTY_SNAPSHOT
@@ -190,7 +194,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     return MemorySnapshot(total=total, available=available, cached=cached)
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
-    """Parsea una línea CSV proveniente de herramientas externas."""
+    """Parsea una línea CSV proveniente de herramientas externas con validación de tipos."""
     if not isinstance(line, str) or "," not in line: 
         return None
         
@@ -199,18 +203,14 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         return None
     
     name, pid_str, ws_str = parts[0], parts[1], parts[2]
-    
-    try:
-        pid = int("".join(filter(str.isdigit, pid_str)))
-        ws = int("".join(filter(str.isdigit, ws_str)))
-    except (ValueError, TypeError):
-        return None
+    pid = _safe_int_conversion(pid_str)
+    ws = _safe_int_conversion(ws_str)
         
     if _is_system_process(pid) or pid <= 0: 
         return None
     
     if 0 < ws < MAX_VALID_PROCESS_MEM:
-        return ProcessMemory(name, pid, BytesValue(ws))
+        return ProcessMemory(name, int(pid), BytesValue(ws))
     return None
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
@@ -220,7 +220,12 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     lines = raw_csv_text.splitlines()
     if len(lines) < 2:
         return []
-    processes = (proc for line in lines[1:] if (proc := _extract_process_info(line)))
+    # Usar generador con validación explícita para evitar None en la lista final
+    processes = []
+    for line in lines[1:]:
+        proc = _extract_process_info(line)
+        if proc:
+            processes.append(proc)
     return sorted(processes, key=lambda p: p.working_set, reverse=True)[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:

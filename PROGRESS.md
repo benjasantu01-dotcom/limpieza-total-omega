@@ -7,38 +7,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **199** (39.5% de aceptación)
-- Rechazadas por tests: 23
+- Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-08 | 122 | 17 | 25 | 11 | 129 |
-| 2026-10-09 | 77 | 6 | 27 | 8 | 82 |
+| 2026-10-08 | 120 | 16 | 24 | 11 | 129 |
+| 2026-10-09 | 79 | 6 | 28 | 8 | 83 |
 
 ## Mejoras aceptadas por enfoque
 
-- rendimiento: **43**
 - seguridad defensiva: **43**
-- manejo de errores y validación de entradas: **39**
+- rendimiento: **42**
+- manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **38**
-- legibilidad y documentación: **36**
+- legibilidad y documentación: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **23**
-- `quarantine.py`: **19**
-- `assistant.py`: **17**
-- `memory.py`: **17**
+- `quarantine.py`: **20**
+- `memory.py`: **18**
 - `safety.py`: **17**
 - `branding.py`: **16**
+- `assistant.py`: **16**
 - `browser.py`: **15**
 - `healthscore.py`: **15**
 - `organizer.py`: **15**
-- `scanner.py`: **13**
+- `scanner.py`: **12**
 - `duplicates.py`: **11**
 - `settings.py`: **10**
 - `main.py`: **8**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-09T08:39:58` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` añadiendo un manejo de errores más específico para evitar que un archivo de manifiesto corrupto o mal formado (ej. JSON truncado) impida la carga de otros componentes, garantizando que siempre se devuelva una lista válida.
+- `2026-10-09T08:38:28` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de entrada y conversión de datos en `memory.py` para prevenir errores de ejecución ante entradas malformadas o inesperadas, centralizando la validación de valores numéricos en `_safe_int_conversion` y añadiendo chequeos de integridad en las funciones de parsing.
 - `2026-10-09T08:28:54` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de alto nivel (`largest_files`, `usage_by_extension`, `largest_folders`, `total_size` y `summarize`) capturando excepciones específicas dentro de `_collect_summary_data` y centralizando la lógica de validación para evitar que errores inesperados en el recorrido de archivos interrumpan la generación del reporte, cumpliendo con el enfoque de validación de entradas y manejo de errores.
 - `2026-10-09T08:20:06` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` implementando una validación recursiva de tipos más estricta que evita inyecciones de datos complejos o profundos, y añadí validación de tipos explícita en `_apply_field` para asegurar que el contenido ingerido sea coherente antes de actualizar el estado del `SystemContext`.
 - `2026-10-09T06:58:32` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez de la lógica de seguridad del escáner implementando un filtrado preventivo mediante `is_protected_path` directamente en la pila de directorios, evitando que el escaneo siquiera considere entrar en jerarquías bloqueadas, reforzando la defensa antes de realizar cualquier operación sobre el disco.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-09T06:26:26` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al inyectar un control explícito en `_call_gemini` para impedir el procesamiento de respuestas de la API que contengan caracteres de control o patrones prohibidos, evitando que un endpoint comprometido o una respuesta inesperada inyecte contenido malicioso en la interfaz.
 - `2026-10-09T06:25:40` **startup.py** (robustez ante casos límite): Mejoré la robustez ante rutas corruptas o inexistentes durante la normalización en `_resolve_and_cache_path` y `_extract_quoted_path`, añadiendo chequeos preventivos contra rutas de longitud excesiva, caracteres inválidos post-normalización y fallos de resolución (`OSError` / `ValueError`), asegurando que la app no aborte ante entradas de registro malformadas.
 - `2026-10-09T06:16:08` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked_by_other_process` agregando un manejo explícito de rutas que no existen (evitando I/O innecesario) y una verificación adicional de estado del archivo que reduce falsos negativos en condiciones de carrera al intentar obtener un handle exclusivo.
-- `2026-10-09T06:06:17` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_is_path_safe_and_valid` añadiendo un manejo explícito de rutas UNC y paths de longitud cero que podían causar errores en llamadas de bajo nivel o malinterpretaciones de `Path`.
-- `2026-10-09T06:05:47` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` implementando una validación temprana de la existencia del directorio de trabajo en todas las operaciones asíncronas para prevenir errores de tipo `FileNotFoundError` si el usuario cambia el directorio de trabajo del sistema durante la ejecución, y agregué una limpieza más estricta en `_collect_settings` para evitar inyecciones o datos basura en la configuración.

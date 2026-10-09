@@ -507,7 +507,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
     """Carga el manifiesto de cuarentena, usando caché de mtime para eficiencia."""
     try:
         base_dir = quarantine_dir(base)
-    except (OSError, UnsafePathError) as e:
+    except (OSError, UnsafePathError):
         return []
         
     m_path = _manifest_path(base_dir)
@@ -530,13 +530,13 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
             data = json.load(f)
         
         if not isinstance(data, list):
-            raise ValueError("Estructura de datos inválida en manifiesto.")
+            return []
             
         items = [i for d in data if (i := QuarantineItem.from_dict(d))]
         _MANIFEST_CACHE[base_dir] = (items, current_mtime)
         return items
-    except (OSError, json.JSONDecodeError, ValueError) as e:
-        # Registramos el error de parseo pero devolvemos lista vacía para no romper el flujo
+    except (OSError, json.JSONDecodeError, ValueError):
+        # Ante error de lectura o parseo, devolvemos lista vacía para no romper el flujo
         return []
 
 

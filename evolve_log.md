@@ -870,3 +870,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-10-09T08:29:51` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: SystemMetrics.safe_get
 - `2026-10-09T08:29:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T08:29:51` Corrida terminada. Total usado hoy: 200.
+- `2026-10-09T08:37:29` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-10-09T08:37:50` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 1): unexpected indent
+- `2026-10-09T08:38:28` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones de entrada y conversión de datos en `memory.py` para prevenir errores de ejecución ante entradas malformadas o inesperadas, centralizando la validación de valores numéricos en `_safe_int_conversion` y añadiendo chequeos de integridad en las funciones de parsing.
+- `2026-10-09T08:39:22` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-09T08:39:58` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `load_manifest` añadiendo un manejo de errores más específico para evitar que un archivo de manifiesto corrupto o mal formado (ej. JSON truncado) impida la carga de otros componentes, garantizando que siempre se devuelva una lista válida.
+- `2026-10-09T08:39:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T08:39:58` Corrida terminada. Total usado hoy: 204.
