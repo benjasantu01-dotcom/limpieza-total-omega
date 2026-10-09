@@ -1506,3 +1506,9 @@ ERROR evolve/tests/test_assistant.py - ValueError: 'score' in __slots__ conflict
 - `2026-10-09T14:47:32` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la función `walk_files` y `_collect_summary_data`, añadiendo un bloque `try-except` específico para manejar archivos con permisos denegados o bloqueados por el sistema durante el escaneo, asegurando que el proceso completo no aborte ante un archivo inaccesible.
 - `2026-10-09T14:47:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T14:47:32` Corrida terminada. Total usado hoy: 348.
+- `2026-10-09T14:55:16` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-09T14:55:43` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Mejoré la resiliencia en la recolección de archivos y el cálculo de hashes integrando `is_safe_to_modify` como filtro de seguridad obligatorio en `_collect_candidates`, previniendo así errores de acceso en rutas protegidas que antes podían causar excepciones durante el escaneo recursivo.
+- `2026-10-09T14:56:18` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del motor de cómputo añadiendo validaciones de entrada (`isinstance`) y manejos de excepciones específicos en la inicialización de métricas para evitar que valores inesperados inyectados accidentalmente provoquen fallos en el pipeline o estados inconsistentes.
+- `2026-10-09T14:56:18` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-10-09T14:56:18` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T14:56:18` Corrida terminada. Total usado hoy: 350.

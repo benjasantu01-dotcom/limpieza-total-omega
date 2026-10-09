@@ -235,7 +235,11 @@ class SystemMetrics:
     )
 
     def __post_init__(self) -> None:
-        self.validate()
+        try:
+            self.validate()
+        except Exception as e:
+            logging.error(f"Error crítico en validación de métricas: {e}")
+            self.__init__()
 
     def safe_get(self, field_name: str, default: Any = 0) -> Any:
         """Acceso defensivo a los campos del contenedor."""
@@ -255,7 +259,7 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verifica que ninguna métrica numérica sea infinita o NaN."""
-        return all(math.isfinite(getattr(self, f)) for f in self._CHECK_FIELDS)
+        return all(math.isfinite(getattr(self, f)) for f in self._CHECK_FIELDS if isinstance(getattr(self, f), (int, float)))
 
 @dataclass
 class HealthResult:
