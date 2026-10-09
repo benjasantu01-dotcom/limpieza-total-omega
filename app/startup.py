@@ -82,9 +82,9 @@ class StartupEntry:
     debido a que `Path.resolve()` es una operación costosa en disco.
     
     Attributes:
-        name (str): Nombre amigable del programa detectado.
-        command (str): Cadena original extraída del registro o archivo .lnk.
-        source (str): Origen del hallazgo ('registro' o 'carpeta').
+        name: Nombre amigable del programa detectado.
+        command: Cadena original extraída del registro o archivo .lnk.
+        source: Origen del hallazgo ('registro' o 'carpeta').
     """
     name: str
     command: str
@@ -164,7 +164,10 @@ class StartupEntry:
             return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
-        """Resuelve rutas a su forma absoluta, usando la caché de sesión para evitar I/O redundante."""
+        """
+        Resuelve rutas absolutas, utilizando _EXISTS_CACHE para minimizar llamadas 
+        al sistema de archivos (Disk I/O). Valida integridad mediante `is_protected_path`.
+        """
         if not path_string or not isinstance(path_string, str) or not self.is_valid:
             return ""
         
@@ -324,9 +327,7 @@ def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
-    """
-    Parsea la salida de PowerShell CSV (formato crudo).
-    """
+    """Parsea la salida de PowerShell CSV (formato crudo)."""
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
         

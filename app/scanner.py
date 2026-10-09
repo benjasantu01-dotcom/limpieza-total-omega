@@ -103,7 +103,11 @@ def _get_file_size(path: Path) -> int:
         return -1
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
-    """Valida metadatos asegurando integridad: rechaza hardlinks y reanálisis por seguridad."""
+    """
+    Valida metadatos asegurando integridad: rechaza hardlinks y reanálisis.
+    Se utiliza 'follow_symlinks=False' explícitamente para evitar escapar de la sandbox 
+    definida por la ruta base de escaneo.
+    """
     if not isinstance(entry, os.DirEntry):
         return None
     try:
@@ -204,7 +208,11 @@ class Scanner:
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Valida si el directorio/archivo es transitable bajo los criterios de seguridad definidos."""
+        """
+        Valida si el directorio/archivo es transitable.
+        Bloquea activamente Symlinks y Junctions (reparse points) para prevenir 
+        recursión fuera del ámbito autorizado por el usuario.
+        """
         if not isinstance(entry, os.DirEntry) or not entry.path:
             return False
         
