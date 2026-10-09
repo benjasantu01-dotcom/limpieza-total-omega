@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 51
-- Sin cambios (nada sustancial que mejorar): 21
+- Rechazadas por guardia de seguridad: 50
+- Sin cambios (nada sustancial que mejorar): 20
 - Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-08 | 80 | 10 | 16 | 7 | 91 |
-| 2026-10-09 | 111 | 11 | 35 | 14 | 129 |
+| 2026-10-08 | 79 | 10 | 15 | 6 | 90 |
+| 2026-10-09 | 114 | 11 | 35 | 14 | 130 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **42**
 - rendimiento: **39**
 - robustez ante casos límite: **39**
-- legibilidad y documentación: **38**
-- manejo de errores y validación de entradas: **33**
+- legibilidad y documentación: **37**
+- manejo de errores y validación de entradas: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
-- `memory.py`: **20**
+- `diskreport.py`: **22**
+- `memory.py`: **19**
 - `safety.py`: **17**
 - `quarantine.py`: **17**
 - `assistant.py`: **16**
 - `healthscore.py`: **16**
-- `branding.py`: **14**
+- `branding.py`: **15**
 - `scanner.py`: **13**
+- `browser.py`: **13**
 - `organizer.py`: **12**
-- `browser.py`: **12**
 - `settings.py`: **11**
 - `duplicates.py`: **11**
 - `main.py`: **7**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-09T12:54:08` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `_collect_summary_data` ante escenarios de fallas parciales durante el escaneo, asegurando que las funciones devuelvan estructuras consistentes incluso cuando el sistema de archivos deniega el acceso a partes del árbol.
+- `2026-10-09T12:53:40` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_sum_directory_recursive` mediante la validación explícita de `entry.path` antes de procesar y la adición de una cláusula de guarda ante posibles errores de acceso en `os.DirEntry.is_dir`, asegurando que el bucle de escaneo no se interrumpa por archivos con permisos denegados o rutas inválidas.
+- `2026-10-09T12:53:14` **branding.py** (manejo de errores y validación de entradas): He robustecido la función `_hex_to_rgb` y la lógica de validación de colores en `blend` y `gradient_colors`, asegurando que cualquier entrada malformada o `None` sea tratada de forma segura sin excepciones, mejorando la integridad del procesamiento cromático.
 - `2026-10-09T12:46:11` **assistant.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de errores y la validación de tipos en `SystemContext.ingest` y `_apply_field`, asegurando que cualquier entrada malformada sea descartada silenciosamente sin corromper el estado del contexto.
 - `2026-10-09T11:22:55` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` y `_load_impl()` al implementar una validación de propiedad y estado del directorio padre mediante `os.stat` antes de realizar operaciones de E/S, evitando condiciones de carrera de archivos o enlaces simbólicos malintencionados en el directorio de configuración.
 - `2026-10-09T11:22:37` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_safe_entry` y `scan_directory` añadiendo una validación explícita de `is_protected_path` al inicio de cada evaluación, y asegurando que las rutas resultantes de `resolve()` no sean enlaces simbólicos ocultos que evadieron los chequeos de atributos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-09T10:50:48` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante errores de lectura de disco (como archivos corruptos o bloqueados) al implementar un bloque `try-except` más granular en `_load_impl`, garantizando que una falla puntual no impida la carga de los valores de fábrica predeterminados.
 - `2026-10-09T10:41:49` **safety.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `ensure_safe_to_modify` para detectar y bloquear rutas que contengan caracteres de control RTL (Right-to-Left) o secuencias de escape no imprimibles, mitigando el riesgo de ataques de "bidi spoofing" donde un archivo parece tener una extensión segura cuando en realidad es un ejecutable.
 - `2026-10-09T10:32:30` **memory.py** (robustez ante casos límite): Mejoré la robustez de `trim_working_set` y sus ayudantes al corregir una inconsistencia lógica donde se validaba la seguridad mediante `is_safe_to_modify` (que está diseñada para archivos de disco) sobre rutas de procesos, reemplazándolo por un chequeo estricto del PID y el estado del handle, evitando bloqueos innecesarios en procesos legítimos pero no "modificables" según la política de archivos.
-- `2026-10-09T10:31:28` **main.py** (robustez ante casos límite): Se reforzó la robustez ante errores de ejecución durante la inicialización de la interfaz en `_setup_application` y `_build_tabs_container`, asegurando que cualquier fallo en la creación de componentes UI sea capturado y manejado correctamente antes de intentar acceder a `winfo_exists()`, evitando cierres inesperados por excepciones de ciclo de vida de Tkinter.
-- `2026-10-09T10:30:19` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` y `summarize` implementando una defensa estricta contra entradas de `metrics` parcialmente corruptas o que violan los tipos esperados, asegurando que `_render_bar` y los iteradores del pipeline no fallen ante diccionarios o métricas inesperadas.
-- `2026-10-09T10:21:29` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de sistema de archivos (como discos de solo lectura o permisos denegados) mediante un manejo de excepciones más granular y se eliminó la posible recursión infinita en la validación de `path`.

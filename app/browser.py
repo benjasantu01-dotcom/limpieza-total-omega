@@ -235,7 +235,14 @@ def _sum_directory_recursive(
                     if _should_skip_entry(entry, ctx):
                         continue
                     
-                    if entry.is_dir(follow_symlinks=False):
+                    # Validación estricta del atributo is_dir para manejar fallos de acceso
+                    is_dir = False
+                    try:
+                        is_dir = entry.is_dir(follow_symlinks=False)
+                    except (OSError, PermissionError):
+                        continue
+
+                    if is_dir:
                         res = _sum_directory_recursive(entry.path, ctx, depth + 1)
                         total_bytes += res.bytes_found
                     else:

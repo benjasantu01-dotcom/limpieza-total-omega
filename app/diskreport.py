@@ -368,23 +368,18 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Ejecuta el escaneo completo de disco y agrega las métricas necesarias.
-    Utiliza un heap (min-heap de tamaño fijo 'limit') para mantener los N archivos más grandes
-    con una complejidad temporal de O(N log L) donde L es el límite.
     """
     stats = GlobalStats()
     top_heap: List[Tuple[int, Path]] = [] 
     
-    try:
-        for path, size_bytes in walk_files(directory, skip_protected):
-            stats.register_file(size_bytes, path)
-            
-            if limit > 0:
-                if len(top_heap) < limit: 
-                    heapq.heappush(top_heap, (size_bytes, path))
-                elif size_bytes > top_heap[0][0]: 
-                    heapq.heapreplace(top_heap, (size_bytes, path))
-    except (OSError, PermissionError, RuntimeError):
-        pass
+    for path, size_bytes in walk_files(directory, skip_protected):
+        stats.register_file(size_bytes, path)
+        
+        if limit > 0:
+            if len(top_heap) < limit: 
+                heapq.heappush(top_heap, (size_bytes, path))
+            elif size_bytes > top_heap[0][0]: 
+                heapq.heapreplace(top_heap, (size_bytes, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
@@ -395,7 +390,10 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     if root is None: 
         return ["Error: Ruta no válida, protegida o inaccesible."]
     
-    data = _collect_summary_data(root, skip_protected, limit=20)
+    try:
+        data = _collect_summary_data(root, skip_protected, limit=20)
+    except (OSError, PermissionError):
+        return ["Error: Fallo crítico al acceder al sistema de archivos."]
         
     if data.total_files == 0: return ["Aviso: No hay archivos accesibles."]
     

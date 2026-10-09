@@ -290,13 +290,13 @@ def bar(percent: Union[float, int, None], width: int = 24,
         return empty * max(1, int(width))
 
 @lru_cache(maxsize=512)
-def _hex_to_rgb(value: ColorHex) -> RGBTuple:
-    """Transforma una cadena HEX a una tupla RGB (r, g, b)."""
+def _hex_to_rgb(value: Optional[str]) -> RGBTuple:
+    """Transforma una cadena HEX a una tupla RGB (r, g, b). Retorna (0,0,0) ante error."""
     if isinstance(value, str) and len(value) == 7 and value.startswith('#'):
         try:
             val = int(value[1:], 16)
             return ((val >> 16) & 0xFF, (val >> 8) & 0xFF, val & 0xFF)
-        except ValueError:
+        except (ValueError, TypeError):
             pass
     return (0, 0, 0)
 
@@ -307,20 +307,23 @@ def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
     return "#{:02x}{:02x}{:02x}".format(r, g, b)
 
 @lru_cache(maxsize=256)
-def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
-    """Interpola linealmente entre dos colores HEX."""
+def blend(start: Optional[str], end: Optional[str], ratio: float) -> ColorHex:
+    """Interpola linealmente entre dos colores HEX, validando entradas."""
     try:
-        if not isinstance(start, str) or not isinstance(end, str): return start
+        if not isinstance(start, str) or not isinstance(end, str): 
+            return start if isinstance(start, str) else C_TEXT_MUTED
+        
         r1, g1, b1 = _hex_to_rgb(start)
         r2, g2, b2 = _hex_to_rgb(end)
-        ratio = max(0.0, min(1.0, float(ratio)))
-        if not math.isfinite(ratio): ratio = 0.0
+        ratio = max(0.0, min(1.0, float(ratio))) if math.isfinite(ratio) else 0.0
+        
         return _rgb_to_hex((
             int(r1 + (r2 - r1) * ratio),
             int(g1 + (g2 - g1) * ratio),
             int(b1 + (b2 - b1) * ratio)
         ))
-    except (TypeError, ValueError): return start
+    except (TypeError, ValueError): 
+        return start if isinstance(start, str) else C_TEXT_MUTED
 
 @lru_cache(maxsize=128)
 def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, ...]:
