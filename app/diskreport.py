@@ -374,15 +374,18 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     stats = GlobalStats()
     top_heap: List[Tuple[int, Path]] = [] 
     
-    for path, size_bytes in walk_files(directory, skip_protected):
-        stats.register_file(size_bytes, path)
-        
-        # Mantenimiento del heap para tracking de archivos top
-        if limit > 0:
-            if len(top_heap) < limit: 
-                heapq.heappush(top_heap, (size_bytes, path))
-            elif size_bytes > top_heap[0][0]: 
-                heapq.heapreplace(top_heap, (size_bytes, path))
+    try:
+        for path, size_bytes in walk_files(directory, skip_protected):
+            stats.register_file(size_bytes, path)
+            
+            # Mantenimiento del heap para tracking de archivos top
+            if limit > 0:
+                if len(top_heap) < limit: 
+                    heapq.heappush(top_heap, (size_bytes, path))
+                elif size_bytes > top_heap[0][0]: 
+                    heapq.heapreplace(top_heap, (size_bytes, path))
+    except (OSError, PermissionError, RuntimeError):
+        pass # Registro parcial ante errores de lectura durante el escaneo
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
@@ -393,10 +396,7 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     if root is None: 
         return ["Error: Ruta no válida, protegida o inaccesible."]
     
-    try:
-        data = _collect_summary_data(root, skip_protected, limit=20)
-    except Exception:
-        return ["Error: Falló el análisis de la estructura de archivos."]
+    data = _collect_summary_data(root, skip_protected, limit=20)
         
     if data.total_files == 0: return ["Aviso: No hay archivos accesibles."]
     

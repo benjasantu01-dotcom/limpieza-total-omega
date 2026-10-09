@@ -863,3 +863,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-10-09T08:21:32` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-09T08:21:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T08:21:32` Corrida terminada. Total usado hoy: 196.
+- `2026-10-09T08:27:16` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-10-09T08:28:13` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-09T08:28:54` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones de alto nivel (`largest_files`, `usage_by_extension`, `largest_folders`, `total_size` y `summarize`) capturando excepciones específicas dentro de `_collect_summary_data` y centralizando la lógica de validación para evitar que errores inesperados en el recorrido de archivos interrumpan la generación del reporte, cumpliendo con el enfoque de validación de entradas y manejo de errores.
+- `2026-10-09T08:29:37` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-09T08:29:51` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: SystemMetrics.safe_get
+- `2026-10-09T08:29:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T08:29:51` Corrida terminada. Total usado hoy: 200.
