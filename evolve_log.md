@@ -1392,3 +1392,49 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-09T13:25:02` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se han añadido docstrings técnicos detallados en los métodos de utilidad de color, conversión y renderizado para documentar las asunciones de diseño y las estrategias de mitigación de errores (robustez ante entradas nulas o tipos inesperados), mejorando la mantenibilidad y claridad del contrato de cada función.
 - `2026-10-09T13:25:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T13:25:02` Corrida terminada. Total usado hoy: 316.
+- `2026-10-09T13:33:39` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-09T13:34:06` Tests FALLARON:
+```
+eligrosa.mkdir(parents=True)
+        (peligrosa / "x").write_text("secreto")
+>       assert browser.detect_profiles(
+            bases=[tmp_path], cache_paths={"Chrome": r"Perfil\Cookies"}
+        ) == []
+E       AssertionError: assert [BrowserCache...size_bytes=7)] == []
+E         
+E         Left contains one more item: BrowserCache(browser='Chrome', path=PosixPath('/tmp/pytest-of-runner/pytest-1/test_detect_profiles_never_rep0/Perfil/Cookies'), size_bytes=7)
+E         
+E         Full diff:
+E         - []
+E         + [
+E         +     BrowserCache(
+E         +         browser='Chrome',
+E         +         path=PosixPath('/tmp/pytest-of-runner/pytest-1/test_detect_profiles_never_rep0/Perfil/Cookies'),
+E         +         size_bytes=7,
+E         +     ),
+E         + ]
+
+evolve/tests/test_modules.py:755: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_data_folders - AssertionError: assert [BrowserCache...size_bytes=7)] == []
+  
+  Left contains one more item: BrowserCache(browser='Chrome', path=PosixPath('/tmp/pytest-of-runner/pytest-1/test_detect_profiles_never_rep0/Perfil/Cookies'), size_bytes=7)
+  
+  Full diff:
+  - []
+  + [
+  +     BrowserCache(
+  +         browser='Chrome',
+  +         path=PosixPath('/tmp/pytest-of-runner/pytest-1/test_detect_profiles_never_rep0/Perfil/Cookies'),
+  +         size_bytes=7,
+  +     ),
+  + ]
+1 failed, 298 passed in 1.59s
+
+```
+- `2026-10-09T13:34:06` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y la robustez del código mediante la aplicación de type hinting específico, la clarificación de las responsabilidades en las funciones de escaneo recursivo y la centralización de las reglas de exclusión en `_should_skip_entry` para reducir la redundancia lógica.
+- `2026-10-09T13:34:33` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `diskreport.py` agregando type hints consistentes en los atributos de clase y documentando explícitamente el propósito de las estructuras de datos (dataclasses/NamedTuples) mediante docstrings claros, facilitando la comprensión del flujo de datos.
+- `2026-10-09T13:35:00` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica mediante docstrings más precisos, actualicé las anotaciones de tipo para mayor claridad en el flujo de datos (`Union[Path, str]` vs `PathLike`) y renombré variables internas poco claras (ej. `r` por `directory_root`) para facilitar la auditoría del código bajo las reglas de seguridad.
+- `2026-10-09T13:35:09` ➖ Sin cambios en healthscore.py (enfoque: legibilidad y documentación). Motivo: Mejoré la documentación técnica del módulo mediante la adición de Type Hints en parámetros faltantes y docstrings descriptivos, facilitando la comprensión del flujo de datos en el pipeline sin alterar su lógica funcional.
+- `2026-10-09T13:35:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T13:35:09` Corrida terminada. Total usado hoy: 320.

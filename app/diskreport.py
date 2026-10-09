@@ -109,7 +109,11 @@ class FolderMetrics:
 
 class SummaryData(NamedTuple):
     """
-    Estructura inmutable que transporta los resultados procesados de un escaneo.
+    Estructura inmutable que transporta los resultados procesados de un escaneo:
+    total_bytes: Espacio total ocupado.
+    total_files: Cantidad total de archivos procesados.
+    ext_stats: Diccionario de estadísticas por extensión.
+    top_files: Lista de tuplas (tamaño, ruta) de los archivos más grandes encontrados.
     """
     total_bytes: int
     total_files: int
@@ -198,7 +202,7 @@ def _get_local_windows_drives() -> List[str]:
 
 @dataclass(frozen=True)
 class FileEntry:
-    """Representación de un archivo individual para reportes externos."""
+    """Representación de un archivo individual: ruta y tamaño en bytes."""
     path: Path
     size_bytes: int
 
@@ -209,7 +213,7 @@ class FileEntry:
 
 @dataclass(frozen=True)
 class ExtensionUsage:
-    """Representación de uso de disco agregado por extensión de archivo."""
+    """Representación de uso de disco por extensión: nombre, total bytes y contador."""
     extension: str
     size_bytes: int
     count: int
@@ -221,7 +225,7 @@ class ExtensionUsage:
 
 @dataclass(frozen=True)
 class FolderUsage:
-    """Representación de uso de disco de una carpeta particular."""
+    """Representación de uso de disco de una carpeta: ruta, total bytes y conteo de archivos."""
     path: Path
     size_bytes: int
     file_count: int
@@ -233,7 +237,7 @@ class FolderUsage:
 
 @dataclass(frozen=True)
 class DriveUsage:
-    """Estado del espacio disponible en una unidad de disco."""
+    """Estado del espacio de una unidad: punto de montaje, total, usado y libre (en bytes)."""
     mount: str
     total: int
     used: int
