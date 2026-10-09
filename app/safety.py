@@ -473,7 +473,7 @@ def _rule(reason: ProtectionReason, predicate: ViolationPredicate) -> _Integrity
 # ==============================================================================
 
 def _check_symlink(p: Path, _, __) -> bool: return p.is_symlink()
-def _check_reparse(p: Path, _, sd: SecurityDescriptor) -> bool: return sd.is_reparse or _is_system_directory_junction(str(p))
+def _check_reparse(p: Path, _, sd: SecurityDescriptor) -> bool: return sd.is_reparse
 def _check_kernel_locked(p: Path, _, __) -> bool: return _is_kernel_managed(str(p))
 def _check_read_only(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return not bool(st.st_mode & stat.S_IWRITE) or sd.is_readonly
 def _check_vol_read_only(p: Path, _, __) -> bool: return _is_volume_readonly(str(p))
@@ -841,10 +841,9 @@ def _validate_path_components(path: Path) -> None:
     for part in path.parts:
         if part in (os.sep, os.altsep): continue
         current_check = current_check / part
-        # Uso de cache: _is_system_directory_junction llama internamente a _get_file_attrs(cacheada)
-        if current_check.exists():
-            if current_check.is_symlink() or _is_system_directory_junction(str(current_check)):
-                raise UnsafePathError(f"Punto de reparse detectado en el camino: {current_check}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+        # Uso de caché: _is_system_directory_junction (vía _get_file_attrs)
+        if current_check.exists() and _is_system_directory_junction(str(current_check)):
+            raise UnsafePathError(f"Punto de reparse detectado en el camino: {current_check}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
 
 def _check_hard_link_security(path: Path, stat_res: os.stat_result) -> None:
     """Verifica que el archivo no posea múltiples enlaces físicos (hard links) para evitar modificaciones involuntarias."""
@@ -854,10 +853,6 @@ def _check_hard_link_security(path: Path, stat_res: os.stat_result) -> None:
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
     Valida exhaustivamente una ruta para garantizar que es segura de modificar.
-    
-    Esta función orquesta una serie de chequeos defensivos: normalización,
-    verificación de límites de sandbox, integridad de metadatos contra 
-    ataques TOCTOU y bloqueo de rutas de sistema o dispositivos críticos.
     """
     try:
         if path is None:
@@ -866,12 +861,12 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         if not isinstance(path, (str, Path, os.PathLike)):
             raise UnsafePathError(f"Tipo de ruta no soportado: {type(path).__name__}", SafetyValidationErrorCode.GENERIC)
         
-        # Validar caracteres prohibidos antes de normalizar
         if _has_invalid_chars(str(path)):
             raise UnsafePathError("Caracteres inválidos detectados.", SafetyValidationErrorCode.INVALID_CHARS)
         
         p = normalize(path)
         
+        # Validar componentes de ruta usando caché de atributos
         _validate_path_components(p)
 
         if os.name == 'nt' and os.path.ismount(p):
@@ -944,7 +939,7 @@ def describe_protection(path: PathLike) -> str:
         if p.exists():
             sd = _get_security_descriptor(p)
             if p.is_symlink(): return f"'{p}' es un enlace simbólico."
-            if _is_system_directory_junction(str(p)): return f"'{p}' es un punto de reparse (Junction/Symlink)."
+            if sd.is_reparse: return f"'{p}' es un punto de reparse (Junction/Symlink)."
             if os.path.ismount(p): return f"'{p}' es un punto de montaje."
             if _is_virtual_drive(str(p)): return f"'{p}' es una unidad virtual mapeada (SUBST)."
             if sd.is_readonly: return f"'{p}' tiene atributo de solo lectura activo."
