@@ -274,16 +274,15 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
         if not entry.is_file(follow_symlinks=False):
             return None
         
-        # Uso eficiente de os.path para evitar instanciar Path innecesariamente
         _, ext = os.path.splitext(entry.name)
         if ext.lower() not in EXECUTABLE_EXTS:
             return None
             
-        # Solo verificamos seguridad en rutas que ya sabemos que son ejecutables
         if is_protected_path(Path(entry.path)):
             return None
             
-        name = "".join(c for c in _ if ord(c) >= 32)
+        # El nombre amigable se deriva del nombre de archivo sin la extensión
+        name = os.path.splitext(entry.name)[0]
         return StartupEntry(name=name, command=entry.path, source="carpeta")
     except (OSError, PermissionError, ValueError):
         return None

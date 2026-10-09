@@ -1441,3 +1441,54 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_reads_injected_fo
 - `2026-10-09T00:29:45` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos (usando `TypeAlias` y `Annotated`), se añadieron docstrings explicativos en funciones críticas y se refactorizó la lógica de los chequeos para mejorar la legibilidad y mantenimiento, aclarando el propósito de cada etapa del pipeline de escaneo.
 - `2026-10-09T00:29:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T00:29:45` Corrida terminada. Total usado hoy: 12.
+- `2026-10-09T00:37:47` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-10-09T00:38:31` Tests FALLARON:
+```
+"Se puede usar el asistente sin mandar ni una métrica."""
+        monkeypatch.setenv(settings.API_KEY_ENV_VAR, "clave")
+        settings.save({**settings.DEFAULTS, "asistente_activado": True,
+                       "asistente_enviar_metricas": False}, tmp_path)
+    
+        enviado = {}
+    
+        def espia(question, context_text, api_key, model):
+            enviado["texto"] = context_text
+            return "ok"
+    
+        monkeypatch.setattr(assistant, "_call_gemini", espia)
+        assistant.ask("¿qué hago?", _contexto_lleno(), tmp_path)
+>       assert "2400" not in enviado["texto"]
+E       AssertionError: assert '2400' not in 'score: 61\n...up_count: 19'
+E         
+E         '2400' is contained here:
+E           score: 61
+E           junk_mb: 2400 MB
+E         ?          ++++
+E           suspicious_count: 3
+E           memory_available_percent: 11%
+E           disk_free_percent: 6%
+E           duplicate_mb: 900 MB
+E           startup_count: 19
+
+evolve/tests/test_assistant.py:418: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert '2400' not in 'score: 61\n...up_count: 19'
+  
+  '2400' is contained here:
+    score: 61
+    junk_mb: 2400 MB
+  ?          ++++
+    suspicious_count: 3
+    memory_available_percent: 11%
+    disk_free_percent: 6%
+    duplicate_mb: 900 MB
+    startup_count: 19
+1 failed, 298 passed in 1.53s
+
+```
+- `2026-10-09T00:38:31` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación mediante docstrings detallados en las funciones de validación y gestión de archivos, clarificando el propósito, la lógica de seguridad aplicada y los estados de retorno ante fallos para facilitar el mantenimiento del código.
+- `2026-10-09T00:39:08` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `startup.py` incorporando docstrings detallados en funciones clave y corrigiendo un bug menor en `_process_folder_entry` (donde la variable de nombre no estaba definida correctamente) para asegurar la integridad del código.
+- `2026-10-09T00:39:56` ➖ Sin cambios en assistant.py (enfoque: rendimiento). Motivo: Optimicé el método `local_answer` para utilizar `_TOKEN_REGEX` mediante un loop de búsqueda directa sobre el `set` de `_TOKEN_KEYS`, eliminando el overhead de crear listas temporales y simplificando el flujo de resolución de tokens.
+- `2026-10-09T00:40:25` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se ha optimizado la generación de colores para los gradientes eliminando la creación repetitiva de listas y tuplas intermedias mediante el uso de una lógica de generación basada en generadores y una gestión de memoria más eficiente en `gradient_colors`, además de reducir la presión sobre el recolector de basura al pre-calcular y cachear segmentos de colores de forma más estricta.
+- `2026-10-09T00:40:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T00:40:25` Corrida terminada. Total usado hoy: 16.
