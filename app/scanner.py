@@ -77,7 +77,7 @@ TARGETED_DOWNLOAD_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp
 SYSTEM32_LOWER: Final[str] = "system32"
 
 def _is_readable(path: Path) -> bool:
-    """Verifica si el archivo existe físicamente y el proceso tiene permisos de lectura."""
+    """Valida si el archivo es accesible físicamente para lectura."""
     if not isinstance(path, Path):
         return False
     try:
@@ -86,7 +86,7 @@ def _is_readable(path: Path) -> bool:
         return False
 
 def _get_file_attributes(entry: os.DirEntry) -> int:
-    """Consulta los atributos de archivo Win32 mediante syscall (evitando resolución)."""
+    """Extrae atributos de archivo Win32; vital para identificar Junctions sin seguir rutas."""
     try:
         stat_res = entry.stat(follow_symlinks=False)
         return int(getattr(stat_res, "st_file_attributes", 0))
@@ -94,7 +94,7 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
         return 0
 
 def _get_file_size(path: Path) -> int:
-    """Retorna el tamaño en bytes, o -1 si el archivo es inaccesible."""
+    """Obtiene el tamaño en bytes, permitiendo diagnosticar ejecutables 'fantasma' (0 bytes)."""
     if not isinstance(path, Path):
         return -1
     try:
@@ -104,20 +104,19 @@ def _get_file_size(path: Path) -> int:
         return -1
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
-    """Extrae metadatos solo si la entrada no es un enlace simbólico, reanálisis o archivo con hardlinks."""
+    """Valida metadatos asegurando integridad: rechaza hardlinks y reanálisis por seguridad."""
     if not isinstance(entry, os.DirEntry):
         return None
     try:
         if not entry.is_file(follow_symlinks=False) or entry.is_symlink() or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask):
             return None
         stats = entry.stat(follow_symlinks=False)
-        # Rechazar hardlinks (st_nlink > 1) por seguridad contra redirecciones en el FS
         return stats if getattr(stats, "st_nlink", 1) <= 1 else None
     except (OSError, PermissionError, AttributeError):
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
-    """Valida la integridad de la ruta contra límites de longitud y caracteres prohibidos."""
+    """Filtra rutas peligrosas, UNC, o estructuras que superan los límites de la API Win32."""
     if not path_str or len(path_str) > SCAN_LIMITS.max_path or "\0" in path_str:
         return False
     if UNC_PATH_RE.match(path_str) or RTL_CHAR_RE.search(path_str):
@@ -125,17 +124,17 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     return True
 
 def _is_target_extension(name: str) -> bool:
-    """Verifica si el archivo es candidato a escaneo según su extensión."""
+    """Verifica si la extensión del archivo es relevante para nuestras heurísticas."""
     return Path(name).suffix.lower() in SUSPICIOUS_ALL_EXTS
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Heurística: Detecta nombres con doble extensión para ofuscación (ej: doc.pdf.exe)."""
+    """Analiza si el nombre del archivo intenta ocultar su verdadera extensión (ej. .pdf.exe)."""
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión detectada como técnica de enmascaramiento", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Heurística: Detecta ejecutables nuevos en carpetas temporales o de usuario."""
+    """Evalúa si un ejecutable descargado es inusualmente reciente en carpetas volátiles."""
     try:
         if not path or path.parent is None:
             return None
@@ -152,7 +151,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Heurística: Detecta archivos con nombres de sistema encontrados fuera de System32."""
+    """Detecta archivos maliciosos usando nombres de procesos legítimos fuera de System32."""
     try:
         if path is None or not path.name:
             return None
@@ -165,7 +164,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Heurística: Detecta ejecutables vacíos, a menudo usados para pruebas o carga de malwares."""
+    """Detecta archivos binarios vacíos; a menudo asociados a errores o carga de exploits."""
     size = _get_file_size(path)
     if size == 0:
         return Suspicion(path, "Ejecutable vacío detectado", "warning")
@@ -179,7 +178,7 @@ ALL_CHECKS: Final[Sequence[SuspicionCheck]] = [
 ]
 
 class Scanner:
-    """Gestiona el estado y la recursión segura del escaneo sobre el sistema de archivos."""
+    """Controlador de estado para el recorrido recursivo del árbol de directorios."""
     
     def __init__(self, base_root: Path) -> None:
         self.results: List[Suspicion] = []
@@ -190,7 +189,7 @@ class Scanner:
 
     @lru_cache(maxsize=2048)
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Verifica que una ruta resuelta pertenezca al árbol de escaneo definido."""
+        """Verifica la pertenencia al árbol base para prevenir escapes de directorio."""
         try:
             resolved = str(Path(entry_path).resolve()).lower()
             return resolved.startswith(self.base_root_str)
@@ -198,18 +197,15 @@ class Scanner:
             return False
 
     def _has_invalid_name(self, name: str) -> bool:
-        """Valida si el nombre infringe las convenciones de dispositivos del SO."""
+        """Valida que el nombre no infrinja las convenciones de dispositivos del SO."""
         return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Identifica puntos de reanálisis (Junction/Symlink) mediante atributos."""
+        """Usa flags de sistema para identificar puntos de reanálisis sin resolver rutas."""
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """
-        Realiza chequeo de seguridad de capa alta para garantizar que la entrada 
-        sea transitable y no se escape del árbol permitido.
-        """
+        """Valida si el directorio/archivo es transitable bajo los criterios de seguridad definidos."""
         if not isinstance(entry, os.DirEntry) or not entry.path:
             return False
         
@@ -236,7 +232,7 @@ class Scanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        """Registra un directorio para ser explorado en una iteración futura."""
+        """Pone en cola directorios válidos para su futura exploración iterativa."""
         if current_depth >= SCAN_LIMITS.max_depth or not entry.path:
             return
         path_lower = entry.path.lower()
@@ -247,14 +243,11 @@ class Scanner:
     @staticmethod
     @lru_cache(maxsize=1024)
     def _is_relevant_extension(name: str) -> bool:
-        """Determina si un archivo debe ser analizado por heurísticas."""
+        """Filtra archivos que no requieren análisis, optimizando el tiempo de escaneo."""
         return _is_target_extension(name)
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        """
-        Orquesta el procesamiento de una entrada del filesystem. 
-        Desambigua entre exploración de directorios y análisis de archivos.
-        """
+        """Despacha la lógica de procesamiento según si la entrada es carpeta o archivo."""
         if not isinstance(entry, os.DirEntry) or not entry.path:
             return
             
@@ -270,7 +263,7 @@ class Scanner:
                     pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta todas las funciones de heurística sobre un archivo validado."""
+        """Ejecuta el conjunto de heurísticas definido sobre un archivo validado."""
         if not _is_readable(path):
             return
         for check_fn in ALL_CHECKS:
@@ -282,7 +275,7 @@ class Scanner:
                 logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> List[Suspicion]:
-    """Realiza un análisis heurístico único sobre un archivo individual, con validaciones previas."""
+    """Realiza un análisis heurístico aislado sobre un archivo individual."""
     if not isinstance(path, Path): return []
     try:
         resolved = path.resolve(strict=True)
@@ -301,7 +294,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
-    """Inicia el escaneo recursivo mediante pila para evitar riesgos de desbordamiento."""
+    """Inicia el escaneo recursivo mediante pila, evitando recursión de llamada excesiva."""
     if directory is None: return []
     try:
         path_str = str(directory).strip()
@@ -327,7 +320,7 @@ def scan_directory(directory: Union[str, Path, None]) -> List[Suspicion]:
     return scanner.results
 
 def run_windows_defender_quick_scan() -> str:
-    """Invoca la API de PowerShell de Windows Defender para iniciar un QuickScan."""
+    """Invoca la API de PowerShell de Windows Defender para iniciar un escaneo de seguridad."""
     try:
         status = subprocess.run(
             ["powershell", "-Command", "Get-MpComputerStatus | Select-Object -ExpandProperty RealTimeProtectionEnabled"],
