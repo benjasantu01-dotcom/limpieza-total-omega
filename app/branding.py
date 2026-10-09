@@ -360,10 +360,14 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
             
     return tuple(gen_colors())
 
-@lru_cache(maxsize=32)
+_GRADIENT_CACHE: dict[Tuple[int, Tuple[ColorHex, ...]], Tuple[ColorSegment, ...]] = {}
+
 def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorSegment, ...]:
-    """Combina generación de gradiente y segmentación con cache."""
-    return _get_grouped_segments(gradient_colors(steps, stops))
+    """Combina generación de gradiente y segmentación con cache manual."""
+    key = (steps, stops)
+    if key not in _GRADIENT_CACHE:
+        _GRADIENT_CACHE[key] = _get_grouped_segments(gradient_colors(steps, stops))
+    return _GRADIENT_CACHE[key]
 
 # Coordenadas relativas del icono principal (Escudo)
 SHIELD_BASE_COORDS: Final[Tuple[float, ...]] = (64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)

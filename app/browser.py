@@ -148,16 +148,9 @@ def _is_unc_path(path_str: Optional[str]) -> TypeGuard[str]:
     """Verifica si la ruta es un recurso de red UNC, los cuales deben ser excluidos."""
     return isinstance(path_str, str) and (path_str.startswith(r"\\") or path_str.startswith("//"))
 
-def _ensure_within_base(target: str, base_norm: str) -> bool:
-    """
-    Valida que la ruta objetivo sea un subdirectorio del directorio base permitido,
-    mitigando riesgos de path traversal.
-    """
-    try:
-        if not target: return False
-        return os.path.normcase(os.path.abspath(target)).startswith(base_norm)
-    except Exception:
-        return False
+def _ensure_within_base(target_norm: str, base_norm: str) -> bool:
+    """Valida que la ruta normalizada objetivo comience con la base normalizada."""
+    return target_norm.startswith(base_norm)
 
 def base_directories() -> List[Path]:
     """Obtiene y valida la ruta del directorio LOCALAPPDATA del usuario actual."""
@@ -194,7 +187,8 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     if _is_unc_path(entry.path) or len(entry.path) >= MAX_PATH_LEN:
         return True
     
-    if not _ensure_within_base(entry.path, ctx.base_norm):
+    # Se usa la normalización previa para evitar recalcular en cada iteración
+    if not _ensure_within_base(os.path.normcase(entry.path), ctx.base_norm):
         return True
 
     if entry.is_symlink() or ctx.is_junction(entry.path) or _is_system_hidden(entry.path, ctx.kernel32):
@@ -204,8 +198,6 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
 def _process_file_node(entry: os.DirEntry, visited_files: Set[tuple[int, int]]) -> int:
     """Calcula el tamaño del archivo usando su identificador único (inodo) para evitar conteo doble."""
     try:
-        if not entry.is_file(follow_symlinks=False):
-            return 0
         st = entry.stat(follow_symlinks=False)
         file_id = (st.st_dev, st.st_ino)
         if file_id in visited_files or not os.access(entry.path, os.R_OK):
@@ -270,7 +262,7 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
     """Valida que una ruta cumpla con los requisitos de seguridad antes de ser escaneada."""
     if not isinstance(candidate, Path) or not candidate.exists() or not candidate.is_dir(): return False
     real: Path = candidate.resolve(strict=True)
-    if not _ensure_within_base(str(real), os.path.normcase(base_abs_str)):
+    if not _ensure_within_base(os.path.normcase(str(real)), os.path.normcase(base_abs_str)):
         return False
     if not is_safe_to_modify(real) or is_protected_path(real):
         return False
@@ -283,7 +275,7 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     target: Path = real_base.joinpath(*rel_str.split("\\"))
     if not target.exists() or not target.is_dir(): return Path()
     target_res = target.resolve(strict=True)
-    if _ensure_within_base(str(target_res), os.path.normcase(str(real_base))) and \
+    if _ensure_within_base(os.path.normcase(str(target_res)), os.path.normcase(str(real_base))) and \
        is_safe_to_modify(target_res) and not is_protected_path(target_res):
         return target_res
     return Path()
@@ -294,7 +286,6 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     
     found: List[BrowserCache] = []
-    ctx = ScanContext("", _get_kernel32(), _IS_JUNCTION_FN, set(), {})
     
     for base in raw_bases:
         if not isinstance(base, Path) or not base.exists(): continue
@@ -302,8 +293,8 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             real_base: Path = base.resolve(strict=True)
             real_base_str: str = str(real_base)
             
-            # Actualizar el contexto con la base actual
-            ctx = ScanContext(os.path.normcase(real_base_str), ctx.kernel32, ctx.is_junction, set(), {})
+            # Actualizar el contexto para la base actual
+            ctx = ScanContext(os.path.normcase(real_base_str), _get_kernel32(), _IS_JUNCTION_FN, set(), {})
             
             for browser_name, rel_str in browser_map.items():
                 candidate = _resolve_browser_path(real_base, rel_str)

@@ -339,9 +339,11 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
-            rel = path.relative_to(root)
-            if not rel.parts: continue
-            top_folder = root / rel.parts[0]
+            # Optimización: calcular nivel superior evitando relative_to si es posible
+            parts = path.parts
+            root_parts_len = len(root.parts)
+            if len(parts) <= root_parts_len: continue
+            top_folder = Path(*parts[:root_parts_len + 1])
             curr = stats[top_folder]
             curr.size += size
             curr.file_count += 1
