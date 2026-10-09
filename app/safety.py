@@ -180,6 +180,7 @@ class SafetyValidationErrorCode(IntEnum):
     PATH_TOO_DEEP = 31
     SYSTEM_OWNER_PROTECTION = 32
     VIRTUAL_DRIVE_DETECTED = 33
+    BIDI_SPOOFING = 34
 
 class UnsafePathError(Exception):
     """Excepción lanzada cuando una ruta no supera los filtros de seguridad."""
@@ -740,6 +741,10 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     if _is_reserved_device_name(target_path.name):
         raise UnsafePathError("Nombre de dispositivo reservado detectado.", SafetyValidationErrorCode.RESERVED_NAME)
     
+    # Detección de Bidi Spoofing (caracteres de control RTL)
+    if re.search(r'[\u200E\u200F\u202A-\u202E]', path_string):
+        raise UnsafePathError("Posible ataque de bidi spoofing detectado.", SafetyValidationErrorCode.BIDI_SPOOFING)
+
     try:
         if target_path.exists() and not target_path.is_absolute():
             raise UnsafePathError("Ruta inconsistente con el sistema.", SafetyValidationErrorCode.GENERIC)

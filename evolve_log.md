@@ -1030,3 +1030,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-09T10:32:39` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-10-09T10:32:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T10:32:39` Corrida terminada. Total usado hoy: 248.
+- `2026-10-09T10:40:01` Arrancando corrida. Quedan hoy ~52 peticiones objetivo.
+- `2026-10-09T10:40:43` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez de `quarantine.py` ante casos límite en la manipulación de archivos mediante la implementación de `_secure_open_for_write` y `_safe_move_to_quarantine` que validan exhaustivamente la existencia de rutas, permisos y condiciones del sistema de archivos antes de cualquier operación física, evitando excepciones no controladas durante el aislamiento.
+- `2026-10-09T10:41:01` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-09T10:41:49` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `ensure_safe_to_modify` para detectar y bloquear rutas que contengan caracteres de control RTL (Right-to-Left) o secuencias de escape no imprimibles, mitigando el riesgo de ataques de "bidi spoofing" donde un archivo parece tener una extensión segura cuando en realidad es un ejecutable.
+- `2026-10-09T10:41:59` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-09T10:41:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T10:41:59` Corrida terminada. Total usado hoy: 252.
