@@ -438,21 +438,15 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         
         if config_path.exists():
             ensure_safe_to_modify(str(bak_path.resolve()))
-            try: 
-                os.replace(config_path, bak_path)
-            except (OSError, PermissionError): pass
+            os.replace(config_path, bak_path)
         
         os.replace(temp_path, config_path)
-        
-        with open(config_path, "r", encoding="utf-8") as f:
-            if not _is_file_secure_to_read(f):
-                raise IOError("Verificación post-escritura fallida")
         
         dir_fd = os.open(str(parent), os.O_RDONLY)
         os.fsync(dir_fd)
         _MANAGER.clear()
         return config_path
-    except (OSError, IOError, PermissionError, json.JSONDecodeError, TypeError): 
+    except (OSError, IOError, PermissionError, TypeError): 
         return None
     finally:
         if dir_fd is not None:

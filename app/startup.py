@@ -107,6 +107,9 @@ class StartupEntry:
         try:
             if "\0" in path_str:
                 return True
+            # Prevenir acceso a rutas de dispositivo estilo NT
+            if path_str.upper().startswith(("\\\\.\\", "\\\\?\\")):
+                return True
             return Path(path_str).stem.upper() in RESERVED_DEVICE_NAMES
         except (ValueError, TypeError):
             return True
@@ -172,6 +175,7 @@ class StartupEntry:
                 return ""
             
             norm: str = os.path.normpath(path_string)
+            # Protección extra contra rutas UNC o dispositivos tras normalización
             if norm.startswith(r"\\"):
                 return ""
         except (ValueError, TypeError):

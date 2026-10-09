@@ -135,7 +135,12 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
         return 0
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
-        return attrs if attrs != 0xFFFFFFFF else 0
+        if attrs == 0xFFFFFFFF:
+            # Si el error es de acceso, forzamos una señal de peligro
+            err = ctypes.windll.kernel32.GetLastError()
+            if err == ERROR_ACCESS_DENIED: return Win32Attr.SYSTEM
+            return 0
+        return attrs
     except (AttributeError, ctypes.ArgumentError):
         return 0
 

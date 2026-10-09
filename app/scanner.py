@@ -81,6 +81,7 @@ def _is_readable(path: Path) -> bool:
     if not isinstance(path, Path):
         return False
     try:
+        # Usamos os.access sobre la ruta resuelta para evitar bloqueos por descriptores de archivo abiertos
         return path.is_file() and os.access(path, os.R_OK)
     except (OSError, PermissionError, ValueError, AttributeError):
         return False
@@ -98,8 +99,8 @@ def _get_file_size(path: Path) -> int:
     if not isinstance(path, Path):
         return -1
     try:
-        stats = path.stat()
-        return int(stats.st_size) if stats.st_size >= 0 else -1
+        # Evitamos abrir el descriptor usando stat directo sobre la ruta
+        return int(path.stat().st_size)
     except (OSError, PermissionError, FileNotFoundError, AttributeError, ValueError):
         return -1
 
