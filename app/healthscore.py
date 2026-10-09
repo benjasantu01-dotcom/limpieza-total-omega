@@ -251,7 +251,7 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verifica que ninguna métrica numérica sea infinita o NaN."""
-        return all(isinstance(getattr(self, f), (int, float)) and math.isfinite(getattr(self, f)) for f in self._CHECK_FIELDS)
+        return all(math.isfinite(getattr(self, f)) for f in self._CHECK_FIELDS)
 
 @dataclass
 class HealthResult:

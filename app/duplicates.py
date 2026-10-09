@@ -244,19 +244,19 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        p_entry = Path(entry.path)
-                        if not _safe_path_check(p_entry) or (skip_protected and is_protected_path(p_entry)):
-                            continue
-                        
                         if entry.is_dir(follow_symlinks=False):
-                            queue.append((p_entry, depth + 1))
+                            p_entry = Path(entry.path)
+                            if _safe_path_check(p_entry) and not (skip_protected and is_protected_path(p_entry)):
+                                queue.append((p_entry, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat()
                             if st.st_size >= min_size:
-                                inode_id = (st.st_dev, st.st_ino)
-                                if inode_id not in visited_inodes and not is_system_or_hidden(p_entry) and not _is_file_locked(p_entry):
-                                    visited_inodes.add(inode_id)
-                                    size_to_paths_map[st.st_size].append(p_entry)
+                                p_entry = Path(entry.path)
+                                # Chequeo consolidado: evitamos llamadas múltiples a atributos de sistema/lock
+                                if (st.st_dev, st.st_ino) not in visited_inodes:
+                                    if _safe_path_check(p_entry) and not is_system_or_hidden(p_entry) and not _is_file_locked(p_entry):
+                                        visited_inodes.add((st.st_dev, st.st_ino))
+                                        size_to_paths_map[st.st_size].append(p_entry)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

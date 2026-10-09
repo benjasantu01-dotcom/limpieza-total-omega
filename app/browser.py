@@ -216,7 +216,7 @@ def _process_file_node(entry: os.DirEntry, visited_files: Set[tuple[int, int]]) 
         return 0
 
 def _sum_directory_recursive(
-    root_path: Path, 
+    root_path: str, 
     root_abs_norm: str,
     kernel32: Optional[ctypes.WinDLL],
     visited_files: Set[tuple[int, int]],
@@ -230,22 +230,21 @@ def _sum_directory_recursive(
     if depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)
     
-    try:
-        path_str = str(root_path)
-        path_norm = os.path.normcase(path_str)
-        if path_norm in visited_dirs:
-            return ScanResult(visited_dirs[path_norm], True)
+    path_norm = os.path.normcase(root_path)
+    if path_norm in visited_dirs:
+        return ScanResult(visited_dirs[path_norm], True)
 
-        total_bytes: int = 0
-        with os.scandir(path_str) as it:
+    total_bytes: int = 0
+    try:
+        with os.scandir(root_path) as it:
             for entry in it:
                 try:
                     if _should_skip_entry(entry, kernel32, _IS_JUNCTION_FN, root_abs_norm):
                         continue
                     
                     if entry.is_dir(follow_symlinks=False):
-                        res: ScanResult = _sum_directory_recursive(
-                            Path(entry.path), root_abs_norm, kernel32, 
+                        res = _sum_directory_recursive(
+                            entry.path, root_abs_norm, kernel32, 
                             visited_files, visited_dirs, depth + 1
                         )
                         total_bytes += res.bytes_found
@@ -269,8 +268,8 @@ def directory_size(path: Optional[OSPath]) -> int:
     if not is_safe_to_modify(resolved_p) or is_protected_path(resolved_p):
         return 0
     
-    norm_root: str = os.path.normcase(str(resolved_p))
-    return _sum_directory_recursive(resolved_p, norm_root, _get_kernel32(), set(), {}, 0).bytes_found
+    path_str = str(resolved_p)
+    return _sum_directory_recursive(path_str, os.path.normcase(path_str), _get_kernel32(), set(), {}, 0).bytes_found
 
 @safe_path_operation(False)
 def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
@@ -309,11 +308,12 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         try:
             real_base: Path = base.resolve(strict=True)
             real_base_str: str = str(real_base)
+            real_base_norm: str = os.path.normcase(real_base_str)
             for browser_name, rel_str in browser_map.items():
                 candidate = _resolve_browser_path(real_base, rel_str)
                 if candidate != Path() and _is_valid_cache_path(candidate, real_base_str):
                     scan_res = _sum_directory_recursive(
-                        candidate, os.path.normcase(str(candidate)), 
+                        str(candidate), real_base_norm, 
                         k32, visited_files, visited_dirs, 0
                     )
                     if scan_res.bytes_found > 0:
