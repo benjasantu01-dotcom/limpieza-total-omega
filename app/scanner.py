@@ -105,8 +105,6 @@ def _get_file_size(path: Path) -> int:
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """
     Valida metadatos asegurando integridad: rechaza hardlinks y reanálisis.
-    Se utiliza 'follow_symlinks=False' explícitamente para evitar escapar de la sandbox 
-    definida por la ruta base de escaneo.
     """
     if not isinstance(entry, os.DirEntry):
         return None
@@ -139,7 +137,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Evalúa si un ejecutable descargado es inusualmente reciente en carpetas volátiles."""
     try:
-        if not path or path.parent is None:
+        if path is None or path.parent is None:
             return None
         if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
             return None
@@ -208,40 +206,36 @@ class Scanner:
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """
-        Valida si el directorio/archivo es transitable.
-        Bloquea activamente Symlinks y Junctions (reparse points) para prevenir 
-        recursión fuera del ámbito autorizado por el usuario.
-        """
-        if not isinstance(entry, os.DirEntry) or not entry.path:
+        """Valida si el directorio/archivo es transitable evitando escapes."""
+        if not isinstance(entry, os.DirEntry) or entry.path is None:
             return False
         
-        if entry.path in self.safe_cache:
+        path_str = entry.path
+        if path_str in self.safe_cache:
             return True
             
-        if not _is_valid_path_structure(entry.path) or self._has_invalid_name(entry.name):
+        if not _is_valid_path_structure(path_str) or self._has_invalid_name(entry.name):
             return False
             
         try:
-            # Chequeo defensivo inicial antes de resolver
             if entry.is_symlink() or self._is_reparse_point(entry):
                 return False
                 
-            real_path = Path(entry.path).resolve(strict=True)
-            if real_path.is_symlink() or not str(real_path).lower().startswith(self.base_root_str):
+            real_path = Path(path_str).resolve(strict=True)
+            if not str(real_path).lower().startswith(self.base_root_str):
                 return False
                 
             if is_protected_path(real_path):
                 return False
                 
-            self.safe_cache.add(entry.path)
+            self.safe_cache.add(path_str)
             return True
         except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
         """Pone en cola directorios válidos para su futura exploración iterativa."""
-        if current_depth >= SCAN_LIMITS.max_depth or not entry.path:
+        if current_depth >= SCAN_LIMITS.max_depth or entry.path is None:
             return
         
         path_lower = entry.path.lower()
@@ -257,19 +251,19 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
         """Despacha la lógica de procesamiento según si la entrada es carpeta o archivo."""
-        if not isinstance(entry, os.DirEntry) or not entry.path:
+        if not isinstance(entry, os.DirEntry) or entry.path is None:
             return
             
-        if entry.is_dir(follow_symlinks=False):
-            if self._is_safe_entry(entry):
-                self._handle_directory(entry, directory_stack, current_depth)
-        elif self._is_relevant_extension(entry.name):
-            if self._is_safe_entry(entry):
-                try:
+        try:
+            if entry.is_dir(follow_symlinks=False):
+                if self._is_safe_entry(entry):
+                    self._handle_directory(entry, directory_stack, current_depth)
+            elif self._is_relevant_extension(entry.name):
+                if self._is_safe_entry(entry):
                     path_obj = Path(entry.path)
                     self._run_file_heuristics(path_obj, entry)
-                except (OSError, ValueError):
-                    pass
+        except (OSError, PermissionError):
+            pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta el conjunto de heurísticas definido sobre un archivo validado."""

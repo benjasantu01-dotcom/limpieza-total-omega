@@ -761,6 +761,8 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
         
     if root_directory:
+        if not isinstance(root_directory, (str, Path, os.PathLike)):
+             raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC)
         try:
             rd_path = Path(root_directory)
             if not rd_path.is_absolute():

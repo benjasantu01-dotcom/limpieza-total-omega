@@ -1023,7 +1023,8 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 purged_ids.add(item.item_id)
         
         if purged_ids:
-            remaining = [i for i in items if i.item_id not in purged_ids]
+            # Sincronizamos manifiesto tras purga para reflejar estado actual
+            remaining = [i for i in load_manifest(base, force_reload=True) if i.item_id not in purged_ids]
             save_manifest(remaining, base)
             
         return len(purged_ids)
