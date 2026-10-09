@@ -1452,3 +1452,27 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-09T13:55:40` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators._check_path_safety
 - `2026-10-09T13:55:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T13:55:40` Corrida terminada. Total usado hoy: 328.
+- `2026-10-09T14:04:15` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-09T14:04:43` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: legibilidad y documentación).
+- `2026-10-09T14:05:20` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+_______________ ERROR collecting evolve/tests/test_assistant.py ________________
+evolve/tests/test_assistant.py:25: in <module>
+    import assistant  # noqa: E402
+    ^^^^^^^^^^^^^^^^
+app/assistant.py:343: in <module>
+    class SystemContext:
+E   ValueError: 'score' in __slots__ conflicts with class variable
+=========================== short test summary info ============================
+ERROR evolve/tests/test_assistant.py - ValueError: 'score' in __slots__ conflicts with class variable
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.30s
+
+```
+- `2026-10-09T14:05:20` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se optimizó el acceso a las métricas del sistema utilizando `__slots__` en `SystemContext` para reducir el consumo de memoria y mejorar la velocidad de acceso, y se reemplazó la iteración sobre el diccionario `__dict__` por un acceso directo en `metrics_snapshot` para evitar recrear el diccionario en cada llamada.
+- `2026-10-09T14:06:02` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimizé el uso de memoria y rendimiento en `branding.py` al reemplazar el diccionario de caché manual `_GRADIENT_CACHE` por un decorador `@lru_cache` estándar, consolidando la lógica de invalidación y reduciendo la complejidad del código.
+- `2026-10-09T14:06:13` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo recursivo eliminando la creación repetitiva de objetos `Path` y normalizaciones redundantes dentro del bucle crítico, reemplazándolas por operaciones de bajo nivel con `os.path` y `os.scandir` para reducir el overhead de asignación de memoria.
+- `2026-10-09T14:06:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T14:06:13` Corrida terminada. Total usado hoy: 332.

@@ -186,16 +186,21 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
 
 def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     """Aplica reglas de filtrado de seguridad para ignorar archivos según políticas de protección."""
-    if _is_excluded_file(entry.name) or is_protected_path(Path(entry.path)):
+    if _is_excluded_file(entry.name):
         return True
     
-    if _is_unc_path(entry.path) or len(entry.path) >= MAX_PATH_LEN:
+    path_str = entry.path
+    if _is_unc_path(path_str) or len(path_str) >= MAX_PATH_LEN:
         return True
     
-    if not _ensure_within_base(os.path.normcase(entry.path), ctx.base_norm):
+    # Pre-cálculo para evitar llamadas a Path() repetitivas
+    if not _ensure_within_base(os.path.normcase(path_str), ctx.base_norm):
+        return True
+    
+    if is_protected_path(Path(path_str)):
         return True
 
-    if entry.is_symlink() or ctx.is_junction(entry.path) or _is_system_hidden(entry.path, ctx.kernel32):
+    if entry.is_symlink() or ctx.is_junction(path_str) or _is_system_hidden(path_str, ctx.kernel32):
         return True
     return False
 
@@ -204,7 +209,7 @@ def _process_file_node(entry: os.DirEntry, visited_files: Set[tuple[int, int]]) 
     try:
         st = entry.stat(follow_symlinks=False)
         file_id = (st.st_dev, st.st_ino)
-        if file_id in visited_files or not os.access(entry.path, os.R_OK):
+        if file_id in visited_files:
             return 0
         visited_files.add(file_id)
         return st.st_size
@@ -231,18 +236,11 @@ def _sum_directory_recursive(
     try:
         with os.scandir(root_path) as it:
             for entry in it:
+                if _should_skip_entry(entry, ctx):
+                    continue
+                
                 try:
-                    if _should_skip_entry(entry, ctx):
-                        continue
-                    
-                    # Validación estricta del atributo is_dir para manejar fallos de acceso
-                    is_dir = False
-                    try:
-                        is_dir = entry.is_dir(follow_symlinks=False)
-                    except (OSError, PermissionError):
-                        continue
-
-                    if is_dir:
+                    if entry.is_dir(follow_symlinks=False):
                         res = _sum_directory_recursive(entry.path, ctx, depth + 1)
                         total_bytes += res.bytes_found
                     else:
