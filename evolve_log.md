@@ -490,3 +490,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-09T05:14:50` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el rendimiento de la fase de recolección de candidatos en `_collect_candidates` eliminando llamadas redundantes a `stat()` y `is_valid_candidate` mediante la reutilización de los datos obtenidos durante el escaneo con `os.scandir`.
 - `2026-10-09T05:14:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T05:14:50` Corrida terminada. Total usado hoy: 124.
+- `2026-10-09T05:23:12` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-10-09T05:23:38` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics.is_finite, SystemMetrics.safe_get
+- `2026-10-09T05:24:47` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run, LimpiezaTotalOmegaApp._get_numeric_setting_from_widget, LimpiezaTotalOmegaApp._is_safe_file_access, LimpiezaTotalOmegaApp._is_safe_target_dir, LimpiezaTotalOmegaApp._is_valid_dir, LimpiezaTotalOmegaApp._update_cards, LimpiezaTotalOmegaApp._validate_numeric_setting, LimpiezaTotalOmegaApp._verify_disk_path
+- `2026-10-09T05:25:19` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `top_memory_processes` reemplazando la creación de listas intermedias y el filtrado redundante mediante un generador eficiente, además de reducir el uso innecesario de memoria al evitar cargar todos los procesos en memoria antes de ordenarlos.
+- `2026-10-09T05:25:38` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-10-09T05:25:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T05:25:38` Corrida terminada. Total usado hoy: 128.
