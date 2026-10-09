@@ -261,15 +261,8 @@ def _get_cached_snapshot(timestamp_bucket: int) -> MemorySnapshot:
 def read_snapshot() -> MemorySnapshot:
     return _get_cached_snapshot(int(time.time() / 5))
 
-def _query_working_set_bytes(pid: int) -> Optional[BytesValue]:
-    """
-    Consulta la API PSAPI GetProcessMemoryInfo.
-    El índice 3 de PROCESS_MEMORY_COUNTERS corresponde a WorkingSetSize.
-    """
-    kernel32 = ctypes.windll.kernel32
-    psapi = getattr(ctypes.windll, "psapi", None)
-    if not psapi: return None
-    
+def _query_working_set_bytes(pid: int, kernel32, psapi) -> Optional[BytesValue]:
+    """Consulta la API PSAPI GetProcessMemoryInfo para un PID dado."""
     process_handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
     if not process_handle:
         return None
@@ -284,11 +277,6 @@ def _query_working_set_bytes(pid: int) -> Optional[BytesValue]:
         kernel32.CloseHandle(process_handle)
     return None
 
-def _get_proc_memory_by_pid(pid: int) -> Optional[ProcessMemory]:
-    ws = _query_working_set_bytes(pid)
-    if ws is None: return None
-    return ProcessMemory(f"PID {pid}", pid, ws)
-
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if not hasattr(top_memory_processes, "_cache"):
         top_memory_processes._cache = (0.0, [])
@@ -298,21 +286,22 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     cache_time, cache_data = top_memory_processes._cache
     
     if (now - cache_time) > 60:
+        kernel32 = ctypes.windll.kernel32
         psapi = getattr(ctypes.windll, "psapi", None)
         if not psapi: return []
         
         pids = (ctypes.c_ulong * 4096)()
-        cb = ctypes.sizeof(pids)
         cb_needed = ctypes.c_ulong()
         
-        if psapi.EnumProcesses(ctypes.byref(pids), cb, ctypes.byref(cb_needed)):
+        if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
             count = cb_needed.value // ctypes.sizeof(ctypes.c_ulong)
             procs = []
-            for pid in pids[:min(count, 4096)]:
+            for i in range(min(count, 4096)):
+                pid = pids[i]
                 if not _is_system_process(pid):
-                    proc = _get_proc_memory_by_pid(pid)
-                    if proc:
-                        procs.append(proc)
+                    ws = _query_working_set_bytes(pid, kernel32, psapi)
+                    if ws:
+                        procs.append(ProcessMemory(f"PID {pid}", pid, ws))
             
             cache_data = sorted(procs, key=lambda p: p.working_set, reverse=True)[:limit]
             top_memory_processes._cache = (now, cache_data)
