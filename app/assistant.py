@@ -402,7 +402,6 @@ class SystemContext:
         try:
             val = _get_source_value(source, key)
             if val is None: return None
-            
             float_val = float(val)
             if not _is_metric_within_bounds(float_val, spec): 
                 return None
@@ -431,14 +430,16 @@ class SystemContext:
         Normaliza e importa datos externos al contexto de manera transaccional.
         """
         if not self._validate_ingestion_source(source): return False
-        
         has_updates = False
         try:
             for key, spec in _VALIDATORS.items():
                 res = self._apply_field(source, key, spec)
-                if res is not None and res != getattr(self, key):
-                    object.__setattr__(self, key, res)
-                    has_updates = True
+                if res is not None:
+                    try:
+                        if res != getattr(self, key):
+                            object.__setattr__(self, key, res)
+                            has_updates = True
+                    except Exception: continue
             
             grade_val = self._clean_grade(_get_source_value(source, "grade"))
             if grade_val and grade_val != self.grade:
@@ -450,8 +451,8 @@ class SystemContext:
                 for cache_attr in ('metrics_snapshot', 'active_problems'):
                     if cache_attr in self.__dict__: del self.__dict__[cache_attr]
                 return True
-        except (Exception, OverflowError):
-            logging.warning("Fallo durante la ingesta de datos.")
+        except (Exception):
+            pass
         return False
 
 @dataclass

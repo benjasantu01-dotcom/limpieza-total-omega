@@ -1513,3 +1513,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-10-09T01:10:17` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
 - `2026-10-09T01:10:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T01:10:17` Corrida terminada. Total usado hoy: 28.
+- `2026-10-09T01:18:35` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-10-09T01:19:13` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-10-09T01:19:55` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez del sistema de ingesta en `SystemContext.ingest` y `_apply_field` para manejar de forma segura entradas mal formadas o tipos inesperados, evitando excepciones que detengan el flujo del asistente ante datos corruptos.
+- `2026-10-09T01:20:33` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `draw_ring` ante desbordamientos y cálculos inválidos, asegurando que `extent` sea un número finito y que el cálculo del ángulo base no resulte en una división por cero u otras excepciones matemáticas inesperadas en el objeto `Canvas`.
+- `2026-10-09T01:21:09` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-10-09T01:21:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T01:21:09` Corrida terminada. Total usado hoy: 32.
