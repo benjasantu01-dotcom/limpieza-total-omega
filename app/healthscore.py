@@ -183,10 +183,7 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
     """Calcula el ratio de seguridad penalizando hallazgos críticos y advertencias sospechosas."""
     try:
-        c = float(suspicious_count) if isinstance(suspicious_count, (int, float)) else 0.0
-        w = float(warnings) if isinstance(warnings, (int, float)) else 0.0
-        if not math.isfinite(c) or not math.isfinite(w): return 0.0
-        penalization = (max(0.0, c) * 0.05) + (max(0.0, w) * 0.25)
+        penalization = (float(suspicious_count) * 0.05) + (float(warnings) * 0.25)
         return _clamp(1.0 - penalization)
     except (ValueError, TypeError):
         return 0.0
@@ -282,16 +279,13 @@ def _sanitize_msg(msg: str) -> str:
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio, findings: List[str]) -> None:
     """Ejecuta las reglas de diagnóstico y sanitiza el texto de los resultados."""
-    if not isinstance(rules, (tuple, list)): return
     for rule in rules:
         try:
-            if not isinstance(rule, RecommendationRule): continue
             if rule.check(metrics, normalized_ratio):
-                raw_msg = rule.message_factory(metrics)
-                clean_msg = _sanitize_msg(raw_msg)
+                clean_msg = _sanitize_msg(rule.message_factory(metrics))
                 if clean_msg: findings.append(clean_msg)
         except Exception as e:
-            logging.error(f"Falla en evaluación de regla {getattr(rule, 'area', 'desconocida')}: {e}")
+            logging.error(f"Falla en evaluación de regla {rule.area}: {e}")
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
@@ -315,9 +309,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             logging.error(f"Falla crítica en pipeline {entry.area}: {e}")
             metric_breakdown[entry.area] = 0
             
-    q_val = getattr(m, 'quarantined_count', 0)
-    if isinstance(q_val, (int, float)) and q_val > 0:
-        recommendations.append(f"Tenés {int(q_val)} archivo(s) en cuarentena.")
+    if m.quarantined_count > 0:
+        recommendations.append(f"Tenés {m.quarantined_count} archivo(s) en cuarentena.")
     
     final_score = int(round(_clamp(accumulated_score, 0.0, 100.0)))
     return HealthResult(
@@ -329,9 +322,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 
 def _render_bar(points: int, max_val: int) -> str:
     """Representación visual: barra de caracteres ASCII para la interfaz con manejo de errores."""
-    if not isinstance(max_val, int) or max_val <= 0:
+    if max_val <= 0:
         return ".........."
-    p = max(0, min(int(points), max_val))
+    p = max(0, min(points, max_val))
     return "#" * p + "." * (max_val - p)
 
 def summarize(result: HealthResult | None) -> List[str]:
@@ -340,14 +333,10 @@ def summarize(result: HealthResult | None) -> List[str]:
         return ["Error: Informe de salud no disponible."]
         
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
-    bd = result.breakdown if isinstance(result.breakdown, dict) else {}
     
     for area, maximo in _WEIGHTS_LIST:
-        points = bd.get(area, 0)
-        p = int(points) if isinstance(points, (int, float)) else 0
-        bar = _render_bar(p, maximo)
-        lines.append(f"  {area.capitalize():<12} {p:>2}/{maximo:<2} [{bar}]")
+        p = result.breakdown.get(area, 0)
+        lines.append(f"  {area.capitalize():<12} {p:>2}/{maximo:<2} [{_render_bar(p, maximo)}]")
     
-    recs = result.recommendations if isinstance(result.recommendations, list) else ["Sin recomendaciones."]
-    lines.extend(("", "Recomendaciones:", *(f"  - {r}" for r in recs if isinstance(r, str))))
+    lines.extend(("", "Recomendaciones:", *(f"  - {r}" for r in result.recommendations)))
     return lines

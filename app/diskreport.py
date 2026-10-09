@@ -344,12 +344,14 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     root = _validate_root(directory)
     if not root: return []
     stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
+    root_str = str(root)
     
     for path, size in walk_files(root, skip_protected):
         try:
-            relative = path.relative_to(root)
-            if not relative.parts: continue
-            top_folder = root / relative.parts[0]
+            # Obtener el componente principal de la ruta sin convertir a Path completo
+            parts = path.relative_to(root).parts
+            if not parts: continue
+            top_folder = root / parts[0]
             
             curr = stats[top_folder]
             curr.size += size

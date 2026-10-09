@@ -246,9 +246,8 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                 for entry in iterator:
                     try:
                         if entry.is_dir(follow_symlinks=False):
-                            dir_path = Path(entry.path)
-                            if not (skip_protected and is_protected_path(dir_path)):
-                                queue.append((dir_path, depth + 1))
+                            if not (skip_protected and is_protected_path(Path(entry.path))):
+                                queue.append((Path(entry.path), depth + 1))
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat()
                             if st.st_size >= min_size and (st.st_dev, st.st_ino) not in visited_inodes:

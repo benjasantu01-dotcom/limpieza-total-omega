@@ -1476,3 +1476,12 @@ ERROR evolve/tests/test_assistant.py - ValueError: 'score' in __slots__ conflict
 - `2026-10-09T14:06:13` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo recursivo eliminando la creación repetitiva de objetos `Path` y normalizaciones redundantes dentro del bucle crítico, reemplazándolas por operaciones de bajo nivel con `os.path` y `os.scandir` para reducir el overhead de asignación de memoria.
 - `2026-10-09T14:06:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T14:06:13` Corrida terminada. Total usado hoy: 332.
+- `2026-10-09T14:14:31` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-09T14:14:59` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `largest_folders` para evitar la creación innecesaria de objetos `Path` y cálculos de `relative_to` en cada iteración del bucle, procesando las métricas directamente con el componente de primer nivel del path, reduciendo así la carga de CPU y memoria en escaneos profundos.
+- `2026-10-09T14:15:24` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el rendimiento de `_collect_candidates` eliminando la creación de objetos `Path` innecesarios dentro del bucle de escaneo, trabajando directamente con `entry.path` (str) donde es posible y reduciendo llamadas redundantes a `Path.resolve()` y al sistema de archivos.
+- `2026-10-09T14:15:50` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el acceso a los datos dentro de `compute_score` eliminando la llamada redundante a `getattr` y `isinstance` dentro del bucle de procesamiento del pipeline, aprovechando que `SystemMetrics` ya garantiza datos limpios y finitos mediante su `__post_init__`.
+- `2026-10-09T14:16:50` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-09T14:17:53` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-09T14:18:54` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se implementó un sistema de "invalidación perezosa" de la caché (`_invalidate_cache` y uso de `time.time()`) para evitar recálculos redundantes de los estados de análisis en el dashboard, reduciendo drásticamente la carga de CPU y disco al cambiar de pestañas.
+- `2026-10-09T14:18:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T14:18:54` Corrida terminada. Total usado hoy: 336.
