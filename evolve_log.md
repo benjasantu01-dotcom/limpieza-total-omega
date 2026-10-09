@@ -1542,3 +1542,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-10-09T01:51:26` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_reserved_device_name` y `_resolve_and_cache_path` añadiendo un manejo explícito para rutas con prefijos de dispositivo (ej. `\\.\` o `\\?\`) que pueden causar bloqueos o comportamientos impredecibles al interactuar con `pathlib` en Windows, asegurando que el motor de escaneo no falle ante rutas inválidas o dispositivos del sistema.
 - `2026-10-09T01:51:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T01:51:26` Corrida terminada. Total usado hoy: 44.
+- `2026-10-09T01:59:25` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-10-09T02:00:07` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_build_payload` y `_call_gemini` para prevenir la construcción de rutas arbitrarias o ataques de inyección mediante la validación explícita de `model` y `api_key` contra el entorno, asegurando que `urllib` solo interactúe con el endpoint esperado.
+- `2026-10-09T02:00:43` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `save_logo_svg` validando la existencia de la ruta padre antes de proceder, asegurando que la operación de escritura sea robusta y evitando errores de sistema innecesarios.
+- `2026-10-09T02:01:07` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-10-09T02:01:20` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_is_excluded_path` asegurando que la validación de rutas no solo dependa de `is_protected_path`, sino que realice un chequeo estricto de la ruta física mediante `resolve()` para evitar ataques de manipulación de rutas simbólicas (path traversal).
+- `2026-10-09T02:01:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T02:01:20` Corrida terminada. Total usado hoy: 48.

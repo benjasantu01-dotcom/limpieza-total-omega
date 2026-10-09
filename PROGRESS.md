@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **205** (40.7% de aceptación)
+- Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 23
 - Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 39 | 4 | 9 | 4 | 54 |
+| 2026-10-07 | 39 | 4 | 9 | 4 | 50 |
 | 2026-10-08 | 139 | 18 | 28 | 12 | 153 |
-| 2026-10-09 | 27 | 1 | 6 | 4 | 6 |
+| 2026-10-09 | 30 | 1 | 6 | 4 | 7 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,19 +26,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - rendimiento: **44**
 - legibilidad y documentación: **42**
 - robustez ante casos límite: **38**
-- seguridad defensiva: **34**
+- seguridad defensiva: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **23**
 - `quarantine.py`: **20**
+- `assistant.py`: **19**
 - `browser.py`: **19**
-- `assistant.py`: **18**
 - `safety.py`: **18**
 - `memory.py`: **17**
 - `organizer.py`: **17**
 - `healthscore.py`: **16**
-- `branding.py`: **14**
+- `branding.py`: **15**
 - `scanner.py`: **13**
 - `settings.py`: **11**
 - `duplicates.py`: **11**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-09T02:01:20` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_excluded_path` asegurando que la validación de rutas no solo dependa de `is_protected_path`, sino que realice un chequeo estricto de la ruta física mediante `resolve()` para evitar ataques de manipulación de rutas simbólicas (path traversal).
+- `2026-10-09T02:00:43` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `save_logo_svg` validando la existencia de la ruta padre antes de proceder, asegurando que la operación de escritura sea robusta y evitando errores de sistema innecesarios.
+- `2026-10-09T02:00:07` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_build_payload` y `_call_gemini` para prevenir la construcción de rutas arbitrarias o ataques de inyección mediante la validación explícita de `model` y `api_key` contra el entorno, asegurando que `urllib` solo interactúe con el endpoint esperado.
 - `2026-10-09T01:51:26` **startup.py** (robustez ante casos límite): Mejoré la robustez de `_is_reserved_device_name` y `_resolve_and_cache_path` añadiendo un manejo explícito para rutas con prefijos de dispositivo (ej. `\\.\` o `\\?\`) que pueden causar bloqueos o comportamientos impredecibles al interactuar con `pathlib` en Windows, asegurando que el motor de escaneo no falle ante rutas inválidas o dispositivos del sistema.
 - `2026-10-09T01:51:11` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `save()` ante condiciones de carrera y fallos parciales del sistema de archivos mediante la implementación de `os.replace` para el archivo principal y el archivo de respaldo, asegurando que la operación de escritura sea atómica y que no se pierda la configuración previa en caso de un fallo durante el proceso.
 - `2026-10-09T01:50:42` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de las heurísticas ante archivos bloqueados o en uso mediante la implementación de una validación de estado de archivo basada en metadatos, evitando excepciones no controladas durante la inspección de atributos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-09T01:19:55` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del sistema de ingesta en `SystemContext.ingest` y `_apply_field` para manejar de forma segura entradas mal formadas o tipos inesperados, evitando excepciones que detengan el flujo del asistente ante datos corruptos.
 - `2026-10-09T01:09:36` **safety.py** (rendimiento): Se optimizó el rendimiento del módulo `safety.py` sustituyendo las consultas repetitivas de atributos mediante `ctypes.windll.kernel32` en el bucle de validación de componentes de ruta por una búsqueda eficiente en caché, aprovechando el decorador `lru_cache` existente para minimizar el acceso a disco.
 - `2026-10-09T01:00:52` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y la carga de manifiestos evitando iteraciones redundantes y centralizando la gestión de caché, reemplazando búsquedas lineales `O(N)` por `O(1)` mediante diccionarios y utilizando `set` para la exclusión de ítems.
-- `2026-10-09T00:59:56` **memory.py** (rendimiento): Se optimizó el rendimiento de `top_memory_processes` reemplazando la consulta secuencial y potencialmente lenta de cada proceso mediante `_get_proc_memory_by_pid` (que abre y cierra handles de kernel 4096 veces en el peor caso) por una recolección selectiva que primero filtra la lista de PIDs mediante el manejo interno de la caché, reduciendo drásticamente las llamadas al sistema.
-- `2026-10-09T00:59:26` **main.py** (rendimiento): Se implementó un sistema de "lazy-initialization" en la recolección de métricas de `on_full_analysis` para evitar el cálculo de snapshots de memoria y consultas al sistema si los datos ya están en caché, reduciendo drásticamente la carga de CPU y disco al refrescar la pestaña de Salud.
-- `2026-10-09T00:49:34` **healthscore.py** (rendimiento): Optimicé el bucle de cálculo en `compute_score` eliminando el uso de `getattr` dentro de la validación crítica de `SystemMetrics` mediante la pre-compilación de los campos en una tupla de constantes, reduciendo la sobrecarga de reflexión en cada ciclo de ejecución.

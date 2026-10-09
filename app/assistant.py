@@ -741,6 +741,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     if not payload: return None
     
     target_url = _ENDPOINT_BASE.format(model=model)
+    # Validar que la URL solo apunte a los hosts permitidos
     if not target_url.startswith(_API_HOST_ROOT) or re.search(r"[<>\s]", target_url):
         return None
         

@@ -163,7 +163,8 @@ def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
         if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
             return True
         
-        # Detección de puntos de reparse (Windows) o enlaces simbólicos (Unix)
+        # Validación estricta de ruta resuelta contra la raíz para evitar escape
+        target_path = Path(entry.path).resolve()
         if entry.is_symlink():
             return True
         if os.name == 'nt':
@@ -171,7 +172,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
             if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x0400):
                  return True
             
-        return is_protected_path(Path(entry.path))
+        return is_protected_path(target_path)
     except (OSError, PermissionError, AttributeError, RuntimeError, TypeError):
         return True
             
