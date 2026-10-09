@@ -270,6 +270,7 @@ def grade_for_score(score: float | int) -> str:
 
 def _sanitize_msg(msg: str) -> str:
     """Elimina caracteres no imprimibles y trunca el mensaje."""
+    if not isinstance(msg, str): return ""
     return "".join(c for c in msg if c.isprintable() and c not in "\r\n\t").strip()[:200]
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio, findings: List[str]) -> None:
@@ -280,7 +281,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             if not isinstance(rule, RecommendationRule): continue
             if rule.check(metrics, normalized_ratio):
                 raw_msg = rule.message_factory(metrics)
-                if not isinstance(raw_msg, str): continue
                 clean_msg = _sanitize_msg(raw_msg)
                 if clean_msg: findings.append(clean_msg)
         except Exception as e:
@@ -304,8 +304,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             area_ratio = _clamp(float(entry.scorer(m)))
             _evaluate_rules(m, entry.rules, area_ratio, recommendations)
             points = area_ratio * entry.weight
-            metric_breakdown[entry.area] = int(round(_clamp(points, 0.0, float(entry.weight))))
-            accumulated_score += points
+            val = int(round(_clamp(points, 0.0, float(entry.weight))))
+            metric_breakdown[entry.area] = val
+            accumulated_score += float(val)
         except (Exception, ValueError, TypeError) as e:
             logging.error(f"Falla crítica en pipeline {entry.area}: {e}")
             metric_breakdown[entry.area] = 0
@@ -340,9 +341,9 @@ def summarize(result: HealthResult | None) -> List[str]:
     bd = result.breakdown
     for area, maximo in WEIGHTS.items():
         points = bd.get(area, 0)
-        if not isinstance(points, int): points = 0
-        bar = _render_bar(points, maximo)
-        lines.append(f"  {area.capitalize():<12} {points:>2}/{maximo:<2} [{bar}]")
+        p = points if isinstance(points, int) else 0
+        bar = _render_bar(p, maximo)
+        lines.append(f"  {area.capitalize():<12} {p:>2}/{maximo:<2} [{bar}]")
     
     recs = result.recommendations if isinstance(result.recommendations, list) else ["Sin recomendaciones."]
     lines.extend(("", "Recomendaciones:", *(f"  - {r}" for r in recs if isinstance(r, str))))

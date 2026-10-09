@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 45
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 215
+- Rechazadas por guardia de seguridad: 44
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 25 | 3 | 7 | 4 | 23 |
+| 2026-10-07 | 24 | 3 | 6 | 4 | 21 |
 | 2026-10-08 | 139 | 18 | 28 | 12 | 153 |
-| 2026-10-09 | 35 | 2 | 10 | 6 | 39 |
+| 2026-10-09 | 38 | 2 | 10 | 7 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - rendimiento: **44**
 - seguridad defensiva: **42**
+- manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **38**
-- manejo de errores y validación de entradas: **38**
-- legibilidad y documentación: **37**
+- legibilidad y documentación: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
-- `quarantine.py`: **20**
+- `diskreport.py`: **22**
+- `quarantine.py`: **19**
 - `safety.py`: **19**
 - `assistant.py`: **17**
 - `browser.py`: **17**
+- `healthscore.py`: **17**
 - `organizer.py`: **16**
-- `healthscore.py`: **16**
 - `memory.py`: **16**
 - `branding.py`: **14**
+- `duplicates.py`: **12**
 - `scanner.py`: **12**
-- `duplicates.py`: **11**
 - `settings.py`: **11**
 - `main.py`: **7**
 - `startup.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-09T04:03:07` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `summarize` implementando validaciones de tipo explícitas y chequeos de integridad en las estructuras de datos devueltas, evitando potenciales errores de ejecución ante entradas mal formadas.
+- `2026-10-09T04:02:39` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` ante errores inesperados durante la lectura de archivos, integrando una validación de `Path` más estricta y asegurando que los descriptores de archivo se cierren correctamente ante excepciones, previniendo fugas de recursos.
+- `2026-10-09T04:02:11` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_excluded_path` añadiendo un bloque `try-except` más granular para capturar errores específicos durante la obtención de `st_file_attributes` y se añadió una validación defensiva de `root` en `summarize` para manejar fallos de resolución de ruta antes de operar.
 - `2026-10-09T02:30:54` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_load_impl` y `save` al integrar explícitamente `ensure_safe_to_modify` como una barrera de validación adicional, garantizando que ninguna operación de lectura o escritura ocurra si la ruta, tras ser resuelta, incumple las políticas de seguridad del sistema antes de manipular el descriptor de archivo.
 - `2026-10-09T02:21:43` **safety.py** (seguridad defensiva): Se ha implementado `_check_hard_link_security` en `ensure_safe_to_modify` para detectar y bloquear la modificación de archivos que posean múltiples enlaces físicos (hard links) hacia el mismo inodo, previniendo así daños colaterales accidentales en otros puntos del sistema de archivos donde el mismo contenido pueda ser referenciado.
 - `2026-10-09T02:20:56` **quarantine.py** (seguridad defensiva): Se endureció `quarantine_dir` para impedir que la cuarentena se configure en una ruta que sea un prefijo de la raíz del sistema o un directorio vacío, evitando riesgos de inyección de rutas de alto nivel mediante `path.parent`.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-09T01:51:11` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `save()` ante condiciones de carrera y fallos parciales del sistema de archivos mediante la implementación de `os.replace` para el archivo principal y el archivo de respaldo, asegurando que la operación de escritura sea atómica y que no se pierda la configuración previa en caso de un fallo durante el proceso.
 - `2026-10-09T01:50:42` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de las heurísticas ante archivos bloqueados o en uso mediante la implementación de una validación de estado de archivo basada en metadatos, evitando excepciones no controladas durante la inspección de atributos.
 - `2026-10-09T01:50:14` **safety.py** (robustez ante casos límite): Mejoré la robustez ante errores de permiso y estados de bloqueo al introducir una capa de manejo de excepciones más granular en `_get_file_attrs`, asegurando que consultas fallidas no retornen una ruta "segura" por defecto (0), sino que propaguen un error de acceso adecuado.
-- `2026-10-09T01:40:44` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine.py` ante errores de I/O y race conditions durante el aislamiento, añadiendo un chequeo explícito de existencia antes de realizar operaciones de borrado en archivos temporales o destinos y asegurando que las rutas base de cuarentena se normalicen correctamente antes de cualquier acceso.
-- `2026-10-09T01:40:02` **organizer.py** (robustez ante casos límite): Se mejora la resiliencia ante errores de entrada y estados inválidos en `_is_file_locked` y `_is_safe_for_disk_op`, añadiendo comprobaciones de existencia robustas para evitar excepciones no manejadas durante el acceso a archivos temporales.
-- `2026-10-09T01:39:34` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la recolección de métricas al añadir una validación de coherencia en `_extract_process_info` para evitar errores de lógica si las herramientas externas devuelven valores negativos o desbordados, y se ha encapsulado el acceso a `psapi` en `top_memory_processes` para prevenir fallos fatales si la DLL no está cargada o es inaccesible en entornos restringidos.

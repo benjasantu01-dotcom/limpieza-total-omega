@@ -168,9 +168,12 @@ def _is_excluded_path(entry: os.DirEntry, root_path_str: str) -> bool:
         if entry.is_symlink():
             return True
         if os.name == 'nt':
-            st = entry.stat(follow_symlinks=False)
-            if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x0400):
-                 return True
+            try:
+                st = entry.stat(follow_symlinks=False)
+                if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x0400):
+                     return True
+            except OSError:
+                return True
             
         return is_protected_path(target_path)
     except (OSError, PermissionError, AttributeError, RuntimeError, TypeError):
@@ -371,9 +374,13 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
     """Genera un reporte de texto legible con un resumen del escaneo del directorio."""
     root = _validate_root(directory)
-    if root is None: return ["Error: Ruta no válida, protegida o inaccesible."]
+    if root is None: 
+        return ["Error: Ruta no válida, protegida o inaccesible."]
     
-    data = _collect_summary_data(root, skip_protected, limit=20)
+    try:
+        data = _collect_summary_data(root, skip_protected, limit=20)
+    except Exception:
+        return ["Error: Falló el análisis de la estructura de archivos."]
         
     if data.total_files == 0: return ["Aviso: No hay archivos accesibles."]
     
