@@ -404,8 +404,8 @@ class SystemContext:
         try:
             val = _get_source_value(source, key)
             if val is None: return None
-            # Asegurar tipo compatible antes de pasar al chequeo de límites
-            if not isinstance(val, (int, float)): return None
+            # Validar integridad inicial
+            if not _check_metric_integrity(val): return None
             float_val = float(val)
             if not _is_metric_within_bounds(float_val, spec): 
                 return None
@@ -422,7 +422,7 @@ class SystemContext:
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad sobre el objeto fuente."""
         if source is None: return False
-        if not (isinstance(source, dict) or isinstance(source, object)):
+        if not (isinstance(source, dict) or hasattr(source, "__dict__")):
             return False
         return not _is_input_too_deep_or_complex(source)
 
