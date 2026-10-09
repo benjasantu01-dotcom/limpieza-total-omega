@@ -16,7 +16,7 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Final, Callable, Union, TypeAlias, NamedTuple, Dict, Sequence
+from typing import List, Optional, Final, Callable, Union, TypeAlias, NamedTuple, Dict, Sequence, Literal
 
 from safety import is_safe_to_modify, ensure_safe_to_modify, is_protected_path
 
@@ -25,6 +25,7 @@ logging.basicConfig(level=logging.INFO)
 logger: logging.Logger = logging.getLogger(__name__)
 
 SortKey: TypeAlias = Union[int, datetime]
+SortField: TypeAlias = Literal["size", "date"]
 
 # Constantes de control de límites y seguridad:
 WIN_ATTR_JUNCTION: Final[int] = 0x400
@@ -174,8 +175,12 @@ def _is_system_hidden(entry: os.DirEntry) -> bool:
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Auditoría de seguridad integral para operaciones de disco.
-    Realiza validaciones de integridad del archivo (inode/dev), permisos y 
-    verificaciones de seguridad de ruta (safety.py) antes de proceder con el movimiento.
+    
+    Verifica:
+    1. Identidad mediante Inodes/Device ID para evitar race conditions (TOCTOU).
+    2. Integridad de ruta (evitar archivos críticos o protegidos).
+    3. Espacio en disco (asegurar que la operación no cause denegación de servicio).
+    4. Estado de bloqueo exclusivo del archivo.
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     src = junk_file.path
@@ -218,7 +223,11 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> boo
     return True
 
 def _is_candidate_junk(stats: os.stat_result, entry: os.DirEntry, now_ts: float) -> bool:
-    """Evalúa si un archivo cumple los criterios de tamaño y fecha para ser considerado basura."""
+    """
+    Evalúa criterios heurísticos para marcar un archivo como basura.
+    Considera umbrales de tamaño (MAX_FILE_SIZE_BYTES) y omite archivos 
+    con atributos de sistema/ocultos para prevenir riesgos operativos.
+    """
     return (0 <= stats.st_size < MAX_FILE_SIZE_BYTES and 
             stats.st_mtime <= now_ts + 3600 and
             not _is_system_hidden(entry))
@@ -264,7 +273,7 @@ def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[Ju
             continue
     return found
 
-def sort_junk(files: Sequence[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
+def sort_junk(files: Sequence[JunkFile], by: SortField = "size", ascending: bool = True) -> List[JunkFile]:
     """Ordena los archivos encontrados basándose en el registro de configuración."""
     config = SORT_REGISTRY.get(by.lower(), SORT_REGISTRY["size"])
     return sorted(files, key=config.key_func, reverse=not bool(ascending))

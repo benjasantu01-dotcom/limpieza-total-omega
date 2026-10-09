@@ -707,6 +707,28 @@ def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, Inode]:
         raise OSError(f"Error crítico en transferencia: {e}")
 
 
+class IsolationManager:
+    """
+    Gestiona validaciones para proteger el proceso de aislamiento atómico 
+    contra Race Conditions (TOCTOU).
+    """
+    @staticmethod
+    def validate_atomicity(source: Path, original_stat: os.stat_result, dest: Path) -> None:
+        """Verifica que el archivo no haya sido modificado durante la validación."""
+        if not source.exists():
+            raise FileNotFoundError("Archivo origen eliminado antes del aislamiento.")
+        if source.stat().st_ino != original_stat.st_ino:
+            raise RuntimeError("Integridad comprometida: archivo reemplazado (TOCTOU).")
+        if source.stat().st_nlink > 1:
+            raise UnsafePathError("Aislamiento denegado: múltiples enlaces físicos.")
+        
+        dest_res = dest.resolve()
+        base_res = dest.parent.resolve()
+        if not is_within_directory(dest_res, base_res):
+            raise UnsafePathError("Intento de escape del sandbox destino.")
+        if not is_safe_to_modify(dest.parent):
+            raise UnsafePathError("Sandbox destino no es una ruta segura.")
+
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode]:
     """Aislamiento atómico protegiendo contra race conditions (TOCTOU)."""
     if not source.exists():
@@ -716,31 +738,11 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if stat_orig.st_size != original_size:
         raise RuntimeError("El archivo cambió durante la validación inicial (TOCTOU).")
     
-    if stat_orig.st_nlink > 1:
-        raise UnsafePathError("Aislamiento denegado: el archivo tiene enlaces físicos múltiples.")
-    
-    dest_resolved = destination.resolve()
-    base_resolved = destination.parent.resolve()
-    
-    if base_resolved.is_symlink() or (os.name == 'nt' and _check_path_for_junctions(base_resolved)):
-        raise UnsafePathError("Sandbox destino inválido: no es una ruta física directa.")
-
-    if not is_within_directory(dest_resolved, base_resolved):
-        raise UnsafePathError("Intento de escape del sandbox detectado.")
-        
-    if source.resolve() == dest_resolved:
-        raise UnsafePathError("El origen ya reside en el directorio destino.")
-    _validate_quarantine_path(destination, destination.parent)
+    IsolationManager.validate_atomicity(source, stat_orig, destination)
     
     if len(str(destination)) >= 250:
         raise OSError("Ruta destino demasiado larga.")
         
-    if not is_safe_to_modify(destination.parent):
-        raise UnsafePathError("El sandbox destino ha sido invalidado.")
-
-    if source.stat().st_ino != stat_orig.st_ino:
-        raise RuntimeError("Integridad comprometida: el archivo fue reemplazado (TOCTOU).")
-
     existing_items = load_manifest(destination.parent.parent)
     if any(i.file_inode == stat_orig.st_ino for i in existing_items):
         raise RuntimeError("Colisión de inodo: el archivo parece estar ya registrado.")

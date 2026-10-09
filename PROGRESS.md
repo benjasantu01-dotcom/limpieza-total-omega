@@ -7,37 +7,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **203** (40.3% de aceptación)
-- Rechazadas por tests: 25
-- Rechazadas por guardia de seguridad: 44
-- Sin cambios (nada sustancial que mejorar): 21
+- Rechazadas por tests: 24
+- Rechazadas por guardia de seguridad: 46
+- Sin cambios (nada sustancial que mejorar): 20
 - Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-07 | 16 | 3 | 3 | 2 | 18 |
+| 2026-10-07 | 14 | 2 | 3 | 1 | 18 |
 | 2026-10-08 | 139 | 18 | 28 | 12 | 153 |
-| 2026-10-09 | 48 | 4 | 13 | 7 | 40 |
+| 2026-10-09 | 50 | 4 | 15 | 7 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **45**
+- legibilidad y documentación: **44**
 - seguridad defensiva: **42**
-- legibilidad y documentación: **42**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **36**
 - rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
 - `memory.py`: **18**
 - `safety.py`: **18**
-- `browser.py`: **17**
 - `healthscore.py`: **17**
-- `assistant.py`: **16**
-- `organizer.py`: **16**
+- `organizer.py`: **17**
+- `browser.py`: **16**
+- `assistant.py`: **15**
 - `branding.py`: **14**
 - `duplicates.py`: **12**
 - `settings.py`: **12**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-09T04:55:42` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la lógica de aislamiento atómico extrayendo las validaciones de seguridad de `_atomic_isolate_file` hacia un método de clase más específico, mejorando la claridad de los mensajes de error y documentando los pasos críticos del proceso de aislamiento.
+- `2026-10-09T04:53:22` **organizer.py** (legibilidad y documentación): Se introdujeron constantes de tipo `Literal` y se refinaron los docstrings en las funciones críticas de validación de seguridad (`_is_safe_for_disk_op` y `_is_candidate_junk`) para documentar claramente el PORQUÉ de las restricciones, mejorando la legibilidad técnica del flujo de datos sin alterar la funcionalidad.
 - `2026-10-09T04:45:14` **memory.py** (legibilidad y documentación): Se introdujeron type hints faltantes en funciones críticas, se renombró `_get_process_memory_stats` a `_query_working_set_bytes` para reflejar con precisión su propósito, y se mejoró la documentación interna mediante docstrings que explican el contexto de seguridad y el comportamiento de las APIs de Windows utilizadas.
 - `2026-10-09T04:44:52` **main.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del archivo `main.py` mediante la implementación de `docstrings` descriptivos en los métodos de la clase `LimpiezaTotalOmegaApp` y la estandarización de la terminología en los comentarios, facilitando la comprensión de las responsabilidades de cada componente en la arquitectura.
 - `2026-10-09T04:43:10` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `duplicates.py` mediante la adición de docstrings técnicos detallados en funciones clave, la estandarización de type hints y la consolidación de la lógica de validación de archivos para evitar redundancias.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-09T04:03:07` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `summarize` implementando validaciones de tipo explícitas y chequeos de integridad en las estructuras de datos devueltas, evitando potenciales errores de ejecución ante entradas mal formadas.
 - `2026-10-09T04:02:39` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` ante errores inesperados durante la lectura de archivos, integrando una validación de `Path` más estricta y asegurando que los descriptores de archivo se cierren correctamente ante excepciones, previniendo fugas de recursos.
 - `2026-10-09T04:02:11` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_excluded_path` añadiendo un bloque `try-except` más granular para capturar errores específicos durante la obtención de `st_file_attributes` y se añadió una validación defensiva de `root` en `summarize` para manejar fallos de resolución de ruta antes de operar.
-- `2026-10-09T02:30:54` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_load_impl` y `save` al integrar explícitamente `ensure_safe_to_modify` como una barrera de validación adicional, garantizando que ninguna operación de lectura o escritura ocurra si la ruta, tras ser resuelta, incumple las políticas de seguridad del sistema antes de manipular el descriptor de archivo.
-- `2026-10-09T02:21:43` **safety.py** (seguridad defensiva): Se ha implementado `_check_hard_link_security` en `ensure_safe_to_modify` para detectar y bloquear la modificación de archivos que posean múltiples enlaces físicos (hard links) hacia el mismo inodo, previniendo así daños colaterales accidentales en otros puntos del sistema de archivos donde el mismo contenido pueda ser referenciado.

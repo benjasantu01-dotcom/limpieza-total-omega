@@ -467,3 +467,12 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-09T04:45:14` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se introdujeron type hints faltantes en funciones críticas, se renombró `_get_process_memory_stats` a `_query_working_set_bytes` para reflejar con precisión su propósito, y se mejoró la documentación interna mediante docstrings que explican el contexto de seguridad y el comportamiento de las APIs de Windows utilizadas.
 - `2026-10-09T04:45:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-09T04:45:14` Corrida terminada. Total usado hoy: 112.
+- `2026-10-09T04:52:39` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-10-09T04:53:22` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se introdujeron constantes de tipo `Literal` y se refinaron los docstrings en las funciones críticas de validación de seguridad (`_is_safe_for_disk_op` y `_is_candidate_junk`) para documentar claramente el PORQUÉ de las restricciones, mejorando la legibilidad técnica del flujo de datos sin alterar la funcionalidad.
+- `2026-10-09T04:54:22` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-09T04:54:30` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-09T04:55:42` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de la lógica de aislamiento atómico extrayendo las validaciones de seguridad de `_atomic_isolate_file` hacia un método de clase más específico, mejorando la claridad de los mensajes de error y documentando los pasos críticos del proceso de aislamiento.
+- `2026-10-09T04:56:11` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-09T04:56:39` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _CheckResult
+- `2026-10-09T04:56:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-09T04:56:39` Corrida terminada. Total usado hoy: 116.
