@@ -375,9 +375,12 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         raise ValueError("El directorio base no puede estar vacío.")
     try:
         path = Path(str(base)).expanduser().resolve()
-        _check_path_for_junctions(path)
+        
+        # Validaciones de seguridad de estructura: evitar raíces y rutas ambiguas
         if not path.name.strip() or path == path.parent:
-            raise UnsafePathError("Ruta de cuarentena inválida o es raíz.")
+            raise UnsafePathError("Ruta de cuarentena inválida: raíz o vacía.")
+        
+        _check_path_for_junctions(path)
         
         if is_protected_path(path):
             raise UnsafePathError("Directorio de cuarentena reside en ruta protegida.")

@@ -184,7 +184,8 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         stat_result = src.stat()
         if (junk_file._ino is not None and stat_result.st_ino != junk_file._ino) or \
            (junk_file._dev is not None and stat_result.st_dev != junk_file._dev): return False
-        if not src.is_file() or stat_result.st_nlink > 1: return False
+        # Seguridad extra: rechazar si es un enlace simbólico o punto de reparse
+        if not src.is_file() or src.is_symlink(): return False
         
         try:
             if src.resolve(strict=True) != src: return False

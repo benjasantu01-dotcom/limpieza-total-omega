@@ -845,6 +845,11 @@ def _validate_path_components(path: Path) -> None:
             if current_check.is_symlink() or _is_system_directory_junction(str(current_check)):
                 raise UnsafePathError(f"Punto de reparse detectado en el camino: {current_check}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
 
+def _check_hard_link_security(path: Path, stat_res: os.stat_result) -> None:
+    """Verifica que el archivo no posea múltiples enlaces físicos (hard links) para evitar modificaciones involuntarias."""
+    if path.is_file() and stat_res.st_nlink > 1:
+        raise UnsafePathError(f"Archivo con múltiples hard links detectado: {path.name}", SafetyValidationErrorCode.HARD_LINK_DETECTED)
+
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
     Valida exhaustivamente una ruta para garantizar que es segura de modificar.
@@ -891,6 +896,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
                  raise UnsafePathError(f"Archivo en uso por el sistema: {p.name}", SafetyValidationErrorCode.FILE_IN_USE)
             
             initial_stat = _get_path_stat_robust(p)
+            _check_hard_link_security(p, initial_stat)
             if os.name == 'nt': 
                 _validate_ntfs_reparse_redirection(p)
             _check_file_integrity(p, initial_stat)
