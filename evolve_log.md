@@ -655,3 +655,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-10-10T03:21:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-10-10T03:21:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T03:21:23` Corrida terminada. Total usado hoy: 80.
+- `2026-10-10T03:29:50` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-10-10T03:30:35` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_boundary_conditions` para separar la validación de unidades (DriveType) en una función privada dedicada, facilitando la comprensión del flujo de control y reduciendo el anidamiento profundo.
+- `2026-10-10T03:30:59` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: legibilidad y documentación).
+- `2026-10-10T03:31:29` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `settings.py` mediante la refactorización de `_load_impl` para reducir su complejidad ciclomática, extrayendo el proceso de lectura y validación de archivos a un método privado más claro, facilitando el seguimiento de los flujos de seguridad.
+- `2026-10-10T03:31:41` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints faltantes en funciones críticas de manejo de archivos y registro, clarificando la intención y los contratos de datos para mejorar la mantenibilidad del módulo.
+- `2026-10-10T03:31:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T03:31:41` Corrida terminada. Total usado hoy: 84.

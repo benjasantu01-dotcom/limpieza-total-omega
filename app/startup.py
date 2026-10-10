@@ -271,7 +271,14 @@ def startup_folders() -> List[Path]:
 
 
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
-    """Valida un archivo en disco contra extensiones permitidas y seguridad."""
+    """
+    Valida un archivo en disco contra extensiones permitidas y seguridad.
+    
+    Args:
+        entry: Objeto DirEntry que representa el archivo a evaluar.
+    Returns:
+        Un objeto StartupEntry si es válido, None en caso contrario.
+    """
     try:
         if not entry.is_file(follow_symlinks=False):
             return None
@@ -307,7 +314,16 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> StartupEnt
 
 
 def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
-    """Valida entradas del registro para filtrar basura o rutas inseguras."""
+    """
+    Realiza una validación heurística de una entrada del registro.
+    
+    Args:
+        name: Clave del valor en el registro.
+        cmd: Comando asociado a la clave.
+        seen: Conjunto de comandos ya procesados para evitar duplicados.
+    Returns:
+        True si la entrada parece legítima y segura.
+    """
     if not name or not cmd or cmd.startswith(r"\\") or cmd in seen or name.upper().startswith("PS"):
         return False
     try:
@@ -319,7 +335,6 @@ def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
         if any(c in clean_path for c in SUSPICIOUS_CHARS):
             return False
         target_path = Path(clean_path)
-        # Seguridad adicional: verificar si la ruta del registro apunta a un sitio protegido
         if is_protected_path(target_path) or ".." in str(target_path):
             return False
         return True
@@ -328,7 +343,15 @@ def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
-    """Parsea la salida de PowerShell CSV (formato crudo)."""
+    """
+    Parsea la salida de PowerShell en formato CSV.
+    
+    Args:
+        csv_text: Contenido crudo de la salida de Get-ItemProperty.
+        source: Fuente de los datos para la etiqueta del objeto StartupEntry.
+    Returns:
+        Una lista de objetos StartupEntry validados.
+    """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
         

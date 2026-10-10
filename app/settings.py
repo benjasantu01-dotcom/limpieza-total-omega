@@ -340,6 +340,24 @@ def _is_file_secure_to_read(file_obj: Any) -> bool:
     except (OSError, PermissionError, AttributeError, ValueError):
         return False
 
+def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
+    """Helper que encapsula la apertura, lock y lectura segura del archivo."""
+    try:
+        ensure_safe_to_modify(str(file_path.resolve()))
+        with open(file_path, "r", encoding="utf-8") as f:
+            if not _is_file_secure_to_read(f): return None
+            try:
+                fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
+                content = f.read(MAX_SETTINGS_SIZE + 1)
+                if not content: return None
+                data = json.loads(content)
+                return data if _is_dict(data) else None
+            finally:
+                try: fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                except (OSError, IOError): pass
+    except (OSError, PermissionError, IOError, json.JSONDecodeError, ValueError, AttributeError, RuntimeError):
+        return None
+
 def _is_dir_safe(path: Path) -> bool:
     """Verifica seguridad básica del directorio padre antes de operaciones de escritura."""
     try:
@@ -350,32 +368,12 @@ def _is_dir_safe(path: Path) -> bool:
     except OSError: return False
 
 def _load_impl(ruta: Path) -> AppSettings:
-    """
-    Implementación de carga: valida seguridad, utiliza locks advisory (flock) 
-    para evitar corrupción por accesos concurrentes y parsea el contenido.
-    """
-    if not ruta.is_file() or ruta.stat().st_size == 0: return DEFAULTS.copy()
-    if _Validators._is_reparse_point(ruta): return DEFAULTS.copy()
-    
-    try:
-        resolved = ruta.resolve()
-        ensure_safe_to_modify(str(resolved))
-        with open(resolved, "r", encoding="utf-8") as f:
-            if not _is_file_secure_to_read(f): return DEFAULTS.copy()
-            try:
-                fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
-                content = f.read(MAX_SETTINGS_SIZE + 1)
-                if not content: return DEFAULTS.copy()
-                data = json.loads(content)
-            finally:
-                try: fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-                except (OSError, IOError): pass
-        
-        if _is_dict(data):
-            return _coerce_and_verify(validate(data))
-    except (OSError, PermissionError, IOError, UnicodeDecodeError, EOFError, json.JSONDecodeError, ValueError, AttributeError, RuntimeError):
+    """Implementación de carga: valida seguridad y parsea el contenido."""
+    if not ruta.is_file() or ruta.stat().st_size == 0 or _Validators._is_reparse_point(ruta):
         return DEFAULTS.copy()
-    return DEFAULTS.copy()
+    
+    data = _read_and_parse_json(ruta.resolve())
+    return _coerce_and_verify(validate(data)) if data else DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga los ajustes desde el disco, utilizando caché por mtime."""

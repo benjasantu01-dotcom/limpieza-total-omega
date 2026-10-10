@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-08 | 24 | 2 | 4 | 0 | 44 |
+| 2026-10-08 | 21 | 2 | 4 | 0 | 43 |
 | 2026-10-09 | 140 | 13 | 42 | 18 | 137 |
-| 2026-10-10 | 34 | 2 | 5 | 2 | 37 |
+| 2026-10-10 | 37 | 2 | 5 | 2 | 38 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **44**
+- legibilidad y documentación: **43**
 - manejo de errores y validación de entradas: **42**
-- robustez ante casos límite: **40**
-- legibilidad y documentación: **40**
+- robustez ante casos límite: **37**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **21**
 - `quarantine.py`: **20**
-- `healthscore.py`: **18**
 - `memory.py`: **18**
+- `healthscore.py`: **17**
 - `branding.py`: **17**
+- `safety.py`: **15**
 - `assistant.py`: **15**
-- `safety.py`: **14**
 - `scanner.py`: **14**
 - `duplicates.py`: **14**
 - `organizer.py`: **12**
-- `browser.py`: **10**
+- `settings.py`: **10**
 - `main.py`: **10**
-- `settings.py`: **9**
-- `startup.py`: **5**
+- `browser.py`: **9**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-10T03:31:41` **startup.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en funciones críticas de manejo de archivos y registro, clarificando la intención y los contratos de datos para mejorar la mantenibilidad del módulo.
+- `2026-10-10T03:31:29` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `settings.py` mediante la refactorización de `_load_impl` para reducir su complejidad ciclomática, extrayendo el proceso de lectura y validación de archivos a un método privado más claro, facilitando el seguimiento de los flujos de seguridad.
+- `2026-10-10T03:30:35` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_boundary_conditions` para separar la validación de unidades (DriveType) en una función privada dedicada, facilitando la comprensión del flujo de control y reduciendo el anidamiento profundo.
 - `2026-10-10T03:21:19` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del módulo `quarantine.py` mediante la refactorización de `_get_sha256` para utilizar un bloque `finally` más seguro y la adición de docstrings técnicos detallados en funciones críticas, clarificando el propósito de seguridad en el manejo de I/O.
 - `2026-10-10T03:20:33` **organizer.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `organizer.py` mediante la adición de docstrings detallados en las funciones de validación crítica y la normalización de la nomenclatura de variables, clarificando el propósito de las comprobaciones de seguridad para cumplir con el enfoque de documentación exigido.
 - `2026-10-10T03:15:22` **main.py** (legibilidad y documentación): He refactorizado la validación del entorno de inicio extrayendo la lógica a un método privado (`_check_environment_integrity`) y utilizando un `enum` interno para tipar las condiciones, lo que mejora drásticamente la legibilidad y facilita el mantenimiento de las reglas de seguridad defensiva.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-10T02:40:59` **organizer.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `stage_for_review` y `delete_reviewed` al asegurar que las rutas de destino sean validadas mediante `ensure_safe_to_modify` ANTES de intentar crear directorios o iterar, evitando que operaciones con rutas potencialmente bloqueadas interrumpan el flujo de trabajo.
 - `2026-10-10T02:40:32` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y sus ayudantes validando explícitamente la presencia de `kernel32` antes de cada llamada y capturando errores de `ctypes` de forma más granular para evitar cierres inesperados de la aplicación.
 - `2026-10-10T02:40:04` **main.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de errores en el ciclo de vida de la aplicación y la validación de entradas de usuario, evitando capturas genéricas que oculten fallos de lógica (`Exception`) y centralizando la validación de tipos numéricos mediante un flujo más seguro que evita el uso de `try/except` en el hilo principal siempre que sea posible.
-- `2026-10-10T02:30:21` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `_render_bar` mediante validación de tipos y rangos, evitando comportamientos inesperados (como divisiones por cero o desbordamientos) al generar representaciones textuales para la interfaz.
-- `2026-10-10T02:29:54` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_file_locked` y `_safe_path_check` agregando un manejo de excepciones más granular y validaciones de tipos para evitar fallos silenciosos durante la iteración sobre el sistema de archivos.
-- `2026-10-10T02:29:29` **diskreport.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones de entrada (como `largest_files`, `usage_by_extension`, `largest_folders` y `total_size`) añadiendo validaciones preventivas ante `None` y gestionando errores de forma más granular para evitar interrupciones innecesarias en el reporte.
