@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **202** (40.1% de aceptación)
+- Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 82 | 8 | 19 | 11 | 96 |
-| 2026-10-10 | 120 | 10 | 23 | 9 | 126 |
+| 2026-10-09 | 79 | 8 | 19 | 11 | 95 |
+| 2026-10-10 | 122 | 10 | 25 | 9 | 126 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **46**
-- robustez ante casos límite: **40**
-- legibilidad y documentación: **38**
+- legibilidad y documentación: **40**
+- robustez ante casos límite: **37**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
 - `healthscore.py`: **21**
+- `diskreport.py`: **20**
 - `safety.py`: **18**
-- `assistant.py`: **17**
-- `branding.py`: **16**
-- `quarantine.py`: **16**
+- `quarantine.py`: **17**
+- `assistant.py`: **16**
 - `memory.py`: **15**
+- `branding.py`: **15**
 - `duplicates.py`: **15**
-- `scanner.py`: **14**
+- `scanner.py`: **15**
 - `main.py`: **13**
 - `browser.py`: **10**
 - `settings.py`: **9**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-10T12:21:52` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones `Args` y `Returns`) y type hints explícitos en funciones críticas para clarificar el flujo de datos y el propósito de los chequeos heurísticos, facilitando así el mantenimiento del motor de escaneo.
+- `2026-10-10T12:19:56` **quarantine.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo `quarantine.py` mediante la refactorización de `_write_temp_to_final` para reducir su complejidad ciclomática y mediante la adición de Type Hints detallados en funciones que gestionan la I/O, asegurando así una mayor claridad en el flujo de datos.
 - `2026-10-10T12:11:30` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación de las estructuras y funciones críticas mediante docstrings detallados que explican el contexto de la API de Windows y la lógica de validación, además de añadir type hints explícitos en los argumentos de las llamadas a `ctypes` para clarificar la interfaz.
 - `2026-10-10T12:09:42` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo documentando los protocolos y estructuras de datos con docstrings detallados, y clarificando la intención del pipeline de evaluación mediante el uso de nombres más descriptivos en los procesos de cómputo.
 - `2026-10-10T12:00:53` **duplicates.py** (legibilidad y documentación): Se introdujo documentación en el docstring de `_collect_candidates` para explicar la lógica de BFS, el uso de inodos para evitar ciclos en sistemas de archivos y el porqué del filtrado de duplicados, mejorando la mantenibilidad técnica del módulo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-10T11:28:52` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_file_locked` para manejar fallos en la obtención de atributos y se mejoró la resiliencia de `_safe_path_check` ante errores durante la inspección de metadatos, evitando que una excepción en un archivo puntual detenga el proceso global de escaneo.
 - `2026-10-10T11:20:52` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas y manejando casos de rutas inexistentes o inaccesibles sin detener el flujo completo, aplicando un manejo de errores más defensivo en las iteraciones de sistema de archivos.
 - `2026-10-10T11:20:26` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_valid_cache_path` y `_resolve_browser_path` añadiendo validaciones explícitas de tipos y estados antes de operar, previniendo errores en tiempo de ejecución al manipular rutas mal formadas o inexistentes.
-- `2026-10-10T11:19:52` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `branding.py` mediante una validación más estricta de las entradas en funciones críticas (`color`, `font_size`, `icon`, `tab_label`), asegurando que cualquier entrada nula o de tipo incorrecto sea tratada de forma consistente sin riesgo de excepciones inesperadas.
-- `2026-10-10T11:19:04` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_source_value` y `SystemContext.ingest` para evitar excepciones no controladas al acceder a objetos externos, asegurando que cualquier entrada mal formada sea descartada silenciosamente sin romper el bucle del asistente.

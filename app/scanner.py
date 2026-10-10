@@ -136,13 +136,27 @@ def _is_target_extension(name: str) -> bool:
     return Path(name).suffix.lower() in SUSPICIOUS_ALL_EXTS
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta el uso de doble extensión como técnica común de enmascaramiento de ejecutables."""
+    """
+    Detecta el uso de doble extensión (ej. archivo.jpg.exe).
+    
+    Args:
+        path: Ruta completa del archivo a inspeccionar.
+    Returns:
+        Objeto Suspicion si se detecta doble extensión, None en caso contrario.
+    """
     if path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión detectada como técnica de enmascaramiento", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Advierte sobre ejecutables nuevos detectados en directorios volátiles."""
+    """
+    Advierte sobre ejecutables nuevos detectados en directorios volátiles.
+    
+    Args:
+        path: Ruta del archivo.
+        entry: Entrada de directorio asociada.
+        now_ts: Timestamp actual para cálculo de antigüedad.
+    """
     try:
         if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
             return None

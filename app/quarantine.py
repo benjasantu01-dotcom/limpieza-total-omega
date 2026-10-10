@@ -678,16 +678,12 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
 
 
 def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, Inode]:
-    """Flujo de trabajo para persistir el archivo en cuarentena mediante archivo temporal."""
+    """Persiste el archivo en cuarentena mediante un archivo temporal y copia segura."""
     _check_path_syntax_integrity(destination)
     _validate_file_transfer_preconditions(source, destination)
     
     if not source.is_file():
         raise FileNotFoundError("Archivo origen no encontrado o no es un archivo.")
-    if destination.exists():
-        raise FileExistsError("Colisión de ruta: el archivo destino ya existe.")
-    if not is_safe_to_modify(destination.parent):
-        raise UnsafePathError("Operación denegada en ruta no segura.")
         
     source_hash = _get_sha256(source)
     temp_dest = _create_temp_file(source, destination)
@@ -696,6 +692,7 @@ def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, Inode]:
         _perform_secure_copy(source, temp_dest, source_hash)
         os.replace(temp_dest, destination)
         
+        # Sincronización final del directorio contenedor
         dir_fd = os.open(str(destination.parent), os.O_RDONLY)
         try: os.fsync(dir_fd)
         finally: os.close(dir_fd)

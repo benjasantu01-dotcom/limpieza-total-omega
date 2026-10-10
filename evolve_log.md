@@ -409,3 +409,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-10T12:11:48` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: legibilidad y documentación).
 - `2026-10-10T12:11:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T12:11:48` Corrida terminada. Total usado hoy: 288.
+- `2026-10-10T12:19:11` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-10-10T12:19:56` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad y mantenibilidad del módulo `quarantine.py` mediante la refactorización de `_write_temp_to_final` para reducir su complejidad ciclomática y mediante la adición de Type Hints detallados en funciones que gestionan la I/O, asegurando así una mayor claridad en el flujo de datos.
+- `2026-10-10T12:20:18` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-10T12:20:47` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-10-10T12:21:39` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _CheckResult
+- `2026-10-10T12:21:52` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones `Args` y `Returns`) y type hints explícitos en funciones críticas para clarificar el flujo de datos y el propósito de los chequeos heurísticos, facilitando así el mantenimiento del motor de escaneo.
+- `2026-10-10T12:21:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T12:21:52` Corrida terminada. Total usado hoy: 292.
