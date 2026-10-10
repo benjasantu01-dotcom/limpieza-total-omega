@@ -85,7 +85,10 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura Win32 mapeada para la API GlobalMemoryStatusEx."""
+    """
+    Estructura Win32 utilizada por GlobalMemoryStatusEx para reportar el uso de memoria.
+    Los campos ull* utilizan c_ulonglong para soportar arquitecturas de 64 bits.
+    """
     _fields_: List[Tuple[str, type]] = [
         ("dwLength", ctypes.c_ulong),            
         ("dwMemoryLoad", ctypes.c_ulong),        
@@ -135,7 +138,10 @@ class ProcessMemory:
         return self.working_set < other.working_set
 
 def format_bytes(num: Optional[int | float]) -> str:
-    """Convierte bytes crudos a una cadena formateada con su unidad (KB, MB, GB, etc)."""
+    """
+    Formateo legible de bytes a unidades binarias (B, KB, MB, GB, TB).
+    Usa logaritmo en base 1024 para determinar la escala adecuada.
+    """
     if not isinstance(num, (int, float)) or num < 0:
         return "0 B"
     if num == 0:
@@ -148,12 +154,13 @@ def format_bytes(num: Optional[int | float]) -> str:
         return "0 B"
 
 def _create_mem_status_ex() -> MEMORYSTATUSEX:
+    """Inicializa la estructura MEMORYSTATUSEX con su tamaño requerido por la API."""
     mem_status = MEMORYSTATUSEX()
     mem_status.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return mem_status
 
 def _safe_int_conversion(value: Optional[str], multiplier: int = 1) -> BytesValue:
-    """Convierte cadenas con posibles caracteres no numéricos a BytesValue."""
+    """Limpia cadenas de texto, extrayendo dígitos y multiplicando por el factor dado."""
     if not isinstance(value, str): return BytesValue(0)
     digits = "".join(filter(str.isdigit, value))
     try:
@@ -229,11 +236,12 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     return sorted(processes, key=lambda p: p.working_set, reverse=True)[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Obtiene el estado de memoria del sistema mediante la API de bajo nivel GlobalMemoryStatusEx."""
+    """Obtiene el estado de memoria mediante la API GlobalMemoryStatusEx de kernel32."""
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32 or not hasattr(kernel32, "GlobalMemoryStatusEx"): return _EMPTY_SNAPSHOT
     mem_status = _create_mem_status_ex()
     try:
+        # Puntero a la estructura para recibir los datos del sistema
         if kernel32.GlobalMemoryStatusEx(ctypes.byref(mem_status)) != 0:
             if mem_status.ullTotalPhys > 0 and mem_status.ullAvailPhys <= mem_status.ullTotalPhys:
                 return MemorySnapshot(
@@ -259,14 +267,18 @@ def read_snapshot() -> MemorySnapshot:
     return _get_cached_snapshot(int(time.time() / 5))
 
 def _query_working_set_bytes(pid: int, kernel32, psapi) -> Optional[BytesValue]:
-    """Consulta la API PSAPI GetProcessMemoryInfo para un PID dado."""
+    """
+    Consulta el tamaño del working set de un proceso vía GetProcessMemoryInfo.
+    Requiere un manejador con permisos de consulta limitada.
+    """
     process_handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
     if not process_handle:
         return None
     try:
+        # PSAPI_WORKING_SET_INFORMATION struct mapeado como array de size_t
         pmc = (ctypes.c_size_t * 6)()
         if psapi.GetProcessMemoryInfo(process_handle, ctypes.byref(pmc), ctypes.sizeof(pmc)):
-            val = pmc[3]
+            val = pmc[3] # WorkingSetSize es el índice 3 en la estructura PROCESS_MEMORY_COUNTERS
             return BytesValue(val) if 0 < val < MAX_VALID_PROCESS_MEM else None
     except (ctypes.ArgumentError, OSError, AttributeError):
         pass
@@ -290,6 +302,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         pids = (ctypes.c_ulong * 4096)()
         cb_needed = ctypes.c_ulong()
         
+        # EnumProcesses devuelve un array de PIDs, se itera para consultar cada uno
         if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
             count = cb_needed.value // ctypes.sizeof(ctypes.c_ulong)
             
@@ -333,7 +346,7 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def _is_process_executable_safe(pid: int) -> bool:
-    """Verifica si la ruta del ejecutable es segura para interactuar."""
+    """Verifica si la ruta del ejecutable es segura para interactuar mediante is_protected_path."""
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     psapi = getattr(ctypes.windll, "psapi", None)
     if not kernel32 or not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return False
@@ -357,6 +370,10 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
+    """
+    Ejecuta EmptyWorkingSet sobre un proceso. 
+    ADVERTENCIA: Esta operación reduce la RAM visible pero puede causar latencia en el proceso.
+    """
     if not _is_windows: return False, "Solo soportado en Windows."
     
     try:

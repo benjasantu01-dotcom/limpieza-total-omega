@@ -57,10 +57,10 @@ class RecommendationRule(NamedTuple):
     Regla de diagnóstico ejecutable para detectar anomalías en una métrica específica.
     
     Attributes:
-        area: Identificador de la métrica (ej: 'disco').
+        area: Identificador de la métrica analizada (ej: 'disco').
         threshold: Límite inferior de salud para activar la sugerencia.
         message_factory: Función que genera un mensaje contextual al usuario.
-        check: Predicado (SystemMetrics, NormalizedRatio) -> bool para decidir si alertar.
+        check: Predicado (SystemMetrics, NormalizedRatio) -> bool que evalúa si activar alerta.
     """
     area: MetricKey
     threshold: float
@@ -70,6 +70,7 @@ class RecommendationRule(NamedTuple):
 class PipelineEntry(NamedTuple):
     """
     Configuración completa de una unidad de análisis dentro del motor de salud.
+    Incluye el peso relativo y las reglas de diagnóstico asociadas.
     """
     area: MetricKey
     weight: int
@@ -105,7 +106,7 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
     """
-    Fábrica para crear normalizadores lineales.
+    Fábrica para crear normalizadores lineales de métricas.
     
     Args:
         limit: Valor umbral para el cálculo.
@@ -135,7 +136,7 @@ WEIGHTS: Final[Dict[MetricKey, int]] = {
 _WEIGHTS_LIST: Final[Tuple[Tuple[MetricKey, int], ...]] = tuple(WEIGHTS.items())
 
 def _verify_weights(weights: Dict[str, int]) -> None:
-    """Valida la integridad de la configuración de pesos."""
+    """Valida que la suma de pesos configurados sea exactamente 100."""
     if sum(weights.values()) != 100:
         raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
 
@@ -282,13 +283,13 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _sanitize_msg(msg: str) -> str:
-    """Elimina caracteres no imprimibles y trunca el mensaje."""
+    """Elimina caracteres no imprimibles y trunca el mensaje de recomendación."""
     if not isinstance(msg, str): return ""
     sanitized = "".join(c for c in msg if c.isprintable() and c not in "\r\n\t").strip()
     return sanitized[:200] if sanitized else ""
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio, findings: List[str]) -> None:
-    """Ejecuta las reglas de diagnóstico."""
+    """Ejecuta las reglas de diagnóstico para una métrica y agrega hallazgos si es necesario."""
     for rule in rules:
         try:
             if rule.check(metrics, normalized_ratio):
@@ -299,7 +300,8 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
-    Calcula el puntaje global mediante la ejecución del pipeline con manejo estricto de errores.
+    Calcula el puntaje global recorriendo el pipeline de métricas.
+    Consolida puntajes normalizados, aplica pesos y agrega recomendaciones.
     """
     try:
         m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
@@ -314,8 +316,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             try:
                 area_ratio = _clamp(float(entry.scorer(m)))
                 _evaluate_rules(m, entry.rules, area_ratio, recommendations)
+                
+                # Calcular contribución ponderada al total
                 points = area_ratio * entry.weight
                 val = int(round(_clamp(points, 0.0, float(entry.weight))))
+                
                 metric_breakdown[entry.area] = val
                 accumulated_score += float(val)
             except Exception as e:
@@ -337,7 +342,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error interno al calcular salud del sistema."])
 
 def _render_bar(points: int, max_val: int) -> str:
-    """Representación visual: barra de caracteres ASCII para la interfaz con manejo de errores."""
+    """Genera representación visual (ASCII) de barras para la interfaz."""
     try:
         if not isinstance(points, int) or not isinstance(max_val, int) or max_val <= 0:
             return ".........."
@@ -347,7 +352,7 @@ def _render_bar(points: int, max_val: int) -> str:
         return ".........."
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """Genera una lista de cadenas legible para el informe de estado final."""
+    """Genera una lista de líneas legible para el informe de estado final del sistema."""
     if not isinstance(result, HealthResult): 
         return ["Error: Informe de salud no disponible."]
         
