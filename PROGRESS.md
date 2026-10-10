@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 50
+- Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 105 | 12 | 33 | 13 | 129 |
-| 2026-10-10 | 91 | 8 | 17 | 8 | 88 |
+| 2026-10-09 | 105 | 11 | 33 | 13 | 126 |
+| 2026-10-10 | 92 | 9 | 18 | 8 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **42**
+- robustez ante casos límite: **38**
 - seguridad defensiva: **38**
-- robustez ante casos límite: **37**
 - rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
@@ -35,8 +35,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **16**
 - `branding.py`: **16**
 - `assistant.py`: **16**
+- `safety.py`: **16**
 - `duplicates.py`: **15**
-- `safety.py`: **15**
 - `scanner.py`: **14**
 - `main.py`: **12**
 - `organizer.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-10T09:08:33` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `is_protected_path` ante errores de resolución de rutas (como rutas mal formadas o inaccesibles) y se ha añadido un chequeo de existencia temprana para evitar fallos en llamadas a `resolve()` sobre rutas que no existen, mejorando la estabilidad general del módulo ante casos límite de entrada de usuario.
 - `2026-10-10T08:47:28` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular durante la obtención de metadatos (`os.stat`), evitando que fallos puntuales de lectura silencien el progreso del análisis.
 - `2026-10-10T08:47:16` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a archivos al refinar el manejo de `OSError` dentro del bucle de `os.scandir`, asegurando que archivos bloqueados o con permisos denegados no aborten el escaneo de toda la rama, y se ha fortalecido la integridad del contexto de escaneo al asegurar que las rutas se normalicen consistentemente antes de la comparación.
 - `2026-10-10T08:46:11` **assistant.py** (robustez ante casos límite): Mejora la robustez del motor local al añadir un manejo defensivo ante valores de configuración ausentes o corruptos en `_parse_config`, evitando que el asistente falle silenciosamente o se bloquee ante un `settings.json` mal formado.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-10T07:47:46` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de escaneo y validación de seguridad mediante la adición de Type Hints explícitos, docstrings detallados que explican el "porqué" de las restricciones (como el uso de `os.scandir` para rendimiento y `frozenset` para búsquedas en O(1)), y se estandarizó la nomenclatura de los parámetros para mejorar la legibilidad y mantenimiento del flujo de datos en el módulo.
 - `2026-10-10T07:35:38` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones de cálculo de salud y se ha clarificado el propósito de las constantes globales de umbral, asegurando que el código sea más legible para futuros auditores del proyecto sin alterar su comportamiento funcional.
 - `2026-10-10T07:35:03` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de los tipos, se ha estandarizado la interfaz de las clases de almacenamiento mediante `__slots__` para optimizar memoria, y se ha añadido una docstring explicativa al motor principal de recolección de métricas para aclarar cómo se integra con el resto del módulo.
-- `2026-10-10T07:34:36` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando docstrings explicativos en los tipos complejos y funciones críticas para aclarar el "porqué" del filtrado de seguridad, y se han añadido type hints faltantes en funciones internas para mejorar la robustez y legibilidad.
