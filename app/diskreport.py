@@ -167,7 +167,9 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 def _is_excluded_path(entry: os.DirEntry) -> bool:
     """Determina si un nodo del sistema de archivos debe ser ignorado."""
     try:
-        if not entry.name or '\0' in entry.name or any(c in entry.name for c in SUSPICIOUS_CHARS):
+        # Validar nombre con manejo ante errores de codificación
+        name = entry.name
+        if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
             return True
         
         if entry.is_symlink():
@@ -317,8 +319,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode)
                                 stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            yield Path(entry.path), int(entry.stat().st_size)
-                    except (OSError, PermissionError):
+                            f_stat = entry.stat()
+                            yield Path(entry.path), int(f_stat.st_size)
+                    except (OSError, PermissionError, FileNotFoundError):
                         continue
         except (PermissionError, OSError, FileNotFoundError): 
             continue

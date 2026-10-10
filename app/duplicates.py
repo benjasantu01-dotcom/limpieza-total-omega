@@ -119,7 +119,6 @@ def _safe_path_check(path: Path) -> bool:
     if not isinstance(path, Path):
         return False
     try:
-        # Usar .exists() primero ayuda a evitar excepciones de I/O en rutas rotas
         if not path.exists():
             return False
         return (is_safe_to_modify(path) and 
@@ -230,12 +229,6 @@ def _resolve_and_verify_root(directory_path: PathLike) -> Optional[Path]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Recorre rutas de forma iterativa (BFS) para identificar archivos candidatos.
-    
-    Implementa:
-    - Control de profundidad (MAX_RECURSION_DEPTH) para evitar recursión infinita.
-    - Registro de inodos (dev, ino) para evitar procesar el mismo archivo físico
-      varias veces si existen enlaces duros o puntos de montaje redundantes.
-    - Filtrado de seguridad en tiempo de escaneo para descartar zonas protegidas.
     """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     queue: deque[Tuple[Path, int]] = deque()
@@ -340,7 +333,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     
     candidates: List[Tuple[Tuple[float, int], Path]] = []
     for p in group.paths:
-        if isinstance(p, Path):
+        if isinstance(p, Path) and p.exists():
             if (score := _calculate_keeper_heuristic(p)) is not None:
                 candidates.append((score, p))
             
@@ -349,7 +342,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 def _get_path_label(path: Path, keeper: Optional[Path]) -> str:
     """Devuelve una etiqueta legible según el estado de la ruta en el grupo."""
-    if not isinstance(path, Path) or not path.is_file():
+    if not isinstance(path, Path) or not path.exists():
         return "[desaparecido]"
     if not _safe_path_check(path):
         return "[inaccesible]"

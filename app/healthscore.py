@@ -210,7 +210,7 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
 def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) -> float:
     """Helper para sanitizar métricas numéricas entrantes y evitar valores fuera de rango."""
     try:
-        if value is None or not isinstance(value, (int, float)):
+        if value is None or not isinstance(value, (int, float, bool)):
             return default
         val = float(value)
         if not math.isfinite(val) or val < min_v or val > max_v:
@@ -238,12 +238,7 @@ class SystemMetrics:
     )
 
     def __post_init__(self) -> None:
-        try:
-            self.validate()
-        except Exception as e:
-            logging.error(f"Error crítico en validación de métricas: {e}")
-            for field_name in self._FIELDS_TO_VALIDATE:
-                setattr(self, field_name, 0.0)
+        self.validate()
 
     def safe_get(self, field_name: str, default: Any = 0) -> Any:
         """Acceso defensivo a los campos del contenedor."""
@@ -263,7 +258,7 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verifica que ninguna métrica numérica sea infinita o NaN."""
-        return all(math.isfinite(getattr(self, f)) for f in self._FIELDS_TO_VALIDATE if isinstance(getattr(self, f), (int, float)))
+        return all(math.isfinite(float(getattr(self, f))) for f in self._FIELDS_TO_VALIDATE)
 
 @dataclass
 class HealthResult:
@@ -303,8 +298,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
     try:
         m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
-        if not m.is_finite:
-            m.validate()
+        m.validate()
             
         recommendations: List[str] = []
         metric_breakdown: Dict[MetricKey, int] = {}
