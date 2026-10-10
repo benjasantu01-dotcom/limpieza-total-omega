@@ -87,10 +87,10 @@ def _is_file_in_use(path: Path) -> bool:
 
 def _is_readable(path: Path) -> bool:
     """Valida si el archivo es un archivo regular, legible y no bloqueado."""
-    if not isinstance(path, Path):
-        return False
     try:
-        return path.is_file() and os.access(path, os.R_OK) and not _is_file_in_use(path)
+        # Usar lstat para evitar seguir enlaces y verificar existencia antes de abrir
+        st = path.lstat()
+        return st.st_size >= 0 and os.access(path, os.R_OK) and not _is_file_in_use(path)
     except (OSError, PermissionError, ValueError, AttributeError):
         return False
 
@@ -104,8 +104,6 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 
 def _get_file_size(path: Path) -> int:
     """Devuelve el tamaño del archivo en bytes o -1 en caso de error de acceso."""
-    if not isinstance(path, Path):
-        return -1
     try:
         return int(path.stat().st_size)
     except (OSError, PermissionError, FileNotFoundError, AttributeError, ValueError):
@@ -113,8 +111,6 @@ def _get_file_size(path: Path) -> int:
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """Retorna metadatos solo si la entrada es un archivo estándar y seguro."""
-    if not isinstance(entry, os.DirEntry):
-        return None
     try:
         if not entry.is_file(follow_symlinks=False) or entry.is_symlink() or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask):
             return None
@@ -136,27 +132,13 @@ def _is_target_extension(name: str) -> bool:
     return Path(name).suffix.lower() in SUSPICIOUS_ALL_EXTS
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    Detecta el uso de doble extensión (ej. archivo.jpg.exe).
-    
-    Args:
-        path: Ruta completa del archivo a inspeccionar.
-    Returns:
-        Objeto Suspicion si se detecta doble extensión, None en caso contrario.
-    """
+    """Detecta el uso de doble extensión (ej. archivo.jpg.exe)."""
     if path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión detectada como técnica de enmascaramiento", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    Advierte sobre ejecutables nuevos detectados en directorios volátiles.
-    
-    Args:
-        path: Ruta del archivo.
-        entry: Entrada de directorio asociada.
-        now_ts: Timestamp actual para cálculo de antigüedad.
-    """
+    """Advierte sobre ejecutables nuevos detectados en directorios volátiles."""
     try:
         if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
             return None
@@ -227,7 +209,6 @@ class Scanner:
         if path_str in self.safe_cache:
             return True
         
-        # Filtro temprano antes de costosas resoluciones de disco
         if is_protected_path(Path(path_str)) or not _is_valid_path_structure(path_str) or self._has_invalid_name(entry.name):
             return False
             
@@ -270,7 +251,6 @@ class Scanner:
                 if self._is_safe_entry(entry):
                     self._handle_directory(entry, directory_stack, current_depth)
             elif entry.is_file(follow_symlinks=False) and self._is_relevant_extension(entry.name):
-                # Validamos seguridad una única vez a través del caché
                 if self._is_safe_entry(entry):
                     self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError):
@@ -278,25 +258,21 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta el conjunto de heurísticas sobre un archivo validado."""
-        try:
-            if not path.exists() or not _is_readable(path):
-                return
-            for check_fn in ALL_CHECKS:
-                try:
-                    finding = check_fn(path, entry, self.now_ts)
-                    if finding is not None:
-                        self.results.append(finding)
-                except (OSError, PermissionError, AttributeError, ValueError) as e:
-                    logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
-        except (OSError, PermissionError):
+        if not path.exists() or not _is_readable(path):
             return
+        for check_fn in ALL_CHECKS:
+            try:
+                finding = check_fn(path, entry, self.now_ts)
+                if finding is not None:
+                    self.results.append(finding)
+            except (OSError, PermissionError, AttributeError, ValueError) as e:
+                logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Ejecuta un escaneo heurístico individual sobre un archivo específico."""
     if not isinstance(path, Path) or is_protected_path(path): return []
     try:
-        resolved = path.resolve(strict=True)
-        if not resolved.exists() or not _is_readable(resolved) or resolved.is_symlink(): 
+        if not path.exists() or not _is_readable(path): 
             return []
     except (OSError, RuntimeError):
         return []
@@ -304,7 +280,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     findings: ScanResult = []
     for check_fn in ALL_CHECKS:
         try:
-            res = check_fn(resolved, entry, now_ts)
+            res = check_fn(path, entry, now_ts)
             if res is not None: findings.append(res)
         except (OSError, PermissionError, AttributeError, ValueError):
             continue

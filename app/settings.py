@@ -342,13 +342,24 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     """Helper que encapsula la apertura, lock y lectura segura del archivo."""
     try:
         ensure_safe_to_modify(str(file_path.resolve()))
+        # Apertura en modo lectura compartida inicial
         with open(file_path, "r", encoding="utf-8") as f:
+            # Validación inicial post-apertura
             if not _is_file_secure_to_read(f): return None
+            
+            # Bloqueo compartido no bloqueante
             try:
                 fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
+                
+                # Segunda validación post-lock para mitigar TOCTOU
                 if not _is_file_secure_to_read(f): return None
+                
                 content = f.read(MAX_SETTINGS_SIZE + 1)
-                if not content or not _is_file_secure_to_read(f): return None
+                
+                # Verificación final de consistencia
+                if not content or len(content) > MAX_SETTINGS_SIZE: return None
+                if not _is_file_secure_to_read(f): return None
+                
                 data = json.loads(content)
                 return data if _is_dict(data) else None
             except (json.JSONDecodeError, OSError, IOError):

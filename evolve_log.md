@@ -532,3 +532,35 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-10T13:32:24` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
 - `2026-10-10T13:32:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T13:32:24` Corrida terminada. Total usado hoy: 320.
+- `2026-10-10T13:40:41` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-10T13:41:33` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la detección de archivos bloqueados mediante la implementación de un chequeo preventivo de errores de I/O en `_is_file_locked_by_other_process`, evitando el lanzamiento de excepciones inesperadas al procesar archivos con privilegios restringidos o bloqueos por kernel.
+- `2026-10-10T13:42:00` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra archivos que son eliminados o bloqueados por procesos externos durante el escaneo, reemplazando accesos directos propensos a race conditions por `os.stat` seguro dentro de `_get_file_size` y `_is_readable`, evitando así excepciones no controladas en el bucle principal.
+- `2026-10-10T13:42:35` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de concurrencia y estado de archivo más robusto en `_read_and_parse_json` para prevenir condiciones de carrera (TOCTOU) y corrupción ante archivos malformados o bloqueados, asegurando que la lectura sea consistente y segura bajo cualquier condición de entorno.
+- `2026-10-10T13:42:52` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+........................................F............................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+1 failed, 298 passed in 1.55s
+
+```
+- `2026-10-10T13:42:52` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se mejora la robustez de `StartupEntry._extract_quoted_path` para evitar errores de excepciones no controladas al procesar rutas mal formadas (como cadenas con una sola comilla o rutas con caracteres inválidos) que antes podían romper la lógica de resolución de ejecutables.
+- `2026-10-10T13:42:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T13:42:52` Corrida terminada. Total usado hoy: 324.

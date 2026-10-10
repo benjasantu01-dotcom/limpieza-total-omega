@@ -347,7 +347,9 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
         handle = kernel32.CreateFileW(
             _to_long_path(path_str), 0, 0, None, 3, 0x00000080, None
         )
-        if handle == -1: return True
+        if handle == -1: 
+            err = kernel32.GetLastError()
+            return err == ERROR_SHARING_VIOLATION
         kernel32.CloseHandle(handle)
         return False
     except (OSError, ctypes.ArgumentError, AttributeError):
