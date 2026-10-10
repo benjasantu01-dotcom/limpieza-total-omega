@@ -751,6 +751,15 @@ class IsolationManager:
         if not is_safe_to_modify(dest.parent):
             raise UnsafePathError("Sandbox destino no es una ruta segura.")
 
+def _validate_integrity_before_move(source: Path, original_size: int, original_inode: Inode) -> None:
+    """Verificación proactiva de atributos antes de iniciar la transferencia."""
+    try:
+        current_stat = source.stat()
+        if current_stat.st_size != original_size or current_stat.st_ino != original_inode:
+            raise RuntimeError("Integridad comprometida: el archivo fue modificado antes de la copia (TOCTOU).")
+    except OSError as e:
+        raise RuntimeError(f"Falla al verificar integridad del origen antes de mover: {e}")
+
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode]:
     """Aislamiento atómico protegiendo contra race conditions (TOCTOU)."""
     if not source.exists():
@@ -775,6 +784,8 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     existing_items = load_manifest(destination.parent.parent)
     if any(i.file_inode == stat_orig.st_ino for i in existing_items):
         raise RuntimeError("Colisión de inodo: el archivo parece estar ya registrado.")
+
+    _validate_integrity_before_move(source, original_size, stat_orig.st_ino)
 
     try:
         if destination.exists():

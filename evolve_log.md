@@ -1650,3 +1650,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-10-10T00:38:43` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad del método `_validate_environment` para detectar explícitamente puntos de reparse (junctions) y enlaces simbólicos en rutas críticas, asegurando que la aplicación no pueda ser engañada para operar fuera de su sandbox mediante redirecciones del sistema de archivos.
 - `2026-10-10T00:38:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T00:38:43` Corrida terminada. Total usado hoy: 16.
+- `2026-10-10T00:46:44` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-10-10T00:47:21` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `memory.py` al restringir la resolución de rutas de procesos mediante `GetModuleFileNameExW` utilizando un buffer de tamaño adecuado y validando la seguridad de la ruta obtenida mediante `is_protected_path` antes de cualquier interacción, evitando así posibles ataques por rutas maliciosas o mal formadas.
+- `2026-10-10T00:47:45` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-10-10T00:48:25` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha añadido `_validate_integrity_before_move` en `quarantine_file` para implementar una verificación de seguridad proactiva justo antes de iniciar la operación de transferencia física, asegurando que los atributos críticos del archivo origen no hayan cambiado entre la validación inicial y el inicio de la copia (defensa contra TOCTOU).
+- `2026-10-10T00:48:29` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-10T00:48:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T00:48:29` Corrida terminada. Total usado hoy: 20.
