@@ -373,7 +373,7 @@ def _load_impl(ruta: Path) -> AppSettings:
         
         if _is_dict(data):
             return _coerce_and_verify(validate(data))
-    except (OSError, PermissionError, IOError, UnicodeDecodeError, EOFError, json.JSONDecodeError, ValueError):
+    except (OSError, PermissionError, IOError, UnicodeDecodeError, EOFError, json.JSONDecodeError, ValueError, AttributeError, RuntimeError):
         return DEFAULTS.copy()
     return DEFAULTS.copy()
 

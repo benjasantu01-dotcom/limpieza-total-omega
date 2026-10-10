@@ -77,12 +77,21 @@ TARGETED_DOWNLOAD_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp
 
 SYSTEM32_LOWER: Final[str] = "system32"
 
+def _is_file_in_use(path: Path) -> bool:
+    """Verifica si un archivo está bloqueado por otro proceso intentando abrirlo de forma exclusiva."""
+    try:
+        fd = os.open(path, os.O_RDONLY | os.O_EXCL)
+        os.close(fd)
+        return False
+    except (OSError, PermissionError):
+        return True
+
 def _is_readable(path: Path) -> bool:
     """Verifica si un archivo es accesible para lectura utilizando permisos del sistema."""
     if not isinstance(path, Path):
         return False
     try:
-        return path.is_file() and os.access(path, os.R_OK)
+        return path.is_file() and os.access(path, os.R_OK) and not _is_file_in_use(path)
     except (OSError, PermissionError, ValueError, AttributeError):
         return False
 
