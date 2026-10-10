@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **202** (40.1% de aceptación)
+- Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 89 | 9 | 26 | 11 | 97 |
-| 2026-10-10 | 113 | 10 | 19 | 8 | 122 |
+| 2026-10-09 | 86 | 9 | 25 | 11 | 97 |
+| 2026-10-10 | 115 | 10 | 20 | 8 | 123 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
-- manejo de errores y validación de entradas: **44**
+- manejo de errores y validación de entradas: **46**
 - robustez ante casos límite: **40**
-- rendimiento: **36**
+- rendimiento: **33**
 - legibilidad y documentación: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `healthscore.py`: **20**
-- `assistant.py`: **18**
-- `branding.py`: **17**
-- `safety.py`: **17**
-- `quarantine.py`: **16**
+- `safety.py`: **18**
+- `quarantine.py`: **17**
+- `assistant.py`: **17**
+- `branding.py`: **16**
 - `duplicates.py`: **15**
 - `memory.py`: **15**
 - `scanner.py`: **14**
 - `main.py`: **13**
-- `browser.py`: **10**
+- `browser.py`: **9**
 - `settings.py`: **9**
 - `organizer.py`: **9**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-10T11:41:12` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_owned_by_system` encapsulando la lógica en un bloque `try-except` más preciso y eliminando el uso de `LocalFree` en escenarios donde el puntero SID es nulo, previniendo errores de segmentación o comportamiento indefinido al interactuar con la API Win32.
+- `2026-10-10T11:39:59` **quarantine.py** (manejo de errores y validación de entradas): Mejora la robustez de `quarantine.py` mediante la validación proactiva y centralizada de parámetros en el registro del manifiesto, evitando que tipos de datos malformados (`size_bytes` no entero o `None`) o IDs vacíos propaguen errores de ejecución inesperados.
 - `2026-10-10T11:31:14` **memory.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `trim_working_set` y sus funciones auxiliares implementando una validación de PIDs más estricta mediante `psutil`-less check y evitando el uso de excepciones genéricas, asegurando que `OpenProcess` maneje correctamente los errores de acceso.
 - `2026-10-10T11:30:56` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_trim_process` y `on_restore_quarantine` mediante la validación proactiva de datos de entrada (`pid` y `id`), evitando errores en tiempo de ejecución al manipular valores de entrada que podrían ser malintencionados o malformados, cumpliendo estrictamente con el enfoque de validación de entradas.
 - `2026-10-10T11:29:33` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `score_security` capturando excepciones específicas en los cálculos aritméticos y validando los tipos de entrada, previniendo fallos cuando las métricas reciben valores inesperados.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-10T09:48:12` **safety.py** (seguridad defensiva): Se ha añadido una validación estricta en `ensure_safe_to_modify` para detectar y rechazar rutas que utilicen nombres de dispositivos cortos (ej. `COM1`, `LPT1`) combinados con extensiones, los cuales son vectores de ataque conocidos para bloquear operaciones de I/O en Windows al acceder a puertos físicos del sistema.
 - `2026-10-10T09:47:12` **quarantine.py** (seguridad defensiva): Se introdujo una validación de ruta estricta en `purge_all` para asegurar que solo se procesen archivos que residan exactamente dentro del directorio de cuarentena, evitando cualquier posibilidad de salto de directorio o procesamiento de archivos fuera del ámbito del sandbox.
 - `2026-10-10T09:39:30` **organizer.py** (seguridad defensiva): He mejorado `_is_safe_for_disk_op` para prevenir ataques de redirección de archivos o race conditions al realizar validaciones de rutas absolutas y resolución de enlaces simbólicos mediante `resolve(strict=True)` antes de confirmar la seguridad de la operación.
-- `2026-10-10T09:38:54` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva centralizando la validación de rutas en el arranque mediante `_check_environment_integrity` y aplicando un filtrado más estricto en los callbacks que aceptan entradas de usuario, evitando que rutas relativas o malformadas puedan ser inyectadas en operaciones críticas.
-- `2026-10-10T09:36:46` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la restricción estricta de las entradas al motor de puntuación, asegurando que `_validate_numeric` y la lógica de `SystemMetrics.validate` utilicen límites superiores más conservadores y validados frente a posibles desbordamientos, evitando que una entrada maliciosa o corrupta afecte la estabilidad del pipeline de cálculo.

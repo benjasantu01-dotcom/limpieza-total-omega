@@ -283,14 +283,14 @@ def _is_virtual_drive(path_str: str) -> bool:
 def _is_file_owned_by_system(path_str: str) -> bool:
     """Verifica si el propietario del archivo es el grupo SYSTEM o TrustedInstaller (Windows)."""
     if os.name != 'nt' or not isinstance(path_str, str): return False
+    advapi32 = ctypes.windll.advapi32
+    kernel32 = ctypes.windll.kernel32
+    sid_ptr = ctypes.c_void_p()
     try:
-        advapi32 = ctypes.windll.advapi32
-        kernel32 = ctypes.windll.kernel32
-        sid_ptr = ctypes.c_void_p()
         res = advapi32.GetNamedSecurityInfoW(
             path_str, 1, 0x00000001, ctypes.byref(sid_ptr), None, None, None, None
         )
-        if res == 0:
+        if res == 0 and sid_ptr:
             try:
                 sid_str = ctypes.create_unicode_buffer(128)
                 if advapi32.ConvertSidToStringSidW(sid_ptr, ctypes.byref(sid_str)):
@@ -298,7 +298,8 @@ def _is_file_owned_by_system(path_str: str) -> bool:
                     return sid_val.startswith("S-1-5-18") or sid_val.startswith("S-1-5-80")
             finally:
                 kernel32.LocalFree(sid_ptr)
-    except (AttributeError, OSError, ctypes.ArgumentError): pass
+    except (AttributeError, OSError, ctypes.ArgumentError):
+        pass
     return False
 
 def _has_invalid_chars(path_str: Optional[str]) -> bool:

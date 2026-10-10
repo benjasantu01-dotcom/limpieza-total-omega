@@ -1489,3 +1489,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-10T11:31:14` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se mejoró la robustez de `trim_working_set` y sus funciones auxiliares implementando una validación de PIDs más estricta mediante `psutil`-less check y evitando el uso de excepciones genéricas, asegurando que `OpenProcess` maneje correctamente los errores de acceso.
 - `2026-10-10T11:31:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T11:31:14` Corrida terminada. Total usado hoy: 272.
+- `2026-10-10T11:38:27` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-10-10T11:39:05` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-10T11:39:59` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `quarantine.py` mediante la validación proactiva y centralizada de parámetros en el registro del manifiesto, evitando que tipos de datos malformados (`size_bytes` no entero o `None`) o IDs vacíos propaguen errores de ejecución inesperados.
+- `2026-10-10T11:39:59` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-10T11:40:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-10T11:40:31` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-10T11:41:12` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_owned_by_system` encapsulando la lógica en un bloque `try-except` más preciso y eliminando el uso de `LocalFree` en escenarios donde el puntero SID es nulo, previniendo errores de segmentación o comportamiento indefinido al interactuar con la API Win32.
+- `2026-10-10T11:41:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T11:41:12` Corrida terminada. Total usado hoy: 276.

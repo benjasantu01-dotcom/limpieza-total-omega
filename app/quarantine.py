@@ -154,10 +154,12 @@ class QuarantineItem:
             self.size_bytes = int(self.size_bytes)
         except (ValueError, TypeError):
             self.size_bytes = 0
-        if not isinstance(self.item_id, str) or not self.item_id:
-            raise ValueError("ID de ítem vacío o inválido")
-        if not isinstance(self.reason, str) or not self.reason:
-            raise ValueError("Motivo no especificado")
+        if not isinstance(self.item_id, str) or not self.item_id.strip():
+            raise ValueError("ID de ítem inválido")
+        if not isinstance(self.reason, str) or not self.reason.strip():
+            self.reason = "Sin motivo especificado"
+        if not isinstance(self.original_path, str) or not self.original_path.strip():
+            raise ValueError("Ruta original inválida")
 
     @property
     def size_mb(self) -> float:
@@ -788,7 +790,7 @@ def _register_quarantine_item(
             original_path=str(source_path),
             stored_name=destination.name,
             size_bytes=original_size,
-            reason=str(reason) if reason else "Sin motivo",
+            reason=reason if reason else "Sin motivo",
             quarantined_at=datetime.now().isoformat(timespec="seconds"),
             sha256=file_hash,
             file_inode=file_inode,
