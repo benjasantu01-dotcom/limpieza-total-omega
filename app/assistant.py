@@ -732,7 +732,7 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
             sanitized = _validate_response_length(text_val)
             return sanitized if _ensure_safe_text(sanitized) else None
     except (AttributeError, TypeError, IndexError, KeyError): 
-        pass
+        return None
     return None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
@@ -744,7 +744,6 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     if not payload: return None
     
     target_url = _ENDPOINT_BASE.format(model=model)
-    # Validar estrictamente el host root para evitar manipulaciones de redirección
     if not target_url.startswith(_API_HOST_ROOT) or re.search(r"[<>\s]", target_url):
         return None
         

@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 53
+- Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 138 | 13 | 42 | 18 | 137 |
-| 2026-10-10 | 66 | 6 | 11 | 4 | 69 |
+| 2026-10-09 | 136 | 13 | 41 | 18 | 136 |
+| 2026-10-10 | 67 | 6 | 11 | 4 | 72 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **46**
 - robustez ante casos límite: **44**
 - rendimiento: **41**
-- legibilidad y documentación: **40**
-- manejo de errores y validación de entradas: **33**
+- legibilidad y documentación: **38**
+- manejo de errores y validación de entradas: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **21**
 - `quarantine.py`: **19**
 - `branding.py`: **19**
-- `healthscore.py`: **18**
 - `memory.py`: **18**
+- `healthscore.py`: **17**
+- `assistant.py`: **16**
 - `duplicates.py`: **15**
 - `safety.py`: **15**
-- `assistant.py`: **15**
 - `scanner.py`: **14**
 - `organizer.py`: **12**
 - `main.py`: **12**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-10T06:47:20` **assistant.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de errores en `_call_gemini` y `_extract_text_from_gemini_json` mediante una validación más estricta de las respuestas HTTP y el parseo de JSON, asegurando que cualquier fallo parcial resulte en un retorno seguro (`None`) en lugar de propagar excepciones hacia la interfaz.
 - `2026-10-10T05:25:04` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de TOCTOU (Time-of-Check to Time-of-Use) y asegurar que el archivo de configuración, tras ser abierto, no haya sido reemplazado por un enlace simbólico o un dispositivo peligroso antes de la lectura.
 - `2026-10-10T05:23:34` **safety.py** (seguridad defensiva): Se añadió un control de integridad de reparse points anidados dentro de `ensure_safe_to_modify` para detectar y bloquear recursivamente puntos de unión ocultos que `_validate_path_components` podría pasar por alto si se accede mediante rutas relativas o aliases de sistema, reforzando la seguridad defensiva contra el acceso a directorios prohibidos fuera del sandbox.
 - `2026-10-10T05:13:49` **organizer.py** (seguridad defensiva): Se ha mejorado la integridad de las operaciones de disco asegurando que `ensure_safe_to_modify` se aplique estrictamente sobre la ruta absoluta de origen, evitando discrepancias entre rutas relativas y el sistema de archivos real durante la ejecución de `shutil.move`.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-10T04:43:08` **scanner.py** (robustez ante casos límite): Mejoré la robustez ante archivos inexistentes o con permisos denegados en `_run_file_heuristics` y `scan_file`, envolviendo el chequeo de lectura y las heurísticas en un manejo de excepciones más granular para evitar interrupciones en el escaneo cuando un archivo se vuelve inaccesible tras ser detectado por `os.scandir`.
 - `2026-10-10T04:42:54` **safety.py** (robustez ante casos límite): Se implementó un chequeo preventivo de concurrencia al inicio de `ensure_safe_to_modify` para detectar si el sistema operativo tiene el archivo bloqueado por acceso exclusivo antes de intentar cualquier otra operación de I/O, evitando excepciones de `Win32` no capturadas durante la fase de normalización o estadística.
 - `2026-10-10T04:41:47` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `purge_all` ante archivos inesperados en la carpeta de cuarentena y posibles inconsistencias entre el sistema de archivos y el manifiesto, utilizando `item_map` y validaciones estrictas de existencia.
-- `2026-10-10T04:34:45` **main.py** (robustez ante casos límite): Se introdujo una validación robusta para el manejo de caracteres no imprimibles y longitudes de ruta en `_validate_disk_access`, protegiendo el sistema de inyecciones de rutas maliciosas o rutas inválidas ("path traversal" o errores de sistema) antes de cualquier operación de disco.
