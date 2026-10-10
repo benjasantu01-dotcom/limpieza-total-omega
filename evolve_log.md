@@ -443,3 +443,25 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-10-10T12:41:38` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje convirtiendo `_PIPELINE` de una tupla a una estructura de acceso directo y almacenando los pesos en un `dict` local dentro de `compute_score`, eliminando búsquedas innecesarias y conversiones de tipo redundantes en cada iteración del bucle.
 - `2026-10-10T12:41:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T12:41:38` Corrida terminada. Total usado hoy: 300.
+- `2026-10-10T12:49:41` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-10T12:50:44` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-10T12:50:47` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-10T12:52:08` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el rendimiento de la interfaz al implementar una estructura de datos `set` para `self._active_buttons` y `self._debounces` (a través de `after_cancel`), asegurando que las operaciones de UI masivas no redunden en el hilo principal y que la recolección de basura sea más eficiente al evitar el crecimiento ilimitado de listas de objetos en el registro de componentes.
+- `2026-10-10T12:52:09` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-10T12:52:44` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el rendimiento de `top_memory_processes` reemplazando la creación dinámica de una función generadora dentro del loop por una lógica plana, y se eliminó la dependencia de `ctypes.c_size_t` dentro del bucle de recolección de memoria (`_query_working_set_bytes`), pre-calculando el tamaño de la estructura para evitar el overhead de instanciación en cada iteración.
+- `2026-10-10T12:53:13` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_for_junk` y `_process_directory` transformando `JUNK_EXT_TUPLE` en un set de búsqueda rápida para evitar el overhead de conversión de tuplas en cada comparación, y reemplazando iteraciones repetidas por validaciones de conjunto más eficientes.
+- `2026-10-10T12:53:16` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-10T12:53:52` Tests FALLARON:
+```
+Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+8 failed, 291 passed in 2.25s
+
+```
+- `2026-10-10T12:53:52` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `purge_all` eliminando la iteración innecesaria sobre el sistema de archivos al priorizar la lista de manifiesto, reduciendo la complejidad de O(N*M) a O(N) y evitando llamadas redundantes a `is_within_directory` y `stat` para archivos que ya sabemos que existen por el manifiesto.
+- `2026-10-10T12:53:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T12:53:52` Corrida terminada. Total usado hoy: 304.

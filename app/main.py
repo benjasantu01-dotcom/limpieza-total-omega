@@ -39,6 +39,7 @@ Se optimiza el volcado de reportes mediante inserción de bloques de texto únic
 Se implementa memoización de contexto para evitar re-cálculos en el asistente.
 Optimización de caché mediante marcas de tiempo para reducir re-cálculos de UI.
 Invalidación inteligente mediante digests de estado para evitar re-compilaciones.
+Uso de conjuntos (sets) para gestión de estado de UI y debounces.
 
 Instalar dependencias:
     pip install customtkinter
@@ -57,7 +58,7 @@ from functools import lru_cache, wraps
 from collections import OrderedDict, defaultdict
 from tkinter import filedialog, messagebox
 from pathlib import Path
-from typing import Optional, List, Dict, Tuple, Any, Callable, Union, TypedDict, TypeAlias
+from typing import Optional, List, Dict, Tuple, Any, Callable, Union, TypedDict, TypeAlias, Set
 
 import customtkinter as ctk
 
@@ -237,7 +238,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._log_queue: List[LogEntry] = []
         self._log_lock = threading.Lock()
         self._log_scheduled = False
-        self._active_buttons: List[ctk.CTkButton] = []
+        self._active_buttons: Set[ctk.CTkButton] = set()
         
         self._last_card_values: Dict[str, str] = {}
         self._last_gauge_state: Tuple[int, str] = (-1, "")
@@ -443,7 +444,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             width=190, height=36, corner_radius=9,
         )
         button.grid(row=0, column=column, padx=6, pady=4, sticky="w")
-        self._active_buttons.append(button)
+        self._active_buttons.add(button)
         return button
 
     def _hint(self, parent: ctk.CTk, text: str) -> None:

@@ -40,7 +40,6 @@ SYSTEM_CRITICAL_NAMES: Final[frozenset[str]] = frozenset({"pagefile.sys", "hiber
 JUNK_EXTENSIONS: Final[frozenset[str]] = frozenset({
     ".tmp", ".temp", ".log", ".bak", ".old", ".dmp", ".chk", ".cache",
 })
-JUNK_EXT_TUPLE: Final[tuple[str, ...]] = tuple(JUNK_EXTENSIONS)
 
 class SortConfig(NamedTuple):
     """Configuración para criterios de ordenamiento de archivos."""
@@ -96,11 +95,12 @@ class JunkFile:
     @property
     def is_junk_extension(self) -> bool:
         """Verifica si la extensión del archivo coincide con las heurísticas de basura."""
-        return self.path.name.lower().endswith(JUNK_EXT_TUPLE)
+        return any(self.path.name.lower().endswith(ext) for ext in JUNK_EXTENSIONS)
 
 def is_valid_junk_extension(filename: str) -> bool:
     """Valida si el sufijo del archivo pertenece a la lista definida en JUNK_EXTENSIONS."""
-    return filename.lower().endswith(JUNK_EXT_TUPLE)
+    name = filename.lower()
+    return any(name.endswith(ext) for ext in JUNK_EXTENSIONS)
 
 def _get_win_attributes(entry: os.DirEntry) -> int:
     """Extrae atributos de archivo (bitmask) usando syscall de bajo nivel para Windows."""
@@ -188,18 +188,15 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     try:
-        # Resolvemos la ruta real para evitar discrepancias por enlaces o reparse points
         src_real = junk_file.path.resolve(strict=True)
         if src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         
         stat_result = src_real.stat()
-        # Verificación contra cambios en disco (Race Condition Check)
         if (junk_file._ino is not None and stat_result.st_ino != junk_file._ino) or \
            (junk_file._dev is not None and stat_result.st_dev != junk_file._dev): return False
         
         if not src_real.is_file(): return False
         
-        # Validaciones de seguridad de ruta (safety.py y políticas internas)
         if not is_safe_to_modify(src_real) or is_protected_path(dest) or \
            not _validate_path_security(src_real, dest): return False
         
@@ -232,11 +229,7 @@ def _is_candidate_junk(stats: os.stat_result, entry: os.DirEntry, now_ts: float)
             not _is_system_hidden(entry))
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
-    """
-    Escaneo recursivo de directorios. 
-    depth: Limita la profundidad para evitar el agotamiento de pila en sistemas con links complejos.
-    visited: Cache de rutas para evitar ciclos infinitos en el árbol de archivos.
-    """
+    """Escaneo recursivo de directorios con límite de profundidad y cache de rutas."""
     if depth > 50: return
     try:
         resolved_dir = current_dir.resolve(strict=False)
@@ -251,7 +244,9 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False):
-                        if entry.name.lower().endswith(JUNK_EXT_TUPLE):
+                        # Búsqueda eficiente usando el nombre del archivo en minúsculas
+                        name_lower = entry.name.lower()
+                        if any(name_lower.endswith(ext) for ext in JUNK_EXTENSIONS):
                             stats = entry.stat(follow_symlinks=False)
                             if _is_candidate_junk(stats, entry, now_ts):
                                 found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
@@ -261,10 +256,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
         pass
 
 def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[JunkFile]:
-    """
-    Punto de entrada para el escaneo de basura. 
-    Usa el listado por defecto si no se proporcionan rutas específicas.
-    """
+    """Punto de entrada para el escaneo de basura."""
     found: List[JunkFile] = []
     protected_cache: set[str] = set()
     visited: set[Path] = set()
@@ -285,10 +277,7 @@ def sort_junk(files: Sequence[JunkFile], by: SortField = "size", ascending: bool
     return sorted(files, key=config.key_func, reverse=not bool(ascending))
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """
-    Mueve los archivos detectados a la carpeta de revisión.
-    Usa ensure_safe_to_modify para garantizar que ninguna operación viole las reglas de seguridad.
-    """
+    """Mueve los archivos detectados a la carpeta de revisión."""
     if not files or not review_dir: return None
     try:
         dest_base = Path(review_dir).expanduser()
@@ -296,7 +285,6 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             dest_base.mkdir(parents=True, exist_ok=True)
         dest_res = dest_base.resolve(strict=False)
         
-        # Validar destino antes de procesar archivos
         if not is_safe_to_modify(dest_res): return None
         ensure_safe_to_modify(dest_res)
     except (OSError, RuntimeError, PermissionError):

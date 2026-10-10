@@ -101,6 +101,9 @@ class MEMORYSTATUSEX(ctypes.Structure):
         ("ullAvailExtendedVirtual", ctypes.c_ulonglong), 
     ]
 
+# Estructura pre-instanciada para performance en consultas recurrentes
+_PMC_TYPE = (ctypes.c_size_t * 6)
+
 @dataclass(frozen=True)
 class MemorySnapshot:
     """Representación inmutable del estado global de memoria del sistema."""
@@ -275,8 +278,7 @@ def _query_working_set_bytes(pid: int, kernel32, psapi) -> Optional[BytesValue]:
     if not process_handle:
         return None
     try:
-        # PSAPI_WORKING_SET_INFORMATION struct mapeado como array de size_t
-        pmc = (ctypes.c_size_t * 6)()
+        pmc = _PMC_TYPE()
         if psapi.GetProcessMemoryInfo(process_handle, ctypes.byref(pmc), ctypes.sizeof(pmc)):
             val = pmc[3] # WorkingSetSize es el índice 3 en la estructura PROCESS_MEMORY_COUNTERS
             return BytesValue(val) if 0 < val < MAX_VALID_PROCESS_MEM else None
@@ -305,16 +307,16 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         # EnumProcesses devuelve un array de PIDs, se itera para consultar cada uno
         if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
             count = cb_needed.value // ctypes.sizeof(ctypes.c_ulong)
+            found_procs = []
             
-            def _get_active_procs():
-                for i in range(min(count, 4096)):
-                    pid = pids[i]
-                    if not _is_system_process(pid):
-                        ws = _query_working_set_bytes(pid, kernel32, psapi)
-                        if ws:
-                            yield ProcessMemory(f"PID {pid}", pid, ws)
+            for i in range(min(count, 4096)):
+                pid = pids[i]
+                if not _is_system_process(pid):
+                    ws = _query_working_set_bytes(pid, kernel32, psapi)
+                    if ws:
+                        found_procs.append(ProcessMemory(f"PID {pid}", pid, ws))
             
-            cache_data = sorted(_get_active_procs(), key=lambda p: p.working_set, reverse=True)[:limit]
+            cache_data = sorted(found_procs, key=lambda p: p.working_set, reverse=True)[:limit]
             top_memory_processes._cache = (now, cache_data)
             
     return cache_data
