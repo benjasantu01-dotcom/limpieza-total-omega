@@ -172,12 +172,11 @@ class StartupEntry:
             return ""
         
         try:
-            if len(path_string) > 260: # Límite MAX_PATH estándar
+            # Validación robusta de límites y protocolos de red antes de tocar disco
+            if len(path_string) > 260 or path_string.startswith(r"\\"):
                 return ""
             
             norm: str = os.path.normpath(path_string)
-            if norm.startswith(r"\\"):
-                return ""
         except (ValueError, TypeError):
             return ""
         

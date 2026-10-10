@@ -91,7 +91,7 @@ _CONTEXT_SCHEMA: Final = (
 
 def _is_safe_key(key: str) -> bool:
     """Valida que una clave de diccionario o atributo no sea privada o interna."""
-    return isinstance(key, str) and not (key.startswith("__") or key.startswith("_") or key == "ingest")
+    return isinstance(key, str) and not (key.startswith("__") or key.startswith("_"))
 
 def _check_metric_integrity(val: Any) -> bool:
     """Verifica que un valor numérico sea seguro, finito y coherente para el asistente."""
@@ -499,6 +499,7 @@ def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
             val = source.get(key)
         elif hasattr(source, key):
             val = getattr(source, key)
+            # Bloqueamos el acceso a métodos y estructuras anidadas complejas
             if callable(val) or isinstance(val, (type, list, dict, set, tuple)):
                 return None
         else:
