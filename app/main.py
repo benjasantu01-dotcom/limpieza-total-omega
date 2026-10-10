@@ -172,13 +172,16 @@ def validated_ui_operation(func: Callable) -> Callable:
             return None
     return wrapper
 
-# Validación de seguridad defensiva en el inicio
-try:
+def _check_environment_integrity() -> None:
+    """Valida requisitos de seguridad críticos al arrancar el proceso."""
     cwd = Path.cwd().resolve()
     if str(cwd).startswith(r"\\"):
-        raise RuntimeError("No se permite ejecutar desde rutas de red (UNC).")
+        raise RuntimeError("Ejecución en ruta UNC prohibida.")
     safety.ensure_safe_to_modify(Path.home().resolve())
     safety.ensure_safe_to_modify(cwd)
+
+try:
+    _check_environment_integrity()
 except safety.UnsafePathError as e:
     logging.critical("Iniciando desde ruta insegura: %s", e)
     raise

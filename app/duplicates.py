@@ -128,6 +128,21 @@ def _safe_path_check(path: Path) -> bool:
         return False
 
 
+def _is_valid_candidate(path: Path, st_size: int) -> bool:
+    """
+    Filtro de pre-selección: confirma que el archivo es procesable, 
+    no está protegido, no es sistema y no está bloqueado.
+    """
+    if not isinstance(path, Path) or st_size <= 0:
+        return False
+    try:
+        return (_safe_path_check(path) and 
+                not is_system_or_hidden(path) and 
+                not _is_file_locked(path))
+    except (OSError, ValueError, TypeError, RuntimeError, AttributeError):
+        return False
+
+
 def _validate_and_resolve_path(path_input: PathLike) -> Optional[Path]:
     """
     Normaliza y valida que una ruta sea un archivo procesable.
@@ -136,9 +151,8 @@ def _validate_and_resolve_path(path_input: PathLike) -> Optional[Path]:
         return None
     try:
         path_obj: Path = Path(path_input).resolve()
-        if path_obj.is_file() and _safe_path_check(path_obj) and not _is_file_locked(path_obj):
-            if path_obj.stat().st_size > 0:
-                return path_obj
+        if path_obj.is_file() and _is_valid_candidate(path_obj, path_obj.stat().st_size):
+            return path_obj
     except (OSError, RuntimeError, ValueError):
         return None
     return None
@@ -181,18 +195,6 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
             return hashlib.sha256(content).hexdigest()
     except (OSError, PermissionError, ValueError, IOError):
         return None
-
-
-def _is_valid_candidate(path: Path, st_size: int) -> bool:
-    """Filtro de pre-selección para evitar procesar archivos bloqueados o protegidos."""
-    if not isinstance(path, Path) or st_size <= 0:
-        return False
-    try:
-        return (_safe_path_check(path) and 
-                not is_system_or_hidden(path) and 
-                not _is_file_locked(path))
-    except (OSError, ValueError, TypeError, RuntimeError, AttributeError):
-        return False
 
 
 def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:

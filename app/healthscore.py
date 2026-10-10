@@ -177,11 +177,11 @@ _PIPELINE: Final[Tuple[PipelineEntry, ...]] = (
 )
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
-    """Calcula la salud del sistema basada en el volumen de archivos basura acumulados."""
+    """Calcula salud: Normaliza el volumen de basura (MB) vs el límite definido."""
     return _JUNK_SCORER(float(junk_mb))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
-    """Calcula el ratio de seguridad penalizando hallazgos críticos y advertencias sospechosas."""
+    """Calcula salud: Penaliza hallazgos críticos (0.05) y advertencias (0.25) por unidad."""
     try:
         penalization = (float(suspicious_count) * 0.05) + (float(warnings) * 0.25)
         return _clamp(1.0 - penalization)
@@ -189,19 +189,19 @@ def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
         return 0.0
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
-    """Normaliza el porcentaje de memoria disponible respecto al umbral crítico."""
+    """Calcula salud: Ratio de memoria disponible respecto al umbral de criticidad del sistema."""
     return _clamp(float(available_percent) / _LIMIT_RAM_PERCENT)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
-    """Normaliza el espacio en disco disponible respecto al límite de advertencia."""
+    """Calcula salud: Ratio de espacio libre respecto al porcentaje umbral para advertencias."""
     return _clamp(float(free_percent) / _LIMIT_DISK_PERCENT)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
-    """Evalúa la salud respecto a archivos duplicados redundantes que ocupan espacio."""
+    """Calcula salud: Normaliza el peso de duplicados detectados frente al límite de recuperación."""
     return _DUP_SCORER(float(duplicate_mb))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
-    """Calcula la puntuación basada en la cantidad de elementos de inicio configurados."""
+    """Calcula salud: Normaliza la carga de programas en inicio según el límite de tolerancia."""
     return _STARTUP_SCORER(float(startup_count))
 
 def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) -> float:
@@ -218,7 +218,7 @@ def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) ->
 
 @dataclass
 class SystemMetrics:
-    """Contenedor de datos estructurado que agrupa las métricas recolectadas del sistema."""
+    """Contenedor de datos centralizado para las métricas del sistema."""
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -228,7 +228,7 @@ class SystemMetrics:
     startup_count: int = 0
     quarantined_count: int = 0
 
-    _CHECK_FIELDS: Final[Tuple[str, ...]] = (
+    _FIELDS_TO_VALIDATE: Final[Tuple[str, ...]] = (
         "junk_mb", "suspicious_count", "suspicious_warnings", 
         "memory_available_percent", "disk_free_percent", 
         "duplicate_mb", "startup_count", "quarantined_count"
@@ -246,7 +246,7 @@ class SystemMetrics:
         return getattr(self, field_name, default)
 
     def validate(self) -> None:
-        """Asegura que los datos recibidos tengan tipos y rangos válidos, bloqueando entradas maliciosas."""
+        """Asegura rangos aceptables para todas las métricas, evitando inyección de datos fuera de escala."""
         self.junk_mb = _validate_numeric(self.junk_mb, 0.0, 0.0, 1e9)
         self.duplicate_mb = _validate_numeric(self.duplicate_mb, 0.0, 0.0, 1e9)
         self.suspicious_count = int(_validate_numeric(self.suspicious_count, 0, 0, 1e6))
@@ -259,7 +259,7 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verifica que ninguna métrica numérica sea infinita o NaN."""
-        return all(math.isfinite(getattr(self, f)) for f in self._CHECK_FIELDS if isinstance(getattr(self, f), (int, float)))
+        return all(math.isfinite(getattr(self, f)) for f in self._FIELDS_TO_VALIDATE if isinstance(getattr(self, f), (int, float)))
 
 @dataclass
 class HealthResult:
