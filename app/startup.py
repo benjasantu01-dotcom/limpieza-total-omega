@@ -146,6 +146,7 @@ class StartupEntry:
             
         try:
             p: Path = Path(path_str)
+            # Validación explícita de componentes de ruta antes de verificar protección
             if not p.parts or is_protected_path(p):
                 return ""
             return str(p)
@@ -172,7 +173,6 @@ class StartupEntry:
             return ""
         
         try:
-            # Validación robusta de límites y protocolos de red antes de tocar disco
             if len(path_string) > 260 or path_string.startswith(r"\\"):
                 return ""
             

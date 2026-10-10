@@ -329,7 +329,7 @@ def _is_file_secure_to_read(file_obj: Any) -> bool:
     try:
         if file_obj.closed: return False
         st = os.fstat(file_obj.fileno())
-        # Verificar que sea archivo regular y no un enlace simbólico (lstat no es suficiente aquí)
+        # Verificar que sea archivo regular y no un enlace simbólico
         if not stat.S_ISREG(st.st_mode): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
         # Permisos restringidos: sin ejecución, sin escritura global/grupo
@@ -355,10 +355,12 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
                 if not content or not _is_file_secure_to_read(f): return None
                 data = json.loads(content)
                 return data if _is_dict(data) else None
+            except (json.JSONDecodeError, OSError, IOError):
+                return None
             finally:
                 try: fcntl.flock(f.fileno(), fcntl.LOCK_UN)
                 except (OSError, IOError): pass
-    except (OSError, PermissionError, IOError, json.JSONDecodeError, ValueError, AttributeError, RuntimeError):
+    except (OSError, PermissionError, ValueError, AttributeError, RuntimeError):
         return None
 
 def _is_dir_safe(path: Path) -> bool:

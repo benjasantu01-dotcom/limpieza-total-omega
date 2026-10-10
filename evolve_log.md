@@ -1071,3 +1071,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-10T07:15:58` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-10T07:15:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T07:15:58` Corrida terminada. Total usado hoy: 172.
+- `2026-10-10T07:23:59` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-10-10T07:24:48` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` y `_read_and_parse_json()` capturando excepciones críticas de `json.loads` y `fcntl.flock`, y reemplazando validaciones de tipo genéricas por comprobaciones más estrictas para evitar el uso de archivos corruptos.
+- `2026-10-10T07:25:21` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `StartupEntry._extract_quoted_path` validando explícitamente el resultado de `Path()` antes de acceder a sus propiedades para evitar excepciones inesperadas por rutas mal formadas, cumpliendo con el enfoque de manejo de errores.
+- `2026-10-10T07:26:21` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-10T07:27:01` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: SystemContext._apply_field
+- `2026-10-10T07:27:19` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-10-10T07:27:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T07:27:19` Corrida terminada. Total usado hoy: 176.
