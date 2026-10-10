@@ -669,3 +669,11 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-10-10T03:41:52` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el método `largest_folders` para evitar la creación innecesaria de objetos `Path` y realizar cálculos de subcarpetas mediante operaciones de cadena más eficientes, reduciendo la carga sobre la memoria durante el escaneo.
 - `2026-10-10T03:41:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T03:41:52` Corrida terminada. Total usado hoy: 88.
+- `2026-10-10T03:50:11` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-10-10T03:50:47` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se optimizó el proceso de recolección de archivos (`_collect_candidates`) evitando el cálculo redundante de `stat()` y `Path.resolve()` al reutilizar los resultados obtenidos por `os.scandir` durante la iteración inicial.
+- `2026-10-10T03:51:17` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el acceso a las métricas del sistema utilizando `getattr` dentro de un diccionario cacheado localmente para evitar múltiples búsquedas de atributos (lookup) en el objeto `SystemMetrics` durante la ejecución del pipeline y las reglas, reduciendo la carga de resolución dinámica en cada iteración del bucle de scoring.
+- `2026-10-10T03:52:17` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-10T03:53:24` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards
+- `2026-10-10T03:53:53` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `top_memory_processes` reemplazando la instanciación de un objeto `list` completo por un generador dentro del bucle de recolección de PIDs, reduciendo el consumo de memoria durante el escaneo y evitando el recreado innecesario de `ProcessMemory` para procesos cuyo `ws` no supera los umbrales de validación.
+- `2026-10-10T03:53:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T03:53:53` Corrida terminada. Total usado hoy: 92.
