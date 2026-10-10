@@ -18,7 +18,6 @@ o `is_protected_path` para garantizar que no se interactúe con zonas críticas.
 from __future__ import annotations
 import hashlib
 import os
-import io
 import ctypes
 from collections import defaultdict, deque
 from collections.abc import Sequence, Iterable
@@ -102,26 +101,27 @@ class DuplicateGroup:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si un archivo está en uso intentando un acceso de lectura.
+    Verifica si un archivo está en uso intentando abrirlo en modo exclusivo.
     """
     if not isinstance(path, Path) or not is_safe_to_modify(path):
         return True
     try:
+        # Se intenta abrir el archivo en modo de lectura binaria exclusiva
         with open(path, "rb") as f:
-            f.peek(1)
             return False
-    except (PermissionError, OSError, ValueError, io.UnsupportedOperation):
+    except (PermissionError, OSError, ValueError):
         return True
 
 
 def _safe_path_check(path: Path) -> bool:
     """
-    Validación de seguridad: verifica protección, puntos de reanálisis y symlinks.
+    Validación de seguridad: verifica existencia, protección, puntos de reanálisis y symlinks.
     """
     if not isinstance(path, Path):
         return False
     try:
-        return (is_safe_to_modify(path) and 
+        return (path.exists() and
+                is_safe_to_modify(path) and 
                 not is_protected_path(path) and 
                 not is_junction(path) and 
                 not path.is_symlink())

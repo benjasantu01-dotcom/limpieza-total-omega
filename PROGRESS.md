@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **204** (40.5% de aceptación)
 - Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-08 | 52 | 6 | 9 | 4 | 71 |
+| 2026-10-08 | 52 | 6 | 9 | 4 | 67 |
 | 2026-10-09 | 140 | 13 | 42 | 18 | 137 |
-| 2026-10-10 | 8 | 2 | 1 | 0 | 1 |
+| 2026-10-10 | 12 | 2 | 1 | 0 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,27 +26,31 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **41**
 - robustez ante casos límite: **41**
 - rendimiento: **40**
-- seguridad defensiva: **35**
+- seguridad defensiva: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **23**
+- `diskreport.py`: **24**
 - `memory.py`: **19**
+- `healthscore.py`: **18**
 - `quarantine.py`: **18**
-- `healthscore.py`: **17**
 - `assistant.py`: **16**
 - `safety.py`: **16**
 - `branding.py`: **16**
+- `duplicates.py`: **14**
 - `scanner.py`: **14**
 - `browser.py`: **13**
-- `duplicates.py`: **13**
 - `organizer.py`: **13**
 - `settings.py`: **10**
-- `main.py`: **8**
+- `main.py`: **9**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-10T00:38:43` **main.py** (seguridad defensiva): Se ha mejorado la seguridad del método `_validate_environment` para detectar explícitamente puntos de reparse (junctions) y enlaces simbólicos en rutas críticas, asegurando que la aplicación no pueda ser engañada para operar fuera de su sandbox mediante redirecciones del sistema de archivos.
+- `2026-10-10T00:37:51` **healthscore.py** (seguridad defensiva): Se reforzó la robustez defensiva de `compute_score` asegurando que el cálculo del puntaje no solo dependa de la finitud de las métricas, sino que se realice dentro de un bloque `try-except` encapsulado que garantice la integridad del `HealthResult` incluso ante fallos inesperados en el `_PIPELINE`.
+- `2026-10-10T00:37:26` **duplicates.py** (seguridad defensiva): Se ha refactorizado `_is_file_locked` para evitar abrir archivos potencialmente inmensos (evitando la carga en buffer) y se ha mejorado `_safe_path_check` para asegurar que las comprobaciones de seguridad sean deterministas y rápidas al usar `Path.exists()` antes de realizar operaciones costosas o bloqueantes.
+- `2026-10-10T00:37:00` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` para prevenir ataques de trayectoria (path traversal) o accesos no autorizados mediante la validación explícita de que la ruta resuelta mantenga el prefijo de la base, evitando que se escapen a directorios padres o fuera del alcance esperado si la entrada original era maliciosa.
 - `2026-10-10T00:28:04` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `save_logo_svg` reemplazando la lógica de validación manual por un uso estricto de `ensure_safe_to_modify`, garantizando que el archivo nunca se escriba en rutas no permitidas, siguiendo el patrón correcto de la arquitectura.
 - `2026-10-10T00:27:30` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva de `assistant.py` mediante la validación explícita de la URL de destino de Gemini, evitando cualquier posibilidad de redirección maliciosa o manipulación del endpoint mediante el parámetro `model`, asegurando que solo se contacte al host oficial.
 - `2026-10-10T00:18:15` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante fallos en la lectura de disco añadiendo un manejo de excepciones más granular en `_load_impl` para capturar errores de sistema específicos (como `OSError` o `PermissionError`) durante la apertura y lectura del archivo, asegurando que la app siempre retorne un estado válido (`DEFAULTS`) ante cualquier corrupción parcial o bloqueo inesperado del sistema de archivos.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-09T14:56:18` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor de cómputo añadiendo validaciones de entrada (`isinstance`) y manejos de excepciones específicos en la inicialización de métricas para evitar que valores inesperados inyectados accidentalmente provoquen fallos en el pipeline o estados inconsistentes.
 - `2026-10-09T14:55:43` **duplicates.py** (robustez ante casos límite): Mejoré la resiliencia en la recolección de archivos y el cálculo de hashes integrando `is_safe_to_modify` como filtro de seguridad obligatorio en `_collect_candidates`, previniendo así errores de acceso en rutas protegidas que antes podían causar excepciones durante el escaneo recursivo.
 - `2026-10-09T14:47:32` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la función `walk_files` y `_collect_summary_data`, añadiendo un bloque `try-except` específico para manejar archivos con permisos denegados o bloqueados por el sistema durante el escaneo, asegurando que el proceso completo no aborte ante un archivo inaccesible.
-- `2026-10-09T14:36:08` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner moviendo la validación de seguridad `_is_safe_entry` (que es costosa debido al `resolve()` y `is_protected_path`) para que ocurra solo después de filtrar por extensión, evitando llamadas redundantes a disco para archivos que no son de interés.
-- `2026-10-09T14:35:39` **safety.py** (rendimiento): Se optimizó `_is_kernel_managed` y `is_protected_path` reemplazando búsquedas repetitivas de cadenas por el uso de `set` y `frozenset` para realizar consultas de membresía en tiempo constante O(1), mejorando el rendimiento en recorridos masivos de disco.
-- `2026-10-09T14:26:34` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` introduciendo una lógica de invalidación basada en el tamaño del archivo además del `mtime` y mejoré `purge_all` para evitar lecturas redundantes del disco y procesar la eliminación de forma más eficiente.
-- `2026-10-09T14:25:19` **memory.py** (rendimiento): Optimizé el rendimiento de `top_memory_processes` reemplazando la consulta secuencial e individual de cada proceso por un uso más eficiente de `EnumProcesses` y validaciones previas para reducir el número de llamadas al sistema (syscalls) innecesarias, evitando la recreación constante de objetos en cada ciclo.

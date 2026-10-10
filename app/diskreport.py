@@ -147,12 +147,18 @@ def _validate_limit(limit: Any) -> int:
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     """
     Valida y resuelve una ruta de inicio, prohibiendo enlaces simbólicos directos.
-    Verifica existencia, accesibilidad y si es una ruta protegida.
+    Verifica existencia, accesibilidad, rutas protegidas y previene path traversal.
     """
     if directory is None:
         return None
     try:
+        base = Path(os.getcwd()).resolve()
         p = Path(directory).expanduser().resolve()
+        
+        # Prevenir escape fuera del directorio base si se intenta escalar (seguridad defensiva)
+        if not str(p).startswith(str(base)) and not os.path.isabs(directory):
+            return None
+
         if p.is_symlink():
             return None
         if not p.is_dir() or is_protected_path(p) or not os.access(p, os.R_OK):
@@ -344,7 +350,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     root = _validate_root(directory)
     if not root: return []
     stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
-    root_str = str(root)
     
     for path, size in walk_files(root, skip_protected):
         try:

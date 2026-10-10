@@ -305,7 +305,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 (home.resolve().is_absolute(), "La ruta home no es absoluta."),
                 (safety.is_safe_to_modify(cwd), "Directorio de trabajo inseguro."),
                 (not safety.is_protected_path(app_root), "Directorio de aplicación protegido."),
-                (not str(cwd).lower().startswith(tuple(["c:\\windows", "c:\\program files"])), "Ejecución desde ruta de sistema restringida.")
+                (not str(cwd).lower().startswith(tuple(["c:\\windows", "c:\\program files"])), "Ejecución desde ruta de sistema restringida."),
+                (not cwd.is_symlink(), "Directorio de trabajo es un enlace simbólico o junction.")
             ]
             
             for condition, error_msg in validations:
