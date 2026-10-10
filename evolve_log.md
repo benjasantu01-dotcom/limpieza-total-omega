@@ -1470,3 +1470,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-10T11:12:05` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-10-10T11:12:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T11:12:05` Corrida terminada. Total usado hoy: 264.
+- `2026-10-10T11:18:10` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-10-10T11:19:04` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_get_source_value` y `SystemContext.ingest` para evitar excepciones no controladas al acceder a objetos externos, asegurando que cualquier entrada mal formada sea descartada silenciosamente sin romper el bucle del asistente.
+- `2026-10-10T11:19:52` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `branding.py` mediante una validación más estricta de las entradas en funciones críticas (`color`, `font_size`, `icon`, `tab_label`), asegurando que cualquier entrada nula o de tipo incorrecto sea tratada de forma consistente sin riesgo de excepciones inesperadas.
+- `2026-10-10T11:20:26` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_valid_cache_path` y `_resolve_browser_path` añadiendo validaciones explícitas de tipos y estados antes de operar, previniendo errores en tiempo de ejecución al manipular rutas mal formadas o inexistentes.
+- `2026-10-10T11:20:26` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-10T11:20:29` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-10T11:20:52` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas y manejando casos de rutas inexistentes o inaccesibles sin detener el flujo completo, aplicando un manejo de errores más defensivo en las iteraciones de sistema de archivos.
+- `2026-10-10T11:20:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T11:20:52` Corrida terminada. Total usado hoy: 268.

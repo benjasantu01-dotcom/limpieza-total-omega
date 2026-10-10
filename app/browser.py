@@ -278,7 +278,8 @@ def directory_size(path: Optional[OSPath]) -> int:
 @safe_path_operation(False)
 def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
     """Valida que una ruta cumpla con los requisitos de seguridad antes de ser escaneada."""
-    if not isinstance(candidate, Path) or not candidate.exists() or not candidate.is_dir(): return False
+    if not isinstance(candidate, Path) or not candidate.exists() or not candidate.is_dir(): 
+        return False
     try:
         real: Path = candidate.resolve(strict=True)
     except (OSError, RuntimeError):
@@ -293,15 +294,18 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
 @safe_path_operation(Path())
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Resuelve rutas relativas a absolutas dentro del contexto del perfil de usuario."""
-    if not isinstance(real_base, Path) or not isinstance(rel_str, str) or not rel_str: return Path()
+    if not isinstance(real_base, Path) or not isinstance(rel_str, str) or not rel_str: 
+        return Path()
     
-    if any(char in rel_str for char in PATH_FORBIDDEN_CHARS): return Path()
+    if any(char in rel_str for char in PATH_FORBIDDEN_CHARS): 
+        return Path()
     
     # Construcción segura evitando '..' mediante descomposición de componentes
     parts = [p for p in rel_str.split("\\") if p and p != "." and p != ".."]
     target: Path = real_base.joinpath(*parts)
     
-    if not target.exists() or not target.is_dir(): return Path()
+    if not target.exists() or not target.is_dir(): 
+        return Path()
     
     try:
         target_res = target.resolve(strict=True)

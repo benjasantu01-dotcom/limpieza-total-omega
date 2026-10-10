@@ -195,30 +195,30 @@ def app_title() -> str:
     """Retorna el título completo de la aplicación incluyendo la versión."""
     return f"{APP_NAME} v{APP_VERSION}"
 
-def color(name: str) -> ColorHex:
-    """Recupera un color de la paleta centralizada por nombre. Retorna gris ante llaves inexistentes."""
-    if not isinstance(name, str):
+def color(name: Optional[str]) -> ColorHex:
+    """Recupera un color de la paleta centralizada por nombre. Retorna gris ante llaves inexistentes o inválidas."""
+    if not name or not isinstance(name, str):
         return "#808080"
     return PALETTE.get(name, "#808080")
 
 @lru_cache(maxsize=16)
-def font_size(name: str) -> int:
+def font_size(name: Optional[str]) -> int:
     """Obtiene el tamaño de fuente configurado para un identificador. Retorna valor por defecto ante error."""
-    if not isinstance(name, str):
+    if not name or not isinstance(name, str):
         return UI_FONT_BODY_SIZE
     return FONT_SIZES.get(name, UI_FONT_BODY_SIZE)
 
 @lru_cache(maxsize=32)
 def icon(section: Optional[str]) -> str:
     """Retorna el glifo Unicode asociado a una sección de la app. Sanitiza el input mediante strip()."""
-    if not isinstance(section, str):
+    if not section or not isinstance(section, str):
         return "\u2022"
     return ICONS.get(section.strip(), "\u2022")
 
 @lru_cache(maxsize=32)
 def tab_label(section: Optional[str]) -> str:
     """Formatea la etiqueta de una pestaña con su icono y texto. Asegura un formato consistente."""
-    if not isinstance(section, str): 
+    if not section or not isinstance(section, str): 
         return f"\u2022  Desconocido"
     return f"{icon(section)}  {section}"
 

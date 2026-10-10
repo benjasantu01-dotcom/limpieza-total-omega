@@ -314,12 +314,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode)
                                 stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            # Acceso granular a stat para manejar errores de archivos bloqueados
                             st = entry.stat(follow_symlinks=False)
                             yield Path(entry.path), int(st.st_size)
                     except (OSError, PermissionError):
                         continue
-        except (PermissionError, OSError): 
+        except (PermissionError, OSError, FileNotFoundError): 
             continue
 
 
@@ -357,7 +356,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             curr = stats[str(target)]
             curr.size += size
             curr.file_count += 1
-        except (ValueError, IndexError, OSError, PermissionError):
+        except (ValueError, IndexError, OSError, PermissionError, AttributeError):
             continue
 
     results = [FolderUsage(Path(p), m.size, m.file_count) for p, m in stats.items()]
@@ -402,7 +401,10 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     if root is None: 
         return ["Error: La ruta seleccionada no es válida o no tiene permisos de lectura."]
     
-    data = _collect_summary_data(root, skip_protected, limit=20)
+    try:
+        data = _collect_summary_data(root, skip_protected, limit=20)
+    except Exception:
+        return ["Error: Falló el escaneo del directorio raíz."]
         
     if data.total_files == 0: 
         return ["Aviso: No se encontraron archivos accesibles en la ruta seleccionada."]

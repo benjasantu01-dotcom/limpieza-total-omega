@@ -447,7 +447,7 @@ class SystemContext:
                 value = self._apply_field(source, key, spec)
                 if value is not None and value != getattr(self, key, None):
                     updates[key] = value
-            except Exception:
+            except (AttributeError, Exception):
                 continue
         
         grade_val = self._clean_grade(_get_source_value(source, "grade"))
@@ -498,13 +498,11 @@ def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
     if depth > _MAX_NESTING_DEPTH or not _is_safe_key(key): return None
     try:
         if isinstance(source, dict):
-            val = source.get(key)
-        elif hasattr(source, key):
-            val = getattr(source, key)
-            # Bloqueamos el acceso a métodos y estructuras anidadas complejas
-            if callable(val) or isinstance(val, (type, list, dict, set, tuple)):
-                return None
-        else:
+            return source.get(key)
+        
+        # Acceso genérico a objeto, evitando __dict__ directo
+        val = getattr(source, key, None)
+        if callable(val) or isinstance(val, (type, list, dict, set, tuple)):
             return None
         return val
     except (AttributeError, ValueError, TypeError):
