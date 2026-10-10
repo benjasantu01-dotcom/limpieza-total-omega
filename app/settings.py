@@ -288,17 +288,17 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     if cache_key in _MANAGER.path_cache:
         return _MANAGER.path_cache[cache_key]
     
-    base_path = (Path(custom_base).resolve() if custom_base else SETTINGS_DIR)
-    
+    # Normalizar ruta antes de cualquier chequeo
     try:
-        if _Validators._is_safe_path(str(base_path)) and not _Validators._is_reparse_point(base_path):
-            if not base_path.exists():
-                base_path.mkdir(parents=True, exist_ok=True)
-            if base_path.is_dir() and os.access(base_path, os.R_OK | os.W_OK):
-                full_path = base_path / SETTINGS_FILE
+        raw_base = Path(custom_base).resolve() if custom_base else SETTINGS_DIR.resolve()
+        if _Validators._is_safe_path(str(raw_base)) and not _Validators._is_reparse_point(raw_base):
+            if not raw_base.exists():
+                raw_base.mkdir(parents=True, exist_ok=True)
+            if raw_base.is_dir() and os.access(raw_base, os.R_OK | os.W_OK):
+                full_path = raw_base / SETTINGS_FILE
                 _MANAGER.path_cache[cache_key] = full_path
                 return full_path
-    except (OSError, RuntimeError, PermissionError):
+    except (OSError, RuntimeError, PermissionError, ValueError):
         pass
     return SETTINGS_DIR / SETTINGS_FILE
 

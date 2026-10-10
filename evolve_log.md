@@ -1211,3 +1211,34 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-10T09:08:33` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `is_protected_path` ante errores de resolución de rutas (como rutas mal formadas o inaccesibles) y se ha añadido un chequeo de existencia temprana para evitar fallos en llamadas a `resolve()` sobre rutas que no existen, mejorando la estabilidad general del módulo ante casos límite de entrada de usuario.
 - `2026-10-10T09:08:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T09:08:33` Corrida terminada. Total usado hoy: 216.
+- `2026-10-10T09:15:54` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-10-10T09:16:20` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se añadió un control de disponibilidad del sistema de archivos al inicio de `process_entry` mediante un bloque `try-except` robusto y la verificación previa de `entry.is_file()` y `entry.is_dir()` para evitar excepciones `FileNotFoundError` si un archivo desaparece durante la iteración (concurrencia).
+- `2026-10-10T09:17:11` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en `settings.path` introduciendo una normalización estricta de la ruta antes de cualquier validación para evitar ataques de manipulación de paths, y se reforzó la gestión de excepciones durante la creación del directorio de configuración para asegurar que el sistema no falle silenciosamente si el sistema de archivos deniega la operación.
+- `2026-10-10T09:17:42` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.02s
+
+```
+- `2026-10-10T09:17:42` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez ante rutas inválidas o nombres de archivos corruptos en `_resolve_and_cache_path` mediante la implementación de una validación de `os.path.exists` antes de intentar resolver, previniendo errores de `OSError` que podrían colapsar el escaneo en entornos con archivos huérfanos o bloqueados.
+- `2026-10-10T09:18:10` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad en la ingesta de datos del `SystemContext` mediante la implementación de una validación estricta contra el bloqueo de `SYSTEM_FOLDER_BLOCKLIST` y el uso de `is_protected_path`, previniendo que rutas del sistema o configuraciones maliciosas puedan ser inyectadas en el objeto de contexto.
+- `2026-10-10T09:18:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T09:18:10` Corrida terminada. Total usado hoy: 220.

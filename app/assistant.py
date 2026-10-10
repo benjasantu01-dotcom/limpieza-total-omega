@@ -417,7 +417,9 @@ class SystemContext:
         """Limpia el string de calificación eliminando caracteres de control no seguros."""
         if not isinstance(val, str): return ""
         clean = _REGEX_CONTROL_CHARS.sub(" ", val)[:10].strip()
-        return clean if _ensure_safe_text(clean) and not is_protected_path(clean) else ""
+        # Impedir rutas o nombres protegidos en strings de grado
+        if not clean or is_protected_path(clean): return ""
+        return clean if _ensure_safe_text(clean) else ""
 
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad sobre el objeto fuente."""

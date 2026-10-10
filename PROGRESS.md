@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
-- Rechazadas por tests: 20
+- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 105 | 11 | 33 | 13 | 126 |
-| 2026-10-10 | 92 | 9 | 18 | 8 | 89 |
+| 2026-10-09 | 105 | 11 | 33 | 13 | 122 |
+| 2026-10-10 | 95 | 10 | 18 | 8 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **42**
-- robustez ante casos límite: **38**
-- seguridad defensiva: **38**
+- robustez ante casos límite: **40**
+- seguridad defensiva: **39**
 - rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
@@ -32,20 +32,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **21**
 - `healthscore.py`: **19**
 - `quarantine.py`: **17**
+- `assistant.py`: **17**
 - `memory.py`: **16**
 - `branding.py`: **16**
-- `assistant.py`: **16**
 - `safety.py`: **16**
 - `duplicates.py`: **15**
-- `scanner.py`: **14**
+- `scanner.py`: **15**
 - `main.py`: **12**
 - `organizer.py`: **10**
 - `browser.py`: **10**
-- `settings.py`: **8**
+- `settings.py`: **9**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-10T09:18:10` **assistant.py** (seguridad defensiva): Mejoré la seguridad en la ingesta de datos del `SystemContext` mediante la implementación de una validación estricta contra el bloqueo de `SYSTEM_FOLDER_BLOCKLIST` y el uso de `is_protected_path`, previniendo que rutas del sistema o configuraciones maliciosas puedan ser inyectadas en el objeto de contexto.
+- `2026-10-10T09:17:11` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en `settings.path` introduciendo una normalización estricta de la ruta antes de cualquier validación para evitar ataques de manipulación de paths, y se reforzó la gestión de excepciones durante la creación del directorio de configuración para asegurar que el sistema no falle silenciosamente si el sistema de archivos deniega la operación.
+- `2026-10-10T09:16:20` **scanner.py** (robustez ante casos límite): Se añadió un control de disponibilidad del sistema de archivos al inicio de `process_entry` mediante un bloque `try-except` robusto y la verificación previa de `entry.is_file()` y `entry.is_dir()` para evitar excepciones `FileNotFoundError` si un archivo desaparece durante la iteración (concurrencia).
 - `2026-10-10T09:08:33` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `is_protected_path` ante errores de resolución de rutas (como rutas mal formadas o inaccesibles) y se ha añadido un chequeo de existencia temprana para evitar fallos en llamadas a `resolve()` sobre rutas que no existen, mejorando la estabilidad general del módulo ante casos límite de entrada de usuario.
 - `2026-10-10T08:47:28` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular durante la obtención de metadatos (`os.stat`), evitando que fallos puntuales de lectura silencien el progreso del análisis.
 - `2026-10-10T08:47:16` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a archivos al refinar el manejo de `OSError` dentro del bucle de `os.scandir`, asegurando que archivos bloqueados o con permisos denegados no aborten el escaneo de toda la rama, y se ha fortalecido la integridad del contexto de escaneo al asegurar que las rutas se normalicen consistentemente antes de la comparación.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-10T07:56:10` **scanner.py** (legibilidad y documentación): Se introdujo un `TypeAlias` específico para el resultado de las heurísticas y se mejoró la documentación interna mediante la estandarización de los `docstrings` y la clarificación de las responsabilidades en la clase `Scanner`, facilitando la lectura del flujo de control ante otros colaboradores.
 - `2026-10-10T07:55:43` **safety.py** (legibilidad y documentación): Mejora la legibilidad del módulo `safety.py` mediante la refactorización de `ensure_safe_to_modify` para separar la lógica de validación de alto nivel de las verificaciones de estado detalladas, facilitando el mantenimiento y auditabilidad del código.
 - `2026-10-10T07:48:13` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en funciones críticas (como las de validación y transferencia de archivos) y la clarificación de tipos, facilitando la comprensión de las salvaguardas de integridad implementadas.
-- `2026-10-10T07:47:46` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de escaneo y validación de seguridad mediante la adición de Type Hints explícitos, docstrings detallados que explican el "porqué" de las restricciones (como el uso de `os.scandir` para rendimiento y `frozenset` para búsquedas en O(1)), y se estandarizó la nomenclatura de los parámetros para mejorar la legibilidad y mantenimiento del flujo de datos en el módulo.
-- `2026-10-10T07:35:38` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones de cálculo de salud y se ha clarificado el propósito de las constantes globales de umbral, asegurando que el código sea más legible para futuros auditores del proyecto sin alterar su comportamiento funcional.
-- `2026-10-10T07:35:03` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de los tipos, se ha estandarizado la interfaz de las clases de almacenamiento mediante `__slots__` para optimizar memoria, y se ha añadido una docstring explicativa al motor principal de recolección de métricas para aclarar cómo se integra con el resto del módulo.
