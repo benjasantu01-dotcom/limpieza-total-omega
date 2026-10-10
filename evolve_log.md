@@ -436,3 +436,10 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-10-10T12:31:44` ➖ Sin cambios en branding.py (enfoque: rendimiento). Motivo: Se introdujo una cache Lru dedicada para la conversión de coordenadas del polígono del escudo (`_get_scaled_poly`), evitando el recálculo aritmético de 16 vértices en cada frame de renderizado y reduciendo la presión sobre el recolector de basura al reutilizar tuplas de coordenadas precalculadas según el factor de escala.
 - `2026-10-10T12:31:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T12:31:44` Corrida terminada. Total usado hoy: 296.
+- `2026-10-10T12:39:31` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-10-10T12:40:27` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé el rendimiento de `detect_profiles` reutilizando el `ScanContext` y la memoria de `visited_dirs` para evitar re-escaneos redundantes cuando múltiples navegadores comparten jerarquías de subcarpetas en `AppData`.
+- `2026-10-10T12:40:55` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé `walk_files` y `_collect_summary_data` eliminando la recreación innecesaria de objetos `Path` y reduciendo el uso de `str()` dentro del loop principal, lo que mejora significativamente el rendimiento en escaneos profundos de disco.
+- `2026-10-10T12:41:23` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-10T12:41:38` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje convirtiendo `_PIPELINE` de una tupla a una estructura de acceso directo y almacenando los pesos en un `dict` local dentro de `compute_score`, eliminando búsquedas innecesarias y conversiones de tipo redundantes en cada iteración del bucle.
+- `2026-10-10T12:41:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T12:41:38` Corrida terminada. Total usado hoy: 300.

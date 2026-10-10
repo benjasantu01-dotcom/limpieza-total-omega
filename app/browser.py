@@ -331,6 +331,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             real_base: Path = base.resolve(strict=True)
             real_base_str: str = str(real_base)
             
+            # Reutilizamos ScanContext para todo el árbol de AppData de este base_path
             ctx = ScanContext(os.path.normcase(real_base_str), _get_kernel32(), _IS_JUNCTION_FN, set(), {})
             
             for browser_name, rel_str in browser_map.items():

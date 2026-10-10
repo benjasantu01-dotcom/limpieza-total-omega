@@ -133,8 +133,6 @@ WEIGHTS: Final[Dict[MetricKey, int]] = {
     "arranque": 8,
 }
 
-_WEIGHTS_LIST: Final[Tuple[Tuple[MetricKey, int], ...]] = tuple(WEIGHTS.items())
-
 def _verify_weights(weights: Dict[str, int]) -> None:
     """Valida que la suma de pesos configurados sea exactamente 100."""
     if sum(weights.values()) != 100:
@@ -358,7 +356,7 @@ def summarize(result: HealthResult | None) -> List[str]:
         
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
-    for area, maximo in _WEIGHTS_LIST:
+    for area, maximo in WEIGHTS.items():
         p = result.breakdown.get(area, 0)
         lines.append(f"  {area.capitalize():<12} {p:>2}/{maximo:<2} [{_render_bar(p, maximo)}]")
     
