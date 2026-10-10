@@ -88,9 +88,11 @@ def _is_file_in_use(path: Path) -> bool:
 def _is_readable(path: Path) -> bool:
     """Valida si el archivo es un archivo regular, legible y no bloqueado."""
     try:
-        # Usar lstat para evitar seguir enlaces y verificar existencia antes de abrir
+        # lstat verifica que el archivo exista sin resolver enlaces y ser manipulado
         st = path.lstat()
-        return st.st_size >= 0 and os.access(path, os.R_OK) and not _is_file_in_use(path)
+        if not st.st_mode or not (st.st_mode & 0o100000): # S_IFREG check
+            return False
+        return os.access(path, os.R_OK) and not _is_file_in_use(path)
     except (OSError, PermissionError, ValueError, AttributeError):
         return False
 
@@ -110,12 +112,14 @@ def _get_file_size(path: Path) -> int:
         return -1
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
-    """Retorna metadatos solo si la entrada es un archivo estándar y seguro."""
+    """Retorna metadatos solo si la entrada es un archivo estándar, no es symlink y no es punto de reanálisis."""
     try:
-        if not entry.is_file(follow_symlinks=False) or entry.is_symlink() or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask):
+        if not entry.is_file(follow_symlinks=False) or entry.is_symlink():
+            return None
+        if _get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask:
             return None
         stats = entry.stat(follow_symlinks=False)
-        return stats if getattr(stats, "st_nlink", 1) <= 1 else None
+        return stats
     except (OSError, PermissionError, AttributeError):
         return None
 

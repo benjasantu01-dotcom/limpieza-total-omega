@@ -322,8 +322,7 @@ def validate(raw_values: Any) -> AppSettings:
 def _is_file_secure_to_read(file_obj: Any) -> bool:
     """
     Verifica mediante fstat que el archivo de configuración sea un archivo regular
-    propiedad del usuario, sin permisos de ejecución, y no un enlace, previniendo
-    ataques de TOCTOU al validar el estado tras la apertura.
+    propiedad del usuario, sin permisos de ejecución, y no un enlace.
     """
     try:
         if file_obj.closed: return False
@@ -342,21 +341,18 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     """Helper que encapsula la apertura, lock y lectura segura del archivo."""
     try:
         ensure_safe_to_modify(str(file_path.resolve()))
-        # Apertura en modo lectura compartida inicial
+        # Verificación de permisos antes de abrir
+        if not _is_dir_safe(file_path.parent): return None
+        
         with open(file_path, "r", encoding="utf-8") as f:
-            # Validación inicial post-apertura
             if not _is_file_secure_to_read(f): return None
             
-            # Bloqueo compartido no bloqueante
             try:
                 fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
-                
-                # Segunda validación post-lock para mitigar TOCTOU
                 if not _is_file_secure_to_read(f): return None
                 
                 content = f.read(MAX_SETTINGS_SIZE + 1)
                 
-                # Verificación final de consistencia
                 if not content or len(content) > MAX_SETTINGS_SIZE: return None
                 if not _is_file_secure_to_read(f): return None
                 
@@ -376,6 +372,7 @@ def _is_dir_safe(path: Path) -> bool:
         st = path.stat()
         if not stat.S_ISDIR(st.st_mode): return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
+        if st.st_mode & (stat.S_IWGRP | stat.S_IWOTH): return False
         return True
     except OSError: return False
 

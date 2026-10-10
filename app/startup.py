@@ -331,6 +331,9 @@ def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
         clean_path = cmd.strip('"')
         if not clean_path:
             return False
+        # Bloquea rutas relativas peligrosas que no contienen información de directorio (ej. "a.exe")
+        if "\\" not in clean_path and "/" not in clean_path:
+            return False
         if any(c in clean_path for c in SUSPICIOUS_CHARS):
             return False
         target_path = Path(clean_path)
