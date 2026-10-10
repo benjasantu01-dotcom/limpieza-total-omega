@@ -1592,7 +1592,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         
         clean_id = "".join(c for c in raw_id if c.isalnum() or c == "-")
         if not quarantine.item_exists(clean_id):
-            self.log(f"Error: El ID '{clean_id}' no existe o es inválido.", "Cuarentena")
+            self.log(f"Error: El ID '{clean_id}' no existe.", "Cuarentena")
             return
 
         def task() -> None:
@@ -1688,15 +1688,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Callback: Intenta liberar memoria working set de un proceso específico."""
         pid_val = self._safe_get_entry_value(getattr(self, 'pid_entry', None), None, numeric=True)
         
-        if pid_val is None or int(pid_val) < 0:
-            self.log("Error: PID inválido.", "Memoria")
+        if pid_val is None or int(pid_val) < 100:
+            self.log("Error: PID inválido o crítico del sistema.", "Memoria")
             return
         
         pid = int(pid_val)
-        if pid < 100:
-            self.log(f"Error: El proceso {pid} es crítico del sistema.", "Memoria")
-            return
-        
         if not memory_mod.process_exists(pid):
             self.log(f"Error: El proceso {pid} no está activo.", "Memoria")
             return

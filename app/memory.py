@@ -348,7 +348,7 @@ def _is_process_executable_safe(pid: int) -> bool:
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
             # Reutiliza el filtro de seguridad centralizado.
             return not is_protected_path(buf.value)
-    except (ctypes.ArgumentError, OSError):
+    except (ctypes.ArgumentError, OSError, Exception):
         return False
     finally:
         kernel32.CloseHandle(handle)

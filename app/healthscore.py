@@ -207,7 +207,7 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
 def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) -> float:
     """Helper para sanitizar métricas numéricas entrantes y evitar valores fuera de rango."""
     try:
-        if not isinstance(value, (int, float)):
+        if value is None or not isinstance(value, (int, float)):
             return default
         val = float(value)
         if not math.isfinite(val) or val < min_v or val > max_v:
@@ -239,7 +239,9 @@ class SystemMetrics:
             self.validate()
         except Exception as e:
             logging.error(f"Error crítico en validación de métricas: {e}")
-            self.__init__()
+            # Reset a valores seguros iniciales
+            for field_name in self._FIELDS_TO_VALIDATE:
+                setattr(self, field_name, 0.0)
 
     def safe_get(self, field_name: str, default: Any = 0) -> Any:
         """Acceso defensivo a los campos del contenedor."""
@@ -296,37 +298,41 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
     Calcula el puntaje global mediante la ejecución del pipeline con manejo estricto de errores.
     """
-    m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
-    if not m.is_finite:
-        m.validate()
+    try:
+        m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
+        if not m.is_finite:
+            m.validate()
+            
+        m_cache = {f: getattr(m, f) for f in m._FIELDS_TO_VALIDATE}
+        recommendations: List[str] = []
+        metric_breakdown: Dict[MetricKey, int] = {}
+        accumulated_score: float = 0.0
         
-    m_cache = {f: getattr(m, f) for f in m._FIELDS_TO_VALIDATE}
-    recommendations: List[str] = []
-    metric_breakdown: Dict[MetricKey, int] = {}
-    accumulated_score: float = 0.0
-    
-    for entry in _PIPELINE:
-        try:
-            area_ratio = _clamp(float(entry.scorer(m)))
-            _evaluate_rules(m, m_cache, entry.rules, area_ratio, recommendations)
-            points = area_ratio * entry.weight
-            val = int(round(_clamp(points, 0.0, float(entry.weight))))
-            metric_breakdown[entry.area] = val
-            accumulated_score += float(val)
-        except Exception as e:
-            logging.error(f"Falla crítica en pipeline {entry.area}: {e}")
-            metric_breakdown[entry.area] = 0
-                
-    if m_cache.get("quarantined_count", 0) > 0:
-        recommendations.append(f"Tenés {m_cache['quarantined_count']} archivo(s) en cuarentena.")
-        
-    final_score = int(round(_clamp(accumulated_score, 0.0, 100.0)))
-    return HealthResult(
-        score=final_score,
-        grade=grade_for_score(final_score),
-        breakdown=metric_breakdown,
-        recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
-    )
+        for entry in _PIPELINE:
+            try:
+                area_ratio = _clamp(float(entry.scorer(m)))
+                _evaluate_rules(m, m_cache, entry.rules, area_ratio, recommendations)
+                points = area_ratio * entry.weight
+                val = int(round(_clamp(points, 0.0, float(entry.weight))))
+                metric_breakdown[entry.area] = val
+                accumulated_score += float(val)
+            except Exception as e:
+                logging.error(f"Falla crítica en pipeline {entry.area}: {e}")
+                metric_breakdown[entry.area] = 0
+                    
+        if m_cache.get("quarantined_count", 0) > 0:
+            recommendations.append(f"Tenés {m_cache['quarantined_count']} archivo(s) en cuarentena.")
+            
+        final_score = int(round(_clamp(accumulated_score, 0.0, 100.0)))
+        return HealthResult(
+            score=final_score,
+            grade=grade_for_score(final_score),
+            breakdown=metric_breakdown,
+            recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
+        )
+    except Exception as e:
+        logging.critical(f"Error fatal al calcular puntaje: {e}")
+        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error interno al calcular salud del sistema."])
 
 def _render_bar(points: int, max_val: int) -> str:
     """Representación visual: barra de caracteres ASCII para la interfaz con manejo de errores."""

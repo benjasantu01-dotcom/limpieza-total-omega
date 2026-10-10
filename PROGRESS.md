@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
-- Rechazadas por tests: 19
+- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 51
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 210
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 134 | 13 | 40 | 17 | 136 |
-| 2026-10-10 | 69 | 6 | 11 | 4 | 74 |
+| 2026-10-09 | 132 | 12 | 40 | 16 | 136 |
+| 2026-10-10 | 72 | 6 | 11 | 4 | 75 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **46**
 - robustez ante casos límite: **44**
 - rendimiento: **41**
-- legibilidad y documentación: **36**
-- manejo de errores y validación de entradas: **36**
+- manejo de errores y validación de entradas: **39**
+- legibilidad y documentación: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `branding.py`: **19**
-- `memory.py`: **18**
+- `memory.py`: **19**
+- `healthscore.py`: **18**
 - `quarantine.py`: **18**
-- `healthscore.py`: **17**
 - `duplicates.py`: **16**
 - `assistant.py`: **16**
 - `safety.py`: **15**
-- `scanner.py`: **14**
-- `main.py`: **12**
+- `main.py`: **13**
+- `scanner.py`: **13**
 - `organizer.py`: **11**
 - `browser.py`: **9**
 - `settings.py`: **9**
-- `startup.py`: **7**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-10T07:06:57` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_process_executable_safe` y `trim_working_set` capturando errores de `ctypes` y validando estrictamente los manejadores de procesos para evitar fugas de recursos o excepciones no controladas durante la interacción con la API de Windows.
+- `2026-10-10T07:06:29` **main.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `on_trim_process` y `on_restore_quarantine` mediante la validación proactiva de sus entradas (`pid` y `id`), evitando llamadas innecesarias al worker o registros de error en el log que podrían confundir al usuario, alineándose con el enfoque de validación de parámetros antes de operar.
+- `2026-10-10T07:04:10` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.validate` y `compute_score` asegurando que las métricas no sean `None` y capturando errores inesperados durante la inicialización, evitando que un objeto mal formado bloquee la generación del informe.
 - `2026-10-10T06:58:16` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez del módulo agregando validación de tipos y manejo de errores defensivo en las funciones `_calculate_keeper_heuristic` y `format_group`, asegurando que la app no colapse ante rutas malformadas o estados de archivo inesperados durante la generación de reportes.
 - `2026-10-10T06:58:07` **diskreport.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `summarize` y `walk_files`, asegurando que el estado del sistema no se vea afectado por excepciones inesperadas durante el acceso al disco y proporcionando mensajes de error más informativos.
 - `2026-10-10T06:47:20` **assistant.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de errores en `_call_gemini` y `_extract_text_from_gemini_json` mediante una validación más estricta de las respuestas HTTP y el parseo de JSON, asegurando que cualquier fallo parcial resulte en un retorno seguro (`None`) en lugar de propagar excepciones hacia la interfaz.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-10T05:03:19` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` para asegurar que el recorrido del sistema de archivos no solo valide la ruta actual, sino que verifique explícitamente que cada sub-ruta analizada sea segura antes de intentar entrar en ella, evitando seguir enlaces a directorios (junctions/symlinks) durante el escaneo recursivo.
 - `2026-10-10T05:02:53` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` para prevenir ataques de path traversal mediante el uso de `Path.resolve().parts` y la comparación estricta de subconjuntos, garantizando que una ruta proporcionada por el usuario no pueda escapar de su directorio base incluso si contiene manipulaciones como `..` o enlaces simbólicos maliciosos.
 - `2026-10-10T04:53:29` **branding.py** (seguridad defensiva): Se ha introducido `is_protected_path` en `save_logo_svg` para reforzar la seguridad defensiva, garantizando que incluso rutas sintácticamente válidas no apunten a ubicaciones restringidas por el sistema antes de iniciar cualquier operación de escritura.
-- `2026-10-10T04:53:08` **assistant.py** (seguridad defensiva): Mejoré la seguridad de la ingestión de datos en `SystemContext` aplicando una validación más estricta sobre el contenido de `source`, asegurando que `_get_source_value` no pueda acceder a atributos privados o métodos protegidos de objetos arbitrarios, bloqueando cualquier intento de manipulación estructural antes de que los datos toquen el estado del asistente.
-- `2026-10-10T04:52:29` **startup.py** (robustez ante casos límite): Se reforzó la robustez de `StartupEntry._resolve_and_cache_path` añadiendo un manejo explícito para rutas de red UNC y casos de desbordamiento de `MAX_PATH` antes de interactuar con el sistema de archivos, previniendo excepciones innecesarias en entornos de red corporativos o con estructuras de directorios profundas.
-- `2026-10-10T04:43:08` **scanner.py** (robustez ante casos límite): Mejoré la robustez ante archivos inexistentes o con permisos denegados en `_run_file_heuristics` y `scan_file`, envolviendo el chequeo de lectura y las heurísticas en un manejo de excepciones más granular para evitar interrupciones en el escaneo cuando un archivo se vuelve inaccesible tras ser detectado por `os.scandir`.

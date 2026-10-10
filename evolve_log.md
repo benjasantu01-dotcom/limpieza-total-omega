@@ -1056,3 +1056,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-10T06:58:16` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del módulo agregando validación de tipos y manejo de errores defensivo en las funciones `_calculate_keeper_heuristic` y `format_group`, asegurando que la app no colapse ante rutas malformadas o estados de archivo inesperados durante la generación de reportes.
 - `2026-10-10T06:58:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T06:58:16` Corrida terminada. Total usado hoy: 164.
+- `2026-10-10T07:03:37` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-10-10T07:04:10` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `SystemMetrics.validate` y `compute_score` asegurando que las métricas no sean `None` y capturando errores inesperados durante la inicialización, evitando que un objeto mal formado bloquee la generación del informe.
+- `2026-10-10T07:05:10` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-10T07:06:29` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se mejora el manejo de errores en `on_trim_process` y `on_restore_quarantine` mediante la validación proactiva de sus entradas (`pid` y `id`), evitando llamadas innecesarias al worker o registros de error en el log que podrían confundir al usuario, alineándose con el enfoque de validación de parámetros antes de operar.
+- `2026-10-10T07:06:57` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_process_executable_safe` y `trim_working_set` capturando errores de `ctypes` y validando estrictamente los manejadores de procesos para evitar fugas de recursos o excepciones no controladas durante la interacción con la API de Windows.
+- `2026-10-10T07:07:21` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-10T07:07:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T07:07:21` Corrida terminada. Total usado hoy: 168.
