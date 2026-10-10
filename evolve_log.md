@@ -770,3 +770,10 @@ FAILED evolve/tests/test_modules.py::test_never_scans_system_folders - Attribute
 - `2026-10-10T04:35:22` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-10-10T04:35:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T04:35:22` Corrida terminada. Total usado hoy: 108.
+- `2026-10-10T04:41:05` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-10-10T04:41:47` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `purge_all` ante archivos inesperados en la carpeta de cuarentena y posibles inconsistencias entre el sistema de archivos y el manifiesto, utilizando `item_map` y validaciones estrictas de existencia.
+- `2026-10-10T04:42:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-10T04:42:54` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se implementó un chequeo preventivo de concurrencia al inicio de `ensure_safe_to_modify` para detectar si el sistema operativo tiene el archivo bloqueado por acceso exclusivo antes de intentar cualquier otra operación de I/O, evitando excepciones de `Win32` no capturadas durante la fase de normalización o estadística.
+- `2026-10-10T04:43:08` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Mejoré la robustez ante archivos inexistentes o con permisos denegados en `_run_file_heuristics` y `scan_file`, envolviendo el chequeo de lectura y las heurísticas en un manejo de excepciones más granular para evitar interrupciones en el escaneo cuando un archivo se vuelve inaccesible tras ser detectado por `os.scandir`.
+- `2026-10-10T04:43:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T04:43:08` Corrida terminada. Total usado hoy: 112.

@@ -270,22 +270,25 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Aplica todas las heurísticas registradas a un archivo validado."""
-        if not _is_readable(path) or is_protected_path(path):
+        try:
+            if not path.exists() or not _is_readable(path) or is_protected_path(path):
+                return
+            for check_fn in ALL_CHECKS:
+                try:
+                    finding = check_fn(path, entry, self.now_ts)
+                    if finding is not None:
+                        self.results.append(finding)
+                except (OSError, PermissionError, AttributeError, ValueError) as e:
+                    logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
+        except (OSError, PermissionError):
             return
-        for check_fn in ALL_CHECKS:
-            try:
-                finding = check_fn(path, entry, self.now_ts)
-                if finding is not None:
-                    self.results.append(finding)
-            except (OSError, PermissionError, AttributeError, ValueError) as e:
-                logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> List[Suspicion]:
     """Ejecuta un escaneo heurístico individual sobre un archivo específico."""
     if not isinstance(path, Path): return []
     try:
         resolved = path.resolve(strict=True)
-        if not _is_readable(resolved) or is_protected_path(resolved) or resolved.is_symlink(): 
+        if not resolved.exists() or not _is_readable(resolved) or is_protected_path(resolved) or resolved.is_symlink(): 
             return []
     except (OSError, RuntimeError):
         return []

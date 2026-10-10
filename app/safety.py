@@ -807,7 +807,13 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             raise UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC)
         if not isinstance(path, (str, Path, os.PathLike)):
             raise UnsafePathError(f"Tipo de ruta no soportado: {type(path).__name__}", SafetyValidationErrorCode.GENERIC)
-        if _has_invalid_chars(str(path)):
+        
+        # Pre-chequeo temprano de concurrencia para evitar bloqueos del SO
+        path_str = str(path)
+        if os.name == 'nt' and os.path.exists(path_str) and _is_file_locked_by_other_process(path_str):
+             raise UnsafePathError(f"Archivo bloqueado por el sistema: {path_str}", SafetyValidationErrorCode.FILE_IN_USE)
+
+        if _has_invalid_chars(path_str):
             raise UnsafePathError("Caracteres inválidos detectados.", SafetyValidationErrorCode.INVALID_CHARS)
         
         p = normalize(path)
