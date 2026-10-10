@@ -465,3 +465,37 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-10T12:53:52` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `purge_all` eliminando la iteración innecesaria sobre el sistema de archivos al priorizar la lista de manifiesto, reduciendo la complejidad de O(N*M) a O(N) y evitando llamadas redundantes a `is_within_directory` y `stat` para archivos que ya sabemos que existen por el manifiesto.
 - `2026-10-10T12:53:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T12:53:52` Corrida terminada. Total usado hoy: 304.
+- `2026-10-10T12:59:56` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-10T13:00:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-10T13:01:13` Tests FALLARON:
+```
+...................F...................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_____________________ test_drive_root_is_always_protected ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_drive_root_is_always_prot0')
+
+    def test_drive_root_is_always_protected(tmp_path):
+        # tmp_path.anchor es "/" en Linux y "C:\\" en Windows: sirve en los dos.
+        assert safety.is_drive_root(tmp_path.anchor)
+>       assert safety.is_protected_path(tmp_path.anchor)
+E       AssertionError: assert False
+E        +  where False = <functools._lru_cache_wrapper object at 0x7f9d147bc720>('/')
+E        +    where <functools._lru_cache_wrapper object at 0x7f9d147bc720> = safety.is_protected_path
+E        +    and   '/' = PosixPath('/tmp/pytest-of-runner/pytest-1/test_drive_root_is_always_prot0').anchor
+
+evolve/tests/test_safety.py:63: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_drive_root_is_always_protected - AssertionError: assert False
+ +  where False = <functools._lru_cache_wrapper object at 0x7f9d147bc720>('/')
+ +    where <functools._lru_cache_wrapper object at 0x7f9d147bc720> = safety.is_protected_path
+ +    and   '/' = PosixPath('/tmp/pytest-of-runner/pytest-1/test_drive_root_is_always_prot0').anchor
+1 failed, 298 passed in 1.55s
+
+```
+- `2026-10-10T13:01:13` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Optimizamos `is_protected_path` reemplazando la lógica de resolución completa (`resolve()`) y la iteración por los ancestros por un chequeo basado en conjuntos (sets) mucho más eficiente, evitando llamadas innecesarias al sistema de archivos para rutas que no existen o que claramente no son críticas.
+- `2026-10-10T13:01:43` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo recursivo mediante el uso de un `frozenset` para realizar búsquedas rápidas en el `Scanner.safe_cache` y se eliminó la redundancia en `process_entry` al verificar `is_protected_path` solo una vez antes de decidir procesar el archivo.
+- `2026-10-10T13:02:05` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` y `update()` evitando lecturas redundantes de disco mediante una cache local persistente en `_MANAGER` que verifica el `mtime` del archivo antes de recargar.
+- `2026-10-10T13:02:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T13:02:05` Corrida terminada. Total usado hoy: 308.

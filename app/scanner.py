@@ -270,8 +270,8 @@ class Scanner:
                 if self._is_safe_entry(entry):
                     self._handle_directory(entry, directory_stack, current_depth)
             elif entry.is_file(follow_symlinks=False) and self._is_relevant_extension(entry.name):
-                # Validamos seguridad básica antes de invocar heurísticas pesadas
-                if not is_protected_path(Path(entry.path)) and self._is_safe_entry(entry):
+                # Validamos seguridad una única vez a través del caché
+                if self._is_safe_entry(entry):
                     self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError):
             pass

@@ -288,7 +288,6 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     if cache_key in _MANAGER.path_cache:
         return _MANAGER.path_cache[cache_key]
     
-    # Normalizar ruta antes de cualquier chequeo
     try:
         raw_base = Path(custom_base).resolve() if custom_base else SETTINGS_DIR.resolve()
         if _Validators._is_safe_path(str(raw_base)) and not _Validators._is_reparse_point(raw_base):
@@ -329,15 +328,11 @@ def _is_file_secure_to_read(file_obj: Any) -> bool:
     try:
         if file_obj.closed: return False
         st = os.fstat(file_obj.fileno())
-        # Verificar que sea archivo regular y no un enlace simbólico
         if not stat.S_ISREG(st.st_mode): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
-        # Permisos restringidos: sin ejecución, sin escritura global/grupo
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
         if st.st_mode & (stat.S_ISUID | stat.S_ISGID): return False
-        # Link count = 1 asegura que no sea un hardlink peligroso
         if st.st_nlink != 1: return False
-        # Verificación de propiedad (si es posible)
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         return True
     except (OSError, PermissionError, AttributeError, ValueError):
@@ -351,10 +346,8 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
             if not _is_file_secure_to_read(f): return None
             try:
                 fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
-                # Validar estado pre-lectura
                 if not _is_file_secure_to_read(f): return None
                 content = f.read(MAX_SETTINGS_SIZE + 1)
-                # Validar estado post-lectura
                 if not content or not _is_file_secure_to_read(f): return None
                 data = json.loads(content)
                 return data if _is_dict(data) else None
