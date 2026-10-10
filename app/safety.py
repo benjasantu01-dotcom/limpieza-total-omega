@@ -657,9 +657,9 @@ def is_protected_path(path: PathLike) -> bool:
     if not isinstance(path, (str, Path)) or not path: return True
     try:
         p = Path(path)
+        p_str = str(p).lower()
         if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts): return True
-        p_abs = p.absolute()
-        if any(str(p_abs).lower().startswith(r) for r in _SYSTEM_ROOT_STRS): return True
+        if any(p_str.startswith(r) for r in _SYSTEM_ROOT_STRS): return True
         p_res = p.resolve()
         if p_res == Path(p_res.anchor): return True
         if _is_system_directory_junction(str(p_res)): return True

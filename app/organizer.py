@@ -238,6 +238,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
     """
     if depth > 50: return
     try:
+        # Usamos el path resuelto una sola vez al entrar
         resolved_dir = current_dir.resolve(strict=False)
         if resolved_dir in visited: return
         visited.add(resolved_dir)
