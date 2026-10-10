@@ -97,7 +97,10 @@ class GlobalStats:
 
 
 class FolderMetrics:
-    """Acumulador temporal de peso para el cálculo de `largest_folders`."""
+    """
+    Acumulador temporal utilizado para calcular la jerarquía de directorios.
+    Se utiliza en `largest_folders` para agrupar el peso por subcarpeta de primer nivel.
+    """
     __slots__ = ('size', 'file_count')
     def __init__(self) -> None:
         self.size: int = 0

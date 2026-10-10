@@ -228,7 +228,15 @@ def _resolve_and_verify_root(directory_path: PathLike) -> Optional[Path]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Recorre rutas usando BFS evitando ciclos y redundancias de inodos."""
+    """
+    Recorre rutas de forma iterativa (BFS) para identificar archivos candidatos.
+    
+    Implementa:
+    - Control de profundidad (MAX_RECURSION_DEPTH) para evitar recursión infinita.
+    - Registro de inodos (dev, ino) para evitar procesar el mismo archivo físico
+      varias veces si existen enlaces duros o puntos de montaje redundantes.
+    - Filtrado de seguridad en tiempo de escaneo para descartar zonas protegidas.
+    """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     queue: deque[Tuple[Path, int]] = deque()
     visited_dirs: set[Path] = set()

@@ -197,18 +197,22 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
         return True
     
     path_str = entry.path
+    # Validación básica de longitud y formato
     if _is_unc_path(path_str) or len(path_str) >= MAX_PATH_LEN:
         return True
     
-    norm_path = os.path.normcase(path_str)
-    if not _ensure_within_base(norm_path, ctx.base_norm):
+    # Validación de límites de alcance
+    if not _ensure_within_base(os.path.normcase(path_str), ctx.base_norm):
         return True
     
+    # Validación de seguridad global
     if is_protected_path(Path(path_str)):
         return True
 
+    # Validación de atributos de FS
     if entry.is_symlink() or ctx.is_junction(path_str) or _is_system_hidden(path_str, ctx.kernel32):
         return True
+        
     return False
 
 def _process_file_node(entry: os.DirEntry, visited_files: Set[tuple[int, int]]) -> int:
@@ -242,19 +246,16 @@ def _sum_directory_recursive(
     total_bytes: int = 0
     try:
         with os.scandir(root_path) as it:
-            while True:
-                try:
-                    entry = next(it, None)
-                    if entry is None: break
-                    if _should_skip_entry(entry, ctx): continue
-                    
-                    if entry.is_dir(follow_symlinks=False):
-                        res = _sum_directory_recursive(entry.path, ctx, depth + 1)
-                        total_bytes += res.bytes_found
-                    else:
-                        total_bytes += _process_file_node(entry, ctx.visited_files)
-                except (OSError, PermissionError):
+            for entry in it:
+                if _should_skip_entry(entry, ctx):
                     continue
+                    
+                if entry.is_dir(follow_symlinks=False):
+                    res = _sum_directory_recursive(entry.path, ctx, depth + 1)
+                    total_bytes += res.bytes_found
+                else:
+                    total_bytes += _process_file_node(entry, ctx.visited_files)
+        
         ctx.visited_dirs[path_norm] = total_bytes
         return ScanResult(total_bytes, True)
     except (OSError, PermissionError, ValueError):
