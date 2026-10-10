@@ -103,7 +103,7 @@ class StartupEntry:
         return True
 
     def _is_reserved_device_name(self, path_str: str) -> bool:
-        """Comprueba si la ruta hace referencia a un dispositivo lógico de Windows."""
+        """Determina si la ruta apunta a un dispositivo lógico de sistema (ej. NUL)."""
         try:
             if "\0" in path_str:
                 return True
@@ -114,7 +114,7 @@ class StartupEntry:
             return True
 
     def _is_path_suspicious(self, path_string: str) -> bool:
-        """Bloquea rutas con metacaracteres o rutas UNC (riesgo de inyección/red)."""
+        """Bloquea rutas que contengan caracteres potencialmente peligrosos o rutas de red (UNC)."""
         return any(c in path_string for c in SUSPICIOUS_CHARS) or path_string.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
@@ -131,7 +131,7 @@ class StartupEntry:
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
-        """Extrae rutas encerradas en comillas para manejar espacios en nombres de archivos."""
+        """Extrae la ruta de un ejecutable encerrado entre comillas (formato común en registros)."""
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
         
@@ -203,7 +203,7 @@ class StartupEntry:
             return ""
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Lógica de particionado de línea de comandos para aislar el ejecutable."""
+        """Extrae y normaliza el ejecutable de una línea de comandos completa."""
         if not command_line or not isinstance(command_line, str):
             return ""
         
@@ -271,7 +271,7 @@ def startup_folders() -> List[Path]:
 
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
     """
-    Valida un archivo en disco contra extensiones permitidas y seguridad.
+    Valida si un archivo en una carpeta de inicio es un ejecutable permitido.
     
     Args:
         entry: Objeto DirEntry que representa el archivo a evaluar.
@@ -296,7 +296,7 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
 
 
 def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> StartupEntries:
-    """Busca recursivamente ejecutables en carpetas de inicio detectadas."""
+    """Busca ejecutables en las carpetas de inicio identificadas."""
     found_entries: StartupEntries = []
     scan_folders = folders if folders is not None else startup_folders()
     
@@ -343,13 +343,13 @@ def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
     """
-    Parsea la salida de PowerShell en formato CSV.
+    Parsea la salida de PowerShell en formato CSV a objetos StartupEntry.
     
     Args:
         csv_text: Contenido crudo de la salida de Get-ItemProperty.
         source: Fuente de los datos para la etiqueta del objeto StartupEntry.
     Returns:
-        Una lista de objetos StartupEntry validados.
+        Lista de objetos StartupEntry validados.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []

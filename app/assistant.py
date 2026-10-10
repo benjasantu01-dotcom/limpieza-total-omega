@@ -550,8 +550,9 @@ def _format_problem_message(problems: tuple[str, ...], score: int | str) -> str:
 @_safe_handler_wrapper
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre memoria RAM."""
-    mem_pct = ctx.get_metric("memory_available_percent", DEFAULT_RAM_PCT)
-    total_gb = ctx.get_metric("memory_total_gb", 0.0)
+    snap = ctx.metrics_snapshot
+    mem_pct = snap.get("memory_available_percent", DEFAULT_RAM_PCT)
+    total_gb = snap.get("memory_total_gb", 0.0)
     
     msg = f"Tenés {mem_pct:.0f}% de RAM disponible{f' de {total_gb:.0f} GB' if total_gb > 0 else ''}."
     if mem_pct < 15:
@@ -560,7 +561,7 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
         msg += " Eso está bien. Si la PC va lenta, el problema seguramente no es la RAM."
     
     msg += " No busques un 'liberador de RAM': la PC queda más lenta."
-    startup_count = int(ctx.get_metric("startup_count", 0))
+    startup_count = int(snap.get("startup_count", 0))
     if startup_count > 12:
         msg += f" Sí te conviene mirar los {startup_count} programas de inicio."
     return Answer(_validate_response_length(msg), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
@@ -568,10 +569,11 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
 @_safe_handler_wrapper
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre almacenamiento y limpieza."""
-    junk = ctx.get_metric("junk_mb", 0.0)
-    dup = ctx.get_metric("duplicate_mb", 0.0)
-    cache = ctx.get_metric("browser_cache_mb", 0.0)
-    free = ctx.get_metric("disk_free_percent", 100.0)
+    snap = ctx.metrics_snapshot
+    junk = snap.get("junk_mb", 0.0)
+    dup = snap.get("duplicate_mb", 0.0)
+    cache = snap.get("browser_cache_mb", 0.0)
+    free = snap.get("disk_free_percent", 100.0)
     
     recuperable = junk + dup + cache
     msg = f"Tenés {free:.0f}% libre en disco. Podés recuperar cerca de {recuperable:.0f} MB."
@@ -584,8 +586,9 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
 @_safe_handler_wrapper
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre archivos sospechosos y seguridad."""
-    count = int(ctx.get_metric("suspicious_count", 0.0))
-    warn = int(ctx.get_metric("suspicious_warnings", 0.0))
+    snap = ctx.metrics_snapshot
+    count = int(snap.get("suspicious_count", 0.0))
+    warn = int(snap.get("suspicious_warnings", 0.0))
     if count == 0:
         texto = "No hay archivos sospechosos. La app nunca borra sola, todo va a revisión."
     else:
@@ -616,7 +619,7 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
 @_safe_handler_wrapper
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre aplicaciones de arranque."""
-    count = int(ctx.get_metric("startup_count", 0.0))
+    count = int(ctx.metrics_snapshot.get("startup_count", 0.0))
     estado = f"Tenés {count} programas que arrancan con Windows."
     valoracion = "Son bastantes, y cada uno suma tiempo de encendido." if count > 15 else ("Es normal." if count > 8 else "Está bien.")
     cierre = " La app los lista, pero desactivalos desde el Administrador de tareas de Windows."
