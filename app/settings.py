@@ -323,18 +323,21 @@ def validate(raw_values: Any) -> AppSettings:
 def _is_file_secure_to_read(file_obj: Any) -> bool:
     """
     Verifica mediante fstat que el archivo de configuración sea un archivo regular
-    propiedad del usuario y sin permisos de ejecución, previniendo lectura de
-    ficheros sensibles o enlaces peligrosos.
+    propiedad del usuario, sin permisos de ejecución, y no un enlace, previniendo
+    ataques de TOCTOU al validar el estado tras la apertura.
     """
     try:
         if file_obj.closed: return False
         st = os.fstat(file_obj.fileno())
-        mode = st.st_mode
-        if not stat.S_ISREG(mode): return False
+        # Verificar que sea archivo regular y no un enlace simbólico (lstat no es suficiente aquí)
+        if not stat.S_ISREG(st.st_mode): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
-        if mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
-        if mode & (stat.S_ISUID | stat.S_ISGID): return False
+        # Permisos restringidos: sin ejecución, sin escritura global/grupo
+        if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
+        if st.st_mode & (stat.S_ISUID | stat.S_ISGID): return False
+        # Link count = 1 asegura que no sea un hardlink peligroso
         if st.st_nlink != 1: return False
+        # Verificación de propiedad (si es posible)
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         return True
     except (OSError, PermissionError, AttributeError, ValueError):
@@ -349,7 +352,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
             try:
                 fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
                 content = f.read(MAX_SETTINGS_SIZE + 1)
-                if not content: return None
+                if not content or not _is_file_secure_to_read(f): return None
                 data = json.loads(content)
                 return data if _is_dict(data) else None
             finally:

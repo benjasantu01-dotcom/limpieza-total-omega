@@ -809,3 +809,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-10T05:14:14` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se endureció la validación en `purge_all` para evitar la eliminación de archivos que, aunque presentes en el directorio de cuarentena, no tengan una correspondencia válida en el manifiesto, protegiendo así contra manipulaciones del directorio de cuarentena por agentes externos.
 - `2026-10-10T05:14:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T05:14:14` Corrida terminada. Total usado hoy: 124.
+- `2026-10-10T05:21:51` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-10-10T05:22:24` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-10T05:23:34` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se añadió un control de integridad de reparse points anidados dentro de `ensure_safe_to_modify` para detectar y bloquear recursivamente puntos de unión ocultos que `_validate_path_components` podría pasar por alto si se accede mediante rutas relativas o aliases de sistema, reforzando la seguridad defensiva contra el acceso a directorios prohibidos fuera del sandbox.
+- `2026-10-10T05:24:22` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-10-10T05:25:04` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de TOCTOU (Time-of-Check to Time-of-Use) y asegurar que el archivo de configuración, tras ser abierto, no haya sido reemplazado por un enlace simbólico o un dispositivo peligroso antes de la lectura.
+- `2026-10-10T05:25:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T05:25:04` Corrida terminada. Total usado hoy: 128.

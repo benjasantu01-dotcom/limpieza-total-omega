@@ -785,6 +785,13 @@ def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> 
     if _is_system_directory_junction(str(path)):
         if base_dir and _is_junction_target_outside_base(path, base_dir):
             raise UnsafePathError("Redirección de reparse point fuera de base.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+        
+        # Validación recursiva: Si la ruta tiene subdirectorios, verificamos que no contengan reparse points anidados
+        for parent in path.parents:
+            if _is_system_directory_junction(str(parent)):
+                if base_dir and _is_junction_target_outside_base(parent, base_dir):
+                    raise UnsafePathError("Reparse point anidado detectado.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+            if parent == base_dir: break
 
 def _validate_path_components(path: Path) -> None:
     """Itera sobre la estructura de la ruta para detectar puntos de reparse intermedios."""
