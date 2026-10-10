@@ -355,22 +355,23 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     """Identifica las subcarpetas de primer nivel que consumen más espacio."""
     root = _validate_root(directory)
     if root is None: return []
-    stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
+    stats: Dict[str, FolderMetrics] = defaultdict(FolderMetrics)
+    root_str = str(root)
     
     for path, size in walk_files(root, skip_protected):
         try:
-            # Obtener el componente principal de la ruta sin convertir a Path completo
-            parts = path.relative_to(root).parts
-            if not parts: continue
-            top_folder = root / parts[0]
+            rel = str(path.parent)[len(root_str):].lstrip(os.sep)
+            top_folder = rel.split(os.sep)[0]
+            if not top_folder: continue
             
-            curr = stats[top_folder]
+            target = root / top_folder
+            curr = stats[str(target)]
             curr.size += size
             curr.file_count += 1
         except (ValueError, IndexError, OSError, PermissionError):
             continue
 
-    results = [FolderUsage(p, m.size, m.file_count) for p, m in stats.items()]
+    results = [FolderUsage(Path(p), m.size, m.file_count) for p, m in stats.items()]
     return heapq.nlargest(_validate_limit(limit), results, key=lambda f: f.size_bytes)
 
 

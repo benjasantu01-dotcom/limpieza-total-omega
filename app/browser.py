@@ -193,8 +193,8 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     if _is_unc_path(path_str) or len(path_str) >= MAX_PATH_LEN:
         return True
     
-    # Pre-cálculo para evitar llamadas a Path() repetitivas
-    if not _ensure_within_base(os.path.normcase(path_str), ctx.base_norm):
+    norm_path = os.path.normcase(path_str)
+    if not _ensure_within_base(norm_path, ctx.base_norm):
         return True
     
     if is_protected_path(Path(path_str)):
@@ -287,7 +287,6 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Resuelve rutas relativas a absolutas dentro del contexto del perfil de usuario."""
     if not isinstance(real_base, Path) or not isinstance(rel_str, str) or not rel_str: return Path()
     
-    # Validar caracteres prohibidos en la ruta relativa
     if any(char in rel_str for char in PATH_FORBIDDEN_CHARS): return Path()
     
     target: Path = real_base.joinpath(*rel_str.split("\\"))

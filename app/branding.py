@@ -329,7 +329,7 @@ def blend(start: Optional[str], end: Optional[str], ratio: float) -> ColorHex:
 def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, ...]:
     """Optimización: agrupa colores idénticos para reducir llamadas al Canvas."""
     if not colors: return ()
-    segments = []
+    segments: List[ColorSegment] = []
     current_color, start = colors[0], 0
     for i in range(1, len(colors)):
         if colors[i] != current_color:
@@ -349,19 +349,18 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
     n_segments = len(stops) - 1
     div = n - 1 if n > 1 else 1
     
-    def gen_colors():
-        for i in range(n):
-            pos = (i / div) * n_segments
-            idx = min(int(pos), n_segments - 1)
-            delta = pos - idx
-            s1, s2 = rgb_stops[idx], rgb_stops[idx + 1]
-            yield _rgb_to_hex((
-                int(s1[0] + (s2[0] - s1[0]) * delta),
-                int(s1[1] + (s2[1] - s1[1]) * delta),
-                int(s1[2] + (s2[2] - s1[2]) * delta)
-            ))
-            
-    return tuple(gen_colors())
+    colors: List[ColorHex] = []
+    for i in range(n):
+        pos = (i / div) * n_segments
+        idx = min(int(pos), n_segments - 1)
+        delta = pos - idx
+        s1, s2 = rgb_stops[idx], rgb_stops[idx + 1]
+        colors.append(_rgb_to_hex((
+            int(s1[0] + (s2[0] - s1[0]) * delta),
+            int(s1[1] + (s2[1] - s1[1]) * delta),
+            int(s1[2] + (s2[2] - s1[2]) * delta)
+        )))
+    return tuple(colors)
 
 @lru_cache(maxsize=64)
 def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorSegment, ...]:
@@ -421,9 +420,12 @@ STRIPE_BASE_Y_OFFSET: Final[float] = 18.0
 def _get_stripe_params(scale: float, franjas_count: int) -> Tuple[Tuple[float, float, float], ...]:
     """Calcula dimensiones de franjas decorativas basadas en escala geométrica."""
     thickness_factor = STRIPE_THICKNESS_SCALE * scale
-    return tuple((thickness_factor * (1.0 if (i / (franjas_count - 1)) < 0.55 else 1.0 - (((i / (franjas_count - 1)) - 0.55) * 1.9)),
-                  i * (thickness_factor / franjas_count),
-                  (i + 1) * (thickness_factor / franjas_count)) for i in range(franjas_count))
+    params = []
+    for i in range(franjas_count):
+        rel = i / (franjas_count - 1) if franjas_count > 1 else 0
+        thickness = thickness_factor * (1.0 if rel < 0.55 else 1.0 - ((rel - 0.55) * 1.9))
+        params.append((thickness, i * (thickness_factor / franjas_count), (i + 1) * (thickness_factor / franjas_count)))
+    return tuple(params)
 
 @lru_cache(maxsize=128)
 def _get_cached_stripe_data(scale: float, franjas_count: int) -> Tuple[Tuple[Tuple[float, float, float], ...], Tuple[ColorSegment, ...]]:
