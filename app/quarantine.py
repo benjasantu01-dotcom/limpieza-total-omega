@@ -570,17 +570,18 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
     except (TypeError, ValueError) as e:
         raise RuntimeError(f"Error al serializar metadatos de cuarentena: {e}")
 
-    try:
-        if target_path.exists():
-            if not target_path.is_file():
-                raise PermissionError("El objetivo del manifiesto no es un archivo.")
-            if not os.access(target_path, os.W_OK):
-                raise PermissionError("Manifiesto protegido contra escritura.")
-            if os.name == 'nt':
-                attrs = ctypes.windll.kernel32.GetFileAttributesW(str(target_path))
-                if attrs != -1 and (attrs & 0x02 or attrs & 0x04):
-                    raise PermissionError("Manifiesto restringido por atributos de sistema.")
+    # Verificar estado de escritura antes de intentar persistir
+    if target_path.exists():
+        if not target_path.is_file():
+            raise PermissionError(f"Error: {target_path} no es un archivo.")
+        if not os.access(target_path, os.W_OK):
+            raise PermissionError(f"Error: Manifiesto {target_path} protegido contra escritura.")
+        if os.name == 'nt':
+            attrs = ctypes.windll.kernel32.GetFileAttributesW(str(target_path))
+            if attrs != -1 and (attrs & 0x02 or attrs & 0x04):
+                raise PermissionError(f"Error: Manifiesto {target_path} bloqueado por atributos de sistema.")
 
+    try:
         # Escritura atómica vía archivo temporal
         with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as tf:
             tf.write(encoded_content)
@@ -599,7 +600,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         _MANIFEST_CACHE[base_path] = (items, st.st_mtime, st.st_size)
         return target_path
     except (OSError, IOError) as e:
-        raise RuntimeError(f"Falla al persistir estado del manifiesto en disco: {e}")
+        raise RuntimeError(f"Falla crítica al persistir estado del manifiesto en {base_path}: {e}")
 
 
 def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:

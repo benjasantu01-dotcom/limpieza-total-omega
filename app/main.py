@@ -106,7 +106,7 @@ def get_cached_settings() -> Dict[str, Any]:
                 if key in raw and raw[key] and not safety.is_safe_to_modify(Path(raw[key]).resolve()):
                     raw[key] = ""
             return raw
-    except Exception as e:
+    except (IOError, ValueError) as e:
         logging.error("Error al cargar settings: %s", e)
     return settings_mod.reset()
 
@@ -136,8 +136,6 @@ def ensure_safety(func: Callable) -> Callable:
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         home_path = Path.home().resolve()
-        if not home_path.is_dir():
-            raise RuntimeError("Contexto de seguridad degradado: Home no es directorio.")
         safety.ensure_safe_to_modify(home_path)
         return func(*args, **kwargs)
     return wrapper
@@ -171,9 +169,6 @@ def validated_ui_operation(func: Callable) -> Callable:
             return func(self, *args, **kwargs)
         except (tk.TclError, RuntimeError) as e:
             logging.warning("Error de UI recuperable en %s: %s", func.__name__, e)
-            return None
-        except Exception as e:
-            logging.error("Error no capturado en UI (%s): %s", func.__name__, e)
             return None
     return wrapper
 
@@ -509,11 +504,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             try:
                 constructor()
                 self._initialized_tabs[name] = True
-            except Exception as e:
+            except (tk.TclError, AttributeError) as e:
                 logging.error("Fallo crítico en el constructor de la pestaña %s: %s", name, e)
-                # Notificar visualmente si es posible
-                if hasattr(self, 'tabview'):
-                     self.log(f"Error cargando pestaña {name}: {type(e).__name__}", "Salud")
 
     def _build_tabs_container(self) -> None:
         """Configura el componente contenedor de pestañas."""
@@ -968,7 +960,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         try:
             self._validate_disk_access(path)
             return True
-        except Exception:
+        except (safety.UnsafePathError, PermissionError, FileNotFoundError, OSError):
             return False
 
     def _is_safe_file_access(self, path: Union[str, Path]) -> bool:
@@ -984,7 +976,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         try:
             self._validate_disk_access(path)
             return True
-        except Exception:
+        except (safety.UnsafePathError, PermissionError, FileNotFoundError, OSError):
             return False
 
     def _is_safe_target_dir(self, path: Union[str, Path]) -> bool:
@@ -998,7 +990,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         try:
             p = Path(path).resolve(strict=True)
             return p.is_dir()
-        except Exception:
+        except (OSError, RuntimeError):
             return False
 
     def _get_cached_data(self, key: str) -> Any:
@@ -1026,8 +1018,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                     self._cache[key] = data
                     self._cache_access_times[key] = now
                 return data
-            except Exception as e:
-                logging.error("Error al obtener datos para caché %s: %s", key, e)
+            except Exception:
+                return None
         return None
 
     def _get_cached_or_run(self, key: str, provider: Callable[[], Any], on_complete: Callable[[Any], None]) -> None:
@@ -1144,7 +1136,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         elif isinstance(e, OSError):
             self.log(f"Error de sistema ({e.errno}): {e.strerror}", tab)
         else:
-            logging.exception("Error inesperado en tarea asíncrona: %s", e)
+            logging.error("Error inesperado en tarea asíncrona: %s", type(e).__name__)
             self.log(f"Error inesperado: {type(e).__name__}", tab)
 
     def _safe_run(self, fn: AsyncCallback, tab: str) -> None:
@@ -1188,7 +1180,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 return "Limpieza"
             etiqueta = self.tabview.get()
             if not isinstance(etiqueta, str): return "Limpieza"
-        except (Exception, tk.TclError, RuntimeError):
+        except (tk.TclError, RuntimeError):
             return "Limpieza"
         for nombre in TABS:
             if branding.tab_label(nombre) in etiqueta:
@@ -1681,8 +1673,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 lineas += ["", "Cerrar el que no uses libera memoria de verdad. "
                                "Copiá el PID si querés probar el trim manual."]
                 self.log_lines(lineas, "Memoria")
-            except Exception as e:
-                self.log(f"Error procesando lista de memoria: {e}", "Memoria")
+            except Exception:
+                self.log("Error procesando lista de procesos.", "Memoria")
 
         self.run_async(task)
 

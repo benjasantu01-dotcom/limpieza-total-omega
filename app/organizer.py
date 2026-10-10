@@ -284,7 +284,8 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             dest_base.mkdir(parents=True, exist_ok=True)
         dest_res = dest_base.resolve(strict=False)
         
-        if not dest_res.is_dir() or not is_safe_to_modify(dest_res) or is_protected_path(dest_res): return None
+        # Validar destino antes de procesar archivos
+        if not is_safe_to_modify(dest_res): return None
         ensure_safe_to_modify(dest_res)
     except (OSError, RuntimeError, PermissionError):
         return None
@@ -315,7 +316,8 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     if not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser().resolve(strict=False)
-        if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest) or is_protected_path(dest): return 0
+        if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest): return 0
+        ensure_safe_to_modify(dest)
         
         count = 0
         for item in dest.iterdir():

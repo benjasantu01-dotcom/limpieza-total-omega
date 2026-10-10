@@ -233,8 +233,8 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Obtiene el estado de memoria del sistema mediante la API de bajo nivel GlobalMemoryStatusEx."""
-    kernel32 = ctypes.windll.kernel32
-    if not hasattr(kernel32, "GlobalMemoryStatusEx"): return _EMPTY_SNAPSHOT
+    kernel32 = getattr(ctypes.windll, "kernel32", None)
+    if not kernel32 or not hasattr(kernel32, "GlobalMemoryStatusEx"): return _EMPTY_SNAPSHOT
     mem_status = _create_mem_status_ex()
     try:
         if kernel32.GlobalMemoryStatusEx(ctypes.byref(mem_status)) != 0:
@@ -286,9 +286,9 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     cache_time, cache_data = top_memory_processes._cache
     
     if (now - cache_time) > 60:
-        kernel32 = ctypes.windll.kernel32
+        kernel32 = getattr(ctypes.windll, "kernel32", None)
         psapi = getattr(ctypes.windll, "psapi", None)
-        if not psapi: return []
+        if not kernel32 or not psapi: return []
         
         pids = (ctypes.c_ulong * 4096)()
         cb_needed = ctypes.c_ulong()
@@ -336,9 +336,9 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 def _is_process_executable_safe(pid: int) -> bool:
     """Verifica si la ruta del ejecutable es segura para interactuar."""
-    kernel32 = ctypes.windll.kernel32
+    kernel32 = getattr(ctypes.windll, "kernel32", None)
     psapi = getattr(ctypes.windll, "psapi", None)
-    if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return False
+    if not kernel32 or not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return False
     
     handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
     if not handle: return False
@@ -373,7 +373,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "API no disponible."
     
-    kernel32 = ctypes.windll.kernel32
+    kernel32 = getattr(ctypes.windll, "kernel32", None)
+    if not kernel32: return False, "Sistema operativo no accesible."
+    
     proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
     if not proc_handle:
         return False, "No se pudo acceder al proceso (requiere privilegios)."
