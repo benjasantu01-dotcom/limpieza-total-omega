@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 53
+- Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 118 | 12 | 37 | 14 | 131 |
-| 2026-10-10 | 85 | 6 | 16 | 5 | 80 |
+| 2026-10-09 | 115 | 12 | 36 | 14 | 131 |
+| 2026-10-10 | 86 | 6 | 16 | 5 | 83 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **42**
-- robustez ante casos límite: **39**
-- rendimiento: **33**
+- robustez ante casos límite: **36**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `quarantine.py`: **19**
-- `healthscore.py`: **18**
+- `healthscore.py`: **19**
+- `quarantine.py`: **18**
 - `branding.py`: **17**
 - `memory.py`: **17**
-- `safety.py`: **16**
 - `assistant.py`: **16**
+- `safety.py`: **15**
 - `duplicates.py`: **15**
-- `scanner.py`: **14**
+- `scanner.py`: **13**
 - `main.py`: **12**
 - `organizer.py`: **11**
 - `settings.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-10T08:17:09` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje eliminando la creación innecesaria de un `m_cache` en `compute_score`, reemplazando el acceso vía diccionario por el acceso directo a los atributos del objeto `SystemMetrics` (que es más rápido y eficiente), y reduje la complejidad del `loop` principal.
 - `2026-10-10T08:06:09` **assistant.py** (rendimiento): Optimicé el acceso a los datos de `SystemContext` dentro de `local_answer` y las funciones `handle_*` mediante el uso del diccionario `metrics_snapshot` ya cacheado, evitando llamadas repetitivas a `getattr` y `get_metric` que realizaban validaciones de integridad costosas en cada iteración del bucle de consulta.
 - `2026-10-10T08:05:08` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes, clarificando la intención de los métodos críticos mediante docstrings más precisos y asegurando la consistencia en la terminología para facilitar el mantenimiento del equipo de desarrollo.
 - `2026-10-10T07:56:10` **scanner.py** (legibilidad y documentación): Se introdujo un `TypeAlias` específico para el resultado de las heurísticas y se mejoró la documentación interna mediante la estandarización de los `docstrings` y la clarificación de las responsabilidades en la clase `Scanner`, facilitando la lectura del flujo de control ante otros colaboradores.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-10T07:15:42` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_file_attrs` y `_is_virtual_drive` al agregar un manejo de errores más específico y defensivo, asegurando que cualquier fallo en la comunicación con la API de Windows retorne un valor seguro (bloqueo) en lugar de una excepción no capturada que podría colapsar el bucle de validación.
 - `2026-10-10T07:14:37` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` mediante la validación explícita de la estructura de datos antes de la serialización y envolviendo la lógica en un bloque `try-except` más preciso para evitar corrupciones ante fallos de escritura o disco.
 - `2026-10-10T07:06:57` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_process_executable_safe` y `trim_working_set` capturando errores de `ctypes` y validando estrictamente los manejadores de procesos para evitar fugas de recursos o excepciones no controladas durante la interacción con la API de Windows.
-- `2026-10-10T07:06:29` **main.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `on_trim_process` y `on_restore_quarantine` mediante la validación proactiva de sus entradas (`pid` y `id`), evitando llamadas innecesarias al worker o registros de error en el log que podrían confundir al usuario, alineándose con el enfoque de validación de parámetros antes de operar.
