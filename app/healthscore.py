@@ -330,10 +330,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 
 def _render_bar(points: int, max_val: int) -> str:
     """Representación visual: barra de caracteres ASCII para la interfaz con manejo de errores."""
-    if max_val <= 0:
+    try:
+        if not isinstance(points, int) or not isinstance(max_val, int) or max_val <= 0:
+            return ".........."
+        p = max(0, min(points, max_val))
+        return "#" * p + "." * (max_val - p)
+    except Exception:
         return ".........."
-    p = max(0, min(points, max_val))
-    return "#" * p + "." * (max_val - p)
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera una lista de cadenas legible para el informe de estado final."""

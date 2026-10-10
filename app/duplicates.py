@@ -106,10 +106,9 @@ def _is_file_locked(path: Path) -> bool:
     if not isinstance(path, Path) or not is_safe_to_modify(path):
         return True
     try:
-        # Se intenta abrir el archivo en modo de lectura binaria exclusiva
         with open(path, "rb") as f:
             return False
-    except (PermissionError, OSError, ValueError):
+    except (PermissionError, OSError, IOError, ValueError):
         return True
 
 
@@ -125,7 +124,7 @@ def _safe_path_check(path: Path) -> bool:
                 not is_protected_path(path) and 
                 not is_junction(path) and 
                 not path.is_symlink())
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, PermissionError):
         return False
 
 
@@ -162,7 +161,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
                     break
                 digest.update(chunk)
         return digest.hexdigest()
-    except (OSError, PermissionError, MemoryError, ValueError):
+    except (OSError, PermissionError, MemoryError, ValueError, IOError):
         return None
 
 
@@ -180,13 +179,13 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
             if not content: 
                 return None
             return hashlib.sha256(content).hexdigest()
-    except (OSError, PermissionError, ValueError):
+    except (OSError, PermissionError, ValueError, IOError):
         return None
 
 
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """Filtro de pre-selección para evitar procesar archivos bloqueados o protegidos."""
-    if st_size <= 0:
+    if not isinstance(path, Path) or st_size <= 0:
         return False
     try:
         return (_safe_path_check(path) and 
@@ -269,7 +268,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Helper para agrupar rutas mediante una función de hash proporcionada."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if is_safe_to_modify(path) and (digest := hash_func(path)):
+        if isinstance(path, Path) and is_safe_to_modify(path) and (digest := hash_func(path)):
             groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 

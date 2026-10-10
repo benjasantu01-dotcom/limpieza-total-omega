@@ -152,8 +152,14 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     if directory is None:
         return None
     try:
+        # Convertir a Path para asegurar manejo consistente de la ruta
+        p_raw = Path(directory)
+        if not p_raw.is_absolute():
+            p = (Path(os.getcwd()) / p_raw).resolve()
+        else:
+            p = p_raw.resolve()
+        
         base = Path(os.getcwd()).resolve()
-        p = Path(directory).expanduser().resolve()
         
         # Prevenir escape fuera del directorio base si se intenta escalar (seguridad defensiva)
         if not str(p).startswith(str(base)) and not os.path.isabs(directory):
@@ -331,7 +337,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
     """Retorna la lista de archivos más pesados en el directorio especificado."""
     root = _validate_root(directory)
-    if not root: return []
+    if root is None: return []
     data = _collect_summary_data(root, skip_protected, limit=_validate_limit(limit))
     return [FileEntry(p, s) for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True)]
 
@@ -339,7 +345,7 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
 def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
     """Calcula la distribución de espacio de disco agrupada por extensión."""
     root = _validate_root(directory)
-    if not root: return []
+    if root is None: return []
     data = _collect_summary_data(root, skip_protected, limit=0)
     usage_list = [ExtensionUsage(ext, s.total_bytes, s.count) for ext, s in data.ext_stats.items()]
     return heapq.nlargest(_validate_limit(limit), usage_list, key=lambda u: u.size_bytes)
@@ -348,7 +354,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     """Identifica las subcarpetas de primer nivel que consumen más espacio."""
     root = _validate_root(directory)
-    if not root: return []
+    if root is None: return []
     stats: Dict[Path, FolderMetrics] = defaultdict(FolderMetrics)
     
     for path, size in walk_files(root, skip_protected):
@@ -371,7 +377,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> SizeReport:
     """Devuelve el tamaño total en bytes y el conteo de archivos de un directorio."""
     root = _validate_root(directory)
-    if not root: return (0, 0)
+    if root is None: return (0, 0)
     data = _collect_summary_data(root, skip_protected, limit=0)
     return (data.total_bytes, data.total_files)
 
