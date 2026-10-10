@@ -6,22 +6,22 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 51
+- Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 105 | 11 | 33 | 13 | 114 |
-| 2026-10-10 | 101 | 10 | 18 | 8 | 91 |
+| 2026-10-09 | 105 | 11 | 33 | 13 | 110 |
+| 2026-10-10 | 103 | 10 | 19 | 8 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **45**
+- seguridad defensiva: **47**
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **42**
 - robustez ante casos límite: **40**
@@ -31,12 +31,12 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `diskreport.py`: **22**
 - `healthscore.py`: **20**
-- `quarantine.py`: **17**
+- `quarantine.py`: **18**
 - `branding.py`: **17**
 - `assistant.py`: **17**
+- `safety.py`: **17**
 - `duplicates.py`: **16**
 - `memory.py`: **16**
-- `safety.py`: **16**
 - `scanner.py`: **15**
 - `main.py`: **13**
 - `organizer.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-10T09:48:12` **safety.py** (seguridad defensiva): Se ha añadido una validación estricta en `ensure_safe_to_modify` para detectar y rechazar rutas que utilicen nombres de dispositivos cortos (ej. `COM1`, `LPT1`) combinados con extensiones, los cuales son vectores de ataque conocidos para bloquear operaciones de I/O en Windows al acceder a puertos físicos del sistema.
+- `2026-10-10T09:47:12` **quarantine.py** (seguridad defensiva): Se introdujo una validación de ruta estricta en `purge_all` para asegurar que solo se procesen archivos que residan exactamente dentro del directorio de cuarentena, evitando cualquier posibilidad de salto de directorio o procesamiento de archivos fuera del ámbito del sandbox.
 - `2026-10-10T09:39:30` **organizer.py** (seguridad defensiva): He mejorado `_is_safe_for_disk_op` para prevenir ataques de redirección de archivos o race conditions al realizar validaciones de rutas absolutas y resolución de enlaces simbólicos mediante `resolve(strict=True)` antes de confirmar la seguridad de la operación.
 - `2026-10-10T09:38:54` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva centralizando la validación de rutas en el arranque mediante `_check_environment_integrity` y aplicando un filtrado más estricto en los callbacks que aceptan entradas de usuario, evitando que rutas relativas o malformadas puedan ser inyectadas en operaciones críticas.
 - `2026-10-10T09:36:46` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la restricción estricta de las entradas al motor de puntuación, asegurando que `_validate_numeric` y la lógica de `SystemMetrics.validate` utilicen límites superiores más conservadores y validados frente a posibles desbordamientos, evitando que una entrada maliciosa o corrupta afecte la estabilidad del pipeline de cálculo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-10T08:47:28` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular durante la obtención de metadatos (`os.stat`), evitando que fallos puntuales de lectura silencien el progreso del análisis.
 - `2026-10-10T08:47:16` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a archivos al refinar el manejo de `OSError` dentro del bucle de `os.scandir`, asegurando que archivos bloqueados o con permisos denegados no aborten el escaneo de toda la rama, y se ha fortalecido la integridad del contexto de escaneo al asegurar que las rutas se normalicen consistentemente antes de la comparación.
 - `2026-10-10T08:46:11` **assistant.py** (robustez ante casos límite): Mejora la robustez del motor local al añadir un manejo defensivo ante valores de configuración ausentes o corruptos en `_parse_config`, evitando que el asistente falle silenciosamente o se bloquee ante un `settings.json` mal formado.
-- `2026-10-10T08:36:30` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner implementando un filtro preventivo mediante `is_protected_path` antes de realizar operaciones de resolución de rutas o acceso al disco (`resolve`, `stat`, `is_file`), evitando así llamadas costosas al sistema de archivos en rutas que de antemano sabemos que deben ignorarse.
-- `2026-10-10T08:35:56` **safety.py** (rendimiento): Optimicé el rendimiento de `_get_security_descriptor_cached` y `_get_file_attrs` evitando llamadas costosas a `ctypes` y syscalls de disco cuando la ruta analizada es idéntica o cuando ya hemos determinado que no es un directorio raíz, aprovechando mejor el `lru_cache` mediante una pre-validación de cadena más eficiente.

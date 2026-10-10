@@ -715,6 +715,9 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         raise UnsafePathError("Nombre de dispositivo reservado detectado.", SafetyValidationErrorCode.RESERVED_NAME)
     if re.search(r'[\u200E\u200F\u202A-\u202E]', path_string):
         raise UnsafePathError("Posible ataque de bidi spoofing detectado.", SafetyValidationErrorCode.BIDI_SPOOFING)
+    # Nueva validación: Bloqueo de nombres de dispositivos con extensión (CVE-esque)
+    if "." in target_path.name and _is_reserved_device_name(target_path.stem):
+        raise UnsafePathError("Nombre de dispositivo con extensión prohibido.", SafetyValidationErrorCode.RESERVED_NAME)
 
     try:
         if target_path.exists() and not target_path.is_absolute():

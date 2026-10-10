@@ -1257,3 +1257,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-10T09:39:30` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). He mejorado `_is_safe_for_disk_op` para prevenir ataques de redirección de archivos o race conditions al realizar validaciones de rutas absolutas y resolución de enlaces simbólicos mediante `resolve(strict=True)` antes de confirmar la seguridad de la operación.
 - `2026-10-10T09:39:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T09:39:30` Corrida terminada. Total usado hoy: 228.
+- `2026-10-10T09:46:28` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-10-10T09:47:12` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se introdujo una validación de ruta estricta en `purge_all` para asegurar que solo se procesen archivos que residan exactamente dentro del directorio de cuarentena, evitando cualquier posibilidad de salto de directorio o procesamiento de archivos fuera del ámbito del sandbox.
+- `2026-10-10T09:47:29` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-10T09:48:12` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación estricta en `ensure_safe_to_modify` para detectar y rechazar rutas que utilicen nombres de dispositivos cortos (ej. `COM1`, `LPT1`) combinados con extensiones, los cuales son vectores de ataque conocidos para bloquear operaciones de I/O en Windows al acceder a puertos físicos del sistema.
+- `2026-10-10T09:48:27` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-10-10T09:48:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T09:48:27` Corrida terminada. Total usado hoy: 232.

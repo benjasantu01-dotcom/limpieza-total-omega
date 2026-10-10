@@ -1021,6 +1021,10 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             if f.name == MANIFEST_NAME or not f.is_file():
                 continue
             
+            # Seguridad adicional: verificar explícitamente que el archivo esté en el sandbox
+            if not is_within_directory(f.resolve(), quarantine_root.resolve()):
+                continue
+            
             # Solo intentamos purgar si el nombre coincide con un item registrado
             item = item_map.get(f.name)
             if item and _is_item_purgable(f, item, quarantine_root):
