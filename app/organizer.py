@@ -183,36 +183,32 @@ def _is_system_hidden(entry: os.DirEntry) -> bool:
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
-    Auditoría multietapa para autorizar operaciones de escritura:
-    1. Comprueba integridad del archivo vs metadatos originales.
-    2. Valida seguridad de rutas.
-    3. Verifica espacio en disco disponible según política MIN_FREE_SPACE_BYTES.
+    Auditoría multietapa para autorizar operaciones de escritura.
+    Usa resolve(strict=True) para evitar ataques de enlace simbólico (TOCTOU).
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
-    src = junk_file.path
     try:
-        if not src.exists() or src.name.lower() in SYSTEM_CRITICAL_NAMES: return False
-        stat_result = src.stat()
+        # Resolvemos la ruta real para evitar discrepancias por enlaces o reparse points
+        src_real = junk_file.path.resolve(strict=True)
+        if src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
+        
+        stat_result = src_real.stat()
         # Verificación contra cambios en disco (Race Condition Check)
         if (junk_file._ino is not None and stat_result.st_ino != junk_file._ino) or \
            (junk_file._dev is not None and stat_result.st_dev != junk_file._dev): return False
         
-        if not src.is_file() or src.is_symlink(): return False
+        if not src_real.is_file(): return False
         
-        try:
-            if src.resolve(strict=True) != src: return False
-        except (OSError, RuntimeError):
-            return False
-        
-        if not is_safe_to_modify(src) or is_protected_path(dest) or is_protected_path(dest.parent) or not _validate_path_security(src, dest): return False
+        # Validaciones de seguridad de ruta (safety.py y políticas internas)
+        if not is_safe_to_modify(src_real) or is_protected_path(dest) or \
+           not _validate_path_security(src_real, dest): return False
         
         target_dir = dest.parent if dest.exists() else dest
         if not target_dir.is_dir() or not os.access(target_dir, os.W_OK): return False
-        if _is_recursive_violation(src, dest) or _is_file_locked(src): return False
+        if _is_recursive_violation(src_real, dest) or _is_file_locked(src_real): return False
         
         usage = shutil.disk_usage(target_dir)
-        if usage.free < (stat_result.st_size + MIN_FREE_SPACE_BYTES): return False
-        return True
+        return usage.free >= (stat_result.st_size + MIN_FREE_SPACE_BYTES)
     except (OSError, AttributeError, ValueError, FileNotFoundError):
         return False
 

@@ -1249,3 +1249,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-10T09:27:46` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` para asegurar que el escaneo de directorios respete explícitamente los límites de `is_safe_to_modify` y `is_protected_path` al procesar cada entrada descubierta, evitando el seguimiento accidental de rutas fuera del alcance permitido del proyecto.
 - `2026-10-10T09:27:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T09:27:46` Corrida terminada. Total usado hoy: 224.
+- `2026-10-10T09:36:17` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-10-10T09:36:46` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la restricción estricta de las entradas al motor de puntuación, asegurando que `_validate_numeric` y la lógica de `SystemMetrics.validate` utilicen límites superiores más conservadores y validados frente a posibles desbordamientos, evitando que una entrada maliciosa o corrupta afecte la estabilidad del pipeline de cálculo.
+- `2026-10-10T09:37:46` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-10T09:38:54` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva centralizando la validación de rutas en el arranque mediante `_check_environment_integrity` y aplicando un filtrado más estricto en los callbacks que aceptan entradas de usuario, evitando que rutas relativas o malformadas puedan ser inyectadas en operaciones críticas.
+- `2026-10-10T09:39:18` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-10-10T09:39:30` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). He mejorado `_is_safe_for_disk_op` para prevenir ataques de redirección de archivos o race conditions al realizar validaciones de rutas absolutas y resolución de enlaces simbólicos mediante `resolve(strict=True)` antes de confirmar la seguridad de la operación.
+- `2026-10-10T09:39:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T09:39:30` Corrida terminada. Total usado hoy: 228.

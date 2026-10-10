@@ -175,8 +175,12 @@ def validated_ui_operation(func: Callable) -> Callable:
 def _check_environment_integrity() -> None:
     """Valida requisitos de seguridad críticos al arrancar el proceso."""
     cwd = Path.cwd().resolve()
+    # Prevenir ejecución desde rutas de red o sistema volátiles
     if str(cwd).startswith(r"\\"):
         raise RuntimeError("Ejecución en ruta UNC prohibida.")
+    if "system32" in str(cwd).lower() or "windows" in str(cwd).lower():
+        raise RuntimeError("Ejecución en entorno protegido.")
+        
     safety.ensure_safe_to_modify(Path.home().resolve())
     safety.ensure_safe_to_modify(cwd)
 
@@ -303,7 +307,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 (home.resolve().is_absolute(), "La ruta home no es absoluta."),
                 (safety.is_safe_to_modify(cwd), "Directorio de trabajo inseguro."),
                 (not safety.is_protected_path(app_root), "Directorio de aplicación protegido."),
-                (not str(cwd).lower().startswith(tuple(["c:\\windows", "c:\\program files"])), "Ejecución desde ruta de sistema restringida."),
                 (not cwd.is_symlink(), "Directorio de trabajo es un enlace simbólico o junction.")
             ]
             
