@@ -290,6 +290,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             cwd = Path.cwd().resolve()
             home = Path.home()
             
+            # Verificación de permisos y accesibilidad
+            if not os.access(app_root, os.W_OK) and not os.access(home, os.W_OK):
+                raise RuntimeError("Permisos insuficientes en rutas críticas.")
+                
             safety.ensure_safe_to_modify(app_root)
             safety.ensure_safe_to_modify(home)
             safety.ensure_safe_to_modify(cwd)
@@ -307,7 +311,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             for condition, error_msg in validations:
                 if not condition:
                     raise RuntimeError(f"Entorno inválido: {error_msg}")
-        except safety.UnsafePathError as e:
+        except (safety.UnsafePathError, PermissionError) as e:
             raise RuntimeError(f"Violación de seguridad de entorno: {e}")
 
     def _validate_disk_access(self, path: Union[str, Path]) -> Path:
@@ -506,8 +510,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self._initialized_tabs[name] = True
             except Exception as e:
                 logging.error("Fallo crítico en el constructor de la pestaña %s: %s", name, e)
-                if self.winfo_exists():
-                    self.log(f"Error cargando pestaña {name}: {type(e).__name__}", "Salud")
+                # Notificar visualmente si es posible
+                if hasattr(self, 'tabview'):
+                     self.log(f"Error cargando pestaña {name}: {type(e).__name__}", "Salud")
 
     def _build_tabs_container(self) -> None:
         """Configura el componente contenedor de pestañas."""

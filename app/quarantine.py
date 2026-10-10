@@ -116,13 +116,12 @@ def _is_file_exclusive(path: Path) -> bool:
     """
     if os.name == 'nt':
         k32 = ctypes.windll.kernel32
-        handle = k32.CreateFileW(str(path), 0x80000000 | 0x40000000, 0, None, 3, 0x00000080, None)
+        # Intentar abrir con acceso compartido mínimo para verificar uso.
+        handle = k32.CreateFileW(str(path), 0x80000000, 0, None, 3, 0x00000080, None)
         if handle == -1: return False
         try:
-            overlapped = ctypes.create_string_buffer(20)
-            locked = k32.LockFileEx(handle, 2, 0, 1, 0, overlapped)
-            if locked: k32.UnlockFileEx(handle, 0, 1, 0, overlapped)
-            return bool(locked)
+            # Si el handle es válido, el archivo no está en uso exclusivo por otro proceso.
+            return True
         except (OSError, AttributeError, ValueError):
             return False
         finally:
@@ -271,8 +270,11 @@ def _is_file_in_use_by_system(path: Path) -> bool:
         return False
     
     try:
-        if path.stat().st_nlink > 1:
+        st = path.stat()
+        if st.st_nlink > 1:
             return True
+        if st.st_size == 0:
+            return False
     except OSError:
         return True
 

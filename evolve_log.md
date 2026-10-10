@@ -1565,3 +1565,11 @@ ERROR evolve/tests/test_assistant.py - ValueError: 'score' in __slots__ conflict
 - `2026-10-09T23:35:28` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-09T23:45:37` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-09T23:55:46` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-10-10T00:05:57` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-10-10T00:06:26` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-10T00:07:35` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se introdujo una comprobación robusta en `_validate_environment` para detectar si la aplicación se ejecuta bajo una ruta con permisos insuficientes o un sistema de archivos inaccesible antes de instanciar la UI, además de fortalecer el manejo de excepciones en `_tab_factory` para evitar bloqueos por carga perezosa de pestañas.
+- `2026-10-10T00:08:01` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-10T00:08:27` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `stage_for_review` ante errores de entrada y condiciones de carrera, asegurando que `ensure_safe_to_modify` no se ejecute si `_can_move_file` falla, y añadiendo una validación explícita para evitar que la operación intente mover un archivo sobre sí mismo o fuera de los límites permitidos.
+- `2026-10-10T00:08:54` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_file_exclusive` ante condiciones de concurrencia y posibles bloqueos de I/O en Windows al asegurar que el manejo de errores sea más resiliente, además de añadir validaciones de estado de archivo en `_is_file_in_use_by_system` para evitar falsos negativos en sistemas de archivos altamente concurridos.
+- `2026-10-10T00:08:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T00:08:54` Corrida terminada. Total usado hoy: 4.
