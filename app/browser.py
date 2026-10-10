@@ -242,11 +242,12 @@ def _sum_directory_recursive(
     total_bytes: int = 0
     try:
         with os.scandir(root_path) as it:
-            for entry in it:
-                if _should_skip_entry(entry, ctx):
-                    continue
-                
+            while True:
                 try:
+                    entry = next(it, None)
+                    if entry is None: break
+                    if _should_skip_entry(entry, ctx): continue
+                    
                     if entry.is_dir(follow_symlinks=False):
                         res = _sum_directory_recursive(entry.path, ctx, depth + 1)
                         total_bytes += res.bytes_found

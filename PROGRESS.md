@@ -9,43 +9,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **198** (39.3% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 52
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 213
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 110 | 12 | 35 | 14 | 129 |
-| 2026-10-10 | 88 | 8 | 17 | 7 | 84 |
+| 2026-10-09 | 107 | 12 | 35 | 13 | 129 |
+| 2026-10-10 | 91 | 8 | 17 | 7 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **42**
+- seguridad defensiva: **40**
+- robustez ante casos límite: **37**
 - rendimiento: **36**
-- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
+- `diskreport.py`: **21**
 - `healthscore.py`: **19**
-- `quarantine.py`: **18**
-- `memory.py`: **17**
+- `quarantine.py`: **17**
 - `safety.py`: **16**
+- `memory.py`: **16**
 - `branding.py`: **16**
+- `assistant.py`: **16**
 - `duplicates.py`: **15**
-- `assistant.py`: **15**
 - `scanner.py`: **14**
 - `main.py`: **12**
-- `organizer.py`: **11**
+- `organizer.py`: **10**
+- `browser.py`: **10**
 - `settings.py`: **9**
-- `browser.py`: **9**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-10T08:47:28` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular durante la obtención de metadatos (`os.stat`), evitando que fallos puntuales de lectura silencien el progreso del análisis.
+- `2026-10-10T08:47:16` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a archivos al refinar el manejo de `OSError` dentro del bucle de `os.scandir`, asegurando que archivos bloqueados o con permisos denegados no aborten el escaneo de toda la rama, y se ha fortalecido la integridad del contexto de escaneo al asegurar que las rutas se normalicen consistentemente antes de la comparación.
+- `2026-10-10T08:46:11` **assistant.py** (robustez ante casos límite): Mejora la robustez del motor local al añadir un manejo defensivo ante valores de configuración ausentes o corruptos en `_parse_config`, evitando que el asistente falle silenciosamente o se bloquee ante un `settings.json` mal formado.
 - `2026-10-10T08:36:30` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner implementando un filtro preventivo mediante `is_protected_path` antes de realizar operaciones de resolución de rutas o acceso al disco (`resolve`, `stat`, `is_file`), evitando así llamadas costosas al sistema de archivos en rutas que de antemano sabemos que deben ignorarse.
 - `2026-10-10T08:35:56` **safety.py** (rendimiento): Optimicé el rendimiento de `_get_security_descriptor_cached` y `_get_file_attrs` evitando llamadas costosas a `ctypes` y syscalls de disco cuando la ruta analizada es idéntica o cuando ya hemos determinado que no es un directorio raíz, aprovechando mejor el `lru_cache` mediante una pre-validación de cadena más eficiente.
 - `2026-10-10T08:17:09` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje eliminando la creación innecesaria de un `m_cache` en `compute_score`, reemplazando el acceso vía diccionario por el acceso directo a los atributos del objeto `SystemMetrics` (que es más rápido y eficiente), y reduje la complejidad del `loop` principal.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-10T07:35:38` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones de cálculo de salud y se ha clarificado el propósito de las constantes globales de umbral, asegurando que el código sea más legible para futuros auditores del proyecto sin alterar su comportamiento funcional.
 - `2026-10-10T07:35:03` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de los tipos, se ha estandarizado la interfaz de las clases de almacenamiento mediante `__slots__` para optimizar memoria, y se ha añadido una docstring explicativa al motor principal de recolección de métricas para aclarar cómo se integra con el resto del módulo.
 - `2026-10-10T07:34:36` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando docstrings explicativos en los tipos complejos y funciones críticas para aclarar el "porqué" del filtrado de seguridad, y se han añadido type hints faltantes en funciones internas para mejorar la robustez y legibilidad.
-- `2026-10-10T07:25:21` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `StartupEntry._extract_quoted_path` validando explícitamente el resultado de `Path()` antes de acceder a sus propiedades para evitar excepciones inesperadas por rutas mal formadas, cumpliendo con el enfoque de manejo de errores.
-- `2026-10-10T07:24:48` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `_read_and_parse_json()` capturando excepciones críticas de `json.loads` y `fcntl.flock`, y reemplazando validaciones de tipo genéricas por comprobaciones más estrictas para evitar el uso de archivos corruptos.
-- `2026-10-10T07:15:42` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_file_attrs` y `_is_virtual_drive` al agregar un manejo de errores más específico y defensivo, asegurando que cualquier fallo en la comunicación con la API de Windows retorne un valor seguro (bloqueo) en lugar de una excepción no capturada que podría colapsar el bucle de validación.

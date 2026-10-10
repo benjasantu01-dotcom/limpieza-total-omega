@@ -670,7 +670,7 @@ def available(base: str | Path | None = None) -> bool:
         return False
 
 def _parse_config(raw_cfg: Any) -> AssistantConfig:
-    """Parsea la configuración de usuario para el asistente."""
+    """Parsea la configuración de usuario para el asistente manejando errores de estructura."""
     default = AssistantConfig("", "gemini-3.1-flash-lite", True)
     if not isinstance(raw_cfg, dict):
         return default
