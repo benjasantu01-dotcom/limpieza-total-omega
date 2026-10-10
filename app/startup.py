@@ -401,13 +401,14 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
     allowed_set = set(REGISTRY_RUN_KEYS)
     for key in keys:
         if isinstance(key, str) and key in allowed_set:
+            # Usamos -LiteralPath para prevenir inyección o errores con nombres de clave que contengan caracteres especiales
             safe_keys.append(f"'{key}'")
             
     if not safe_keys:
         return []
         
     target_registry_keys: str = ", ".join(safe_keys)
-    ps_cmd: str = f"Get-ItemProperty {target_registry_keys} -ErrorAction SilentlyContinue | Select-Object * -ExcludeProperty PS* | ConvertTo-Csv -NoTypeInformation"
+    ps_cmd: str = f"Get-ItemProperty -LiteralPath {target_registry_keys} -ErrorAction SilentlyContinue | Select-Object * -ExcludeProperty PS* | ConvertTo-Csv -NoTypeInformation"
     
     try:
         process: subprocess.CompletedProcess = subprocess.run(

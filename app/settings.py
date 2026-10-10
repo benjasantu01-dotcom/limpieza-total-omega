@@ -351,7 +351,10 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
             if not _is_file_secure_to_read(f): return None
             try:
                 fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
+                # Validar estado pre-lectura
+                if not _is_file_secure_to_read(f): return None
                 content = f.read(MAX_SETTINGS_SIZE + 1)
+                # Validar estado post-lectura
                 if not content or not _is_file_secure_to_read(f): return None
                 data = json.loads(content)
                 return data if _is_dict(data) else None

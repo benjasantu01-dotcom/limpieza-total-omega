@@ -6,22 +6,22 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
+- Mejoras aceptadas: **210** (41.7% de aceptación)
 - Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 105 | 11 | 33 | 13 | 110 |
-| 2026-10-10 | 103 | 10 | 19 | 8 | 92 |
+| 2026-10-09 | 105 | 11 | 33 | 13 | 106 |
+| 2026-10-10 | 105 | 10 | 19 | 8 | 94 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **47**
+- seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **42**
 - robustez ante casos límite: **40**
@@ -40,12 +40,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **15**
 - `main.py`: **13**
 - `organizer.py`: **11**
+- `settings.py`: **10**
 - `browser.py`: **10**
-- `settings.py`: **9**
-- `startup.py`: **7**
+- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-10T09:57:43` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva al invocar el comando de PowerShell, encapsulando las rutas del registro mediante el parámetro `-LiteralPath` en lugar de `-Path` para evitar la interpretación incorrecta de caracteres especiales (como corchetes) que podrían ser usados para inyección de comandos o error de acceso.
+- `2026-10-10T09:57:14` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `_is_file_secure_to_read` para detectar ataques de tiempo de verificación vs tiempo de uso (TOCTOU) al validar el estado del archivo mediante `fstat` antes y después de cada lectura, asegurando que el contenido cargado provenga de un archivo regular que no fue reemplazado o manipulado mientras se mantenía el lock.
 - `2026-10-10T09:48:12` **safety.py** (seguridad defensiva): Se ha añadido una validación estricta en `ensure_safe_to_modify` para detectar y rechazar rutas que utilicen nombres de dispositivos cortos (ej. `COM1`, `LPT1`) combinados con extensiones, los cuales son vectores de ataque conocidos para bloquear operaciones de I/O en Windows al acceder a puertos físicos del sistema.
 - `2026-10-10T09:47:12` **quarantine.py** (seguridad defensiva): Se introdujo una validación de ruta estricta en `purge_all` para asegurar que solo se procesen archivos que residan exactamente dentro del directorio de cuarentena, evitando cualquier posibilidad de salto de directorio o procesamiento de archivos fuera del ámbito del sandbox.
 - `2026-10-10T09:39:30` **organizer.py** (seguridad defensiva): He mejorado `_is_safe_for_disk_op` para prevenir ataques de redirección de archivos o race conditions al realizar validaciones de rutas absolutas y resolución de enlaces simbólicos mediante `resolve(strict=True)` antes de confirmar la seguridad de la operación.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-10T09:16:20` **scanner.py** (robustez ante casos límite): Se añadió un control de disponibilidad del sistema de archivos al inicio de `process_entry` mediante un bloque `try-except` robusto y la verificación previa de `entry.is_file()` y `entry.is_dir()` para evitar excepciones `FileNotFoundError` si un archivo desaparece durante la iteración (concurrencia).
 - `2026-10-10T09:08:33` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `is_protected_path` ante errores de resolución de rutas (como rutas mal formadas o inaccesibles) y se ha añadido un chequeo de existencia temprana para evitar fallos en llamadas a `resolve()` sobre rutas que no existen, mejorando la estabilidad general del módulo ante casos límite de entrada de usuario.
 - `2026-10-10T08:47:28` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular durante la obtención de metadatos (`os.stat`), evitando que fallos puntuales de lectura silencien el progreso del análisis.
-- `2026-10-10T08:47:16` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a archivos al refinar el manejo de `OSError` dentro del bucle de `os.scandir`, asegurando que archivos bloqueados o con permisos denegados no aborten el escaneo de toda la rama, y se ha fortalecido la integridad del contexto de escaneo al asegurar que las rutas se normalicen consistentemente antes de la comparación.
-- `2026-10-10T08:46:11` **assistant.py** (robustez ante casos límite): Mejora la robustez del motor local al añadir un manejo defensivo ante valores de configuración ausentes o corruptos en `_parse_config`, evitando que el asistente falle silenciosamente o se bloquee ante un `settings.json` mal formado.
