@@ -139,7 +139,10 @@ def _is_allowed_directory(name: str) -> bool:
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _is_file_locked(path: Path) -> bool:
-    """Valida si un archivo está bloqueado mediante apertura exclusiva a nivel de OS."""
+    """
+    Intenta abrir el archivo en modo lectura binaria exclusiva.
+    Si falla, el SO mantiene un lock sobre el mismo, indicando uso activo.
+    """
     if not path or not path.is_file(): return True
     try:
         with open(path, "rb"):
@@ -148,7 +151,10 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
-    """Verifica si el destino es un subdirectorio del origen para evitar recursión infinita."""
+    """
+    Verifica que el directorio destino no sea padre del origen.
+    Previene errores de lógica donde la herramienta intentaría auto-moverse.
+    """
     try:
         src_resolved = src.resolve(strict=False)
         dest_resolved = dest.resolve(strict=False)
@@ -175,9 +181,9 @@ def _is_system_hidden(entry: os.DirEntry) -> bool:
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Realiza una auditoría de seguridad multietapa antes de cualquier operación física:
-    1. Valida existencia y consistencia de inodos para evitar race conditions.
-    2. Aplica filtros de seguridad de `safety.py`.
-    3. Asegura espacio en disco suficiente y previene recursión de directorios.
+    1. Valida consistencia de metadatos (inodos/dev) para evitar race conditions.
+    2. Verifica atributos del sistema y protección de rutas.
+    3. Asegura espacio en disco suficiente antes de iniciar el movimiento.
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     src = junk_file.path
@@ -228,8 +234,7 @@ def _is_candidate_junk(stats: os.stat_result, entry: os.DirEntry, now_ts: float)
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
     """
     Recorre recursivamente directorios para recolectar archivos candidatos.
-    Implementa control de profundidad máxima y caché de rutas visitadas para
-    evitar bucles infinitos y optimizar el rendimiento en estructuras profundas.
+    Implementa control de profundidad para evitar recursiones excesivas.
     """
     if depth > 50: return
     try:

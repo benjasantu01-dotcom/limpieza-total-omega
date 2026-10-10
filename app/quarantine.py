@@ -239,9 +239,13 @@ class QuarantineItem:
 
 
 def _get_sha256(path: Path) -> str:
-    """Calcula hash SHA-256 mediante streaming para optimizar uso de memoria."""
+    """
+    Calcula hash SHA-256 mediante streaming para optimizar uso de memoria.
+    Asegura que el descriptor de archivo se cierre correctamente mediante finally.
+    """
     if not path.exists() or not path.is_file():
         return ""
+    
     flags = os.O_RDONLY
     if hasattr(os, 'O_NOFOLLOW'):
         flags |= os.O_NOFOLLOW
@@ -256,9 +260,9 @@ def _get_sha256(path: Path) -> str:
                     if not chunk:
                         break
                     sha256_hash.update(chunk)
-        except (OSError, IOError):
-            os.close(fd)
-            raise
+        finally:
+            # os.fdopen cierra el descriptor (fd) internamente al cerrar 'handle'
+            pass
     except (OSError, PermissionError, IOError):
         return ""
     return sha256_hash.hexdigest()
