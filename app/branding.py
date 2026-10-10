@@ -384,7 +384,13 @@ def logo_svg(size: int = 128) -> str:
     return _SVG_TEMPLATE.format(s=s, stops=_SVG_GRADIENT_STOPS, glow=C_GLOW, bg=C_SURFACE, font=UI_FONT_FAMILY)
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optional[Path]:
-    """Guarda el logo en disco usando validaciones de seguridad atómicas pre-escritura."""
+    """
+    Guarda el logo en disco usando validaciones de seguridad atómicas pre-escritura.
+    Args:
+        destination: Ruta de destino (str o Path).
+        size: Dimensión en píxeles del logo (16 a 1024).
+    Returns: Path de archivo escrito si tuvo éxito, None en caso contrario.
+    """
     if not isinstance(destination, (str, Path)): return None
     try:
         target = Path(destination).resolve()
@@ -468,7 +474,13 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Renderiza el escudo corporativo compuesto, centralizando polígono, franjas y glifos."""
+    """
+    Renderiza el escudo corporativo compuesto en el canvas.
+    Args:
+        canvas: Objeto tipo Canvas para dibujar.
+        size: Tamaño base del icono.
+        canvas_x, canvas_y: Desplazamiento del punto origen.
+    """
     try:
         if canvas is None: return
         s = float(size) if size is not None else 56.0
@@ -506,7 +518,14 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, 
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, 
               track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """Dibuja indicador circular de progreso (anillo de carga) con soporte para track y fill."""
+    """
+    Dibuja indicador circular de progreso (anillo de carga) con soporte para track y fill.
+    Args:
+        canvas: Canvas destino.
+        percent: Porcentaje completado (0-100).
+        size: Diámetro del anillo.
+        thickness: Grosor del trazo.
+    """
     try:
         if canvas is None: return
         val = float(percent) if percent is not None else 0.0

@@ -426,6 +426,14 @@ class SystemContext:
             return False
         return not _is_input_too_deep_or_complex(source)
 
+    def _apply_updates(self, updates: dict[str, Any]) -> None:
+        """Aplica cambios al contexto y limpia cachés internas."""
+        for k, v in updates.items():
+            object.__setattr__(self, k, v)
+        object.__setattr__(self, 'analyzed', True)
+        self.__dict__.pop('metrics_snapshot', None)
+        self.__dict__.pop('active_problems', None)
+
     def ingest(self, source: Any) -> bool:
         """Normaliza e importa datos externos al contexto de manera transaccional."""
         if not self._validate_ingestion_source(source):
@@ -445,11 +453,7 @@ class SystemContext:
             updates["grade"] = grade_val
             
         if updates:
-            for k, v in updates.items():
-                object.__setattr__(self, k, v)
-            object.__setattr__(self, 'analyzed', True)
-            self.__dict__.pop('metrics_snapshot', None)
-            self.__dict__.pop('active_problems', None)
+            self._apply_updates(updates)
             return True
         return False
 
