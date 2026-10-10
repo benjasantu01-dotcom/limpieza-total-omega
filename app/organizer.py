@@ -313,7 +313,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         return None
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Elimina permanentemente archivos desde la zona de revisión tras validación explícita."""
+    """Elimina permanentemente archivos desde la zona de revisión tras validación estricta."""
     if not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser().resolve(strict=False)
@@ -323,7 +323,10 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         count = 0
         for item in dest.iterdir():
             try:
+                # Validar que el item a borrar está contenido realmente en la carpeta de revisión
                 if item.is_file() and is_safe_to_modify(item) and not is_protected_path(item):
+                    if dest.resolve(strict=True) != item.resolve(strict=True).parent:
+                        continue
                     ensure_safe_to_modify(item)
                     item.unlink()
                     count += 1
