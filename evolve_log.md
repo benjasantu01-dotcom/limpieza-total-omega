@@ -603,3 +603,11 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-10-10T13:53:00` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_excluded_path` añadiendo una validación explícita mediante `is_protected_path` sobre el propio `entry.path` antes de cualquier operación, asegurando que incluso rutas que podrían sortear filtros previos por estar en niveles profundos sean descartadas preventivamente por seguridad defensiva.
 - `2026-10-10T13:53:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T13:53:00` Corrida terminada. Total usado hoy: 328.
+- `2026-10-10T14:01:04` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-10T14:01:06` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-10T14:01:37` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-10-10T14:02:06` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). He endurecido la seguridad del pipeline añadiendo una validación explícita de `SystemMetrics` antes de procesar cada regla, asegurando que las funciones de mensaje no reciban datos corrompidos y evitando posibles errores de ejecución durante la evaluación.
+- `2026-10-10T14:03:17` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad defensiva mediante la implementación de `_validate_and_log_error` y una verificación estricta en `on_trim_process` para asegurar que el manejo de procesos y excepciones ante accesos denegados sea consistente y robusto, evitando comportamientos impredecibles en el hilo principal.
+- `2026-10-10T14:03:32` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` implementando un chequeo previo contra el `SYSTEM_FOLDER_BLOCKLIST` indirectamente mediante `is_protected_path` y limitando el tamaño del buffer de caracteres, además de añadir un manejo explícito para rutas UNC que podrían intentar inyectar comportamientos inesperados en las APIs de Windows.
+- `2026-10-10T14:03:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T14:03:32` Corrida terminada. Total usado hoy: 332.

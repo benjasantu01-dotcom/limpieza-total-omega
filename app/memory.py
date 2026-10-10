@@ -357,9 +357,13 @@ def _is_process_executable_safe(pid: int) -> bool:
     handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
     if not handle: return False
     try:
-        buf = ctypes.create_unicode_buffer(1024)
-        if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
-            return not is_protected_path(buf.value)
+        # Buffer limitado para evitar problemas de memoria y asegurar saneamiento básico
+        buf = ctypes.create_unicode_buffer(512)
+        if psapi.GetModuleFileNameExW(handle, None, buf, 512) > 0:
+            path_str = buf.value
+            # Proteger contra rutas UNC (que empiezan con \\) para evitar riesgos en manejo de red
+            if path_str.startswith("\\\\"): return False
+            return not is_protected_path(path_str)
     except (ctypes.ArgumentError, OSError):
         return False
     finally:
