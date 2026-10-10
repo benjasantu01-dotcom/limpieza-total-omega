@@ -1185,3 +1185,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-10T08:47:28` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular durante la obtención de metadatos (`os.stat`), evitando que fallos puntuales de lectura silencien el progreso del análisis.
 - `2026-10-10T08:47:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T08:47:28` Corrida terminada. Total usado hoy: 208.
+- `2026-10-10T08:55:31` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-10-10T08:55:57` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-10T08:56:22` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-10-10T08:57:27` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez de `main.py` ante errores de entrada en los campos numéricos de configuración mediante la validación proactiva y el uso de un método centralizado `_get_numeric_setting_from_widget`, previniendo que valores no numéricos o vacíos corrompan la lógica de la aplicación.
+- `2026-10-10T08:57:40` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-10T08:57:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T08:57:40` Corrida terminada. Total usado hoy: 212.
