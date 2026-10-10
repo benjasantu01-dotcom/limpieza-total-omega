@@ -404,6 +404,7 @@ class SystemContext:
         try:
             val = _get_source_value(source, key)
             if val is None: return None
+            # Re-verificar integridad ante posibles manipulaciones de getattr
             if not _check_metric_integrity(val): return None
             float_val = float(val)
             if not _is_metric_within_bounds(float_val, spec): 
@@ -432,9 +433,12 @@ class SystemContext:
         
         updates: dict[str, Any] = {}
         for key, spec in _VALIDATORS.items():
-            value = self._apply_field(source, key, spec)
-            if value is not None and value != getattr(self, key):
-                updates[key] = value
+            try:
+                value = self._apply_field(source, key, spec)
+                if value is not None and value != getattr(self, key, None):
+                    updates[key] = value
+            except Exception:
+                continue
         
         grade_val = self._clean_grade(_get_source_value(source, "grade"))
         if grade_val and grade_val != self.grade:
