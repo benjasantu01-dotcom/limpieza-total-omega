@@ -417,3 +417,22 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-10T12:21:52` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones `Args` y `Returns`) y type hints explícitos en funciones críticas para clarificar el flujo de datos y el propósito de los chequeos heurísticos, facilitando así el mantenimiento del motor de escaneo.
 - `2026-10-10T12:21:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T12:21:52` Corrida terminada. Total usado hoy: 292.
+- `2026-10-10T12:29:23` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-10-10T12:30:00` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-10T12:30:30` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-10T12:31:17` Tests FALLARON:
+```
+, 2400 MB de basura, 900 MB en duplicados.'
+ +  where 'Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 MB en duplicados.' = Answer(text='Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 M...lo más urgente que debería arreglar?', '¿Por qué mi PC está lenta?', '¿Es seguro borrar lo que encontró la limpieza?']).text
+FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_explains_they_are_signals - AssertionError: assert 'señales' in 'con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de ram, 2400 mb de basura, 900 mb en duplicados.'
+ +  where 'con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de ram, 2400 mb de basura, 900 mb en duplicados.' = <built-in method lower of str object at 0x7fba88f2d790>()
+ +    where <built-in method lower of str object at 0x7fba88f2d790> = 'Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 MB en duplicados.'.lower
+ +      where 'Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 MB en duplicados.' = Answer(text='Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 M...lo más urgente que debería arreglar?', '¿Por qué mi PC está lenta?', '¿Es seguro borrar lo que encontró la limpieza?']).text
+2 failed, 297 passed in 1.65s
+
+```
+- `2026-10-10T12:31:17` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `local_answer` reemplazando la lógica de búsqueda por tokens mediante el uso de un conjunto (set) y un dictado cacheado, eliminando la creación de listas intermedias y el uso de `findall` con regex, que es redundante dada la naturaleza estática del mapeo de palabras clave.
+- `2026-10-10T12:31:18` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-10T12:31:44` ➖ Sin cambios en branding.py (enfoque: rendimiento). Motivo: Se introdujo una cache Lru dedicada para la conversión de coordenadas del polígono del escudo (`_get_scaled_poly`), evitando el recálculo aritmético de 16 vértices en cada frame de renderizado y reduciendo la presión sobre el recolector de basura al reutilizar tuplas de coordenadas precalculadas según el factor de escala.
+- `2026-10-10T12:31:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T12:31:44` Corrida terminada. Total usado hoy: 296.
