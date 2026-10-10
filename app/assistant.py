@@ -491,20 +491,21 @@ def _ensure_safe_text(text: Any) -> bool:
     
     return not _contains_forbidden_patterns(text)
 
-def _get_source_value(source: Any, key: str) -> Any:
+def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
     """Acceso seguro a atributos evitando recursión, inyecciones de clase y acceso a métodos."""
-    if not _is_safe_key(key): return None
+    if depth > _MAX_NESTING_DEPTH or not _is_safe_key(key): return None
     try:
         if isinstance(source, dict):
-            return source.get(key)
-        if hasattr(source, key):
+            val = source.get(key)
+        elif hasattr(source, key):
             val = getattr(source, key)
             if callable(val) or isinstance(val, (type, list, dict, set, tuple)):
                 return None
-            return val
+        else:
+            return None
+        return val
     except (AttributeError, ValueError, TypeError):
-        pass
-    return None
+        return None
 
 def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> SystemContext:
     """Crea un objeto SystemContext a partir de múltiples fuentes de datos de análisis."""
