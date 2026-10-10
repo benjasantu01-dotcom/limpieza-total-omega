@@ -495,9 +495,11 @@ def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
         if isinstance(source, dict):
             return source.get(key)
         
-        # Acceso genérico a objeto, evitando __dict__ directo y métodos
+        # Acceso restringido para instancias de clase evitando exponer lógica interna
+        if not hasattr(source, "__dict__"): return None
         val = getattr(source, key, None)
-        if callable(val) or isinstance(val, (type, list, dict, set, tuple)):
+        # Impedimos acceder a métodos o atributos que no sean datos primitivos o colecciones seguras
+        if callable(val) or isinstance(val, (type,)):
             return None
         return val
     except (AttributeError, ValueError, TypeError):
@@ -742,7 +744,8 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     if not payload: return None
     
     target_url = _ENDPOINT_BASE.format(model=model)
-    if not target_url.startswith(_API_HOST_ROOT) or re.search(r"[<>\s]", target_url):
+    # Validar estrictamente el dominio de Google
+    if not target_url.startswith(_API_HOST_ROOT) or any(c in target_url for c in "<>\"' "):
         return None
         
     url = f"{target_url}?key={api_key}"

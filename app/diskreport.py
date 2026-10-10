@@ -172,10 +172,11 @@ def _is_excluded_path(entry: os.DirEntry) -> bool:
         if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
             return True
         
-        if entry.is_symlink():
-            return True
-            
+        # Seguridad defensiva: validar siempre la ruta contra `is_protected_path`
         if is_protected_path(Path(entry.path)):
+            return True
+        
+        if entry.is_symlink():
             return True
 
         if not os.access(entry.path, os.R_OK):

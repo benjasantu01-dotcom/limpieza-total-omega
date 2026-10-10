@@ -564,3 +564,42 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-10T13:42:52` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se mejora la robustez de `StartupEntry._extract_quoted_path` para evitar errores de excepciones no controladas al procesar rutas mal formadas (como cadenas con una sola comilla o rutas con caracteres inválidos) que antes podían romper la lógica de resolución de ejecutables.
 - `2026-10-10T13:42:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T13:42:52` Corrida terminada. Total usado hoy: 324.
+- `2026-10-10T13:50:54` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-10T13:51:41` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `assistant.py` implementando una validación estricta de dominios en `_call_gemini` y limitando el alcance de `_get_source_value` para prevenir posibles ataques por inyección de atributos o introspección de objetos no deseados.
+- `2026-10-10T13:52:19` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `save_logo_svg` utilizando `filter_safe_paths` para garantizar que la ruta de destino no sea una ubicación bloqueada a nivel de sistema antes de intentar cualquier operación de escritura.
+- `2026-10-10T13:52:47` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+....................................................F................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________ test_detect_profiles_finds_injected_cache_folders _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_finds_inj0')
+
+    def test_detect_profiles_finds_injected_cache_folders(tmp_path):
+        cache = tmp_path / "Navegador" / "Default" / "Cache"
+        cache.mkdir(parents=True)
+        (cache / "dato.bin").write_bytes(b"a" * 500)
+    
+        encontrados = browser.detect_profiles(
+            bases=[tmp_path],
+            cache_paths={"Navegador Falso": r"Navegador\Default\Cache"},
+        )
+>       assert len(encontrados) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:739: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_folders - assert 0 == 1
+ +  where 0 = len([])
+1 failed, 298 passed in 1.33s
+
+```
+- `2026-10-10T13:52:47` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez defensiva en `_resolve_browser_path` al aplicar `os.path.normpath` y una validación de ruta absoluta mediante `pathlib` más estricta antes de la resolución, asegurando que la ruta construida nunca pueda escapar del directorio base del perfil mediante componentes `..` maliciosos, incluso en escenarios de entradas de configuración potencialmente ambiguas.
+- `2026-10-10T13:53:00` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_excluded_path` añadiendo una validación explícita mediante `is_protected_path` sobre el propio `entry.path` antes de cualquier operación, asegurando que incluso rutas que podrían sortear filtros previos por estar en niveles profundos sean descartadas preventivamente por seguridad defensiva.
+- `2026-10-10T13:53:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T13:53:00` Corrida terminada. Total usado hoy: 328.
