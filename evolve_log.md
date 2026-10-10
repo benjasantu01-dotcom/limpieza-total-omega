@@ -1498,3 +1498,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-10T11:41:12` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_owned_by_system` encapsulando la lógica en un bloque `try-except` más preciso y eliminando el uso de `LocalFree` en escenarios donde el puntero SID es nulo, previniendo errores de segmentación o comportamiento indefinido al interactuar con la API Win32.
 - `2026-10-10T11:41:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T11:41:12` Corrida terminada. Total usado hoy: 276.
+- `2026-10-10T11:48:40` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-10-10T11:49:13` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-10T11:49:47` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-10T11:50:18` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-10T11:50:36` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): el archivo se encogió al 39% del original (posible pérdida de código)
+- `2026-10-10T11:50:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T11:50:36` Corrida terminada. Total usado hoy: 280.
