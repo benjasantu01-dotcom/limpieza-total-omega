@@ -1046,3 +1046,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-10T06:47:20` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez del manejo de errores en `_call_gemini` y `_extract_text_from_gemini_json` mediante una validación más estricta de las respuestas HTTP y el parseo de JSON, asegurando que cualquier fallo parcial resulte en un retorno seguro (`None`) en lugar de propagar excepciones hacia la interfaz.
 - `2026-10-10T06:47:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T06:47:20` Corrida terminada. Total usado hoy: 160.
+- `2026-10-10T06:53:25` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-10-10T06:54:27` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-10T06:54:44` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-10T06:55:50` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-10T06:57:02` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-10T06:57:41` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-10T06:58:07` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del manejo de errores en `summarize` y `walk_files`, asegurando que el estado del sistema no se vea afectado por excepciones inesperadas durante el acceso al disco y proporcionando mensajes de error más informativos.
+- `2026-10-10T06:58:16` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del módulo agregando validación de tipos y manejo de errores defensivo en las funciones `_calculate_keeper_heuristic` y `format_group`, asegurando que la app no colapse ante rutas malformadas o estados de archivo inesperados durante la generación de reportes.
+- `2026-10-10T06:58:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T06:58:16` Corrida terminada. Total usado hoy: 164.

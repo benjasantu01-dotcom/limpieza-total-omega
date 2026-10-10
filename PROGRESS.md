@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 52
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 208
+- Rechazadas por guardia de seguridad: 51
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 136 | 13 | 41 | 18 | 136 |
-| 2026-10-10 | 67 | 6 | 11 | 4 | 72 |
+| 2026-10-09 | 134 | 13 | 40 | 17 | 136 |
+| 2026-10-10 | 69 | 6 | 11 | 4 | 74 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **46**
 - robustez ante casos límite: **44**
 - rendimiento: **41**
-- legibilidad y documentación: **38**
-- manejo de errores y validación de entradas: **34**
+- legibilidad y documentación: **36**
+- manejo de errores y validación de entradas: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
-- `quarantine.py`: **19**
+- `diskreport.py`: **22**
 - `branding.py`: **19**
 - `memory.py`: **18**
+- `quarantine.py`: **18**
 - `healthscore.py`: **17**
+- `duplicates.py`: **16**
 - `assistant.py`: **16**
-- `duplicates.py`: **15**
 - `safety.py`: **15**
 - `scanner.py`: **14**
-- `organizer.py`: **12**
 - `main.py`: **12**
+- `organizer.py`: **11**
 - `browser.py`: **9**
 - `settings.py`: **9**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-10T06:58:16` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez del módulo agregando validación de tipos y manejo de errores defensivo en las funciones `_calculate_keeper_heuristic` y `format_group`, asegurando que la app no colapse ante rutas malformadas o estados de archivo inesperados durante la generación de reportes.
+- `2026-10-10T06:58:07` **diskreport.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `summarize` y `walk_files`, asegurando que el estado del sistema no se vea afectado por excepciones inesperadas durante el acceso al disco y proporcionando mensajes de error más informativos.
 - `2026-10-10T06:47:20` **assistant.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de errores en `_call_gemini` y `_extract_text_from_gemini_json` mediante una validación más estricta de las respuestas HTTP y el parseo de JSON, asegurando que cualquier fallo parcial resulte en un retorno seguro (`None`) en lugar de propagar excepciones hacia la interfaz.
 - `2026-10-10T05:25:04` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de TOCTOU (Time-of-Check to Time-of-Use) y asegurar que el archivo de configuración, tras ser abierto, no haya sido reemplazado por un enlace simbólico o un dispositivo peligroso antes de la lectura.
 - `2026-10-10T05:23:34` **safety.py** (seguridad defensiva): Se añadió un control de integridad de reparse points anidados dentro de `ensure_safe_to_modify` para detectar y bloquear recursivamente puntos de unión ocultos que `_validate_path_components` podría pasar por alto si se accede mediante rutas relativas o aliases de sistema, reforzando la seguridad defensiva contra el acceso a directorios prohibidos fuera del sandbox.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-10T04:53:08` **assistant.py** (seguridad defensiva): Mejoré la seguridad de la ingestión de datos en `SystemContext` aplicando una validación más estricta sobre el contenido de `source`, asegurando que `_get_source_value` no pueda acceder a atributos privados o métodos protegidos de objetos arbitrarios, bloqueando cualquier intento de manipulación estructural antes de que los datos toquen el estado del asistente.
 - `2026-10-10T04:52:29` **startup.py** (robustez ante casos límite): Se reforzó la robustez de `StartupEntry._resolve_and_cache_path` añadiendo un manejo explícito para rutas de red UNC y casos de desbordamiento de `MAX_PATH` antes de interactuar con el sistema de archivos, previniendo excepciones innecesarias en entornos de red corporativos o con estructuras de directorios profundas.
 - `2026-10-10T04:43:08` **scanner.py** (robustez ante casos límite): Mejoré la robustez ante archivos inexistentes o con permisos denegados en `_run_file_heuristics` y `scan_file`, envolviendo el chequeo de lectura y las heurísticas en un manejo de excepciones más granular para evitar interrupciones en el escaneo cuando un archivo se vuelve inaccesible tras ser detectado por `os.scandir`.
-- `2026-10-10T04:42:54` **safety.py** (robustez ante casos límite): Se implementó un chequeo preventivo de concurrencia al inicio de `ensure_safe_to_modify` para detectar si el sistema operativo tiene el archivo bloqueado por acceso exclusivo antes de intentar cualquier otra operación de I/O, evitando excepciones de `Win32` no capturadas durante la fase de normalización o estadística.
-- `2026-10-10T04:41:47` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `purge_all` ante archivos inesperados en la carpeta de cuarentena y posibles inconsistencias entre el sistema de archivos y el manifiesto, utilizando `item_map` y validaciones estrictas de existencia.

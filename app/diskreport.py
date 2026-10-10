@@ -189,7 +189,7 @@ def _is_excluded_path(entry: os.DirEntry) -> bool:
                 st = entry.stat(follow_symlinks=False)
                 if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x0400):
                      return True
-            except OSError:
+            except (OSError, PermissionError):
                 return True
             
         return False
@@ -323,9 +323,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             yield Path(entry.path), int(st.st_size)
-                    except (OSError, PermissionError, FileNotFoundError):
+                    except (OSError, PermissionError):
                         continue
-        except (PermissionError, OSError, FileNotFoundError): 
+        except (PermissionError, OSError): 
             continue
 
 
@@ -405,14 +405,12 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     """Genera una representación de texto del reporte de uso de disco."""
     root = _validate_root(directory)
     if root is None: 
-        return ["Error: Ruta no válida, protegida o inaccesible."]
+        return ["Error: La ruta seleccionada no es válida o no tiene permisos de lectura."]
     
-    try:
-        data = _collect_summary_data(root, skip_protected, limit=20)
-    except (OSError, PermissionError):
-        return ["Error: Fallo crítico al acceder al sistema de archivos."]
+    data = _collect_summary_data(root, skip_protected, limit=20)
         
-    if data.total_files == 0: return ["Aviso: No hay archivos accesibles."]
+    if data.total_files == 0: 
+        return ["Aviso: No se encontraron archivos accesibles en la ruta seleccionada."]
     
     lines = [f"Carpeta: {root}", f"Total: {format_size(data.total_bytes)} en {data.total_files} archivos", "", "Por tipo:"]
     for ext, stats in heapq.nlargest(8, data.ext_stats.items(), key=lambda x: x[1].total_bytes):

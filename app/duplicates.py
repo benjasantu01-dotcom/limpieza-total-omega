@@ -248,7 +248,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                     try:
                         if entry.is_dir(follow_symlinks=False):
                             p_entry = Path(entry.path)
-                            # Defensa adicional: solo entrar si es ruta segura y no junction/symlink
                             if _safe_path_check(p_entry):
                                 if not (skip_protected and is_protected_path(p_entry)):
                                     queue.append((p_entry, depth + 1))
@@ -314,14 +313,12 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     """Calcula score de antigüedad y longitud de ruta para sugerir el 'original'."""
-    if not isinstance(path, Path):
+    if not isinstance(path, Path) or not path.exists():
         return None
     try:
-        if not path.is_file():
-            return None
         stat = path.stat()
         return float(stat.st_mtime), len(str(path))
-    except (OSError, PermissionError, ValueError, AttributeError):
+    except (OSError, PermissionError, AttributeError):
         return None
 
 
