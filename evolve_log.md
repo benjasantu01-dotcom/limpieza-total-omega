@@ -1242,3 +1242,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-10T09:18:10` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad en la ingesta de datos del `SystemContext` mediante la implementación de una validación estricta contra el bloqueo de `SYSTEM_FOLDER_BLOCKLIST` y el uso de `is_protected_path`, previniendo que rutas del sistema o configuraciones maliciosas puedan ser inyectadas en el objeto de contexto.
 - `2026-10-10T09:18:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T09:18:10` Corrida terminada. Total usado hoy: 220.
+- `2026-10-10T09:26:04` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-10-10T09:26:39` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `save_logo_svg` utilizando `is_safe_to_modify` para verificar la seguridad antes de realizar operaciones de disco, cumpliendo con el patrón de diseño defensivo que permite saltear operaciones inseguras sin romper el flujo de la aplicación.
+- `2026-10-10T09:27:02` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-10-10T09:27:36` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó `_is_excluded_path` añadiendo un chequeo explícito mediante `os.access` para verificar permisos de ejecución antes de procesar un nodo, alineándose con la estrategia de seguridad defensiva de validar antes de operar y evitar errores de acceso durante el escaneo.
+- `2026-10-10T09:27:46` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` para asegurar que el escaneo de directorios respete explícitamente los límites de `is_safe_to_modify` y `is_protected_path` al procesar cada entrada descubierta, evitando el seguimiento accidental de rutas fuera del alcance permitido del proyecto.
+- `2026-10-10T09:27:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T09:27:46` Corrida terminada. Total usado hoy: 224.

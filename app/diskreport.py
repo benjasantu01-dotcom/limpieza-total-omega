@@ -173,6 +173,9 @@ def _is_excluded_path(entry: os.DirEntry) -> bool:
         if is_protected_path(Path(entry.path)):
             return True
 
+        if not os.access(entry.path, os.R_OK):
+            return True
+
         if os.name == 'nt':
             try:
                 st = entry.stat(follow_symlinks=False)

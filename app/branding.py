@@ -395,8 +395,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         target = Path(destination).resolve()
         
         # Validar ruta de destino antes de intentar crear directorios o escribir
-        if is_protected_path(target): return None
-        ensure_safe_to_modify(target)
+        if not is_safe_to_modify(target): return None
             
         if not target.parent.exists():
             target.parent.mkdir(parents=True, exist_ok=True)
