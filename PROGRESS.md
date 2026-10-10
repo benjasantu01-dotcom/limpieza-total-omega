@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Mejoras aceptadas: **202** (40.1% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-08 | 13 | 1 | 1 | 0 | 35 |
+| 2026-10-08 | 10 | 1 | 1 | 0 | 34 |
 | 2026-10-09 | 140 | 13 | 42 | 18 | 137 |
-| 2026-10-10 | 50 | 4 | 9 | 3 | 38 |
+| 2026-10-10 | 52 | 4 | 9 | 3 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **43**
 - manejo de errores y validación de entradas: **42**
 - rendimiento: **41**
-- seguridad defensiva: **39**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **40**
+- seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `quarantine.py`: **19**
 - `branding.py`: **19**
+- `healthscore.py`: **18**
 - `memory.py`: **18**
-- `healthscore.py`: **17**
 - `assistant.py`: **16**
-- `safety.py`: **15**
 - `duplicates.py`: **15**
-- `scanner.py`: **14**
+- `safety.py`: **14**
+- `scanner.py`: **13**
 - `organizer.py`: **12**
-- `settings.py`: **10**
+- `main.py`: **11**
 - `browser.py`: **10**
-- `main.py`: **10**
+- `settings.py`: **9**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-10T04:34:45` **main.py** (robustez ante casos límite): Se introdujo una validación robusta para el manejo de caracteres no imprimibles y longitudes de ruta en `_validate_disk_access`, protegiendo el sistema de inyecciones de rutas maliciosas o rutas inválidas ("path traversal" o errores de sistema) antes de cualquier operación de disco.
+- `2026-10-10T04:31:22` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` ante fallos de datos inyectados o estados inesperados mediante un filtrado previo de `SystemMetrics` más estricto y la adición de un chequeo de integridad que garantiza que el `pipeline` siempre produzca un resultado numérico válido, incluso ante condiciones de borde como valores negativos o nulos.
 - `2026-10-10T04:22:18` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` ante casos límite mediante la gestión explícita de `OSError` al intentar leer atributos de archivos que pueden desaparecer, estar bloqueados por el sistema o ser inaccesibles durante la iteración del escaneo.
 - `2026-10-10T04:21:50` **browser.py** (robustez ante casos límite): Se mejoró la robustez de `_resolve_browser_path` para evitar ataques de salto de directorio (directory traversal) mediante el uso de `pathlib.Path.parts` y validación de componentes seguros, garantizando que ninguna ruta resuelta escape del directorio base incluso si el `rel_str` contiene manipulaciones maliciosas.
 - `2026-10-10T04:21:23` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `draw_ring` mediante la sanitización estricta de sus parámetros geométricos y la adición de una validación de `math.isfinite` sobre el `extent` calculado, previniendo errores de renderizado ante entradas anómalas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-10T03:41:52` **diskreport.py** (rendimiento): Optimicé el método `largest_folders` para evitar la creación innecesaria de objetos `Path` y realizar cálculos de subcarpetas mediante operaciones de cadena más eficientes, reduciendo la carga sobre la memoria durante el escaneo.
 - `2026-10-10T03:41:40` **browser.py** (rendimiento): Se optimizó el escaneo recursivo sustituyendo las consultas repetitivas de normalización y validación de rutas dentro del bucle (`os.path.normcase`) por el uso de una caché local de rutas ya validadas (`visited_dirs`) y evitando redundancias en la verificación de seguridad durante la recursión.
 - `2026-10-10T03:41:15` **branding.py** (rendimiento): Optimicé el renderizado de franjas y gradientes evitando la creación repetitiva de tuplas en cada llamada mediante una cache compartida y mejorando la eficiencia de `get_gradient_segments`, reduciendo la carga sobre el recolector de basura en operaciones de dibujo intensivas.
-- `2026-10-10T03:31:41` **startup.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en funciones críticas de manejo de archivos y registro, clarificando la intención y los contratos de datos para mejorar la mantenibilidad del módulo.
-- `2026-10-10T03:31:29` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `settings.py` mediante la refactorización de `_load_impl` para reducir su complejidad ciclomática, extrayendo el proceso de lectura y validación de archivos a un método privado más claro, facilitando el seguimiento de los flujos de seguridad.

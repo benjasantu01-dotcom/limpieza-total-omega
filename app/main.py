@@ -317,12 +317,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Valida la integridad de la ruta y permisos de seguridad."""
         p = Path(path).resolve()
         
-        # Prevenir Path Traversal básico verificando que la ruta no sea interna de la app
+        # Prevenir Path Traversal y caracteres no deseados
         app_dir = Path(__file__).resolve().parent
         if str(p).startswith(str(app_dir)) and p != app_dir:
              raise safety.UnsafePathError("Operación denegada: Acceso a estructura interna de la App.")
 
-        if any(ord(c) < 32 for c in str(p)) or len(str(p)) < 3:
+        # Validación estricta de formato
+        if any(ord(c) < 32 or c in '<>|?*' for c in str(p)) or len(str(p)) < 3:
             raise safety.UnsafePathError("Ruta contiene caracteres inválidos o es demasiado corta")
         
         if not p.exists():

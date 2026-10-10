@@ -761,3 +761,12 @@ FAILED evolve/tests/test_modules.py::test_never_scans_system_folders - Attribute
 - `2026-10-10T04:22:29` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se ha robustecido `_collect_candidates` añadiendo manejo de errores granular y una verificación de existencia mediante `path.exists()` dentro del bucle de recolección para evitar excepciones al encontrar archivos que desaparecen durante el escaneo (condición de carrera común en escaneos de disco).
 - `2026-10-10T04:22:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T04:22:29` Corrida terminada. Total usado hoy: 104.
+- `2026-10-10T04:30:54` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-10-10T04:31:22` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `compute_score` ante fallos de datos inyectados o estados inesperados mediante un filtrado previo de `SystemMetrics` más estricto y la adición de un chequeo de integridad que garantiza que el `pipeline` siempre produzca un resultado numérico válido, incluso ante condiciones de borde como valores negativos o nulos.
+- `2026-10-10T04:32:22` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-10T04:33:25` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-10T04:34:45` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta para el manejo de caracteres no imprimibles y longitudes de ruta en `_validate_disk_access`, protegiendo el sistema de inyecciones de rutas maliciosas o rutas inválidas ("path traversal" o errores de sistema) antes de cualquier operación de disco.
+- `2026-10-10T04:35:13` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-10T04:35:22` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-10T04:35:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T04:35:22` Corrida terminada. Total usado hoy: 108.
