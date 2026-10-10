@@ -13,7 +13,7 @@ import re
 import ctypes
 from enum import Enum, auto, IntEnum
 from pathlib import Path
-from typing import Union, Iterable, TypeAlias, Final, NamedTuple, Callable, Optional, TypeGuard, TypedDict
+from typing import Union, Iterable, TypeAlias, Final, NamedTuple, Callable, Optional, TypedDict
 from functools import lru_cache
 import unicodedata
 
@@ -790,7 +790,6 @@ def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> 
         if base_dir and _is_junction_target_outside_base(path, base_dir):
             raise UnsafePathError("Redirección de reparse point fuera de base.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         
-        # Validación recursiva: Si la ruta tiene subdirectorios, verificamos que no contengan reparse points anidados
         for parent in path.parents:
             if _is_system_directory_junction(str(parent)):
                 if base_dir and _is_junction_target_outside_base(parent, base_dir):
@@ -811,6 +810,20 @@ def _check_hard_link_security(path: Path, stat_res: os.stat_result) -> None:
     if path.is_file() and stat_res.st_nlink > 1:
         raise UnsafePathError(f"Archivo con múltiples hard links detectado: {path.name}", SafetyValidationErrorCode.HARD_LINK_DETECTED)
 
+def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Optional[Path]) -> None:
+    """Valida los requisitos específicos para archivos existentes."""
+    if not os.access(p, os.W_OK):
+        raise UnsafePathError(f"Permisos de escritura insuficientes: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
+    _validate_access_permissions(p)
+    if _is_file_in_use_by_system(str(p)):
+        raise UnsafePathError(f"Archivo en uso por el sistema: {p.name}", SafetyValidationErrorCode.FILE_IN_USE)
+    
+    initial_stat = _get_path_stat_robust(p)
+    _check_hard_link_security(p, initial_stat)
+    if os.name == 'nt': 
+        _validate_ntfs_reparse_redirection(p, base)
+    _check_file_integrity(p, initial_stat)
+
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """Valida exhaustivamente una ruta para garantizar que es segura de modificar."""
     try:
@@ -819,7 +832,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         if not isinstance(path, (str, Path, os.PathLike)):
             raise UnsafePathError(f"Tipo de ruta no soportado: {type(path).__name__}", SafetyValidationErrorCode.GENERIC)
         
-        # Pre-chequeo temprano de concurrencia para evitar bloqueos del SO
         path_str = str(path)
         if os.name == 'nt' and os.path.exists(path_str) and _is_file_locked_by_other_process(path_str):
              raise UnsafePathError(f"Archivo bloqueado por el sistema: {path_str}", SafetyValidationErrorCode.FILE_IN_USE)
@@ -829,18 +841,15 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         
         p = normalize(path)
         base = Path(base_dir).resolve() if base_dir else None
+        
+        # Validaciones de pre-condición
         _validate_path_components(p)
-
         if os.name == 'nt' and os.path.ismount(p):
             raise UnsafePathError(f"Punto de montaje bloqueado: {p}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED)
-            
         if _is_kernel_managed(str(p)):
             raise UnsafePathError(f"Archivo de sistema crítico: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
-        
-        if os.name == 'nt':
-            if _is_volume_readonly(str(p)) or _is_volume_compressed_or_encrypted(str(p)) or _is_virtual_drive(str(p)):
-                raise UnsafePathError(f"Volumen restringido/solo lectura/virtual: {p.anchor}", SafetyValidationErrorCode.VOLUME_READ_ONLY)
-
+        if os.name == 'nt' and (_is_volume_readonly(str(p)) or _is_volume_compressed_or_encrypted(str(p)) or _is_virtual_drive(str(p))):
+            raise UnsafePathError(f"Volumen restringido/solo lectura/virtual: {p.anchor}", SafetyValidationErrorCode.VOLUME_READ_ONLY)
         if not allow_sensitive and is_sensitive_file(p):
             raise UnsafePathError(f"Extensión bloqueada '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION)
             
@@ -848,17 +857,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         _validate_boundary_conditions(p, base_dir)
         
         if p.exists():
-            if not os.access(p, os.W_OK):
-                 raise UnsafePathError(f"Permisos de escritura insuficientes: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
-            _validate_access_permissions(p)
-            if _is_file_in_use_by_system(str(p)):
-                 raise UnsafePathError(f"Archivo en uso por el sistema: {p.name}", SafetyValidationErrorCode.FILE_IN_USE)
-            
-            initial_stat = _get_path_stat_robust(p)
-            _check_hard_link_security(p, initial_stat)
-            if os.name == 'nt': 
-                _validate_ntfs_reparse_redirection(p, base)
-            _check_file_integrity(p, initial_stat)
+            _validate_file_operations_security(p, allow_sensitive, base)
         else:
             parent = p.parent
             if parent.exists() and not os.access(parent, os.W_OK):
