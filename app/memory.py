@@ -301,15 +301,16 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         psapi = getattr(ctypes.windll, "psapi", None)
         if not kernel32 or not psapi: return []
         
-        pids = (ctypes.c_ulong * 4096)()
+        # Max 4096 procesos para mantener un tamaño de buffer acotado y seguro
+        max_procs = 4096
+        pids = (ctypes.c_ulong * max_procs)()
         cb_needed = ctypes.c_ulong()
         
-        # EnumProcesses devuelve un array de PIDs, se itera para consultar cada uno
         if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
-            count = cb_needed.value // ctypes.sizeof(ctypes.c_ulong)
+            count = min(cb_needed.value // ctypes.sizeof(ctypes.c_ulong), max_procs)
             found_procs = []
             
-            for i in range(min(count, 4096)):
+            for i in range(count):
                 pid = pids[i]
                 if not _is_system_process(pid):
                     ws = _query_working_set_bytes(pid, kernel32, psapi)

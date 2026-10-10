@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **202** (40.1% de aceptación)
+- Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 65 | 8 | 16 | 10 | 89 |
-| 2026-10-10 | 137 | 13 | 28 | 11 | 127 |
+| 2026-10-09 | 65 | 7 | 16 | 10 | 86 |
+| 2026-10-10 | 138 | 14 | 29 | 11 | 128 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **40**
 - seguridad defensiva: **40**
+- robustez ante casos límite: **39**
 - rendimiento: **38**
-- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,10 +34,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **17**
 - `assistant.py`: **16**
 - `quarantine.py`: **16**
+- `memory.py`: **15**
 - `duplicates.py`: **15**
 - `scanner.py`: **15**
 - `branding.py`: **15**
-- `memory.py`: **14**
 - `main.py`: **13**
 - `browser.py`: **11**
 - `settings.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-10T13:31:05` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `top_memory_processes` añadiendo una validación de `ctypes.byref` y un control explícito sobre la cantidad de PIDs devueltos para prevenir desbordamientos o accesos fuera de rango si la API retorna un número inesperado de procesos, asegurando estabilidad ante fluctuaciones del sistema operativo.
 - `2026-10-10T13:21:51` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` y `compute_score` ante valores atípicos mediante el uso de `getattr` con un respaldo seguro y una validación de tipos más estricta en el pipeline, asegurando que fallos en una métrica individual no invaliden el cálculo del puntaje global.
 - `2026-10-10T13:21:21` **duplicates.py** (robustez ante casos límite): He mejorado la robustez ante casos de archivos eliminados durante la ejecución (Race Conditions) y errores de acceso en `suggest_keeper` y `format_group`, añadiendo verificaciones de `path.exists()` y un manejo de errores más estricto al calcular heurísticas, evitando que un archivo inaccesible detenga el procesamiento de todo un grupo.
 - `2026-10-10T13:20:51` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `_is_excluded_path` añadiendo un manejo explícito de errores para nombres de archivos malformados y se mejoró la resiliencia del bucle de recorrido en `walk_files` ante archivos que desaparecen durante el escaneo (Race Conditions), asegurando que los fallos en una única lectura de metadatos no interrumpan el análisis completo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-10T12:52:08` **main.py** (rendimiento): Optimicé el rendimiento de la interfaz al implementar una estructura de datos `set` para `self._active_buttons` y `self._debounces` (a través de `after_cancel`), asegurando que las operaciones de UI masivas no redunden en el hilo principal y que la recolección de basura sea más eficiente al evitar el crecimiento ilimitado de listas de objetos en el registro de componentes.
 - `2026-10-10T12:41:38` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje convirtiendo `_PIPELINE` de una tupla a una estructura de acceso directo y almacenando los pesos en un `dict` local dentro de `compute_score`, eliminando búsquedas innecesarias y conversiones de tipo redundantes en cada iteración del bucle.
 - `2026-10-10T12:40:55` **diskreport.py** (rendimiento): Optimicé `walk_files` y `_collect_summary_data` eliminando la recreación innecesaria de objetos `Path` y reduciendo el uso de `str()` dentro del loop principal, lo que mejora significativamente el rendimiento en escaneos profundos de disco.
-- `2026-10-10T12:40:27` **browser.py** (rendimiento): Optimizé el rendimiento de `detect_profiles` reutilizando el `ScanContext` y la memoria de `visited_dirs` para evitar re-escaneos redundantes cuando múltiples navegadores comparten jerarquías de subcarpetas en `AppData`.

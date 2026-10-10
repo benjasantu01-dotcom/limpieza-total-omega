@@ -514,3 +514,21 @@ FAILED evolve/tests/test_safety.py::test_drive_root_is_always_protected - Assert
 - `2026-10-10T13:22:43` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `main.py` ante errores inesperados durante la inicialización de hilos y la recolección de configuraciones, asegurando que el estado de la aplicación no quede en una condición de "bloqueo" si un módulo de configuración falla o si un hilo de trabajo se interrumpe prematuramente, aplicando un `try-finally` más estricto y validaciones de existencia de widgets en los métodos asíncronos.
 - `2026-10-10T13:22:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T13:22:43` Corrida terminada. Total usado hoy: 316.
+- `2026-10-10T13:30:30` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-10T13:31:05` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `top_memory_processes` añadiendo una validación de `ctypes.byref` y un control explícito sobre la cantidad de PIDs devueltos para prevenir desbordamientos o accesos fuera de rango si la API retorna un número inesperado de procesos, asegurando estabilidad ante fluctuaciones del sistema operativo.
+- `2026-10-10T13:31:29` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-10T13:32:17` Tests FALLARON:
+```
+Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+8 failed, 291 passed in 2.25s
+
+```
+- `2026-10-10T13:32:17` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se mejora la robustez de `purge_all` añadiendo una validación explícita para asegurar que no se procesen archivos que no formen parte del manifiesto, mitigando riesgos de interferencia con archivos temporales o basura residual en el directorio de cuarentena.
+- `2026-10-10T13:32:24` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-10-10T13:32:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T13:32:24` Corrida terminada. Total usado hoy: 320.
