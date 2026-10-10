@@ -1593,9 +1593,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showinfo("Falta el ID", "Pegá el ID del archivo que querés restaurar.")
             return
         
+        # Validar el formato del ID (alfanumérico y guiones) para prevenir inyecciones
         clean_id = "".join(c for c in raw_id if c.isalnum() or c == "-")
-        if not quarantine.item_exists(clean_id):
-            self.log(f"Error: El ID '{clean_id}' no existe.", "Cuarentena")
+        if not clean_id or not quarantine.item_exists(clean_id):
+            self.log(f"Error: El ID '{clean_id}' no existe o es inválido.", "Cuarentena")
             return
 
         def task() -> None:
@@ -1689,13 +1690,17 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @ensure_safety
     def on_trim_process(self) -> None:
         """Callback: Intenta liberar memoria working set de un proceso específico."""
-        pid_val = self._safe_get_entry_value(getattr(self, 'pid_entry', None), None, numeric=True)
+        raw_pid = self._safe_get_entry_value(getattr(self, 'pid_entry', None), None)
         
-        if pid_val is None or int(pid_val) < 100:
-            self.log("Error: PID inválido o crítico del sistema.", "Memoria")
+        # Validación de PID: solo numérico y mayor que 100 para evitar procesos críticos del sistema (PID < 100)
+        try:
+            pid = int(raw_pid)
+            if pid < 100:
+                raise ValueError
+        except (TypeError, ValueError):
+            self.log("Error: PID inválido o crítico del sistema (debe ser numérico y >= 100).", "Memoria")
             return
         
-        pid = int(pid_val)
         if not memory_mod.process_exists(pid):
             self.log(f"Error: El proceso {pid} no está activo.", "Memoria")
             return

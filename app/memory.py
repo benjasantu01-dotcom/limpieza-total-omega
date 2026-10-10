@@ -192,10 +192,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 
 def _is_system_process(pid: int) -> bool:
     """Evalúa si un proceso pertenece al núcleo o es el proceso propio de la aplicación."""
-    try:
-        return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
-    except Exception:
-        return True
+    return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     """Parsea una línea CSV proveniente de herramientas externas con validación de tipos."""
@@ -243,7 +240,7 @@ def _read_windows_snapshot() -> MemorySnapshot:
                     total=BytesValue(mem_status.ullTotalPhys), 
                     available=BytesValue(mem_status.ullAvailPhys)
                 )
-    except (ctypes.ArgumentError, OSError, Exception):
+    except (ctypes.ArgumentError, OSError):
         pass
     return _EMPTY_SNAPSHOT
 
@@ -346,9 +343,8 @@ def _is_process_executable_safe(pid: int) -> bool:
     try:
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
-            # Reutiliza el filtro de seguridad centralizado.
             return not is_protected_path(buf.value)
-    except (ctypes.ArgumentError, OSError, Exception):
+    except (ctypes.ArgumentError, OSError):
         return False
     finally:
         kernel32.CloseHandle(handle)
@@ -372,20 +368,19 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if not is_safe: return False, error_msg or "Verificación de seguridad fallida."
     
     psapi = getattr(ctypes.windll, "psapi", None)
-    if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "API no disponible."
-    
     kernel32 = getattr(ctypes.windll, "kernel32", None)
-    if not kernel32: return False, "Sistema operativo no accesible."
+    if not psapi or not kernel32 or not hasattr(psapi, "EmptyWorkingSet"):
+        return False, "API no disponible."
     
     proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
     if not proc_handle:
-        return False, "No se pudo acceder al proceso (requiere privilegios)."
+        return False, "No se pudo acceder al proceso (requiere privilegios elevados)."
         
     try:
         if psapi.EmptyWorkingSet(proc_handle) == 0:
-            return False, "El sistema rechazó la operación."
+            return False, "El sistema operativo rechazó la operación."
         return True, f"Working set liberado. {TRIM_WARNING}"
-    except (ctypes.ArgumentError, OSError, Exception):
-        return False, "Error inesperado al liberar memoria."
+    except (ctypes.ArgumentError, OSError):
+        return False, "Error inesperado al ejecutar llamada del sistema."
     finally:
         kernel32.CloseHandle(proc_handle)

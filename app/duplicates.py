@@ -119,12 +119,14 @@ def _safe_path_check(path: Path) -> bool:
     if not isinstance(path, Path):
         return False
     try:
-        return (path.exists() and
-                is_safe_to_modify(path) and 
+        # Usar .exists() primero ayuda a evitar excepciones de I/O en rutas rotas
+        if not path.exists():
+            return False
+        return (is_safe_to_modify(path) and 
                 not is_protected_path(path) and 
                 not is_junction(path) and 
                 not path.is_symlink())
-    except (OSError, RuntimeError, PermissionError):
+    except (OSError, RuntimeError, PermissionError, AttributeError):
         return False
 
 

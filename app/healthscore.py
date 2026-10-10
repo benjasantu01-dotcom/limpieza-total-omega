@@ -185,9 +185,11 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
     """Calcula salud: Aplica penalización incremental basada en cantidad de hallazgos sospechosos."""
     try:
-        penalization = (float(suspicious_count) * 0.05) + (float(warnings) * 0.25)
+        s_count = float(suspicious_count) if isinstance(suspicious_count, (int, float)) else 0.0
+        w_count = float(warnings) if isinstance(warnings, (int, float)) else 0.0
+        penalization = (s_count * 0.05) + (w_count * 0.25)
         return _clamp(1.0 - penalization)
-    except (ValueError, TypeError):
+    except (TypeError, ValueError, OverflowError):
         return 0.0
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
@@ -250,7 +252,6 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Asegura rangos aceptables para todas las métricas, evitando inyección de datos fuera de escala."""
-        # Restricción estricta de límites defensivos (MB en TB, contadores en límites lógicos)
         self.junk_mb = _validate_numeric(self.junk_mb, 0.0, 0.0, 1048576.0)
         self.duplicate_mb = _validate_numeric(self.duplicate_mb, 0.0, 0.0, 1048576.0)
         self.suspicious_count = int(_validate_numeric(self.suspicious_count, 0, 0, 5000))
