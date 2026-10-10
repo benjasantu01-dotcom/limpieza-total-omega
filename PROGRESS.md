@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Mejoras aceptadas: **202** (40.1% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 53
+- Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 213
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 125 | 12 | 40 | 15 | 136 |
-| 2026-10-10 | 76 | 6 | 13 | 4 | 77 |
+| 2026-10-09 | 123 | 12 | 39 | 15 | 135 |
+| 2026-10-10 | 79 | 6 | 13 | 4 | 78 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **46**
 - robustez ante casos límite: **44**
 - manejo de errores y validación de entradas: **43**
-- rendimiento: **34**
-- legibilidad y documentación: **34**
+- legibilidad y documentación: **37**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
-- `quarantine.py`: **19**
+- `diskreport.py`: **22**
 - `branding.py`: **18**
 - `memory.py`: **18**
-- `healthscore.py`: **17**
-- `safety.py`: **16**
+- `quarantine.py`: **18**
+- `healthscore.py`: **18**
 - `assistant.py`: **16**
+- `safety.py`: **15**
 - `duplicates.py`: **15**
 - `scanner.py`: **13**
 - `main.py`: **12**
 - `organizer.py`: **11**
 - `settings.py`: **10**
-- `browser.py`: **8**
+- `browser.py`: **9**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-10T07:35:38` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones de cálculo de salud y se ha clarificado el propósito de las constantes globales de umbral, asegurando que el código sea más legible para futuros auditores del proyecto sin alterar su comportamiento funcional.
+- `2026-10-10T07:35:03` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de los tipos, se ha estandarizado la interfaz de las clases de almacenamiento mediante `__slots__` para optimizar memoria, y se ha añadido una docstring explicativa al motor principal de recolección de métricas para aclarar cómo se integra con el resto del módulo.
+- `2026-10-10T07:34:36` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando docstrings explicativos en los tipos complejos y funciones críticas para aclarar el "porqué" del filtrado de seguridad, y se han añadido type hints faltantes en funciones internas para mejorar la robustez y legibilidad.
 - `2026-10-10T07:25:21` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `StartupEntry._extract_quoted_path` validando explícitamente el resultado de `Path()` antes de acceder a sus propiedades para evitar excepciones inesperadas por rutas mal formadas, cumpliendo con el enfoque de manejo de errores.
 - `2026-10-10T07:24:48` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `_read_and_parse_json()` capturando excepciones críticas de `json.loads` y `fcntl.flock`, y reemplazando validaciones de tipo genéricas por comprobaciones más estrictas para evitar el uso de archivos corruptos.
 - `2026-10-10T07:15:42` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_file_attrs` y `_is_virtual_drive` al agregar un manejo de errores más específico y defensivo, asegurando que cualquier fallo en la comunicación con la API de Windows retorne un valor seguro (bloqueo) en lugar de una excepción no capturada que podría colapsar el bucle de validación.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-10T06:47:20` **assistant.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de errores en `_call_gemini` y `_extract_text_from_gemini_json` mediante una validación más estricta de las respuestas HTTP y el parseo de JSON, asegurando que cualquier fallo parcial resulte en un retorno seguro (`None`) en lugar de propagar excepciones hacia la interfaz.
 - `2026-10-10T05:25:04` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de TOCTOU (Time-of-Check to Time-of-Use) y asegurar que el archivo de configuración, tras ser abierto, no haya sido reemplazado por un enlace simbólico o un dispositivo peligroso antes de la lectura.
 - `2026-10-10T05:23:34` **safety.py** (seguridad defensiva): Se añadió un control de integridad de reparse points anidados dentro de `ensure_safe_to_modify` para detectar y bloquear recursivamente puntos de unión ocultos que `_validate_path_components` podría pasar por alto si se accede mediante rutas relativas o aliases de sistema, reforzando la seguridad defensiva contra el acceso a directorios prohibidos fuera del sandbox.
-- `2026-10-10T05:13:49` **organizer.py** (seguridad defensiva): Se ha mejorado la integridad de las operaciones de disco asegurando que `ensure_safe_to_modify` se aplique estrictamente sobre la ruta absoluta de origen, evitando discrepancias entre rutas relativas y el sistema de archivos real durante la ejecución de `shutil.move`.
-- `2026-10-10T05:13:20` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `memory.py` al reemplazar la lógica de filtro en `_is_process_executable_safe` para que utilice `is_protected_path` directamente sobre la ruta obtenida de la API de Windows, asegurando que cualquier proceso que intente ser manipulado pase por el filtro centralizado de seguridad del proyecto.
-- `2026-10-10T05:12:51` **main.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva centralizando y endureciendo la validación de rutas en el método `_validate_disk_access`, integrando explícitamente una lista de bloqueo de dispositivos (bloques de caracteres reservados de Windows) y garantizando que toda operación crítica de escritura pase por un chequeo riguroso antes de interactuar con el sistema de archivos.

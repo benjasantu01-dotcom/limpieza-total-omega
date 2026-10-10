@@ -44,6 +44,7 @@ __all__ = [
 JunctionChecker: TypeAlias = Callable[[str], bool]
 BrowserMap: TypeAlias = Dict[str, str]
 OSPath: TypeAlias = Union[str, Path]
+# Mapeo de rutas normalizadas a su tamaño calculado para optimizar lecturas redundantes
 VisitedDirs: TypeAlias = Dict[str, int]
 
 # Caracteres no permitidos en rutas de Windows según especificación técnica
@@ -51,7 +52,11 @@ PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|'}
 
 @dataclass(frozen=True)
 class ScanContext:
-    """Contenedor de estado para el escaneo recursivo de directorios."""
+    """
+    Contenedor de estado para el escaneo recursivo. 
+    Mantiene referencias a la API nativa y estructuras de control para 
+    evitar el procesamiento cíclico o fuera de límites permitidos.
+    """
     base_norm: str
     kernel32: Optional[ctypes.WinDLL]
     is_junction: JunctionChecker
@@ -84,7 +89,7 @@ class ScanResult(NamedTuple):
     success: bool
 
 class FileAttributes(NamedTuple):
-    """Máscaras de bits para atributos extendidos de la API Win32."""
+    """Máscaras de bits utilizadas para filtrar atributos extendidos mediante Win32 API."""
     READONLY: int = 0x01
     HIDDEN: int = 0x02
     SYSTEM: int = 0x04
@@ -113,6 +118,8 @@ BROWSER_CACHE_PATHS: BrowserMap = {
     "Chrome (GPU)": r"Microsoft\Edge\User Data\Default\GPUCache",
 }
 
+# Carpetas y archivos críticos que nunca deben ser marcados para limpieza,
+# independientemente de si se encuentran dentro de las rutas de caché detectadas.
 NEVER_TOUCH: frozenset[str] = frozenset({
     "login data", "cookies", "web data", "bookmarks", "history",
     "preferences", "local state", "extensions", "profile",

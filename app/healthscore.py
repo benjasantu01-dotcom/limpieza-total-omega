@@ -91,6 +91,7 @@ __all__ = [
     "summarize",
 ]
 
+# Umbrales máximos tolerables antes de penalizar totalmente el score
 _LIMIT_JUNK_MB: Final[float] = 5000.0
 _LIMIT_DUPLICATE_MB: Final[float] = 2000.0
 _LIMIT_STARTUP_COUNT: Final[int] = 20
@@ -117,6 +118,7 @@ def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float]
         return _clamp(1.0 - ratio if inverse else ratio)
     return scorer
 
+# Niveles de ratio de salud para disparar advertencias (0.0 a 1.0)
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
@@ -181,7 +183,7 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
     return _JUNK_SCORER(float(junk_mb))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
-    """Calcula salud: Penaliza hallazgos críticos (0.05) y advertencias (0.25) por unidad."""
+    """Calcula salud: Aplica penalización incremental basada en cantidad de hallazgos sospechosos."""
     try:
         penalization = (float(suspicious_count) * 0.05) + (float(warnings) * 0.25)
         return _clamp(1.0 - penalization)
@@ -189,19 +191,19 @@ def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
         return 0.0
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
-    """Calcula salud: Ratio de memoria disponible respecto al umbral de criticidad del sistema."""
+    """Calcula salud: Normaliza el porcentaje de memoria libre sobre el umbral mínimo aceptable."""
     return _clamp(float(available_percent) / _LIMIT_RAM_PERCENT)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
-    """Calcula salud: Ratio de espacio libre respecto al porcentaje umbral para advertencias."""
+    """Calcula salud: Normaliza el porcentaje de disco libre sobre el umbral de advertencia."""
     return _clamp(float(free_percent) / _LIMIT_DISK_PERCENT)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
-    """Calcula salud: Normaliza el peso de duplicados detectados frente al límite de recuperación."""
+    """Calcula salud: Normaliza el peso total de duplicados frente a la capacidad de recuperación."""
     return _DUP_SCORER(float(duplicate_mb))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
-    """Calcula salud: Normaliza la carga de programas en inicio según el límite de tolerancia."""
+    """Calcula salud: Normaliza la carga del inicio de Windows comparado con el límite de tolerancia."""
     return _STARTUP_SCORER(float(startup_count))
 
 def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) -> float:
@@ -239,7 +241,6 @@ class SystemMetrics:
             self.validate()
         except Exception as e:
             logging.error(f"Error crítico en validación de métricas: {e}")
-            # Reset a valores seguros iniciales
             for field_name in self._FIELDS_TO_VALIDATE:
                 setattr(self, field_name, 0.0)
 
