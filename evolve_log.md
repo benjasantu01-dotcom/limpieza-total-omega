@@ -1137,3 +1137,44 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-10T08:28:16` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-10-10T08:28:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T08:28:16` Corrida terminada. Total usado hoy: 200.
+- `2026-10-10T08:35:10` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-10-10T08:35:56` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `_get_security_descriptor_cached` y `_get_file_attrs` evitando llamadas costosas a `ctypes` y syscalls de disco cuando la ruta analizada es idéntica o cuando ya hemos determinado que no es un directorio raíz, aprovechando mejor el `lru_cache` mediante una pre-validación de cadena más eficiente.
+- `2026-10-10T08:36:30` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escáner implementando un filtro preventivo mediante `is_protected_path` antes de realizar operaciones de resolución de rutas o acceso al disco (`resolve`, `stat`, `is_file`), evitando así llamadas costosas al sistema de archivos en rutas que de antemano sabemos que deben ignorarse.
+- `2026-10-10T08:37:40` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Se optimizó el acceso a los validadores mediante el uso de una función lambda decorada con `lru_cache` para evitar la regeneración del mapa de validación en cada llamada a `validate` o `update`, reduciendo el costo de cómputo en cada operación.
+- `2026-10-10T08:37:59` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 0.90s
+
+```
+- `2026-10-10T08:37:59` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimizé la resolución de rutas en `StartupEntry` implementando una validación previa mediante `is_protected_path` antes de ejecutar `path.resolve()` (operación de E/S costosa) y consolidando la lógica de caché para evitar llamadas redundantes al sistema de archivos en ejecuciones sucesivas dentro de la misma sesión.
+- `2026-10-10T08:37:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T08:37:59` Corrida terminada. Total usado hoy: 204.

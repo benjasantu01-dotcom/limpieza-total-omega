@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
-- Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 53
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 215
+- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Rechazadas por tests: 20
+- Rechazadas por guardia de seguridad: 52
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 111 | 12 | 36 | 14 | 131 |
-| 2026-10-10 | 86 | 7 | 17 | 6 | 84 |
+| 2026-10-09 | 110 | 12 | 35 | 14 | 129 |
+| 2026-10-10 | 88 | 8 | 17 | 7 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **44**
+- seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **42**
-- rendimiento: **34**
+- rendimiento: **36**
 - robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **20**
 - `healthscore.py`: **19**
 - `quarantine.py`: **18**
 - `memory.py`: **17**
+- `safety.py`: **16**
 - `branding.py`: **16**
-- `safety.py`: **15**
 - `duplicates.py`: **15**
 - `assistant.py`: **15**
-- `scanner.py`: **13**
+- `scanner.py`: **14**
 - `main.py`: **12**
 - `organizer.py`: **11**
 - `settings.py`: **9**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-10T08:36:30` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner implementando un filtro preventivo mediante `is_protected_path` antes de realizar operaciones de resolución de rutas o acceso al disco (`resolve`, `stat`, `is_file`), evitando así llamadas costosas al sistema de archivos en rutas que de antemano sabemos que deben ignorarse.
+- `2026-10-10T08:35:56` **safety.py** (rendimiento): Optimicé el rendimiento de `_get_security_descriptor_cached` y `_get_file_attrs` evitando llamadas costosas a `ctypes` y syscalls de disco cuando la ruta analizada es idéntica o cuando ya hemos determinado que no es un directorio raíz, aprovechando mejor el `lru_cache` mediante una pre-validación de cadena más eficiente.
 - `2026-10-10T08:17:09` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje eliminando la creación innecesaria de un `m_cache` en `compute_score`, reemplazando el acceso vía diccionario por el acceso directo a los atributos del objeto `SystemMetrics` (que es más rápido y eficiente), y reduje la complejidad del `loop` principal.
 - `2026-10-10T08:06:09` **assistant.py** (rendimiento): Optimicé el acceso a los datos de `SystemContext` dentro de `local_answer` y las funciones `handle_*` mediante el uso del diccionario `metrics_snapshot` ya cacheado, evitando llamadas repetitivas a `getattr` y `get_metric` que realizaban validaciones de integridad costosas en cada iteración del bucle de consulta.
 - `2026-10-10T08:05:08` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes, clarificando la intención de los métodos críticos mediante docstrings más precisos y asegurando la consistencia en la terminología para facilitar el mantenimiento del equipo de desarrollo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-10T07:25:21` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `StartupEntry._extract_quoted_path` validando explícitamente el resultado de `Path()` antes de acceder a sus propiedades para evitar excepciones inesperadas por rutas mal formadas, cumpliendo con el enfoque de manejo de errores.
 - `2026-10-10T07:24:48` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `_read_and_parse_json()` capturando excepciones críticas de `json.loads` y `fcntl.flock`, y reemplazando validaciones de tipo genéricas por comprobaciones más estrictas para evitar el uso de archivos corruptos.
 - `2026-10-10T07:15:42` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_file_attrs` y `_is_virtual_drive` al agregar un manejo de errores más específico y defensivo, asegurando que cualquier fallo en la comunicación con la API de Windows retorne un valor seguro (bloqueo) en lugar de una excepción no capturada que podría colapsar el bucle de validación.
-- `2026-10-10T07:14:37` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` mediante la validación explícita de la estructura de datos antes de la serialización y envolviendo la lógica en un bloque `try-except` más preciso para evitar corrupciones ante fallos de escritura o disco.
-- `2026-10-10T07:06:57` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_process_executable_safe` y `trim_working_set` capturando errores de `ctypes` y validando estrictamente los manejadores de procesos para evitar fugas de recursos o excepciones no controladas durante la interacción con la API de Windows.

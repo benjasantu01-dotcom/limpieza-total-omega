@@ -212,8 +212,9 @@ class Scanner:
         path_str = entry.path
         if path_str in self.safe_cache:
             return True
-            
-        if not _is_valid_path_structure(path_str) or self._has_invalid_name(entry.name):
+        
+        # Filtro temprano antes de costosas resoluciones de disco
+        if is_protected_path(Path(path_str)) or not _is_valid_path_structure(path_str) or self._has_invalid_name(entry.name):
             return False
             
         try:
@@ -222,9 +223,6 @@ class Scanner:
                 
             real_path = Path(path_str).resolve(strict=True)
             if not str(real_path).lower().startswith(self.base_root_str):
-                return False
-                
-            if is_protected_path(real_path):
                 return False
                 
             self.safe_cache.add(path_str)
@@ -258,7 +256,8 @@ class Scanner:
                 if self._is_safe_entry(entry):
                     self._handle_directory(entry, directory_stack, current_depth)
             elif self._is_relevant_extension(entry.name):
-                if self._is_safe_entry(entry):
+                # Validamos seguridad básica antes de invocar heurísticas pesadas
+                if not is_protected_path(Path(entry.path)) and self._is_safe_entry(entry):
                     self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError):
             pass
@@ -266,7 +265,7 @@ class Scanner:
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta el conjunto de heurísticas sobre un archivo validado."""
         try:
-            if not path.exists() or not _is_readable(path) or is_protected_path(path):
+            if not path.exists() or not _is_readable(path):
                 return
             for check_fn in ALL_CHECKS:
                 try:
@@ -280,10 +279,10 @@ class Scanner:
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Ejecuta un escaneo heurístico individual sobre un archivo específico."""
-    if not isinstance(path, Path): return []
+    if not isinstance(path, Path) or is_protected_path(path): return []
     try:
         resolved = path.resolve(strict=True)
-        if not resolved.exists() or not _is_readable(resolved) or is_protected_path(resolved) or resolved.is_symlink(): 
+        if not resolved.exists() or not _is_readable(resolved) or resolved.is_symlink(): 
             return []
     except (OSError, RuntimeError):
         return []
@@ -304,9 +303,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         path_str = str(directory).strip()
         if not path_str or not _is_valid_path_structure(path_str): return []
         base_path = Path(path_str).resolve(strict=True)
-        if not base_path.is_dir() or base_path.is_symlink() or not os.access(base_path, os.R_OK):
+        if not base_path.is_dir() or base_path.is_symlink() or not os.access(base_path, os.R_OK) or is_protected_path(base_path):
             return []
-        if is_protected_path(base_path): return []
         scanner = Scanner(base_root=base_path)
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError): return []
     

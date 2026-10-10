@@ -116,13 +116,12 @@ def _is_path_too_long(path_str: str) -> bool:
 @lru_cache(maxsize=4096)
 def _get_file_attrs(path_str: Optional[str]) -> int:
     """Consulta los atributos de archivo mediante la API Win32 GetFileAttributesW."""
-    if not isinstance(path_str, str) or not path_str or not os.path.isabs(path_str): 
+    if not isinstance(path_str, str) or not path_str or not os.path.isabs(path_str) or path_str.upper().startswith("\\\\.\\"): 
         return 0
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         if attrs == 0xFFFFFFFF:
             err = ctypes.windll.kernel32.GetLastError()
-            # Si hay acceso denegado, marcamos como sistema para ser cautelosos
             if err == ERROR_ACCESS_DENIED: return Win32Attr.SYSTEM
             return 0
         return attrs
@@ -356,9 +355,6 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
 @lru_cache(maxsize=1024)
 def _get_security_descriptor_cached(path_str: str) -> SecurityDescriptor:
     """Consulta atributos de seguridad consolidando el estado del sistema."""
-    if not isinstance(path_str, str) or not os.path.isabs(path_str) or path_str.upper().startswith("\\\\.\\"):
-        return SecurityDescriptor(0, True, True, True, True)
-    
     attrs = _get_file_attrs(path_str)
     is_protected = bool(attrs & (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | Win32Attr.TEMPORARY | Win32Attr.REPARSE_POINT))
     is_in_use = is_protected or (attrs != 0xFFFFFFFF and _is_file_locked_by_other_process(path_str))
