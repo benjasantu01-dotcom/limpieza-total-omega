@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 51
-- Sin cambios (nada sustancial que mejorar): 20
+- Rechazadas por guardia de seguridad: 52
+- Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-08 | 32 | 3 | 7 | 1 | 47 |
+| 2026-10-08 | 29 | 3 | 7 | 1 | 46 |
 | 2026-10-09 | 140 | 13 | 42 | 18 | 137 |
-| 2026-10-10 | 26 | 2 | 2 | 1 | 33 |
+| 2026-10-10 | 27 | 2 | 3 | 2 | 34 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **44**
+- manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **41**
-- manejo de errores y validación de entradas: **41**
-- rendimiento: **39**
+- rendimiento: **36**
 - legibilidad y documentación: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **23**
+- `diskreport.py`: **22**
 - `memory.py`: **19**
 - `quarantine.py`: **19**
 - `healthscore.py`: **18**
-- `branding.py`: **17**
+- `branding.py`: **16**
 - `safety.py`: **15**
 - `assistant.py`: **15**
-- `scanner.py`: **13**
+- `scanner.py`: **14**
 - `duplicates.py`: **13**
 - `organizer.py`: **12**
-- `browser.py`: **11**
+- `browser.py`: **10**
 - `settings.py`: **9**
 - `main.py`: **9**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-10T02:52:01` **scanner.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `check_recent_executable_in_downloads` y `check_system_lookalike` eliminando el uso de `None` como control de flujo mediante el uso de guardas explícitas, garantizando que el acceso a metadatos sea siempre seguro y consistente con el enfoque.
 - `2026-10-10T02:41:29` **quarantine.py** (manejo de errores y validación de entradas): Se mejoró la robustez de la persistencia del manifiesto implementando un chequeo previo de integridad de escritura y reemplazando las excepciones genéricas `RuntimeError` por mensajes de error más granulares y específicos en `save_manifest` para facilitar el diagnóstico.
 - `2026-10-10T02:40:59` **organizer.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `stage_for_review` y `delete_reviewed` al asegurar que las rutas de destino sean validadas mediante `ensure_safe_to_modify` ANTES de intentar crear directorios o iterar, evitando que operaciones con rutas potencialmente bloqueadas interrumpan el flujo de trabajo.
 - `2026-10-10T02:40:32` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y sus ayudantes validando explícitamente la presencia de `kernel32` antes de cada llamada y capturando errores de `ctypes` de forma más granular para evitar cierres inesperados de la aplicación.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-10T00:57:48` **safety.py** (seguridad defensiva): Se ha implementado `_is_junction_target_outside_base` para validar que las junctions (puntos de reparse) no redirijan fuera de la jerarquía permitida, fortaleciendo la defensa contra ataques de escape de sandbox mediante reparse points.
 - `2026-10-10T00:48:25` **quarantine.py** (seguridad defensiva): Se ha añadido `_validate_integrity_before_move` en `quarantine_file` para implementar una verificación de seguridad proactiva justo antes de iniciar la operación de transferencia física, asegurando que los atributos críticos del archivo origen no hayan cambiado entre la validación inicial y el inicio de la copia (defensa contra TOCTOU).
 - `2026-10-10T00:47:21` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `memory.py` al restringir la resolución de rutas de procesos mediante `GetModuleFileNameExW` utilizando un buffer de tamaño adecuado y validando la seguridad de la ruta obtenida mediante `is_protected_path` antes de cualquier interacción, evitando así posibles ataques por rutas maliciosas o mal formadas.
-- `2026-10-10T00:38:43` **main.py** (seguridad defensiva): Se ha mejorado la seguridad del método `_validate_environment` para detectar explícitamente puntos de reparse (junctions) y enlaces simbólicos en rutas críticas, asegurando que la aplicación no pueda ser engañada para operar fuera de su sandbox mediante redirecciones del sistema de archivos.

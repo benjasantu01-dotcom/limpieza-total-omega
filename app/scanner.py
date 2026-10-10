@@ -140,44 +140,36 @@ def _is_target_extension(name: str) -> bool:
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta técnicas de engaño donde un archivo usa doble extensión para ocultar un ejecutable."""
-    if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
+    if path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión detectada como técnica de enmascaramiento", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Flag de advertencia para ejecutables nuevos en carpetas volátiles frecuentemente usadas por navegadores."""
     try:
-        if path is None or path.parent is None:
-            return None
         if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
             return None
-        stats = _safe_stat(entry) if entry else None
-        if stats:
+        if entry and (stats := _safe_stat(entry)):
             mtime = getattr(stats, "st_mtime", 0.0)
-            if isinstance(mtime, (int, float)) and mtime > 0:
-                if (now_ts - float(mtime)) < (SCAN_LIMITS.recent_hours * 3600):
-                    return Suspicion(path, f"Ejecutable reciente detectado en carpeta volátil", "info")
+            if isinstance(mtime, (int, float)) and mtime > 0 and (now_ts - float(mtime)) < (SCAN_LIMITS.recent_hours * 3600):
+                return Suspicion(path, "Ejecutable reciente detectado en carpeta volátil", "info")
     except (OSError, AttributeError, ValueError, TypeError):
-        return None
+        pass
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Identifica archivos que suplantan nombres de procesos críticos del sistema fuera de su ubicación legal."""
     try:
-        if path is None or not path.name:
-            return None
-        if path.name.lower() in SYSTEM_LOOKALIKES:
-            path_str = str(path).lower()
-            if SYSTEM32_LOWER not in path_str:
+        if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
+            if SYSTEM32_LOWER not in str(path).lower():
                 return Suspicion(path, "Nombre de proceso de sistema detectado fuera de directorio protegido", "warning")
-    except (OSError, ValueError, AttributeError, TypeError):
-        return None
+    except (OSError, AttributeError, TypeError):
+        pass
     return None
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta archivos binarios vacíos, comportamiento inusual y a menudo indicativo de actividad de malware."""
-    size = _get_file_size(path)
-    if size == 0:
+    if _get_file_size(path) == 0:
         return Suspicion(path, "Ejecutable vacío detectado", "warning")
     return None
 

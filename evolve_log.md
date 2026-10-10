@@ -622,3 +622,11 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-10-10T02:41:29` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se mejoró la robustez de la persistencia del manifiesto implementando un chequeo previo de integridad de escritura y reemplazando las excepciones genéricas `RuntimeError` por mensajes de error más granulares y específicos en `save_manifest` para facilitar el diagnóstico.
 - `2026-10-10T02:41:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T02:41:29` Corrida terminada. Total usado hoy: 64.
+- `2026-10-10T02:49:05` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-10-10T02:50:07` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-10T02:50:51` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 120): unterminated string literal (detected at line 120)
+- `2026-10-10T02:51:35` ➖ Sin cambios en safety.py (enfoque: manejo de errores y validación de entradas). Motivo: Se mejora la robustez de `_get_security_descriptor_cached` añadiendo una verificación temprana para rutas de dispositivo (`\\\\.\\`), evitando llamadas innecesarias y potencialmente bloqueantes a `CreateFileW` en objetos que el sistema operativo no gestiona como archivos convencionales.
+- `2026-10-10T02:52:01` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se mejora el manejo de errores en `check_recent_executable_in_downloads` y `check_system_lookalike` eliminando el uso de `None` como control de flujo mediante el uso de guardas explícitas, garantizando que el acceso a metadatos sea siempre seguro y consistente con el enfoque.
+- `2026-10-10T02:52:17` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-10T02:52:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T02:52:17` Corrida terminada. Total usado hoy: 68.
