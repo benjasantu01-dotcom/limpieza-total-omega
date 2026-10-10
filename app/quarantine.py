@@ -526,28 +526,33 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
 
 
 def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Escritura atómica del manifiesto."""
+    """Escritura atómica del manifiesto con validación estricta de estructura."""
     base_path = quarantine_dir(base)
     target_path = _manifest_path(base_path)
     
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista de objetos.")
 
+    # Pre-validación: verificar que cada item sea un dict serializable
     try:
         serializable_items = [item.to_dict() for item in items]
         encoded_content = json.dumps(serializable_items, indent=2, ensure_ascii=False).encode('utf-8')
     except (TypeError, ValueError) as e:
         raise RuntimeError(f"Error al serializar metadatos de cuarentena: {e}")
 
+    # Chequeos de seguridad previos a escritura
     if target_path.exists():
         if not target_path.is_file():
             raise PermissionError(f"Error: {target_path} no es un archivo.")
         if not os.access(target_path, os.W_OK):
             raise PermissionError(f"Error: Manifiesto {target_path} protegido contra escritura.")
         if os.name == 'nt':
-            attrs = ctypes.windll.kernel32.GetFileAttributesW(str(target_path))
-            if attrs != -1 and (attrs & 0x02 or attrs & 0x04):
-                raise PermissionError(f"Error: Manifiesto {target_path} bloqueado por atributos de sistema.")
+            try:
+                attrs = ctypes.windll.kernel32.GetFileAttributesW(str(target_path))
+                if attrs != -1 and (attrs & 0x02 or attrs & 0x04):
+                    raise PermissionError(f"Error: Manifiesto {target_path} bloqueado por atributos de sistema.")
+            except (OSError, AttributeError):
+                pass
 
     try:
         with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as tf:
@@ -558,6 +563,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
             
         os.replace(temp_name, target_path)
         
+        # Sincronizar directorio padre para asegurar persistencia en disco
         dir_fd = os.open(str(base_path), os.O_RDONLY)
         try: os.fsync(dir_fd)
         finally: os.close(dir_fd)
@@ -566,6 +572,10 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         _MANIFEST_CACHE[base_path] = (items, st.st_mtime, st.st_size, st.st_ino)
         return target_path
     except (OSError, IOError) as e:
+        # Intentar limpiar archivo temporal si la escritura falló
+        if 'temp_name' in locals() and os.path.exists(temp_name):
+            try: os.unlink(temp_name)
+            except OSError: pass
         raise RuntimeError(f"Falla crítica al persistir estado del manifiesto en {base_path}: {e}")
 
 

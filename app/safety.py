@@ -122,10 +122,11 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         if attrs == 0xFFFFFFFF:
             err = ctypes.windll.kernel32.GetLastError()
+            # Si hay acceso denegado, marcamos como sistema para ser cautelosos
             if err == ERROR_ACCESS_DENIED: return Win32Attr.SYSTEM
             return 0
         return attrs
-    except (AttributeError, ctypes.ArgumentError):
+    except (AttributeError, ctypes.ArgumentError, OSError):
         return 0
 
 class SafetyValidationErrorCode(IntEnum):
@@ -269,12 +270,15 @@ def _is_virtual_drive(path_str: str) -> bool:
     if os.name != 'nt' or not isinstance(path_str, str) or not os.path.isabs(path_str): return False
     drive = os.path.splitdrive(path_str)[0]
     if not drive: return False
-    kernel32 = ctypes.windll.kernel32
-    buf = ctypes.create_unicode_buffer(512)
-    res = kernel32.QueryDosDeviceW(drive, buf, 512)
-    if res > 0:
-        device_path = buf.value
-        return device_path.startswith("\\DosDevices\\") or device_path.startswith("\\??\\")
+    try:
+        kernel32 = ctypes.windll.kernel32
+        buf = ctypes.create_unicode_buffer(512)
+        res = kernel32.QueryDosDeviceW(drive, buf, 512)
+        if res > 0:
+            device_path = buf.value
+            return device_path.startswith("\\DosDevices\\") or device_path.startswith("\\??\\")
+    except (AttributeError, OSError, ctypes.ArgumentError):
+        return True # Asumimos seguro (bloqueo) ante fallo de API
     return False
 
 def _is_file_owned_by_system(path_str: str) -> bool:

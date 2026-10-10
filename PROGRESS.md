@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 51
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 211
+- Rechazadas por guardia de seguridad: 52
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 132 | 12 | 40 | 16 | 136 |
-| 2026-10-10 | 72 | 6 | 11 | 4 | 75 |
+| 2026-10-09 | 129 | 12 | 40 | 15 | 136 |
+| 2026-10-10 | 74 | 6 | 12 | 4 | 76 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **46**
 - robustez ante casos límite: **44**
-- rendimiento: **41**
-- manejo de errores y validación de entradas: **39**
+- manejo de errores y validación de entradas: **41**
+- rendimiento: **38**
 - legibilidad y documentación: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
-- `branding.py`: **19**
+- `diskreport.py`: **21**
 - `memory.py`: **19**
+- `quarantine.py`: **19**
 - `healthscore.py`: **18**
-- `quarantine.py`: **18**
+- `branding.py`: **18**
 - `duplicates.py`: **16**
+- `safety.py`: **16**
 - `assistant.py`: **16**
-- `safety.py`: **15**
 - `main.py`: **13**
 - `scanner.py`: **13**
 - `organizer.py`: **11**
-- `browser.py`: **9**
 - `settings.py`: **9**
+- `browser.py`: **8**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-10T07:15:42` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_file_attrs` y `_is_virtual_drive` al agregar un manejo de errores más específico y defensivo, asegurando que cualquier fallo en la comunicación con la API de Windows retorne un valor seguro (bloqueo) en lugar de una excepción no capturada que podría colapsar el bucle de validación.
+- `2026-10-10T07:14:37` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` mediante la validación explícita de la estructura de datos antes de la serialización y envolviendo la lógica en un bloque `try-except` más preciso para evitar corrupciones ante fallos de escritura o disco.
 - `2026-10-10T07:06:57` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_process_executable_safe` y `trim_working_set` capturando errores de `ctypes` y validando estrictamente los manejadores de procesos para evitar fugas de recursos o excepciones no controladas durante la interacción con la API de Windows.
 - `2026-10-10T07:06:29` **main.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `on_trim_process` y `on_restore_quarantine` mediante la validación proactiva de sus entradas (`pid` y `id`), evitando llamadas innecesarias al worker o registros de error en el log que podrían confundir al usuario, alineándose con el enfoque de validación de parámetros antes de operar.
 - `2026-10-10T07:04:10` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemMetrics.validate` y `compute_score` asegurando que las métricas no sean `None` y capturando errores inesperados durante la inicialización, evitando que un objeto mal formado bloquee la generación del informe.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-10T05:12:51` **main.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva centralizando y endureciendo la validación de rutas en el método `_validate_disk_access`, integrando explícitamente una lista de bloqueo de dispositivos (bloques de caracteres reservados de Windows) y garantizando que toda operación crítica de escritura pase por un chequeo riguroso antes de interactuar con el sistema de archivos.
 - `2026-10-10T05:03:34` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante una validación de tipo y valor más estricta en el `_sanitize_msg` y en el manejo de `RecommendationRule`, asegurando que el motor de puntuación nunca sea interrumpido por datos malformados o inyecciones de mensajes vacíos.
 - `2026-10-10T05:03:19` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` para asegurar que el recorrido del sistema de archivos no solo valide la ruta actual, sino que verifique explícitamente que cada sub-ruta analizada sea segura antes de intentar entrar en ella, evitando seguir enlaces a directorios (junctions/symlinks) durante el escaneo recursivo.
-- `2026-10-10T05:02:53` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` para prevenir ataques de path traversal mediante el uso de `Path.resolve().parts` y la comparación estricta de subconjuntos, garantizando que una ruta proporcionada por el usuario no pueda escapar de su directorio base incluso si contiene manipulaciones como `..` o enlaces simbólicos maliciosos.
-- `2026-10-10T04:53:29` **branding.py** (seguridad defensiva): Se ha introducido `is_protected_path` en `save_logo_svg` para reforzar la seguridad defensiva, garantizando que incluso rutas sintácticamente válidas no apunten a ubicaciones restringidas por el sistema antes de iniciar cualquier operación de escritura.
