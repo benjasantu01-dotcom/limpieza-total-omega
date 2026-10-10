@@ -289,7 +289,10 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     
     if any(char in rel_str for char in PATH_FORBIDDEN_CHARS): return Path()
     
-    target: Path = real_base.joinpath(*rel_str.split("\\"))
+    # Construcción segura evitando '..' mediante descomposición de componentes
+    parts = [p for p in rel_str.split("\\") if p and p != "." and p != ".."]
+    target: Path = real_base.joinpath(*parts)
+    
     if not target.exists() or not target.is_dir(): return Path()
     
     try:

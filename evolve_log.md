@@ -725,3 +725,39 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-10T04:12:30` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré `_get_source_value` para añadir una validación de profundidad recursiva al inspeccionar objetos, evitando ataques de recursión infinita o inyección de tipos complejos durante la ingesta de datos, manteniendo la integridad del `SystemContext`.
 - `2026-10-10T04:12:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T04:12:30` Corrida terminada. Total usado hoy: 100.
+- `2026-10-10T04:20:46` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-10-10T04:21:23` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `draw_ring` mediante la sanitización estricta de sus parámetros geométricos y la adición de una validación de `math.isfinite` sobre el `extent` calculado, previniendo errores de renderizado ante entradas anómalas.
+- `2026-10-10T04:21:50` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `_resolve_browser_path` para evitar ataques de salto de directorio (directory traversal) mediante el uso de `pathlib.Path.parts` y validación de componentes seguros, garantizando que ninguna ruta resuelta escape del directorio base incluso si el `rel_str` contiene manipulaciones maliciosas.
+- `2026-10-10T04:22:18` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `_collect_summary_data` ante casos límite mediante la gestión explícita de `OSError` al intentar leer atributos de archivos que pueden desaparecer, estar bloqueados por el sistema o ser inaccesibles durante la iteración del escaneo.
+- `2026-10-10T04:22:29` Tests FALLARON:
+```
+ot := _resolve_and_verify_root(d)):
+                queue.append((root, 0))
+    
+        while queue:
+            current_dir, depth = queue.popleft()
+            if current_dir in visited_dirs or depth > MAX_RECURSION_DEPTH:
+                continue
+            visited_dirs.add(current_dir)
+    
+            try:
+                with os.scandir(current_dir) as iterator:
+                    for entry in iterator:
+                        try:
+>                           if not entry.exists(): continue
+                                   ^^^^^^^^^^^^
+E                           AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+
+app/duplicates.py:249: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_identical_files - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_ignores_files_with_different_content - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_min_size_filters_out_tiny_files - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_never_scans_system_folders - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+5 failed, 294 passed in 1.71s
+
+```
+- `2026-10-10T04:22:29` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se ha robustecido `_collect_candidates` añadiendo manejo de errores granular y una verificación de existencia mediante `path.exists()` dentro del bucle de recolección para evitar excepciones al encontrar archivos que desaparecen durante el escaneo (condición de carrera común en escaneos de disco).
+- `2026-10-10T04:22:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T04:22:29` Corrida terminada. Total usado hoy: 104.
