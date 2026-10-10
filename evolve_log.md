@@ -1580,3 +1580,66 @@ ERROR evolve/tests/test_assistant.py - ValueError: 'score' in __slots__ conflict
 - `2026-10-10T00:18:15` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante fallos en la lectura de disco añadiendo un manejo de excepciones más granular en `_load_impl` para capturar errores de sistema específicos (como `OSError` o `PermissionError`) durante la apertura y lectura del archivo, asegurando que la app siempre retorne un estado válido (`DEFAULTS`) ante cualquier corrupción parcial o bloqueo inesperado del sistema de archivos.
 - `2026-10-10T00:18:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T00:18:15` Corrida terminada. Total usado hoy: 8.
+- `2026-10-10T00:26:21` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-10-10T00:26:52` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.61s
+
+```
+- `2026-10-10T00:26:52` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha añadido un chequeo de existencia de archivos previo en `_resolve_and_cache_path` mediante `os.path.exists`, evitando el coste de invocar `Path.resolve()` (que puede disparar excepciones de sistema en rutas malformadas o inaccesibles) en casos límite donde la ruta en el registro sea texto basura.
+- `2026-10-10T00:27:30` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva de `assistant.py` mediante la validación explícita de la URL de destino de Gemini, evitando cualquier posibilidad de redirección maliciosa o manipulación del endpoint mediante el parámetro `model`, asegurando que solo se contacte al host oficial.
+- `2026-10-10T00:28:04` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `save_logo_svg` reemplazando la lógica de validación manual por un uso estricto de `ensure_safe_to_modify`, garantizando que el archivo nunca se escriba en rutas no permitidas, siguiendo el patrón correcto de la arquitectura.
+- `2026-10-10T00:28:15` Tests FALLARON:
+```
+th('/tmp/pytest-of-runner/pytest-4/test_summarize_includes_the_sa0')
+
+    def test_summarize_includes_the_safety_note(tmp_path):
+        caches = [browser.BrowserCache("Chrome", tmp_path / "Cache", 1024 * 1024)]
+>       texto = "\n".join(browser.summarize(caches))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_modules.py:800: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/browser.py:343: in summarize
+    total_mb: float = round(total_cache_bytes(current_caches) / BYTES_TO_MB, 2)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/browser.py:335: in total_cache_bytes
+    return sum(c.bytes_found for c in caches) if caches else 0
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+.0 = <list_iterator object at 0x7f6050f87df0>
+
+>   return sum(c.bytes_found for c in caches) if caches else 0
+               ^^^^^^^^^^^^^
+E   AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+
+app/browser.py:335: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_total_cache_bytes_sums_detected_caches - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+2 failed, 297 passed in 1.59s
+
+```
+- `2026-10-10T00:28:15` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se ha implementado una validación de longitud de ruta en `_resolve_browser_path` para prevenir ataques de desbordamiento o errores de acceso en rutas que excedan el límite de Windows (`MAX_PATH_LEN`), asegurando que solo se procesen rutas que sigan las convenciones de seguridad del sistema.
+- `2026-10-10T00:28:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T00:28:15` Corrida terminada. Total usado hoy: 12.

@@ -389,10 +389,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     try:
         path = Path(destination).resolve()
         
-        # Validaciones de seguridad pre-operativas
-        if path.is_dir() or is_protected_path(path) or not is_safe_to_modify(path):
-            return None
-        
+        # Validaciones de seguridad pre-operativas usando ensure_safe_to_modify
         ensure_safe_to_modify(path)
             
         if not path.parent.exists():
