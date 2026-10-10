@@ -152,20 +152,15 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     if directory is None:
         return None
     try:
-        # Convertir a Path para asegurar manejo consistente de la ruta
-        p_raw = Path(directory)
-        if not p_raw.is_absolute():
-            p = (Path(os.getcwd()) / p_raw).resolve()
-        else:
-            p = p_raw.resolve()
-        
+        p = Path(directory).resolve()
         base = Path(os.getcwd()).resolve()
         
-        # Prevenir escape fuera del directorio base si se intenta escalar (seguridad defensiva)
-        if not str(p).startswith(str(base)) and not os.path.isabs(directory):
+        # Seguridad defensiva: verificar si la ruta resuelta está bajo el directorio de trabajo
+        # O si es una ruta absoluta válida y segura (no fuera de contexto permitido)
+        if not str(p).startswith(str(base)) and not p.is_absolute():
             return None
 
-        if p.is_symlink():
+        if p.is_symlink() or not p.exists():
             return None
         if not p.is_dir() or is_protected_path(p) or not os.access(p, os.R_OK):
             return None

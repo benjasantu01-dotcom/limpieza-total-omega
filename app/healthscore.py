@@ -279,7 +279,8 @@ def grade_for_score(score: float | int) -> str:
 def _sanitize_msg(msg: str) -> str:
     """Elimina caracteres no imprimibles y trunca el mensaje."""
     if not isinstance(msg, str): return ""
-    return "".join(c for c in msg if c.isprintable() and c not in "\r\n\t").strip()[:200]
+    sanitized = "".join(c for c in msg if c.isprintable() and c not in "\r\n\t").strip()
+    return sanitized[:200] if sanitized else ""
 
 def _evaluate_rules(metrics: SystemMetrics, m_cache: Dict[str, Any], rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio, findings: List[str]) -> None:
     """Ejecuta las reglas de diagnóstico usando caché de atributos para rendimiento."""

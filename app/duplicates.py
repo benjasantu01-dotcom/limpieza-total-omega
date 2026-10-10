@@ -248,8 +248,10 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                     try:
                         if entry.is_dir(follow_symlinks=False):
                             p_entry = Path(entry.path)
-                            if not (skip_protected and is_protected_path(p_entry)):
-                                queue.append((p_entry, depth + 1))
+                            # Defensa adicional: solo entrar si es ruta segura y no junction/symlink
+                            if _safe_path_check(p_entry):
+                                if not (skip_protected and is_protected_path(p_entry)):
+                                    queue.append((p_entry, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat()
                             if st.st_size >= min_size and (st.st_dev, st.st_ino) not in visited_inodes:
