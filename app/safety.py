@@ -837,28 +837,18 @@ def _get_final_path_normalized(path: Path) -> Optional[Path]:
         return None
     return None
 
-def _is_reparse_point_recursive(path: Path) -> bool:
-    """Verifica recursivamente si alguno de los directorios padre es un punto de reparse."""
-    try:
-        for parent in path.parents:
-            if _is_system_directory_junction(str(parent)):
-                return True
-    except (OSError, PermissionError):
-        pass
-    return False
-
-def _validate_ntfs_reparse_redirection(path: Path) -> None:
-    """Verifica que las redirecciones NTFS (junctions/symlinks) no apunten fuera de la jerarquía esperada."""
-    if not path.exists(): return
-    if _is_reparse_point_recursive(path):
-        raise UnsafePathError("Segmento de ruta contiene punto de reparse.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
-            
+def _is_junction_target_outside_base(path: Path, base_dir: Path) -> bool:
+    """Verifica que si la ruta es un punto de reparse, su destino real no escape del directorio base."""
     final_path = _get_final_path_normalized(path)
-    if final_path:
-        if final_path.drive != path.resolve().drive:
-            raise UnsafePathError("Redirección de unidad detectada.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
-        if not str(final_path).startswith(str(path.parent.resolve())):
-            raise UnsafePathError("Salida de carpeta permitida vía redirección.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+    if not final_path: return False
+    return not str(final_path).startswith(str(base_dir))
+
+def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> None:
+    """Verifica que las redirecciones NTFS no apunten fuera de la jerarquía permitida."""
+    if not path.exists(): return
+    if _is_system_directory_junction(str(path)):
+        if base_dir and _is_junction_target_outside_base(path, base_dir):
+            raise UnsafePathError("Redirección de reparse point fuera de base.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
 
 def _validate_path_components(path: Path) -> None:
     """Itera sobre la estructura de la ruta para detectar puntos de reparse intermedios."""
@@ -890,6 +880,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             raise UnsafePathError("Caracteres inválidos detectados.", SafetyValidationErrorCode.INVALID_CHARS)
         
         p = normalize(path)
+        base = Path(base_dir).resolve() if base_dir else None
         
         # Validar componentes de ruta usando caché de atributos
         _validate_path_components(p)
@@ -919,7 +910,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             initial_stat = _get_path_stat_robust(p)
             _check_hard_link_security(p, initial_stat)
             if os.name == 'nt': 
-                _validate_ntfs_reparse_redirection(p)
+                _validate_ntfs_reparse_redirection(p, base)
             _check_file_integrity(p, initial_stat)
         else:
             parent = p.parent

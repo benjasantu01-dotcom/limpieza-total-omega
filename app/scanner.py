@@ -278,7 +278,7 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Aplica todas las heurísticas registradas a un archivo validado."""
-        if not _is_readable(path):
+        if not _is_readable(path) or is_protected_path(path):
             return
         for check_fn in ALL_CHECKS:
             try:

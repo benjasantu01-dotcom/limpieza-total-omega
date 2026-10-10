@@ -319,6 +319,7 @@ def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
         if any(c in clean_path for c in SUSPICIOUS_CHARS):
             return False
         target_path = Path(clean_path)
+        # Seguridad adicional: verificar si la ruta del registro apunta a un sitio protegido
         if is_protected_path(target_path) or ".." in str(target_path):
             return False
         return True
