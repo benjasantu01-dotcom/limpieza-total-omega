@@ -256,13 +256,13 @@ def startup_folders() -> List[Path]:
         pass
     
     valid_folders: List[Path] = []
-    seen_paths: Set[Path] = set()
+    seen_paths: Set[str] = set()
     for c in candidates:
         if c and c.is_dir():
             try:
-                resolved = c.resolve()
-                if resolved not in seen_paths and not c.is_symlink() and not is_protected_path(c):
-                    seen_paths.add(resolved)
+                resolved_str = str(c.resolve())
+                if resolved_str not in seen_paths and not c.is_symlink() and not is_protected_path(c):
+                    seen_paths.add(resolved_str)
                     valid_folders.append(c)
             except (OSError, RuntimeError):
                 continue

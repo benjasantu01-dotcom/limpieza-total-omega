@@ -390,7 +390,8 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         size: Dimensión en píxeles del logo (16 a 1024).
     Returns: Path de archivo escrito si tuvo éxito, None en caso contrario.
     """
-    if not isinstance(destination, (str, Path)): return None
+    if destination is None or not isinstance(destination, (str, Path)):
+        return None
     try:
         target = Path(destination).resolve()
         

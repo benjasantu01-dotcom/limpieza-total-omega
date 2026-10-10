@@ -48,7 +48,7 @@ OSPath: TypeAlias = Union[str, Path]
 VisitedDirs: TypeAlias = Dict[str, int]
 
 # Caracteres no permitidos en rutas de Windows según especificación técnica
-PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|'}
+PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|', '"'}
 
 @dataclass(frozen=True)
 class ScanContext:
@@ -197,8 +197,8 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
         return True
     
     path_str = entry.path
-    # Validación básica de longitud y formato
-    if _is_unc_path(path_str) or len(path_str) >= MAX_PATH_LEN:
+    # Validación básica de longitud, caracteres y formato
+    if _is_unc_path(path_str) or len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS):
         return True
     
     # Validación de límites de alcance

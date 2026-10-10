@@ -404,7 +404,7 @@ class SystemContext:
         try:
             val = _get_source_value(source, key)
             if val is None: return None
-            # Re-verificar integridad ante posibles manipulaciones de getattr
+            # Re-verificar integridad ante posibles manipulaciones externas
             if not _check_metric_integrity(val): return None
             float_val = float(val)
             if not _is_metric_within_bounds(float_val, spec): 
@@ -424,8 +424,6 @@ class SystemContext:
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad sobre el objeto fuente."""
         if source is None: return False
-        if not (isinstance(source, dict) or hasattr(source, "__dict__")):
-            return False
         return not _is_input_too_deep_or_complex(source)
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
@@ -443,12 +441,9 @@ class SystemContext:
         
         updates: dict[str, Any] = {}
         for key, spec in _VALIDATORS.items():
-            try:
-                value = self._apply_field(source, key, spec)
-                if value is not None and value != getattr(self, key, None):
-                    updates[key] = value
-            except (AttributeError, Exception):
-                continue
+            value = self._apply_field(source, key, spec)
+            if value is not None and value != getattr(self, key, None):
+                updates[key] = value
         
         grade_val = self._clean_grade(_get_source_value(source, "grade"))
         if grade_val and grade_val != self.grade:
@@ -500,7 +495,7 @@ def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
         if isinstance(source, dict):
             return source.get(key)
         
-        # Acceso genérico a objeto, evitando __dict__ directo
+        # Acceso genérico a objeto, evitando __dict__ directo y métodos
         val = getattr(source, key, None)
         if callable(val) or isinstance(val, (type, list, dict, set, tuple)):
             return None
