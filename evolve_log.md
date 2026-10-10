@@ -791,3 +791,21 @@ FAILED evolve/tests/test_modules.py::test_never_scans_system_folders - Attribute
 - `2026-10-10T05:03:34` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante una validación de tipo y valor más estricta en el `_sanitize_msg` y en el manejo de `RecommendationRule`, asegurando que el motor de puntuación nunca sea interrumpido por datos malformados o inyecciones de mensajes vacíos.
 - `2026-10-10T05:03:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-10T05:03:34` Corrida terminada. Total usado hoy: 120.
+- `2026-10-10T05:11:39` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-10-10T05:12:51` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva centralizando y endureciendo la validación de rutas en el método `_validate_disk_access`, integrando explícitamente una lista de bloqueo de dispositivos (bloques de caracteres reservados de Windows) y garantizando que toda operación crítica de escritura pase por un chequeo riguroso antes de interactuar con el sistema de archivos.
+- `2026-10-10T05:13:20` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `memory.py` al reemplazar la lógica de filtro en `_is_process_executable_safe` para que utilice `is_protected_path` directamente sobre la ruta obtenida de la API de Windows, asegurando que cualquier proceso que intente ser manipulado pase por el filtro centralizado de seguridad del proyecto.
+- `2026-10-10T05:13:49` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la integridad de las operaciones de disco asegurando que `ensure_safe_to_modify` se aplique estrictamente sobre la ruta absoluta de origen, evitando discrepancias entre rutas relativas y el sistema de archivos real durante la ejecución de `shutil.move`.
+- `2026-10-10T05:14:14` Tests FALLARON:
+```
+Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+8 failed, 291 passed in 2.21s
+
+```
+- `2026-10-10T05:14:14` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se endureció la validación en `purge_all` para evitar la eliminación de archivos que, aunque presentes en el directorio de cuarentena, no tengan una correspondencia válida en el manifiesto, protegiendo así contra manipulaciones del directorio de cuarentena por agentes externos.
+- `2026-10-10T05:14:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-10T05:14:14` Corrida terminada. Total usado hoy: 124.

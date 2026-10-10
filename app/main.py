@@ -322,9 +322,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if str(p).startswith(str(app_dir)) and p != app_dir:
              raise safety.UnsafePathError("Operación denegada: Acceso a estructura interna de la App.")
 
-        # Validación estricta de formato
-        if any(ord(c) < 32 or c in '<>|?*' for c in str(p)) or len(str(p)) < 3:
-            raise safety.UnsafePathError("Ruta contiene caracteres inválidos o es demasiado corta")
+        # Validación estricta de formato: evita caracteres prohibidos en nombres de archivos Windows
+        if any(c in '<>|?*' for c in str(p.name)) or len(str(p)) < 3:
+            raise safety.UnsafePathError("Ruta contiene caracteres inválidos para el sistema de archivos")
         
         if not p.exists():
             raise FileNotFoundError(f"Ruta inexistente: {p}")

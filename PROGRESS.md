@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **211** (41.9% de aceptación)
-- Rechazadas por tests: 18
+- Mejoras aceptadas: **214** (42.5% de aceptación)
+- Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 200
+- Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-08 | 10 | 1 | 1 | 0 | 22 |
+| 2026-10-08 | 10 | 1 | 1 | 0 | 18 |
 | 2026-10-09 | 140 | 13 | 42 | 18 | 137 |
-| 2026-10-10 | 61 | 4 | 10 | 4 | 41 |
+| 2026-10-10 | 64 | 5 | 10 | 4 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **44**
+- seguridad defensiva: **44**
 - legibilidad y documentación: **43**
 - manejo de errores y validación de entradas: **42**
 - rendimiento: **41**
-- seguridad defensiva: **41**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,19 +34,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **20**
 - `branding.py`: **20**
 - `healthscore.py`: **19**
-- `memory.py`: **18**
+- `memory.py`: **19**
 - `assistant.py`: **17**
 - `duplicates.py`: **16**
 - `safety.py`: **15**
 - `scanner.py`: **14**
-- `organizer.py`: **12**
-- `main.py`: **11**
+- `organizer.py`: **13**
+- `main.py`: **12**
 - `browser.py`: **10**
 - `settings.py`: **9**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-10T05:13:49` **organizer.py** (seguridad defensiva): Se ha mejorado la integridad de las operaciones de disco asegurando que `ensure_safe_to_modify` se aplique estrictamente sobre la ruta absoluta de origen, evitando discrepancias entre rutas relativas y el sistema de archivos real durante la ejecución de `shutil.move`.
+- `2026-10-10T05:13:20` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `memory.py` al reemplazar la lógica de filtro en `_is_process_executable_safe` para que utilice `is_protected_path` directamente sobre la ruta obtenida de la API de Windows, asegurando que cualquier proceso que intente ser manipulado pase por el filtro centralizado de seguridad del proyecto.
+- `2026-10-10T05:12:51` **main.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva centralizando y endureciendo la validación de rutas en el método `_validate_disk_access`, integrando explícitamente una lista de bloqueo de dispositivos (bloques de caracteres reservados de Windows) y garantizando que toda operación crítica de escritura pase por un chequeo riguroso antes de interactuar con el sistema de archivos.
 - `2026-10-10T05:03:34` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante una validación de tipo y valor más estricta en el `_sanitize_msg` y en el manejo de `RecommendationRule`, asegurando que el motor de puntuación nunca sea interrumpido por datos malformados o inyecciones de mensajes vacíos.
 - `2026-10-10T05:03:19` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` para asegurar que el recorrido del sistema de archivos no solo valide la ruta actual, sino que verifique explícitamente que cada sub-ruta analizada sea segura antes de intentar entrar en ella, evitando seguir enlaces a directorios (junctions/symlinks) durante el escaneo recursivo.
 - `2026-10-10T05:02:53` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` para prevenir ataques de path traversal mediante el uso de `Path.resolve().parts` y la comparación estricta de subconjuntos, garantizando que una ruta proporcionada por el usuario no pueda escapar de su directorio base incluso si contiene manipulaciones como `..` o enlaces simbólicos maliciosos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-10T04:34:45` **main.py** (robustez ante casos límite): Se introdujo una validación robusta para el manejo de caracteres no imprimibles y longitudes de ruta en `_validate_disk_access`, protegiendo el sistema de inyecciones de rutas maliciosas o rutas inválidas ("path traversal" o errores de sistema) antes de cualquier operación de disco.
 - `2026-10-10T04:31:22` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` ante fallos de datos inyectados o estados inesperados mediante un filtrado previo de `SystemMetrics` más estricto y la adición de un chequeo de integridad que garantiza que el `pipeline` siempre produzca un resultado numérico válido, incluso ante condiciones de borde como valores negativos o nulos.
 - `2026-10-10T04:22:18` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` ante casos límite mediante la gestión explícita de `OSError` al intentar leer atributos de archivos que pueden desaparecer, estar bloqueados por el sistema o ser inaccesibles durante la iteración del escaneo.
-- `2026-10-10T04:21:50` **browser.py** (robustez ante casos límite): Se mejoró la robustez de `_resolve_browser_path` para evitar ataques de salto de directorio (directory traversal) mediante el uso de `pathlib.Path.parts` y validación de componentes seguros, garantizando que ninguna ruta resuelta escape del directorio base incluso si el `rel_str` contiene manipulaciones maliciosas.
-- `2026-10-10T04:21:23` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `draw_ring` mediante la sanitización estricta de sus parámetros geométricos y la adición de una validación de `math.isfinite` sobre el `extent` calculado, previniendo errores de renderizado ante entradas anómalas.
-- `2026-10-10T04:12:30` **assistant.py** (robustez ante casos límite): Mejoré `_get_source_value` para añadir una validación de profundidad recursiva al inspeccionar objetos, evitando ataques de recursión infinita o inyección de tipos complejos durante la ingesta de datos, manteniendo la integridad del `SystemContext`.

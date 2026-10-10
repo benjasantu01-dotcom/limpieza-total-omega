@@ -344,9 +344,9 @@ def _is_process_executable_safe(pid: int) -> bool:
     handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
     if not handle: return False
     try:
-        # Buffer de tamaño MAX_PATH (260) pero ampliado a 1024 por seguridad.
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
+            # Reutiliza el filtro de seguridad centralizado.
             return not is_protected_path(buf.value)
     except (ctypes.ArgumentError, OSError):
         return False

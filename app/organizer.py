@@ -301,9 +301,10 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         try:
             if not _is_safe_for_disk_op(junk_file, dest_res): continue
             target_path = _can_move_file(junk_file, dest_res)
-            if target_path and target_path != junk_file.path and is_safe_to_modify(junk_file.path):
-                ensure_safe_to_modify(junk_file.path)
-                shutil.move(str(junk_file.path), str(target_path))
+            if target_path and target_path != junk_file.path:
+                src_abs = junk_file.path.resolve()
+                ensure_safe_to_modify(src_abs)
+                shutil.move(str(src_abs), str(target_path))
         except (OSError, shutil.Error, PermissionError):
             continue
     return dest_res
