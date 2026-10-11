@@ -1214,3 +1214,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-11T03:07:54` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-10-11T03:07:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-11T03:07:54` Corrida terminada. Total usado hoy: 76.
+- `2026-10-11T03:15:56` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-10-11T03:16:32` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-11T03:17:16` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez ante fallos de persistencia verificando la existencia del directorio antes de intentar escribir y asegurando que las operaciones críticas de archivo no se realicen sobre rutas inexistentes o mal formadas.
+- `2026-10-11T03:17:45` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `StartupEntry._extract_quoted_path` para prevenir excepciones críticas ante rutas malformadas o excesivamente largas, asegurando que el proceso no falle si encuentra fragmentos de registro que no terminan en una ruta de archivo válida.
+- `2026-10-11T03:18:13` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad de la ingestión de datos en `SystemContext` aplicando una validación más estricta sobre el diccionario de entrada para prevenir inyecciones de objetos maliciosos mediante técnicas de introspección (`__dict__` o similares) que podrían sortear las reglas actuales.
+- `2026-10-11T03:18:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-11T03:18:13` Corrida terminada. Total usado hoy: 80.

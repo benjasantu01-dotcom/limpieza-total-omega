@@ -371,8 +371,8 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
 def _is_dir_safe(path: Path) -> bool:
     """Verifica seguridad básica del directorio padre antes de operaciones de escritura."""
     try:
+        if not path.is_dir(): return False
         st = path.stat()
-        if not stat.S_ISDIR(st.st_mode): return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if st.st_mode & (stat.S_IWGRP | stat.S_IWOTH): return False
         return True
@@ -380,7 +380,7 @@ def _is_dir_safe(path: Path) -> bool:
 
 def _load_impl(ruta: Path) -> AppSettings:
     """Implementación de carga: valida seguridad y parsea el contenido."""
-    if not ruta.is_file() or ruta.stat().st_size == 0 or _Validators._is_reparse_point(ruta):
+    if not ruta.exists() or not ruta.is_file() or ruta.stat().st_size == 0 or _Validators._is_reparse_point(ruta):
         return DEFAULTS.copy()
     
     data = _read_and_parse_json(ruta.resolve())
@@ -395,7 +395,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     backup_path = primary_path.with_suffix(".bak")
     
     for path in [primary_path, backup_path]:
-        if path.is_file():
+        if path.exists() and path.is_file():
             try:
                 mtime = os.path.getmtime(path)
                 cache_key = str(path)
@@ -437,7 +437,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     
     parent = config_path.parent
     try:
-        if not _is_dir_safe(parent) or _Validators._is_reparse_point(parent) or is_protected_path(str(parent.resolve())): return None
+        if not parent.exists() or not _is_dir_safe(parent) or _Validators._is_reparse_point(parent) or is_protected_path(str(parent.resolve())): return None
         ensure_safe_to_modify(str(parent.resolve()))
         usage = shutil.disk_usage(parent)
         if usage.free < MAX_SETTINGS_SIZE * 2 or not os.access(parent, os.W_OK): return None

@@ -145,6 +145,9 @@ class StartupEntry:
             return ""
             
         try:
+            # Validación de longitud básica antes de instanciar Path
+            if len(path_str) > 260:
+                return ""
             p: Path = Path(path_str)
             # Validación explícita de componentes de ruta antes de verificar protección
             if not p.parts or is_protected_path(p):

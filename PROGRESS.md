@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **209** (41.5% de aceptación)
+- Mejoras aceptadas: **212** (42.1% de aceptación)
 - Rechazadas por tests: 27
 - Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 30 | 2 | 7 | 4 | 35 |
+| 2026-10-09 | 30 | 2 | 7 | 4 | 31 |
 | 2026-10-10 | 151 | 17 | 30 | 12 | 140 |
-| 2026-10-11 | 28 | 8 | 7 | 2 | 31 |
+| 2026-10-11 | 31 | 8 | 7 | 2 | 32 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
+- seguridad defensiva: **43**
 - legibilidad y documentación: **42**
-- seguridad defensiva: **42**
-- robustez ante casos límite: **40**
+- robustez ante casos límite: **42**
 - rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
@@ -33,7 +33,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **21**
 - `healthscore.py`: **21**
 - `safety.py`: **19**
-- `assistant.py`: **17**
+- `assistant.py`: **18**
 - `scanner.py`: **16**
 - `branding.py`: **15**
 - `memory.py`: **15**
@@ -42,11 +42,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `main.py`: **13**
 - `browser.py`: **12**
 - `organizer.py`: **12**
-- `settings.py`: **10**
-- `startup.py`: **9**
+- `settings.py`: **11**
+- `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-11T03:18:13` **assistant.py** (seguridad defensiva): Mejoré la seguridad de la ingestión de datos en `SystemContext` aplicando una validación más estricta sobre el diccionario de entrada para prevenir inyecciones de objetos maliciosos mediante técnicas de introspección (`__dict__` o similares) que podrían sortear las reglas actuales.
+- `2026-10-11T03:17:45` **startup.py** (robustez ante casos límite): Se mejoró la robustez de `StartupEntry._extract_quoted_path` para prevenir excepciones críticas ante rutas malformadas o excesivamente largas, asegurando que el proceso no falle si encuentra fragmentos de registro que no terminan en una ruta de archivo válida.
+- `2026-10-11T03:17:16` **settings.py** (robustez ante casos límite): Mejoré la robustez ante fallos de persistencia verificando la existencia del directorio antes de intentar escribir y asegurando que las operaciones críticas de archivo no se realicen sobre rutas inexistentes o mal formadas.
 - `2026-10-11T02:58:42` **memory.py** (robustez ante casos límite): Se mejora la robustez de `top_memory_processes` añadiendo una validación explícita para evitar errores de tipo si los PIDs retornados por `EnumProcesses` no son enteros válidos o si la lista de procesos está vacía tras el filtrado, previniendo excepciones durante la iteración sobre PIDs del sistema o procesos zombies.
 - `2026-10-11T02:56:41` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor ante casos límite (entradas mal formadas o vacías) añadiendo una validación explícita de `is_finite` en `compute_score` y asegurando que las reglas de recomendación manejen correctamente posibles divisiones por cero o valores nulos en el cálculo de métricas.
 - `2026-10-11T02:47:53` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_is_excluded_path` ante errores de entrada y permisos denegados al manejar explícitamente posibles excepciones de `os.scandir` y la resolución de rutas, asegurando que el recorrido no se interrumpa silenciosamente por errores de sistema en subdirectorios profundos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-11T02:16:13` **healthscore.py** (rendimiento): Se optimizó el cálculo en `compute_score` cacheando el valor de `m.validate()` fuera del bucle de reglas, eliminando llamadas redundantes y verificaciones de integridad repetitivas dentro de cada ciclo de evaluación.
 - `2026-10-11T02:15:46` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` eliminando la llamada redundante a `Path(entry.path)` y el doble chequeo de seguridad, utilizando directamente los atributos de `os.DirEntry` para evitar llamadas innecesarias al sistema de archivos (`stat`).
 - `2026-10-11T02:05:54` **assistant.py** (rendimiento): Optimicé el método `SystemContext.metrics_snapshot` para evitar recrear el diccionario completo en cada llamada, utilizando una lógica de invalidación basada en caché que aprovecha el diseño del objeto, reduciendo la carga de CPU durante el análisis.
-- `2026-10-11T02:05:11` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones auxiliares de bajo nivel (`_process_folder_entry`, `_is_valid_registry_entry`), detallando las precondiciones y el flujo de validación para facilitar futuras auditorías de seguridad sobre el código.
-- `2026-10-11T01:55:58` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `scanner.py` mediante la refactorización de `_safe_stat` y `_is_readable` para consolidar la lógica de validación de archivos, añadiendo docstrings descriptivos y type hints que clarifican las precondiciones necesarias para el análisis seguro de archivos.
-- `2026-10-11T01:55:33` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_get_security_descriptor` hacia un enfoque basado en objetos, facilitando la comprensión del flujo de auditoría de seguridad y eliminando redundancias en la evaluación de atributos.

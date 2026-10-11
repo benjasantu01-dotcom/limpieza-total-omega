@@ -422,7 +422,10 @@ class SystemContext:
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad sobre el objeto fuente."""
         if source is None: return False
-        return not _is_input_too_deep_or_complex(source)
+        # Prevenir ataques por inspección de diccionarios que contengan métodos o lógica oculta
+        if isinstance(source, dict):
+            return not _is_input_too_deep_or_complex(source)
+        return hasattr(source, "__dict__") and not _is_input_too_deep_or_complex(source.__dict__)
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
         """Aplica cambios al contexto y limpia cachés internas."""
@@ -797,3 +800,4 @@ def ask(question: str, context: SystemContext | None = None,
         return Answer(remoto, source="gemini", notice=PRIVACY_NOTICE)
     except Exception:
         return respaldo
+
