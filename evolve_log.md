@@ -838,3 +838,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-10-11T11:18:55` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-10-11T11:18:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-11T11:18:55` Corrida terminada. Total usado hoy: 268.
+- `2026-10-11T11:24:31` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-10-11T11:25:21` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: rendimiento).
+- `2026-10-11T11:25:45` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-10-11T11:26:35` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimizé `is_protected_path` eliminando llamadas costosas a `resolve()` y `parents` en el caso común de que la ruta esté en `_SYSTEM_ROOT_STRS` o sea un archivo kernel-managed, mejorando la performance en escaneos masivos.
+- `2026-10-11T11:27:09` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-10-11T11:27:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-11T11:27:09` Corrida terminada. Total usado hoy: 272.

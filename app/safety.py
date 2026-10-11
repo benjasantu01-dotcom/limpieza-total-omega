@@ -669,18 +669,16 @@ def is_protected_path(path: PathLike) -> bool:
     if not isinstance(path, (str, Path)) or not path: return True
     try:
         p_str = str(path).lower()
-        if _get_file_attrs(p_str) & (Win32Attr.SYSTEM | Win32Attr.HIDDEN): return True
-        # Check against cached roots and protected patterns first
         if any(p_str.startswith(r) for r in _SYSTEM_ROOT_STRS): return True
         if _is_kernel_managed(p_str): return True
+        if _get_file_attrs(p_str) & (Win32Attr.SYSTEM | Win32Attr.HIDDEN): return True
         
         p = Path(path)
         if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts): return True
         if not p.exists(): return False 
         
         p_res = p.resolve()
-        if p_res == Path(p_res.anchor): return True
-        return any(p_res == root or root in p_res.parents for root in _SYSTEM_ROOT_PATHS)
+        return p_res == Path(p_res.anchor) or any(p_res == root or root in p_res.parents for root in _SYSTEM_ROOT_PATHS)
     except Exception: return True
 
 @lru_cache(maxsize=4096)

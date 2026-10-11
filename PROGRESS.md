@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 33
-- Rechazadas por guardia de seguridad: 46
+- Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-10 | 95 | 13 | 20 | 8 | 100 |
-| 2026-10-11 | 101 | 20 | 26 | 15 | 106 |
+| 2026-10-10 | 92 | 13 | 20 | 8 | 99 |
+| 2026-10-11 | 102 | 20 | 27 | 15 | 108 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **47**
+- seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **42**
 - robustez ante casos límite: **34**
-- rendimiento: **29**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
 - `healthscore.py`: **19**
+- `diskreport.py`: **19**
 - `memory.py`: **18**
-- `safety.py`: **17**
+- `safety.py`: **18**
 - `browser.py`: **16**
-- `assistant.py`: **15**
 - `settings.py`: **15**
+- `assistant.py`: **14**
 - `scanner.py`: **13**
-- `branding.py`: **12**
 - `organizer.py`: **12**
 - `duplicates.py`: **11**
 - `main.py`: **11**
 - `startup.py`: **11**
+- `branding.py`: **11**
 - `quarantine.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-11T11:26:35` **safety.py** (rendimiento): Optimizé `is_protected_path` eliminando llamadas costosas a `resolve()` y `parents` en el caso común de que la ruta esté en `_SYSTEM_ROOT_STRS` o sea un archivo kernel-managed, mejorando la performance en escaneos masivos.
 - `2026-10-11T11:18:45` **memory.py** (rendimiento): Se optimizó el rendimiento de `top_memory_processes` reemplazando la instanciación de una clase `ctypes` de tamaño fijo y el loop manual de filtrado por una implementación más eficiente que reduce las llamadas a la API de Windows mediante un procesamiento más directo, evitando también la recreación de objetos innecesarios dentro del ciclo.
 - `2026-10-11T11:14:55` **healthscore.py** (rendimiento): Se optimizó el cálculo en `compute_score` cacheando las llamadas a `_clamp` y `float` para evitar redundancias dentro del bucle principal del pipeline, mejorando el rendimiento en la ejecución del ciclo de evaluación.
 - `2026-10-11T11:05:43` **diskreport.py** (rendimiento): Optimicé el motor `_collect_summary_data` para evitar la conversión constante a `Path` y el acceso redundante a metadatos dentro del loop principal, reduciendo la carga de CPU y memoria durante recorridos de disco extensos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-11T10:25:08` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica añadiendo type hints faltantes y docstrings descriptivos en funciones auxiliares (`_bytes_to_mb`, `_validate_limit`, `_validate_root`), clarificando el propósito y las restricciones de cada parámetro para facilitar el mantenimiento.
 - `2026-10-11T10:24:58` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (usando el formato Google Style) en funciones clave, aclarando las garantías de seguridad y las restricciones de los parámetros para facilitar el mantenimiento y la comprensión de las heurísticas de escaneo.
 - `2026-10-11T10:24:08` **assistant.py** (legibilidad y documentación): Se introdujeron type hints explícitos en funciones clave del motor local (`local_answer`, `handle_ram`, etc.) y se refinó la documentación interna (docstrings) para aclarar las precondiciones de seguridad de las métricas, mejorando la legibilidad técnica del flujo de datos sin alterar el comportamiento.
-- `2026-10-11T10:15:18` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_valid_registry_entry` y `parse_registry_csv` añadiendo validaciones explícitas de tipos y control de errores ante entradas mal formadas, evitando que fallos en la lectura del registro (como valores inesperados de PowerShell) comprometan el escaneo.
