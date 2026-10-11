@@ -576,12 +576,13 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
             except (OSError, AttributeError):
                 pass
 
+    temp_name = None
     try:
         with tempfile.NamedTemporaryFile("wb", dir=base_path, delete=False) as tf:
+            temp_name = tf.name
             tf.write(encoded_content)
             tf.flush()
             os.fsync(tf.fileno())
-            temp_name = tf.name
             
         os.replace(temp_name, target_path)
         
@@ -594,8 +595,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         _MANIFEST_CACHE[base_path] = (items, st.st_mtime, st.st_size, st.st_ino)
         return target_path
     except (OSError, IOError) as e:
-        # Intentar limpiar archivo temporal si la escritura falló
-        if 'temp_name' in locals() and os.path.exists(temp_name):
+        if temp_name and os.path.exists(temp_name):
             try: os.unlink(temp_name)
             except OSError: pass
         raise RuntimeError(f"Falla crítica al persistir estado del manifiesto en {base_path}: {e}")
