@@ -350,6 +350,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     for path, size in walk_files(root, skip_protected):
         try:
             rel = str(path.parent)[root_len:].lstrip(os.sep)
+            if not rel: continue
             top_folder = rel.split(os.sep)[0]
             if not top_folder: continue
             
@@ -357,7 +358,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             curr = stats[str(target)]
             curr.size += size
             curr.file_count += 1
-        except (ValueError, IndexError, OSError, PermissionError, AttributeError):
+        except (ValueError, IndexError, OSError, AttributeError):
             continue
 
     results = [FolderUsage(Path(p), m.size, m.file_count) for p, m in stats.items()]
@@ -389,7 +390,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         if limit > 0:
             if len(top_heap) < limit: 
                 heapq.heappush(top_heap, (size_bytes, path))
-            elif size_bytes > top_heap[0][0]: 
+            elif size_bytes > (top_heap[0][0] if top_heap else -1): 
                 heapq.heapreplace(top_heap, (size_bytes, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
@@ -403,7 +404,7 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     
     try:
         data = _collect_summary_data(root, skip_protected, limit=20)
-    except (OSError, PermissionError, ValueError):
+    except (OSError, PermissionError, ValueError, TypeError):
         return ["Error: Falló inesperadamente el escaneo del directorio raíz."]
         
     if data.total_files == 0: 

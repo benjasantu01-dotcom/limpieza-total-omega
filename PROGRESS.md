@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **202** (40.1% de aceptación)
+- Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 29
-- Rechazadas por guardia de seguridad: 44
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 211
+- Rechazadas por guardia de seguridad: 43
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 15 | 1 | 6 | 3 | 5 |
+| 2026-10-09 | 13 | 1 | 5 | 3 | 4 |
 | 2026-10-10 | 151 | 17 | 30 | 12 | 140 |
-| 2026-10-11 | 36 | 11 | 8 | 3 | 66 |
+| 2026-10-11 | 39 | 11 | 8 | 4 | 66 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **48**
 - robustez ante casos límite: **42**
-- legibilidad y documentación: **38**
+- manejo de errores y validación de entradas: **39**
 - rendimiento: **38**
-- manejo de errores y validación de entradas: **36**
+- legibilidad y documentación: **36**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **20**
 - `healthscore.py`: **20**
-- `diskreport.py`: **19**
 - `safety.py`: **19**
-- `assistant.py`: **16**
+- `assistant.py`: **17**
 - `scanner.py`: **15**
 - `duplicates.py`: **14**
 - `memory.py`: **14**
-- `quarantine.py`: **13**
 - `branding.py`: **13**
+- `browser.py`: **13**
 - `main.py`: **13**
-- `organizer.py`: **12**
-- `browser.py`: **12**
+- `quarantine.py`: **12**
 - `settings.py`: **12**
+- `organizer.py`: **11**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-11T05:19:55` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `largest_folders` añadiendo capturas de excepciones más granulares y validaciones de estado para prevenir fallos silenciosos durante la iteración de directorios, asegurando que el manejo de rutas malformadas no interrumpa el flujo del reporte.
+- `2026-10-11T05:19:41` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` y `_resolve_browser_path` validando explícitamente que los parámetros de entrada (`bases` y `cache_paths`) no solo tengan el tipo correcto, sino que no sean colecciones vacías antes de procesarlos, evitando iteraciones innecesarias y posibles errores de lógica en flujos con configuraciones de usuario incompletas.
+- `2026-10-11T05:18:44` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_text_from_gemini_json` para manejar estructuras de datos anidadas de forma más defensiva, asegurando que no se produzcan excepciones al acceder a claves ausentes o tipos inesperados, reforzando la validación de seguridad requerida.
 - `2026-10-11T03:57:15` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de condiciones de carrera (TOCTOU) y asegurar que el archivo no haya sido reemplazado por un enlace simbólico malintencionado durante la lectura, añadiendo una validación adicional mediante `os.fstat` sobre el file descriptor antes de la deserialización.
 - `2026-10-11T03:48:32` **safety.py** (seguridad defensiva): Se introdujo la verificación `_is_reparse_point_safe` dentro de `ensure_safe_to_modify` para asegurar que las rutas no solo sean puntos de reparse, sino que su destino final (resolviendo la cadena de redirección) se mantenga dentro de los límites de integridad previstos, evitando escapes de sandbox por enlaces simbólicos o junctions.
 - `2026-10-11T03:38:56` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` añadiendo una validación explícita de `is_protected_path` sobre la ruta resuelta (`src_real`) antes de cualquier operación, asegurando que no se manipulen archivos protegidos incluso si el `resolve` inicial fuera exitoso.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-11T02:56:41` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor ante casos límite (entradas mal formadas o vacías) añadiendo una validación explícita de `is_finite` en `compute_score` y asegurando que las reglas de recomendación manejen correctamente posibles divisiones por cero o valores nulos en el cálculo de métricas.
 - `2026-10-11T02:47:53` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_is_excluded_path` ante errores de entrada y permisos denegados al manejar explícitamente posibles excepciones de `os.scandir` y la resolución de rutas, asegurando que el recorrido no se interrumpa silenciosamente por errores de sistema en subdirectorios profundos.
 - `2026-10-11T02:47:20` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante errores de acceso a archivos al delegar la verificación de atributos de sistema a una lógica protegida contra `OSError`, y se corrigió el manejo de `Kernel32` para asegurar que el escaneo no se interrumpa en sistemas con permisos restringidos o donde `GetFileAttributesW` falle por causas externas.
-- `2026-10-11T02:46:03` **assistant.py** (robustez ante casos límite): Mejora la robustez del manejo de configuración en `_parse_config` y `available` para prevenir fallos silenciosos si `settings.load` retorna valores inesperados o si los tipos de datos en el archivo de configuración son distintos a los esperados, garantizando que el asistente siempre tenga un estado coherente.
-- `2026-10-11T02:37:55` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuración implementando un sistema de caché de instancia en `_SettingsManager` para evitar el parseo innecesario de JSON en llamadas recurrentes dentro del mismo ciclo de ejecución.
-- `2026-10-11T02:37:09` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner moviendo la validación de seguridad `_is_safe_entry` fuera del bucle de heurísticas mediante el uso de `_is_relevant_extension` como filtro previo, reduciendo drásticamente las llamadas costosas al sistema de archivos (`resolve`, `exists`) para archivos no relevantes.

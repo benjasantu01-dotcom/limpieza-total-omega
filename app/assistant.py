@@ -718,11 +718,11 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
         if not isinstance(candidates, list) or not candidates or not isinstance(candidates[0], dict): 
             return None
         
-        first_candidate = candidates[0]
-        if first_candidate.get("finishReason") != "STOP": 
+        first = candidates[0]
+        if first.get("finishReason") != "STOP": 
             return None
         
-        content = first_candidate.get("content")
+        content = first.get("content")
         if not isinstance(content, dict): return None
         
         parts = content.get("parts")
@@ -800,4 +800,3 @@ def ask(question: str, context: SystemContext | None = None,
         return Answer(remoto, source="gemini", notice=PRIVACY_NOTICE)
     except Exception:
         return respaldo
-

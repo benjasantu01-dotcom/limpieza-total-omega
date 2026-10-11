@@ -305,6 +305,9 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
         return Path()
     
     parts = [p for p in rel_str.split("\\") if p and p != "." and p != ".."]
+    if not parts:
+        return Path()
+        
     target: Path = real_base.joinpath(*parts)
     
     if not target.exists() or not target.is_dir(): 
@@ -323,7 +326,12 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
     """Pipeline principal para detectar y medir cachés en las rutas preconfiguradas."""
     raw_bases = list(bases) if bases is not None else base_directories()
+    if not raw_bases:
+        return []
+
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
+    if not browser_map:
+        return []
     
     found: List[BrowserCache] = []
     
