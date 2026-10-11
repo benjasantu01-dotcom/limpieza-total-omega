@@ -343,7 +343,6 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     """Helper que encapsula la apertura, lock y lectura segura del archivo."""
     try:
         ensure_safe_to_modify(str(file_path.resolve()))
-        # Verificación de permisos antes de abrir
         if not _is_dir_safe(file_path.parent): return None
         
         with open(file_path, "r", encoding="utf-8") as f:
@@ -351,6 +350,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
             
             try:
                 fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
+                # Re-validar tras adquirir el lock para prevenir TOCTOU
                 if not _is_file_secure_to_read(f): return None
                 
                 content = f.read(MAX_SETTINGS_SIZE + 1)
