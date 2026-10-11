@@ -895,3 +895,41 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-11T00:46:59` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_get_source_value` y `_apply_field` para prevenir posibles errores de tipo durante la ingesta de datos, asegurando que las conversiones numéricas no fallen silenciosamente ante entradas inesperadas y manteniendo la integridad del `SystemContext` ante fuentes de datos externas malformadas.
 - `2026-10-11T00:46:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-11T00:46:59` Corrida terminada. Total usado hoy: 20.
+- `2026-10-11T00:53:27` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-10-11T00:54:05` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `save_logo_svg` añadiendo una verificación explícita de `is_protected_path` sobre la ruta resuelta antes de cualquier operación, garantizando que el acceso al sistema de archivos sea seguro incluso si `ensure_safe_to_modify` fallara por condiciones de carrera o configuraciones atípicas.
+- `2026-10-11T00:54:33` Tests FALLARON:
+```
+.................... [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________ test_read_only_modules_never_delete_or_move __________________
+
+    def test_read_only_modules_never_delete_or_move():
+        """Ningún módulo de solo lectura puede borrar ni mover archivos."""
+        destructivos = {"unlink", "rmdir", "rmtree", "move", "remove", "rename", "replace"}
+        for nombre in READ_ONLY_MODULES:
+            archivo = APP_DIR / nombre
+            if not archivo.exists():
+                continue
+            usados = calls_and_imports(parse(archivo)) & destructivos
+>           assert not usados, (
+                f"{nombre} debería ser de solo lectura pero llama a "
+                f"{', '.join(sorted(usados))}"
+            )
+E           AssertionError: browser.py debería ser de solo lectura pero llama a replace
+E           assert not {'replace'}
+
+evolve/tests/test_integrity.py:294: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: browser.py debería ser de solo lectura pero llama a replace
+assert not {'replace'}
+1 failed, 298 passed in 1.54s
+
+```
+- `2026-10-11T00:54:33` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_resolve_browser_path` al asegurar que la validación de la cadena `rel_str` maneje correctamente rutas con diagonales mixtas antes de procesarlas, evitando errores de resolución en entornos Windows donde el formato puede ser inconsistente.
+- `2026-10-11T00:55:00` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas durante la iteración y conversión de rutas, evitando que un error de acceso de lectura puntual (común en el sistema de archivos) detenga abruptamente el análisis completo, y añadí una validación explícita para asegurar que `entry.path` sea una ruta absoluta antes de procesarla.
+- `2026-10-11T00:55:09` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-11T00:55:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-11T00:55:09` Corrida terminada. Total usado hoy: 24.

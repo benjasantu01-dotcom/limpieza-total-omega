@@ -313,15 +313,16 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if skip_protected and _is_excluded_path(entry):
                             continue
                         
+                        abs_path = Path(entry.path).absolute()
                         if entry.is_dir(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(entry.path)
+                                stack.append(str(abs_path))
                         elif entry.is_file(follow_symlinks=False):
                             f_stat = entry.stat()
-                            yield Path(entry.path), int(f_stat.st_size)
+                            yield abs_path, int(f_stat.st_size)
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
         except (PermissionError, OSError, FileNotFoundError): 
@@ -406,8 +407,8 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     
     try:
         data = _collect_summary_data(root, skip_protected, limit=20)
-    except Exception:
-        return ["Error: Falló el escaneo del directorio raíz."]
+    except (OSError, PermissionError, ValueError):
+        return ["Error: Falló inesperadamente el escaneo del directorio raíz."]
         
     if data.total_files == 0: 
         return ["Aviso: No se encontraron archivos accesibles en la ruta seleccionada."]
