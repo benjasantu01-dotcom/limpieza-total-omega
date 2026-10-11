@@ -413,10 +413,13 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         
         # Mantener el heap del top N: eficiencia O(N log K) donde K es el límite
         if limit > 0:
-            if len(top_heap) < limit: 
-                heapq.heappush(top_heap, (size_bytes, path))
-            elif size_bytes > top_heap[0][0]: 
-                heapq.heapreplace(top_heap, (size_bytes, path))
+            try:
+                if len(top_heap) < limit: 
+                    heapq.heappush(top_heap, (size_bytes, path))
+                elif size_bytes > top_heap[0][0]: 
+                    heapq.heapreplace(top_heap, (size_bytes, path))
+            except (IndexError, TypeError):
+                continue
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 

@@ -354,7 +354,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     
     candidates: List[Tuple[Tuple[float, int], Path]] = []
     for p in group.paths:
-        if isinstance(p, Path) and p.exists():
+        if isinstance(p, Path) and p.exists() and is_safe_to_modify(p):
             if (score := _calculate_keeper_heuristic(p)) is not None:
                 candidates.append((score, p))
             

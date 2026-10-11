@@ -209,6 +209,8 @@ def _process_file_node(entry: os.DirEntry, visited_files: Set[tuple[int, int]]) 
         if not is_safe_to_modify(Path(entry.path)) or is_protected_path(Path(entry.path)):
             return 0
         st = entry.stat(follow_symlinks=False)
+        if not hasattr(st, 'st_dev') or not hasattr(st, 'st_ino'):
+            return 0
         file_id = (st.st_dev, st.st_ino)
         if file_id in visited_files:
             return 0
