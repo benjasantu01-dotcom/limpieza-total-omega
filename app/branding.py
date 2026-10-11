@@ -35,6 +35,11 @@ GradeKey: TypeAlias = Literal["A", "B", "C", "D", "F"]
 SeverityStyle: TypeAlias = Tuple[ColorHex, str]  
 RGBTuple: TypeAlias = Tuple[int, int, int]  
 
+class Point(NamedTuple):
+    """Representación semántica de un par de coordenadas 2D."""
+    x: float
+    y: float
+
 class SeverityType(Enum):
     """Categorías estándar de severidad de riesgo para la aplicación."""
     OK = "ok"
@@ -492,18 +497,19 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     try:
         if canvas is None: return
         s = float(size) if size is not None else 56.0
-        cx, cy = float(canvas_x) if canvas_x is not None else 0.0, float(canvas_y) if canvas_y is not None else 0.0
-        if not math.isfinite(s) or s <= 0 or not math.isfinite(cx) or not math.isfinite(cy): return
+        origin = Point(float(canvas_x) if canvas_x is not None else 0.0, 
+                       float(canvas_y) if canvas_y is not None else 0.0)
+        if not math.isfinite(s) or s <= 0 or not math.isfinite(origin.x) or not math.isfinite(origin.y): return
         scale = max(0.1, min(10.0, s / 128.0))
         
         canvas.create_oval(
-            cx + (64 * scale) - 75 * scale, cy + (58 * scale) - 75 * scale, 
-            cx + (64 * scale) + 75 * scale, cy + (58 * scale) + 75 * scale, 
+            origin.x + (64 * scale) - 75 * scale, origin.y + (58 * scale) - 75 * scale, 
+            origin.x + (64 * scale) + 75 * scale, origin.y + (58 * scale) + 75 * scale, 
             fill=blend(C_SURFACE, C_GLOW, 0.15), outline=""
         )
-        canvas.create_polygon(*_get_scaled_poly(scale, cx, cy), fill=GRADIENT_STOPS[1], outline="")
-        _draw_shield_stripes(canvas, cx, cy, scale)
-        _draw_shield_icon_decorations(canvas, cx, cy, scale)
+        canvas.create_polygon(*_get_scaled_poly(scale, origin.x, origin.y), fill=GRADIENT_STOPS[1], outline="")
+        _draw_shield_stripes(canvas, origin.x, origin.y, scale)
+        _draw_shield_icon_decorations(canvas, origin.x, origin.y, scale)
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
@@ -512,14 +518,14 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
         if canvas is None or not stops: return
         w_val = max(1, min(4096, int(width)))
         h_val = max(1, min(1024, int(height)))
-        cx, cy = float(canvas_x), float(canvas_y)
-        if not math.isfinite(cx) or not math.isfinite(cy): return
+        origin = Point(float(canvas_x), float(canvas_y))
+        if not math.isfinite(origin.x) or not math.isfinite(origin.y): return
         
         segments = get_gradient_segments(w_val, stops)
             
         for seg in segments:
-            canvas.create_line(cx + seg.start_index, cy, 
-                               cx + seg.end_index, cy, 
+            canvas.create_line(origin.x + seg.start_index, origin.y, 
+                               origin.x + seg.end_index, origin.y, 
                                fill=seg.hex_color, width=h_val)
     except (TypeError, ValueError, AttributeError, ZeroDivisionError, IndexError): pass
 
@@ -542,11 +548,11 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         diam = max(20, min(2048, int(size)))
         thick = max(2, min(int(thickness), (diam // 2) - 1))
         
-        cx, cy = float(canvas_x), float(canvas_y)
-        if not math.isfinite(cx) or not math.isfinite(cy): return
+        origin = Point(float(canvas_x), float(canvas_y))
+        if not math.isfinite(origin.x) or not math.isfinite(origin.y): return
         
         borde: float = float(thick) / 2.0
-        caja = (cx + borde, cy + borde, cx + diam - borde, cy + diam - borde)
+        caja = (origin.x + borde, origin.y + borde, origin.x + diam - borde, origin.y + diam - borde)
         
         canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=thick)
         if val > 0: 

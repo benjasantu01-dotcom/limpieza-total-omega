@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
-- Rechazadas por tests: 26
-- Rechazadas por guardia de seguridad: 42
+- Mejoras aceptadas: **205** (40.7% de aceptación)
+- Rechazadas por tests: 27
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 208
 
@@ -16,30 +16,30 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 50 | 6 | 11 | 8 | 47 |
+| 2026-10-09 | 47 | 6 | 10 | 8 | 47 |
 | 2026-10-10 | 151 | 17 | 30 | 12 | 140 |
-| 2026-10-11 | 6 | 3 | 1 | 1 | 21 |
+| 2026-10-11 | 7 | 4 | 3 | 1 | 21 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **47**
 - robustez ante casos límite: **42**
-- rendimiento: **36**
-- legibilidad y documentación: **32**
+- rendimiento: **33**
+- legibilidad y documentación: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **22**
+- `healthscore.py`: **21**
 - `safety.py`: **20**
 - `diskreport.py`: **20**
+- `branding.py`: **17**
 - `scanner.py`: **16**
 - `assistant.py`: **16**
-- `branding.py`: **16**
-- `memory.py`: **15**
 - `quarantine.py`: **15**
-- `duplicates.py`: **14**
+- `memory.py`: **14**
 - `main.py`: **13**
+- `duplicates.py`: **13**
 - `settings.py`: **11**
 - `organizer.py`: **11**
 - `browser.py`: **10**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-11T01:25:46` **branding.py** (legibilidad y documentación): Se introdujo un `NamedTuple` llamado `Point` para centralizar la representación de coordenadas, reemplazando tuplas planas dispersas y mejorando la legibilidad semántica del cálculo geométrico.
 - `2026-10-11T01:15:45` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` añadiendo una comprobación explícita para evitar errores de tipo al procesar `base_dir` y una validación defensiva en la obtención del estado del volumen para prevenir excepciones inesperadas durante la inspección de seguridad, alineándose con el enfoque de validación de entradas.
 - `2026-10-11T01:05:53` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_process_executable_safe` reemplazando la validación manual de rutas UNC con una verificación de tipo explícita y mejorando la gestión de recursos mediante la validación del estado del buffer de `GetModuleFileNameExW`, garantizando que solo rutas locales válidas sean procesadas por `is_protected_path`.
 - `2026-10-11T01:04:07` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del motor de cálculo capturando excepciones específicas en las factorías de mensajes y validando la integridad del estado de `SystemMetrics` antes de cada evaluación de regla, evitando que errores en datos de entrada propaguen fallas durante el renderizado.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-10T14:03:32` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` implementando un chequeo previo contra el `SYSTEM_FOLDER_BLOCKLIST` indirectamente mediante `is_protected_path` y limitando el tamaño del buffer de caracteres, además de añadir un manejo explícito para rutas UNC que podrían intentar inyectar comportamientos inesperados en las APIs de Windows.
 - `2026-10-10T14:02:06` **healthscore.py** (seguridad defensiva): He endurecido la seguridad del pipeline añadiendo una validación explícita de `SystemMetrics` antes de procesar cada regla, asegurando que las funciones de mensaje no reciban datos corrompidos y evitando posibles errores de ejecución durante la evaluación.
 - `2026-10-10T13:53:00` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_excluded_path` añadiendo una validación explícita mediante `is_protected_path` sobre el propio `entry.path` antes de cualquier operación, asegurando que incluso rutas que podrían sortear filtros previos por estar en niveles profundos sean descartadas preventivamente por seguridad defensiva.
-- `2026-10-10T13:52:19` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `save_logo_svg` utilizando `filter_safe_paths` para garantizar que la ruta de destino no sea una ubicación bloqueada a nivel de sistema antes de intentar cualquier operación de escritura.

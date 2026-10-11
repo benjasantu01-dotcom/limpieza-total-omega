@@ -988,3 +988,44 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-11T01:15:56` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de las funciones `check_system_lookalike` y `check_recent_executable_in_downloads` mediante la adición de validaciones `isinstance` y chequeos de tipo defensivos para evitar que valores inesperados de `path` o `entry` causen errores silenciosos durante el escaneo.
 - `2026-10-11T01:15:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-11T01:15:56` Corrida terminada. Total usado hoy: 32.
+- `2026-10-11T01:24:00` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-10-11T01:24:29` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-11T01:24:56` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.67s
+
+```
+- `2026-10-11T01:24:56` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejora la robustez de `_resolve_and_cache_path` añadiendo un manejo de excepciones más granular y defensivo, asegurando que ante cualquier error de acceso a disco (como bloqueos de sistema o permisos denegados) la función retorne un valor seguro en lugar de propagar una excepción que interrumpa el escaneo.
+- `2026-10-11T01:25:26` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: Answer.is_online, AreaExplanation, SystemContext.__hash__, SystemContext._apply_field, SystemContext._apply_updates, SystemContext._clean_grade, SystemContext._validate_ingestion_source, SystemContext.get_metric, SystemContext.is_valid_structure
+- `2026-10-11T01:25:46` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se introdujo un `NamedTuple` llamado `Point` para centralizar la representación de coordenadas, reemplazando tuplas planas dispersas y mejorando la legibilidad semántica del cálculo geométrico.
+- `2026-10-11T01:25:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-11T01:25:46` Corrida terminada. Total usado hoy: 36.
