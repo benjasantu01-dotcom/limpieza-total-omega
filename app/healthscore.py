@@ -303,7 +303,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     Consolida puntajes normalizados, aplica pesos y agrega recomendaciones.
     """
     try:
-        # Validación estricta del objeto de métricas
         m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
         m.validate()
         
@@ -316,15 +315,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         
         for entry in _PIPELINE:
             try:
-                area_ratio: NormalizedRatio = _clamp(float(entry.scorer(m)))
+                area_ratio = _clamp(entry.scorer(m))
                 _evaluate_rules(m, entry.rules, area_ratio, recommendations)
                 
-                # Calcular contribución ponderada al total
                 points = area_ratio * entry.weight
-                val = int(round(_clamp(points, 0.0, float(entry.weight))))
-                
-                metric_breakdown[entry.area] = val
-                accumulated_score += float(val)
+                metric_breakdown[entry.area] = int(round(_clamp(points, 0.0, float(entry.weight))))
+                accumulated_score += float(metric_breakdown[entry.area])
             except Exception as e:
                 logging.error(f"Falla crítica en pipeline {entry.area}: {e}")
                 metric_breakdown[entry.area] = 0

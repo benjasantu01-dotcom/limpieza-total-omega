@@ -304,17 +304,19 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         psapi = getattr(ctypes.windll, "psapi", None)
         if not kernel32 or not psapi: return []
         
-        max_procs = 4096
-        pids = (ctypes.c_ulong * max_procs)()
-        cb_needed = ctypes.c_ulong()
+        # Uso de c_uint32 para mejorar rendimiento en el enumerador
+        max_procs = 2048
+        pids = (ctypes.c_uint32 * max_procs)()
+        cb_needed = ctypes.c_uint32()
         
         if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
-            count = min(cb_needed.value // ctypes.sizeof(ctypes.c_ulong), max_procs)
+            count = min(cb_needed.value // ctypes.sizeof(ctypes.c_uint32), max_procs)
             found_procs = []
+            own_pid = os.getpid()
             
             for i in range(count):
-                pid = int(pids[i])
-                if pid > 0 and pid not in SYSTEM_CRITICAL_PIDS and pid != os.getpid():
+                pid = pids[i]
+                if pid > 4 and pid != own_pid:
                     ws = _query_working_set_bytes(pid, kernel32, psapi)
                     if ws:
                         found_procs.append(ProcessMemory(f"PID {pid}", pid, ws))

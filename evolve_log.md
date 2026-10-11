@@ -829,3 +829,12 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-10-11T11:06:02` ➖ Sin cambios en duplicates.py (enfoque: rendimiento). Motivo: Se optimizó el proceso de descubrimiento de archivos en `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando la creación redundante de objetos `Path` dentro del bucle interno, reduciendo la presión sobre el recolector de basura y mejorando la velocidad de escaneo inicial.
 - `2026-10-11T11:06:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-11T11:06:02` Corrida terminada. Total usado hoy: 264.
+- `2026-10-11T11:14:18` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-10-11T11:14:55` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el cálculo en `compute_score` cacheando las llamadas a `_clamp` y `float` para evitar redundancias dentro del bucle principal del pipeline, mejorando el rendimiento en la ejecución del ciclo de evaluación.
+- `2026-10-11T11:15:55` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-11T11:16:58` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-11T11:18:16` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de **invalidación de caché proactiva basada en digests de estado** y se redujo la frecuencia de repintado de la interfaz mediante la **memoización del estado de los widgets (cards y gauge)**, evitando cálculos redundantes y parpadeos en el hilo principal durante el análisis de salud.
+- `2026-10-11T11:18:45` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el rendimiento de `top_memory_processes` reemplazando la instanciación de una clase `ctypes` de tamaño fijo y el loop manual de filtrado por una implementación más eficiente que reduce las llamadas a la API de Windows mediante un procesamiento más directo, evitando también la recreación de objetos innecesarios dentro del ciclo.
+- `2026-10-11T11:18:55` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-10-11T11:18:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-11T11:18:55` Corrida terminada. Total usado hoy: 268.
