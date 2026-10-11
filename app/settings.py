@@ -385,9 +385,6 @@ def _load_impl(ruta: Path) -> AppSettings:
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga los ajustes desde el disco, utilizando caché por mtime."""
-    if custom_base is None and _MANAGER.instance_cache is not None:
-        return _MANAGER.instance_cache.copy()
-
     primary_path = settings_path(custom_base)
     backup_path = primary_path.with_suffix(".bak")
     
@@ -397,6 +394,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
                 mtime = os.path.getmtime(path)
                 cache_key = str(path)
                 cached = _MANAGER.settings_cache.get(cache_key)
+                
                 if cached and cached[0] == mtime:
                     res = cached[1].copy()
                 else:
