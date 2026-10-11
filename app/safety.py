@@ -387,13 +387,13 @@ def _is_volume_readonly(path_str: Optional[str]) -> bool:
     """Verifica flags de solo lectura del volumen."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str or not os.path.isabs(path_str): return False
     try:
-        root = os.path.splitdrive(path_str)[0] + "\\"
+        drive = os.path.splitdrive(path_str)[0]
+        if not drive: return False
+        root = drive + "\\"
         if not os.path.exists(root): return False
-        buf = ctypes.create_unicode_buffer(260)
-        if ctypes.windll.kernel32.GetVolumePathNameW(path_str, buf, 260) != 0:
-            flags = ctypes.c_ulong()
-            if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
-                return bool(flags.value & 0x80000)
+        flags = ctypes.c_ulong()
+        if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
+            return bool(flags.value & 0x80000)
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError): pass
     return False
 

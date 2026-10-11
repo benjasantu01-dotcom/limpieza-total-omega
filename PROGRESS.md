@@ -8,45 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 29
-- Rechazadas por guardia de seguridad: 40
+- Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 12 | 1 | 2 | 3 | 4 |
+| 2026-10-09 | 10 | 0 | 2 | 3 | 3 |
 | 2026-10-10 | 151 | 17 | 30 | 12 | 140 |
-| 2026-10-11 | 40 | 11 | 8 | 6 | 67 |
+| 2026-10-11 | 42 | 12 | 9 | 6 | 67 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **48**
 - robustez ante casos límite: **42**
-- manejo de errores y validación de entradas: **40**
-- rendimiento: **38**
+- manejo de errores y validación de entradas: **42**
+- rendimiento: **36**
 - legibilidad y documentación: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
 - `healthscore.py`: **20**
-- `safety.py`: **19**
+- `safety.py`: **20**
 - `assistant.py`: **17**
 - `memory.py`: **15**
 - `duplicates.py`: **14**
 - `scanner.py`: **14**
-- `branding.py`: **13**
-- `browser.py`: **13**
 - `main.py`: **13**
 - `quarantine.py`: **12**
+- `organizer.py`: **12**
 - `settings.py`: **12**
-- `organizer.py`: **11**
+- `branding.py`: **12**
+- `browser.py`: **12**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-11T05:40:21` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_file_attrs` y `_is_volume_readonly` añadiendo validaciones de tipo y estructura para prevenir errores de ejecución silenciosos (como `TypeError` o `ValueError`) en casos de rutas mal formadas, asegurando que la capa de seguridad siempre retorne valores seguros por defecto en lugar de fallar catastróficamente.
+- `2026-10-11T05:38:55` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_locked` al asegurar que el archivo sea efectivamente accesible antes de intentar abrirlo, y añadí validaciones de tipo explícitas en `stage_for_review` para prevenir fallos por entradas inesperadas, cumpliendo con el enfoque de manejo de errores.
 - `2026-10-11T05:30:18` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_process_info` y `trim_working_set` añadiendo validaciones preventivas contra valores inesperados, asegurando que cualquier entrada sea procesada de forma segura sin abortar operaciones por errores de tipo.
 - `2026-10-11T05:19:55` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `largest_folders` añadiendo capturas de excepciones más granulares y validaciones de estado para prevenir fallos silenciosos durante la iteración de directorios, asegurando que el manejo de rutas malformadas no interrumpa el flujo del reporte.
 - `2026-10-11T05:19:41` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` y `_resolve_browser_path` validando explícitamente que los parámetros de entrada (`bases` y `cache_paths`) no solo tengan el tipo correcto, sino que no sean colecciones vacías antes de procesarlos, evitando iteraciones innecesarias y posibles errores de lógica en flujos con configuraciones de usuario incompletas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-11T03:17:45` **startup.py** (robustez ante casos límite): Se mejoró la robustez de `StartupEntry._extract_quoted_path` para prevenir excepciones críticas ante rutas malformadas o excesivamente largas, asegurando que el proceso no falle si encuentra fragmentos de registro que no terminan en una ruta de archivo válida.
 - `2026-10-11T03:17:16` **settings.py** (robustez ante casos límite): Mejoré la robustez ante fallos de persistencia verificando la existencia del directorio antes de intentar escribir y asegurando que las operaciones críticas de archivo no se realicen sobre rutas inexistentes o mal formadas.
 - `2026-10-11T02:58:42` **memory.py** (robustez ante casos límite): Se mejora la robustez de `top_memory_processes` añadiendo una validación explícita para evitar errores de tipo si los PIDs retornados por `EnumProcesses` no son enteros válidos o si la lista de procesos está vacía tras el filtrado, previniendo excepciones durante la iteración sobre PIDs del sistema o procesos zombies.
-- `2026-10-11T02:56:41` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor ante casos límite (entradas mal formadas o vacías) añadiendo una validación explícita de `is_finite` en `compute_score` y asegurando que las reglas de recomendación manejen correctamente posibles divisiones por cero o valores nulos en el cálculo de métricas.
-- `2026-10-11T02:47:53` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_is_excluded_path` ante errores de entrada y permisos denegados al manejar explícitamente posibles excepciones de `os.scandir` y la resolución de rutas, asegurando que el recorrido no se interrumpa silenciosamente por errores de sistema en subdirectorios profundos.

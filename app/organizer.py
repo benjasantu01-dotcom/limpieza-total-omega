@@ -144,11 +144,11 @@ def _is_file_locked(path: Path) -> bool:
     Verifica si un archivo está bloqueado intentando abrirlo en modo lectura exclusiva.
     La apertura exitosa implica que no hay bloqueos de escritura por parte de otros procesos.
     """
-    if not path or not path.is_file(): return True
+    if not path or not path.exists() or not path.is_file(): return True
     try:
         with open(path, "rb"):
             return False
-    except (OSError, PermissionError, FileNotFoundError):
+    except (OSError, PermissionError):
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
@@ -185,7 +185,6 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Realiza una auditoría multietapa para autorizar operaciones de escritura.
     Verifica estado de archivo, bloqueos y disponibilidad de espacio en disco.
-    Usa resolve(strict=True) para mitigar ataques tipo TOCTOU (Time-of-check to time-of-use).
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     try:
@@ -230,10 +229,7 @@ def _is_candidate_junk(stats: os.stat_result, entry: os.DirEntry, now_ts: float)
             not _is_system_hidden(entry))
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
-    """
-    Escaneo recursivo de directorios con límite de profundidad (50) para evitar desbordamiento de pila.
-    Utiliza un cache de rutas visitadas y rutas protegidas para optimizar el rendimiento y seguridad.
-    """
+    """Escaneo recursivo de directorios con límite de profundidad."""
     if depth > 50: return
     try:
         resolved_dir = current_dir.resolve(strict=False)
@@ -281,7 +277,7 @@ def sort_junk(files: Sequence[JunkFile], by: SortField = "size", ascending: bool
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """Mueve de forma segura los archivos detectados a la carpeta de revisión."""
-    if not files or not review_dir: return None
+    if not isinstance(files, (list, tuple)) or not review_dir: return None
     try:
         dest_base = Path(review_dir).expanduser()
         if not dest_base.exists():
@@ -294,7 +290,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         return None
     
     for junk_file in files:
-        if not junk_file or not isinstance(junk_file.path, Path): continue
+        if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): continue
         try:
             if not _is_safe_for_disk_op(junk_file, dest_res): continue
             target_path = _can_move_file(junk_file, dest_res)
@@ -316,7 +312,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         return None
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Elimina permanentemente archivos tras una validación estricta de seguridad y pertenencia al directorio."""
+    """Elimina permanentemente archivos tras una validación estricta de seguridad."""
     if not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser().resolve(strict=False)
@@ -326,7 +322,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         count = 0
         for item in dest.iterdir():
             try:
-                # Validar que el item a borrar está contenido realmente en la carpeta de revisión
                 if item.is_file() and is_safe_to_modify(item) and not is_protected_path(item):
                     if dest.resolve(strict=True) != item.resolve(strict=True).parent:
                         continue

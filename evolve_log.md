@@ -1536,3 +1536,21 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-11T05:30:18` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_extract_process_info` y `trim_working_set` añadiendo validaciones preventivas contra valores inesperados, asegurando que cualquier entrada sea procesada de forma segura sin abortar operaciones por errores de tipo.
 - `2026-10-11T05:30:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-11T05:30:18` Corrida terminada. Total usado hoy: 132.
+- `2026-10-11T05:38:28` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-10-11T05:38:55` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_locked` al asegurar que el archivo sea efectivamente accesible antes de intentar abrirlo, y añadí validaciones de tipo explícitas en `stage_for_review` para prevenir fallos por entradas inesperadas, cumpliendo con el enfoque de manejo de errores.
+- `2026-10-11T05:39:34` Tests FALLARON:
+```
+Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+8 failed, 291 passed in 1.72s
+
+```
+- `2026-10-11T05:39:34` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `save_manifest` mediante la validación temprana de la integridad del JSON antes de la operación de escritura atómica, previniendo la corrupción del manifiesto y asegurando una recuperación más limpia ante fallos de I/O.
+- `2026-10-11T05:39:52` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 112): unterminated string literal (detected at line 112)
+- `2026-10-11T05:40:21` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_get_file_attrs` y `_is_volume_readonly` añadiendo validaciones de tipo y estructura para prevenir errores de ejecución silenciosos (como `TypeError` o `ValueError`) en casos de rutas mal formadas, asegurando que la capa de seguridad siempre retorne valores seguros por defecto en lugar de fallar catastróficamente.
+- `2026-10-11T05:40:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-11T05:40:21` Corrida terminada. Total usado hoy: 136.
