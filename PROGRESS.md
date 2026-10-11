@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
+- Mejoras aceptadas: **209** (41.5% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 44 | 5 | 9 | 6 | 46 |
+| 2026-10-09 | 43 | 5 | 9 | 6 | 43 |
 | 2026-10-10 | 151 | 17 | 30 | 12 | 140 |
-| 2026-10-11 | 13 | 5 | 3 | 1 | 22 |
+| 2026-10-11 | 15 | 5 | 5 | 1 | 22 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **47**
-- robustez ante casos límite: **41**
-- legibilidad y documentación: **39**
+- legibilidad y documentación: **41**
+- robustez ante casos límite: **40**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **21**
 - `diskreport.py`: **21**
-- `safety.py`: **19**
-- `branding.py`: **17**
+- `safety.py`: **20**
+- `branding.py`: **16**
+- `scanner.py`: **16**
 - `memory.py`: **15**
 - `quarantine.py`: **15**
-- `scanner.py`: **15**
 - `assistant.py`: **15**
 - `main.py`: **14**
 - `duplicates.py`: **14**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-11T01:55:58` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `scanner.py` mediante la refactorización de `_safe_stat` y `_is_readable` para consolidar la lógica de validación de archivos, añadiendo docstrings descriptivos y type hints que clarifican las precondiciones necesarias para el análisis seguro de archivos.
+- `2026-10-11T01:55:33` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_get_security_descriptor` hacia un enfoque basado en objetos, facilitando la comprensión del flujo de auditoría de seguridad y eliminando redundancias en la evaluación de atributos.
 - `2026-10-11T01:46:19` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante docstrings descriptivos, se añadió `type hints` en las funciones de procesamiento recursivo para mayor claridad y se reemplazaron los comentarios vagos por explicaciones funcionales que detallan el "porqué" de las validaciones de seguridad, facilitando el mantenimiento.
 - `2026-10-11T01:45:53` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las estructuras Win32 y los tipos de datos internos, clarificando la finalidad de los campos `PMC` (Process Memory Counters) mediante el uso de nombres explícitos y eliminando el uso de índices mágicos, lo que aumenta la mantenibilidad del código sin alterar la lógica.
 - `2026-10-11T01:45:26` **main.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad de la clase principal `LimpiezaTotalOmegaApp` mediante la conversión de variables de estado críticas en propiedades protegidas y una organización más explícita de la inicialización de los componentes de UI, facilitando el mantenimiento sin alterar la funcionalidad.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-11T00:55:00` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas durante la iteración y conversión de rutas, evitando que un error de acceso de lectura puntual (común en el sistema de archivos) detenga abruptamente el análisis completo, y añadí una validación explícita para asegurar que `entry.path` sea una ruta absoluta antes de procesarla.
 - `2026-10-11T00:54:05` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` añadiendo una verificación explícita de `is_protected_path` sobre la ruta resuelta antes de cualquier operación, garantizando que el acceso al sistema de archivos sea seguro incluso si `ensure_safe_to_modify` fallara por condiciones de carrera o configuraciones atípicas.
 - `2026-10-11T00:46:59` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_source_value` y `_apply_field` para prevenir posibles errores de tipo durante la ingesta de datos, asegurando que las conversiones numéricas no fallen silenciosamente ante entradas inesperadas y manteniendo la integridad del `SystemContext` ante fuentes de datos externas malformadas.
-- `2026-10-10T14:22:52` **startup.py** (seguridad defensiva): Se endureció la seguridad defensiva en `_is_valid_registry_entry` añadiendo una comprobación explícita para evitar que comandos que apuntan a rutas relativas sin unidad (ej. "archivo.exe") sean procesados, previniendo así posibles ataques de secuestro de DLL o ejecución de archivos inesperados en el directorio de trabajo del proceso.
-- `2026-10-10T14:22:27` **settings.py** (seguridad defensiva): Reforcé la integridad defensiva al cargar configuraciones implementando una verificación estricta de permisos de archivos y directorios (`owner` y `permissions`) antes de cualquier operación de I/O, previniendo así la carga o escritura de archivos bajo rutas potencialmente manipuladas o con permisos laxos.

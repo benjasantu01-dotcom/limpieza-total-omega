@@ -77,7 +77,7 @@ TARGETED_DOWNLOAD_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp
 SYSTEM32_LOWER: Final[str] = "system32"
 
 def _is_file_in_use(path: Path) -> bool:
-    """Verifica exclusividad de acceso al archivo intentando abrirlo en modo exclusivo."""
+    """Verifica si el archivo está bloqueado por otro proceso intentando abrirlo en modo exclusivo."""
     try:
         fd = os.open(path, os.O_RDONLY | os.O_EXCL)
         os.close(fd)
@@ -86,14 +86,12 @@ def _is_file_in_use(path: Path) -> bool:
         return True
 
 def _is_readable(path: Path) -> bool:
-    """Valida si el archivo es un archivo regular, legible y no bloqueado."""
+    """Valida si la ruta es un archivo regular, legible y sin bloqueos de acceso."""
     try:
-        # lstat verifica que el archivo exista sin resolver enlaces y ser manipulado
-        st = path.lstat()
-        if not st.st_mode or not (st.st_mode & 0o100000): # S_IFREG check
+        if not path.is_file():
             return False
         return os.access(path, os.R_OK) and not _is_file_in_use(path)
-    except (OSError, PermissionError, ValueError, AttributeError):
+    except (OSError, PermissionError, ValueError):
         return False
 
 def _get_file_attributes(entry: os.DirEntry) -> int:
@@ -105,26 +103,29 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
         return 0
 
 def _get_file_size(path: Path) -> int:
-    """Devuelve el tamaño del archivo en bytes o -1 en caso de error de acceso."""
+    """Retorna el tamaño en bytes del archivo. Devuelve -1 si el archivo es inaccesible."""
     try:
         return int(path.stat().st_size)
     except (OSError, PermissionError, FileNotFoundError, AttributeError, ValueError):
         return -1
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
-    """Retorna metadatos solo si la entrada es un archivo estándar, no es symlink y no es punto de reanálisis."""
+    """
+    Retorna metadatos de la entrada únicamente si:
+    1. Es un archivo estándar (no symlink, no punto de reanálisis).
+    2. Los atributos de sistema no indican estructuras recursivas.
+    """
     try:
         if not entry.is_file(follow_symlinks=False) or entry.is_symlink():
             return None
         if _get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask:
             return None
-        stats = entry.stat(follow_symlinks=False)
-        return stats
+        return entry.stat(follow_symlinks=False)
     except (OSError, PermissionError, AttributeError):
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
-    """Valida integridad de la cadena de ruta contra límites de API y caracteres inseguros."""
+    """Valida integridad de la ruta contra límites de longitud API y caracteres inseguros/RTL."""
     if not path_str or len(path_str) > SCAN_LIMITS.max_path or "\0" in path_str:
         return False
     if UNC_PATH_RE.match(path_str) or RTL_CHAR_RE.search(path_str):
@@ -132,17 +133,17 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     return True
 
 def _is_target_extension(name: str) -> bool:
-    """Determina si la extensión del archivo es un objetivo para las heurísticas."""
+    """Determina si la extensión del archivo es un objetivo relevante para heurísticas."""
     return Path(name).suffix.lower() in SUSPICIOUS_ALL_EXTS
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta el uso de doble extensión (ej. archivo.jpg.exe)."""
+    """Detecta el uso de doble extensión como técnica común de enmascaramiento de ejecutables."""
     if path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión detectada como técnica de enmascaramiento", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Advierte sobre ejecutables nuevos detectados en directorios volátiles."""
+    """Analiza si un ejecutable fue creado recientemente dentro de carpetas de alto riesgo."""
     try:
         if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
             return None
@@ -155,7 +156,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta suplantación de nombres de procesos críticos fuera de System32."""
+    """Identifica ejecutables que intentan suplantar procesos críticos fuera de System32."""
     try:
         if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
             if SYSTEM32_LOWER not in str(path).lower():
@@ -165,7 +166,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Identifica archivos binarios vacíos, comportamiento inusual y sospechoso."""
+    """Identifica archivos ejecutables con tamaño cero, frecuentemente usados como marcadores maliciosos."""
     if _get_file_size(path) == 0:
         return Suspicion(path, "Ejecutable vacío detectado", "warning")
     return None
@@ -197,15 +198,15 @@ class Scanner:
             return False
 
     def _has_invalid_name(self, name: str) -> bool:
-        """Valida que el nombre de archivo no sea un alias de dispositivo reservado."""
+        """Valida que el nombre de archivo no sea un alias de dispositivo reservado o termine en caracteres inválidos."""
         return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Identifica si una entrada es un punto de reanálisis para evitar ciclos."""
+        """Identifica si una entrada es un punto de reanálisis (reparse point) para evitar ciclos."""
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Verifica que la entrada sea transitable y no viole políticas de seguridad."""
+        """Verifica que la entrada sea transitable y no viole las políticas de seguridad del proyecto."""
         if not isinstance(entry, os.DirEntry) or entry.path is None:
             return False
         
@@ -230,7 +231,7 @@ class Scanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        """Gestiona la cola de directorios para la recursión segura."""
+        """Gestiona la cola de directorios para la recursión segura, controlando la profundidad máxima."""
         if current_depth >= SCAN_LIMITS.max_depth or entry.path is None:
             return
         
@@ -242,7 +243,7 @@ class Scanner:
     @staticmethod
     @lru_cache(maxsize=1024)
     def _is_relevant_extension(name: str) -> bool:
-        """Filtra archivos relevantes por extensión para optimizar el análisis."""
+        """Filtra archivos relevantes por extensión para optimizar el análisis heurístico."""
         return _is_target_extension(name)
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
@@ -261,7 +262,7 @@ class Scanner:
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta el conjunto de heurísticas sobre un archivo validado."""
+        """Ejecuta el conjunto de heurísticas definido sobre un archivo validado."""
         if not path.exists() or not _is_readable(path):
             return
         for check_fn in ALL_CHECKS:
@@ -291,7 +292,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """Inicia el recorrido recursivo mediante un modelo de pila con límites de seguridad."""
+    """Inicia el recorrido recursivo mediante un modelo de pila con límites de seguridad estrictos."""
     if directory is None: return []
     try:
         path_str = str(directory).strip()

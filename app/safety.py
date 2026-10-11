@@ -47,6 +47,21 @@ class SecurityDescriptor(NamedTuple):
         """Verifica si un bit específico de los atributos Win32 está activo."""
         return bool(self.attrs & flag)
 
+    @classmethod
+    def from_path(cls, path_str: str) -> SecurityDescriptor:
+        """Factoría que consolida los atributos del sistema y el estado de bloqueo."""
+        attrs = _get_file_attrs(path_str)
+        is_protected = bool(attrs & (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | Win32Attr.TEMPORARY | Win32Attr.REPARSE_POINT))
+        is_in_use = is_protected or (attrs != 0xFFFFFFFF and _is_file_locked_by_other_process(path_str))
+        
+        return cls(
+            attrs=attrs,
+            is_protected_system=is_protected,
+            is_in_use=is_in_use,
+            is_readonly=bool(attrs & Win32Attr.READONLY),
+            is_reparse=bool(attrs & Win32Attr.REPARSE_POINT)
+        )
+
 class FileMetadata(TypedDict):
     """Estructura de datos simplificada para exportar el perfil de seguridad de un archivo."""
     is_reparse: bool
@@ -355,18 +370,9 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
     except (OSError, ctypes.ArgumentError, AttributeError):
         return True
 
-@lru_cache(maxsize=1024)
-def _get_security_descriptor_cached(path_str: str) -> SecurityDescriptor:
-    """Consulta atributos de seguridad consolidando el estado del sistema."""
-    attrs = _get_file_attrs(path_str)
-    is_protected = bool(attrs & (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | Win32Attr.TEMPORARY | Win32Attr.REPARSE_POINT))
-    is_in_use = is_protected or (attrs != 0xFFFFFFFF and _is_file_locked_by_other_process(path_str))
-    
-    return SecurityDescriptor(attrs, is_protected, is_in_use, bool(attrs & Win32Attr.READONLY), bool(attrs & Win32Attr.REPARSE_POINT))
-
 def _get_security_descriptor(path: Path) -> SecurityDescriptor:
     """Construye un descriptor de seguridad para evaluar el archivo."""
-    return _get_security_descriptor_cached(str(path))
+    return SecurityDescriptor.from_path(str(path))
 
 def _is_file_in_use_by_system(path_str: str) -> bool:
     """Verifica si el archivo está siendo referenciado por módulos cargados del sistema."""
