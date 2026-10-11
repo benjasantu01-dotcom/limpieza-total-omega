@@ -85,32 +85,32 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura Win32 GlobalMemoryStatusEx. Los campos ull* soportan 64 bits."""
+    """Estructura Win32 GlobalMemoryStatusEx. Soporta memorias físicas mayores a 4GB."""
     _fields_: List[Tuple[str, type]] = [
-        ("dwLength", ctypes.c_ulong),            
-        ("dwMemoryLoad", ctypes.c_ulong),        
-        ("ullTotalPhys", ctypes.c_ulonglong),    
-        ("ullAvailPhys", ctypes.c_ulonglong),    
-        ("ullTotalPageFile", ctypes.c_ulonglong),
-        ("ullAvailPageFile", ctypes.c_ulonglong),
-        ("ullTotalVirtual", ctypes.c_ulonglong), 
-        ("ullAvailVirtual", ctypes.c_ulonglong), 
-        ("ullAvailExtendedVirtual", ctypes.c_ulonglong), 
+        ("dwLength", ctypes.c_ulong),            # Tamaño de la estructura en bytes
+        ("dwMemoryLoad", ctypes.c_ulong),        # Porcentaje de memoria en uso (0-100)
+        ("ullTotalPhys", ctypes.c_ulonglong),    # Memoria física total
+        ("ullAvailPhys", ctypes.c_ulonglong),    # Memoria física disponible
+        ("ullTotalPageFile", ctypes.c_ulonglong),# Total paginable (Físico + Swap)
+        ("ullAvailPageFile", ctypes.c_ulonglong),# Disponible paginable
+        ("ullTotalVirtual", ctypes.c_ulonglong), # Espacio de direcciones virtuales
+        ("ullAvailVirtual", ctypes.c_ulonglong), # Disponible virtual
+        ("ullAvailExtendedVirtual", ctypes.c_ulonglong), # Reservado
     ]
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
     """Estructura Win32 para obtener estadísticas de uso de memoria de proceso."""
     _fields_: List[Tuple[str, type]] = [
-        ("cb", ctypes.c_ulong),
-        ("PageFaultCount", ctypes.c_ulong),
-        ("PeakWorkingSetSize", ctypes.c_size_t),
-        ("WorkingSetSize", ctypes.c_size_t),
+        ("cb", ctypes.c_ulong),                 # Tamaño de la estructura
+        ("PageFaultCount", ctypes.c_ulong),     # Fallos de página
+        ("PeakWorkingSetSize", ctypes.c_size_t),# Pico de memoria RAM utilizada
+        ("WorkingSetSize", ctypes.c_size_t),    # Memoria RAM actual en uso
         ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
         ("QuotaPagedPoolUsage", ctypes.c_size_t),
         ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
         ("QuotaNonPagedPoolUsage", ctypes.c_size_t),
-        ("PagefileUsage", ctypes.c_size_t),
-        ("PeakPagefileUsage", ctypes.c_size_t),
+        ("PagefileUsage", ctypes.c_size_t),     # Bytes en el archivo de paginación
+        ("PeakPagefileUsage", ctypes.c_size_t), # Pico en el archivo de paginación
     ]
 
 @dataclass(frozen=True)

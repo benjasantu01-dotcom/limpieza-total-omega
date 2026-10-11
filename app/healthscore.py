@@ -178,11 +178,11 @@ _PIPELINE: Final[Tuple[PipelineEntry, ...]] = (
 )
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
-    """Calcula salud: Normaliza el volumen de basura (MB) vs el límite definido."""
+    """Calcula salud: Normaliza el volumen de basura (MB) comparándolo contra el límite total."""
     return _JUNK_SCORER(float(junk_mb))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
-    """Calcula salud: Aplica penalización incremental basada en cantidad de hallazgos sospechosos."""
+    """Calcula salud: Penaliza el score según hallazgos sospechosos y advertencias de seguridad."""
     try:
         s_count = float(suspicious_count) if isinstance(suspicious_count, (int, float)) else 0.0
         w_count = float(warnings) if isinstance(warnings, (int, float)) else 0.0
@@ -192,21 +192,21 @@ def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
         return 0.0
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
-    """Calcula salud: Normaliza el porcentaje de memoria libre sobre el umbral mínimo aceptable."""
+    """Calcula salud: Normaliza el porcentaje de RAM libre frente al umbral crítico definido."""
     if _LIMIT_RAM_PERCENT <= 0: return 0.0
     return _clamp(float(available_percent) / _LIMIT_RAM_PERCENT)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
-    """Calcula salud: Normaliza el porcentaje de disco libre sobre el umbral de advertencia."""
+    """Calcula salud: Normaliza el porcentaje de disco libre frente al umbral de advertencia."""
     if _LIMIT_DISK_PERCENT <= 0: return 0.0
     return _clamp(float(free_percent) / _LIMIT_DISK_PERCENT)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
-    """Calcula salud: Normaliza el peso total de duplicados frente a la capacidad de recuperación."""
+    """Calcula salud: Normaliza el volumen de duplicados detectados frente a la capacidad de recuperación."""
     return _DUP_SCORER(float(duplicate_mb))
 
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
-    """Calcula salud: Normaliza la carga del inicio de Windows comparado con el límite de tolerancia."""
+    """Calcula salud: Normaliza la cantidad de elementos de inicio contra el límite de tolerancia."""
     return _STARTUP_SCORER(float(startup_count))
 
 def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) -> float:

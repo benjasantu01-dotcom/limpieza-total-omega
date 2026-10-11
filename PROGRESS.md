@@ -8,35 +8,35 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **205** (40.7% de aceptación)
 - Rechazadas por tests: 30
-- Rechazadas por guardia de seguridad: 40
-- Sin cambios (nada sustancial que mejorar): 20
+- Rechazadas por guardia de seguridad: 41
+- Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 5 | 0 | 1 | 2 | 2 |
+| 2026-10-09 | 3 | 0 | 1 | 1 | 1 |
 | 2026-10-10 | 151 | 17 | 30 | 12 | 140 |
-| 2026-10-11 | 49 | 13 | 9 | 6 | 67 |
+| 2026-10-11 | 51 | 13 | 10 | 6 | 68 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **42**
-- legibilidad y documentación: **40**
-- rendimiento: **31**
+- legibilidad y documentación: **42**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **20**
 - `diskreport.py`: **20**
-- `healthscore.py`: **19**
+- `healthscore.py`: **20**
+- `safety.py`: **19**
 - `assistant.py`: **18**
-- `scanner.py`: **15**
+- `memory.py`: **15**
 - `duplicates.py`: **14**
-- `memory.py`: **14**
+- `scanner.py`: **14**
 - `main.py`: **13**
 - `settings.py`: **13**
 - `branding.py`: **13**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-11T06:10:51` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las estructuras de datos críticas (`MEMORYSTATUSEX` y `PROCESS_MEMORY_COUNTERS`) añadiendo comentarios detallados sobre el propósito de cada campo y corrigiendo la firma de los tipos en `_fields_` para mejorar la claridad de la interfaz con la API de Windows.
+- `2026-10-11T06:09:22` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del pipeline añadiendo docstrings descriptivos a las funciones de cálculo (`score_*`) y estandarizando los nombres de los parámetros en las lambdas del `_PIPELINE` para mayor claridad conceptual.
 - `2026-10-11T06:00:31` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de los métodos de filtrado y procesamiento para aclarar la lógica de las estrategias de hashing y la seguridad en el acceso a archivos.
 - `2026-10-11T06:00:19` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings técnicos explicativos en los métodos de la clase `GlobalStats` y se ha aclarado el propósito del parámetro `limit` en `_collect_summary_data`, facilitando la comprensión de la lógica de agregación y el manejo de memoria mediante el heap.
 - `2026-10-11T05:59:51` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `browser.py` mediante docstrings detallados en las funciones de recorrido, la clarificación de las restricciones de seguridad en las constantes y la mejora de los type hints para reflejar el comportamiento real de las estructuras de control de flujo.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-11T05:19:55` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `largest_folders` añadiendo capturas de excepciones más granulares y validaciones de estado para prevenir fallos silenciosos durante la iteración de directorios, asegurando que el manejo de rutas malformadas no interrumpa el flujo del reporte.
 - `2026-10-11T05:19:41` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` y `_resolve_browser_path` validando explícitamente que los parámetros de entrada (`bases` y `cache_paths`) no solo tengan el tipo correcto, sino que no sean colecciones vacías antes de procesarlos, evitando iteraciones innecesarias y posibles errores de lógica en flujos con configuraciones de usuario incompletas.
 - `2026-10-11T05:18:44` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_text_from_gemini_json` para manejar estructuras de datos anidadas de forma más defensiva, asegurando que no se produzcan excepciones al acceder a claves ausentes o tipos inesperados, reforzando la validación de seguridad requerida.
-- `2026-10-11T03:57:15` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de condiciones de carrera (TOCTOU) y asegurar que el archivo no haya sido reemplazado por un enlace simbólico malintencionado durante la lectura, añadiendo una validación adicional mediante `os.fstat` sobre el file descriptor antes de la deserialización.
-- `2026-10-11T03:48:32` **safety.py** (seguridad defensiva): Se introdujo la verificación `_is_reparse_point_safe` dentro de `ensure_safe_to_modify` para asegurar que las rutas no solo sean puntos de reparse, sino que su destino final (resolviendo la cadena de redirección) se mantenga dentro de los límites de integridad previstos, evitando escapes de sandbox por enlaces simbólicos o junctions.
