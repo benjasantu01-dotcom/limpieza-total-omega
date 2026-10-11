@@ -13,6 +13,7 @@ import os
 import shutil
 import string
 import logging
+import ctypes
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -140,13 +141,22 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si un archivo está bloqueado intentando abrirlo en modo lectura exclusiva.
-    La apertura exitosa implica que no hay bloqueos de escritura por parte de otros procesos.
+    Verifica si un archivo está bloqueado.
+    En Windows, utiliza CreateFile para intentar abrir con acceso nulo pero compartir exclusividad.
     """
     if not path or not path.exists() or not path.is_file(): return True
-    try:
-        with open(path, "rb"):
+    if os.name == 'nt':
+        try:
+            handle = ctypes.windll.kernel32.CreateFileW(
+                str(path), 0x80000000, 0, None, 3, 0x80, None
+            )
+            if handle == -1: return True
+            ctypes.windll.kernel32.CloseHandle(handle)
             return False
+        except Exception:
+            return True
+    try:
+        with open(path, "rb"): return False
     except (OSError, PermissionError):
         return True
 

@@ -254,13 +254,15 @@ def _read_windows_snapshot() -> MemorySnapshot:
     if not kernel32 or not hasattr(kernel32, "GlobalMemoryStatusEx"): return _EMPTY_SNAPSHOT
     mem_status = _create_mem_status_ex()
     try:
+        # GlobalMemoryStatusEx retorna cero en caso de error.
         if kernel32.GlobalMemoryStatusEx(ctypes.byref(mem_status)) != 0:
             if mem_status.ullTotalPhys > 0 and mem_status.ullAvailPhys <= mem_status.ullTotalPhys:
                 return MemorySnapshot(
                     total=BytesValue(mem_status.ullTotalPhys), 
                     available=BytesValue(mem_status.ullAvailPhys)
                 )
-    except (ctypes.ArgumentError, OSError):
+    except (ctypes.ArgumentError, OSError, ValueError):
+        # ValueError capturado por si los valores leídos desbordan los límites de C en 32-bit.
         pass
     return _EMPTY_SNAPSHOT
 
