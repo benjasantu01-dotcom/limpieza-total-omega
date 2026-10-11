@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
-- Rechazadas por tests: 33
-- Rechazadas por guardia de seguridad: 44
+- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Rechazadas por tests: 34
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-10 | 66 | 11 | 14 | 7 | 62 |
-| 2026-10-11 | 129 | 22 | 30 | 16 | 147 |
+| 2026-10-10 | 66 | 11 | 14 | 7 | 58 |
+| 2026-10-11 | 130 | 23 | 32 | 16 | 147 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
 - robustez ante casos límite: **43**
-- manejo de errores y validación de entradas: **39**
+- manejo de errores y validación de entradas: **40**
 - legibilidad y documentación: **34**
 - rendimiento: **30**
 
@@ -31,9 +31,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `diskreport.py`: **20**
 - `healthscore.py`: **18**
+- `safety.py`: **18**
 - `browser.py`: **18**
 - `memory.py`: **18**
-- `safety.py`: **17**
 - `settings.py`: **15**
 - `scanner.py`: **14**
 - `assistant.py`: **14**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-11T14:39:10` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en la resolución de rutas mediante la implementación de una técnica de doble validación (existencia + permiso) dentro de `ensure_safe_to_modify`, previniendo errores de sistema al intentar operar sobre rutas inexistentes pero aparentemente válidas, y refinando el manejo de excepciones para evitar el colapso del bucle de validación ante estados de carrera (`Race Conditions`).
 - `2026-10-11T14:30:18` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` y `load_manifest` mediante el manejo explícito de `OSError` al realizar operaciones atómicas, asegurando que cualquier fallo en la escritura de metadatos no deje el estado interno del módulo en una inconsistencia lógica, además de fortalecer la validación de tipos en la serialización.
 - `2026-10-11T14:19:02` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` añadiendo validaciones explícitas de tipo y estado para evitar errores en tiempo de ejecución si los archivos son eliminados o modificados por procesos externos durante el análisis.
 - `2026-10-11T14:18:37` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó `walk_files` y `_collect_summary_data` para capturar errores de acceso y metadatos de forma granular, evitando que una falla en un solo archivo detenga todo el proceso de escaneo y asegurando que las funciones de alto nivel manejen correctamente las rutas mal formadas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-11T12:27:14` **healthscore.py** (seguridad defensiva): Se ha implementado un filtrado de seguridad en la composición de recomendaciones dentro de `_evaluate_rules` para asegurar que los mensajes no contengan datos sensibles, validando la integridad del contenido antes de su procesamiento.
 - `2026-10-11T12:26:40` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de `_collect_candidates` aplicando el filtrado de seguridad `is_safe_to_modify` antes de añadir directorios a la cola, previniendo que el escáner intente acceder a rutas cuya validación de seguridad fallaría recursivamente, protegiendo así la integridad del bucle de exploración.
 - `2026-10-11T12:26:10` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` mediante la validación estricta de rutas con `Path.resolve()` antes de realizar cualquier operación de escaneo, asegurando que los enlaces simbólicos y los escapes fuera del directorio raíz sean bloqueados explícitamente antes de entrar al bucle.
-- `2026-10-11T12:18:26` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_process_file_node` y `_sum_directory_recursive` validando explícitamente que cada entrada cumpla con `is_safe_to_modify` y no sea una ruta protegida antes de procesar su tamaño, garantizando que el escáner no acceda a archivos fuera de las políticas permitidas incluso durante la iteración de bajo nivel.

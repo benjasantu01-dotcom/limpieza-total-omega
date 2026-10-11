@@ -839,6 +839,11 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
     """Valida los requisitos específicos para archivos existentes."""
     if not os.access(p, os.W_OK):
         raise UnsafePathError(f"Permisos de escritura insuficientes: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
+    
+    # Validación doble de accesibilidad previa a la carga de estado
+    if not p.exists():
+        raise UnsafePathError(f"El archivo fue eliminado: {p.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+        
     _validate_access_permissions(p)
     if _is_file_in_use_by_system(str(p)):
         raise UnsafePathError(f"Archivo en uso por el sistema: {p.name}", SafetyValidationErrorCode.FILE_IN_USE)
@@ -887,6 +892,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             _validate_file_operations_security(p, allow_sensitive, base)
         else:
             parent = p.parent
+            # Verificar existencia del padre para no fallar sobre rutas no creadas pero seguras
             if parent.exists() and not os.access(parent, os.W_OK):
                 raise UnsafePathError("Directorio contenedor no tiene permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
         return p
