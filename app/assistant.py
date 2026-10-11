@@ -661,8 +661,8 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 def available(base: str | Path | None = None) -> bool:
     """Determina si la consulta a IA está habilitada globalmente mediante settings."""
     try:
-        return settings.assistant_enabled(base)
-    except (TypeError, ValueError, AttributeError, OSError):
+        return bool(settings.assistant_enabled(base))
+    except Exception:
         return False
 
 def _parse_config(raw_cfg: Any) -> AssistantConfig:
@@ -678,7 +678,7 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
         
         return AssistantConfig(
             api_key=str(api_key) if isinstance(api_key, str) else "",
-            model=str(model) if isinstance(model, str) and len(str(model)) < 64 else "gemini-3.1-flash-lite",
+            model=str(model) if isinstance(model, str) and len(model) < 64 else "gemini-3.1-flash-lite",
             allow_metrics=bool(metrics_val) if isinstance(metrics_val, bool) else True
         )
     except Exception:

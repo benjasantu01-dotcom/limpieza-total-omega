@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **209** (41.5% de aceptación)
+- Mejoras aceptadas: **210** (41.7% de aceptación)
 - Rechazadas por tests: 28
 - Rechazadas por guardia de seguridad: 44
-- Sin cambios (nada sustancial que mejorar): 19
+- Sin cambios (nada sustancial que mejorar): 18
 - Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 35 | 3 | 8 | 5 | 39 |
+| 2026-10-09 | 33 | 3 | 8 | 4 | 38 |
 | 2026-10-10 | 151 | 17 | 30 | 12 | 140 |
-| 2026-10-11 | 23 | 8 | 6 | 2 | 25 |
+| 2026-10-11 | 26 | 8 | 6 | 2 | 26 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **47**
 - manejo de errores y validación de entradas: **47**
+- seguridad defensiva: **45**
 - legibilidad y documentación: **42**
 - rendimiento: **38**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **21**
 - `safety.py`: **20**
-- `diskreport.py`: **20**
 - `healthscore.py`: **20**
 - `scanner.py`: **17**
-- `assistant.py`: **16**
-- `quarantine.py`: **15**
+- `assistant.py`: **17**
 - `branding.py`: **15**
 - `duplicates.py`: **15**
-- `main.py`: **14**
 - `memory.py`: **14**
+- `quarantine.py`: **14**
+- `main.py`: **13**
+- `browser.py`: **12**
 - `organizer.py`: **12**
 - `settings.py`: **11**
-- `browser.py`: **11**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-11T02:47:53` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_is_excluded_path` ante errores de entrada y permisos denegados al manejar explícitamente posibles excepciones de `os.scandir` y la resolución de rutas, asegurando que el recorrido no se interrumpa silenciosamente por errores de sistema en subdirectorios profundos.
+- `2026-10-11T02:47:20` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante errores de acceso a archivos al delegar la verificación de atributos de sistema a una lógica protegida contra `OSError`, y se corrigió el manejo de `Kernel32` para asegurar que el escaneo no se interrumpa en sistemas con permisos restringidos o donde `GetFileAttributesW` falle por causas externas.
+- `2026-10-11T02:46:03` **assistant.py** (robustez ante casos límite): Mejora la robustez del manejo de configuración en `_parse_config` y `available` para prevenir fallos silenciosos si `settings.load` retorna valores inesperados o si los tipos de datos en el archivo de configuración son distintos a los esperados, garantizando que el asistente siempre tenga un estado coherente.
 - `2026-10-11T02:37:55` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuración implementando un sistema de caché de instancia en `_SettingsManager` para evitar el parseo innecesario de JSON en llamadas recurrentes dentro del mismo ciclo de ejecución.
 - `2026-10-11T02:37:09` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner moviendo la validación de seguridad `_is_safe_entry` fuera del bucle de heurísticas mediante el uso de `_is_relevant_extension` como filtro previo, reduciendo drásticamente las llamadas costosas al sistema de archivos (`resolve`, `exists`) para archivos no relevantes.
 - `2026-10-11T02:36:14` **safety.py** (rendimiento): Optimizamos la seguridad y el rendimiento reemplazando el chequeo redundante de metadatos en `is_protected_path` mediante la consolidación de las llamadas a `_get_file_attrs` y el uso de `lru_cache` en las rutas resueltas, evitando resolución de nombres de sistema repetida.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-11T01:55:33` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_get_security_descriptor` hacia un enfoque basado en objetos, facilitando la comprensión del flujo de auditoría de seguridad y eliminando redundancias en la evaluación de atributos.
 - `2026-10-11T01:46:19` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante docstrings descriptivos, se añadió `type hints` en las funciones de procesamiento recursivo para mayor claridad y se reemplazaron los comentarios vagos por explicaciones funcionales que detallan el "porqué" de las validaciones de seguridad, facilitando el mantenimiento.
 - `2026-10-11T01:45:53` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las estructuras Win32 y los tipos de datos internos, clarificando la finalidad de los campos `PMC` (Process Memory Counters) mediante el uso de nombres explícitos y eliminando el uso de índices mágicos, lo que aumenta la mantenibilidad del código sin alterar la lógica.
-- `2026-10-11T01:45:26` **main.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad de la clase principal `LimpiezaTotalOmegaApp` mediante la conversión de variables de estado críticas en propiedades protegidas y una organización más explícita de la inicialización de los componentes de UI, facilitando el mantenimiento sin alterar la funcionalidad.
-- `2026-10-11T01:36:17` **duplicates.py** (legibilidad y documentación): Mejora la mantenibilidad y legibilidad mediante la adición de Type Hints en los retornos y parámetros faltantes, y la simplificación de estructuras condicionales en `_is_valid_candidate` para facilitar su auditoría de seguridad.
-- `2026-10-11T01:35:35` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y la mantenibilidad del motor de escaneo centralizando la lógica de recolección de datos mediante docstrings más precisos y nombrando explícitamente los tipos de retorno internos, facilitando la comprensión del flujo de datos en las funciones de alto nivel.

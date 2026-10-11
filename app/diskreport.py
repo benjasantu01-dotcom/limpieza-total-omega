@@ -155,7 +155,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         if not str(p).startswith(str(base)) and not p.is_absolute():
             return None
 
-        if p.is_symlink() or not p.exists():
+        if not p.exists() or p.is_symlink():
             return None
         if not p.is_dir() or is_protected_path(p) or not os.access(p, os.R_OK):
             return None
@@ -167,12 +167,10 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 def _is_excluded_path(entry: os.DirEntry) -> bool:
     """Determina si un nodo del sistema de archivos debe ser ignorado."""
     try:
-        # Validar nombre con manejo ante errores de codificación
         name = entry.name
         if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
             return True
         
-        # Seguridad defensiva: validar siempre la ruta contra `is_protected_path`
         if is_protected_path(Path(entry.path)):
             return True
         
@@ -183,16 +181,12 @@ def _is_excluded_path(entry: os.DirEntry) -> bool:
             return True
 
         if os.name == 'nt':
-            try:
-                st = entry.stat(follow_symlinks=False)
-                # Verifica el atributo FILE_ATTRIBUTE_REPARSE_POINT (0x0400)
-                if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x0400):
-                     return True
-            except (OSError, PermissionError):
-                return True
+            st = entry.stat(follow_symlinks=False)
+            if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x0400):
+                 return True
             
         return False
-    except (OSError, PermissionError, AttributeError, RuntimeError, TypeError):
+    except (OSError, PermissionError, AttributeError, TypeError):
         return True
             
 def _get_local_windows_drives() -> List[str]:
@@ -313,19 +307,18 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if skip_protected and _is_excluded_path(entry):
                             continue
                         
-                        abs_path = Path(entry.path).absolute()
                         if entry.is_dir(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(str(abs_path))
+                                stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
                             f_stat = entry.stat()
-                            yield abs_path, int(f_stat.st_size)
-                    except (OSError, PermissionError, FileNotFoundError):
+                            yield Path(entry.path), int(f_stat.st_size)
+                    except (OSError, PermissionError):
                         continue
-        except (PermissionError, OSError, FileNotFoundError): 
+        except (PermissionError, OSError): 
             continue
 
 

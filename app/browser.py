@@ -189,7 +189,8 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
     """Determina si un archivo tiene atributos de sistema o ocultos mediante Win32 API."""
     if kernel32 is None: return False
     attrs: int = kernel32.GetFileAttributesW(entry_path)
-    return bool(attrs != 0xFFFFFFFF and (attrs & SYSTEM_HIDDEN_FLAGS))
+    if attrs == 0xFFFFFFFF: return False
+    return bool(attrs & SYSTEM_HIDDEN_FLAGS)
 
 def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     """Aplica reglas de filtrado de seguridad para ignorar archivos según políticas de protección."""
