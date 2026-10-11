@@ -25,9 +25,7 @@ from safety import is_protected_path
 logger: Final = logging.getLogger(__name__)
 
 class ScannerLimits(NamedTuple):
-    """
-    Parámetros de configuración para el motor de escaneo y sus límites de seguridad.
-    """
+    """Parámetros de configuración para el motor de escaneo y sus límites de seguridad."""
     max_path: int = 260
     recent_hours: int = 24
     reparse_point_attr_mask: int = 0x400
@@ -52,6 +50,7 @@ class Suspicion:
 class SuspicionCheck(Protocol):
     """
     Interfaz para funciones de análisis heurístico.
+    
     Todas las implementaciones deben ser funciones puras, operando solo sobre
     el estado proporcionado mediante parámetros.
     """
@@ -77,7 +76,7 @@ TARGETED_DOWNLOAD_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp
 SYSTEM32_LOWER: Final[str] = "system32"
 
 def _is_file_in_use(path: Path) -> bool:
-    """Verifica si el archivo está bloqueado por otro proceso intentando abrirlo en modo exclusivo."""
+    """Verifica si el archivo está bloqueado por otro proceso abriéndolo en modo exclusivo."""
     try:
         fd = os.open(path, os.O_RDONLY | os.O_EXCL)
         os.close(fd)
@@ -110,11 +109,7 @@ def _get_file_size(path: Path) -> int:
         return -1
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
-    """
-    Retorna metadatos de la entrada únicamente si:
-    1. Es un archivo estándar (no symlink, no punto de reanálisis).
-    2. Los atributos de sistema no indican estructuras recursivas.
-    """
+    """Retorna metadatos solo si es un archivo estándar sin estructuras recursivas."""
     try:
         if not entry.is_file(follow_symlinks=False) or entry.is_symlink():
             return None
@@ -125,7 +120,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
-    """Valida integridad de la ruta contra límites de longitud API y caracteres inseguros/RTL."""
+    """Valida integridad de la ruta contra límites API y caracteres inseguros/RTL."""
     if not path_str or len(path_str) > SCAN_LIMITS.max_path or "\0" in path_str:
         return False
     if UNC_PATH_RE.match(path_str) or RTL_CHAR_RE.search(path_str):
@@ -137,7 +132,7 @@ def _is_target_extension(name: str) -> bool:
     return Path(name).suffix.lower() in SUSPICIOUS_ALL_EXTS
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta el uso de doble extensión como técnica común de enmascaramiento de ejecutables."""
+    """Detecta el uso de doble extensión como técnica común de enmascaramiento."""
     try:
         if path.name and DOUBLE_EXTENSION_RE.search(path.name):
             return Suspicion(path, "Doble extensión detectada como técnica de enmascaramiento", "warning")
@@ -169,7 +164,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Identifica archivos ejecutables con tamaño cero, frecuentemente usados como marcadores maliciosos."""
+    """Identifica archivos ejecutables con tamaño cero."""
     try:
         if _get_file_size(path) == 0:
             return Suspicion(path, "Ejecutable vacío detectado", "warning")
@@ -185,7 +180,7 @@ ALL_CHECKS: Final[Sequence[SuspicionCheck]] = [
 ]
 
 class Scanner:
-    """Controlador de estado encargado de gestionar el escaneo recursivo del sistema."""
+    """Controlador de estado que gestiona el escaneo recursivo del sistema."""
     
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
@@ -204,15 +199,15 @@ class Scanner:
             return False
 
     def _has_invalid_name(self, name: str) -> bool:
-        """Valida que el nombre de archivo no sea un alias de dispositivo reservado o termine en caracteres inválidos."""
+        """Valida que el nombre de archivo no sea un alias de dispositivo reservado."""
         return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Identifica si una entrada es un punto de reanálisis (reparse point) para evitar ciclos."""
+        """Identifica si una entrada es un punto de reanálisis para evitar ciclos."""
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Verifica que la entrada sea transitable y no viole las políticas de seguridad del proyecto."""
+        """Verifica que la entrada sea transitable y no viole las políticas de seguridad."""
         if not isinstance(entry, os.DirEntry) or entry.path is None:
             return False
         
@@ -237,7 +232,7 @@ class Scanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        """Gestiona la cola de directorios para la recursión segura, controlando la profundidad máxima."""
+        """Gestiona la cola de directorios para la recursión segura, controlando la profundidad."""
         if current_depth >= SCAN_LIMITS.max_depth or entry.path is None:
             return
         
@@ -299,7 +294,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """Inicia el recorrido recursivo mediante un modelo de pila con límites de seguridad estrictos."""
+    """Inicia el recorrido recursivo mediante un modelo de pila con límites de seguridad."""
     if directory is None: return []
     try:
         path_str = str(directory).strip()

@@ -815,3 +815,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-10-11T10:45:45` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `ensure_safe_to_modify` para separar la lógica de validación de precondiciones de la lógica de evaluación de integridad, reduciendo su complejidad ciclomática y facilitando su lectura.
 - `2026-10-11T10:45:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-11T10:45:45` Corrida terminada. Total usado hoy: 256.
+- `2026-10-11T10:53:59` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-10-11T10:54:27` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y la mantenibilidad técnica del módulo mediante la adición de Type Hints en la pila de directorios, la estandarización de docstrings para seguir el formato PEP 257 y la clarificación de las responsabilidades en los métodos del `Scanner`, facilitando la auditoría de seguridad del flujo recursivo.
+- `2026-10-11T10:54:54` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _NumericRange, _ValidationResult, _ValidatorEntry
+- `2026-10-11T10:55:19` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-11T10:55:41` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: rendimiento).
+- `2026-10-11T10:55:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-11T10:55:41` Corrida terminada. Total usado hoy: 260.
