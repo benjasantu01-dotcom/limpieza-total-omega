@@ -1636,3 +1636,11 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-10-11T06:31:19` ➖ Sin cambios en branding.py (enfoque: rendimiento). Motivo: Optimicé el renderizado de la interfaz mediante la pre-cálculo y cacheo de las dimensiones del escudo (`_get_scaled_poly`), evitando que el cálculo matemático de coordenadas se repita en cada llamada a `draw_logo`.
 - `2026-10-11T06:31:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-11T06:31:19` Corrida terminada. Total usado hoy: 156.
+- `2026-10-11T06:39:25` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-10-11T06:39:53` ➖ Sin cambios en browser.py (enfoque: rendimiento). Motivo: Se optimizó el rendimiento del escaneo recursivo integrando el `VisitedDirs` dentro del `ScanContext` para cachear resultados de directorios intermedios y evitar procesar subárboles redundantes, además de pre-normalizar el `base_norm` para acelerar las comparaciones de rutas dentro de `_should_skip_entry`.
+- `2026-10-11T06:40:19` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-10-11T06:40:20` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-11T06:40:49` ➖ Sin cambios en duplicates.py (enfoque: rendimiento). Motivo: Optimizado el rendimiento de `_collect_candidates` moviendo la validación de `st_size` antes de instanciar `Path` y evitando llamadas redundantes a `Path.resolve()` en el bucle principal, reduciendo drásticamente las llamadas al sistema operativo (I/O) durante el recorrido de directorios.
+- `2026-10-11T06:41:02` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics.safe_get
+- `2026-10-11T06:41:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-11T06:41:02` Corrida terminada. Total usado hoy: 160.
