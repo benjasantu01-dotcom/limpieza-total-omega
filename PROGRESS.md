@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 33
-- Rechazadas por guardia de seguridad: 47
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 206
 
@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-10 | 106 | 15 | 24 | 9 | 102 |
-| 2026-10-11 | 90 | 18 | 23 | 13 | 104 |
+| 2026-10-10 | 105 | 15 | 21 | 9 | 102 |
+| 2026-10-11 | 94 | 18 | 23 | 13 | 104 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **47**
 - robustez ante casos límite: **44**
 - manejo de errores y validación de entradas: **44**
-- legibilidad y documentación: **36**
-- rendimiento: **25**
+- legibilidad y documentación: **40**
+- rendimiento: **24**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
-- `safety.py`: **19**
-- `healthscore.py`: **18**
+- `healthscore.py`: **19**
+- `safety.py`: **18**
+- `memory.py`: **17**
 - `assistant.py`: **16**
 - `browser.py`: **16**
-- `memory.py`: **16**
 - `settings.py`: **15**
 - `scanner.py`: **13**
 - `branding.py`: **12**
+- `main.py`: **12**
 - `startup.py`: **12**
-- `main.py`: **11**
+- `duplicates.py`: **11**
 - `organizer.py`: **11**
-- `duplicates.py`: **10**
 - `quarantine.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-11T10:35:44` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la documentación explícita de estructuras complejas (Win32), la eliminación de variables globales mutables con efectos colaterales (`_linux_available`) a favor de un manejo de estados más limpio, y la estandarización de type hints en el manejo de estructuras.
+- `2026-10-11T10:35:33` **main.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad de `main.py` mediante la refactorización de las complejas cadenas de `lambda` en `on_reset_settings` hacia un método dedicado `_update_entry_fields` (reutilizando el existente o creando uno más general) y, principalmente, organizando las constantes de configuración visual en una estructura cohesiva, eliminando la duplicación de lógica en la inicialización de los widgets de Ajustes.
+- `2026-10-11T10:34:31` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en funciones críticas y normalizando la nomenclatura de variables para que el flujo de datos (de `SystemMetrics` a `HealthResult`) sea más evidente.
+- `2026-10-11T10:34:06` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings explicativos en funciones críticas y normalizando los type hints para mejorar la mantenibilidad y legibilidad del código.
 - `2026-10-11T10:25:08` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica añadiendo type hints faltantes y docstrings descriptivos en funciones auxiliares (`_bytes_to_mb`, `_validate_limit`, `_validate_root`), clarificando el propósito y las restricciones de cada parámetro para facilitar el mantenimiento.
 - `2026-10-11T10:24:58` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (usando el formato Google Style) en funciones clave, aclarando las garantías de seguridad y las restricciones de los parámetros para facilitar el mantenimiento y la comprensión de las heurísticas de escaneo.
 - `2026-10-11T10:24:08` **assistant.py** (legibilidad y documentación): Se introdujeron type hints explícitos en funciones clave del motor local (`local_answer`, `handle_ram`, etc.) y se refinó la documentación interna (docstrings) para aclarar las precondiciones de seguridad de las métricas, mejorando la legibilidad técnica del flujo de datos sin alterar el comportamiento.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-11T10:03:41` **memory.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `_query_working_set_bytes` y `top_memory_processes` añadiendo validaciones explícitas contra posibles retornos nulos de `kernel32` y `psapi` (frecuentes en sistemas con restricciones), y asegurando que las llamadas a la API se cierren correctamente ante errores inesperados.
 - `2026-10-11T09:54:23` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `compute_score` y `_evaluate_rules` mediante la validación proactiva de tipos y valores, asegurando que `SystemMetrics` sea siempre una instancia válida antes de procesar el pipeline, evitando propagación de errores por datos corruptos o inesperados.
 - `2026-10-11T09:53:26` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas (`OSError`, `PermissionError`) durante la iteración y el acceso a metadatos, evitando que fallos puntuales en archivos bloqueados detengan el escaneo completo de la unidad.
-- `2026-10-11T09:45:23` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_valid_cache_path` y `_resolve_browser_path` añadiendo validaciones explícitas de tipos y estados vacíos antes de ejecutar operaciones de sistema, previniendo errores de ejecución ante entradas inesperadas o corrupción en los mapeos de rutas.
-- `2026-10-11T09:45:12` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `draw_ring` mediante la validación explícita de tipos y la captura de errores específicos, evitando que valores `None` o mal formados interrumpan el flujo de la UI.
-- `2026-10-11T08:22:51` **startup.py** (seguridad defensiva): Se endureció la seguridad en `startup.py` añadiendo un filtro explícito en `_resolve_and_cache_path` y `_process_folder_entry` para detectar y rechazar automáticamente los Puntos de Reparse (junctions y symlinks de directorios) que pueden conducir a recursiones infinitas o escapes de sandbox fuera de las carpetas permitidas.
-- `2026-10-11T08:22:20` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `settings.py` reforzando la validación del directorio de configuración en la función `settings_path`, asegurando que no solo sea un directorio, sino que su propiedad, permisos y ausencia de puntos de reparse sean validados antes de realizar cualquier operación sobre él, alineándose con las técnicas de defensa en profundidad.

@@ -894,17 +894,17 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._add_setting_label(grilla, "Top de archivos:", 2, 2)
         self.top_files_entry = self._entry(grilla, "15", 100)
         
-        self._update_entry_fields(self.min_dup_entry, "duplicados_tamano_minimo_kb", 64)
-        self._update_entry_fields(self.top_files_entry, "top_archivos", 15)
+        self._update_entry_fields(self.min_dup_entry, "duplicados_tamano_minimo_kb", 64, row=2, col=1)
+        self._update_entry_fields(self.top_files_entry, "top_archivos", 15, row=2, col=3)
 
         self._build_ia_settings(tab)
         self._make_output("Ajustes", tab)
 
-    def _update_entry_fields(self, widget: ctk.CTkEntry, key: str, default: int) -> None:
+    def _update_entry_fields(self, widget: ctk.CTkEntry, key: str, default: int, row: int, col: int) -> None:
         """Inicializa los campos de entrada de ajustes con valores guardados."""
         try:
             widget.insert(0, str(self.settings.get(key, default)))
-            widget.grid(row=2, column=3 if "top" in key else 1, sticky="w")
+            widget.grid(row=row, column=col, sticky="w")
         except (tk.TclError, AttributeError):
             pass
 
@@ -2048,13 +2048,18 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                     except (tk.TclError, RuntimeError, Exception):
                         continue
             
-            self._safe_run_ui_callback(lambda: (
-                self.min_dup_entry.delete(0, "end") if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists() else None,
-                self.min_dup_entry.insert(0, str(settings_mod.DEFAULTS.get("duplicados_tamano_minimo_kb", 64))) if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists() else None,
-                self.top_files_entry.delete(0, "end") if hasattr(self, 'top_files_entry') and self.top_files_entry.winfo_exists() else None,
-                self.top_files_entry.insert(0, str(settings_mod.DEFAULTS.get("top_archivos", 15))) if hasattr(self, 'top_files_entry') and self.top_files_entry.winfo_exists() else None,
+            def restore_ui():
+                widgets = [
+                    (getattr(self, 'min_dup_entry', None), "duplicados_tamano_minimo_kb", 64),
+                    (getattr(self, 'top_files_entry', None), "top_archivos", 15)
+                ]
+                for widget, key, default in widgets:
+                    if widget and widget.winfo_exists():
+                        widget.delete(0, "end")
+                        widget.insert(0, str(settings_mod.DEFAULTS.get(key, default)))
                 self.log_lines(["Ajustes restaurados a los valores de fábrica.", ""] + settings_mod.describe(), "Ajustes")
-            ))
+            
+            self._safe_run_ui_callback(restore_ui)
 
         self.run_async(task)
 

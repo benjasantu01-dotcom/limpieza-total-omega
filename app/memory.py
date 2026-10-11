@@ -85,32 +85,32 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura Win32 GlobalMemoryStatusEx. Soporta memorias físicas mayores a 4GB."""
+    """Estructura Win32 GlobalMemoryStatusEx para reportar memoria total y disponible."""
     _fields_: List[Tuple[str, type]] = [
-        ("dwLength", ctypes.c_ulong),            # Tamaño de la estructura en bytes
-        ("dwMemoryLoad", ctypes.c_ulong),        # Porcentaje de memoria en uso (0-100)
-        ("ullTotalPhys", ctypes.c_ulonglong),    # Memoria física total
-        ("ullAvailPhys", ctypes.c_ulonglong),    # Memoria física disponible
-        ("ullTotalPageFile", ctypes.c_ulonglong),# Total paginable (Físico + Swap)
+        ("dwLength", ctypes.c_ulong),            # Tamaño de esta estructura
+        ("dwMemoryLoad", ctypes.c_ulong),        # Porcentaje en uso
+        ("ullTotalPhys", ctypes.c_ulonglong),    # RAM física total
+        ("ullAvailPhys", ctypes.c_ulonglong),    # RAM física disponible
+        ("ullTotalPageFile", ctypes.c_ulonglong),# Total paginable
         ("ullAvailPageFile", ctypes.c_ulonglong),# Disponible paginable
-        ("ullTotalVirtual", ctypes.c_ulonglong), # Espacio de direcciones virtuales
-        ("ullAvailVirtual", ctypes.c_ulonglong), # Disponible virtual
-        ("ullAvailExtendedVirtual", ctypes.c_ulonglong), # Reservado
+        ("ullTotalVirtual", ctypes.c_ulonglong), # Espacio virtual total
+        ("ullAvailVirtual", ctypes.c_ulonglong), # Espacio virtual disponible
+        ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
     ]
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
-    """Estructura Win32 para obtener estadísticas de uso de memoria de proceso."""
+    """Estructura Win32 para obtener estadísticas de memoria de un proceso (PSAPI)."""
     _fields_: List[Tuple[str, type]] = [
-        ("cb", ctypes.c_ulong),                 # Tamaño de la estructura
-        ("PageFaultCount", ctypes.c_ulong),     # Fallos de página
-        ("PeakWorkingSetSize", ctypes.c_size_t),# Pico de memoria RAM utilizada
-        ("WorkingSetSize", ctypes.c_size_t),    # Memoria RAM actual en uso
+        ("cb", ctypes.c_ulong),
+        ("PageFaultCount", ctypes.c_ulong),
+        ("PeakWorkingSetSize", ctypes.c_size_t),
+        ("WorkingSetSize", ctypes.c_size_t),     # Memoria RAM actual (Working Set)
         ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
         ("QuotaPagedPoolUsage", ctypes.c_size_t),
         ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
         ("QuotaNonPagedPoolUsage", ctypes.c_size_t),
-        ("PagefileUsage", ctypes.c_size_t),     # Bytes en el archivo de paginación
-        ("PeakPagefileUsage", ctypes.c_size_t), # Pico en el archivo de paginación
+        ("PagefileUsage", ctypes.c_size_t),
+        ("PeakPagefileUsage", ctypes.c_size_t),
     ]
 
 @dataclass(frozen=True)
@@ -163,13 +163,12 @@ def format_bytes(num: Optional[int | float]) -> str:
         return "0 B"
 
 def _create_mem_status_ex() -> MEMORYSTATUSEX:
-    """Inicializa la estructura MEMORYSTATUSEX con su tamaño requerido."""
     mem_status = MEMORYSTATUSEX()
     mem_status.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return mem_status
 
 def _safe_int_conversion(value: Optional[str], multiplier: int = 1) -> BytesValue:
-    """Limpia cadenas de texto, extrayendo dígitos y multiplicando por el factor dado."""
+    """Extrae enteros de cadenas de texto y los escala por el multiplicador dado."""
     if not isinstance(value, str): return BytesValue(0)
     digits = "".join(filter(str.isdigit, value))
     try:
@@ -181,7 +180,6 @@ def _safe_int_conversion(value: Optional[str], multiplier: int = 1) -> BytesValu
 _is_windows: bool = os.name == "nt"
 _linux_mem_path: Path = Path("/proc/meminfo")
 _EMPTY_SNAPSHOT: MemorySnapshot = MemorySnapshot(BytesValue(0), BytesValue(0))
-_linux_available: bool = True
 
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
@@ -211,7 +209,6 @@ def _is_system_process(pid: int) -> bool:
     return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
-    """Parsea una línea CSV proveniente de herramientas externas."""
     if not isinstance(line, str) or "," not in line: 
         return None
         
@@ -254,7 +251,6 @@ def _read_windows_snapshot() -> MemorySnapshot:
     if not kernel32 or not hasattr(kernel32, "GlobalMemoryStatusEx"): return _EMPTY_SNAPSHOT
     mem_status = _create_mem_status_ex()
     try:
-        # GlobalMemoryStatusEx retorna cero en caso de error.
         if kernel32.GlobalMemoryStatusEx(ctypes.byref(mem_status)) != 0:
             if mem_status.ullTotalPhys > 0 and mem_status.ullAvailPhys <= mem_status.ullTotalPhys:
                 return MemorySnapshot(
@@ -262,27 +258,24 @@ def _read_windows_snapshot() -> MemorySnapshot:
                     available=BytesValue(mem_status.ullAvailPhys)
                 )
     except (ctypes.ArgumentError, OSError, ValueError):
-        # ValueError capturado por si los valores leídos desbordan los límites de C en 32-bit.
         pass
     return _EMPTY_SNAPSHOT
 
 @lru_cache(maxsize=1)
 def _get_cached_snapshot(timestamp_bucket: int) -> MemorySnapshot:
     if _is_windows: return _read_windows_snapshot()
-    global _linux_available
-    if _linux_available:
-        try:
+    try:
+        if _linux_mem_path.exists():
             snapshot = parse_linux_meminfo(_linux_mem_path.read_text(encoding="utf-8"))
             return snapshot if snapshot != _EMPTY_SNAPSHOT else _EMPTY_SNAPSHOT
-        except (OSError, PermissionError, UnicodeDecodeError): _linux_available = False
+    except (OSError, PermissionError, UnicodeDecodeError): 
+        pass
     return _EMPTY_SNAPSHOT
 
 def read_snapshot() -> MemorySnapshot:
     return _get_cached_snapshot(int(time.time() / 5))
 
 def _query_working_set_bytes(pid: int, kernel32, psapi) -> Optional[BytesValue]:
-    """Consulta el tamaño del working set vía GetProcessMemoryInfo."""
-    if not kernel32 or not psapi: return None
     process_handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
     if not process_handle:
         return None
@@ -358,7 +351,6 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def _is_process_executable_safe(pid: int) -> bool:
-    """Verifica si la ruta del ejecutable es segura usando is_protected_path."""
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     psapi = getattr(ctypes.windll, "psapi", None)
     if not kernel32 or not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return False
@@ -370,7 +362,6 @@ def _is_process_executable_safe(pid: int) -> bool:
         bytes_copied = psapi.GetModuleFileNameExW(handle, None, buf, 512)
         if bytes_copied > 0:
             path_str = buf.value
-            # Validación defensiva: debe ser ruta absoluta y no de dispositivo/red sospechosa
             if not isinstance(path_str, str) or len(path_str) < 3 or ":" not in path_str[1:3]:
                 return False
             if path_str.startswith("\\\\"): return False

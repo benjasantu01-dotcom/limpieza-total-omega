@@ -316,7 +316,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         
         for entry in _PIPELINE:
             try:
-                area_ratio = _clamp(float(entry.scorer(m)))
+                area_ratio: NormalizedRatio = _clamp(float(entry.scorer(m)))
                 _evaluate_rules(m, entry.rules, area_ratio, recommendations)
                 
                 # Calcular contribución ponderada al total
