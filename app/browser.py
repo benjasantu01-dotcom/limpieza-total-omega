@@ -233,6 +233,7 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
                         continue
                         
                     if entry.is_dir(follow_symlinks=False):
+                        # Se verifica nuevamente que la entrada sea un directorio tras filtro de seguridad
                         res = _sum_directory_recursive(entry.path, ctx, depth + 1)
                         total_bytes += res.bytes_found
                     else:

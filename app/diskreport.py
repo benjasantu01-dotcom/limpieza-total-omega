@@ -173,7 +173,10 @@ def _is_excluded_path(entry: os.DirEntry) -> bool:
     """Determina si un nodo del sistema de archivos debe ser ignorado."""
     try:
         name = entry.name
+        # Prevenir errores de ruta con caracteres nulos o nombres reservados inválidos
         if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
+            return True
+        if any(char in name for char in ('<', '>', ':', '"', '|', '?', '*')):
             return True
         
         if is_protected_path(Path(entry.path)):

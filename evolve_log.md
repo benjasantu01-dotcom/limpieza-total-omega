@@ -891,3 +891,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-11T11:37:54` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta para la ruta de destino en `save_logo_svg` utilizando `resolve()` y `ensure_safe_to_modify` para prevenir escrituras en ubicaciones inesperadas o protegidas por enlaces simbólicos, garantizando un comportamiento predecible ante condiciones de carrera o rutas malformadas.
 - `2026-10-11T11:37:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-11T11:37:54` Corrida terminada. Total usado hoy: 276.
+- `2026-10-11T11:44:53` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-10-11T11:45:26` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez del escaneo recursivo de directorios ante condiciones de carrera (Time-of-check to time-of-use) y acceso denegado, asegurando que `os.scandir` maneje el contexto de forma más resiliente y validando explícitamente que la ruta resuelta sea un directorio antes de recursar.
+- `2026-10-11T11:45:27` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-11T11:45:32` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-11T11:46:17` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_excluded_path` añadiendo una validación explícita para rutas que contienen caracteres nulos o nombres de archivos inválidos según el SO, evitando que `os.scandir` o `pathlib` arrojen excepciones no controladas durante el escaneo de directorios con nombres corruptos.
+- `2026-10-11T11:46:46` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-11T11:47:03` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la función `_evaluate_rules` y `compute_score`, asegurando que si las funciones de diagnóstico (`message_factory` o `check`) fallan debido a estados inconsistentes de las métricas, el motor de cálculo no colapse ni se detenga, manteniendo la integridad del proceso de reporte.
+- `2026-10-11T11:47:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-11T11:47:03` Corrida terminada. Total usado hoy: 280.

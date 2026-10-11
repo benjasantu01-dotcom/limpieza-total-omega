@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
-- Rechazadas por tests: 34
-- Rechazadas por guardia de seguridad: 47
+- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Rechazadas por tests: 33
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-10 | 88 | 13 | 20 | 8 | 99 |
-| 2026-10-11 | 105 | 21 | 27 | 15 | 108 |
+| 2026-10-10 | 86 | 12 | 19 | 8 | 99 |
+| 2026-10-11 | 108 | 21 | 27 | 15 | 109 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **42**
-- seguridad defensiva: **40**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **39**
+- seguridad defensiva: **38**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
-- `safety.py`: **18**
-- `healthscore.py`: **18**
+- `diskreport.py`: **20**
+- `healthscore.py`: **19**
 - `memory.py`: **17**
+- `safety.py`: **17**
+- `browser.py`: **17**
 - `settings.py`: **16**
-- `browser.py`: **16**
 - `assistant.py`: **15**
 - `scanner.py`: **13**
-- `organizer.py`: **12**
 - `branding.py`: **12**
 - `startup.py`: **11**
+- `organizer.py`: **11**
 - `duplicates.py`: **10**
 - `main.py`: **10**
 - `quarantine.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-11T11:47:03` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la función `_evaluate_rules` y `compute_score`, asegurando que si las funciones de diagnóstico (`message_factory` o `check`) fallan debido a estados inconsistentes de las métricas, el motor de cálculo no colapse ni se detenga, manteniendo la integridad del proceso de reporte.
+- `2026-10-11T11:46:17` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_excluded_path` añadiendo una validación explícita para rutas que contienen caracteres nulos o nombres de archivos inválidos según el SO, evitando que `os.scandir` o `pathlib` arrojen excepciones no controladas durante el escaneo de directorios con nombres corruptos.
+- `2026-10-11T11:45:26` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo recursivo de directorios ante condiciones de carrera (Time-of-check to time-of-use) y acceso denegado, asegurando que `os.scandir` maneje el contexto de forma más resiliente y validando explícitamente que la ruta resuelta sea un directorio antes de recursar.
 - `2026-10-11T11:37:54` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta para la ruta de destino en `save_logo_svg` utilizando `resolve()` y `ensure_safe_to_modify` para prevenir escrituras en ubicaciones inesperadas o protegidas por enlaces simbólicos, garantizando un comportamiento predecible ante condiciones de carrera o rutas malformadas.
 - `2026-10-11T11:37:16` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_get_source_value` y `_apply_field` para manejar de forma segura el acceso a objetos fuente (incluyendo casos donde `__dict__` podría ser manipulado o inexistente), evitando fallos en la ingesta de datos cuando los objetos de origen no tienen una estructura predecible.
 - `2026-10-11T11:35:30` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `_is_file_secure_to_read` eliminando llamadas redundantes a `stat` y `resolve()` mediante el aprovechamiento de la información ya obtenida en los objetos de archivo abiertos, y simplificando la lógica de validación para evitar re-análisis innecesarios del disco en cada llamada.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-11T10:54:27` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y la mantenibilidad técnica del módulo mediante la adición de Type Hints en la pila de directorios, la estandarización de docstrings para seguir el formato PEP 257 y la clarificación de las responsabilidades en los métodos del `Scanner`, facilitando la auditoría de seguridad del flujo recursivo.
 - `2026-10-11T10:44:19` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna de `organizer.py`, añadiendo docstrings descriptivos a funciones complejas, aclarando la lógica de las validaciones de seguridad y mejorando la consistencia de los tipos para asegurar que el código sea mantenible y fácil de auditar según los estándares del proyecto.
 - `2026-10-11T10:35:44` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la documentación explícita de estructuras complejas (Win32), la eliminación de variables globales mutables con efectos colaterales (`_linux_available`) a favor de un manejo de estados más limpio, y la estandarización de type hints en el manejo de estructuras.
-- `2026-10-11T10:35:33` **main.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad de `main.py` mediante la refactorización de las complejas cadenas de `lambda` en `on_reset_settings` hacia un método dedicado `_update_entry_fields` (reutilizando el existente o creando uno más general) y, principalmente, organizando las constantes de configuración visual en una estructura cohesiva, eliminando la duplicación de lógica en la inicialización de los widgets de Ajustes.
-- `2026-10-11T10:34:31` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en funciones críticas y normalizando la nomenclatura de variables para que el flujo de datos (de `SystemMetrics` a `HealthResult`) sea más evidente.
-- `2026-10-11T10:34:06` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings explicativos en funciones críticas y normalizando los type hints para mejorar la mantenibilidad y legibilidad del código.

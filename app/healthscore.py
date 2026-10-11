@@ -292,10 +292,11 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     for rule in rules:
         try:
             if rule.check(metrics, normalized_ratio):
-                clean_msg = _sanitize_msg(rule.message_factory(metrics))
+                raw_msg = rule.message_factory(metrics)
+                clean_msg = _sanitize_msg(raw_msg)
                 if clean_msg: findings.append(clean_msg)
         except Exception as e:
-            logging.error(f"Falla en evaluación de regla {rule.area}: {e}")
+            logging.warning(f"Salteando regla de diagnóstico en {rule.area} por error: {e}")
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
