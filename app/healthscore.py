@@ -193,10 +193,12 @@ def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
     """Calcula salud: Normaliza el porcentaje de memoria libre sobre el umbral mínimo aceptable."""
+    if _LIMIT_RAM_PERCENT <= 0: return 0.0
     return _clamp(float(available_percent) / _LIMIT_RAM_PERCENT)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
     """Calcula salud: Normaliza el porcentaje de disco libre sobre el umbral de advertencia."""
+    if _LIMIT_DISK_PERCENT <= 0: return 0.0
     return _clamp(float(free_percent) / _LIMIT_DISK_PERCENT)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
@@ -299,6 +301,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     try:
         m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
         m.validate()
+        if not m.is_finite:
+            raise ValueError("Métricas inestables detectadas.")
             
         recommendations: List[str] = []
         metric_breakdown: Dict[MetricKey, int] = {}
