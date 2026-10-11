@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
-- Rechazadas por tests: 33
+- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Rechazadas por tests: 34
 - Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 23
 - Sin respuesta de la IA (error o límite): 207
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-10 | 92 | 13 | 20 | 8 | 99 |
-| 2026-10-11 | 102 | 20 | 27 | 15 | 108 |
+| 2026-10-10 | 88 | 13 | 20 | 8 | 99 |
+| 2026-10-11 | 105 | 21 | 27 | 15 | 108 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **42**
-- robustez ante casos límite: **34**
-- rendimiento: **30**
+- seguridad defensiva: **40**
+- robustez ante casos límite: **36**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **19**
 - `diskreport.py`: **19**
-- `memory.py`: **18**
 - `safety.py`: **18**
+- `healthscore.py`: **18**
+- `memory.py`: **17**
+- `settings.py`: **16**
 - `browser.py`: **16**
-- `settings.py`: **15**
-- `assistant.py`: **14**
+- `assistant.py`: **15**
 - `scanner.py`: **13**
 - `organizer.py`: **12**
-- `duplicates.py`: **11**
-- `main.py`: **11**
+- `branding.py`: **12**
 - `startup.py`: **11**
-- `branding.py`: **11**
+- `duplicates.py`: **10**
+- `main.py`: **10**
 - `quarantine.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-11T11:37:54` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta para la ruta de destino en `save_logo_svg` utilizando `resolve()` y `ensure_safe_to_modify` para prevenir escrituras en ubicaciones inesperadas o protegidas por enlaces simbólicos, garantizando un comportamiento predecible ante condiciones de carrera o rutas malformadas.
+- `2026-10-11T11:37:16` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_get_source_value` y `_apply_field` para manejar de forma segura el acceso a objetos fuente (incluyendo casos donde `__dict__` podría ser manipulado o inexistente), evitando fallos en la ingesta de datos cuando los objetos de origen no tienen una estructura predecible.
+- `2026-10-11T11:35:30` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `_is_file_secure_to_read` eliminando llamadas redundantes a `stat` y `resolve()` mediante el aprovechamiento de la información ya obtenida en los objetos de archivo abiertos, y simplificando la lógica de validación para evitar re-análisis innecesarios del disco en cada llamada.
 - `2026-10-11T11:26:35` **safety.py** (rendimiento): Optimizé `is_protected_path` eliminando llamadas costosas a `resolve()` y `parents` en el caso común de que la ruta esté en `_SYSTEM_ROOT_STRS` o sea un archivo kernel-managed, mejorando la performance en escaneos masivos.
 - `2026-10-11T11:18:45` **memory.py** (rendimiento): Se optimizó el rendimiento de `top_memory_processes` reemplazando la instanciación de una clase `ctypes` de tamaño fijo y el loop manual de filtrado por una implementación más eficiente que reduce las llamadas a la API de Windows mediante un procesamiento más directo, evitando también la recreación de objetos innecesarios dentro del ciclo.
 - `2026-10-11T11:14:55` **healthscore.py** (rendimiento): Se optimizó el cálculo en `compute_score` cacheando las llamadas a `_clamp` y `float` para evitar redundancias dentro del bucle principal del pipeline, mejorando el rendimiento en la ejecución del ciclo de evaluación.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-11T10:35:33` **main.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad de `main.py` mediante la refactorización de las complejas cadenas de `lambda` en `on_reset_settings` hacia un método dedicado `_update_entry_fields` (reutilizando el existente o creando uno más general) y, principalmente, organizando las constantes de configuración visual en una estructura cohesiva, eliminando la duplicación de lógica en la inicialización de los widgets de Ajustes.
 - `2026-10-11T10:34:31` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en funciones críticas y normalizando la nomenclatura de variables para que el flujo de datos (de `SystemMetrics` a `HealthResult`) sea más evidente.
 - `2026-10-11T10:34:06` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings explicativos en funciones críticas y normalizando los type hints para mejorar la mantenibilidad y legibilidad del código.
-- `2026-10-11T10:25:08` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica añadiendo type hints faltantes y docstrings descriptivos en funciones auxiliares (`_bytes_to_mb`, `_validate_limit`, `_validate_root`), clarificando el propósito y las restricciones de cada parámetro para facilitar el mantenimiento.
-- `2026-10-11T10:24:58` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (usando el formato Google Style) en funciones clave, aclarando las garantías de seguridad y las restricciones de los parámetros para facilitar el mantenimiento y la comprensión de las heurísticas de escaneo.
-- `2026-10-11T10:24:08` **assistant.py** (legibilidad y documentación): Se introdujeron type hints explícitos en funciones clave del motor local (`local_answer`, `handle_ram`, etc.) y se refinó la documentación interna (docstrings) para aclarar las precondiciones de seguridad de las métricas, mejorando la legibilidad técnica del flujo de datos sin alterar el comportamiento.

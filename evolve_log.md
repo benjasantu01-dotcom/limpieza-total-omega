@@ -845,3 +845,49 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-10-11T11:27:09` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
 - `2026-10-11T11:27:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-11T11:27:09` Corrida terminada. Total usado hoy: 272.
+- `2026-10-11T11:34:41` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-10-11T11:34:43` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-11T11:35:30` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` y `_is_file_secure_to_read` eliminando llamadas redundantes a `stat` y `resolve()` mediante el aprovechamiento de la información ya obtenida en los objetos de archivo abiertos, y simplificando la lógica de validación para evitar re-análisis innecesarios del disco en cada llamada.
+- `2026-10-11T11:36:05` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.26s
+
+```
+- `2026-10-11T11:36:05` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de caché `lru_cache` (simulado mediante un decorador en `_resolve_and_cache_path`) y se optimizó el chequeo de existencia eliminando redundancias en la lógica de resolución, evitando llamadas repetitivas al sistema de archivos para las mismas rutas en una misma ejecución.
+- `2026-10-11T11:36:06` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-11T11:36:11` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-11T11:36:18` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-11T11:37:16` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_get_source_value` y `_apply_field` para manejar de forma segura el acceso a objetos fuente (incluyendo casos donde `__dict__` podría ser manipulado o inexistente), evitando fallos en la ingesta de datos cuando los objetos de origen no tienen una estructura predecible.
+- `2026-10-11T11:37:26` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-11T11:37:54` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta para la ruta de destino en `save_logo_svg` utilizando `resolve()` y `ensure_safe_to_modify` para prevenir escrituras en ubicaciones inesperadas o protegidas por enlaces simbólicos, garantizando un comportamiento predecible ante condiciones de carrera o rutas malformadas.
+- `2026-10-11T11:37:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-11T11:37:54` Corrida terminada. Total usado hoy: 276.

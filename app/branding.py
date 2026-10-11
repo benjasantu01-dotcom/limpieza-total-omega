@@ -390,10 +390,6 @@ def logo_svg(size: int = 128) -> str:
 def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optional[Path]:
     """
     Guarda el logo en disco usando validaciones de seguridad atómicas pre-escritura.
-    Args:
-        destination: Ruta de destino (str o Path).
-        size: Dimensión en píxeles del logo (16 a 1024).
-    Returns: Path de archivo escrito si tuvo éxito, None en caso contrario.
     """
     if destination is None or not isinstance(destination, (str, Path)):
         return None
@@ -402,6 +398,9 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         # Verificación estricta contra rutas protegidas
         if is_protected_path(target) or not is_safe_to_modify(target):
             return None
+        
+        # Validar ruta de escritura final con el sistema de seguridad
+        ensure_safe_to_modify(target)
         
         parent = target.parent
         if not parent.exists():

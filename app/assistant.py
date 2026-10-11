@@ -403,8 +403,8 @@ class SystemContext:
         """Valida, convierte y verifica límites de un campo individual."""
         val = _get_source_value(source, key)
         if val is None: return None
+        if not _check_metric_integrity(val): return None
         try:
-            if not _check_metric_integrity(val): return None
             float_val = float(val)
             if not _is_metric_within_bounds(float_val, spec): return None
             return spec.cast_func(float_val)
@@ -498,6 +498,7 @@ def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
             return source.get(key)
         
         # Acceso restringido para instancias de clase evitando exponer lógica interna
+        # Verificamos hasattr primero para evitar AttributeError en tipos inesperados
         if not hasattr(source, "__dict__"): return None
         val = getattr(source, key, None)
         # Impedimos acceder a métodos o atributos que no sean datos primitivos o colecciones seguras

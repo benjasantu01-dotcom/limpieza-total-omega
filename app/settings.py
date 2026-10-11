@@ -292,11 +292,9 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     
     try:
         raw_base = Path(custom_base).resolve() if custom_base else SETTINGS_DIR.resolve()
-        # Verificación estricta de seguridad sobre el directorio base
         if _Validators._is_safe_path(str(raw_base)) and not _Validators._is_reparse_point(raw_base):
             if not raw_base.exists():
                 raw_base.mkdir(parents=True, exist_ok=True)
-            # Validar permisos de directorio antes de retornar la ruta
             if raw_base.is_dir() and _is_dir_safe(raw_base):
                 full_path = raw_base / SETTINGS_FILE
                 _MANAGER.path_cache[cache_key] = full_path
@@ -323,14 +321,13 @@ def validate(raw_values: Any) -> AppSettings:
             continue
     return config 
 
-def _is_file_secure_to_read(file_obj: Any) -> bool:
+def _is_file_secure_to_read(st: os.stat_result, file_obj: Any) -> bool:
     """
-    Verifica mediante fstat que el archivo de configuración sea un archivo regular
-    propiedad del usuario, sin permisos de ejecución, y no un enlace.
+    Verifica mediante el stat previo que el archivo de configuración sea regular,
+    propiedad del usuario y sin permisos de ejecución peligrosos.
     """
     try:
         if file_obj.closed: return False
-        st = os.fstat(file_obj.fileno())
         if not stat.S_ISREG(st.st_mode): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
@@ -348,12 +345,11 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         if not _is_dir_safe(file_path.parent): return None
         
         with open(file_path, "r", encoding="utf-8") as f:
-            if not _is_file_secure_to_read(f): return None
+            st = os.fstat(f.fileno())
+            if not _is_file_secure_to_read(st, f): return None
             
             try:
                 fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
-                if not _is_file_secure_to_read(f): return None
-                
                 content = f.read(MAX_SETTINGS_SIZE + 1)
                 if not content or len(content) > MAX_SETTINGS_SIZE: return None
                 
@@ -379,7 +375,7 @@ def _is_dir_safe(path: Path) -> bool:
 
 def _load_impl(ruta: Path) -> AppSettings:
     """Implementación de carga: valida seguridad y parsea el contenido."""
-    if not ruta.exists() or not ruta.is_file() or ruta.stat().st_size == 0 or _Validators._is_reparse_point(ruta):
+    if not ruta.exists() or not ruta.is_file() or _Validators._is_reparse_point(ruta):
         return DEFAULTS.copy()
     
     data = _read_and_parse_json(ruta.resolve())
@@ -393,7 +389,8 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     for path in [primary_path, backup_path]:
         if path.exists() and path.is_file():
             try:
-                mtime = os.path.getmtime(path)
+                st = path.stat()
+                mtime = st.st_mtime
                 cache_key = str(path)
                 cached = _MANAGER.settings_cache.get(cache_key)
                 
@@ -453,7 +450,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             f.write(serialized)
             f.flush()
             os.fsync(f.fileno())
-            if not _is_file_secure_to_read(f):
+            st = os.fstat(f.fileno())
+            if not _is_file_secure_to_read(st, f):
                 raise PermissionError("Archivo temporal inseguro")
             fcntl.flock(f.fileno(), fcntl.LOCK_UN)
         
