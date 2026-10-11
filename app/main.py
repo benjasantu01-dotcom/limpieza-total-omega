@@ -2014,6 +2014,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                     self.settings = settings_mod.update(propuestos)
                     ruta = settings_mod.settings_path()
                     if ruta:
+                        self._ensure_path_writable_and_clean(Path(ruta).parent)
                         self._safe_run_ui_callback(lambda: self.log_lines(
                             [f"Ajustes guardados en: {ruta}", ""] + settings_mod.describe(),
                             "Ajustes",

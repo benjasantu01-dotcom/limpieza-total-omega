@@ -302,7 +302,8 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre el sistema de archivos (DFS) usando inodos para prevenir bucles.
-    Valida que cada subdirectorio sea un hijo real del raíz para evitar escapes por symlink.
+    Valida que cada nodo escaneado resida físicamente dentro del raíz para prevenir
+    escapes provocados por enlaces simbólicos detectados tras el inicio.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -321,6 +322,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             continue
                         
                         entry_path = Path(entry.path).resolve()
+                        
+                        # Seguridad Defensiva: verificar que la resolución no escape del raíz
                         if not str(entry_path).startswith(str(root_resolved)):
                             continue
 
@@ -331,7 +334,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode)
                                 stack.append(entry_path)
                         elif entry.is_file(follow_symlinks=False):
-                            f_stat = entry.stat()
+                            f_stat = entry.stat(follow_symlinks=False)
                             yield entry_path, int(f_stat.st_size)
                     except (OSError, PermissionError):
                         continue

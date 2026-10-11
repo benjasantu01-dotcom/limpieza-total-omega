@@ -283,7 +283,8 @@ def grade_for_score(score: float | int) -> str:
 def _sanitize_msg(msg: str) -> str:
     """Elimina caracteres no imprimibles y trunca el mensaje de recomendación."""
     if not isinstance(msg, str): return ""
-    sanitized = "".join(c for c in msg if c.isprintable() and c not in "\r\n\t").strip()
+    # Evitar fugas de rutas o contenido sensible mediante limpieza estricta
+    sanitized = "".join(c for c in msg if c.isprintable() and c not in "\r\n\t\\/").strip()
     return sanitized[:200] if sanitized else ""
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio, findings: List[str]) -> None:
@@ -293,6 +294,8 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
         try:
             if rule.check(metrics, normalized_ratio):
                 raw_msg = rule.message_factory(metrics)
+                # Seguridad defensiva: validar mensaje contra el modelo de datos
+                if any(k in raw_msg for k in ["C:\\", "/", "root"]): continue
                 clean_msg = _sanitize_msg(raw_msg)
                 if clean_msg: findings.append(clean_msg)
         except Exception as e:
