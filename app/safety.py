@@ -796,16 +796,22 @@ def _is_junction_target_outside_base(path: Path, base_dir: Path) -> bool:
     if not final_path: return False
     return not str(final_path).startswith(str(base_dir))
 
+def _is_reparse_point_safe(path: Path, base_dir: Optional[Path]) -> bool:
+    """Verifica si la redirección es segura dentro del sandbox."""
+    if not base_dir: return True
+    final_path = _get_final_path_normalized(path)
+    return final_path is not None and str(final_path).startswith(str(base_dir))
+
 def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> None:
     """Verifica que las redirecciones NTFS no apunten fuera de la jerarquía permitida."""
     if not path.exists(): return
     if _is_system_directory_junction(str(path)):
-        if base_dir and _is_junction_target_outside_base(path, base_dir):
+        if not _is_reparse_point_safe(path, base_dir):
             raise UnsafePathError("Redirección de reparse point fuera de base.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         
         for parent in path.parents:
             if _is_system_directory_junction(str(parent)):
-                if base_dir and _is_junction_target_outside_base(parent, base_dir):
+                if not _is_reparse_point_safe(parent, base_dir):
                     raise UnsafePathError("Reparse point anidado detectado.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
             if parent == base_dir: break
 
