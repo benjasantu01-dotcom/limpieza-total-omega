@@ -1616,3 +1616,23 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-11T06:20:18` ➖ Sin cambios en scanner.py (enfoque: legibilidad y documentación). Motivo: Mejora la legibilidad del módulo mediante la adición de Type Hints detallados en los argumentos de los métodos de la clase `Scanner` y la estandarización de docstrings siguiendo convenciones de documentación técnica, facilitando la comprensión de los flujos de control críticos.
 - `2026-10-11T06:20:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-11T06:20:18` Corrida terminada. Total usado hoy: 152.
+- `2026-10-11T06:29:15` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-10-11T06:29:45` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._is_safe_path, _Validators._validate_enum_str
+- `2026-10-11T06:30:13` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `StartupEntry` añadiendo docstrings técnicos sobre las restricciones de seguridad (`260` caracteres, `UNC`) y clarificando mediante comentarios el flujo de resolución de rutas y el uso de caché, facilitando el mantenimiento a futuro.
+- `2026-10-11T06:30:55` Tests FALLARON:
+```
+')
+ +    where <built-in method replace of str object at 0x7f9ba5769ed0> = 'Tenés 100% libre en disco. Podés recuperar cerca de 0 MB. (incluye 0 MB de basura, 0 MB de duplicados). Empezá por Limpieza: mueve los candidatos a revisión.'.replace
+ +      where 'Tenés 100% libre en disco. Podés recuperar cerca de 0 MB. (incluye 0 MB de basura, 0 MB de duplicados). Empezá por Limpieza: mueve los candidatos a revisión.' = Answer(text='Tenés 100% libre en disco. Podés recuperar cerca de 0 MB. (incluye 0 MB de basura, 0 MB de duplicados). E... a revisión.', source='local', notice='Respondido por el motor local, sin conexión ni envío de datos.', suggestions=[]).text
+FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_explains_they_are_signals - AssertionError: assert 'señales' in 'no hay archivos sospechosos. la app nunca borra sola, todo va a revisión.'
+ +  where 'no hay archivos sospechosos. la app nunca borra sola, todo va a revisión.' = <built-in method lower of str object at 0x7f9ba67c46f0>()
+ +    where <built-in method lower of str object at 0x7f9ba67c46f0> = 'No hay archivos sospechosos. La app nunca borra sola, todo va a revisión.'.lower
+ +      where 'No hay archivos sospechosos. La app nunca borra sola, todo va a revisión.' = Answer(text='No hay archivos sospechosos. La app nunca borra sola, todo va a revisión.', source='local', notice='Respondido por el motor local, sin conexión ni envío de datos.', suggestions=[]).text
+4 failed, 295 passed in 1.61s
+
+```
+- `2026-10-11T06:30:55` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Optimicé el método `SystemContext.metrics_snapshot` para evitar recrear el diccionario en cada acceso (evitando el loop y la conversión de tipos innecesaria), moviendo la actualización al momento de la ingesta de datos.
+- `2026-10-11T06:30:57` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-11T06:31:19` ➖ Sin cambios en branding.py (enfoque: rendimiento). Motivo: Optimicé el renderizado de la interfaz mediante la pre-cálculo y cacheo de las dimensiones del escudo (`_get_scaled_poly`), evitando que el cálculo matemático de coordenadas se repita en cada llamada a `draw_logo`.
+- `2026-10-11T06:31:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-11T06:31:19` Corrida terminada. Total usado hoy: 156.

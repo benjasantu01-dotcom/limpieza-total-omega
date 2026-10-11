@@ -131,7 +131,10 @@ class StartupEntry:
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
-        """Extrae la ruta de un ejecutable encerrado entre comillas (formato común en registros)."""
+        """
+        Extrae y valida la ruta de un ejecutable encerrado entre comillas.
+        Aplica límites de longitud (MAX_PATH=260) y verifica protección mediante safety.
+        """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
         
@@ -145,11 +148,9 @@ class StartupEntry:
             return ""
             
         try:
-            # Validación de longitud básica antes de instanciar Path
             if len(path_str) > 260:
                 return ""
             p: Path = Path(path_str)
-            # Validación explícita de componentes de ruta antes de verificar protección
             if not p.parts or is_protected_path(p):
                 return ""
             return str(p)
@@ -169,13 +170,14 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
-        Resuelve rutas absolutas, utilizando _EXISTS_CACHE para minimizar llamadas 
-        al sistema de archivos (Disk I/O). Valida integridad mediante `is_protected_path`.
+        Resuelve rutas absolutas, utilizando _EXISTS_CACHE para minimizar Disk I/O.
+        Descarta rutas que excedan límites del sistema o sean UNC.
         """
         if not path_string or not isinstance(path_string, str) or not self.is_valid:
             return ""
         
         try:
+            # Validación de seguridad: rutas de red y longitud máxima
             if len(path_string) > 260 or path_string.startswith(r"\\"):
                 return ""
             
@@ -192,6 +194,7 @@ class StartupEntry:
                 _EXISTS_CACHE[path_string] = False
                 return ""
             
+            # Resolvemos enlaces y normalizamos para verificar existencia real
             p = p.resolve(strict=False)
             
             if not self._validate_file_access(p):
@@ -206,7 +209,7 @@ class StartupEntry:
             return ""
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Extrae y normaliza el ejecutable de una línea de comandos completa."""
+        """Extrae el ejecutable principal y normaliza su ruta mediante el caché."""
         if not command_line or not isinstance(command_line, str):
             return ""
         
@@ -325,13 +328,6 @@ def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
     Aplica reglas heurísticas: excluye rutas con caracteres sospechosos,
     dispositivos reservados, rutas relativas (que carecen de información de unidad)
     y asegura que la ruta no sea una ubicación del sistema protegida.
-
-    Args:
-        name: Nombre de la clave de registro.
-        cmd: Valor (comando) asociado a la clave.
-        seen: Historial de comandos ya procesados para deduplicación.
-    Returns:
-        True si la entrada pasa los filtros de seguridad, False en caso contrario.
     """
     if not name or not cmd or cmd.startswith(r"\\") or cmd in seen or name.upper().startswith("PS"):
         return False
@@ -341,7 +337,6 @@ def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
         clean_path = cmd.strip('"')
         if not clean_path:
             return False
-        # Bloquea rutas relativas peligrosas que no contienen información de directorio (ej. "a.exe")
         if "\\" not in clean_path and "/" not in clean_path:
             return False
         if any(c in clean_path for c in SUSPICIOUS_CHARS):
@@ -357,12 +352,6 @@ def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
     """
     Parsea la salida de PowerShell en formato CSV a objetos StartupEntry.
-    
-    Args:
-        csv_text: Contenido crudo de la salida de Get-ItemProperty.
-        source: Fuente de los datos para la etiqueta del objeto StartupEntry.
-    Returns:
-        Lista de objetos StartupEntry validados.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
@@ -414,7 +403,7 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
     allowed_set = set(REGISTRY_RUN_KEYS)
     for key in keys:
         if isinstance(key, str) and key in allowed_set:
-            # Usamos -LiteralPath para prevenir inyección o errores con nombres de clave que contengan caracteres especiales
+            # -LiteralPath previene inyección en nombres de clave
             safe_keys.append(f"'{key}'")
             
     if not safe_keys:
