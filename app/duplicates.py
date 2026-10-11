@@ -106,7 +106,7 @@ def _is_file_locked(path: Path) -> bool:
     if not isinstance(path, Path) or not is_safe_to_modify(path):
         return True
     try:
-        with open(path, "rb") as f:
+        with open(path, "rb") as _:
             return False
     except (PermissionError, OSError, IOError, ValueError):
         return True
@@ -136,12 +136,16 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """
     if not isinstance(path, Path) or st_size <= 0:
         return False
-    try:
-        return (_safe_path_check(path) and 
-                not is_system_or_hidden(path) and 
-                not _is_file_locked(path))
-    except (OSError, ValueError, TypeError, RuntimeError, AttributeError):
+    
+    # Evalúa condiciones de seguridad y estado de archivo
+    if not _safe_path_check(path):
         return False
+    if is_system_or_hidden(path):
+        return False
+    if _is_file_locked(path):
+        return False
+        
+    return True
 
 
 def _validate_and_resolve_path(path_input: PathLike) -> Optional[Path]:

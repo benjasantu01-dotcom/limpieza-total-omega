@@ -383,6 +383,9 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     """
     Motor central: recorre el directorio, consolida métricas globales y mantiene
     un heap para identificar los archivos más pesados según el límite solicitado.
+    
+    Returns:
+        SummaryData con el estado consolidado del escaneo.
     """
     stats = GlobalStats()
     top_heap: List[Tuple[int, Path]] = [] 

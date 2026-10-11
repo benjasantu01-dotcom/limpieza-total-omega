@@ -216,7 +216,10 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     return False
 
 def _process_file_node(entry: os.DirEntry, visited_files: Set[tuple[int, int]]) -> int:
-    """Calcula el tamaño del archivo usando identificadores de inodo/dev para evitar conteo doble."""
+    """
+    Calcula el tamaño de un archivo individual evitando el recuento doble
+    mediante el seguimiento de tuplas (dispositivo, inodo) únicas.
+    """
     try:
         st = entry.stat(follow_symlinks=False)
         file_id = (st.st_dev, st.st_ino)
@@ -233,13 +236,20 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> ScanResult:
     """
-    Recorre jerárquicamente directorios limitando la profundidad máxima.
-    Utiliza un mapa de directorios visitados para evitar ciclos infinitos.
+    Realiza un recorrido en profundidad (DFS) del árbol de archivos.
+    
+    Argumentos:
+        root_path: Ruta raíz del directorio actual a procesar.
+        ctx: Contexto de estado compartido que rastrea visited_dirs para 
+             cortar recursión en bucles de montaje o enlaces.
+        depth: Nivel actual de profundidad para evitar stack overflow y 
+               escaneos excesivamente largos.
     """
     if depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)
     
     path_norm = os.path.normcase(root_path)
+    # Evita el reprocesamiento de directorios ya visitados en este ciclo
     if path_norm in ctx.visited_dirs:
         return ScanResult(ctx.visited_dirs[path_norm], True)
 
