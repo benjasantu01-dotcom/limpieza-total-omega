@@ -1246,3 +1246,9 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-11T14:39:37` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: manejo de errores y validación de entradas): el archivo se encogió al 8% del original (posible pérdida de código)
 - `2026-10-11T14:39:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-11T14:39:37` Corrida terminada. Total usado hoy: 348.
+- `2026-10-11T14:48:14` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-11T14:48:45` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-11T14:49:21` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: Answer.is_online, AreaExplanation, SystemContext.__hash__, SystemContext.get_metric, SystemContext.is_valid_structure
+- `2026-10-11T14:49:21` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-10-11T14:49:21` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-11T14:49:21` Corrida terminada. Total usado hoy: 350.
