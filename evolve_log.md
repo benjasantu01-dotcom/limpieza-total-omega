@@ -1554,3 +1554,44 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-11T05:40:21` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_get_file_attrs` y `_is_volume_readonly` añadiendo validaciones de tipo y estructura para prevenir errores de ejecución silenciosos (como `TypeError` o `ValueError`) en casos de rutas mal formadas, asegurando que la capa de seguridad siempre retorne valores seguros por defecto en lugar de fallar catastróficamente.
 - `2026-10-11T05:40:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-11T05:40:21` Corrida terminada. Total usado hoy: 136.
+- `2026-10-11T05:48:33` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-10-11T05:49:06` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del manejo de errores en `scanner.py` asegurando que las llamadas a `os.scandir` y la validación de archivos no se interrumpan ante excepciones inesperadas, centralizando la lógica de captura y evitando el uso de bloques `try-except` vacíos que ocultaban fallos silenciosos.
+- `2026-10-11T05:49:38` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez en la carga de configuración añadiendo un manejo explícito de errores de I/O y validación de tipos al leer el archivo JSON, evitando que una lectura parcial o corrupta propague errores silenciosos hacia la aplicación.
+- `2026-10-11T05:50:08` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.36s
+
+```
+- `2026-10-11T05:50:08` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `StartupEntry._extract_quoted_path` y `_resolve_and_cache_path` añadiendo validaciones preventivas ante rutas malformadas y evitando el acceso al disco con `Path.resolve()` cuando la cadena de entrada es inválida, mitigando posibles excepciones no controladas.
+- `2026-10-11T05:50:32` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Se introdujeron type hints explícitos en los métodos de `SystemContext` y funciones de soporte (`_get_source_value`, `_fmt_metric`) para mejorar la claridad del contrato de datos, y se añadieron docstrings detallados en funciones críticas que carecían de ellos, aclarando el propósito y las precondiciones de seguridad.
+- `2026-10-11T05:50:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-11T05:50:32` Corrida terminada. Total usado hoy: 140.

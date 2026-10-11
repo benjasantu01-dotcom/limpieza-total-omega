@@ -350,17 +350,14 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
             
             try:
                 fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
-                # Re-validar tras adquirir el lock para prevenir TOCTOU
                 if not _is_file_secure_to_read(f): return None
                 
                 content = f.read(MAX_SETTINGS_SIZE + 1)
-                
                 if not content or len(content) > MAX_SETTINGS_SIZE: return None
-                if not _is_file_secure_to_read(f): return None
                 
                 data = json.loads(content)
                 return data if _is_dict(data) else None
-            except (json.JSONDecodeError, OSError, IOError):
+            except (json.JSONDecodeError, OSError, IOError, TypeError):
                 return None
             finally:
                 try: fcntl.flock(f.fileno(), fcntl.LOCK_UN)

@@ -528,7 +528,7 @@ def context_as_text(context: SystemContext) -> str:
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     """Formatea métricas numéricas convirtiéndolas a strings legibles."""
-    f = _safe_float(val, -1.0)
+    f: float = _safe_float(val, -1.0)
     if f < 0: return "N/A"
     return f"{f:.{decimal}f}{unit}"
 

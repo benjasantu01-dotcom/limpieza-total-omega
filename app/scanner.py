@@ -151,8 +151,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
             mtime = getattr(stats, "st_mtime", 0.0)
             if isinstance(mtime, (int, float)) and mtime > 0 and (now_ts - float(mtime)) < (SCAN_LIMITS.recent_hours * 3600):
                 return Suspicion(path, "Ejecutable reciente detectado en carpeta volátil", "info")
-    except (OSError, AttributeError, ValueError, TypeError):
-        pass
+    except (OSError, AttributeError, ValueError, TypeError) as e:
+        logger.debug(f"Error analizando fecha de archivo {path}: {e}")
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
@@ -161,8 +161,8 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
         if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
             if SYSTEM32_LOWER not in str(path).lower():
                 return Suspicion(path, "Nombre de proceso de sistema detectado fuera de directorio protegido", "warning")
-    except (OSError, AttributeError, TypeError):
-        pass
+    except (OSError, AttributeError, TypeError) as e:
+        logger.debug(f"Error verificando lookalike en {path}: {e}")
     return None
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
@@ -227,7 +227,8 @@ class Scanner:
                 
             self.safe_cache.add(path_str)
             return True
-        except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
+        except (OSError, RuntimeError, ValueError, TypeError, AttributeError) as e:
+            logger.debug(f"Validación de seguridad fallida para {path_str}: {e}")
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
@@ -256,11 +257,10 @@ class Scanner:
                 if self._is_safe_entry(entry):
                     self._handle_directory(entry, directory_stack, current_depth)
             elif entry.is_file(follow_symlinks=False) and self._is_relevant_extension(entry.name):
-                # Validar seguridad solo si la extensión es relevante para evitar I/O innecesario
                 if self._is_safe_entry(entry):
                     self._run_file_heuristics(Path(entry.path), entry)
-        except (OSError, PermissionError):
-            pass
+        except (OSError, PermissionError) as e:
+            logger.debug(f"Error procesando entrada {entry.path}: {e}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta el conjunto de heurísticas definido sobre un archivo validado."""
@@ -280,7 +280,8 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     try:
         if not path.exists() or not _is_readable(path): 
             return []
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError) as e:
+        logger.debug(f"Error accediendo a archivo {path}: {e}")
         return []
     
     findings: ScanResult = []
@@ -288,8 +289,8 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
         try:
             res = check_fn(path, entry, now_ts)
             if res is not None: findings.append(res)
-        except (OSError, PermissionError, AttributeError, ValueError):
-            continue
+        except (OSError, PermissionError, AttributeError, ValueError) as e:
+            logger.debug(f"Heurística individual fallida en {path}: {e}")
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
@@ -302,7 +303,9 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         if not base_path.is_dir() or base_path.is_symlink() or not os.access(base_path, os.R_OK) or is_protected_path(base_path):
             return []
         scanner = Scanner(base_root=base_path)
-    except (OSError, RuntimeError, ValueError, TypeError, AttributeError): return []
+    except (OSError, RuntimeError, ValueError, TypeError, AttributeError) as e:
+        logger.error(f"Error inicializando escaneo en {directory}: {e}")
+        return []
     
     directory_stack: DirectoryStack = [(str(base_path), 0)]
     scanner.seen.add(str(base_path).lower())
@@ -313,7 +316,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
                 for entry in it:
                     if entry is not None:
                         scanner.process_entry(entry, directory_stack, depth)
-        except (PermissionError, OSError, AttributeError):
+        except (PermissionError, OSError, AttributeError) as e:
+            logger.debug(f"Error accediendo al directorio {current_dir}: {e}")
             continue
     return scanner.results
 
