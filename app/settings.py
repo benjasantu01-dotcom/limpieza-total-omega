@@ -292,10 +292,12 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     
     try:
         raw_base = Path(custom_base).resolve() if custom_base else SETTINGS_DIR.resolve()
+        # Verificación estricta de seguridad sobre el directorio base
         if _Validators._is_safe_path(str(raw_base)) and not _Validators._is_reparse_point(raw_base):
             if not raw_base.exists():
                 raw_base.mkdir(parents=True, exist_ok=True)
-            if raw_base.is_dir() and os.access(raw_base, os.R_OK | os.W_OK):
+            # Validar permisos de directorio antes de retornar la ruta
+            if raw_base.is_dir() and _is_dir_safe(raw_base):
                 full_path = raw_base / SETTINGS_FILE
                 _MANAGER.path_cache[cache_key] = full_path
                 return full_path

@@ -160,9 +160,8 @@ class StartupEntry:
     def _validate_file_access(self, p: Path) -> bool:
         """Verifica la existencia del archivo delegando la protección a safety.py."""
         try:
-            if is_protected_path(p):
-                return False
-            if p.is_symlink():
+            # Rechazar puntos de reparse (junctions/symlinks) para prevenir bucles
+            if is_protected_path(p) or p.is_symlink() or (p.exists() and p.is_mount()):
                 return False
             return p.stat().is_file()
         except (OSError, PermissionError, FileNotFoundError, AttributeError):
@@ -177,7 +176,6 @@ class StartupEntry:
             return ""
         
         try:
-            # Validación de seguridad: rutas de red y longitud máxima
             if len(path_string) > 260 or path_string.startswith(r"\\"):
                 return ""
             
@@ -194,7 +192,6 @@ class StartupEntry:
                 _EXISTS_CACHE[path_string] = False
                 return ""
             
-            # Resolvemos enlaces y normalizamos para verificar existencia real
             p = p.resolve(strict=False)
             
             if not self._validate_file_access(p):
@@ -267,6 +264,7 @@ def startup_folders() -> List[Path]:
         if c and c.is_dir():
             try:
                 resolved_str = str(c.resolve())
+                # Bloquear symlinks y puntos de reparse de directorio
                 if resolved_str not in seen_paths and not c.is_symlink() and not is_protected_path(c):
                     seen_paths.add(resolved_str)
                     valid_folders.append(c)
@@ -278,17 +276,10 @@ def startup_folders() -> List[Path]:
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
     """
     Valida y convierte una entrada de sistema de archivos en un objeto StartupEntry.
-    
-    Aplica filtros de seguridad: verifica que el archivo no esté en una ruta protegida
-    y que tenga una extensión ejecutable permitida, evitando seguir enlaces simbólicos.
-
-    Args:
-        entry: Objeto os.DirEntry obtenido mediante escaneo de directorio.
-    Returns:
-        StartupEntry si el archivo cumple con las reglas de seguridad, None si se ignora.
     """
     try:
-        if not entry.is_file(follow_symlinks=False):
+        # Prevenir entrada si es enlace simbólico de directorio o reparse point
+        if not entry.is_file(follow_symlinks=False) or entry.is_symlink():
             return None
         
         _, ext = os.path.splitext(entry.name)
@@ -324,10 +315,6 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> StartupEnt
 def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
     """
     Valida la integridad de una entrada leída desde el registro de Windows.
-    
-    Aplica reglas heurísticas: excluye rutas con caracteres sospechosos,
-    dispositivos reservados, rutas relativas (que carecen de información de unidad)
-    y asegura que la ruta no sea una ubicación del sistema protegida.
     """
     if not name or not cmd or cmd.startswith(r"\\") or cmd in seen or name.upper().startswith("PS"):
         return False
@@ -400,7 +387,6 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
     allowed_set = set(REGISTRY_RUN_KEYS)
     for key in keys:
         if isinstance(key, str) and key in allowed_set:
-            # -LiteralPath previene inyección en nombres de clave
             safe_keys.append(f"'{key}'")
             
     if not safe_keys:
