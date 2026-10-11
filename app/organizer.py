@@ -142,13 +142,13 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si un archivo está bloqueado.
-    En Windows, utiliza CreateFile para intentar abrir con acceso nulo pero compartir exclusividad.
+    Verifica si un archivo está bloqueado por otro proceso.
+    En Windows, utiliza un handle exclusivo para probar el bloqueo. En otros sistemas,
+    intenta abrir el archivo para lectura exclusiva.
     """
     if not path or not path.is_file(): return True
     if os.name == 'nt':
         try:
-            # INVALID_HANDLE_VALUE es -1. Se solicita acceso genérico nulo (0) y modo compartir 0 (exclusivo).
             handle = ctypes.windll.kernel32.CreateFileW(
                 str(path), 0, 0, None, 3, 0x80, None
             )
@@ -164,7 +164,7 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
-    """Verifica que el destino no sea un subdirectorio del origen (bucle de recursión)."""
+    """Verifica si la ruta de destino es subdirectorio de la de origen para evitar ciclos."""
     try:
         src_resolved = src.resolve(strict=False)
         dest_resolved = dest.resolve(strict=False)
@@ -195,8 +195,9 @@ def _is_system_hidden(entry: os.DirEntry) -> bool:
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
-    Realiza una auditoría multietapa para autorizar operaciones de escritura.
-    Verifica estado de archivo, bloqueos y disponibilidad de espacio en disco.
+    Auditoría multietapa para autorizar operaciones de escritura.
+    Valida: integridad del archivo, protección contra renombre, permisos de escritura
+    en el destino, ausencia de bloqueos y espacio suficiente en disco.
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     try:
@@ -241,7 +242,7 @@ def _is_candidate_junk(stats: os.stat_result, entry: os.DirEntry, now_ts: float)
             not _is_system_hidden(entry))
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
-    """Escaneo recursivo de directorios con límite de profundidad."""
+    """Escaneo recursivo controlado, limitado a profundidad 50 para prevenir desbordamientos."""
     if depth > 50: return
     try:
         resolved_dir = current_dir.resolve(strict=False)

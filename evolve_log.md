@@ -770,3 +770,48 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-11T10:35:44` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la documentación explícita de estructuras complejas (Win32), la eliminación de variables globales mutables con efectos colaterales (`_linux_available`) a favor de un manejo de estados más limpio, y la estandarización de type hints en el manejo de estructuras.
 - `2026-10-11T10:35:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-11T10:35:44` Corrida terminada. Total usado hoy: 252.
+- `2026-10-11T10:43:52` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-10-11T10:44:19` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica interna de `organizer.py`, añadiendo docstrings descriptivos a funciones complejas, aclarando la lógica de las validaciones de seguridad y mejorando la consistencia de los tipos para asegurar que el código sea mantenible y fácil de auditar según los estándares del proyecto.
+- `2026-10-11T10:44:59` Tests FALLARON:
+```
+Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+8 failed, 291 passed in 2.22s
+
+```
+- `2026-10-11T10:44:59` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se introdujeron docstrings descriptivos y type hints faltantes en funciones internas, además de estandarizar la nomenclatura de variables para mejorar la legibilidad del flujo de control en las operaciones de I/O.
+- `2026-10-11T10:45:17` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 113): unterminated string literal (detected at line 113)
+- `2026-10-11T10:45:45` Tests FALLARON:
+```
+a'))
+E        +    where <function save at 0x7fba1c902200> = settings.save
+E        +    and   {'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...} = settings.DEFAULTS
+
+evolve/tests/test_assistant.py:60: AssertionError
+______________________ test_save_logo_svg_writes_the_file ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionError: assert None is not None
+ +  where None = <function save at 0x7fba1c902200>({'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...}, PosixPath('/tmp/pytest-of-runner/pytest-3/test_save_creates_the_folder0/sub/carpeta'))
+ +    where <function save at 0x7fba1c902200> = settings.save
+ +    and   {'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...} = settings.DEFAULTS
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+2 failed, 297 passed in 1.62s
+
+```
+- `2026-10-11T10:45:45` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `ensure_safe_to_modify` para separar la lógica de validación de precondiciones de la lógica de evaluación de integridad, reduciendo su complejidad ciclomática y facilitando su lectura.
+- `2026-10-11T10:45:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-11T10:45:45` Corrida terminada. Total usado hoy: 256.
