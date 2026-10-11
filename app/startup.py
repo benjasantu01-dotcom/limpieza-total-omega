@@ -271,12 +271,15 @@ def startup_folders() -> List[Path]:
 
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
     """
-    Valida si un archivo en una carpeta de inicio es un ejecutable permitido.
+    Valida y convierte una entrada de sistema de archivos en un objeto StartupEntry.
     
+    Aplica filtros de seguridad: verifica que el archivo no esté en una ruta protegida
+    y que tenga una extensión ejecutable permitida, evitando seguir enlaces simbólicos.
+
     Args:
-        entry: Objeto DirEntry que representa el archivo a evaluar.
+        entry: Objeto os.DirEntry obtenido mediante escaneo de directorio.
     Returns:
-        Un objeto StartupEntry si es válido, None en caso contrario.
+        StartupEntry si el archivo cumple con las reglas de seguridad, None si se ignora.
     """
     try:
         if not entry.is_file(follow_symlinks=False):
@@ -314,14 +317,18 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> StartupEnt
 
 def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
     """
-    Realiza una validación heurística de una entrada del registro.
+    Valida la integridad de una entrada leída desde el registro de Windows.
     
+    Aplica reglas heurísticas: excluye rutas con caracteres sospechosos,
+    dispositivos reservados, rutas relativas (que carecen de información de unidad)
+    y asegura que la ruta no sea una ubicación del sistema protegida.
+
     Args:
-        name: Clave del valor en el registro.
-        cmd: Comando asociado a la clave.
-        seen: Conjunto de comandos ya procesados para evitar duplicados.
+        name: Nombre de la clave de registro.
+        cmd: Valor (comando) asociado a la clave.
+        seen: Historial de comandos ya procesados para deduplicación.
     Returns:
-        True si la entrada parece legítima y segura.
+        True si la entrada pasa los filtros de seguridad, False en caso contrario.
     """
     if not name or not cmd or cmd.startswith(r"\\") or cmd in seen or name.upper().startswith("PS"):
         return False

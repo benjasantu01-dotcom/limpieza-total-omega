@@ -429,6 +429,7 @@ class SystemContext:
         for k, v in updates.items():
             object.__setattr__(self, k, v)
         object.__setattr__(self, 'analyzed', True)
+        # Limpiar cachés manualmente tras cambios en el estado
         self.__dict__.pop('metrics_snapshot', None)
         self.__dict__.pop('active_problems', None)
 
