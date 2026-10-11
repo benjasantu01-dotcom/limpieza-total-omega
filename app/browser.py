@@ -196,7 +196,7 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     if not _ensure_within_base(os.path.normcase(path_str), ctx.base_norm):
         return True
     
-    if is_protected_path(Path(path_str)):
+    if is_protected_path(Path(path_str)) or not is_safe_to_modify(Path(path_str)):
         return True
 
     if entry.is_symlink() or ctx.is_junction(path_str) or _is_system_hidden(path_str, ctx.kernel32):
@@ -206,6 +206,8 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
 
 def _process_file_node(entry: os.DirEntry, visited_files: Set[tuple[int, int]]) -> int:
     try:
+        if not is_safe_to_modify(Path(entry.path)) or is_protected_path(Path(entry.path)):
+            return 0
         st = entry.stat(follow_symlinks=False)
         file_id = (st.st_dev, st.st_ino)
         if file_id in visited_files:
@@ -218,6 +220,9 @@ def _process_file_node(entry: os.DirEntry, visited_files: Set[tuple[int, int]]) 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
     """Realiza un recorrido DFS limitado con detección de ciclos y nodos visitados."""
     if depth > MAX_SCAN_DEPTH:
+        return ScanResult(0, True)
+    
+    if not is_safe_to_modify(Path(root_path)) or is_protected_path(Path(root_path)):
         return ScanResult(0, True)
     
     path_norm = os.path.normcase(root_path)
@@ -233,7 +238,6 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
                         continue
                         
                     if entry.is_dir(follow_symlinks=False):
-                        # Se verifica nuevamente que la entrada sea un directorio tras filtro de seguridad
                         res = _sum_directory_recursive(entry.path, ctx, depth + 1)
                         total_bytes += res.bytes_found
                     else:

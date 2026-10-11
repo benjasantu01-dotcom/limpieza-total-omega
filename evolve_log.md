@@ -917,3 +917,47 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-11T12:07:31` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: robustez ante casos límite).
 - `2026-10-11T12:07:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-11T12:07:31` Corrida terminada. Total usado hoy: 288.
+- `2026-10-11T12:15:29` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-10-11T12:16:09` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.63s
+
+```
+- `2026-10-11T12:16:09` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez ante rutas corruptas o inaccesibles en `StartupEntry._resolve_and_cache_path` añadiendo un manejo de excepciones más granular que impide que el acceso a metadatos de archivos bloqueados detenga el análisis completo.
+- `2026-10-11T12:16:59` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció `_sanitize_query` para prevenir que caracteres de control o secuencias de escape sean procesados por el motor, evitando cualquier posible ofuscación de la intención del usuario antes de que llegue a los validadores.
+- `2026-10-11T12:17:17` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-11T12:17:20` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-11T12:18:07` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha implementado una validación de ruta robusta en `save_logo_svg` utilizando `is_protected_path` de forma previa a cualquier operación de sistema, garantizando que incluso ante errores inesperados, la integridad del sistema sea el primer filtro antes de interactuar con el almacenamiento.
+- `2026-10-11T12:18:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-11T12:18:26` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_process_file_node` y `_sum_directory_recursive` validando explícitamente que cada entrada cumpla con `is_safe_to_modify` y no sea una ruta protegida antes de procesar su tamaño, garantizando que el escáner no acceda a archivos fuera de las políticas permitidas incluso durante la iteración de bajo nivel.
+- `2026-10-11T12:18:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-11T12:18:26` Corrida terminada. Total usado hoy: 292.

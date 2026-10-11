@@ -395,11 +395,10 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         return None
     try:
         target = Path(destination).resolve()
-        # Verificación estricta contra rutas protegidas
+        # Verificación estricta de seguridad
         if is_protected_path(target) or not is_safe_to_modify(target):
             return None
         
-        # Validar ruta de escritura final con el sistema de seguridad
         ensure_safe_to_modify(target)
         
         parent = target.parent

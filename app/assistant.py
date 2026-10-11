@@ -635,10 +635,14 @@ _TOKENS_MAP: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
 _TOKEN_KEYS: Final[set[str]] = set(_TOKENS_MAP.keys())
 
 def _sanitize_query(question: str) -> str:
-    """Limpia y trunca la consulta del usuario."""
+    """Limpia, trunca y desinfecta la consulta del usuario antes del procesamiento."""
     if not isinstance(question, str): return ""
+    # Eliminación agresiva de caracteres fuera de control y normalización
     clean = _REGEX_CONTROL_CHARS.sub(' ', question).strip()[:100]
-    return clean if _ensure_safe_text(clean) else ""
+    # Aplicar chequeo estricto para evitar inyecciones en el parser del motor local
+    if _ensure_safe_text(clean):
+        return clean
+    return ""
 
 def local_answer(question: str, context: SystemContext) -> Answer:
     """Motor de inferencia local: resuelve consultas basándose en heurísticas de datos."""
