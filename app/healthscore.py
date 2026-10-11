@@ -285,8 +285,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     """Ejecuta las reglas de diagnóstico para una métrica y agrega hallazgos si es necesario."""
     for rule in rules:
         try:
-            # Validar métricas antes de check/message_factory para evitar corrupción
-            metrics.validate()
             if rule.check(metrics, normalized_ratio):
                 clean_msg = _sanitize_msg(rule.message_factory(metrics))
                 if clean_msg: findings.append(clean_msg)

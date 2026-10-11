@@ -1256,7 +1256,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Callback: realiza un análisis de salud global del sistema."""
         self._lazy_init_health_ui()
 
-        state_digest = (
+        # Generar un digest de estado basado en la cantidad de elementos detectados para evitar recálculos redundantes
+        current_digest = (
+            len(self._get_cached("junk") or []),
             len(self._get_cached("suspicions") or []),
             len(self._get_cached("startup") or []),
             len(quarantine.list_items()),
@@ -1273,13 +1275,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             metrics, snapshot, _ = self._compile_metrics()
             score_result = healthscore.compute_score(metrics)
 
-            if self._last_compilation_digest != state_digest:
+            if self._last_compilation_digest != current_digest:
                 self.assistant_context = assistant.build_context(
                     metrics=metrics, 
                     health=score_result,
                     memory_total_gb=snapshot.total / (1024 ** 3) if (snapshot and snapshot.total) else 0.0,
                 )
-                self._last_compilation_digest = state_digest
+                self._last_compilation_digest = current_digest
             
             self._update_health_visuals(
                 score_result, metrics.junk_mb, metrics.suspicious_count,

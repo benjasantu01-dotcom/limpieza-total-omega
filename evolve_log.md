@@ -1116,3 +1116,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-11T02:06:35` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento del escaneo recursivo eliminando la creación repetitiva de objetos `ScanContext` y delegando el filtrado de seguridad de rutas a una verificación previa `os.path.commonpath`, reduciendo las llamadas a `resolve()` y `normcase()` dentro de los bucles críticos.
 - `2026-10-11T02:06:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-11T02:06:35` Corrida terminada. Total usado hoy: 52.
+- `2026-10-11T02:14:49` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-10-11T02:15:20` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-10-11T02:15:46` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el rendimiento de `_collect_candidates` eliminando la llamada redundante a `Path(entry.path)` y el doble chequeo de seguridad, utilizando directamente los atributos de `os.DirEntry` para evitar llamadas innecesarias al sistema de archivos (`stat`).
+- `2026-10-11T02:16:13` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el cálculo en `compute_score` cacheando el valor de `m.validate()` fuera del bucle de reglas, eliminando llamadas redundantes y verificaciones de integridad repetitivas dentro de cada ciclo de evaluación.
+- `2026-10-11T02:17:03` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un mecanismo de caché más eficiente con invalidación granular para `_compile_metrics`, evitando el re-cálculo costoso de las métricas de salud (que involucran múltiples llamadas a disco y módulos) a menos que ocurra un cambio real en el estado detectado del sistema.
+- `2026-10-11T02:17:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-11T02:17:03` Corrida terminada. Total usado hoy: 56.

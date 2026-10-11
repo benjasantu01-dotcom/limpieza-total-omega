@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
+- Mejoras aceptadas: **210** (41.7% de aceptación)
 - Rechazadas por tests: 28
-- Rechazadas por guardia de seguridad: 44
-- Sin cambios (nada sustancial que mejorar): 19
+- Rechazadas por guardia de seguridad: 43
+- Sin cambios (nada sustancial que mejorar): 18
 - Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 40 | 5 | 9 | 6 | 42 |
+| 2026-10-09 | 39 | 5 | 8 | 5 | 41 |
 | 2026-10-10 | 151 | 17 | 30 | 12 | 140 |
-| 2026-10-11 | 17 | 6 | 5 | 1 | 23 |
+| 2026-10-11 | 20 | 6 | 5 | 1 | 24 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **47**
 - legibilidad y documentación: **42**
-- robustez ante casos límite: **37**
-- rendimiento: **32**
+- robustez ante casos límite: **36**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
-- `safety.py`: **20**
-- `healthscore.py`: **20**
+- `healthscore.py`: **21**
+- `safety.py`: **19**
 - `branding.py`: **16**
 - `scanner.py`: **16**
 - `assistant.py`: **16**
 - `quarantine.py`: **15**
+- `duplicates.py`: **15**
+- `main.py`: **14**
 - `memory.py`: **14**
-- `duplicates.py`: **14**
-- `main.py`: **13**
 - `organizer.py`: **12**
 - `settings.py`: **11**
 - `browser.py`: **11**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-11T02:17:03` **main.py** (rendimiento): Se implementó un mecanismo de caché más eficiente con invalidación granular para `_compile_metrics`, evitando el re-cálculo costoso de las métricas de salud (que involucran múltiples llamadas a disco y módulos) a menos que ocurra un cambio real en el estado detectado del sistema.
+- `2026-10-11T02:16:13` **healthscore.py** (rendimiento): Se optimizó el cálculo en `compute_score` cacheando el valor de `m.validate()` fuera del bucle de reglas, eliminando llamadas redundantes y verificaciones de integridad repetitivas dentro de cada ciclo de evaluación.
+- `2026-10-11T02:15:46` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` eliminando la llamada redundante a `Path(entry.path)` y el doble chequeo de seguridad, utilizando directamente los atributos de `os.DirEntry` para evitar llamadas innecesarias al sistema de archivos (`stat`).
 - `2026-10-11T02:05:54` **assistant.py** (rendimiento): Optimicé el método `SystemContext.metrics_snapshot` para evitar recrear el diccionario completo en cada llamada, utilizando una lógica de invalidación basada en caché que aprovecha el diseño del objeto, reduciendo la carga de CPU durante el análisis.
 - `2026-10-11T02:05:11` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones auxiliares de bajo nivel (`_process_folder_entry`, `_is_valid_registry_entry`), detallando las precondiciones y el flujo de validación para facilitar futuras auditorías de seguridad sobre el código.
 - `2026-10-11T01:55:58` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `scanner.py` mediante la refactorización de `_safe_stat` y `_is_readable` para consolidar la lógica de validación de archivos, añadiendo docstrings descriptivos y type hints que clarifican las precondiciones necesarias para el análisis seguro de archivos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-11T01:34:56` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones de escaneo recursivo, explicando el propósito de `ScanContext` y la lógica de prevención de ciclos para facilitar auditorías futuras.
 - `2026-10-11T01:25:46` **branding.py** (legibilidad y documentación): Se introdujo un `NamedTuple` llamado `Point` para centralizar la representación de coordenadas, reemplazando tuplas planas dispersas y mejorando la legibilidad semántica del cálculo geométrico.
 - `2026-10-11T01:15:45` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` añadiendo una comprobación explícita para evitar errores de tipo al procesar `base_dir` y una validación defensiva en la obtención del estado del volumen para prevenir excepciones inesperadas durante la inspección de seguridad, alineándose con el enfoque de validación de entradas.
-- `2026-10-11T01:05:53` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_process_executable_safe` reemplazando la validación manual de rutas UNC con una verificación de tipo explícita y mejorando la gestión de recursos mediante la validación del estado del buffer de `GetModuleFileNameExW`, garantizando que solo rutas locales válidas sean procesadas por `is_protected_path`.
-- `2026-10-11T01:04:07` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del motor de cálculo capturando excepciones específicas en las factorías de mensajes y validando la integridad del estado de `SystemMetrics` antes de cada evaluación de regla, evitando que errores en datos de entrada propaguen fallas durante el renderizado.
-- `2026-10-11T00:55:00` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas durante la iteración y conversión de rutas, evitando que un error de acceso de lectura puntual (común en el sistema de archivos) detenga abruptamente el análisis completo, y añadí una validación explícita para asegurar que `entry.path` sea una ruta absoluta antes de procesarla.
