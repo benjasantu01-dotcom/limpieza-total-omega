@@ -153,12 +153,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         p = Path(directory).resolve()
-        base = Path(os.getcwd()).resolve()
         
-        # Seguridad: evitar salida de contexto del directorio de trabajo actual
-        if not str(p).startswith(str(base)) and not p.is_absolute():
-            return None
-
         if not p.exists() or p.is_symlink():
             return None
         if not p.is_dir() or is_protected_path(p) or not os.access(p, os.R_OK):
@@ -298,13 +293,14 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre el sistema de archivos (DFS) usando inodos para prevenir bucles.
-    Yields: Tupla (ruta del archivo, tamaño en bytes).
+    Valida que cada subdirectorio sea un hijo real del raíz para evitar escapes por symlink.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
     
+    root_resolved = root_path.resolve()
     visited_inodes: set[Inode] = set()
-    stack: List[str] = [str(root_path)]
+    stack: List[Path] = [root_resolved]
     
     while stack:
         current_dir = stack.pop()
@@ -315,15 +311,19 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if skip_protected and _is_excluded_path(entry):
                             continue
                         
+                        entry_path = Path(entry.path).resolve()
+                        if not str(entry_path).startswith(str(root_resolved)):
+                            continue
+
                         if entry.is_dir(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(entry.path)
+                                stack.append(entry_path)
                         elif entry.is_file(follow_symlinks=False):
                             f_stat = entry.stat()
-                            yield Path(entry.path), int(f_stat.st_size)
+                            yield entry_path, int(f_stat.st_size)
                     except (OSError, PermissionError):
                         continue
         except (PermissionError, OSError): 

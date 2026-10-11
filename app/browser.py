@@ -243,7 +243,8 @@ def _sum_directory_recursive(
         with os.scandir(root_path) as it:
             for entry in it:
                 try:
-                    if _should_skip_entry(entry, ctx):
+                    # Protección explícita contra rutas protegidas a nivel de nodo
+                    if is_protected_path(Path(entry.path)) or _should_skip_entry(entry, ctx):
                         continue
                         
                     if entry.is_dir(follow_symlinks=False):
