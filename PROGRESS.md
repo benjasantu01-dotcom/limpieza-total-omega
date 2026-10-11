@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 32
-- Rechazadas por guardia de seguridad: 46
+- Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-10 | 85 | 11 | 19 | 8 | 97 |
-| 2026-10-11 | 110 | 21 | 27 | 15 | 111 |
+| 2026-10-10 | 85 | 11 | 19 | 8 | 93 |
+| 2026-10-11 | 112 | 21 | 28 | 15 | 112 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **44**
+- robustez ante casos límite: **43**
 - legibilidad y documentación: **42**
-- robustez ante casos límite: **41**
 - seguridad defensiva: **37**
 - rendimiento: **31**
 
@@ -32,11 +32,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **20**
 - `healthscore.py`: **19**
 - `memory.py`: **18**
-- `safety.py`: **17**
+- `safety.py`: **18**
 - `browser.py`: **17**
 - `assistant.py`: **15**
 - `settings.py`: **15**
-- `scanner.py`: **13**
+- `scanner.py`: **14**
 - `branding.py`: **12**
 - `main.py`: **11**
 - `startup.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-11T12:07:13` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `_is_readable` y `_get_file_size` mediante un manejo de excepciones más granular y defensivo, asegurando que el scanner no se bloquee ante archivos que cambian de estado o presentan condiciones de carrera (archivos bloqueados o desaparecidos durante la iteración), alineándolo con el enfoque de robustez ante casos límite.
+- `2026-10-11T12:06:41` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes de la API de Windows añadiendo un manejo de excepciones más granular en `_get_file_attrs` y `_is_volume_readonly`, asegurando que fallos transitorios en el sistema de archivos no bloqueen la validación completa.
 - `2026-10-11T11:56:57` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_is_process_executable_safe` añadiendo una validación explícita para asegurar que la ruta recuperada sea un archivo existente en el sistema de archivos, previniendo errores en procesos cuyo ejecutable ha sido eliminado o es inaccesible mientras se analiza la memoria.
 - `2026-10-11T11:56:26` **main.py** (robustez ante casos límite): Se introdujo `_validate_process_state` para encapsular la verificación de existencia y seguridad de procesos antes de realizar operaciones potencialmente peligrosas como `trim_working_set`, evitando excepciones en tiempo de ejecución causadas por procesos que finalizan durante el tiempo de espera del usuario.
 - `2026-10-11T11:47:03` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la función `_evaluate_rules` y `compute_score`, asegurando que si las funciones de diagnóstico (`message_factory` o `check`) fallan debido a estados inconsistentes de las métricas, el motor de cálculo no colapse ni se detenga, manteniendo la integridad del proceso de reporte.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-11T11:14:55` **healthscore.py** (rendimiento): Se optimizó el cálculo en `compute_score` cacheando las llamadas a `_clamp` y `float` para evitar redundancias dentro del bucle principal del pipeline, mejorando el rendimiento en la ejecución del ciclo de evaluación.
 - `2026-10-11T11:05:43` **diskreport.py** (rendimiento): Optimicé el motor `_collect_summary_data` para evitar la conversión constante a `Path` y el acceso redundante a metadatos dentro del loop principal, reduciendo la carga de CPU y memoria durante recorridos de disco extensos.
 - `2026-10-11T11:05:14` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo integrando el `ScanContext` y la normalización de rutas, evitando múltiples llamados costosos a `os.path.normcase` y `resolve()` mediante el uso de un diccionario de caché eficiente dentro del contexto de escaneo, reduciendo redundancias en la profundidad del árbol.
-- `2026-10-11T11:04:48` **branding.py** (rendimiento): Se optimizó el cálculo de coordenadas del escudo en `logo_svg` y `draw_logo` eliminando la recreación de tuplas en el renderizado y centralizando el escalado mediante una lógica más eficiente que evita recálculos innecesarios en el `Canvas`.
-- `2026-10-11T10:54:27` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y la mantenibilidad técnica del módulo mediante la adición de Type Hints en la pila de directorios, la estandarización de docstrings para seguir el formato PEP 257 y la clarificación de las responsabilidades en los métodos del `Scanner`, facilitando la auditoría de seguridad del flujo recursivo.

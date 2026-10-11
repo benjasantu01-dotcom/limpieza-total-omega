@@ -140,7 +140,7 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
             if err == ERROR_ACCESS_DENIED: return Win32Attr.SYSTEM
             return 0
         return attrs
-    except (AttributeError, ctypes.ArgumentError, OSError):
+    except (AttributeError, ctypes.ArgumentError, OSError, MemoryError):
         return 0
 
 class SafetyValidationErrorCode(IntEnum):
@@ -394,7 +394,7 @@ def _is_volume_readonly(path_str: Optional[str]) -> bool:
         flags = ctypes.c_ulong()
         if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
             return bool(flags.value & 0x80000)
-    except (AttributeError, OSError, TypeError, ctypes.ArgumentError): pass
+    except (AttributeError, OSError, TypeError, ctypes.ArgumentError, MemoryError): pass
     return False
 
 @lru_cache(maxsize=128)

@@ -909,3 +909,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-11T11:57:58` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
 - `2026-10-11T11:57:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-11T11:57:58` Corrida terminada. Total usado hoy: 284.
+- `2026-10-11T12:05:19` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-10-11T12:05:22` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-11T12:05:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-11T12:06:41` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante estados inconsistentes de la API de Windows añadiendo un manejo de excepciones más granular en `_get_file_attrs` y `_is_volume_readonly`, asegurando que fallos transitorios en el sistema de archivos no bloqueen la validación completa.
+- `2026-10-11T12:07:13` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_readable` y `_get_file_size` mediante un manejo de excepciones más granular y defensivo, asegurando que el scanner no se bloquee ante archivos que cambian de estado o presentan condiciones de carrera (archivos bloqueados o desaparecidos durante la iteración), alineándolo con el enfoque de robustez ante casos límite.
+- `2026-10-11T12:07:31` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: robustez ante casos límite).
+- `2026-10-11T12:07:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-11T12:07:31` Corrida terminada. Total usado hoy: 288.

@@ -87,10 +87,12 @@ def _is_file_in_use(path: Path) -> bool:
 def _is_readable(path: Path) -> bool:
     """Valida si la ruta es un archivo regular, legible y sin bloqueos de acceso."""
     try:
+        if not path.exists():
+            return False
         if not path.is_file():
             return False
         return os.access(path, os.R_OK) and not _is_file_in_use(path)
-    except (OSError, PermissionError, ValueError):
+    except (OSError, PermissionError, ValueError, FileNotFoundError):
         return False
 
 def _get_file_attributes(entry: os.DirEntry) -> int:
