@@ -168,7 +168,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
     Calcula el hash SHA256 completo del archivo usando buffers de memoria controlados.
     """
     valid_path: Optional[Path] = _validate_and_resolve_path(path)
-    if valid_path is None:
+    if valid_path is None or not is_safe_to_modify(valid_path):
         return None
             
     try:
@@ -189,7 +189,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
     Genera el hash SHA256 solo de los primeros N bytes para filtrado rápido.
     """
     valid_path: Optional[Path] = _validate_and_resolve_path(path)
-    if valid_path is None:
+    if valid_path is None or not is_safe_to_modify(valid_path):
         return None
 
     try:

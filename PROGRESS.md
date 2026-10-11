@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 31
-- Rechazadas por guardia de seguridad: 46
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 209
 
@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-10 | 138 | 15 | 29 | 12 | 138 |
-| 2026-10-11 | 58 | 16 | 17 | 10 | 71 |
+| 2026-10-10 | 135 | 15 | 28 | 12 | 138 |
+| 2026-10-11 | 62 | 16 | 17 | 10 | 71 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **43**
-- seguridad defensiva: **41**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **39**
+- seguridad defensiva: **38**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **19**
-- `diskreport.py`: **18**
-- `healthscore.py`: **18**
+- `diskreport.py`: **19**
+- `healthscore.py`: **19**
+- `safety.py`: **18**
 - `assistant.py`: **17**
 - `memory.py`: **15**
 - `browser.py`: **14**
-- `scanner.py`: **13**
 - `branding.py`: **13**
+- `duplicates.py`: **13**
 - `settings.py`: **13**
-- `duplicates.py`: **12**
+- `main.py`: **12**
 - `organizer.py`: **12**
+- `scanner.py`: **12**
 - `startup.py`: **11**
-- `main.py`: **11**
-- `quarantine.py`: **10**
+- `quarantine.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-11T07:22:24` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante errores inesperados en el hilo principal y de trabajadores, implementando un mecanismo de limpieza de recursos más estricto y un control de concurrencia que previene ejecuciones con hilos huérfanos o estados inconsistentes tras fallos de inicialización.
+- `2026-10-11T07:21:33` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` y `score_memory`/`score_disk` añadiendo validaciones explícitas contra divisiones por cero y valores no finitos, protegiendo al motor de cálculo ante datos de entrada malformados que podrían causar errores durante la normalización.
+- `2026-10-11T07:21:05` **duplicates.py** (robustez ante casos límite): Se introdujo una gestión robusta de permisos y excepciones en `hash_file` y `partial_hash` para evitar que el proceso de hashing se bloquee por archivos en uso o denegaciones temporales, asegurando la continuidad del análisis ante condiciones de carrera o restricciones del sistema operativo.
+- `2026-10-11T07:20:39` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` y `_is_excluded_path` añadiendo un manejo de excepciones más granular y defensivo ante errores de lectura de atributos de archivo y permisos, evitando que el escaneo se interrumpa prematuramente ante archivos bloqueados o con metadatos inaccesibles.
 - `2026-10-11T07:11:47` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escáner ante posibles errores de resolución de rutas y recursión mediante la validación estricta de `os.scandir` y la adición de un chequeo de `PermissionError` específico en el iterador, asegurando que los fallos de acceso en subcarpetas durante la navegación profunda no propaguen excepciones inesperadas.
 - `2026-10-11T07:11:37` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` ante fallos en el sistema de archivos (ej. directorios de solo lectura o falta de permisos) mediante la implementación de un manejo de excepciones granular y una validación de ruta más estricta antes de la operación de escritura.
 - `2026-10-11T07:01:38` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `update()` implementando un chequeo de `mtime` temprano antes de realizar cualquier operación de lectura o parseo costoso, evitando el procesamiento redundante de archivos que no han cambiado en disco.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-11T06:09:22` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del pipeline añadiendo docstrings descriptivos a las funciones de cálculo (`score_*`) y estandarizando los nombres de los parámetros en las lambdas del `_PIPELINE` para mayor claridad conceptual.
 - `2026-10-11T06:00:31` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de los métodos de filtrado y procesamiento para aclarar la lógica de las estrategias de hashing y la seguridad en el acceso a archivos.
 - `2026-10-11T06:00:19` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings técnicos explicativos en los métodos de la clase `GlobalStats` y se ha aclarado el propósito del parámetro `limit` en `_collect_summary_data`, facilitando la comprensión de la lógica de agregación y el manejo de memoria mediante el heap.
-- `2026-10-11T05:59:51` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `browser.py` mediante docstrings detallados en las funciones de recorrido, la clarificación de las restricciones de seguridad en las constantes y la mejora de los type hints para reflejar el comportamiento real de las estructuras de control de flujo.
-- `2026-10-11T05:59:23` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (usando el formato Google Style) en las funciones críticas de renderizado, clarificando las precondiciones de entrada y la lógica de manejo de errores.
-- `2026-10-11T05:50:32` **assistant.py** (legibilidad y documentación): Se introdujeron type hints explícitos en los métodos de `SystemContext` y funciones de soporte (`_get_source_value`, `_fmt_metric`) para mejorar la claridad del contrato de datos, y se añadieron docstrings detallados en funciones críticas que carecían de ellos, aclarando el propósito y las precondiciones de seguridad.
-- `2026-10-11T05:49:38` **settings.py** (manejo de errores y validación de entradas): Mejora la robustez en la carga de configuración añadiendo un manejo explícito de errores de I/O y validación de tipos al leer el archivo JSON, evitando que una lectura parcial o corrupta propague errores silenciosos hacia la aplicación.

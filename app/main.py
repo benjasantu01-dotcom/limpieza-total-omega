@@ -280,8 +280,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if executor:
             executor.shutdown(wait=False)
         
+        # Forzar cierre de hilos UI
         self.quit()
-        self.destroy()
+        try:
+            self.destroy()
+        except:
+            pass
 
     @safe_ui_operation
     def _safe_run_ui_callback(self, callback: AsyncCallback) -> None:

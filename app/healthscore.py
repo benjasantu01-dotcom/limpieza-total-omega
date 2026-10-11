@@ -186,6 +186,7 @@ def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
     try:
         s_count = float(suspicious_count) if isinstance(suspicious_count, (int, float)) else 0.0
         w_count = float(warnings) if isinstance(warnings, (int, float)) else 0.0
+        if not math.isfinite(s_count) or not math.isfinite(w_count): return 0.0
         penalization = (s_count * 0.05) + (w_count * 0.25)
         return _clamp(1.0 - penalization)
     except (TypeError, ValueError, OverflowError):
@@ -193,13 +194,15 @@ def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
     """Calcula salud: Normaliza el porcentaje de RAM libre frente al umbral crítico definido."""
-    if _LIMIT_RAM_PERCENT <= 0: return 0.0
-    return _clamp(float(available_percent) / _LIMIT_RAM_PERCENT)
+    val = float(available_percent) if isinstance(available_percent, (int, float)) else 0.0
+    if _LIMIT_RAM_PERCENT <= 0 or not math.isfinite(val): return 0.0
+    return _clamp(val / _LIMIT_RAM_PERCENT)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
     """Calcula salud: Normaliza el porcentaje de disco libre frente al umbral de advertencia."""
-    if _LIMIT_DISK_PERCENT <= 0: return 0.0
-    return _clamp(float(free_percent) / _LIMIT_DISK_PERCENT)
+    val = float(free_percent) if isinstance(free_percent, (int, float)) else 0.0
+    if _LIMIT_DISK_PERCENT <= 0 or not math.isfinite(val): return 0.0
+    return _clamp(val / _LIMIT_DISK_PERCENT)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
     """Calcula salud: Normaliza el volumen de duplicados detectados frente a la capacidad de recuperación."""

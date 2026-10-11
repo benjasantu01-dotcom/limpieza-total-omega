@@ -184,10 +184,14 @@ def _is_excluded_path(entry: os.DirEntry) -> bool:
         if not os.access(entry.path, os.R_OK):
             return True
 
+        # Chequeo específico de atributos en Windows
         if os.name == 'nt':
-            st = entry.stat(follow_symlinks=False)
-            if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x0400):
-                 return True
+            try:
+                st = entry.stat(follow_symlinks=False)
+                if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x0400):
+                     return True
+            except (OSError, PermissionError):
+                return True
             
         return False
     except (OSError, PermissionError, AttributeError, TypeError):
