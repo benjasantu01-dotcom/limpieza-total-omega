@@ -9,35 +9,35 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 33
 - Rechazadas por guardia de seguridad: 46
-- Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 205
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-10 | 73 | 11 | 17 | 8 | 63 |
-| 2026-10-11 | 124 | 22 | 29 | 15 | 142 |
+| 2026-10-10 | 72 | 11 | 16 | 7 | 62 |
+| 2026-10-11 | 125 | 22 | 30 | 15 | 144 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
 - robustez ante casos límite: **43**
-- legibilidad y documentación: **40**
-- manejo de errores y validación de entradas: **34**
+- legibilidad y documentación: **39**
+- manejo de errores y validación de entradas: **35**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **19**
 - `diskreport.py`: **19**
 - `safety.py`: **18**
+- `healthscore.py`: **18**
 - `memory.py`: **18**
 - `browser.py`: **17**
 - `scanner.py`: **15**
 - `assistant.py`: **15**
 - `settings.py`: **15**
-- `branding.py`: **13**
+- `branding.py`: **14**
 - `organizer.py`: **12**
 - `main.py`: **11**
 - `startup.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-11T14:10:18` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y sus funciones auxiliares implementando una validación explícita de tipos y valores, asegurando que `size` y `destination` sean procesados de forma segura antes de cualquier operación de I/O, evitando excepciones inesperadas que podrían comprometer la estabilidad de la UI.
 - `2026-10-11T12:48:08` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de TOCTOU y condiciones de carrera, añadiendo una verificación estricta de que el archivo no sea un enlace simbólico (usando `st_nlink` y `os.path.islink`) y restringiendo permisos de escritura para el grupo y otros, asegurando que solo el dueño pueda manipular el archivo de configuración.
 - `2026-10-11T12:47:35` **scanner.py** (seguridad defensiva): Mejoré la robustez del escáner reforzando `process_entry` para validar explícitamente que los archivos detectados no excedan la longitud máxima de ruta permitida después de resolver sus alias, evitando errores de sistema en rutas maliciosas o extremadamente largas que podrían causar `OSError`.
 - `2026-10-11T12:47:07` **safety.py** (seguridad defensiva): Se ha añadido una verificación de "propietario" mediante el SID del archivo en `ensure_safe_to_modify` para detectar rutas que, aunque no tengan atributos de sistema, pertenecen a grupos como `TrustedInstaller` (S-1-5-80), bloqueando preventivamente la manipulación de archivos gestionados exclusivamente por el instalador de Windows.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-11T12:16:59` **assistant.py** (seguridad defensiva): Se endureció `_sanitize_query` para prevenir que caracteres de control o secuencias de escape sean procesados por el motor, evitando cualquier posible ofuscación de la intención del usuario antes de que llegue a los validadores.
 - `2026-10-11T12:07:13` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `_is_readable` y `_get_file_size` mediante un manejo de excepciones más granular y defensivo, asegurando que el scanner no se bloquee ante archivos que cambian de estado o presentan condiciones de carrera (archivos bloqueados o desaparecidos durante la iteración), alineándolo con el enfoque de robustez ante casos límite.
 - `2026-10-11T12:06:41` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes de la API de Windows añadiendo un manejo de excepciones más granular en `_get_file_attrs` y `_is_volume_readonly`, asegurando que fallos transitorios en el sistema de archivos no bloqueen la validación completa.
-- `2026-10-11T11:56:57` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_is_process_executable_safe` añadiendo una validación explícita para asegurar que la ruta recuperada sea un archivo existente en el sistema de archivos, previniendo errores en procesos cuyo ejecutable ha sido eliminado o es inaccesible mientras se analiza la memoria.
