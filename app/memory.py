@@ -364,12 +364,12 @@ def _is_process_executable_safe(pid: int) -> bool:
         bytes_copied = psapi.GetModuleFileNameExW(handle, None, buf, 512)
         if bytes_copied > 0:
             path_str = buf.value
-            if not isinstance(path_str, str) or len(path_str) < 3 or ":" not in path_str[1:3]:
+            # Normalizar ruta para evitar saltos de reparse o evasiones de seguridad.
+            normalized_path = str(Path(path_str).resolve())
+            if not isinstance(normalized_path, str) or len(normalized_path) < 3:
                 return False
-            # Validar que el archivo realmente existe antes de evaluar seguridad
-            if not Path(path_str).exists(): return False
-            if path_str.startswith("\\\\"): return False
-            return not is_protected_path(path_str)
+            if normalized_path.startswith("\\\\"): return False
+            return not is_protected_path(normalized_path)
     except (ctypes.ArgumentError, OSError):
         return False
     finally:

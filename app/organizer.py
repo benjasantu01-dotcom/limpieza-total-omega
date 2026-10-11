@@ -228,7 +228,8 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> boo
     if _is_system_hidden(entry): return False
     if entry.path in protected_cache: return False
     try:
-        if is_protected_path(Path(entry.path)):
+        p = Path(entry.path)
+        if not is_safe_to_modify(p) or is_protected_path(p):
             protected_cache.add(entry.path)
             return False
     except (OSError, RuntimeError):

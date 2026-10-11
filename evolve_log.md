@@ -970,3 +970,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-11T12:28:11` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `main.py` reforzando la validación de rutas mediante la integración del chequeo `safety.ensure_safe_to_modify` antes de cualquier operación de escritura en disco, incluyendo el guardado de reportes y ajustes, asegurando que las rutas de destino pasen por el filtro de seguridad global de la aplicación.
 - `2026-10-11T12:28:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-11T12:28:11` Corrida terminada. Total usado hoy: 296.
+- `2026-10-11T12:35:49` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-10-11T12:35:51` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-11T12:36:25` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` reemplazando la verificación simple mediante `Path.exists()` por una validación que utiliza `is_protected_path` sobre la ruta normalizada, previniendo el seguimiento de enlaces simbólicos o puntos de reparse que podrían apuntar a rutas críticas fuera del alcance esperado.
+- `2026-10-11T12:36:57` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la integridad del proceso de escaneo recursivo mediante la validación obligatoria de `is_safe_to_modify` en cada nivel de directorio procesado, evitando que el escáner intente descender por rutas que el sistema de seguridad considere inapropiadas, incluso si no están explícitamente en la `BLOCKLIST`.
+- `2026-10-11T12:37:41` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: seguridad defensiva).
+- `2026-10-11T12:37:53` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-11T12:37:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-11T12:37:53` Corrida terminada. Total usado hoy: 300.
