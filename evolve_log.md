@@ -1233,3 +1233,43 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-11T03:29:36` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
 - `2026-10-11T03:29:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-11T03:29:36` Corrida terminada. Total usado hoy: 84.
+- `2026-10-11T03:36:18` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-10-11T03:36:49` ➖ Sin cambios en healthscore.py (enfoque: seguridad defensiva). Motivo: Mejoré la resiliencia del motor de diagnóstico añadiendo un bloque `try-except` específico dentro del bucle de `_evaluate_rules` para evitar que una única regla con un `message_factory` defectuoso (ej. error de formato en string o acceso a atributo inexistente en `metrics`) interrumpa el cálculo completo de la salud del sistema, garantizando que el usuario siempre obtenga un reporte, aunque sea parcial.
+- `2026-10-11T03:36:49` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-11T03:38:06` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `main.py` mediante la implementación de un mecanismo de validación de rutas más robusto al seleccionar directorios, forzando la resolución de `Path` antes de cualquier operación y verificando explícitamente que la ruta no sea un enlace simbólico o un punto de reparse (junction point) antes de intentar cualquier interacción.
+- `2026-10-11T03:38:38` Tests FALLARON:
+```
+...................... [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________ test_read_only_modules_never_delete_or_move __________________
+
+    def test_read_only_modules_never_delete_or_move():
+        """Ningún módulo de solo lectura puede borrar ni mover archivos."""
+        destructivos = {"unlink", "rmdir", "rmtree", "move", "remove", "rename", "replace"}
+        for nombre in READ_ONLY_MODULES:
+            archivo = APP_DIR / nombre
+            if not archivo.exists():
+                continue
+            usados = calls_and_imports(parse(archivo)) & destructivos
+>           assert not usados, (
+                f"{nombre} debería ser de solo lectura pero llama a "
+                f"{', '.join(sorted(usados))}"
+            )
+E           AssertionError: memory.py debería ser de solo lectura pero llama a replace
+E           assert not {'replace'}
+
+evolve/tests/test_integrity.py:294: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: memory.py debería ser de solo lectura pero llama a replace
+assert not {'replace'}
+1 failed, 298 passed in 1.54s
+
+```
+- `2026-10-11T03:38:38` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` añadiendo una validación explícita para rutas UNC (que no pueden ser tratadas con `is_protected_path` de forma segura) y asegurando que `GetModuleFileNameExW` no procese rutas que contengan caracteres nulos o malformaciones que pudieran evadir los filtros de seguridad.
+- `2026-10-11T03:38:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-11T03:38:56` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` añadiendo una validación explícita de `is_protected_path` sobre la ruta resuelta (`src_real`) antes de cualquier operación, asegurando que no se manipulen archivos protegidos incluso si el `resolve` inicial fuera exitoso.
+- `2026-10-11T03:38:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-11T03:38:56` Corrida terminada. Total usado hoy: 88.

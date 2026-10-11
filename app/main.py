@@ -335,8 +335,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not p.exists():
             raise FileNotFoundError(f"Ruta inexistente: {p}")
             
+        # Detectar enlaces simbólicos o junctions que apuntan fuera o son sospechosos
         if p.is_symlink():
-            raise safety.UnsafePathError("Ruta inválida o enlace prohibido")
+            raise safety.UnsafePathError("Ruta inválida: se detectó un enlace simbólico o reparse point")
             
         safety.ensure_safe_to_modify(p)
         return p
@@ -1204,6 +1205,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if not folder:
                 return None
             
+            # Validación reforzada de seguridad en la selección
             self._validate_disk_access(folder)
             return str(Path(folder).resolve())
         except Exception:

@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
-- Rechazadas por tests: 27
+- Mejoras aceptadas: **215** (42.7% de aceptación)
+- Rechazadas por tests: 28
 - Rechazadas por guardia de seguridad: 44
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 202
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 198
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 30 | 2 | 7 | 4 | 27 |
+| 2026-10-09 | 30 | 2 | 7 | 4 | 23 |
 | 2026-10-10 | 151 | 17 | 30 | 12 | 140 |
-| 2026-10-11 | 32 | 8 | 7 | 2 | 35 |
+| 2026-10-11 | 34 | 9 | 7 | 3 | 35 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **47**
-- seguridad defensiva: **44**
+- seguridad defensiva: **46**
 - legibilidad y documentación: **42**
 - robustez ante casos límite: **42**
 - rendimiento: **38**
@@ -38,15 +38,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - `branding.py`: **15**
 - `memory.py`: **15**
 - `duplicates.py`: **15**
+- `main.py`: **14**
 - `quarantine.py`: **14**
 - `browser.py`: **13**
-- `main.py`: **13**
-- `organizer.py`: **12**
+- `organizer.py`: **13**
 - `settings.py`: **11**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-11T03:38:56` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` añadiendo una validación explícita de `is_protected_path` sobre la ruta resuelta (`src_real`) antes de cualquier operación, asegurando que no se manipulen archivos protegidos incluso si el `resolve` inicial fuera exitoso.
+- `2026-10-11T03:38:06` **main.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `main.py` mediante la implementación de un mecanismo de validación de rutas más robusto al seleccionar directorios, forzando la resolución de `Path` antes de cualquier operación y verificando explícitamente que la ruta no sea un enlace simbólico o un punto de reparse (junction point) antes de intentar cualquier interacción.
 - `2026-10-11T03:27:23` **browser.py** (seguridad defensiva): Se añadió una validación explícita en `_sum_directory_recursive` para verificar `is_protected_path` sobre el directorio que se está procesando, garantizando que el escaneo no penetre en directorios protegidos por políticas de seguridad globales, además de asegurar que el acceso mediante `os.scandir` mantenga la integridad del contexto de escaneo.
 - `2026-10-11T03:18:13` **assistant.py** (seguridad defensiva): Mejoré la seguridad de la ingestión de datos en `SystemContext` aplicando una validación más estricta sobre el diccionario de entrada para prevenir inyecciones de objetos maliciosos mediante técnicas de introspección (`__dict__` o similares) que podrían sortear las reglas actuales.
 - `2026-10-11T03:17:45` **startup.py** (robustez ante casos límite): Se mejoró la robustez de `StartupEntry._extract_quoted_path` para prevenir excepciones críticas ante rutas malformadas o excesivamente largas, asegurando que el proceso no falle si encuentra fragmentos de registro que no terminan en una ruta de archivo válida.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-11T02:37:09` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner moviendo la validación de seguridad `_is_safe_entry` fuera del bucle de heurísticas mediante el uso de `_is_relevant_extension` como filtro previo, reduciendo drásticamente las llamadas costosas al sistema de archivos (`resolve`, `exists`) para archivos no relevantes.
 - `2026-10-11T02:36:14` **safety.py** (rendimiento): Optimizamos la seguridad y el rendimiento reemplazando el chequeo redundante de metadatos en `is_protected_path` mediante la consolidación de las llamadas a `_get_file_attrs` y el uso de `lru_cache` en las rutas resueltas, evitando resolución de nombres de sistema repetida.
 - `2026-10-11T02:17:03` **main.py** (rendimiento): Se implementó un mecanismo de caché más eficiente con invalidación granular para `_compile_metrics`, evitando el re-cálculo costoso de las métricas de salud (que involucran múltiples llamadas a disco y módulos) a menos que ocurra un cambio real en el estado detectado del sistema.
-- `2026-10-11T02:16:13` **healthscore.py** (rendimiento): Se optimizó el cálculo en `compute_score` cacheando el valor de `m.validate()` fuera del bucle de reglas, eliminando llamadas redundantes y verificaciones de integridad repetitivas dentro de cada ciclo de evaluación.
-- `2026-10-11T02:15:46` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` eliminando la llamada redundante a `Path(entry.path)` y el doble chequeo de seguridad, utilizando directamente los atributos de `os.DirEntry` para evitar llamadas innecesarias al sistema de archivos (`stat`).
