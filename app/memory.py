@@ -282,6 +282,7 @@ def read_snapshot() -> MemorySnapshot:
 
 def _query_working_set_bytes(pid: int, kernel32, psapi) -> Optional[BytesValue]:
     """Consulta el tamaño del working set vía GetProcessMemoryInfo."""
+    if not kernel32 or not psapi: return None
     process_handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
     if not process_handle:
         return None

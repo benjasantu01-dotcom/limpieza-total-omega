@@ -717,3 +717,35 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-11T09:55:15` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de los callbacks que interactúan con el disco al implementar `_validate_disk_access` como chequeo centralizado previo a toda operación, eliminando la redundancia y asegurando que excepciones específicas como `PermissionError` sean capturadas y reportadas limpiamente en lugar de interrumpir el hilo principal.
 - `2026-10-11T09:55:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-11T09:55:15` Corrida terminada. Total usado hoy: 236.
+- `2026-10-11T10:03:09` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-10-11T10:03:41` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora el manejo de errores en `_query_working_set_bytes` y `top_memory_processes` añadiendo validaciones explícitas contra posibles retornos nulos de `kernel32` y `psapi` (frecuentes en sistemas con restricciones), y asegurando que las llamadas a la API se cierren correctamente ante errores inesperados.
+- `2026-10-11T10:04:09` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `_is_file_locked` mediante el manejo explícito de errores y el uso de `ctypes.wintypes` para mayor precisión en la API de Windows, evitando cierres de handles inválidos y mejorando la captura de excepciones específicas durante el chequeo de bloqueos.
+- `2026-10-11T10:04:46` Tests FALLARON:
+```
+d_origin ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_quarantine_summary_report0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-3/test_quarantine_summary_report0/_Cuarentena')
+
+    def test_quarantine_summary_reports_size_and_origin(tmp_path, cuarentena):
+        origen = tmp_path / "pesado.bin"
+        origen.write_bytes(b"0" * 2048)
+        quarantine.quarantine_file(origen, reason="motivo de prueba", base=cuarentena)
+    
+        texto = "\n".join(quarantine.summarize(cuarentena))
+>       assert "pesado.bin" in texto
+E       AssertionError: assert 'pesado.bin' in '1 items — 0.00 MB'
+
+evolve/tests/test_safety.py:309: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly - safety.UnsafePathError: [GENERIC] Ruta no válida: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-3/test_quarantine_missing_file_r0/no-existe.txt'
+FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app - AttributeError: module 'quarantine' has no attribute 'MANIFEST_NAME'. Did you mean: '_MANIFEST_CACHE'?
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - AssertionError: assert 'pesado.bin' in '1 items — 0.00 MB'
+4 failed, 295 passed in 1.64s
+
+```
+- `2026-10-11T10:04:46` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se ha mejorado `quarantine.py` mediante la implementación de validaciones defensivas robustas en `_atomic_isolate_file` y `_write_temp_to_final`, asegurando que cualquier fallo de sistema o interrupción durante la escritura sea capturado con mensajes de error específicos en lugar de excepciones genéricas, reforzando la integridad atómica ante bloqueos de I/O.
+- `2026-10-11T10:04:52` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-10-11T10:04:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-11T10:04:52` Corrida terminada. Total usado hoy: 240.
