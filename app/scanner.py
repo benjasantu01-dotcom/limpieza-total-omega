@@ -214,10 +214,10 @@ class Scanner:
         if path_str in self.safe_cache:
             return True
         
-        if is_protected_path(Path(path_str)) or not _is_valid_path_structure(path_str) or self._has_invalid_name(entry.name):
-            return False
-            
         try:
+            if is_protected_path(Path(path_str)) or not _is_valid_path_structure(path_str) or self._has_invalid_name(entry.name):
+                return False
+                
             if entry.is_symlink() or self._is_reparse_point(entry):
                 return False
                 
@@ -227,8 +227,7 @@ class Scanner:
                 
             self.safe_cache.add(path_str)
             return True
-        except (OSError, RuntimeError, ValueError, TypeError, AttributeError) as e:
-            logger.debug(f"Validación de seguridad fallida para {path_str}: {e}")
+        except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
@@ -259,8 +258,8 @@ class Scanner:
             elif entry.is_file(follow_symlinks=False) and self._is_relevant_extension(entry.name):
                 if self._is_safe_entry(entry):
                     self._run_file_heuristics(Path(entry.path), entry)
-        except (OSError, PermissionError) as e:
-            logger.debug(f"Error procesando entrada {entry.path}: {e}")
+        except (OSError, PermissionError):
+            logger.debug(f"Acceso denegado o error en entrada: {entry.path}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta el conjunto de heurísticas definido sobre un archivo validado."""

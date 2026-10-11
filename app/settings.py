@@ -424,7 +424,7 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     """
-    Persistencia atómica: Valida el estado, usa archivo temporal, fsync y reemplazo.
+    Persistencia atómica: Valida el estado, usa archivo temporal, fsync y reemplazo con validación post-reemplazo.
     """
     if not _is_dict(values): return None
     config_path = settings_path(custom_base)
@@ -460,6 +460,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             os.replace(config_path, bak_path)
         
         os.replace(temp_path, config_path)
+        
+        if not config_path.exists() or config_path.stat().st_size == 0:
+            raise OSError("Error crítico: archivo de configuración truncado tras persistencia")
         
         dir_fd = os.open(str(parent), os.O_RDONLY)
         os.fsync(dir_fd)
