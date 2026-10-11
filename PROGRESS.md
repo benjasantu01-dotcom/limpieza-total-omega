@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **209** (41.5% de aceptación)
+- Mejoras aceptadas: **207** (41.1% de aceptación)
 - Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 58 | 6 | 13 | 10 | 51 |
+| 2026-10-09 | 55 | 6 | 12 | 10 | 51 |
 | 2026-10-10 | 151 | 17 | 30 | 12 | 140 |
-| 2026-10-11 | 0 | 0 | 0 | 0 | 16 |
+| 2026-10-11 | 1 | 0 | 0 | 0 | 19 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **50**
 - robustez ante casos límite: **42**
-- manejo de errores y validación de entradas: **41**
-- legibilidad y documentación: **38**
+- manejo de errores y validación de entradas: **42**
 - rendimiento: **38**
+- legibilidad y documentación: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **22**
-- `diskreport.py`: **21**
+- `healthscore.py`: **21**
+- `diskreport.py`: **20**
 - `safety.py`: **19**
 - `scanner.py`: **17**
 - `branding.py`: **16**
-- `duplicates.py`: **15**
+- `assistant.py`: **16**
 - `memory.py`: **15**
-- `assistant.py`: **15**
 - `quarantine.py`: **15**
+- `duplicates.py`: **14**
 - `main.py`: **13**
 - `settings.py`: **11**
 - `organizer.py`: **11**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-11T00:46:59` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_source_value` y `_apply_field` para prevenir posibles errores de tipo durante la ingesta de datos, asegurando que las conversiones numéricas no fallen silenciosamente ante entradas inesperadas y manteniendo la integridad del `SystemContext` ante fuentes de datos externas malformadas.
 - `2026-10-10T14:22:52` **startup.py** (seguridad defensiva): Se endureció la seguridad defensiva en `_is_valid_registry_entry` añadiendo una comprobación explícita para evitar que comandos que apuntan a rutas relativas sin unidad (ej. "archivo.exe") sean procesados, previniendo así posibles ataques de secuestro de DLL o ejecución de archivos inesperados en el directorio de trabajo del proceso.
 - `2026-10-10T14:22:27` **settings.py** (seguridad defensiva): Reforcé la integridad defensiva al cargar configuraciones implementando una verificación estricta de permisos de archivos y directorios (`owner` y `permissions`) antes de cualquier operación de I/O, previniendo así la carga o escritura de archivos bajo rutas potencialmente manipuladas o con permisos laxos.
 - `2026-10-10T14:21:54` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del escáner implementando una validación estricta del estado de los metadatos en `_is_readable` y `_safe_stat`, asegurando que no solo se verifiquen permisos, sino también que no se sigan enlaces simbólicos de forma inadvertida durante la evaluación heurística, evitando así posibles ataques de "path traversal" o escapes del árbol de escaneo original.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-10T13:42:00` **scanner.py** (robustez ante casos límite): Se introdujo una validación robusta contra archivos que son eliminados o bloqueados por procesos externos durante el escaneo, reemplazando accesos directos propensos a race conditions por `os.stat` seguro dentro de `_get_file_size` y `_is_readable`, evitando así excepciones no controladas en el bucle principal.
 - `2026-10-10T13:41:33` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la detección de archivos bloqueados mediante la implementación de un chequeo preventivo de errores de I/O en `_is_file_locked_by_other_process`, evitando el lanzamiento de excepciones inesperadas al procesar archivos con privilegios restringidos o bloqueos por kernel.
 - `2026-10-10T13:31:05` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `top_memory_processes` añadiendo una validación de `ctypes.byref` y un control explícito sobre la cantidad de PIDs devueltos para prevenir desbordamientos o accesos fuera de rango si la API retorna un número inesperado de procesos, asegurando estabilidad ante fluctuaciones del sistema operativo.
-- `2026-10-10T13:21:51` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` y `compute_score` ante valores atípicos mediante el uso de `getattr` con un respaldo seguro y una validación de tipos más estricta en el pipeline, asegurando que fallos en una métrica individual no invaliden el cálculo del puntaje global.

@@ -401,14 +401,12 @@ class SystemContext:
 
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
         """Valida, convierte y verifica límites de un campo individual."""
+        val = _get_source_value(source, key)
+        if val is None: return None
         try:
-            val = _get_source_value(source, key)
-            if val is None: return None
-            # Re-verificar integridad ante posibles manipulaciones externas
             if not _check_metric_integrity(val): return None
             float_val = float(val)
-            if not _is_metric_within_bounds(float_val, spec): 
-                return None
+            if not _is_metric_within_bounds(float_val, spec): return None
             return spec.cast_func(float_val)
         except (TypeError, ValueError, OverflowError):
             return None
