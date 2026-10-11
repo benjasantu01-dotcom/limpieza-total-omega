@@ -359,10 +359,11 @@ def _is_process_executable_safe(pid: int) -> bool:
     try:
         # Buffer limitado para evitar problemas de memoria y asegurar saneamiento básico
         buf = ctypes.create_unicode_buffer(512)
-        if psapi.GetModuleFileNameExW(handle, None, buf, 512) > 0:
+        bytes_copied = psapi.GetModuleFileNameExW(handle, None, buf, 512)
+        if bytes_copied > 0:
             path_str = buf.value
-            # Proteger contra rutas UNC (que empiezan con \\) para evitar riesgos en manejo de red
-            if path_str.startswith("\\\\"): return False
+            # Validar que sea ruta local absoluta (Windows suele usar c:\...)
+            if not isinstance(path_str, str) or path_str.startswith("\\\\"): return False
             return not is_protected_path(path_str)
     except (ctypes.ArgumentError, OSError):
         return False

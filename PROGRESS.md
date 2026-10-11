@@ -16,37 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 54 | 6 | 11 | 10 | 49 |
+| 2026-10-09 | 52 | 6 | 11 | 9 | 48 |
 | 2026-10-10 | 151 | 17 | 30 | 12 | 140 |
-| 2026-10-11 | 3 | 1 | 0 | 0 | 20 |
+| 2026-10-11 | 5 | 1 | 0 | 1 | 21 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **50**
-- manejo de errores y validación de entradas: **44**
+- manejo de errores y validación de entradas: **46**
 - robustez ante casos límite: **42**
 - rendimiento: **38**
-- legibilidad y documentación: **34**
+- legibilidad y documentación: **32**
 
 ## Mejoras aceptadas por archivo
 
+- `healthscore.py`: **22**
 - `diskreport.py`: **21**
-- `healthscore.py`: **21**
 - `safety.py`: **19**
-- `scanner.py`: **17**
 - `branding.py`: **17**
+- `scanner.py`: **16**
 - `assistant.py`: **16**
+- `memory.py`: **15**
 - `quarantine.py`: **15**
 - `duplicates.py`: **14**
-- `memory.py`: **14**
 - `main.py`: **13**
 - `settings.py`: **11**
 - `organizer.py`: **11**
 - `browser.py`: **10**
-- `startup.py`: **9**
+- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-11T01:05:53` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_process_executable_safe` reemplazando la validación manual de rutas UNC con una verificación de tipo explícita y mejorando la gestión de recursos mediante la validación del estado del buffer de `GetModuleFileNameExW`, garantizando que solo rutas locales válidas sean procesadas por `is_protected_path`.
+- `2026-10-11T01:04:07` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del motor de cálculo capturando excepciones específicas en las factorías de mensajes y validando la integridad del estado de `SystemMetrics` antes de cada evaluación de regla, evitando que errores en datos de entrada propaguen fallas durante el renderizado.
 - `2026-10-11T00:55:00` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas durante la iteración y conversión de rutas, evitando que un error de acceso de lectura puntual (común en el sistema de archivos) detenga abruptamente el análisis completo, y añadí una validación explícita para asegurar que `entry.path` sea una ruta absoluta antes de procesarla.
 - `2026-10-11T00:54:05` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` añadiendo una verificación explícita de `is_protected_path` sobre la ruta resuelta antes de cualquier operación, garantizando que el acceso al sistema de archivos sea seguro incluso si `ensure_safe_to_modify` fallara por condiciones de carrera o configuraciones atípicas.
 - `2026-10-11T00:46:59` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_source_value` y `_apply_field` para prevenir posibles errores de tipo durante la ingesta de datos, asegurando que las conversiones numéricas no fallen silenciosamente ante entradas inesperadas y manteniendo la integridad del `SystemContext` ante fuentes de datos externas malformadas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-10T13:53:00` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_excluded_path` añadiendo una validación explícita mediante `is_protected_path` sobre el propio `entry.path` antes de cualquier operación, asegurando que incluso rutas que podrían sortear filtros previos por estar en niveles profundos sean descartadas preventivamente por seguridad defensiva.
 - `2026-10-10T13:52:19` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `save_logo_svg` utilizando `filter_safe_paths` para garantizar que la ruta de destino no sea una ubicación bloqueada a nivel de sistema antes de intentar cualquier operación de escritura.
 - `2026-10-10T13:51:41` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de `assistant.py` implementando una validación estricta de dominios en `_call_gemini` y limitando el alcance de `_get_source_value` para prevenir posibles ataques por inyección de atributos o introspección de objetos no deseados.
-- `2026-10-10T13:42:35` **settings.py** (robustez ante casos límite): Se ha añadido un chequeo de concurrencia y estado de archivo más robusto en `_read_and_parse_json` para prevenir condiciones de carrera (TOCTOU) y corrupción ante archivos malformados o bloqueados, asegurando que la lectura sea consistente y segura bajo cualquier condición de entorno.
-- `2026-10-10T13:42:00` **scanner.py** (robustez ante casos límite): Se introdujo una validación robusta contra archivos que son eliminados o bloqueados por procesos externos durante el escaneo, reemplazando accesos directos propensos a race conditions por `os.stat` seguro dentro de `_get_file_size` y `_is_readable`, evitando así excepciones no controladas en el bucle principal.

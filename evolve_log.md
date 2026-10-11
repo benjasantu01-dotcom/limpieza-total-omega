@@ -933,3 +933,10 @@ assert not {'replace'}
 - `2026-10-11T00:55:09` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-11T00:55:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-11T00:55:09` Corrida terminada. Total usado hoy: 24.
+- `2026-10-11T01:03:37` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-10-11T01:04:07` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del motor de cálculo capturando excepciones específicas en las factorías de mensajes y validando la integridad del estado de `SystemMetrics` antes de cada evaluación de regla, evitando que errores en datos de entrada propaguen fallas durante el renderizado.
+- `2026-10-11T01:05:16` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `on_trim_process` y `on_restore_quarantine` mediante validaciones adicionales que capturan excepciones específicas y evitan el procesamiento de datos malformados antes de que lleguen a la lógica crítica, asegurando que la app no aborte ante entradas inesperadas del usuario.
+- `2026-10-11T01:05:53` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_process_executable_safe` reemplazando la validación manual de rutas UNC con una verificación de tipo explícita y mejorando la gestión de recursos mediante la validación del estado del buffer de `GetModuleFileNameExW`, garantizando que solo rutas locales válidas sean procesadas por `is_protected_path`.
+- `2026-10-11T01:06:06` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-11T01:06:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-11T01:06:06` Corrida terminada. Total usado hoy: 28.
