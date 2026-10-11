@@ -822,3 +822,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-10-11T10:55:41` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: rendimiento).
 - `2026-10-11T10:55:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-11T10:55:41` Corrida terminada. Total usado hoy: 260.
+- `2026-10-11T11:04:09` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-10-11T11:04:48` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el cálculo de coordenadas del escudo en `logo_svg` y `draw_logo` eliminando la recreación de tuplas en el renderizado y centralizando el escalado mediante una lógica más eficiente que evita recálculos innecesarios en el `Canvas`.
+- `2026-10-11T11:05:14` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo recursivo integrando el `ScanContext` y la normalización de rutas, evitando múltiples llamados costosos a `os.path.normcase` y `resolve()` mediante el uso de un diccionario de caché eficiente dentro del contexto de escaneo, reduciendo redundancias en la profundidad del árbol.
+- `2026-10-11T11:05:43` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el motor `_collect_summary_data` para evitar la conversión constante a `Path` y el acceso redundante a metadatos dentro del loop principal, reduciendo la carga de CPU y memoria durante recorridos de disco extensos.
+- `2026-10-11T11:06:02` ➖ Sin cambios en duplicates.py (enfoque: rendimiento). Motivo: Se optimizó el proceso de descubrimiento de archivos en `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando la creación redundante de objetos `Path` dentro del bucle interno, reduciendo la presión sobre el recolector de basura y mejorando la velocidad de escaneo inicial.
+- `2026-10-11T11:06:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-11T11:06:02` Corrida terminada. Total usado hoy: 264.

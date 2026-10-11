@@ -88,7 +88,7 @@ class GlobalStats:
         self.total_files: int = 0
         self.ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
 
-    def register_file(self, size: int, path: Path) -> None:
+    def register_file(self, size: int, suffix: str) -> None:
         """
         Registra un archivo en las estadísticas globales.
         Actualiza el acumulado de peso total, contador de archivos y segrega
@@ -96,7 +96,7 @@ class GlobalStats:
         """
         self.total_bytes += size
         self.total_files += 1
-        ext = path.suffix.lower() or "(sin extensión)"
+        ext = suffix.lower() or "(sin extensión)"
         self.ext_stats[ext].add(size)
 
 
@@ -403,13 +403,13 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = [] 
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        stats.register_file(size_bytes, path)
+        stats.register_file(size_bytes, path.suffix)
         
         # Mantener el heap del top N: eficiencia O(N log K) donde K es el límite
         if limit > 0:
             if len(top_heap) < limit: 
                 heapq.heappush(top_heap, (size_bytes, path))
-            elif size_bytes > (top_heap[0][0] if top_heap else -1): 
+            elif size_bytes > top_heap[0][0]: 
                 heapq.heapreplace(top_heap, (size_bytes, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)

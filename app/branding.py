@@ -451,7 +451,6 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
         stripe_dims, color_segments = _get_cached_stripe_data(scale, franjas_count)
         
         for seg in color_segments:
-            # Calcular límites de la franja basados en los segmentos de color
             start_y = base_y_coord + stripe_dims[seg.start_index][1]
             end_y = base_y_coord + stripe_dims[seg.end_index - 1][2]
             half_width = stripe_dims[seg.start_index][0]
@@ -468,98 +467,64 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
     try:
         if canvas is None or not math.isfinite(scale) or scale <= 0: return
         
-        LINE_WIDTH_FACTOR: Final[float] = 8.0
-        TEXT_Y_OFFSET: Final[float] = 96.0
-        
+        l_w = max(2, int(8.0 * scale))
         canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, 
                            canvas_x + 75 * scale, canvas_y + 41 * scale, 
-                           fill=C_BACKGROUND, width=max(2, int(LINE_WIDTH_FACTOR * scale)), capstyle="round")
+                           fill=C_BACKGROUND, width=l_w, capstyle="round")
         canvas.create_polygon(canvas_x + 75 * scale, canvas_y + 41 * scale, 
                               canvas_x + 89 * scale, canvas_y + 38 * scale, 
                               canvas_x + 92 * scale, canvas_y + 52 * scale, 
                               fill=C_BACKGROUND, outline="")
-        canvas.create_text(canvas_x + 64 * scale, canvas_y + TEXT_Y_OFFSET * scale, text="\u03a9", 
+        canvas.create_text(canvas_x + 64 * scale, canvas_y + 96 * scale, text="\u03a9", 
                            fill=C_BACKGROUND, font=(UI_FONT_FAMILY, max(8, int(UI_FONT_HEADER_SIZE * scale)), UI_FONT_BOLD))
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """
-    Renderiza el escudo corporativo compuesto en el canvas.
-    Args:
-        canvas: Objeto tipo Canvas para dibujar.
-        size: Tamaño base del icono.
-        canvas_x, canvas_y: Desplazamiento del punto origen.
-    """
+    """Renderiza el escudo corporativo compuesto en el canvas."""
     try:
         if canvas is None: return
         s = float(size) if size is not None else 56.0
-        origin = Point(float(canvas_x) if canvas_x is not None else 0.0, 
-                       float(canvas_y) if canvas_y is not None else 0.0)
-        if not math.isfinite(s) or s <= 0 or not math.isfinite(origin.x) or not math.isfinite(origin.y): return
+        x, y = float(canvas_x or 0.0), float(canvas_y or 0.0)
+        if not math.isfinite(s) or s <= 0 or not math.isfinite(x) or not math.isfinite(y): return
         scale = max(0.1, min(10.0, s / 128.0))
         
-        canvas.create_oval(
-            origin.x + (64 * scale) - 75 * scale, origin.y + (58 * scale) - 75 * scale, 
-            origin.x + (64 * scale) + 75 * scale, origin.y + (58 * scale) + 75 * scale, 
-            fill=blend(C_SURFACE, C_GLOW, 0.15), outline=""
-        )
-        canvas.create_polygon(*_get_scaled_poly(scale, origin.x, origin.y), fill=GRADIENT_STOPS[1], outline="")
-        _draw_shield_stripes(canvas, origin.x, origin.y, scale)
-        _draw_shield_icon_decorations(canvas, origin.x, origin.y, scale)
+        canvas.create_oval(x + (64 - 75) * scale, y + (58 - 75) * scale, 
+                           x + (64 + 75) * scale, y + (58 + 75) * scale, 
+                           fill=blend(C_SURFACE, C_GLOW, 0.15), outline="")
+        canvas.create_polygon(*_get_scaled_poly(scale, x, y), fill=GRADIENT_STOPS[1], outline="")
+        _draw_shield_stripes(canvas, x, y, scale)
+        _draw_shield_icon_decorations(canvas, x, y, scale)
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """
-    Dibuja barra decorativa horizontal con gradiente segmentado.
-    
-    Args:
-        canvas: Canvas destino.
-        width: Ancho de la barra en px.
-        height: Grosor de la barra en px.
-        canvas_x: Offset horizontal inicial.
-        canvas_y: Offset vertical inicial.
-        stops: Tupla de colores HEX para el gradiente.
-    """
+    """Dibuja barra decorativa horizontal con gradiente segmentado."""
     try:
         if canvas is None or not stops: return
-        w_val = max(1, min(4096, int(width)))
-        h_val = max(1, min(1024, int(height)))
-        origin = Point(float(canvas_x), float(canvas_y))
-        if not math.isfinite(origin.x) or not math.isfinite(origin.y): return
+        w_val, h_val = max(1, int(width)), max(1, int(height))
+        x, y = float(canvas_x), float(canvas_y)
+        if not math.isfinite(x) or not math.isfinite(y): return
         
-        segments = get_gradient_segments(w_val, stops)
-            
-        for seg in segments:
-            canvas.create_line(origin.x + seg.start_index, origin.y, 
-                               origin.x + seg.end_index, origin.y, 
-                               fill=seg.hex_color, width=h_val)
+        for seg in get_gradient_segments(w_val, stops):
+            canvas.create_line(x + seg.start_index, y, x + seg.end_index, y, fill=seg.hex_color, width=h_val)
     except (TypeError, ValueError, AttributeError, ZeroDivisionError, IndexError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, 
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, 
               track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """
-    Dibuja indicador circular de progreso (anillo de carga).
-    """
+    """Dibuja indicador circular de progreso (anillo de carga)."""
     try:
         if canvas is None: return
-        val = float(percent) if percent is not None else 0.0
-        val = max(0.0, min(100.0, val)) if math.isfinite(val) else 0.0
-        
+        val = max(0.0, min(100.0, float(percent))) if percent is not None and math.isfinite(float(percent)) else 0.0
         diam = max(20, min(2048, int(size)))
         thick = max(2, min(int(thickness), (diam // 2) - 1))
+        x, y = float(canvas_x or 0.0), float(canvas_y or 0.0)
+        if not math.isfinite(x) or not math.isfinite(y): return
         
-        if canvas_x is None or canvas_y is None: return
-        origin = Point(float(canvas_x), float(canvas_y))
-        if not math.isfinite(origin.x) or not math.isfinite(origin.y): return
-        
-        borde: float = float(thick) / 2.0
-        caja = (origin.x + borde, origin.y + borde, origin.x + diam - borde, origin.y + diam - borde)
+        b = float(thick) / 2.0
+        caja = (x + b, y + b, x + diam - b, y + diam - b)
         
         canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=thick)
         if val > 0: 
-            fill_color = fill or score_color(val)
             extent = -(val / 100.0 * 359.9)
-            if math.isfinite(extent):
-                canvas.create_arc(*caja, start=90, extent=extent, style="arc", outline=fill_color, width=thick)
+            canvas.create_arc(*caja, start=90, extent=extent, style="arc", outline=fill or score_color(val), width=thick)
     except (ValueError, TypeError, AttributeError, OverflowError, ZeroDivisionError): pass

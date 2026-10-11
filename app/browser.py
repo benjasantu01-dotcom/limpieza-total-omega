@@ -217,7 +217,7 @@ def _process_file_node(entry: os.DirEntry, visited_files: Set[tuple[int, int]]) 
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
     """Realiza un recorrido DFS limitado con detección de ciclos y nodos visitados."""
-    if depth > MAX_SCAN_DEPTH or is_protected_path(Path(root_path)):
+    if depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)
     
     path_norm = os.path.normcase(root_path)
@@ -229,7 +229,7 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
         with os.scandir(root_path) as it:
             for entry in it:
                 try:
-                    if is_protected_path(Path(entry.path)) or _should_skip_entry(entry, ctx):
+                    if _should_skip_entry(entry, ctx):
                         continue
                         
                     if entry.is_dir(follow_symlinks=False):
