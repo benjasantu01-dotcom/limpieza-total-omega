@@ -154,10 +154,12 @@ class _SettingsManager:
     def __init__(self) -> None:
         self.settings_cache: dict[str, tuple[float, AppSettings]] = {}
         self.path_cache: dict[Optional[str], Path] = {}
+        self.instance_cache: Optional[AppSettings] = None
 
     def clear(self) -> None:
         """Invalidar caché tras modificaciones de persistencia."""
         self.settings_cache.clear()
+        self.instance_cache = None
 
 _MANAGER = _SettingsManager()
 
@@ -386,6 +388,9 @@ def _load_impl(ruta: Path) -> AppSettings:
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga los ajustes desde el disco, utilizando caché por mtime."""
+    if custom_base is None and _MANAGER.instance_cache is not None:
+        return _MANAGER.instance_cache.copy()
+
     primary_path = settings_path(custom_base)
     backup_path = primary_path.with_suffix(".bak")
     
@@ -396,11 +401,15 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
                 cache_key = str(path)
                 cached = _MANAGER.settings_cache.get(cache_key)
                 if cached and cached[0] == mtime:
-                    return cached[1].copy()
+                    res = cached[1].copy()
+                else:
+                    settings = _load_impl(path)
+                    _MANAGER.settings_cache[cache_key] = (mtime, settings)
+                    res = settings.copy()
                 
-                settings = _load_impl(path)
-                _MANAGER.settings_cache[cache_key] = (mtime, settings)
-                return settings.copy()
+                if custom_base is None:
+                    _MANAGER.instance_cache = res.copy()
+                return res
             except (OSError, PermissionError):
                 continue
     return DEFAULTS.copy()

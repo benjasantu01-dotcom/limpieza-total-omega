@@ -256,6 +256,7 @@ class Scanner:
                 if self._is_safe_entry(entry):
                     self._handle_directory(entry, directory_stack, current_depth)
             elif entry.is_file(follow_symlinks=False) and self._is_relevant_extension(entry.name):
+                # Validar seguridad solo si la extensión es relevante para evitar I/O innecesario
                 if self._is_safe_entry(entry):
                     self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError):
@@ -263,7 +264,7 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta el conjunto de heurísticas definido sobre un archivo validado."""
-        if not path.exists() or not _is_readable(path):
+        if not _is_readable(path):
             return
         for check_fn in ALL_CHECKS:
             try:

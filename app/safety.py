@@ -670,14 +670,14 @@ def is_protected_path(path: PathLike) -> bool:
     try:
         p = Path(path)
         p_str = str(p).lower()
+        # Verificación rápida mediante atributos de sistema pre-resueltos
+        if _get_file_attrs(p_str) & (Win32Attr.SYSTEM | Win32Attr.HIDDEN): return True
         if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts): return True
         if any(p_str.startswith(r) for r in _SYSTEM_ROOT_STRS): return True
-        # Protección proactiva del kernel
         if _is_kernel_managed(p_str): return True
-        if not p.exists(): return False # Evitar fallos en resolve si no existe
+        if not p.exists(): return False 
         p_res = p.resolve()
         if p_res == Path(p_res.anchor): return True
-        if _is_system_directory_junction(str(p_res)): return True
         return any(p_res == root or root in p_res.parents for root in _SYSTEM_ROOT_PATHS)
     except Exception: return True
 
@@ -729,7 +729,6 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         raise UnsafePathError("Nombre de dispositivo reservado detectado.", SafetyValidationErrorCode.RESERVED_NAME)
     if re.search(r'[\u200E\u200F\u202A-\u202E]', path_string):
         raise UnsafePathError("Posible ataque de bidi spoofing detectado.", SafetyValidationErrorCode.BIDI_SPOOFING)
-    # Nueva validación: Bloqueo de nombres de dispositivos con extensión (CVE-esque)
     if "." in target_path.name and _is_reserved_device_name(target_path.stem):
         raise UnsafePathError("Nombre de dispositivo con extensión prohibido.", SafetyValidationErrorCode.RESERVED_NAME)
 

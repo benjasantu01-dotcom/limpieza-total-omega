@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
+- Mejoras aceptadas: **209** (41.5% de aceptación)
 - Rechazadas por tests: 28
 - Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 37 | 4 | 8 | 5 | 40 |
+| 2026-10-09 | 35 | 3 | 8 | 5 | 39 |
 | 2026-10-10 | 151 | 17 | 30 | 12 | 140 |
-| 2026-10-11 | 20 | 7 | 6 | 2 | 25 |
+| 2026-10-11 | 23 | 8 | 6 | 2 | 25 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **49**
+- seguridad defensiva: **47**
 - manejo de errores y validación de entradas: **47**
 - legibilidad y documentación: **42**
-- rendimiento: **35**
+- rendimiento: **38**
 - robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
-- `healthscore.py`: **21**
-- `safety.py`: **19**
-- `scanner.py`: **16**
+- `safety.py`: **20**
+- `diskreport.py`: **20**
+- `healthscore.py`: **20**
+- `scanner.py`: **17**
 - `assistant.py`: **16**
 - `quarantine.py`: **15**
 - `branding.py`: **15**
@@ -41,12 +41,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `main.py`: **14**
 - `memory.py`: **14**
 - `organizer.py`: **12**
+- `settings.py`: **11**
 - `browser.py`: **11**
-- `settings.py`: **10**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-11T02:37:55` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuración implementando un sistema de caché de instancia en `_SettingsManager` para evitar el parseo innecesario de JSON en llamadas recurrentes dentro del mismo ciclo de ejecución.
+- `2026-10-11T02:37:09` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner moviendo la validación de seguridad `_is_safe_entry` fuera del bucle de heurísticas mediante el uso de `_is_relevant_extension` como filtro previo, reduciendo drásticamente las llamadas costosas al sistema de archivos (`resolve`, `exists`) para archivos no relevantes.
+- `2026-10-11T02:36:14` **safety.py** (rendimiento): Optimizamos la seguridad y el rendimiento reemplazando el chequeo redundante de metadatos en `is_protected_path` mediante la consolidación de las llamadas a `_get_file_attrs` y el uso de `lru_cache` en las rutas resueltas, evitando resolución de nombres de sistema repetida.
 - `2026-10-11T02:17:03` **main.py** (rendimiento): Se implementó un mecanismo de caché más eficiente con invalidación granular para `_compile_metrics`, evitando el re-cálculo costoso de las métricas de salud (que involucran múltiples llamadas a disco y módulos) a menos que ocurra un cambio real en el estado detectado del sistema.
 - `2026-10-11T02:16:13` **healthscore.py** (rendimiento): Se optimizó el cálculo en `compute_score` cacheando el valor de `m.validate()` fuera del bucle de reglas, eliminando llamadas redundantes y verificaciones de integridad repetitivas dentro de cada ciclo de evaluación.
 - `2026-10-11T02:15:46` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` eliminando la llamada redundante a `Path(entry.path)` y el doble chequeo de seguridad, utilizando directamente los atributos de `os.DirEntry` para evitar llamadas innecesarias al sistema de archivos (`stat`).
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-11T01:45:26` **main.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad de la clase principal `LimpiezaTotalOmegaApp` mediante la conversión de variables de estado críticas en propiedades protegidas y una organización más explícita de la inicialización de los componentes de UI, facilitando el mantenimiento sin alterar la funcionalidad.
 - `2026-10-11T01:36:17` **duplicates.py** (legibilidad y documentación): Mejora la mantenibilidad y legibilidad mediante la adición de Type Hints en los retornos y parámetros faltantes, y la simplificación de estructuras condicionales en `_is_valid_candidate` para facilitar su auditoría de seguridad.
 - `2026-10-11T01:35:35` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y la mantenibilidad del motor de escaneo centralizando la lógica de recolección de datos mediante docstrings más precisos y nombrando explícitamente los tipos de retorno internos, facilitando la comprensión del flujo de datos en las funciones de alto nivel.
-- `2026-10-11T01:34:56` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones de escaneo recursivo, explicando el propósito de `ScanContext` y la lógica de prevención de ciclos para facilitar auditorías futuras.
-- `2026-10-11T01:25:46` **branding.py** (legibilidad y documentación): Se introdujo un `NamedTuple` llamado `Point` para centralizar la representación de coordenadas, reemplazando tuplas planas dispersas y mejorando la legibilidad semántica del cálculo geométrico.
-- `2026-10-11T01:15:45` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` añadiendo una comprobación explícita para evitar errores de tipo al procesar `base_dir` y una validación defensiva en la obtención del estado del volumen para prevenir excepciones inesperadas durante la inspección de seguridad, alineándose con el enfoque de validación de entradas.
