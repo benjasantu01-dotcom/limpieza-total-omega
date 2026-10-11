@@ -709,3 +709,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-11T09:45:23` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_valid_cache_path` y `_resolve_browser_path` añadiendo validaciones explícitas de tipos y estados vacíos antes de ejecutar operaciones de sistema, previniendo errores de ejecución ante entradas inesperadas o corrupción en los mapeos de rutas.
 - `2026-10-11T09:45:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-11T09:45:23` Corrida terminada. Total usado hoy: 232.
+- `2026-10-11T09:52:57` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-10-11T09:53:26` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas (`OSError`, `PermissionError`) durante la iteración y el acceso a metadatos, evitando que fallos puntuales en archivos bloqueados detengan el escaneo completo de la unidad.
+- `2026-10-11T09:53:51` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-11T09:53:52` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-11T09:54:23` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `compute_score` y `_evaluate_rules` mediante la validación proactiva de tipos y valores, asegurando que `SystemMetrics` sea siempre una instancia válida antes de procesar el pipeline, evitando propagación de errores por datos corruptos o inesperados.
+- `2026-10-11T09:55:15` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de los callbacks que interactúan con el disco al implementar `_validate_disk_access` como chequeo centralizado previo a toda operación, eliminando la redundancia y asegurando que excepciones específicas como `PermissionError` sean capturadas y reportadas limpiamente en lugar de interrumpir el hilo principal.
+- `2026-10-11T09:55:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-11T09:55:15` Corrida terminada. Total usado hoy: 236.

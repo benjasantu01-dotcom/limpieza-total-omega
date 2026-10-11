@@ -288,6 +288,7 @@ def _sanitize_msg(msg: str) -> str:
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio, findings: List[str]) -> None:
     """Ejecuta las reglas de diagnóstico para una métrica y agrega hallazgos si es necesario."""
+    if not isinstance(metrics, SystemMetrics): return
     for rule in rules:
         try:
             if rule.check(metrics, normalized_ratio):
@@ -302,10 +303,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     Consolida puntajes normalizados, aplica pesos y agrega recomendaciones.
     """
     try:
+        # Validación estricta del objeto de métricas
         m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
         m.validate()
+        
         if not m.is_finite:
-            raise ValueError("Métricas inestables detectadas.")
+            raise ValueError("Métricas inestables detectadas tras validación.")
             
         recommendations: List[str] = []
         metric_breakdown: Dict[MetricKey, int] = {}

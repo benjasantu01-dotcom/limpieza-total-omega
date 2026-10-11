@@ -60,7 +60,7 @@ def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
         return None
     try:
         return os.stat(path, follow_symlinks=False)
-    except (OSError, PermissionError, FileNotFoundError, ValueError):
+    except (OSError, PermissionError, ValueError):
         return None
 
 
