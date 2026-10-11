@@ -278,7 +278,7 @@ def directory_size(path: Optional[OSPath]) -> int:
 @safe_path_operation(False)
 def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
     """Valida que una ruta de navegador sea legítima antes de proceder al escaneo."""
-    if not isinstance(candidate, Path) or not candidate.exists() or not candidate.is_dir(): 
+    if not isinstance(candidate, Path) or not candidate.is_dir(): 
         return False
     try:
         real: Path = candidate.resolve(strict=True)
@@ -305,7 +305,7 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
         return Path()
         
     target: Path = real_base.joinpath(*parts)
-    if not target.exists() or not target.is_dir(): 
+    if not target.is_dir(): 
         return Path()
     
     try:

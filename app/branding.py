@@ -403,8 +403,9 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         if is_protected_path(target) or not is_safe_to_modify(target):
             return None
         
-        if not target.parent.exists():
-            target.parent.mkdir(parents=True, exist_ok=True)
+        parent = target.parent
+        if not parent.exists():
+            parent.mkdir(parents=True, exist_ok=True)
             
         validated_size = max(16, min(1024, int(size)))
         target.write_text(logo_svg(validated_size), encoding="utf-8")
@@ -539,16 +540,6 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
               track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
     """
     Dibuja indicador circular de progreso (anillo de carga).
-    
-    Args:
-        canvas: Canvas destino.
-        percent: Valor numérico (0.0-100.0).
-        size: Diámetro del anillo en px.
-        canvas_x: Offset horizontal origen.
-        canvas_y: Offset vertical origen.
-        thickness: Grosor del trazo.
-        track: Color del anillo de fondo.
-        fill: Color del segmento activo (progreso).
     """
     try:
         if canvas is None: return
@@ -558,6 +549,7 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         diam = max(20, min(2048, int(size)))
         thick = max(2, min(int(thickness), (diam // 2) - 1))
         
+        if canvas_x is None or canvas_y is None: return
         origin = Point(float(canvas_x), float(canvas_y))
         if not math.isfinite(origin.x) or not math.isfinite(origin.y): return
         
