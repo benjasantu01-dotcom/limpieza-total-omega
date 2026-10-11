@@ -1253,3 +1253,4 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-11T14:49:21` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-11T14:49:21` Corrida terminada. Total usado hoy: 350.
 - `2026-10-11T14:58:23` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-10-11T15:08:35` Presupuesto diario agotado (350 usados). Corte hasta mañana.
