@@ -1697,13 +1697,19 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         self.run_async(task)
 
+    def _validate_process_state(self, pid: int) -> bool:
+        """Verifica la existencia de un proceso antes de operar."""
+        if not memory_mod.process_exists(pid):
+            self.log(f"Error: El proceso {pid} ya no está activo.", "Memoria")
+            return False
+        return True
+
     @validated_ui_operation
     @ensure_safety
     def on_trim_process(self) -> None:
         """Callback: Intenta liberar memoria working set de un proceso específico."""
         raw_pid = self._safe_get_entry_value(getattr(self, 'pid_entry', None), None)
         
-        # Validación de PID: solo numérico y mayor que 100 para evitar procesos críticos del sistema (PID < 100)
         try:
             pid = int(raw_pid)
             if pid < 100:
@@ -1712,8 +1718,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.log("Error: PID inválido o crítico del sistema (debe ser numérico y >= 100).", "Memoria")
             return
         
-        if not memory_mod.process_exists(pid):
-            self.log(f"Error: El proceso {pid} no está activo.", "Memoria")
+        if not self._validate_process_state(pid):
             return
 
         if not self._confirm("Liberar working set", memory_mod.TRIM_WARNING + "\n\n¿Seguimos?"):
@@ -1721,9 +1726,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def task() -> None:
             try:
-                safety.ensure_safe_to_modify(Path.home())
-                ok, mensaje = memory_mod.trim_working_set(pid)
-                self._safe_run_ui_callback(lambda: self.log(("OK: " if ok else "Sin efecto: ") + mensaje, "Memoria"))
+                if self._validate_process_state(pid):
+                    safety.ensure_safe_to_modify(Path.home())
+                    ok, mensaje = memory_mod.trim_working_set(pid)
+                    self._safe_run_ui_callback(lambda: self.log(("OK: " if ok else "Sin efecto: ") + mensaje, "Memoria"))
             except Exception as e:
                 self._safe_run_ui_callback(lambda: self.log(f"Error al intentar liberar proceso: {e}", "Memoria"))
 

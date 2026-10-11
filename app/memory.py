@@ -366,6 +366,8 @@ def _is_process_executable_safe(pid: int) -> bool:
             path_str = buf.value
             if not isinstance(path_str, str) or len(path_str) < 3 or ":" not in path_str[1:3]:
                 return False
+            # Validar que el archivo realmente existe antes de evaluar seguridad
+            if not Path(path_str).exists(): return False
             if path_str.startswith("\\\\"): return False
             return not is_protected_path(path_str)
     except (ctypes.ArgumentError, OSError):
