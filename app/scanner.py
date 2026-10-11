@@ -225,7 +225,7 @@ class Scanner:
                 return False
                 
             real_path = Path(path_str).resolve(strict=True)
-            if not str(real_path).lower().startswith(self.base_root_str):
+            if len(str(real_path)) > SCAN_LIMITS.max_path or not str(real_path).lower().startswith(self.base_root_str):
                 return False
                 
             self.safe_cache.add(path_str)
@@ -259,6 +259,7 @@ class Scanner:
                 if self._is_safe_entry(entry):
                     self._handle_directory(entry, directory_stack, current_depth)
             elif entry.is_file(follow_symlinks=False) and self._is_relevant_extension(entry.name):
+                # Validación adicional para evitar rutas excesivamente largas tras resolución
                 if self._is_safe_entry(entry):
                     self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError) as e:

@@ -978,3 +978,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-11T12:37:53` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-11T12:37:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-11T12:37:53` Corrida terminada. Total usado hoy: 300.
+- `2026-10-11T12:46:05` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-11T12:46:12` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-11T12:47:07` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una verificación de "propietario" mediante el SID del archivo en `ensure_safe_to_modify` para detectar rutas que, aunque no tengan atributos de sistema, pertenecen a grupos como `TrustedInstaller` (S-1-5-80), bloqueando preventivamente la manipulación de archivos gestionados exclusivamente por el instalador de Windows.
+- `2026-10-11T12:47:35` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Mejoré la robustez del escáner reforzando `process_entry` para validar explícitamente que los archivos detectados no excedan la longitud máxima de ruta permitida después de resolver sus alias, evitando errores de sistema en rutas maliciosas o extremadamente largas que podrían causar `OSError`.
+- `2026-10-11T12:48:08` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de TOCTOU y condiciones de carrera, añadiendo una verificación estricta de que el archivo no sea un enlace simbólico (usando `st_nlink` y `os.path.islink`) y restringiendo permisos de escritura para el grupo y otros, asegurando que solo el dueño pueda manipular el archivo de configuración.
+- `2026-10-11T12:48:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-11T12:48:11` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-11T12:48:18` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-11T12:48:44` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-10-11T12:48:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-11T12:48:44` Corrida terminada. Total usado hoy: 304.
