@@ -489,3 +489,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-11T08:03:13` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_process_executable_safe` añadiendo una validación explícita para asegurar que la ruta del ejecutable sea absoluta y no sea una ruta de dispositivo (a menudo utilizada en ataques de inyección de rutas en Windows), reforzando así la seguridad defensiva.
 - `2026-10-11T08:03:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-11T08:03:13` Corrida terminada. Total usado hoy: 192.
+- `2026-10-11T08:11:05` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-10-11T08:11:33` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-10-11T08:12:19` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `quarantine.py` mediante la implementación de `_verify_source_fs_permissions`, que valida explícitamente que el origen no sea una ruta de red (UNC) y verifica atributos críticos de sistema antes de iniciar cualquier copia, mitigando riesgos de manipulación de punteros de archivo o acceso a recursos bloqueados por el kernel.
+- `2026-10-11T08:12:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-11T08:13:10` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación de `Path Traversal` adicional mediante `os.path.commonpath` en `is_within_directory` para asegurar robustez absoluta contra rutas manipuladas o con puntos de montaje, reforzando la lógica de sandbox.
+- `2026-10-11T08:13:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-11T08:13:10` Corrida terminada. Total usado hoy: 196.

@@ -691,10 +691,15 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         c_path = normalize(child)
         p_path = normalize(parent)
         if is_drive_root(c_path) or is_protected_path(str(c_path)): return False
+        
+        # Validar ruta relativa mediante commonpath para evitar manipulación de sandbox
+        common = os.path.commonpath([str(c_path), str(p_path)])
+        if common != str(p_path): return False
+        
         c_str = str(c_path)
         p_str = str(p_path)
         return c_str.startswith(p_str) if allow_equal else (c_str.startswith(p_str) and c_str != p_str)
-    except (UnsafePathError, TypeError, OSError, RuntimeError): return False
+    except (UnsafePathError, TypeError, OSError, RuntimeError, ValueError): return False
 
 @lru_cache(maxsize=2048)
 def is_sensitive_file(path: PathLike) -> bool:

@@ -87,6 +87,19 @@ def _check_path_for_junctions(path: Path) -> None:
     except (OSError, AttributeError):
         pass
 
+def _verify_source_fs_permissions(path: Path) -> None:
+    """Verifica que el origen no sea una ruta de red y posea permisos básicos."""
+    p_str = str(path)
+    if p_str.startswith(r"\\") or p_str.startswith("//"):
+        raise UnsafePathError("Operaciones en rutas UNC no permitidas.")
+    if os.name == 'nt':
+        try:
+            attrs = ctypes.windll.kernel32.GetFileAttributesW(p_str)
+            if attrs != -1 and (attrs & 0x02 or attrs & 0x04):
+                raise UnsafePathError("Archivo protegido por atributos de sistema.")
+        except (OSError, AttributeError):
+            pass
+
 def _is_filesystem_read_only(path: Path) -> bool:
     """Prueba de escritura temporal para detectar si un volumen es de solo lectura."""
     try:
@@ -814,6 +827,7 @@ def _validate_source_for_quarantine(source: Path) -> Path:
     if is_protected_path(source):
         raise UnsafePathError("La ruta origen está en una zona protegida.")
     
+    _verify_source_fs_permissions(source)
     return source
 
 def _cleanup_orphaned_destination(destination: Path) -> None:
