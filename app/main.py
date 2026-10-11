@@ -221,6 +221,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def __init__(self) -> None:
         """Constructor: inicializa el registro de componentes y despliega la UI."""
         super().__init__()
+        # Estado interno de la aplicación
+        self._closing = False
+        self._tasks_running = 0
+        self._executor: Optional[concurrent.futures.ThreadPoolExecutor] = None
+        self._executor_lock = threading.Lock()
+        
         self._init_component_registry()
         self._setup_application()
 
@@ -229,11 +235,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._initialized_tabs: Dict[str, bool] = {name: False for name in TABS}
         self._health_components_lazy_loaded = False
         
-        self._executor: Optional[concurrent.futures.ThreadPoolExecutor] = None
         self._task_lock = threading.Lock()
-        self._executor_lock = threading.Lock()
-        self._closing = False
-        self._tasks_running = 0
         
         self._log_queue: List[LogEntry] = []
         self._log_lock = threading.Lock()

@@ -141,8 +141,8 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Intenta abrir el archivo en modo lectura binaria exclusiva.
-    El fallo al abrir indica que el sistema operativo mantiene un lock activo.
+    Verifica si un archivo está bloqueado intentando abrirlo en modo lectura exclusiva.
+    La apertura exitosa implica que no hay bloqueos de escritura por parte de otros procesos.
     """
     if not path or not path.is_file(): return True
     try:
@@ -168,10 +168,10 @@ def _has_forbidden_chars(path: Path) -> bool:
 
 def _validate_path_security(src: Path, dest: Path) -> bool:
     """
-    Realiza validaciones previas al movimiento de archivos:
-    - Comprueba rutas UNC.
-    - Verifica longitud de ruta (MAX_PATH).
-    - Valida contra la lista de protección central (safety.py).
+    Realiza validaciones de integridad antes de cualquier operación de movimiento:
+    - Evita rutas UNC y caracteres no permitidos en sistemas de archivos Windows.
+    - Asegura que las rutas no superen el límite MAX_PATH para prevenir errores de E/S.
+    - Consulta safety.py como última instancia de protección global.
     """
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     if len(str(src)) > MAX_PATH_LENGTH or len(str(dest)) > MAX_PATH_LENGTH: return False
@@ -183,8 +183,9 @@ def _is_system_hidden(entry: os.DirEntry) -> bool:
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
-    Auditoría multietapa para autorizar operaciones de escritura.
-    Usa resolve(strict=True) para evitar ataques de enlace simbólico (TOCTOU).
+    Realiza una auditoría multietapa para autorizar operaciones de escritura.
+    Verifica estado de archivo, bloqueos y disponibilidad de espacio en disco.
+    Usa resolve(strict=True) para mitigar ataques tipo TOCTOU (Time-of-check to time-of-use).
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     try:
@@ -210,7 +211,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         return False
 
 def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> bool:
-    """Determina si un directorio es candidato a ser escaneado."""
+    """Determina si un directorio es candidato a ser escaneado basándose en políticas de seguridad."""
     if not _is_allowed_directory(entry.name) or _is_junction(entry): return False
     if _is_system_hidden(entry): return False
     if entry.path in protected_cache: return False
@@ -223,13 +224,16 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> boo
     return True
 
 def _is_candidate_junk(stats: os.stat_result, entry: os.DirEntry, now_ts: float) -> bool:
-    """Aplica heurísticas de elegibilidad para archivos temporales."""
+    """Aplica heurísticas de elegibilidad para archivos temporales según tamaño y fecha."""
     return (0 <= stats.st_size < MAX_FILE_SIZE_BYTES and 
             stats.st_mtime <= now_ts + 3600 and
             not _is_system_hidden(entry))
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
-    """Escaneo recursivo de directorios con límite de profundidad y cache de rutas."""
+    """
+    Escaneo recursivo de directorios con límite de profundidad (50) para evitar desbordamiento de pila.
+    Utiliza un cache de rutas visitadas y rutas protegidas para optimizar el rendimiento y seguridad.
+    """
     if depth > 50: return
     try:
         resolved_dir = current_dir.resolve(strict=False)
@@ -244,7 +248,6 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False):
-                        # Búsqueda eficiente usando el nombre del archivo en minúsculas
                         name_lower = entry.name.lower()
                         if any(name_lower.endswith(ext) for ext in JUNK_EXTENSIONS):
                             stats = entry.stat(follow_symlinks=False)
@@ -256,7 +259,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
         pass
 
 def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[JunkFile]:
-    """Punto de entrada para el escaneo de basura."""
+    """Punto de entrada para el escaneo de basura; normaliza las rutas de entrada."""
     found: List[JunkFile] = []
     protected_cache: set[str] = set()
     visited: set[Path] = set()
@@ -277,7 +280,7 @@ def sort_junk(files: Sequence[JunkFile], by: SortField = "size", ascending: bool
     return sorted(files, key=config.key_func, reverse=not bool(ascending))
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """Mueve los archivos detectados a la carpeta de revisión."""
+    """Mueve de forma segura los archivos detectados a la carpeta de revisión."""
     if not files or not review_dir: return None
     try:
         dest_base = Path(review_dir).expanduser()
@@ -304,7 +307,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     return dest_res
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
-    """Crea una ruta de destino segura con un timestamp para evitar colisiones."""
+    """Calcula una ruta de destino segura para evitar la sobreescritura de archivos previos."""
     if not junk_file or not junk_file.path or not dest_base: return None
     try:
         safe_name = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
@@ -313,7 +316,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         return None
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Elimina permanentemente archivos desde la zona de revisión tras validación estricta."""
+    """Elimina permanentemente archivos tras una validación estricta de seguridad y pertenencia al directorio."""
     if not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser().resolve(strict=False)
