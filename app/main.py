@@ -325,23 +325,23 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _validate_disk_access(self, path: Union[str, Path]) -> Path:
         """Valida la integridad de la ruta y permisos de seguridad."""
-        p = Path(path).resolve()
-        
-        # Prevenir Path Traversal y caracteres no deseados
+        try:
+            p = Path(path).resolve(strict=True)
+        except (OSError, RuntimeError):
+            raise safety.UnsafePathError(f"Ruta inaccesible o inexistente: {path}")
+
+        # Prevenir Path Traversal e inyecciones: solo caracteres imprimibles
+        if not all(c.isprintable() for c in str(p)):
+            raise safety.UnsafePathError("Ruta contiene caracteres no imprimibles.")
+
+        # Evitar tocar la estructura interna de la App
         app_dir = Path(__file__).resolve().parent
-        if str(p).startswith(str(app_dir)) and p != app_dir:
+        if app_dir in p.parents or p == app_dir:
              raise safety.UnsafePathError("Operación denegada: Acceso a estructura interna de la App.")
 
-        # Validación estricta de formato: evita caracteres prohibidos en nombres de archivos Windows
-        if any(c in '<>|?*' for c in str(p.name)) or len(str(p)) < 3:
-            raise safety.UnsafePathError("Ruta contiene caracteres inválidos para el sistema de archivos")
-        
-        if not p.exists():
-            raise FileNotFoundError(f"Ruta inexistente: {p}")
-            
-        # Detectar enlaces simbólicos o junctions que apuntan fuera o son sospechosos
+        # Detectar enlaces simbólicos peligrosos
         if p.is_symlink():
-            raise safety.UnsafePathError("Ruta inválida: se detectó un enlace simbólico o reparse point")
+            raise safety.UnsafePathError("Ruta inválida: se detectó un enlace simbólico.")
             
         safety.ensure_safe_to_modify(p)
         return p

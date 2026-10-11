@@ -369,7 +369,10 @@ def _is_process_executable_safe(pid: int) -> bool:
         bytes_copied = psapi.GetModuleFileNameExW(handle, None, buf, 512)
         if bytes_copied > 0:
             path_str = buf.value
-            if not isinstance(path_str, str) or path_str.startswith("\\\\"): return False
+            # Validación defensiva: debe ser ruta absoluta y no de dispositivo/red sospechosa
+            if not isinstance(path_str, str) or len(path_str) < 3 or ":" not in path_str[1:3]:
+                return False
+            if path_str.startswith("\\\\"): return False
             return not is_protected_path(path_str)
     except (ctypes.ArgumentError, OSError):
         return False
