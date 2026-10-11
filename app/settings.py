@@ -321,7 +321,7 @@ def validate(raw_values: Any) -> AppSettings:
                     config[key_enum.value] = validated_val
         except (AttributeError, KeyError, Exception):
             continue
-    return config # type: ignore
+    return config 
 
 def _is_file_secure_to_read(file_obj: Any) -> bool:
     """
@@ -417,8 +417,8 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """
     final: AppSettings = DEFAULTS.copy()
     for key, val in settings.items():
-        if key in DEFAULTS and isinstance(val, type(DEFAULTS[key])):
-            final[key] = val # type: ignore
+        if key in DEFAULTS and val is not None and isinstance(val, type(DEFAULTS[key])):
+            final[key] = val
         
     if final["asistente_activado"] and not (final["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         final["asistente_activado"] = False

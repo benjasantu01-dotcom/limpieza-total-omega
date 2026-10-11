@@ -852,12 +852,9 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """Valida exhaustivamente una ruta para garantizar que es segura de modificar."""
+    if not isinstance(path, (str, Path, os.PathLike)):
+        raise UnsafePathError(f"Tipo de ruta no soportado: {type(path).__name__}", SafetyValidationErrorCode.GENERIC)
     try:
-        if path is None:
-            raise UnsafePathError("Ruta nula.", SafetyValidationErrorCode.GENERIC)
-        if not isinstance(path, (str, Path, os.PathLike)):
-            raise UnsafePathError(f"Tipo de ruta no soportado: {type(path).__name__}", SafetyValidationErrorCode.GENERIC)
-        
         path_str = str(path)
         if os.name == 'nt' and os.path.exists(path_str) and _is_file_locked_by_other_process(path_str):
              raise UnsafePathError(f"Archivo bloqueado por el sistema: {path_str}", SafetyValidationErrorCode.FILE_IN_USE)
@@ -897,7 +894,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     except UnsafePathError:
         raise
     except (OSError, AttributeError, RuntimeError, ValueError, TypeError) as e:
-        raise UnsafePathError(f"Validación fallida inesperadamente: {e}", SafetyValidationErrorCode.IO_ERROR)
+        raise UnsafePathError(f"Validación fallida: {e}", SafetyValidationErrorCode.IO_ERROR)
     except Exception as e:
         raise UnsafePathError(f"Error crítico durante la validación: {e}", SafetyValidationErrorCode.IO_ERROR)
 

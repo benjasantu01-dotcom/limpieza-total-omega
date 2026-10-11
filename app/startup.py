@@ -316,18 +316,21 @@ def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
     """
     Valida la integridad de una entrada leída desde el registro de Windows.
     """
-    if not name or not cmd or cmd.startswith(r"\\") or cmd in seen or name.upper().startswith("PS"):
+    if not isinstance(name, str) or not isinstance(cmd, str):
         return False
+    if not name.strip() or not cmd.strip() or cmd.startswith(r"\\") or cmd in seen:
+        return False
+    # Evitar propiedades de PowerShell (PS...)
+    if name.upper().startswith("PS"):
+        return False
+    
     try:
-        if not isinstance(cmd, str):
-            return False
         clean_path = cmd.strip('"')
-        if not clean_path:
-            return False
-        if "\\" not in clean_path and "/" not in clean_path:
+        if not clean_path or "\\" not in clean_path and "/" not in clean_path:
             return False
         if any(c in clean_path for c in SUSPICIOUS_CHARS):
             return False
+        
         target_path = Path(clean_path)
         if is_protected_path(target_path) or ".." in str(target_path):
             return False
@@ -360,14 +363,14 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             if not isinstance(row, dict):
                 continue
             
-            raw_val_name: Optional[str] = row.get(header_name)
-            raw_val_cmd: Optional[str] = row.get(header_cmd)
+            raw_val_name = row.get(header_name)
+            raw_val_cmd = row.get(header_cmd)
             
-            if raw_val_name is None or raw_val_cmd is None:
+            if not isinstance(raw_val_name, str) or not isinstance(raw_val_cmd, str):
                 continue
             
-            clean_name: str = "".join(c for c in str(raw_val_name) if ord(c) >= 32).strip()
-            clean_cmd: str = "".join(c for c in str(raw_val_cmd) if ord(c) >= 32).strip()
+            clean_name: str = "".join(c for c in raw_val_name if ord(c) >= 32).strip()
+            clean_cmd: str = "".join(c for c in raw_val_cmd if ord(c) >= 32).strip()
             
             if _is_valid_registry_entry(clean_name, clean_cmd, seen_commands):
                 seen_commands.add(clean_cmd)

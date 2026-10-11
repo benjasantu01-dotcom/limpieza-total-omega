@@ -138,8 +138,11 @@ def _is_target_extension(name: str) -> bool:
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta el uso de doble extensión como técnica común de enmascaramiento de ejecutables."""
-    if path.name and DOUBLE_EXTENSION_RE.search(path.name):
-        return Suspicion(path, "Doble extensión detectada como técnica de enmascaramiento", "warning")
+    try:
+        if path.name and DOUBLE_EXTENSION_RE.search(path.name):
+            return Suspicion(path, "Doble extensión detectada como técnica de enmascaramiento", "warning")
+    except Exception:
+        pass
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
@@ -167,8 +170,11 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Identifica archivos ejecutables con tamaño cero, frecuentemente usados como marcadores maliciosos."""
-    if _get_file_size(path) == 0:
-        return Suspicion(path, "Ejecutable vacío detectado", "warning")
+    try:
+        if _get_file_size(path) == 0:
+            return Suspicion(path, "Ejecutable vacío detectado", "warning")
+    except OSError:
+        pass
     return None
 
 ALL_CHECKS: Final[Sequence[SuspicionCheck]] = [
@@ -258,8 +264,8 @@ class Scanner:
             elif entry.is_file(follow_symlinks=False) and self._is_relevant_extension(entry.name):
                 if self._is_safe_entry(entry):
                     self._run_file_heuristics(Path(entry.path), entry)
-        except (OSError, PermissionError):
-            logger.debug(f"Acceso denegado o error en entrada: {entry.path}")
+        except (OSError, PermissionError) as e:
+            logger.debug(f"Acceso denegado o error en entrada {entry.path}: {e}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta el conjunto de heurísticas definido sobre un archivo validado."""
@@ -270,7 +276,7 @@ class Scanner:
                 finding = check_fn(path, entry, self.now_ts)
                 if finding is not None:
                     self.results.append(finding)
-            except (OSError, PermissionError, AttributeError, ValueError) as e:
+            except (OSError, PermissionError, AttributeError, ValueError, TypeError) as e:
                 logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
@@ -288,7 +294,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
         try:
             res = check_fn(path, entry, now_ts)
             if res is not None: findings.append(res)
-        except (OSError, PermissionError, AttributeError, ValueError) as e:
+        except (OSError, PermissionError, AttributeError, ValueError, TypeError) as e:
             logger.debug(f"Heurística individual fallida en {path}: {e}")
     return findings
 
@@ -315,7 +321,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
                 for entry in it:
                     if entry is not None:
                         scanner.process_entry(entry, directory_stack, depth)
-        except (PermissionError, OSError, AttributeError) as e:
+        except (PermissionError, OSError) as e:
             logger.debug(f"Error accediendo al directorio {current_dir}: {e}")
             continue
     return scanner.results
