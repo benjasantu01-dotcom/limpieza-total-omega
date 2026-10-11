@@ -220,7 +220,11 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         return None
     
     name, pid_str, ws_str = parts[0], parts[1], parts[2]
-    pid = int(_safe_int_conversion(pid_str))
+    try:
+        pid = int(pid_str)
+    except (ValueError, TypeError):
+        return None
+        
     ws = _safe_int_conversion(ws_str)
         
     if _is_system_process(pid) or pid <= 0: 
@@ -386,6 +390,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError):
         return False, "PID no numérico."
     
+    if target_pid <= 0:
+        return False, "PID inválido."
+        
     is_safe, error_msg = _is_safe_to_trim(target_pid)
     if not is_safe: return False, error_msg or "Verificación de seguridad fallida."
     

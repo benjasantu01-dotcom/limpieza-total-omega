@@ -8,25 +8,25 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 29
-- Rechazadas por guardia de seguridad: 43
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 210
+- Rechazadas por guardia de seguridad: 40
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-09 | 13 | 1 | 5 | 3 | 4 |
+| 2026-10-09 | 12 | 1 | 2 | 3 | 4 |
 | 2026-10-10 | 151 | 17 | 30 | 12 | 140 |
-| 2026-10-11 | 39 | 11 | 8 | 4 | 66 |
+| 2026-10-11 | 40 | 11 | 8 | 6 | 67 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **48**
 - robustez ante casos límite: **42**
-- manejo de errores y validación de entradas: **39**
+- manejo de errores y validación de entradas: **40**
 - rendimiento: **38**
-- legibilidad y documentación: **36**
+- legibilidad y documentación: **35**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,9 +34,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **20**
 - `safety.py`: **19**
 - `assistant.py`: **17**
-- `scanner.py`: **15**
+- `memory.py`: **15**
 - `duplicates.py`: **14**
-- `memory.py`: **14**
+- `scanner.py`: **14**
 - `branding.py`: **13**
 - `browser.py`: **13**
 - `main.py`: **13**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-11T05:30:18` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_process_info` y `trim_working_set` añadiendo validaciones preventivas contra valores inesperados, asegurando que cualquier entrada sea procesada de forma segura sin abortar operaciones por errores de tipo.
 - `2026-10-11T05:19:55` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `largest_folders` añadiendo capturas de excepciones más granulares y validaciones de estado para prevenir fallos silenciosos durante la iteración de directorios, asegurando que el manejo de rutas malformadas no interrumpa el flujo del reporte.
 - `2026-10-11T05:19:41` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` y `_resolve_browser_path` validando explícitamente que los parámetros de entrada (`bases` y `cache_paths`) no solo tengan el tipo correcto, sino que no sean colecciones vacías antes de procesarlos, evitando iteraciones innecesarias y posibles errores de lógica en flujos con configuraciones de usuario incompletas.
 - `2026-10-11T05:18:44` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_text_from_gemini_json` para manejar estructuras de datos anidadas de forma más defensiva, asegurando que no se produzcan excepciones al acceder a claves ausentes o tipos inesperados, reforzando la validación de seguridad requerida.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-11T02:58:42` **memory.py** (robustez ante casos límite): Se mejora la robustez de `top_memory_processes` añadiendo una validación explícita para evitar errores de tipo si los PIDs retornados por `EnumProcesses` no son enteros válidos o si la lista de procesos está vacía tras el filtrado, previniendo excepciones durante la iteración sobre PIDs del sistema o procesos zombies.
 - `2026-10-11T02:56:41` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor ante casos límite (entradas mal formadas o vacías) añadiendo una validación explícita de `is_finite` en `compute_score` y asegurando que las reglas de recomendación manejen correctamente posibles divisiones por cero o valores nulos en el cálculo de métricas.
 - `2026-10-11T02:47:53` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_is_excluded_path` ante errores de entrada y permisos denegados al manejar explícitamente posibles excepciones de `os.scandir` y la resolución de rutas, asegurando que el recorrido no se interrumpa silenciosamente por errores de sistema en subdirectorios profundos.
-- `2026-10-11T02:47:20` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante errores de acceso a archivos al delegar la verificación de atributos de sistema a una lógica protegida contra `OSError`, y se corrigió el manejo de `Kernel32` para asegurar que el escaneo no se interrumpa en sistemas con permisos restringidos o donde `GetFileAttributesW` falle por causas externas.
