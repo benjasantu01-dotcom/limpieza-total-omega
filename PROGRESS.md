@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Mejoras aceptadas: **198** (39.3% de aceptación)
 - Rechazadas por tests: 31
-- Rechazadas por guardia de seguridad: 44
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 208
 
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-10 | 147 | 17 | 29 | 12 | 139 |
-| 2026-10-11 | 52 | 14 | 15 | 10 | 69 |
+| 2026-10-10 | 144 | 16 | 29 | 12 | 139 |
+| 2026-10-11 | 54 | 15 | 16 | 10 | 69 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **48**
+- seguridad defensiva: **47**
 - manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **43**
-- robustez ante casos límite: **35**
-- rendimiento: **29**
+- robustez ante casos límite: **33**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
 - `healthscore.py`: **19**
-- `assistant.py`: **18**
 - `safety.py`: **18**
-- `memory.py`: **15**
-- `scanner.py`: **14**
-- `settings.py`: **13**
+- `assistant.py`: **17**
+- `memory.py`: **16**
 - `branding.py`: **13**
 - `duplicates.py`: **13**
+- `scanner.py`: **13**
 - `browser.py`: **13**
 - `main.py`: **12**
+- `organizer.py`: **12**
+- `settings.py`: **12**
 - `startup.py`: **11**
-- `organizer.py`: **11**
 - `quarantine.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-11T06:51:36` **organizer.py** (rendimiento): Optimizé la detección de extensiones en `_process_directory` pasando de una lista de `any()` con `.endswith()` a un `set` de extensiones y validación de `path.suffix` para reducir la complejidad algorítmica de O(N*M) a O(N) por cada archivo.
+- `2026-10-11T06:51:10` **memory.py** (rendimiento): Se optimizó el acceso a los procesos mediante la pre-validación de los PIDs en un `set` antes de llamar a funciones de sistema costosas, evitando iteraciones repetitivas y llamadas innecesarias a la API de Windows en procesos ya descartados.
 - `2026-10-11T06:30:13` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `StartupEntry` añadiendo docstrings técnicos sobre las restricciones de seguridad (`260` caracteres, `UNC`) y clarificando mediante comentarios el flujo de resolución de rutas y el uso de caché, facilitando el mantenimiento a futuro.
 - `2026-10-11T06:10:51` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las estructuras de datos críticas (`MEMORYSTATUSEX` y `PROCESS_MEMORY_COUNTERS`) añadiendo comentarios detallados sobre el propósito de cada campo y corrigiendo la firma de los tipos en `_fields_` para mejorar la claridad de la interfaz con la API de Windows.
 - `2026-10-11T06:09:22` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del pipeline añadiendo docstrings descriptivos a las funciones de cálculo (`score_*`) y estandarizando los nombres de los parámetros en las lambdas del `_PIPELINE` para mayor claridad conceptual.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-11T05:40:21` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_file_attrs` y `_is_volume_readonly` añadiendo validaciones de tipo y estructura para prevenir errores de ejecución silenciosos (como `TypeError` o `ValueError`) en casos de rutas mal formadas, asegurando que la capa de seguridad siempre retorne valores seguros por defecto en lugar de fallar catastróficamente.
 - `2026-10-11T05:38:55` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_locked` al asegurar que el archivo sea efectivamente accesible antes de intentar abrirlo, y añadí validaciones de tipo explícitas en `stage_for_review` para prevenir fallos por entradas inesperadas, cumpliendo con el enfoque de manejo de errores.
 - `2026-10-11T05:30:18` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_process_info` y `trim_working_set` añadiendo validaciones preventivas contra valores inesperados, asegurando que cualquier entrada sea procesada de forma segura sin abortar operaciones por errores de tipo.
-- `2026-10-11T05:19:55` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `largest_folders` añadiendo capturas de excepciones más granulares y validaciones de estado para prevenir fallos silenciosos durante la iteración de directorios, asegurando que el manejo de rutas malformadas no interrumpa el flujo del reporte.
-- `2026-10-11T05:19:41` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` y `_resolve_browser_path` validando explícitamente que los parámetros de entrada (`bases` y `cache_paths`) no solo tengan el tipo correcto, sino que no sean colecciones vacías antes de procesarlos, evitando iteraciones innecesarias y posibles errores de lógica en flujos con configuraciones de usuario incompletas.

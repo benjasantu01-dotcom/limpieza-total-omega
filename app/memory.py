@@ -318,7 +318,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
             
             for i in range(count):
                 pid = int(pids[i])
-                if pid > 0 and not _is_system_process(pid):
+                if pid > 0 and pid not in SYSTEM_CRITICAL_PIDS and pid != os.getpid():
                     ws = _query_working_set_bytes(pid, kernel32, psapi)
                     if ws:
                         found_procs.append(ProcessMemory(f"PID {pid}", pid, ws))

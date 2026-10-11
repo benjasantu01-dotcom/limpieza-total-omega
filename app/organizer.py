@@ -95,12 +95,11 @@ class JunkFile:
     @property
     def is_junk_extension(self) -> bool:
         """Verifica si la extensión del archivo coincide con las heurísticas de basura."""
-        return any(self.path.name.lower().endswith(ext) for ext in JUNK_EXTENSIONS)
+        return self.path.suffix.lower() in JUNK_EXTENSIONS
 
 def is_valid_junk_extension(filename: str) -> bool:
     """Valida si el sufijo del archivo pertenece a la lista definida en JUNK_EXTENSIONS."""
-    name = filename.lower()
-    return any(name.endswith(ext) for ext in JUNK_EXTENSIONS)
+    return Path(filename).suffix.lower() in JUNK_EXTENSIONS
 
 def _get_win_attributes(entry: os.DirEntry) -> int:
     """Extrae atributos de archivo (bitmask) usando syscall de bajo nivel para Windows."""
@@ -244,8 +243,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False):
-                        name_lower = entry.name.lower()
-                        if any(name_lower.endswith(ext) for ext in JUNK_EXTENSIONS):
+                        if Path(entry.name).suffix.lower() in JUNK_EXTENSIONS:
                             stats = entry.stat(follow_symlinks=False)
                             if _is_candidate_junk(stats, entry, now_ts):
                                 found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
