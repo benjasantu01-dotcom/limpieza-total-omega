@@ -548,10 +548,10 @@ def _format_problem_message(problems: tuple[str, ...], score: int | str) -> str:
 
 @_safe_handler_wrapper
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
-    """Gestiona consultas sobre memoria RAM."""
+    """Gestiona consultas sobre memoria RAM usando contexto validado."""
     snap = ctx.metrics_snapshot
-    mem_pct = snap.get("memory_available_percent", DEFAULT_RAM_PCT)
-    total_gb = snap.get("memory_total_gb", 0.0)
+    mem_pct: float = snap.get("memory_available_percent", DEFAULT_RAM_PCT)
+    total_gb: float = snap.get("memory_total_gb", 0.0)
     
     msg = f"Tenés {mem_pct:.0f}% de RAM disponible{f' de {total_gb:.0f} GB' if total_gb > 0 else ''}."
     if mem_pct < 15:

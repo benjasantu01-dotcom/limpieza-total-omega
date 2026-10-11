@@ -128,7 +128,10 @@ class SummaryData(NamedTuple):
 
 
 def _bytes_to_mb(size_bytes: int | float | None) -> float:
-    """Convierte bytes a MB (float) redondeado a 2 decimales. Maneja nulos y negativos."""
+    """
+    Convierte un valor en bytes a megabytes (MB) como float.
+    Maneja entradas nulas o negativas devolviendo 0.0 para evitar errores de lógica.
+    """
     if not isinstance(size_bytes, (int, float)) or size_bytes < 0:
         return 0.0
     try:
@@ -138,7 +141,10 @@ def _bytes_to_mb(size_bytes: int | float | None) -> float:
 
 
 def _validate_limit(limit: Any) -> int:
-    """Normaliza el límite de resultados para asegurar un entero no negativo."""
+    """
+    Normaliza el parámetro 'limit' para operaciones de corte (slice/heap).
+    Asegura que el valor sea un entero no negativo.
+    """
     if isinstance(limit, int) and not isinstance(limit, bool):
         return max(0, limit)
     return 0
@@ -146,8 +152,8 @@ def _validate_limit(limit: Any) -> int:
 
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     """
-    Valida la existencia y seguridad de la ruta raíz.
-    Retorna Path resuelto y validado, o None si no es seguro o no existe.
+    Valida la existencia, seguridad y accesibilidad de la ruta raíz.
+    Resuelve la ruta absoluta y verifica que no sea protegida ni un enlace simbólico.
     """
     if directory is None:
         return None
