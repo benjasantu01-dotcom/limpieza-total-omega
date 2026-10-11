@@ -238,19 +238,11 @@ def _sum_directory_recursive(
 ) -> ScanResult:
     """
     Realiza un recorrido en profundidad (DFS) del árbol de archivos.
-    
-    Argumentos:
-        root_path: Ruta raíz del directorio actual a procesar.
-        ctx: Contexto de estado compartido que rastrea visited_dirs para 
-             cortar recursión en bucles de montaje o enlaces.
-        depth: Nivel actual de profundidad para evitar stack overflow y 
-               escaneos excesivamente largos.
     """
-    if depth > MAX_SCAN_DEPTH:
+    if depth > MAX_SCAN_DEPTH or is_protected_path(Path(root_path)):
         return ScanResult(0, True)
     
     path_norm = os.path.normcase(root_path)
-    # Evita el reprocesamiento de directorios ya visitados en este ciclo
     if path_norm in ctx.visited_dirs:
         return ScanResult(ctx.visited_dirs[path_norm], True)
 
@@ -312,7 +304,6 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     if any(char in rel_str for char in PATH_FORBIDDEN_CHARS): 
         return Path()
     
-    # Construcción segura evitando '..' mediante descomposición de componentes
     parts = [p for p in rel_str.split("\\") if p and p != "." and p != ".."]
     target: Path = real_base.joinpath(*parts)
     
@@ -342,7 +333,6 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             real_base: Path = base.resolve(strict=True)
             real_base_str: str = str(real_base)
             
-            # Reutilizamos ScanContext para todo el árbol de AppData de este base_path
             ctx = ScanContext(os.path.normcase(real_base_str), _get_kernel32(), _IS_JUNCTION_FN, set(), {})
             
             for browser_name, rel_str in browser_map.items():
