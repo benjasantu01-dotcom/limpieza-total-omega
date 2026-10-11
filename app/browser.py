@@ -242,18 +242,21 @@ def _sum_directory_recursive(
     try:
         with os.scandir(root_path) as it:
             for entry in it:
-                if _should_skip_entry(entry, ctx):
+                try:
+                    if _should_skip_entry(entry, ctx):
+                        continue
+                        
+                    if entry.is_dir(follow_symlinks=False):
+                        res = _sum_directory_recursive(entry.path, ctx, depth + 1)
+                        total_bytes += res.bytes_found
+                    else:
+                        total_bytes += _process_file_node(entry, ctx.visited_files)
+                except (OSError, PermissionError):
                     continue
-                    
-                if entry.is_dir(follow_symlinks=False):
-                    res = _sum_directory_recursive(entry.path, ctx, depth + 1)
-                    total_bytes += res.bytes_found
-                else:
-                    total_bytes += _process_file_node(entry, ctx.visited_files)
         
         ctx.visited_dirs[path_norm] = total_bytes
         return ScanResult(total_bytes, True)
-    except (OSError, PermissionError, ValueError):
+    except (OSError, PermissionError):
         return ScanResult(0, False)
 
 @safe_path_operation(0)

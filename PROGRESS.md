@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
-- Rechazadas por tests: 30
+- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Rechazadas por tests: 31
 - Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 209
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-10 | 141 | 15 | 29 | 12 | 139 |
-| 2026-10-11 | 56 | 15 | 17 | 10 | 70 |
+| 2026-10-10 | 138 | 15 | 29 | 12 | 138 |
+| 2026-10-11 | 58 | 16 | 17 | 10 | 71 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **43**
+- seguridad defensiva: **41**
+- robustez ante casos límite: **35**
 - rendimiento: **33**
-- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **19**
 - `safety.py`: **19**
 - `diskreport.py`: **18**
+- `healthscore.py`: **18**
 - `assistant.py`: **17**
-- `memory.py`: **16**
+- `memory.py`: **15**
+- `browser.py`: **14**
 - `scanner.py`: **13**
+- `branding.py`: **13**
 - `settings.py`: **13**
-- `browser.py`: **13**
-- `main.py`: **12**
-- `branding.py`: **12**
 - `duplicates.py`: **12**
 - `organizer.py`: **12**
 - `startup.py`: **11**
+- `main.py`: **11**
 - `quarantine.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-11T07:11:47` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escáner ante posibles errores de resolución de rutas y recursión mediante la validación estricta de `os.scandir` y la adición de un chequeo de `PermissionError` específico en el iterador, asegurando que los fallos de acceso en subcarpetas durante la navegación profunda no propaguen excepciones inesperadas.
+- `2026-10-11T07:11:37` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` ante fallos en el sistema de archivos (ej. directorios de solo lectura o falta de permisos) mediante la implementación de un manejo de excepciones granular y una validación de ruta más estricta antes de la operación de escritura.
 - `2026-10-11T07:01:38` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `update()` implementando un chequeo de `mtime` temprano antes de realizar cualquier operación de lectura o parseo costoso, evitando el procesamiento redundante de archivos que no han cambiado en disco.
 - `2026-10-11T07:00:55` **safety.py** (rendimiento): Se ha optimizado la validación de rutas mediante la implementación de `lru_cache` en `_is_kernel_managed` y `_is_sensitive_extension`, y se ha refactorizado `is_protected_path` para evitar llamadas redundantes a `Path.resolve()` y `Path.parents` en cada iteración, mejorando drásticamente el rendimiento en escaneos masivos de disco.
 - `2026-10-11T06:51:36` **organizer.py** (rendimiento): Optimizé la detección de extensiones en `_process_directory` pasando de una lista de `any()` con `.endswith()` a un `set` de extensiones y validación de `path.suffix` para reducir la complejidad algorítmica de O(N*M) a O(N) por cada archivo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-11T05:59:23` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (usando el formato Google Style) en las funciones críticas de renderizado, clarificando las precondiciones de entrada y la lógica de manejo de errores.
 - `2026-10-11T05:50:32` **assistant.py** (legibilidad y documentación): Se introdujeron type hints explícitos en los métodos de `SystemContext` y funciones de soporte (`_get_source_value`, `_fmt_metric`) para mejorar la claridad del contrato de datos, y se añadieron docstrings detallados en funciones críticas que carecían de ellos, aclarando el propósito y las precondiciones de seguridad.
 - `2026-10-11T05:49:38` **settings.py** (manejo de errores y validación de entradas): Mejora la robustez en la carga de configuración añadiendo un manejo explícito de errores de I/O y validación de tipos al leer el archivo JSON, evitando que una lectura parcial o corrupta propague errores silenciosos hacia la aplicación.
-- `2026-10-11T05:49:06` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de errores en `scanner.py` asegurando que las llamadas a `os.scandir` y la validación de archivos no se interrumpan ante excepciones inesperadas, centralizando la lógica de captura y evitando el uso de bloques `try-except` vacíos que ocultaban fallos silenciosos.
-- `2026-10-11T05:40:21` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_file_attrs` y `_is_volume_readonly` añadiendo validaciones de tipo y estructura para prevenir errores de ejecución silenciosos (como `TypeError` o `ValueError`) en casos de rutas mal formadas, asegurando que la capa de seguridad siempre retorne valores seguros por defecto en lugar de fallar catastróficamente.

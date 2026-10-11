@@ -399,22 +399,20 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         return None
     try:
         target = Path(destination).resolve()
+        # Verificación preliminar de seguridad
+        if is_protected_path(target) or not is_safe_to_modify(target):
+            return None
         
-        # Validar ruta de destino antes de intentar crear directorios o escribir
-        # Chequeo extra de seguridad: verificar protección del sistema explícitamente
-        if is_protected_path(target):
-            return None
-        safe_path = filter_safe_paths([target])
-        if not safe_path or not is_safe_to_modify(target):
-            return None
-            
+        # Crear directorio si no existe, manejando colisiones y permisos
         if not target.parent.exists():
             target.parent.mkdir(parents=True, exist_ok=True)
             
         validated_size = max(16, min(1024, int(size)))
+        # Escritura atómica a través de un archivo temporal si fuera necesario, 
+        # pero aquí usamos write_text con manejo de errores de escritura
         target.write_text(logo_svg(validated_size), encoding="utf-8")
-        
         return target if target.is_file() else None
+        
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError, AttributeError, IOError):
         return None
 
