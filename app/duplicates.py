@@ -273,7 +273,9 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Helper para agrupar rutas mediante una función de hash proporcionada."""
+    """
+    Helper para agrupar rutas mediante una función de hash (parcial o completa).
+    """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if isinstance(path, Path) and is_safe_to_modify(path) and (digest := hash_func(path)):
@@ -282,7 +284,10 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
-    """Ejecuta filtrado jerárquico: hash parcial seguido de confirmación completa."""
+    """
+    Ejecuta filtrado jerárquico para optimizar rendimiento en archivos grandes:
+    primero reduce el espacio de búsqueda con hash parcial, luego confirma con hash completo.
+    """
     partial_groups = _group_paths_by_hash(paths, partial_hash)
     final_results: Dict[str, List[Path]] = {}
     for candidate_subset in partial_groups.values():
@@ -295,6 +300,7 @@ def _decide_hash_strategy_and_process(size_bytes: int, file_paths: List[Path]) -
     if not file_paths or size_bytes <= 0:
         return []
 
+    # Archivos muy pequeños se hashean directamente, los grandes viajan por filtrado jerárquico
     if size_bytes <= PARTIAL_READ_BYTES:
         final_groups = _group_paths_by_hash(file_paths, hash_file)
     else:

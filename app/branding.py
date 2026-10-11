@@ -513,7 +513,17 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja barra decorativa horizontal con gradiente segmentado."""
+    """
+    Dibuja barra decorativa horizontal con gradiente segmentado.
+    
+    Args:
+        canvas: Canvas destino.
+        width: Ancho de la barra en px.
+        height: Grosor de la barra en px.
+        canvas_x: Offset horizontal inicial.
+        canvas_y: Offset vertical inicial.
+        stops: Tupla de colores HEX para el gradiente.
+    """
     try:
         if canvas is None or not stops: return
         w_val = max(1, min(4096, int(width)))
@@ -533,12 +543,17 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, 
               track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
     """
-    Dibuja indicador circular de progreso (anillo de carga) con soporte para track y fill.
+    Dibuja indicador circular de progreso (anillo de carga).
+    
     Args:
         canvas: Canvas destino.
-        percent: Porcentaje completado (0-100).
-        size: Diámetro del anillo.
+        percent: Valor numérico (0.0-100.0).
+        size: Diámetro del anillo en px.
+        canvas_x: Offset horizontal origen.
+        canvas_y: Offset vertical origen.
         thickness: Grosor del trazo.
+        track: Color del anillo de fondo.
+        fill: Color del segmento activo (progreso).
     """
     try:
         if canvas is None: return

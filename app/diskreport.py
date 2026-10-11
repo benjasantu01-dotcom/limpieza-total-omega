@@ -89,7 +89,11 @@ class GlobalStats:
         self.ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
 
     def register_file(self, size: int, path: Path) -> None:
-        """Actualiza las métricas globales con los datos de un archivo procesado."""
+        """
+        Registra un archivo en las estadísticas globales.
+        Actualiza el acumulado de peso total, contador de archivos y segrega
+        el tamaño según la extensión del archivo (o etiqueta por defecto).
+        """
         self.total_bytes += size
         self.total_files += 1
         ext = path.suffix.lower() or "(sin extensión)"
@@ -376,7 +380,11 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Motor central: recorre el directorio, consolida métricas globales y mantiene
-    un heap para identificar los archivos más pesados según el límite solicitado.
+    un heap para identificar los archivos más pesados.
+    
+    Args:
+        limit: Cantidad máxima de archivos más pesados a mantener en el heap.
+               Si es 0, no se rastrean los archivos individuales más grandes.
     
     Returns:
         SummaryData con el estado consolidado del escaneo.
@@ -387,6 +395,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     for path, size_bytes in walk_files(directory, skip_protected):
         stats.register_file(size_bytes, path)
         
+        # Mantener el heap del top N: eficiencia O(N log K) donde K es el límite
         if limit > 0:
             if len(top_heap) < limit: 
                 heapq.heappush(top_heap, (size_bytes, path))
