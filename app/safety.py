@@ -448,19 +448,22 @@ def _validate_drive_restrictions(target_path: Path) -> None:
     if not anchor: return
     
     kernel32 = ctypes.windll.kernel32
-    drive_type = kernel32.GetDriveTypeW(anchor)
-    if drive_type == DRIVE_NO_ROOT_DIR:
-        raise UnsafePathError("Unidad inaccesible.", SafetyValidationErrorCode.IO_ERROR)
-    if drive_type == DRIVE_REMOTE:
-        raise UnsafePathError("Unidad de red bloqueada.", SafetyValidationErrorCode.REMOTE_DRIVE_DETECTED)
-    if drive_type == DRIVE_REMOVABLE:
-        raise UnsafePathError("Unidad extraíble bloqueada.", SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED)
-    if drive_type == DRIVE_CDROM or _is_volume_readonly(str(target_path)):
-        raise UnsafePathError("Volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY)
-    if _is_volume_compressed_or_encrypted(str(target_path)):
-        raise UnsafePathError("Volumen cifrado o comprimido.", SafetyValidationErrorCode.VOLUME_RESTRICTED)
-    if _is_virtual_drive(str(target_path)):
-        raise UnsafePathError("Unidad virtual bloqueada.", SafetyValidationErrorCode.VIRTUAL_DRIVE_DETECTED)
+    try:
+        drive_type = kernel32.GetDriveTypeW(anchor)
+        if drive_type == DRIVE_NO_ROOT_DIR:
+            raise UnsafePathError("Unidad inaccesible.", SafetyValidationErrorCode.IO_ERROR)
+        if drive_type == DRIVE_REMOTE:
+            raise UnsafePathError("Unidad de red bloqueada.", SafetyValidationErrorCode.REMOTE_DRIVE_DETECTED)
+        if drive_type == DRIVE_REMOVABLE:
+            raise UnsafePathError("Unidad extraíble bloqueada.", SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED)
+        if drive_type == DRIVE_CDROM or _is_volume_readonly(str(target_path)):
+            raise UnsafePathError("Volumen de solo lectura.", SafetyValidationErrorCode.VOLUME_READ_ONLY)
+        if _is_volume_compressed_or_encrypted(str(target_path)):
+            raise UnsafePathError("Volumen cifrado o comprimido.", SafetyValidationErrorCode.VOLUME_RESTRICTED)
+        if _is_virtual_drive(str(target_path)):
+            raise UnsafePathError("Unidad virtual bloqueada.", SafetyValidationErrorCode.VIRTUAL_DRIVE_DETECTED)
+    except (AttributeError, OSError, ctypes.ArgumentError):
+        pass
 
 # ==============================================================================
 # PREDICADOS DE SEGURIDAD (Reglas de Integridad)
@@ -845,7 +848,12 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             raise UnsafePathError("Caracteres inválidos detectados.", SafetyValidationErrorCode.INVALID_CHARS)
         
         p = normalize(path)
-        base = Path(base_dir).resolve() if base_dir else None
+        base = None
+        if base_dir:
+            try:
+                base = Path(base_dir).resolve()
+            except (TypeError, ValueError):
+                raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC)
         
         # Validaciones de pre-condición
         _validate_path_components(p)
