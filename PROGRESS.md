@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Mejoras aceptadas: **198** (39.3% de aceptación)
 - Rechazadas por tests: 35
-- Rechazadas por guardia de seguridad: 49
-- Sin cambios (nada sustancial que mejorar): 23
+- Rechazadas por guardia de seguridad: 48
+- Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-10 | 29 | 7 | 5 | 3 | 14 |
+| 2026-10-10 | 29 | 6 | 3 | 2 | 14 |
 | 2026-10-11 | 130 | 23 | 34 | 16 | 147 |
-| 2026-10-12 | 37 | 5 | 10 | 4 | 40 |
+| 2026-10-12 | 39 | 6 | 11 | 4 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **48**
 - seguridad defensiva: **46**
 - legibilidad y documentación: **37**
-- manejo de errores y validación de entradas: **33**
+- manejo de errores y validación de entradas: **35**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
+- `memory.py`: **20**
 - `browser.py`: **19**
 - `diskreport.py`: **19**
-- `memory.py`: **19**
 - `healthscore.py`: **18**
 - `safety.py`: **16**
 - `settings.py`: **15**
 - `branding.py`: **15**
+- `organizer.py`: **14**
 - `assistant.py`: **14**
-- `organizer.py`: **13**
 - `scanner.py`: **13**
 - `main.py`: **10**
 - `startup.py`: **10**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T04:09:00` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` mediante la captura explícita de excepciones específicas en las operaciones de entrada/salida y la validación de rutas, evitando que fallos parciales (como archivos inexistentes o bloqueados) interrumpan el proceso completo de organización o borrado.
+- `2026-10-12T04:08:20` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `top_memory_processes` añadiendo una validación explícita para la disponibilidad de las funciones requeridas (`EnumProcesses`) y manejo de errores ante cambios inesperados en los buffers del sistema, evitando excepciones no capturadas.
 - `2026-10-12T03:59:35` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_render_bar` y `summarize` implementando chequeos explícitos para evitar excepciones por tipos inesperados o divisiones por cero, siguiendo el enfoque de manejo de errores.
 - `2026-10-12T03:58:10` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `walk_files` y `summarize` integrando validaciones de tipo `None` y capturas de excepciones específicas en las operaciones de entrada/salida de disco, garantizando que el escaneo no se detenga abruptamente ante archivos bloqueados o con metadatos inaccesibles.
 - `2026-10-12T03:49:24` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `_parse_severity` implementando una validación explícita de entradas críticas (`None` o tipos incorrectos) y centralizando el manejo de errores para evitar que el estado interno se corrompa, siguiendo el enfoque de validación defensiva antes de operar.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T01:56:02` **assistant.py** (seguridad defensiva): Mejoré la seguridad de la ingesta de datos en `SystemContext` mediante la implementación de una validación explícita de tipos para cada campo al momento de la ingesta, evitando que valores inesperados (o inyecciones de tipos maliciosos) afecten el estado interno, reforzando la integridad de los datos antes de que el asistente los procese.
 - `2026-10-12T01:48:00` **startup.py** (robustez ante casos límite): Se ha mejorado la robustez ante permisos denegados durante la resolución de rutas en `StartupEntry._resolve_and_cache_path` y la lectura de directorios en `startup_folders`, añadiendo un manejo de excepciones más granular para evitar que bloqueos de acceso parciales en el disco aborten el escaneo completo.
 - `2026-10-12T01:47:33` **settings.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `OSError` y `PermissionError` en el bloque de `os.replace` dentro de `save()` para mejorar la robustez ante fallos de concurrencia o bloqueos de sistema de archivos al atomizar la configuración.
-- `2026-10-12T01:46:47` **scanner.py** (robustez ante casos límite): He mejorado la robustez de `_is_readable` al prevenir excepciones por bloqueos de acceso, integrando una validación previa de existencia y permisos sin forzar la apertura de archivo, lo cual es crítico para evitar fallos en entornos con alta concurrencia de I/O o archivos bloqueados por el sistema operativo.
-- `2026-10-12T01:45:58` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite mediante la refactorización de `_get_file_attrs` y `_is_file_locked_by_other_process` para manejar de forma explícita errores de sistema (`ERROR_INVALID_NAME` y `ERROR_INSUFFICIENT_BUFFER`) que podrían causar fallos impredecibles en rutas mal formadas, asegurando que la app no aborte ante condiciones inesperadas del SO.

@@ -316,7 +316,8 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                 src_abs = junk_file.path.resolve()
                 ensure_safe_to_modify(src_abs)
                 shutil.move(str(src_abs), str(target_path))
-        except (OSError, shutil.Error, PermissionError):
+        except (OSError, shutil.Error, PermissionError) as e:
+            logger.error(f"Error moviendo {junk_file.path}: {e}")
             continue
     return dest_res
 
@@ -350,7 +351,8 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                     if item.stat().st_ino == stat_result.st_ino:
                         item.unlink()
                         count += 1
-            except (OSError, PermissionError, FileNotFoundError):
+            except (OSError, PermissionError, FileNotFoundError) as e:
+                logger.error(f"Error borrando {item}: {e}")
                 continue
         return count
     except (OSError, PermissionError, RuntimeError):

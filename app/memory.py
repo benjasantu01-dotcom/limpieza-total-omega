@@ -310,26 +310,30 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if (now - cache_time) > 60:
         kernel32 = getattr(ctypes.windll, "kernel32", None)
         psapi = getattr(ctypes.windll, "psapi", None)
-        if not kernel32 or not psapi: return []
+        if not kernel32 or not psapi or not hasattr(psapi, "EnumProcesses"): 
+            return []
         
         max_procs = 1024
         pids = (ctypes.c_uint32 * max_procs)()
         cb_needed = ctypes.c_uint32()
         
-        if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
-            count = min(cb_needed.value // ctypes.sizeof(ctypes.c_uint32), max_procs)
-            found_procs = []
-            own_pid = os.getpid()
-            
-            for i in range(count):
-                pid = pids[i]
-                if pid > 4 and pid != own_pid:
-                    ws = _query_working_set_bytes(pid, kernel32, psapi)
-                    if ws:
-                        found_procs.append(ProcessMemory(f"PID {pid}", pid, ws))
-            
-            cache_data = sorted(found_procs, key=lambda p: p.working_set, reverse=True)[:limit]
-            top_memory_processes._cache = (now, cache_data)
+        try:
+            if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
+                count = min(cb_needed.value // ctypes.sizeof(ctypes.c_uint32), max_procs)
+                found_procs = []
+                own_pid = os.getpid()
+                
+                for i in range(count):
+                    pid = pids[i]
+                    if pid > 4 and pid != own_pid:
+                        ws = _query_working_set_bytes(pid, kernel32, psapi)
+                        if ws:
+                            found_procs.append(ProcessMemory(f"PID {pid}", pid, ws))
+                
+                cache_data = sorted(found_procs, key=lambda p: p.working_set, reverse=True)[:limit]
+                top_memory_processes._cache = (now, cache_data)
+        except (ctypes.ArgumentError, OSError):
+            return []
             
     return cache_data
 
