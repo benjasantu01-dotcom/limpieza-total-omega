@@ -130,14 +130,17 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
 
 def _is_target_extension(name: str) -> bool:
     """Determina si la extensión del archivo es un objetivo relevante para heurísticas."""
-    return Path(name).suffix.lower() in SUSPICIOUS_ALL_EXTS
+    try:
+        return Path(name).suffix.lower() in SUSPICIOUS_ALL_EXTS
+    except Exception:
+        return False
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta el uso de doble extensión como técnica común de enmascaramiento."""
     try:
         if path.name and DOUBLE_EXTENSION_RE.search(path.name):
             return Suspicion(path, "Doble extensión detectada como técnica de enmascaramiento", "warning")
-    except Exception:
+    except (UnicodeDecodeError, AttributeError, TypeError):
         pass
     return None
 
@@ -160,8 +163,8 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
         if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
             if SYSTEM32_LOWER not in str(path).lower():
                 return Suspicion(path, "Nombre de proceso de sistema detectado fuera de directorio protegido", "warning")
-    except (OSError, AttributeError, TypeError) as e:
-        logger.debug(f"Error verificando lookalike en {path}: {e}")
+    except (OSError, AttributeError, TypeError, UnicodeDecodeError):
+        pass
     return None
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:

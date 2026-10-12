@@ -830,3 +830,36 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-12T06:05:32` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejora la robustez de `quarantine_file` añadiendo una verificación de existencia y estado del archivo origen justo antes de la operación de escritura atómica para evitar estados inconsistentes (TOCTOU) y asegura el cierre de descriptores en caso de error durante el registro del manifiesto.
 - `2026-10-12T06:05:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T06:05:32` Corrida terminada. Total usado hoy: 144.
+- `2026-10-12T06:09:48` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-10-12T06:10:25` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-12T06:11:28` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido `_is_volume_busy_or_invalid` para validar proactivamente si una ruta reside en un volumen que el sistema operativo considera inaccesible (ej. dispositivo de solo lectura por hardware o volumen con error de E/S), mejorando la robustez frente a bloqueos inesperados.
+- `2026-10-12T06:12:04` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de las heurísticas ante nombres de archivos con caracteres inválidos o Unicode inesperado, añadiendo un manejo de excepciones más granular en `check_double_extension` y `check_system_lookalike` para evitar que un nombre de archivo malformado detenga el procesamiento completo del directorio.
+- `2026-10-12T06:12:25` Tests FALLARON:
+```
+rror: assert 15 == 33
+ +  where 15 = <function get at 0x7f5b907b6020>('top_procesos', PosixPath('/tmp/pytest-of-runner/pytest-3/test_get_reads_a_single_value0'))
+ +    where <function get at 0x7f5b907b6020> = settings.get
+FAILED evolve/tests/test_assistant.py::test_config_key_is_used_when_there_is_no_env_var - AssertionError: assert '' == 'del-archivo'
+  
+  - del-archivo
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - AssertionError: assert False is True
+ +  where False = <function assistant_enabled at 0x7f5b907b6160>(PosixPath('/tmp/pytest-of-runner/pytest-3/test_enabled_requires_both_the0'))
+ +    where <function assistant_enabled at 0x7f5b907b6160> = settings.assistant_enabled
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - AssertionError: assert 'archivo de configuración' in 'Configuración actual\n\n  Archivo: /tmp/pytest-of-runner/pytest-3/test_describe_never_prints_the0/config.json\n\n  Ap...is en paralelo: sí\n\n  Asistente IA\n    Activado: no\n    Clave: no configurada\n    Modelo: gemini-3.1-flash-lite\n'
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert '2400' not in 'score: 61\n...up_count: 19'
+  
+  '2400' is contained here:
+    score: 61
+    junk_mb: 2400 MB
+  ?          ++++
+    suspicious_count: 3
+    memory_available_percent: 11%
+    disk_free_percent: 6%
+    duplicate_mb: 900 MB
+    startup_count: 19
+8 failed, 291 passed in 0.95s
+
+```
+- `2026-10-12T06:12:25` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_is_file_secure_to_read` ante archivos malintencionados o corruptos añadiendo una verificación explícita de `stat.st_nlink` para detectar hard links maliciosos y reforzando la validación de `os.stat` antes de abrir el stream del archivo.
+- `2026-10-12T06:12:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T06:12:25` Corrida terminada. Total usado hoy: 148.

@@ -403,6 +403,19 @@ def _is_volume_readonly(path_str: Optional[str]) -> bool:
     return False
 
 @lru_cache(maxsize=128)
+def _is_volume_busy_or_invalid(path_str: Optional[str]) -> bool:
+    """Verifica si el volumen raíz es accesible para operaciones de I/O."""
+    if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
+    try:
+        drive = os.path.splitdrive(path_str)[0] + "\\"
+        kernel32 = ctypes.windll.kernel32
+        # Verifica si el dispositivo responde, evitamos colgar el hilo
+        if kernel32.GetVolumeInformationW(drive, None, 0, None, None, None, None, 0) == 0:
+            return True
+        return False
+    except Exception: return True
+
+@lru_cache(maxsize=128)
 def _is_volume_removable_media(path_str: Optional[str]) -> bool:
     """Verifica si el volumen es extraíble."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str or not os.path.isabs(path_str): return False
@@ -460,6 +473,8 @@ def _validate_drive_restrictions(target_path: Path) -> None:
     
     kernel32 = ctypes.windll.kernel32
     try:
+        if _is_volume_busy_or_invalid(str(target_path)):
+             raise UnsafePathError("Volumen inaccesible.", SafetyValidationErrorCode.IO_ERROR)
         drive_type = kernel32.GetDriveTypeW(anchor)
         if drive_type == DRIVE_NO_ROOT_DIR:
             raise UnsafePathError("Unidad inaccesible.", SafetyValidationErrorCode.IO_ERROR)
@@ -888,8 +903,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             raise UnsafePathError(f"Punto de montaje bloqueado: {p}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED)
         if _is_kernel_managed(str(p)):
             raise UnsafePathError(f"Archivo de sistema crítico: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
-        if os.name == 'nt' and (_is_volume_readonly(str(p)) or _is_volume_compressed_or_encrypted(str(p)) or _is_virtual_drive(str(p))):
-            raise UnsafePathError(f"Volumen restringido/solo lectura/virtual: {p.anchor}", SafetyValidationErrorCode.VOLUME_READ_ONLY)
+        if os.name == 'nt' and (_is_volume_readonly(str(p)) or _is_volume_compressed_or_encrypted(str(p)) or _is_virtual_drive(str(p)) or _is_volume_busy_or_invalid(str(p))):
+            raise UnsafePathError(f"Volumen restringido/solo lectura/virtual/inaccesible: {p.anchor}", SafetyValidationErrorCode.VOLUME_READ_ONLY)
         if not allow_sensitive and is_sensitive_file(p):
             raise UnsafePathError(f"Extensión bloqueada '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION)
             
