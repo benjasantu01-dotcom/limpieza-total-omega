@@ -484,16 +484,20 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
     try:
         if canvas is None or not math.isfinite(scale) or scale <= 0: return
         
-        l_w = max(2, int(8.0 * scale))
+        line_width = max(2, int(8.0 * scale))
+        text_size = max(8, int(UI_FONT_HEADER_SIZE * scale))
+        
         canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, 
                            canvas_x + 75 * scale, canvas_y + 41 * scale, 
-                           fill=C_BACKGROUND, width=l_w, capstyle="round")
+                           fill=C_BACKGROUND, width=line_width, capstyle="round")
+        
         canvas.create_polygon(canvas_x + 75 * scale, canvas_y + 41 * scale, 
                               canvas_x + 89 * scale, canvas_y + 38 * scale, 
                               canvas_x + 92 * scale, canvas_y + 52 * scale, 
                               fill=C_BACKGROUND, outline="")
+                              
         canvas.create_text(canvas_x + 64 * scale, canvas_y + 96 * scale, text="\u03a9", 
-                           fill=C_BACKGROUND, font=(UI_FONT_FAMILY, max(8, int(UI_FONT_HEADER_SIZE * scale)), UI_FONT_BOLD))
+                           fill=C_BACKGROUND, font=(UI_FONT_FAMILY, text_size, UI_FONT_BOLD))
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
@@ -537,17 +541,22 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
     """
     try:
         if canvas is None: return
+        # Normalización y validación de entrada
         val = max(0.0, min(100.0, float(percent))) if percent is not None and math.isfinite(float(percent)) else 0.0
-        diam = max(20, min(2048, int(size)))
-        thick = max(2, min(int(thickness), (diam // 2) - 1))
-        x, y = float(canvas_x or 0.0), float(canvas_y or 0.0)
-        if not math.isfinite(x) or not math.isfinite(y): return
+        diameter = max(20, min(2048, int(size)))
+        thickness_val = max(2, min(int(thickness), (diameter // 2) - 1))
+        offset_x = float(canvas_x or 0.0)
+        offset_y = float(canvas_y or 0.0)
         
-        b = float(thick) / 2.0
-        caja = (x + b, y + b, x + diam - b, y + diam - b)
+        if not math.isfinite(offset_x) or not math.isfinite(offset_y): return
         
-        canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=thick)
+        # Cálculo de la caja delimitadora del anillo
+        border_pad = float(thickness_val) / 2.0
+        bounding_box = (offset_x + border_pad, offset_y + border_pad, offset_x + diameter - border_pad, offset_y + diameter - border_pad)
+        
+        # Renderizado de fondo (track) y arco activo
+        canvas.create_arc(*bounding_box, start=0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=thickness_val)
         if val > 0: 
-            extent = -(val / 100.0 * 359.9)
-            canvas.create_arc(*caja, start=90, extent=extent, style="arc", outline=fill or score_color(val), width=thick)
+            extent_arc = -(val / 100.0 * 359.9)
+            canvas.create_arc(*bounding_box, start=90, extent=extent_arc, style="arc", outline=fill or score_color(val), width=thickness_val)
     except (ValueError, TypeError, AttributeError, OverflowError, ZeroDivisionError): pass

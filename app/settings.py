@@ -167,15 +167,18 @@ class _SettingsManager:
         
         for attempt in range(3):
             dir_fd = None
+            f = None
             try:
-                with open(temp_path, "w", encoding="utf-8") as f:
-                    fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-                    f.write(serialized)
-                    f.flush()
-                    os.fsync(f.fileno())
-                    if not _is_file_secure_to_read(os.fstat(f.fileno()), f):
-                        raise PermissionError("Archivo temporal inseguro")
-                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                f = open(temp_path, "w", encoding="utf-8")
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                f.write(serialized)
+                f.flush()
+                os.fsync(f.fileno())
+                if not _is_file_secure_to_read(os.fstat(f.fileno()), f):
+                    raise PermissionError("Archivo temporal inseguro")
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                f.close()
+                f = None
                 
                 if config_path.exists():
                     ensure_safe_to_modify(str(config_path.resolve()))
@@ -189,6 +192,9 @@ class _SettingsManager:
             except (OSError, IOError):
                 time.sleep(0.1 * (2 ** attempt))
             finally:
+                if f is not None:
+                    try: f.close()
+                    except: pass
                 if dir_fd is not None: os.close(dir_fd)
                 if temp_path.exists():
                     try: os.remove(temp_path)
