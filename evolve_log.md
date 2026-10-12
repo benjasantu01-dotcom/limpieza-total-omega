@@ -923,3 +923,14 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-12T06:43:16` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-12T06:43:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T06:43:16` Corrida terminada. Total usado hoy: 160.
+- `2026-10-12T06:50:36` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-10-12T06:50:48` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T06:51:16` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 1): invalid syntax
+- `2026-10-12T06:51:17` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T06:51:22` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-12T06:51:29` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-12T06:51:42` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-12T06:52:43` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad del método `_is_file_secure_to_read` para prevenir ataques de denegación de servicio o manipulación mediante enlaces simbólicos, añadiendo una verificación explícita mediante `os.path.islink` sobre la ruta resuelta para evitar que el archivo de configuración sea un punto de reparse que apunte fuera del directorio seguro.
+- `2026-10-12T06:53:07` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-10-12T06:53:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T06:53:07` Corrida terminada. Total usado hoy: 164.

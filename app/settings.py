@@ -352,6 +352,7 @@ def _is_file_secure_to_read(st: os.stat_result, file_obj: Any) -> bool:
         if st.st_mode & (stat.S_ISUID | stat.S_ISGID) or st.st_nlink != 1: return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if os.path.islink(file_obj.name): return False
+        if os.path.islink(os.path.realpath(file_obj.name)): return False
         return True
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
