@@ -506,3 +506,4 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-12T14:51:37` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T14:51:37` Corrida terminada. Total usado hoy: 350.
 - `2026-10-12T15:00:16` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-10-12T15:10:29` Presupuesto diario agotado (350 usados). Corte hasta mañana.
