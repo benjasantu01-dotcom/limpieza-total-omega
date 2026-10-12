@@ -787,3 +787,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-12T05:31:45` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_inside_base_root
 - `2026-10-12T05:31:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T05:31:45` Corrida terminada. Total usado hoy: 132.
+- `2026-10-12T05:39:18` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-10-12T05:39:59` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _Validators._check_path_safety
+- `2026-10-12T05:40:34` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-12T05:40:37` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T05:40:40` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-12T05:40:48` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-12T05:41:50` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Mejora la robustez ante estados inconsistentes del objeto `SystemContext` mediante la validación proactiva de tipos y límites durante la ingesta de datos, evitando que valores inesperados (`None` o tipos incorrectos) causen fallos en tiempo de ejecución o respuestas degradadas del asistente.
+- `2026-10-12T05:42:23` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-10-12T05:42:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T05:42:23` Corrida terminada. Total usado hoy: 136.
