@@ -67,7 +67,7 @@ class RecommendationRule(NamedTuple):
     Attributes:
         area: Identificador de la métrica analizada (ej: 'disco').
         threshold: Límite inferior de salud para activar la sugerencia.
-        message_factory: Función que genera un mensaje contextual al usuario.
+        message_factory: Callable que recibe las métricas completas y retorna un string.
         check: Predicado (SystemMetrics, NormalizedRatio) -> bool que evalúa si activar alerta.
     """
     area: MetricKey
@@ -78,11 +78,11 @@ class RecommendationRule(NamedTuple):
 class PipelineEntry(NamedTuple):
     """
     Configuración completa de una unidad de análisis dentro del motor de salud.
-    Incluye el peso relativo y las reglas de diagnóstico asociadas.
+    Incluye el peso relativo, el normalizador (scorer) y las reglas de diagnóstico.
     """
     area: MetricKey
     weight: int
-    scorer: Callable[[SystemMetrics], NormalizedRatio]
+    scorer: Scorer
     rules: Tuple[RecommendationRule, ...]
 
 __all__ = [

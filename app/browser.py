@@ -195,7 +195,7 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
     return attrs != 0xFFFFFFFF and bool(attrs & SYSTEM_HIDDEN_FLAGS)
 
 def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
-    """Determina si una entrada de escaneo debe omitirse por motivos de seguridad."""
+    """Valida si una entrada debe omitirse basándose en restricciones de sandbox y seguridad."""
     if _is_excluded_file(entry.name):
         return True
     
@@ -215,7 +215,7 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     return False
 
 def _process_file_node(entry: os.DirEntry, visited_files: Set[tuple[int, int]]) -> int:
-    """Calcula el tamaño de un archivo individual evitando conteos duplicados por inodo."""
+    """Calcula el tamaño de archivo asegurando la integridad mediante inodos para evitar ciclos."""
     try:
         if not os.access(entry.path, os.R_OK):
             return 0
@@ -234,9 +234,10 @@ def _process_file_node(entry: os.DirEntry, visited_files: Set[tuple[int, int]]) 
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
     """
-    Realiza un recorrido recursivo en profundidad limitada del sistema de archivos.
-    Utiliza el contexto de escaneo para validar límites de seguridad y evitar bucles
-    infinitos mediante la detección de puntos de reparse.
+    Realiza un recorrido recursivo controlado del sistema de archivos.
+    
+    Aplica límites de profundidad y validación de seguridad por cada nodo para prevenir
+    recursión infinita o el acceso a zonas protegidas fuera del perfil de usuario.
     """
     if depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN:
         return ScanResult(0, True)
@@ -277,7 +278,7 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
 
 @safe_path_operation(0)
 def directory_size(path: Optional[OSPath]) -> int:
-    """Calcula el tamaño acumulado de un directorio tras validar su seguridad."""
+    """Calcula el tamaño acumulado de un directorio, garantizando que sea una ruta segura."""
     if not isinstance(path, (str, Path)): return 0
     path_obj: Path = Path(path)
     if not path_obj.exists() or not path_obj.is_dir() or not os.access(path_obj, os.R_OK): return 0
@@ -292,7 +293,7 @@ def directory_size(path: Optional[OSPath]) -> int:
 
 @safe_path_operation(False)
 def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
-    """Valida la integridad de una ruta de caché frente a la base configurada."""
+    """Valida que la ruta de caché resuelta se mantenga dentro del sandbox definido."""
     if not isinstance(candidate, Path) or not candidate.is_dir() or not os.access(candidate, os.R_OK): 
         return False
     try:

@@ -20,10 +20,10 @@ import hashlib
 import os
 import ctypes
 from collections import defaultdict, deque
-from collections.abc import Sequence, Iterable
+from collections.abc import Sequence, Iterable, Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Union, Callable, TypeAlias, Tuple
+from typing import Dict, List, Optional, Union, TypeAlias, Tuple
 
 from safety import is_protected_path, is_safe_to_modify
 
@@ -174,8 +174,8 @@ def _validate_and_resolve_path(path_input: PathLike) -> Optional[Path]:
 
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
-    Paso 3 (Hash Completo): Calcula el SHA256 completo.
-    Requiere una ruta validada por _validate_and_resolve_path.
+    Paso 3: Calcula el SHA256 completo del contenido de un archivo.
+    Requiere una ruta validada; es una operación de lectura intensiva.
     """
     valid_path = _validate_and_resolve_path(path)
     if valid_path is None or not is_safe_to_modify(valid_path):
@@ -196,8 +196,8 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
-    Paso 2 (Hash Parcial): Calcula SHA256 sobre un prefijo para filtrado rápido.
-    Reduce drásticamente el uso de I/O al descartar duplicados antes del paso 3.
+    Paso 2: Calcula SHA256 sobre el inicio de un archivo (prefijo).
+    Optimiza el rendimiento descartando candidatos dispares antes del hashing completo.
     """
     valid_path = _validate_and_resolve_path(path)
     if valid_path is None or not is_safe_to_modify(valid_path):

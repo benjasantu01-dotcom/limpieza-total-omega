@@ -104,7 +104,7 @@ class GlobalStats:
             return
         self.total_bytes += size
         self.total_files += 1
-        ext = (str(suffix) if suffix else "(sin extensión)").lower()
+        ext: str = (str(suffix) if suffix else "(sin extensión)").lower()
         self.ext_stats[ext].add(size)
 
 
