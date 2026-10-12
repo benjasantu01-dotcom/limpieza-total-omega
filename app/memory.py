@@ -41,6 +41,8 @@ else:
         HANDLE = ctypes.c_void_p
 
 # Tipos semánticos para prevenir errores de lógica al operar con diferentes unidades.
+# BytesValue: Representa el consumo de memoria en bytes crudos del sistema.
+# MegabytesValue: Representa la conversión a MB para visualización y reporte.
 BytesValue = NewType("BytesValue", int)
 MegabytesValue = NewType("MegabytesValue", float)
 
@@ -150,7 +152,7 @@ class ProcessMemory:
         return self.working_set < other.working_set
 
 def format_bytes(num: Optional[int | float]) -> str:
-    """Formateo legible de bytes a unidades binarias (B, KB, MB, GB, TB)."""
+    """Convierte bytes numéricos en una cadena humanamente legible con unidades."""
     if not isinstance(num, (int, float)) or num < 0:
         return "0 B"
     if num == 0:
@@ -163,6 +165,7 @@ def format_bytes(num: Optional[int | float]) -> str:
         return "0 B"
 
 def _create_mem_status_ex() -> MEMORYSTATUSEX:
+    """Inicializa la estructura MEMORYSTATUSEX con el tamaño de bytes requerido."""
     mem_status = MEMORYSTATUSEX()
     mem_status.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return mem_status
@@ -183,7 +186,7 @@ _EMPTY_SNAPSHOT: MemorySnapshot = MemorySnapshot(BytesValue(0), BytesValue(0))
 
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
-    """Analiza /proc/meminfo para extraer métricas de memoria en Linux."""
+    """Analiza /proc/meminfo para extraer métricas de memoria en sistemas Linux."""
     if not isinstance(meminfo_text, str) or not meminfo_text:
         return _EMPTY_SNAPSHOT
         
@@ -205,10 +208,11 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     return MemorySnapshot(total=total, available=available, cached=cached)
 
 def _is_system_process(pid: int) -> bool:
-    """Evalúa si un proceso pertenece al núcleo o es el proceso propio."""
+    """Verifica si el PID corresponde al sistema o al proceso actual (autoprotección)."""
     return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
+    """Parsea una línea CSV para crear un objeto ProcessMemory tras validar el PID."""
     if not isinstance(line, str) or "," not in line: 
         return None
         
@@ -232,7 +236,7 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     return None
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
-    """Filtra y ordena la lista de procesos recibida en formato CSV."""
+    """Transforma una entrada CSV en una lista de ProcessMemory ordenada por uso de RAM."""
     if not isinstance(raw_csv_text, str) or not raw_csv_text: 
         return []
     lines = raw_csv_text.splitlines()
@@ -246,7 +250,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     return sorted(processes, key=lambda p: p.working_set, reverse=True)[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Obtiene el estado de memoria mediante la API GlobalMemoryStatusEx."""
+    """Interroga la API nativa GlobalMemoryStatusEx para obtener el estado físico."""
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32 or not hasattr(kernel32, "GlobalMemoryStatusEx"): return _EMPTY_SNAPSHOT
     mem_status = _create_mem_status_ex()
@@ -263,6 +267,7 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
 @lru_cache(maxsize=1)
 def _get_cached_snapshot(timestamp_bucket: int) -> MemorySnapshot:
+    """Selector de origen para la lectura del snapshot según la plataforma (Win/Linux)."""
     if _is_windows: return _read_windows_snapshot()
     try:
         if _linux_mem_path.exists():
@@ -273,9 +278,11 @@ def _get_cached_snapshot(timestamp_bucket: int) -> MemorySnapshot:
     return _EMPTY_SNAPSHOT
 
 def read_snapshot() -> MemorySnapshot:
+    """Devuelve un estado de memoria con una latencia de caché de 5 segundos."""
     return _get_cached_snapshot(int(time.time() / 5))
 
 def _query_working_set_bytes(pid: int, kernel32, psapi) -> Optional[BytesValue]:
+    """Consulta los contadores de memoria de un PID externo mediante PSAPI."""
     process_handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
     if not process_handle:
         return None
@@ -292,6 +299,7 @@ def _query_working_set_bytes(pid: int, kernel32, psapi) -> Optional[BytesValue]:
     return None
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
+    """Lista los procesos más pesados enumerando la tabla de procesos del sistema."""
     if not hasattr(top_memory_processes, "_cache"):
         top_memory_processes._cache = (0.0, [])
     
@@ -328,6 +336,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 
 @lru_cache(maxsize=8)
 def pressure_level(snapshot: MemorySnapshot) -> str:
+    """Clasifica la salud de la memoria según porcentaje disponible."""
     if snapshot.total <= 0: return "info"
     avail = snapshot.available_percent
     if avail >= 35: return "ok"
@@ -335,6 +344,7 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
     return "warning" if avail >= 10 else "danger"
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
+    """Genera una descripción legible sobre el estado de la memoria para el usuario."""
     if snapshot.total <= 0: return ["No se pudo leer el estado de la memoria."]
     diagnostics = {
         "ok": "Estado: holgado. La memoria ocupada por caché mejora la velocidad.",
@@ -353,6 +363,7 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def _is_process_executable_safe(pid: int) -> bool:
+    """Valida la integridad de la ruta del ejecutable del proceso antes de actuar."""
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     psapi = getattr(ctypes.windll, "psapi", None)
     if not kernel32 or not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return False
@@ -377,6 +388,7 @@ def _is_process_executable_safe(pid: int) -> bool:
     return False
 
 def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
+    """Capa de seguridad antes de modificar el working set del proceso."""
     if pid <= 0: return False, "PID inválido."
     if _is_system_process(pid): return False, "Proceso protegido."
     if not _is_process_executable_safe(pid): return False, "Ruta de proceso restringida."

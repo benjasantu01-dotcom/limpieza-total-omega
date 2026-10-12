@@ -41,7 +41,14 @@ class Grade(Enum):
 
     @classmethod
     def from_score(cls, score: float | int) -> str:
-        """Convierte una puntuación numérica a su categoría alfabética equivalente."""
+        """
+        Convierte una puntuación numérica a su categoría alfabética equivalente.
+        
+        Args:
+            score: Valor numérico (int o float) a clasificar.
+        Returns:
+            String representando la nota (A-F). F si el input es inválido.
+        """
         try:
             s = float(score)
         except (TypeError, ValueError):
@@ -304,7 +311,14 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
     Calcula el puntaje global recorriendo el pipeline de métricas.
-    Consolida puntajes normalizados, aplica pesos y agrega recomendaciones.
+    
+    Procesa secuencialmente cada entrada del _PIPELINE, normaliza el valor, 
+    evalúa reglas de recomendación y consolida los puntos según el peso definido.
+    
+    Args:
+        metrics: Instancia de SystemMetrics con los valores actuales.
+    Returns:
+        Un objeto HealthResult con el puntaje final y desglose.
     """
     try:
         m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
@@ -344,7 +358,15 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error interno al calcular salud del sistema."])
 
 def _render_bar(points: int, max_val: int) -> str:
-    """Genera representación visual (ASCII) de barras para la interfaz."""
+    """
+    Genera representación visual (ASCII) de barras para la interfaz.
+    
+    Args:
+        points: Puntos actuales del área.
+        max_val: Valor máximo permitido (peso).
+    Returns:
+        String con barra de progreso.
+    """
     try:
         if not isinstance(points, int) or not isinstance(max_val, int) or max_val <= 0:
             return ".........."
