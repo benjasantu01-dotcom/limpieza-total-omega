@@ -23,6 +23,7 @@ ERROR_FILE_NOT_FOUND: Final[int] = 2
 ERROR_ACCESS_DENIED: Final[int] = 5
 ERROR_INSUFFICIENT_BUFFER: Final[int] = 122
 ERROR_INVALID_NAME: Final[int] = 123
+INVALID_FILE_ATTRIBUTES: Final[int] = 0xFFFFFFFF
 
 PathLike: TypeAlias = Union[str, os.PathLike]
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
@@ -52,7 +53,7 @@ class SecurityDescriptor(NamedTuple):
         """Factoría que consolida los atributos del sistema y el estado de bloqueo."""
         attrs = _get_file_attrs(path_str)
         is_protected = bool(attrs & (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | Win32Attr.TEMPORARY | Win32Attr.REPARSE_POINT))
-        is_in_use = is_protected or (attrs != 0xFFFFFFFF and _is_file_locked_by_other_process(path_str))
+        is_in_use = is_protected or (attrs != INVALID_FILE_ATTRIBUTES and _is_file_locked_by_other_process(path_str))
         
         return cls(
             attrs=attrs,
@@ -135,9 +136,9 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
         return 0
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
-        if attrs == 0xFFFFFFFF:
-            err = ctypes.windll.kernel32.GetLastError()
-            if err == ERROR_ACCESS_DENIED: return Win32Attr.SYSTEM
+        if attrs == INVALID_FILE_ATTRIBUTES:
+            if ctypes.windll.kernel32.GetLastError() == ERROR_ACCESS_DENIED:
+                return Win32Attr.SYSTEM
             return 0
         return attrs
     except (AttributeError, ctypes.ArgumentError, OSError, MemoryError):

@@ -122,22 +122,27 @@ def _check_io_error_context(func: Callable[..., Any], *args: Any, **kwargs: Any)
                 raise e
             time.sleep(0.1 * (2 ** i))
 
+def _win_has_system_attributes(path: Path) -> bool:
+    """Verifica si el archivo posee atributos críticos de sistema en Windows."""
+    if os.name != 'nt': return False
+    try:
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+        return attrs != -1 and bool(attrs & 0x02 or attrs & 0x04)
+    except (OSError, AttributeError):
+        return True
+
 def _is_file_exclusive(path: Path) -> bool:
     """
-    Verifica si un archivo está bloqueado por otro proceso. En Windows utiliza 
-    CreateFileW con acceso exclusivo; en POSIX emplea flock para intentar 
-    adquirir un lock de exclusión.
+    Verifica si un archivo está bloqueado por otro proceso utilizando acceso 
+    exclusivo a nivel de sistema operativo.
     """
     if os.name == 'nt':
         k32 = ctypes.windll.kernel32
+        # OPEN_EXISTING(3), FILE_SHARE_NONE(0) -> acceso exclusivo
         handle = k32.CreateFileW(str(path), 0x80000000, 0, None, 3, 0x00000080, None)
         if handle == -1: return False
-        try:
-            return True
-        except (OSError, AttributeError, ValueError):
-            return False
-        finally:
-            k32.CloseHandle(handle)
+        k32.CloseHandle(handle)
+        return True
     
     try:
         fd = os.open(path, os.O_RDONLY) 
@@ -278,19 +283,12 @@ def _is_file_in_use_by_system(path: Path) -> bool:
     
     try:
         st = path.stat()
-        if st.st_nlink > 1:
-            return True
-        if st.st_size == 0:
-            return False
+        if st.st_nlink > 1: return True
     except OSError:
         return True
 
-    if os.name == 'nt':
-        try:
-            attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-            if attrs != -1 and (attrs & 0x02 or attrs & 0x04): return True
-        except (OSError, AttributeError, ValueError):
-            return True
+    if _win_has_system_attributes(path):
+        return True
             
     return not _is_file_exclusive(path)
 
@@ -436,18 +434,8 @@ def _validate_quarantine_path(path: Path, base: Path) -> Path:
     return resolved_path
 
 def _check_windows_file_attributes(path_str: str) -> None:
-    if os.name != 'nt':
-        return
-    path_obj = Path(path_str)
-    if not path_obj.exists():
-        return
-    try:
-        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path_obj))
-        if attrs != -1:
-            if attrs & 0x02 or attrs & 0x04:
-                raise UnsafePathError("Archivo con atributos del sistema/oculto no permitido.")
-    except (OSError, AttributeError):
-        pass
+    if _win_has_system_attributes(Path(path_str)):
+        raise UnsafePathError("Archivo con atributos del sistema/oculto no permitido.")
 
 def _check_device_consistency(source: Path, target_dir: Path) -> None:
     try:
@@ -568,13 +556,8 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
             raise PermissionError(f"Error: {target_path} no es un archivo.")
         if not os.access(target_path, os.W_OK):
             raise PermissionError(f"Error: Manifiesto {target_path} protegido contra escritura.")
-        if os.name == 'nt':
-            try:
-                attrs = ctypes.windll.kernel32.GetFileAttributesW(str(target_path))
-                if attrs != -1 and (attrs & 0x02 or attrs & 0x04):
-                    raise PermissionError(f"Error: Manifiesto {target_path} bloqueado por atributos de sistema.")
-            except (OSError, AttributeError):
-                pass
+        if _win_has_system_attributes(target_path):
+            raise PermissionError(f"Error: Manifiesto {target_path} bloqueado por atributos de sistema.")
 
     temp_name = None
     try:
@@ -629,13 +612,11 @@ def _validate_file_transfer_preconditions(source: Path, destination: Path) -> No
     _check_windows_file_attributes(str(destination))
     if not source.is_file():
         raise OSError("Archivo origen inaccesible para copia.")
-    if os.name == 'nt':
-        try:
-            attrs = ctypes.windll.kernel32.GetFileAttributesW(str(source))
-            if attrs != -1 and (attrs & 0x01):
-                raise PermissionError("Archivo origen marcado como solo lectura.")
-        except (OSError, AttributeError):
-            pass
+    
+    # Verificación de solo lectura
+    if os.name == 'nt' and _win_has_system_attributes(source):
+        raise PermissionError("Archivo origen marcado como solo lectura/sistema.")
+
     if destination.exists():
         raise FileExistsError(f"El destino ya existe: {destination}")
 

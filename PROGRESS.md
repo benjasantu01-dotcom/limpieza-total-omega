@@ -8,45 +8,48 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **200** (39.7% de aceptación)
 - Rechazadas por tests: 32
-- Rechazadas por guardia de seguridad: 48
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-10 | 63 | 9 | 13 | 5 | 56 |
+| 2026-10-10 | 60 | 9 | 13 | 5 | 55 |
 | 2026-10-11 | 130 | 23 | 34 | 16 | 147 |
-| 2026-10-12 | 7 | 0 | 1 | 0 | 0 |
+| 2026-10-12 | 10 | 0 | 2 | 0 | 0 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
-- robustez ante casos límite: **43**
-- legibilidad y documentación: **41**
+- legibilidad y documentación: **44**
+- robustez ante casos límite: **40**
 - manejo de errores y validación de entradas: **40**
 - rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
-- `browser.py`: **19**
+- `diskreport.py`: **20**
 - `memory.py`: **19**
+- `safety.py`: **18**
 - `healthscore.py`: **18**
-- `safety.py`: **17**
+- `browser.py`: **18**
 - `settings.py`: **15**
 - `branding.py`: **15**
-- `assistant.py`: **14**
-- `scanner.py`: **13**
+- `scanner.py`: **14**
+- `assistant.py`: **13**
 - `duplicates.py`: **12**
 - `organizer.py`: **12**
 - `main.py`: **11**
 - `startup.py`: **9**
-- `quarantine.py`: **5**
+- `quarantine.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T00:25:34` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de tipado explícito en estructuras complejas, la aclaración de las responsabilidades de los métodos mediante docstrings más precisos y la estandarización de la terminología en los comentarios del motor heurístico, facilitando el mantenimiento futuro y la legibilidad para futuros colaboradores.
+- `2026-10-12T00:25:22` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_get_file_attrs` para eliminar el manejo de `0xFFFFFFFF` mediante un `if` directo, integrando la lógica en un flujo más claro, y renombré internamente los predicados de validación para que coincidan explícitamente con su motivo de protección (`ProtectionReason`), reduciendo la ambigüedad en la configuración de la tabla de reglas.
+- `2026-10-12T00:24:08` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_is_file_in_use_by_system` y `_is_file_exclusive`, extrayendo la lógica de bloqueo específica de Windows a un método privado más descriptivo, y añadiendo docstrings técnicos sobre las garantías de concurrencia.
 - `2026-10-12T00:15:31` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` mediante la adición de Type Hints detallados, docstrings específicos que explican las decisiones de diseño (especialmente en las validaciones de seguridad de bajo nivel) y la clarificación de nombres en funciones críticas para evitar ambigüedades.
 - `2026-10-12T00:15:05` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando docstrings descriptivos a las funciones de bajo nivel y detallando el propósito de los tipos semánticos (`BytesValue`, `MegabytesValue`) para facilitar la auditoría del código, manteniendo intacta la lógica funcional.
 - `2026-10-12T00:14:00` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `healthscore.py` mediante la adición de docstrings estructurados y detallados en las funciones clave, clarificando el propósito, argumentos y comportamiento ante errores de cada componente del pipeline de puntuación.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-11T14:19:02` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` añadiendo validaciones explícitas de tipo y estado para evitar errores en tiempo de ejecución si los archivos son eliminados o modificados por procesos externos durante el análisis.
 - `2026-10-11T14:18:37` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó `walk_files` y `_collect_summary_data` para capturar errores de acceso y metadatos de forma granular, evitando que una falla en un solo archivo detenga todo el proceso de escaneo y asegurando que las funciones de alto nivel manejen correctamente las rutas mal formadas.
 - `2026-10-11T14:18:11` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de errores en `_process_file_node` y `_sum_directory_recursive` validando la existencia de `stat` y evitando excepciones mediante chequeos explícitos, protegiendo al motor de escaneo ante archivos bloqueados por el SO o accesos denegados.
-- `2026-10-11T14:10:18` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y sus funciones auxiliares implementando una validación explícita de tipos y valores, asegurando que `size` y `destination` sean procesados de forma segura antes de cualquier operación de I/O, evitando excepciones inesperadas que podrían comprometer la estabilidad de la UI.
-- `2026-10-11T12:48:08` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_file_secure_to_read` para prevenir ataques de TOCTOU y condiciones de carrera, añadiendo una verificación estricta de que el archivo no sea un enlace simbólico (usando `st_nlink` y `os.path.islink`) y restringiendo permisos de escritura para el grupo y otros, asegurando que solo el dueño pueda manipular el archivo de configuración.
-- `2026-10-11T12:47:35` **scanner.py** (seguridad defensiva): Mejoré la robustez del escáner reforzando `process_entry` para validar explícitamente que los archivos detectados no excedan la longitud máxima de ruta permitida después de resolver sus alias, evitando errores de sistema en rutas maliciosas o extremadamente largas que podrían causar `OSError`.

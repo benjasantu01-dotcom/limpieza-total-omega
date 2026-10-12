@@ -57,6 +57,7 @@ class SuspicionCheck(Protocol):
     def __call__(self, path: Path, entry: Optional[os.DirEntry], now_ts: float) -> Optional[Suspicion]: ...
 
 ScanResult: TypeAlias = List[Suspicion]
+# Tupla de (ruta_directorio, profundidad_actual)
 DirectoryStack: TypeAlias = List[Tuple[str, int]]
 
 # Expresiones regulares para validación de nombres y riesgos
