@@ -242,7 +242,7 @@ class Scanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        """Gestiona la pila de directorios pendientes, controlando la profundidad máxima."""
+        """Añade subdirectorios válidos a la pila para continuar el recorrido recursivo."""
         if current_depth >= SCAN_LIMITS.max_depth or entry.path is None:
             return
         
@@ -258,7 +258,7 @@ class Scanner:
         return _is_target_extension(name)
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        """Clasifica la entrada para proceder con recursión o análisis de archivos."""
+        """Clasifica la entrada para proceder con recursión (si es directorio) o heurísticas (si es archivo)."""
         if not isinstance(entry, os.DirEntry) or entry.path is None:
             return
             
@@ -273,7 +273,7 @@ class Scanner:
             logger.debug(f"Acceso denegado o error en entrada {entry.path}: {e}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta secuencialmente las heurísticas sobre un archivo validado."""
+        """Ejecuta secuencialmente todas las heurísticas registradas sobre un archivo validado."""
         if not _is_readable(path):
             return
         for check_fn in ALL_CHECKS:
@@ -285,7 +285,10 @@ class Scanner:
                 logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
-    """Escaneo heurístico individual para un archivo específico."""
+    """
+    Escaneo heurístico individual para un archivo específico tras validar
+    permisos y estructura de seguridad.
+    """
     if not isinstance(path, Path) or is_protected_path(path): return []
     if not _is_readable(path): 
         return []
@@ -302,7 +305,8 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
     Inicia el recorrido recursivo de un directorio mediante una pila, 
-    aplicando validaciones de seguridad en cada nodo.
+    aplicando validaciones de seguridad en cada nodo y retornando una lista 
+    de sospechas encontradas.
     """
     if directory is None: return []
     try:

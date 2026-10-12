@@ -434,3 +434,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-12T13:45:48` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad y la seguridad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas, la mejora de la nomenclatura de variables para evitar ambigüedades en las comprobaciones de seguridad (`is_file_locked` vs `is_file_in_use_by_system`) y la unificación de la lógica de validación de rutas mediante la consolidación de `_check_path_for_junctions` como una práctica estandarizada en el flujo de aislamiento.
 - `2026-10-12T13:45:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T13:45:48` Corrida terminada. Total usado hoy: 324.
+- `2026-10-12T13:48:48` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-12T13:49:29` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-10-12T13:50:20` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): el archivo se encogió al 45% del original (posible pérdida de código)
+- `2026-10-12T13:50:58` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se han aplicado type hints faltantes en funciones clave (`scan_directory`, `scan_file`) y se han documentado con mayor precisión las responsabilidades de los métodos del controlador `Scanner`, mejorando la legibilidad técnica y facilitando el mantenimiento futuro.
+- `2026-10-12T13:51:31` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints faltantes en el gestor de caché `_SettingsManager`, mejorando la legibilidad técnica y la trazabilidad de las operaciones de persistencia.
+- `2026-10-12T13:51:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T13:51:31` Corrida terminada. Total usado hoy: 328.

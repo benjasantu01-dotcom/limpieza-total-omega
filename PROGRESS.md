@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 25
-- Rechazadas por guardia de seguridad: 52
+- Rechazadas por guardia de seguridad: 54
 - Sin cambios (nada sustancial que mejorar): 20
 - Sin respuesta de la IA (error o límite): 204
 
@@ -16,29 +16,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 74 | 7 | 17 | 6 | 76 |
-| 2026-10-12 | 129 | 18 | 35 | 14 | 128 |
+| 2026-10-11 | 70 | 7 | 17 | 6 | 76 |
+| 2026-10-12 | 131 | 18 | 37 | 14 | 128 |
 
 ## Mejoras aceptadas por enfoque
 
-- robustez ante casos límite: **46**
+- legibilidad y documentación: **47**
 - seguridad defensiva: **46**
-- legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **43**
+- robustez ante casos límite: **42**
 - rendimiento: **23**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
-- `diskreport.py`: **20**
-- `browser.py`: **19**
+- `diskreport.py`: **19**
 - `healthscore.py`: **18**
-- `branding.py`: **17**
+- `browser.py`: **18**
 - `safety.py`: **17**
 - `organizer.py`: **16**
-- `duplicates.py`: **14**
-- `settings.py`: **14**
-- `scanner.py`: **13**
+- `branding.py`: **16**
+- `settings.py`: **15**
+- `scanner.py`: **14**
+- `duplicates.py`: **13**
 - `assistant.py`: **11**
 - `quarantine.py`: **10**
 - `startup.py`: **7**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T13:51:31` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el gestor de caché `_SettingsManager`, mejorando la legibilidad técnica y la trazabilidad de las operaciones de persistencia.
+- `2026-10-12T13:50:58` **scanner.py** (legibilidad y documentación): Se han aplicado type hints faltantes en funciones clave (`scan_directory`, `scan_file`) y se han documentado con mayor precisión las responsabilidades de los métodos del controlador `Scanner`, mejorando la legibilidad técnica y facilitando el mantenimiento futuro.
 - `2026-10-12T13:45:48` **quarantine.py** (legibilidad y documentación): Se ha mejorado la legibilidad y la seguridad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas, la mejora de la nomenclatura de variables para evitar ambigüedades en las comprobaciones de seguridad (`is_file_locked` vs `is_file_in_use_by_system`) y la unificación de la lógica de validación de rutas mediante la consolidación de `_check_path_for_junctions` como una práctica estandarizada en el flujo de aislamiento.
 - `2026-10-12T13:44:05` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las estructuras de datos nativas (Win32 API) añadiendo docstrings descriptivos y type hints explícitos en los campos para clarificar el propósito de cada miembro y evitar confusiones en el acceso a la memoria de bajo nivel.
 - `2026-10-12T13:31:04` **healthscore.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el pipeline de evaluación para clarificar el flujo de datos y la naturaleza del contrato entre el motor de scoring y las reglas de diagnóstico, mejorando la mantenibilidad técnica del módulo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T13:00:30` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_locked` para manejar fallos de tipos en la llamada a `ctypes` y añadí una validación de `None` en `scan_for_junk` para prevenir `AttributeError` si `Path(d)` recibe un valor inesperado, fortaleciendo el manejo de errores del bucle de escaneo.
 - `2026-10-12T13:00:14` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_process_executable_safe` y `_query_working_set_bytes` implementando una validación de `None` más rigurosa para los handles de procesos y un manejo explícito de errores que evita el uso de bloques `try-except` vacíos, asegurando que cualquier fallo en la API nativa sea gestionado o ignorado explícitamente sin enmascarar errores de lógica.
 - `2026-10-12T12:49:14` **duplicates.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `hash_file` y `partial_hash` asegurando que cualquier fallo durante la lectura de archivos (como errores de hardware o bloqueos repentinos) devuelva `None` de forma controlada sin propagar excepciones que interrumpan el bucle principal de escaneo.
-- `2026-10-12T12:49:03` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_summary_data` y `_is_excluded_path` añadiendo validaciones de tipo y capturas de excepciones más granulares para prevenir que el escaneo se detenga silenciosamente ante errores de acceso a disco o rutas malformadas.
-- `2026-10-12T12:48:11` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `_hex_to_rgb` y `_rgb_to_hex` validando explícitamente los tipos y rangos de entrada antes de operar, evitando posibles errores de desbordamiento o excepciones inesperadas al procesar valores de color mal formados.

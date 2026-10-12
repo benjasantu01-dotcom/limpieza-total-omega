@@ -157,16 +157,19 @@ class _SettingsManager:
         self.path_cache: dict[Optional[str], Path] = {}
 
     def clear(self) -> None:
-        """Invalidar caché tras modificaciones de persistencia."""
+        """Limpia las cachés internas para forzar recarga en la siguiente lectura."""
         self.settings_cache.clear()
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
-        """Escribe datos de forma atómica usando archivos temporales y reintentos ante bloqueos."""
-        temp_path = config_path.with_suffix(".tmp")
-        bak_path = config_path.with_suffix(".bak")
+        """
+        Escribe el contenido serializado de forma atómica usando archivos temporales 
+        y bloqueo de sistema (flock) para evitar corrupción por concurrencia.
+        """
+        temp_path: Path = config_path.with_suffix(".tmp")
+        bak_path: Path = config_path.with_suffix(".bak")
         
         for attempt in range(3):
-            dir_fd = None
+            dir_fd: Optional[int] = None
             f = None
             try:
                 f = open(temp_path, "w", encoding="utf-8")
