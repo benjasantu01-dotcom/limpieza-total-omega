@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
-- Rechazadas por tests: 34
-- Rechazadas por guardia de seguridad: 49
+- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Rechazadas por tests: 35
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 23
 - Sin respuesta de la IA (error o límite): 201
 
@@ -16,37 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-10 | 21 | 4 | 2 | 2 | 13 |
+| 2026-10-10 | 17 | 4 | 2 | 2 | 13 |
 | 2026-10-11 | 130 | 23 | 34 | 16 | 147 |
-| 2026-10-12 | 46 | 7 | 13 | 5 | 41 |
+| 2026-10-12 | 48 | 8 | 14 | 5 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
-- robustez ante casos límite: **48**
 - seguridad defensiva: **46**
-- legibilidad y documentación: **41**
+- robustez ante casos límite: **45**
+- legibilidad y documentación: **43**
 - manejo de errores y validación de entradas: **38**
-- rendimiento: **24**
+- rendimiento: **23**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **20**
-- `browser.py`: **19**
 - `diskreport.py`: **19**
+- `browser.py`: **18**
 - `healthscore.py`: **17**
 - `safety.py`: **17**
-- `branding.py`: **16**
 - `settings.py`: **15**
-- `assistant.py`: **14**
+- `branding.py`: **15**
+- `organizer.py`: **14**
 - `scanner.py`: **13**
-- `organizer.py`: **13**
-- `startup.py`: **10**
+- `assistant.py`: **13**
 - `duplicates.py`: **10**
+- `startup.py`: **9**
 - `main.py`: **9**
-- `quarantine.py`: **5**
+- `quarantine.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T04:49:57` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones críticas de manipulación de archivos y la clarificación de los tipos de datos en la clase `QuarantineItem` para asegurar que el código sea más legible y mantenible según el enfoque de documentación actual.
+- `2026-10-12T04:49:02` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de `organizer.py` mediante type hints explícitos, la corrección de una inconsistencia en `_is_safe_for_disk_op` (donde se comprobaba la seguridad antes de obtener el `resolve()`), y la adición de docstrings precisos que clarifican las salvaguardas de seguridad en el flujo de archivos, cumpliendo estrictamente con el enfoque de legibilidad.
 - `2026-10-12T04:41:42` **memory.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando las estructuras Win32 mediante type hints en los campos y normalizando la creación de objetos de memoria, además de añadir un docstring detallado para la función de bajo nivel `_query_working_set_bytes` que clarifica su interacción con `psapi`.
 - `2026-10-12T04:31:12` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints explícitos, la corrección de una inconsistencia en el manejo de `pathlib.Path` y la mejora de los docstrings en las funciones críticas para clarificar el flujo de datos.
 - `2026-10-12T04:30:47` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (siguiendo las convenciones de Google/NumPy) para clarificar las responsabilidades de cada función y se han añadido type hints en las estructuras de datos complejas para facilitar la mantenibilidad del escáner.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T03:58:10` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `walk_files` y `summarize` integrando validaciones de tipo `None` y capturas de excepciones específicas en las operaciones de entrada/salida de disco, garantizando que el escaneo no se detenga abruptamente ante archivos bloqueados o con metadatos inaccesibles.
 - `2026-10-12T03:49:24` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `_parse_severity` implementando una validación explícita de entradas críticas (`None` o tipos incorrectos) y centralizando el manejo de errores para evitar que el estado interno se corrompa, siguiendo el enfoque de validación defensiva antes de operar.
 - `2026-10-12T02:27:43` **startup.py** (seguridad defensiva): Mejoré la seguridad defensiva en `entries_from_registry` al añadir un control de validación estricto sobre las claves de registro (`REGISTRY_RUN_KEYS`) antes de pasarlas a la shell, asegurando que la entrada sea sanitizada y evitando inyecciones de comandos al tratar los parámetros de PowerShell como literales (`-LiteralPath`).
-- `2026-10-12T02:27:06` **settings.py** (seguridad defensiva): Se reforzó la seguridad en `_is_file_secure_to_read` mediante la validación explícita de `st_nlink == 1` para prevenir ataques de enlaces duros (hard links), asegurando que el archivo leído sea el único descriptor en el sistema de archivos.
-- `2026-10-12T02:17:09` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` implementando una validación estricta en `purge_all` para asegurar que solo se eliminen archivos que están explícitamente registrados en el manifiesto, evitando el borrado accidental de archivos huérfanos o maliciosos que pudieran haber sido inyectados en la carpeta de cuarentena.

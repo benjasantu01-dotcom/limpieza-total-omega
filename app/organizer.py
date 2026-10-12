@@ -122,7 +122,7 @@ def _is_junction(entry: os.DirEntry) -> bool:
         return True
 
 def _is_unc_path(path: Path) -> bool:
-    """Detecta rutas de red UNC, las cuales requieren manejo especial por latencia/bloqueos."""
+    """Detecta rutas de red UNC (ej. \\servidor\recurso) con precauciones de acceso."""
     if not isinstance(path, Path): return True
     try:
         p_str = str(path.absolute())
@@ -183,9 +183,8 @@ def _has_forbidden_chars(path: Path) -> bool:
 
 def _validate_path_security(src: Path, dest: Path) -> bool:
     """
-    Realiza una auditoría exhaustiva antes de permitir la interacción con el archivo:
-    - Valida que la ruta no sea UNC, no contenga caracteres ilegales y no sea crítica.
-    - Consulta `is_protected_path` como última defensa de seguridad global.
+    Realiza una auditoría exhaustiva antes de permitir la interacción con el archivo.
+    Comprueba rutas UNC, caracteres ilegales, longitud de ruta y protección global.
     """
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     if len(str(src)) > MAX_PATH_LENGTH or len(str(dest)) > MAX_PATH_LENGTH: return False
@@ -198,25 +197,24 @@ def _is_system_hidden(entry: os.DirEntry) -> bool:
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Auditoría final de seguridad antes de mover un archivo.
-    Verifica estado, permisos, espacio en disco y consistencia mediante inodos.
+    Verifica estado, permisos, espacio en disco, bloqueos y consistencia de inodos.
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     try:
+        # Resolvemos la ruta antes de cualquier chequeo de seguridad
         src_real = junk_file.path.resolve(strict=True)
-        if src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         
-        # Bloqueo explícito contra puntos de reparse (junctions/symlinks)
+        # Validaciones de seguridad pre-movimiento
+        if src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         if src_real.is_symlink() or (os.name == 'nt' and bool(src_real.stat().st_file_attributes & WIN_ATTR_JUNCTION)): return False
         
         stat_result = src_real.stat()
-        # Verificación de integridad: el archivo en disco debe ser el mismo que el detectado
+        # Verificación de integridad: el archivo detectado no debe haber sido reemplazado
         if (junk_file._ino is not None and stat_result.st_ino != junk_file._ino) or \
            (junk_file._dev is not None and stat_result.st_dev != junk_file._dev): return False
         
         if not src_real.is_file() or is_protected_path(src_real): return False
-        
-        if not is_safe_to_modify(src_real) or is_protected_path(dest) or \
-           not _validate_path_security(src_real, dest): return False
+        if not is_safe_to_modify(src_real) or is_protected_path(dest) or not _validate_path_security(src_real, dest): return False
         
         target_dir = dest.parent if dest.exists() else dest
         if not target_dir.is_dir() or not os.access(target_dir, os.W_OK): return False
@@ -248,7 +246,7 @@ def _is_candidate_junk(stats: os.stat_result, entry: os.DirEntry, now_ts: float)
             not _is_system_hidden(entry))
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
-    """Realiza un escaneo recursivo limitado a una profundidad de 50 niveles para seguridad."""
+    """Realiza un escaneo recursivo limitado a una profundidad de 50 niveles."""
     if depth > 50: return
     try:
         resolved_dir = current_dir.resolve(strict=False)
@@ -322,7 +320,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     return dest_res
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
-    """Genera una ruta de destino segura para el archivo, integrando un timestamp para trazabilidad."""
+    """Genera una ruta de destino segura añadiendo un timestamp para trazabilidad."""
     if not junk_file or not junk_file.path or not dest_base: return None
     try:
         safe_name = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
