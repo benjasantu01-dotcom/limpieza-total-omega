@@ -181,7 +181,10 @@ ALL_CHECKS: Final[Sequence[SuspicionCheck]] = [
 ]
 
 class Scanner:
-    """Controlador de estado que gestiona el escaneo recursivo del sistema."""
+    """
+    Controlador de estado encargado de gestionar el escaneo recursivo 
+    y persistir los resultados encontrados durante la ejecución.
+    """
     
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
@@ -208,7 +211,7 @@ class Scanner:
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Verifica que la entrada sea transitable y no viole las políticas de seguridad."""
+        """Valida si la entrada es transitable y cumple con las políticas de seguridad."""
         if not isinstance(entry, os.DirEntry) or entry.path is None:
             return False
         
@@ -233,7 +236,7 @@ class Scanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        """Gestiona la cola de directorios para la recursión segura, controlando la profundidad."""
+        """Gestiona la pila de directorios pendientes, controlando la profundidad máxima."""
         if current_depth >= SCAN_LIMITS.max_depth or entry.path is None:
             return
         
@@ -249,7 +252,7 @@ class Scanner:
         return _is_target_extension(name)
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        """Despacha la entrada hacia el análisis correspondiente según su tipo."""
+        """Clasifica la entrada para proceder con recursión o análisis de archivos."""
         if not isinstance(entry, os.DirEntry) or entry.path is None:
             return
             
@@ -264,7 +267,7 @@ class Scanner:
             logger.debug(f"Acceso denegado o error en entrada {entry.path}: {e}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta el conjunto de heurísticas definido sobre un archivo validado."""
+        """Ejecuta secuencialmente las heurísticas sobre un archivo validado."""
         if not _is_readable(path):
             return
         for check_fn in ALL_CHECKS:
@@ -276,7 +279,7 @@ class Scanner:
                 logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
-    """Ejecuta un escaneo heurístico individual sobre un archivo específico."""
+    """Escaneo heurístico individual para un archivo específico."""
     if not isinstance(path, Path) or is_protected_path(path): return []
     if not _is_readable(path): 
         return []
@@ -291,7 +294,10 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """Inicia el recorrido recursivo mediante un modelo de pila con límites de seguridad."""
+    """
+    Inicia el recorrido recursivo de un directorio mediante una pila, 
+    aplicando validaciones de seguridad en cada nodo.
+    """
     if directory is None: return []
     try:
         path_str = str(directory).strip()

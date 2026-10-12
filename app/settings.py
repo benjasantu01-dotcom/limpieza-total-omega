@@ -149,17 +149,48 @@ _ENUM_VALS: Final[MappingProxyType[ConfigKey, frozenset[str]]] = MappingProxyTyp
 class _SettingsManager:
     """
     Singleton que centraliza el acceso a la caché de settings en memoria
-    y rutas de configuración. Evita lecturas redundantes de disco.
+    y métodos de persistencia atómica.
     """
     def __init__(self) -> None:
         self.settings_cache: dict[str, tuple[float, AppSettings]] = {}
         self.path_cache: dict[Optional[str], Path] = {}
-        self.instance_cache: Optional[AppSettings] = None
 
     def clear(self) -> None:
         """Invalidar caché tras modificaciones de persistencia."""
         self.settings_cache.clear()
-        self.instance_cache = None
+
+    def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
+        """Escribe datos de forma atómica usando archivos temporales y fsync."""
+        temp_path = config_path.with_suffix(".tmp")
+        bak_path = config_path.with_suffix(".bak")
+        dir_fd = None
+        try:
+            with open(temp_path, "w", encoding="utf-8") as f:
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                f.write(serialized)
+                f.flush()
+                os.fsync(f.fileno())
+                if not _is_file_secure_to_read(os.fstat(f.fileno()), f):
+                    raise PermissionError("Archivo temporal inseguro")
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+            
+            if config_path.exists():
+                ensure_safe_to_modify(str(bak_path.resolve()))
+                os.replace(config_path, bak_path)
+            
+            os.replace(temp_path, config_path)
+            
+            dir_fd = os.open(str(config_path.parent), os.O_RDONLY)
+            os.fsync(dir_fd)
+            self.clear()
+            return True
+        except (OSError, IOError, PermissionError, TypeError): 
+            return False
+        finally:
+            if dir_fd is not None: os.close(dir_fd)
+            if temp_path.exists():
+                try: os.remove(temp_path)
+                except OSError: pass
 
 _MANAGER = _SettingsManager()
 
@@ -282,10 +313,7 @@ def _build_validator_map() -> MappingProxyType[ConfigKey, _ValidatorEntry]:
     return MappingProxyType({key: _ValidatorEntry(_determine_validator(key)) for key in ConfigKey})
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
-    """
-    Retorna la ruta absoluta al archivo de configuración.
-    Garantiza que el directorio de configuración sea seguro antes de intentar su uso.
-    """
+    """Retorna la ruta absoluta al archivo de configuración."""
     cache_key = str(custom_base) if custom_base else None
     if cache_key in _MANAGER.path_cache:
         return _MANAGER.path_cache[cache_key]
@@ -293,8 +321,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     try:
         raw_base = Path(custom_base).resolve() if custom_base else SETTINGS_DIR.resolve()
         if _Validators._is_safe_path(str(raw_base)) and not _Validators._is_reparse_point(raw_base):
-            if not raw_base.exists():
-                raw_base.mkdir(parents=True, exist_ok=True)
+            if not raw_base.exists(): raw_base.mkdir(parents=True, exist_ok=True)
             if raw_base.is_dir() and _is_dir_safe(raw_base):
                 full_path = raw_base / SETTINGS_FILE
                 _MANAGER.path_cache[cache_key] = full_path
@@ -305,67 +332,46 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
 
 def validate(raw_values: Any) -> AppSettings:
     """Valida y limpia una estructura de datos externa contra el esquema oficial."""
-    if not _is_dict(raw_values): 
-        return DEFAULTS.copy()
-    
+    if not _is_dict(raw_values): return DEFAULTS.copy()
     config = DEFAULTS.copy()
     validators = _build_validator_map()
-    
     for key_str, raw_val in raw_values.items():
         try:
             if (key_enum := _KEY_TO_ENUM.get(key_str)):
                 validated_val = validators[key_enum].func(key_enum, raw_val)
-                if validated_val is not None:
-                    config[key_enum.value] = validated_val
-        except (AttributeError, KeyError, Exception):
-            continue
+                if validated_val is not None: config[key_enum.value] = validated_val
+        except (AttributeError, KeyError, Exception): continue
     return config 
 
 def _is_file_secure_to_read(st: os.stat_result, file_obj: Any) -> bool:
-    """
-    Verifica mediante el stat previo que el archivo de configuración sea regular,
-    propiedad del usuario y sin permisos de ejecución peligrosos o symlinks.
-    """
+    """Verifica seguridad del archivo de configuración antes de lectura."""
     try:
-        if file_obj.closed: return False
-        if not stat.S_ISREG(st.st_mode): return False
+        if file_obj.closed or not stat.S_ISREG(st.st_mode): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
-        # No permitir ejecución, ni escritura grupal/pública
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
-        # Evitar SUID/SGID y enlaces duros múltiples (ataques de persistencia/traversal)
         if st.st_mode & (stat.S_ISUID | stat.S_ISGID) or st.st_nlink != 1: return False
-        # Verificar dueño
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-        # Verificar si es un symlink (path real contra el fd)
         if os.path.islink(file_obj.name): return False
         return True
-    except (OSError, PermissionError, AttributeError, ValueError):
-        return False
+    except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     """Helper que encapsula la apertura, lock y lectura segura del archivo."""
     try:
         ensure_safe_to_modify(str(file_path.resolve()))
         if not _is_dir_safe(file_path.parent): return None
-        
         with open(file_path, "r", encoding="utf-8") as f:
             st = os.fstat(f.fileno())
             if not _is_file_secure_to_read(st, f): return None
-            
             try:
                 fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
                 content = f.read(MAX_SETTINGS_SIZE + 1)
-                if not content or len(content) > MAX_SETTINGS_SIZE: return None
-                
-                data = json.loads(content)
+                data = json.loads(content) if content and len(content) <= MAX_SETTINGS_SIZE else None
                 return data if _is_dict(data) else None
-            except (json.JSONDecodeError, OSError, IOError, TypeError):
-                return None
             finally:
                 try: fcntl.flock(f.fileno(), fcntl.LOCK_UN)
                 except (OSError, IOError): pass
-    except (OSError, PermissionError, ValueError, AttributeError, RuntimeError):
-        return None
+    except (OSError, PermissionError, ValueError, AttributeError, RuntimeError): return None
 
 def _is_dir_safe(path: Path) -> bool:
     """Verifica seguridad básica del directorio padre antes de operaciones de escritura."""
@@ -381,7 +387,6 @@ def _load_impl(ruta: Path) -> AppSettings:
     """Implementación de carga: valida seguridad y parsea el contenido."""
     if not ruta.exists() or not ruta.is_file() or _Validators._is_reparse_point(ruta):
         return DEFAULTS.copy()
-    
     data = _read_and_parse_json(ruta.resolve())
     return _coerce_and_verify(validate(data)) if data else DEFAULTS.copy()
 
@@ -389,7 +394,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga los ajustes desde el disco, utilizando caché por mtime."""
     primary_path = settings_path(custom_base)
     backup_path = primary_path.with_suffix(".bak")
-    
     for path in [primary_path, backup_path]:
         if path.exists() and path.is_file():
             try:
@@ -397,100 +401,42 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
                 mtime = st.st_mtime
                 cache_key = str(path)
                 cached = _MANAGER.settings_cache.get(cache_key)
-                
-                if cached and cached[0] == mtime:
-                    res = cached[1].copy()
-                else:
-                    settings = _load_impl(path)
-                    _MANAGER.settings_cache[cache_key] = (mtime, settings)
-                    res = settings.copy()
-                
-                if custom_base is None:
-                    _MANAGER.instance_cache = res.copy()
-                return res
-            except (OSError, PermissionError):
-                continue
+                if cached and cached[0] == mtime: return cached[1].copy()
+                settings = _load_impl(path)
+                _MANAGER.settings_cache[cache_key] = (mtime, settings)
+                return settings
+            except (OSError, PermissionError): continue
     return DEFAULTS.copy()
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
-    """
-    Asegura consistencia de tipos y reglas de negocio, revertiendo a defaults ante inconsistencias.
-    """
+    """Asegura consistencia de tipos y reglas de negocio."""
     final: AppSettings = DEFAULTS.copy()
     for key, val in settings.items():
         if key in DEFAULTS and val is not None and isinstance(val, type(DEFAULTS[key])):
             final[key] = val
-        
     if final["asistente_activado"] and not (final["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         final["asistente_activado"] = False
     return final
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
-    """
-    Persistencia atómica: Valida el estado, usa archivo temporal, fsync y reemplazo con validación post-reemplazo.
-    """
+    """Persistencia atómica delegada al gestor de estados."""
     if not _is_dict(values): return None
     config_path = settings_path(custom_base)
     cleaned_settings = _coerce_and_verify(validate(values))
-    
     parent = config_path.parent
     try:
         if not parent.exists() or not _is_dir_safe(parent) or _Validators._is_reparse_point(parent) or is_protected_path(str(parent.resolve())): return None
         ensure_safe_to_modify(str(parent.resolve()))
-        usage = shutil.disk_usage(parent)
-        if usage.free < MAX_SETTINGS_SIZE * 2 or not os.access(parent, os.W_OK): return None
+        if shutil.disk_usage(parent).free < MAX_SETTINGS_SIZE * 2 or not os.access(parent, os.W_OK): return None
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
-        if config_path.exists():
-            ensure_safe_to_modify(str(config_path.resolve()))
+        if config_path.exists(): ensure_safe_to_modify(str(config_path.resolve()))
+        return config_path if _MANAGER.perform_atomic_write(config_path, serialized) else None
     except (TypeError, ValueError, OSError, PermissionError, AttributeError): return None
-    
-    temp_path = config_path.with_suffix(".tmp")
-    bak_path = config_path.with_suffix(".bak")
-    dir_fd = None
-    try:
-        with open(temp_path, "w", encoding="utf-8") as f:
-            fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-            f.write(serialized)
-            f.flush()
-            os.fsync(f.fileno())
-            st = os.fstat(f.fileno())
-            if not _is_file_secure_to_read(st, f):
-                raise PermissionError("Archivo temporal inseguro")
-            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-        
-        if config_path.exists():
-            ensure_safe_to_modify(str(bak_path.resolve()))
-            os.replace(config_path, bak_path)
-        
-        try:
-            os.replace(temp_path, config_path)
-        except (OSError, PermissionError):
-            return None
-        
-        if not config_path.exists() or config_path.stat().st_size == 0:
-            raise OSError("Error crítico: archivo de configuración truncado tras persistencia")
-        
-        dir_fd = os.open(str(parent), os.O_RDONLY)
-        if dir_fd >= 0:
-            os.fsync(dir_fd)
-        _MANAGER.clear()
-        return config_path
-    except (OSError, IOError, PermissionError, TypeError): 
-        return None
-    finally:
-        if dir_fd is not None and dir_fd >= 0:
-            try: os.close(dir_fd)
-            except OSError: pass
-        if temp_path.exists():
-            try: os.remove(temp_path)
-            except OSError: pass
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
     """Actualiza campos específicos en la configuración y persiste solo si hay cambios."""
-    if not changes or not _is_dict(changes):
-        return load(custom_base)
-        
+    if not changes or not _is_dict(changes): return load(custom_base)
     current = load(custom_base)
     modified = False
     validators = _build_validator_map()
@@ -500,8 +446,7 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
             if val is not None and val != current.get(k):
                 current[k] = val
                 modified = True
-    if modified: 
-        save(current, custom_base)
+    if modified: save(current, custom_base)
     return current
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
@@ -520,7 +465,7 @@ def assistant_api_key(custom_base: PathLike | None = None) -> str:
     return str(load(custom_base).get("asistente_clave_api", "")).strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
-    """Verifica si el asistente tiene permiso para activarse (flag y clave presentes)."""
+    """Verifica si el asistente tiene permiso para activarse."""
     if os.environ.get(API_KEY_ENV_VAR): return True
     settings = load(custom_base)
     return bool(settings.get("asistente_activado")) and bool(str(settings.get("asistente_clave_api", "")).strip())

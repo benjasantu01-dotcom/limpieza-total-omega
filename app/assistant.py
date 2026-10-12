@@ -405,8 +405,6 @@ class SystemContext:
         val = _get_source_value(source, key)
         if val is None or not spec.is_valid_type(val):
             return None
-        
-        # Conversión segura y validación de rango
         try:
             float_val = float(val)
             if not _is_metric_within_bounds(float_val, spec):
@@ -419,7 +417,6 @@ class SystemContext:
         """Limpia el string de calificación eliminando caracteres de control no seguros."""
         if not isinstance(val, str): return ""
         clean = _REGEX_CONTROL_CHARS.sub(" ", val)[:10].strip()
-        # Impedir rutas o nombres protegidos en strings de grado
         if not clean or is_protected_path(clean): return ""
         return clean if _ensure_safe_text(clean) else ""
 
@@ -435,24 +432,22 @@ class SystemContext:
         for k, v in updates.items():
             object.__setattr__(self, k, v)
         object.__setattr__(self, 'analyzed', True)
-        for attr in ['metrics_snapshot', 'active_problems', '_hash_tuple']:
-            self.__dict__.pop(attr, None)
+        self.__dict__.pop('metrics_snapshot', None)
+        self.__dict__.pop('active_problems', None)
+        self.__dict__.pop('_hash_tuple', None)
 
     def ingest(self, source: Any) -> bool:
         """Normaliza e importa datos externos al contexto de manera transaccional."""
         if not self._validate_ingestion_source(source):
             return False
-        
         updates: dict[str, Any] = {}
         for key, spec in _VALIDATORS.items():
             value = self._apply_field(source, key, spec)
             if value is not None and value != getattr(self, key, None):
                 updates[key] = value
-        
         grade_val = self._clean_grade(_get_source_value(source, "grade"))
         if grade_val and grade_val != self.grade:
             updates["grade"] = grade_val
-            
         if updates:
             self._apply_updates(updates)
             return True
@@ -486,10 +481,8 @@ def _ensure_safe_text(text: Any) -> bool:
         return False
     if _REGEX_CONTROL_CHARS.search(text) or any(c in text for c in "<>|&^"):
         return False
-    
     if _is_safe_path_input(text):
         return False
-    
     return not _contains_forbidden_patterns(text)
 
 def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
@@ -498,11 +491,8 @@ def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
     try:
         if isinstance(source, dict):
             return source.get(key)
-        
-        # Acceso restringido para instancias de clase evitando exponer lógica interna
         if not hasattr(source, "__dict__"): return None
         val = getattr(source, key, None)
-        # Impedimos acceder a métodos o atributos que no sean datos primitivos o colecciones seguras
         if callable(val) or isinstance(val, (type,)):
             return None
         return val
@@ -554,13 +544,11 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     snap = ctx.metrics_snapshot
     mem_pct: float = snap.get("memory_available_percent", DEFAULT_RAM_PCT)
     total_gb: float = snap.get("memory_total_gb", 0.0)
-    
     msg = f"Tenés {mem_pct:.0f}% de RAM disponible{f' de {total_gb:.0f} GB' if total_gb > 0 else ''}."
     if mem_pct < 15:
         msg += " Eso es poco: Windows está usando el disco como memoria y ahí se siente la lentitud. Cerrá lo que no uses."
     else:
         msg += " Eso está bien. Si la PC va lenta, el problema seguramente no es la RAM."
-    
     msg += " No busques un 'liberador de RAM': la PC queda más lenta."
     startup_count = int(snap.get("startup_count", 0))
     if startup_count > 12:
@@ -575,7 +563,6 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     dup = snap.get("duplicate_mb", 0.0)
     cache = snap.get("browser_cache_mb", 0.0)
     free = snap.get("disk_free_percent", 100.0)
-    
     recuperable = junk + dup + cache
     msg = f"Tenés {free:.0f}% libre en disco. Podés recuperar cerca de {recuperable:.0f} MB."
     msg += f" (incluye {junk:.0f} MB de basura, {dup:.0f} MB de duplicados{f', {cache:.0f} MB caché' if cache > 0 else ''})."
@@ -604,7 +591,6 @@ def _get_score_response(score: int | None, grade: str, problems: tuple[str, ...]
     score_val = score if score is not None else "N/A"
     grade_str = grade if grade else ""
     score_display = f"Tu puntaje es {score_val}/100{f' (nota {grade_str})' if grade_str else ''}."
-    
     resumen = ("Lo que más te está restando: " + ", ".join(problems[:3]) + ".") if problems else "No hay nada urgente."
     explicacion = " El puntaje combina basura, seguridad, memoria, disco, duplicados y programas de inicio."
     return f"{score_display} {resumen}{explicacion}"
@@ -638,9 +624,7 @@ _TOKEN_KEYS: Final[set[str]] = set(_TOKENS_MAP.keys())
 def _sanitize_query(question: str) -> str:
     """Limpia, trunca y desinfecta la consulta del usuario antes del procesamiento."""
     if not isinstance(question, str): return ""
-    # Eliminación agresiva de caracteres fuera de control y normalización
     clean = _REGEX_CONTROL_CHARS.sub(' ', question).strip()[:100]
-    # Aplicar chequeo estricto para evitar inyecciones en el parser del motor local
     if _ensure_safe_text(clean):
         return clean
     return ""
@@ -654,15 +638,12 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             notice=OFFLINE_NOTICE,
             suggestions=SUGGESTED_QUESTIONS_SHORT,
         )
-
     q_sanitized = _sanitize_query(question)
     if not q_sanitized:
         return Answer("Entrada no válida.")
-    
     for token in _TOKEN_REGEX.findall(q_sanitized.lower()):
         if token in _TOKEN_KEYS:
             return _TOKENS_MAP[token](context, question)
-            
     cuerpo = _format_problem_message(context.active_problems, context.score if context.score is not None else "N/A")
     ans = Answer(_validate_response_length(cuerpo), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
     return ans if ans.text else Answer("No pude procesar tu consulta correctamente.")
@@ -679,12 +660,10 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
     default = AssistantConfig("", "gemini-3.1-flash-lite", True)
     if not isinstance(raw_cfg, dict):
         return default
-    
     try:
         api_key = raw_cfg.get("asistente_api_key")
         model = raw_cfg.get("asistente_modelo")
         metrics_val = raw_cfg.get("asistente_enviar_metricas")
-        
         return AssistantConfig(
             api_key=str(api_key) if isinstance(api_key, str) else "",
             model=str(model) if isinstance(model, str) and len(model) < 64 else "gemini-3.1-flash-lite",
@@ -697,18 +676,13 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     """Serializa la pregunta y el contexto en el formato JSON esperado por Gemini."""
     if not all([_ensure_safe_text(context_text), _ensure_safe_text(SYSTEM_PROMPT)]): 
         return None
-    
     q = _sanitize_query(question)
     if not q or not _ensure_safe_text(q): return None
-    
     full_prompt = f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"
-    
     payload_data = {"contents": [{"parts": [{"text": full_prompt}]}]}
     if not _is_safe_payload_structure(payload_data): return None
-    
     if len(full_prompt) > _MAX_PROMPT_LIMIT or _is_input_too_deep_or_complex(full_prompt): 
         return None
-        
     try:
         payload = json.dumps(payload_data).encode("utf-8")
         return payload if len(payload) <= (_MAX_RESPONSE_BYTES // 2) else None
@@ -718,23 +692,18 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     """Extrae de manera segura el contenido textual de la respuesta JSON del motor remoto."""
     if not isinstance(data, dict) or not _is_safe_payload_structure(data): return None
-        
     try:
         candidates = data.get("candidates")
         if not isinstance(candidates, list) or not candidates or not isinstance(candidates[0], dict): 
             return None
-        
         first = candidates[0]
         if first.get("finishReason") != "STOP": 
             return None
-        
         content = first.get("content")
         if not isinstance(content, dict): return None
-        
         parts = content.get("parts")
         if not isinstance(parts, list) or not parts or not isinstance(parts[0], dict): 
             return None
-        
         text_val = parts[0].get("text")
         if isinstance(text_val, str):
             sanitized = _validate_response_length(text_val)
@@ -747,34 +716,24 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     """Realiza una petición POST segura a la API de Google."""
     if not isinstance(api_key, str) or not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model) or not context_text:
         return None
-    
     payload = _build_payload(question, context_text)
     if not payload: return None
-    
     target_url = _ENDPOINT_BASE.format(model=model)
-    # Validar estrictamente el dominio de Google
     if not target_url.startswith(_API_HOST_ROOT) or any(c in target_url for c in "<>\"' "):
         return None
-        
     url = f"{target_url}?key={api_key}"
-    
     try:
         req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"}, method="POST")
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: 
                 return None
-            
             content_length = res.headers.get("Content-Length")
             if content_length and int(content_length) > _MAX_RESPONSE_BYTES: return None
-                
             raw_res = res.read(_MAX_RESPONSE_BYTES + 1)
             if not isinstance(raw_res, bytes) or len(raw_res) > _MAX_RESPONSE_BYTES: return None
-            
             data = json.loads(raw_res.decode("utf-8"))
             if not _is_safe_payload_structure(data): return None
-            
             raw_text = _extract_text_from_gemini_json(data)
-            
             if isinstance(raw_text, str) and _ensure_safe_text(raw_text):
                 return raw_text.strip()
             return None
@@ -786,7 +745,6 @@ def ask(question: str, context: SystemContext | None = None,
     """Punto de acceso único que orquesta los motores local y remoto."""
     if not _ensure_safe_text(question):
         return Answer("Entrada no válida.")
-        
     ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()
     respaldo: Answer = local_answer(question, ctx)
     if not available(base):
@@ -794,10 +752,8 @@ def ask(question: str, context: SystemContext | None = None,
     try:
         settings_data = settings.load(base)
         cfg = _parse_config(settings_data)
-        
         if ctx.is_empty and cfg.allow_metrics:
             return respaldo
-            
         texto_contexto = context_as_text(ctx) if cfg.allow_metrics else "El usuario no autorizó enviar métricas."
         remoto = _call_gemini(question, texto_contexto, cfg.api_key, cfg.model)
         if not remoto:

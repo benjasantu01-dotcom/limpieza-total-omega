@@ -274,10 +274,15 @@ def startup_folders() -> List[Path]:
 
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
     """
-    Valida y convierte una entrada de sistema de archivos en un objeto StartupEntry.
+    Convierte una entrada de directorio en un `StartupEntry` si es ejecutable válido.
+    
+    Args:
+        entry: Objeto `os.DirEntry` proveniente de `os.scandir`.
+    Returns:
+        Un objeto `StartupEntry` configurado si el archivo es seguro y ejecutable,
+        de lo contrario `None`.
     """
     try:
-        # Prevenir entrada si es enlace simbólico de directorio o reparse point
         if not entry.is_file(follow_symlinks=False) or entry.is_symlink():
             return None
         
@@ -314,6 +319,13 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> StartupEnt
 def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
     """
     Valida la integridad de una entrada leída desde el registro de Windows.
+    
+    Args:
+        name: Clave identificadora en el registro.
+        cmd: Comando o ruta ejecutable asociada.
+        seen: Conjunto de comandos ya procesados para evitar duplicados.
+    Returns:
+        `True` si la entrada es un ejecutable potencialmente válido y no bloqueado.
     """
     if not isinstance(name, str) or not isinstance(cmd, str):
         return False
@@ -340,7 +352,13 @@ def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
     """
-    Parsea la salida de PowerShell en formato CSV a objetos StartupEntry.
+    Parsea una cadena CSV generada por PowerShell en una lista de `StartupEntry`.
+    
+    Args:
+        csv_text: Salida cruda de la ejecución de `ConvertTo-Csv`.
+        source: Identificador del origen para fines de reporte.
+    Returns:
+        Lista de objetos `StartupEntry` validados.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
