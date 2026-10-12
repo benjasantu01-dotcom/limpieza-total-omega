@@ -187,7 +187,7 @@ _PIPELINE: Final[Tuple[PipelineEntry, ...]] = (
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
     """Calcula salud: Normaliza el volumen de basura (MB) comparándolo contra el límite total."""
-    return _JUNK_SCORER(float(junk_mb))
+    return _JUNK_SCORER(float(junk_mb) if isinstance(junk_mb, (int, float)) else 0.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
     """Calcula salud: Penaliza el score según hallazgos sospechosos y advertencias de seguridad."""
@@ -214,11 +214,11 @@ def score_disk(free_percent: float | int) -> NormalizedRatio:
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
     """Calcula salud: Normaliza el volumen de duplicados detectados frente a la capacidad de recuperación."""
-    return _DUP_SCORER(float(duplicate_mb))
+    return _DUP_SCORER(float(duplicate_mb) if isinstance(duplicate_mb, (int, float)) else 0.0)
 
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
     """Calcula salud: Normaliza la cantidad de elementos de inicio contra el límite de tolerancia."""
-    return _STARTUP_SCORER(float(startup_count))
+    return _STARTUP_SCORER(float(startup_count) if isinstance(startup_count, (int, float)) else 0.0)
 
 def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) -> float:
     """Helper para sanitizar métricas numéricas entrantes y evitar valores fuera de rango."""
@@ -325,6 +325,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         accumulated_score: float = 0.0
         
         for entry in _PIPELINE:
+            if not isinstance(entry, PipelineEntry): continue
             try:
                 area_ratio = _clamp(entry.scorer(m))
                 _evaluate_rules(m, entry.rules, area_ratio, recommendations)

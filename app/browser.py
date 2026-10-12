@@ -117,7 +117,7 @@ BROWSER_CACHE_PATHS: BrowserMap = {
 
 def _is_valid_rel_path(p: str) -> bool:
     """Valida que una ruta no contenga secuencias de escape ni caracteres ilegales."""
-    if '..' in p or any(c in p for c in PATH_FORBIDDEN_CHARS):
+    if not p or '..' in p or any(c in p for c in PATH_FORBIDDEN_CHARS):
         return False
     return True
 
@@ -305,10 +305,7 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
 @safe_path_operation(Path())
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Resuelve la ruta absoluta del caché garantizando confinamiento al perfil."""
-    if not isinstance(real_base, Path) or not isinstance(rel_str, str) or not rel_str: 
-        return Path()
-    
-    if not _is_valid_rel_path(rel_str): 
+    if not isinstance(real_base, Path) or not isinstance(rel_str, str) or not _is_valid_rel_path(rel_str): 
         return Path()
     
     parts = [p for p in rel_str.split("\\") if p and p != "." and p != ".."]
@@ -334,7 +331,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     Realiza un inventario de cachés detectando perfiles de navegador en el sistema.
     """
     raw_bases = list(bases) if bases is not None else base_directories()
-    if not raw_bases: return []
+    if not isinstance(raw_bases, list) or not raw_bases: return []
 
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     found: List[BrowserCache] = []
@@ -360,7 +357,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
 
 def total_cache_bytes(caches: Optional[Iterable[BrowserCache]] = None) -> int:
     """Calcula el total de bytes ocupados por el conjunto de cachés proporcionado."""
-    return sum(c.size_bytes for c in caches) if caches else 0
+    return sum(c.size_bytes for c in caches) if isinstance(caches, Iterable) else 0
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
     """Genera una representación textual de los resultados del escaneo."""

@@ -155,17 +155,19 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     Asegura que el directorio exista, sea accesible y no esté marcado como 
     protegido por `safety.is_protected_path`.
     """
-    if directory is None:
+    if not directory:
         return None
     try:
-        p = Path(directory).expanduser().resolve()
+        p = Path(directory).expanduser()
+        if not p.exists():
+            return None
         
-        if not p.exists() or p.is_symlink():
-            return None
+        resolved_path = p.resolve()
+        
         # Validar acceso de lectura y protección de ruta
-        if not p.is_dir() or is_protected_path(p) or not os.access(p, os.R_OK):
+        if not resolved_path.is_dir() or is_protected_path(resolved_path) or not os.access(resolved_path, os.R_OK):
             return None
-        return p
+        return resolved_path
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
         return None
 
@@ -195,7 +197,6 @@ def _is_excluded_path(entry: os.DirEntry) -> bool:
             return True
 
         # Chequeo defensivo: Detectar puntos de reparse (reparse points)
-        # 0x0400 es FILE_ATTRIBUTE_REPARSE_POINT en Windows
         if os.name == 'nt':
             try:
                 st = entry.stat(follow_symlinks=False)
@@ -212,11 +213,13 @@ def _get_local_windows_drives() -> List[str]:
     """Retorna una lista de rutas de unidades físicas montadas en Windows."""
     import string
     drives: List[str] = []
-    for letter in string.ascii_uppercase:
-        drive = f"{letter}:\\"
-        # Verificar unidad física usando os.path.exists (no llama a errores de disco vacío)
-        if os.path.exists(drive) and not is_protected_path(Path(drive)):
-            drives.append(drive)
+    try:
+        for letter in string.ascii_uppercase:
+            drive = f"{letter}:\\"
+            if os.path.exists(drive) and not is_protected_path(Path(drive)):
+                drives.append(drive)
+    except Exception:
+        pass
     return drives
 
 

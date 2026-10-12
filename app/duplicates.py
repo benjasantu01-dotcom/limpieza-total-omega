@@ -107,12 +107,12 @@ def _is_file_locked(path: Path) -> bool:
     Verifica si un archivo está en uso intentando abrirlo en modo exclusivo.
     Útil para no procesar archivos que están siendo escritos por otros procesos.
     """
-    if not isinstance(path, Path) or not is_safe_to_modify(path):
+    if not isinstance(path, Path) or not path.is_file() or not is_safe_to_modify(path):
         return True
     try:
         with open(path, "rb") as _:
             return False
-    except (PermissionError, OSError, IOError, ValueError):
+    except (PermissionError, OSError, IOError, ValueError, BlockingIOError, EOFError):
         return True
 
 
