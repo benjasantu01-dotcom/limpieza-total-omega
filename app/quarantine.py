@@ -739,6 +739,7 @@ def _validate_integrity_before_move(source: Path, original_size: int, original_i
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode]:
     """Coordina el aislamiento atómico de un archivo."""
+    _check_path_syntax_integrity(destination)
     if not source.exists():
         raise FileNotFoundError("Archivo origen no existe.")
     

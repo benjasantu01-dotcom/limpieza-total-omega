@@ -392,8 +392,9 @@ def _is_process_executable_safe(pid: int) -> bool:
         bytes_copied = psapi.GetModuleFileNameExW(handle, None, buf, 512)
         if bytes_copied > 0:
             path_str = buf.value
+            if path_str.startswith("\\\\"): return False
             normalized_path = str(Path(path_str).resolve())
-            if not normalized_path or normalized_path.startswith("\\\\"): return False
+            if not normalized_path: return False
             return not is_protected_path(normalized_path)
     except (ctypes.ArgumentError, OSError):
         return False
