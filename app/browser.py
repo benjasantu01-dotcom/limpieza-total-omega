@@ -110,6 +110,7 @@ def _is_junction_default(path: str) -> bool:
 
 _IS_JUNCTION_FN: JunctionChecker = getattr(os.path, 'isjunction', _is_junction_default)
 
+# Sanitización estática: se rechazan rutas con '..' o caracteres prohibidos
 BROWSER_CACHE_PATHS: BrowserMap = {
     "Google Chrome": r"Google\Chrome\User Data\Default\Cache",
     "Microsoft Edge": r"Microsoft\Edge\User Data\Default\Cache",
@@ -120,6 +121,16 @@ BROWSER_CACHE_PATHS: BrowserMap = {
     "Edge (código)": r"Microsoft\Edge\User Data\Default\Code Cache",
     "Chrome (GPU)": r"Microsoft\Edge\User Data\Default\GPUCache",
 }
+
+def _is_valid_rel_path(p: str) -> bool:
+    if '..' in p or any(c in p for c in PATH_FORBIDDEN_CHARS):
+        return False
+    return True
+
+# Validación de seguridad preventiva sobre el mapa de configuración
+for _k, _v in BROWSER_CACHE_PATHS.items():
+    if not _is_valid_rel_path(_v):
+        raise ValueError(f"Ruta de configuración insegura detectada: {_v}")
 
 NEVER_TOUCH: frozenset[str] = frozenset({
     "login data", "cookies", "web data", "bookmarks", "history",
@@ -305,7 +316,7 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     if not isinstance(real_base, Path) or not isinstance(rel_str, str) or not rel_str: 
         return Path()
     
-    if any(char in rel_str for char in PATH_FORBIDDEN_CHARS): 
+    if not _is_valid_rel_path(rel_str): 
         return Path()
     
     parts = [p for p in rel_str.split("\\") if p and p != "." and p != ".."]

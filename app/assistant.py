@@ -139,17 +139,17 @@ class MetricSpec:
     Especificación de validación para métricas numéricas del sistema.
 
     Attributes:
-        cast_func (Callable): Función para normalizar el tipo de dato.
+        type_hint (type): Tipo esperado de la métrica (int o float).
         min_val (float): Límite inferior permitido.
         max_val (float): Límite superior permitido.
     """
-    cast_func: Callable[[Any], Any]
+    type_hint: type
     min_val: float
     max_val: float
 
     def is_valid_type(self, val: Any) -> bool:
-        """Verifica que el valor sea un número real y no booleano."""
-        return _check_metric_integrity(val)
+        """Verifica que el valor sea del tipo esperado y no un booleano."""
+        return isinstance(val, self.type_hint) and not isinstance(val, bool) and _check_metric_integrity(val)
 
 class ProblemCriterion(NamedTuple):
     """
@@ -337,16 +337,12 @@ def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
 
 def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
     """Verifica si un valor numérico está dentro del rango lógico definido por su especificación."""
-    return _check_metric_integrity(val) and spec.min_val <= val <= spec.max_val
+    return spec.min_val <= val <= spec.max_val
 
 @dataclass
 class SystemContext:
     """
     Contenedor de estado consolidado que representa la salud del sistema.
-    
-    Ingesta datos de diagnóstico, aplicando validaciones de tipo y seguridad
-    mediante `MetricSpec`. Actúa como la única fuente de verdad para el motor
-    del asistente, anonimizando la información antes de cualquier uso.
     """
     score: Optional[int] = None
     grade: str = ""
@@ -407,13 +403,16 @@ class SystemContext:
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
         """Valida, convierte y verifica límites de un campo individual."""
         val = _get_source_value(source, key)
-        if val is None: return None
-        if not _check_metric_integrity(val): return None
+        if val is None or not spec.is_valid_type(val):
+            return None
+        
+        # Conversión segura y validación de rango
         try:
             float_val = float(val)
-            if not _is_metric_within_bounds(float_val, spec): return None
-            return spec.cast_func(float_val)
-        except (TypeError, ValueError, OverflowError):
+            if not _is_metric_within_bounds(float_val, spec):
+                return None
+            return spec.type_hint(float_val)
+        except (ValueError, TypeError):
             return None
 
     def _clean_grade(self, val: Any) -> str:
@@ -427,7 +426,6 @@ class SystemContext:
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad sobre el objeto fuente."""
         if source is None: return False
-        # Prevenir ataques por inspección de diccionarios que contengan métodos o lógica oculta
         if isinstance(source, dict):
             return not _is_input_too_deep_or_complex(source)
         return hasattr(source, "__dict__") and not _is_input_too_deep_or_complex(source.__dict__)
@@ -437,7 +435,6 @@ class SystemContext:
         for k, v in updates.items():
             object.__setattr__(self, k, v)
         object.__setattr__(self, 'analyzed', True)
-        # Limpiar cachés tras cambios
         for attr in ['metrics_snapshot', 'active_problems', '_hash_tuple']:
             self.__dict__.pop(attr, None)
 

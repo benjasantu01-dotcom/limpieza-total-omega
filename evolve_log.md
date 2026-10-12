@@ -1423,3 +1423,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-12T01:48:00` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante permisos denegados durante la resolución de rutas en `StartupEntry._resolve_and_cache_path` y la lectura de directorios en `startup_folders`, añadiendo un manejo de excepciones más granular para evitar que bloqueos de acceso parciales en el disco aborten el escaneo completo.
 - `2026-10-12T01:48:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T01:48:00` Corrida terminada. Total usado hoy: 44.
+- `2026-10-12T01:55:06` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-10-12T01:56:02` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad de la ingesta de datos en `SystemContext` mediante la implementación de una validación explícita de tipos para cada campo al momento de la ingesta, evitando que valores inesperados (o inyecciones de tipos maliciosos) afecten el estado interno, reforzando la integridad de los datos antes de que el asistente los procese.
+- `2026-10-12T01:56:49` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-10-12T01:57:30` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la sanitización de la lista de rutas relativas de caché (`BROWSER_CACHE_PATHS`), asegurando que ninguna ruta contenga caracteres de escape o secuencias de ascenso de directorio (`..`) que pudieran intentar evadir el confinamiento al perfil de usuario.
+- `2026-10-12T01:57:30` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T01:57:34` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-12T01:57:40` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-12T01:57:52` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-12T01:57:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T01:57:52` Corrida terminada. Total usado hoy: 48.
