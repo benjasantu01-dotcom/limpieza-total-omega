@@ -429,9 +429,12 @@ class SystemContext:
             return False
         updates: dict[str, Any] = {}
         for key, spec in _VALIDATORS.items():
-            value = self._apply_field(source, key, spec)
-            if value is not None and value != getattr(self, key):
-                updates[key] = value
+            try:
+                value = self._apply_field(source, key, spec)
+                if value is not None and value != getattr(self, key):
+                    updates[key] = value
+            except Exception:
+                continue
         grade_val = self._clean_grade(_get_source_value(source, "grade"))
         if grade_val and grade_val != self.grade:
             updates["grade"] = grade_val

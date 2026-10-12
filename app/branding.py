@@ -364,7 +364,6 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
         delta = pos - idx
         s1, s2 = rgb_stops[idx], rgb_stops[idx + 1]
         
-        # Validacion defensiva de saturacion de color
         colors.append(_rgb_to_hex((
             int(s1[0] + (s2[0] - s1[0]) * delta),
             int(s1[1] + (s2[1] - s1[1]) * delta),
@@ -482,7 +481,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
     Aplica escalado uniforme sobre las coordenadas base para mantener la proporción visual.
     """
     try:
-        if canvas is None or not math.isfinite(scale) or scale <= 0: return
+        if canvas is None or not math.isfinite(scale) or scale <= 0 or not math.isfinite(canvas_x) or not math.isfinite(canvas_y): return
         
         line_width = max(2, int(8.0 * scale))
         text_size = max(8, int(UI_FONT_HEADER_SIZE * scale))
@@ -525,7 +524,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     try:
         if canvas is None or not stops: return
         w_val, h_val = max(1, int(width)), max(1, int(height))
-        x, y = float(canvas_x), float(canvas_y)
+        x, y = float(canvas_x or 0.0), float(canvas_y or 0.0)
         if not math.isfinite(x) or not math.isfinite(y): return
         
         for seg in get_gradient_segments(w_val, stops):
