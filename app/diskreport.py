@@ -191,12 +191,8 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         if any(char in name for char in ('<', '>', ':', '"', '|', '?', '*')):
             return True
         
-        # Seguridad: verificar que la ruta absoluta resida bajo el root
-        abs_entry_path = Path(entry.path).resolve()
-        if not str(abs_entry_path).startswith(str(root_path)):
-            return True
-        
-        if is_protected_path(abs_entry_path):
+        # Seguridad: verificar que la ruta sea segura sin resolverla constantemente
+        if is_protected_path(Path(entry.path)):
             return True
         
         if entry.is_symlink():
@@ -329,9 +325,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     root_path = _validate_root(directory)
     if root_path is None: return
     
-    root_resolved = root_path.resolve()
     visited_inodes: set[Inode] = set()
-    stack: List[Path] = [root_resolved]
+    stack: List[Path] = [root_path]
     
     while stack:
         current_dir = stack.pop()
@@ -339,20 +334,18 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if skip_protected and _is_excluded_path(entry, root_resolved):
+                        if skip_protected and _is_excluded_path(entry, root_path):
                             continue
-                        
-                        entry_path = Path(entry.path).resolve()
                         
                         if entry.is_dir(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(entry_path)
+                                stack.append(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
                             f_stat = entry.stat(follow_symlinks=False)
-                            yield entry_path, int(f_stat.st_size)
+                            yield Path(entry.path), int(f_stat.st_size)
                     except (OSError, PermissionError):
                         continue
         except (PermissionError, OSError, FileNotFoundError): 

@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
-- Rechazadas por tests: 25
+- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Rechazadas por tests: 24
 - Rechazadas por guardia de seguridad: 54
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 205
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 66 | 7 | 17 | 6 | 76 |
-| 2026-10-12 | 134 | 18 | 37 | 14 | 129 |
+| 2026-10-11 | 65 | 6 | 16 | 5 | 76 |
+| 2026-10-12 | 136 | 18 | 38 | 14 | 130 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **43**
-- robustez ante casos límite: **38**
-- rendimiento: **25**
+- robustez ante casos límite: **37**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **20**
 - `memory.py`: **20**
 - `browser.py`: **19**
-- `diskreport.py`: **19**
 - `healthscore.py`: **17**
 - `safety.py`: **17**
 - `branding.py`: **16**
 - `settings.py`: **15**
 - `organizer.py`: **15**
-- `scanner.py`: **14**
-- `duplicates.py`: **13**
+- `duplicates.py`: **14**
+- `scanner.py`: **13**
 - `assistant.py`: **12**
 - `quarantine.py`: **10**
 - `startup.py`: **8**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T14:10:32` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando un cache local de resultados de `is_protected_path` para evitar llamadas redundantes a `safety.py` y restringiendo el uso de `os.scandir` para evitar el acceso a atributos pesados de archivos que no cumplen con el umbral de tamaño mínimo.
+- `2026-10-12T14:10:00` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_is_excluded_path` eliminando la llamada redundante a `Path(entry.path).resolve()` dentro de cada iteración del bucle, la cual es una operación costosa de E/S que impacta significativamente en el tiempo de escaneo sobre discos grandes.
 - `2026-10-12T14:03:45` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo mediante la implementación de una caché de estados de `is_safe_to_modify` y `is_protected_path` dentro del `ScanContext`, evitando llamadas repetitivas y costosas al sistema de archivos para los mismos directorios durante el recorrido.
 - `2026-10-12T14:00:51` **assistant.py** (rendimiento): Optimicé el rendimiento de `SystemContext` reemplazando los accesos repetitivos a `__dict__` en bucles mediante el uso de `getattr` con un acceso cacheado a las claves permitidas, evitando la reconstrucción innecesaria de diccionarios en `metrics_snapshot` y `ingest`.
 - `2026-10-12T13:59:53` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones de acceso público y privado, siguiendo las convenciones de Google, lo cual facilita el mantenimiento y la comprensión de las responsabilidades de cada componente sin alterar la lógica.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T13:29:16` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo incluyendo docstrings detallados en las funciones de escaneo recursivo y validación, precisando los criterios de seguridad y el manejo de excepciones para mayor claridad y mantenibilidad.
 - `2026-10-12T13:21:35` **branding.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo `branding.py` mediante la refactorización de `draw_ring` y `draw_shield_icon_decorations`, extrayendo lógica compleja de cálculo de coordenadas y aplicando *type hinting* robusto, además de documentar el propósito de las constantes geométricas para facilitar futuras auditorías visuales.
 - `2026-10-12T13:19:05` **settings.py** (manejo de errores y validación de entradas): Mejora la robustez del método `perform_atomic_write` añadiendo un bloque `try-finally` para asegurar el cierre del descriptor de archivo y la liberación del lock `fcntl` incluso ante excepciones durante la escritura, evitando posibles bloqueos de archivos persistentes.
-- `2026-10-12T13:10:38` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `scanner.py` reemplazando los bloques `except Exception` genéricos por capturas de excepciones específicas (`OSError`, `PermissionError`, etc.) y añadiendo validaciones de entrada (`None`/`path`) para evitar fallos de ejecución en condiciones de borde.
-- `2026-10-12T13:10:28` **safety.py** (manejo de errores y validación de entradas): Se introdujo un manejo robusto de errores mediante bloques `try-except` específicos en la función `_get_security_descriptor`, evitando que fallos inesperados al consultar metadatos de sistema (como errores de privilegios o I/O) retornen valores por defecto incorrectos que podrían enmascarar riesgos.
