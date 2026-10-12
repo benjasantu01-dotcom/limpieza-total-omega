@@ -1208,3 +1208,14 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-12T09:26:12` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y la claridad de las constantes en `startup.py`, añadiendo tipos de retorno específicos y detallando el propósito de las heurísticas de seguridad para facilitar futuras auditorías.
 - `2026-10-12T09:26:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T09:26:12` Corrida terminada. Total usado hoy: 224.
+- `2026-10-12T09:33:41` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-10-12T09:33:44` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T09:34:40` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `SystemContext` reemplazando la serialización iterativa basada en `getattr` por un acceso directo al diccionario `__dict__` con filtrado previo, reduciendo la carga de introspección en `metrics_snapshot` y `ingest`.
+- `2026-10-12T09:35:24` ➖ Sin cambios en branding.py (enfoque: rendimiento). Motivo: Se optimizó el rendimiento de renderizado en `branding.py` al reemplazar la lógica recursiva de `gradient_colors` por una pre-generación basada en los segmentos ya calculados de `get_gradient_segments`, eliminando el overhead de interpolación en tiempo de ejecución.
+- `2026-10-12T09:36:12` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé el rendimiento de `detect_profiles` reutilizando el `ScanContext` para todo el proceso de descubrimiento, evitando la recreación redundante de diccionarios de caché y sets de archivos visitados durante el escaneo de múltiples rutas de caché.
+- `2026-10-12T09:36:13` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T09:36:16` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-12T09:36:22` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-12T09:36:56` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-10-12T09:36:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T09:36:56` Corrida terminada. Total usado hoy: 228.

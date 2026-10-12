@@ -339,13 +339,15 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
 
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     found: List[BrowserCache] = []
+    kernel32 = _get_kernel32()
     
     for base in raw_bases:
         if not isinstance(base, Path) or not base.exists(): continue
         try:
             real_base: Path = base.resolve(strict=True)
             real_base_str: str = str(real_base)
-            ctx = ScanContext(os.path.normcase(real_base_str), _get_kernel32(), _IS_JUNCTION_FN, set(), {})
+            # Reutilizamos el mismo contexto para todos los navegadores bajo esta base
+            ctx = ScanContext(os.path.normcase(real_base_str), kernel32, _IS_JUNCTION_FN, set(), {})
             
             for browser_name, rel_str in browser_map.items():
                 candidate = _resolve_browser_path(real_base, rel_str)
