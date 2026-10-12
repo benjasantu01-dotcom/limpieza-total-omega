@@ -1393,3 +1393,23 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-12T01:26:51` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de `main.py` ante posibles excepciones durante la inicialización de widgets y el manejo de hilos, asegurando que si un componente crítico falla al crearse o al actualizarse (debido a estados de carrera o cierres prematuros), la aplicación no colapse silenciosamente ni deje hilos colgados, reforzando la validación de `winfo_exists` en puntos clave de la interfaz.
 - `2026-10-12T01:26:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T01:26:51` Corrida terminada. Total usado hoy: 36.
+- `2026-10-12T01:34:42` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-10-12T01:35:27` 🛑 Propuesta bloqueada por la guardia en memory.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 287): invalid syntax
+- `2026-10-12T01:36:10` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante condiciones de carrera (TOCTOU) en `delete_reviewed` implementando la verificación de inodos antes de la eliminación, asegurando que el archivo eliminado sea el mismo que fue validado por las protecciones de seguridad.
+- `2026-10-12T01:37:10` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T01:37:14` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-12T01:38:16` Tests FALLARON:
+```
+Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+8 failed, 291 passed in 2.19s
+
+```
+- `2026-10-12T01:38:16` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se mejora la robustez de `quarantine_file` añadiendo una validación explícita para evitar colisiones de nombres de archivos en el destino mediante el uso de `os.open` con flags de creación atómica (`O_CREAT | O_EXCL`) y manejando preventivamente situaciones donde la ruta original podría contener caracteres de control o ser inválida antes de intentar la transferencia, fortaleciendo el manejo de errores ante condiciones de carrera (TOCTOU).
+- `2026-10-12T01:38:33` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-10-12T01:38:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T01:38:33` Corrida terminada. Total usado hoy: 40.

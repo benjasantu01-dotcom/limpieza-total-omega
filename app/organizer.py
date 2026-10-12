@@ -337,12 +337,16 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         count = 0
         for item in dest.iterdir():
             try:
+                # Verificación de integridad adicional contra race conditions
+                stat_result = item.stat()
                 if item.is_file() and is_safe_to_modify(item) and not is_protected_path(item):
                     if dest.resolve(strict=True) != item.resolve(strict=True).parent:
                         continue
                     ensure_safe_to_modify(item)
-                    item.unlink()
-                    count += 1
+                    # Confirmar que no ha cambiado de inodo desde la inspección inicial
+                    if item.stat().st_ino == stat_result.st_ino:
+                        item.unlink()
+                        count += 1
             except (OSError, PermissionError, FileNotFoundError):
                 continue
         return count

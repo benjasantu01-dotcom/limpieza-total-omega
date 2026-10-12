@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
-- Rechazadas por tests: 31
-- Rechazadas por guardia de seguridad: 51
+- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Rechazadas por tests: 32
+- Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 199
+- Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-10 | 48 | 7 | 11 | 4 | 48 |
+| 2026-10-10 | 46 | 7 | 11 | 4 | 46 |
 | 2026-10-11 | 130 | 23 | 34 | 16 | 147 |
-| 2026-10-12 | 21 | 1 | 6 | 4 | 4 |
+| 2026-10-12 | 22 | 2 | 8 | 4 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **44**
-- robustez ante casos límite: **43**
-- seguridad defensiva: **40**
+- robustez ante casos límite: **44**
 - manejo de errores y validación de entradas: **40**
+- seguridad defensiva: **38**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
@@ -36,17 +36,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **18**
 - `safety.py`: **16**
 - `branding.py`: **15**
-- `settings.py`: **14**
 - `assistant.py`: **14**
 - `scanner.py`: **13**
+- `settings.py`: **13**
 - `duplicates.py`: **12**
+- `organizer.py`: **12**
 - `main.py`: **11**
-- `organizer.py`: **11**
-- `startup.py`: **9**
+- `startup.py`: **8**
 - `quarantine.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T01:36:10` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera (TOCTOU) en `delete_reviewed` implementando la verificación de inodos antes de la eliminación, asegurando que el archivo eliminado sea el mismo que fue validado por las protecciones de seguridad.
 - `2026-10-12T01:26:51` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante posibles excepciones durante la inicialización de widgets y el manejo de hilos, asegurando que si un componente crítico falla al crearse o al actualizarse (debido a estados de carrera o cierres prematuros), la aplicación no colapse silenciosamente ni deje hilos colgados, reforzando la validación de `winfo_exists` en puntos clave de la interfaz.
 - `2026-10-12T01:25:56` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `_evaluate_rules` reemplazando la validación manual de strings por una lógica de filtrado de rutas mediante `pathlib`, eliminando el riesgo de dejar pasar rutas relativas o mal formadas, y reforzando la integridad al prevenir excepciones ante entradas inesperadas en `message_factory`.
 - `2026-10-12T01:25:29` **duplicates.py** (robustez ante casos límite): Se introdujo una gestión robusta de permisos y estados de archivo en `suggest_keeper` y `format_group`, utilizando `is_safe_to_modify` antes de cualquier acceso de escritura o lectura sensible para prevenir excepciones en archivos bloqueados o con permisos denegados que rompan la UI.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T00:25:34` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de tipado explícito en estructuras complejas, la aclaración de las responsabilidades de los métodos mediante docstrings más precisos y la estandarización de la terminología en los comentarios del motor heurístico, facilitando el mantenimiento futuro y la legibilidad para futuros colaboradores.
 - `2026-10-12T00:25:22` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_get_file_attrs` para eliminar el manejo de `0xFFFFFFFF` mediante un `if` directo, integrando la lógica en un flujo más claro, y renombré internamente los predicados de validación para que coincidan explícitamente con su motivo de protección (`ProtectionReason`), reduciendo la ambigüedad en la configuración de la tabla de reglas.
 - `2026-10-12T00:24:08` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_is_file_in_use_by_system` y `_is_file_exclusive`, extrayendo la lógica de bloqueo específica de Windows a un método privado más descriptivo, y añadiendo docstrings técnicos sobre las garantías de concurrencia.
-- `2026-10-12T00:15:31` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` mediante la adición de Type Hints detallados, docstrings específicos que explican las decisiones de diseño (especialmente en las validaciones de seguridad de bajo nivel) y la clarificación de nombres en funciones críticas para evitar ambigüedades.
