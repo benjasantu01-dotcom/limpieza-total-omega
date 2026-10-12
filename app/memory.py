@@ -103,7 +103,7 @@ class MEMORYSTATUSEX(ctypes.Structure):
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
     """Estructura Win32 para obtener estadísticas de memoria de un proceso (PSAPI)."""
     _fields_: List[Tuple[str, type]] = [
-        ("cb", ctypes.c_ulong),
+        ("cb", ctypes.c_size_t),
         ("PageFaultCount", ctypes.c_ulong),
         ("PeakWorkingSetSize", ctypes.c_size_t),
         ("WorkingSetSize", ctypes.c_size_t),

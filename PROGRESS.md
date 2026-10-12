@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
-- Rechazadas por tests: 35
-- Rechazadas por guardia de seguridad: 49
+- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Rechazadas por tests: 34
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-10 | 13 | 3 | 1 | 1 | 12 |
+| 2026-10-10 | 10 | 2 | 1 | 1 | 12 |
 | 2026-10-11 | 130 | 23 | 34 | 16 | 147 |
-| 2026-10-12 | 54 | 9 | 14 | 5 | 42 |
+| 2026-10-12 | 56 | 9 | 15 | 5 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **46**
 - legibilidad y documentación: **46**
-- robustez ante casos límite: **41**
 - manejo de errores y validación de entradas: **38**
-- rendimiento: **26**
+- robustez ante casos límite: **38**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **19**
+- `memory.py`: **20**
 - `diskreport.py`: **18**
 - `browser.py`: **18**
-- `safety.py`: **17**
-- `settings.py`: **16**
 - `branding.py`: **16**
 - `healthscore.py`: **16**
-- `scanner.py`: **14**
+- `safety.py`: **16**
+- `organizer.py`: **15**
+- `settings.py`: **15**
 - `assistant.py`: **14**
-- `organizer.py`: **14**
+- `scanner.py`: **13**
 - `startup.py`: **10**
 - `duplicates.py`: **10**
 - `main.py`: **9**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T05:26:18` **organizer.py** (rendimiento): Se optimizó el proceso de escaneo sustituyendo la llamada redundante `Path(entry.path).suffix.lower()` dentro del bucle principal por una verificación basada en `entry.name`, evitando la creación innecesaria de objetos `Path` y mejorando la eficiencia en directorios con muchos archivos.
+- `2026-10-12T05:24:48` **memory.py** (rendimiento): Se optimizó el acceso a los procesos en `top_memory_processes` eliminando la llamada innecesaria a `_query_working_set_bytes` para procesos cuyo PID ya ha sido descartado, y reutilizando el buffer de PIDs para reducir la presión en la asignación de memoria durante escaneos frecuentes.
 - `2026-10-12T05:11:22` **duplicates.py** (rendimiento): Optimicé el método `_collect_candidates` utilizando un cache local para `is_protected_path` durante el recorrido, evitando llamadas redundantes a la lógica de validación de seguridad dentro del bucle de archivos.
 - `2026-10-12T05:09:38` **branding.py** (rendimiento): Optimicé el rendimiento de `branding.py` mediante la refactorización de `gradient_colors` para evitar la creación innecesaria de listas y tuplas intermedias en cada iteración, consolidando la lógica de cálculo dentro de un bucle simple que minimiza la carga sobre la memoria y las llamadas a funciones auxiliares.
 - `2026-10-12T05:01:19` **assistant.py** (rendimiento): Optimicé el método `ingest` de `SystemContext` para evitar iteraciones redundantes y re-cálculos de caché mediante un enfoque de "actualización diferencial" transaccional, mejorando el rendimiento en el bucle de procesamiento de métricas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T04:30:47` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (siguiendo las convenciones de Google/NumPy) para clarificar las responsabilidades de cada función y se han añadido type hints en las estructuras de datos complejas para facilitar la mantenibilidad del escáner.
 - `2026-10-12T04:30:07` **branding.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings estructurados (estilo Google) y la simplificación de la lógica de guardado en `save_logo_svg` utilizando el patrón de retorno temprano, eliminando el anidamiento excesivo y clarificando las precondiciones de seguridad.
 - `2026-10-12T04:20:25` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` añadiendo una validación explícita de `dir_fd` antes de intentar realizar `fsync` sobre el directorio, previniendo errores de sistema al intentar operar sobre descriptores inválidos en entornos con permisos restringidos.
-- `2026-10-12T04:19:42` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `scanner.py` centralizando la validación de archivos en `_is_readable`, asegurando que todas las operaciones de lectura en heurísticas (como tamaño o metadatos) manejen correctamente las excepciones de E/S evitando paradas abruptas.
-- `2026-10-12T04:19:00` **safety.py** (manejo de errores y validación de entradas): Mejora el manejo de excepciones y la validación de parámetros en las funciones de bajo nivel de `safety.py` para evitar que errores inesperados de la API de Windows se propaguen como errores genéricos o corrompan el estado del flujo de seguridad.

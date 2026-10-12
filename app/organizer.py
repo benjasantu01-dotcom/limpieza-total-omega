@@ -261,7 +261,9 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False):
-                        if Path(entry.name).suffix.lower() in JUNK_EXTENSIONS:
+                        # Optimización: extraer extensión desde entry.name sin instanciar Path
+                        ext = os.path.splitext(entry.name)[1].lower()
+                        if ext in JUNK_EXTENSIONS:
                             stats = entry.stat(follow_symlinks=False)
                             if _is_candidate_junk(stats, entry, now_ts):
                                 found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
