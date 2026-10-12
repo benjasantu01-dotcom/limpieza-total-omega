@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
-- Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 54
+- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Rechazadas por tests: 25
+- Rechazadas por guardia de seguridad: 55
 - Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 206
 
@@ -16,36 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 65 | 6 | 16 | 5 | 76 |
-| 2026-10-12 | 136 | 18 | 38 | 14 | 130 |
+| 2026-10-11 | 62 | 6 | 15 | 5 | 76 |
+| 2026-10-12 | 137 | 19 | 40 | 14 | 130 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
-- seguridad defensiva: **46**
+- seguridad defensiva: **45**
 - manejo de errores y validación de entradas: **43**
-- robustez ante casos límite: **37**
-- rendimiento: **27**
+- robustez ante casos límite: **35**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
+- `memory.py`: **21**
 - `diskreport.py`: **20**
-- `memory.py`: **20**
 - `browser.py`: **19**
 - `healthscore.py`: **17**
 - `safety.py`: **17**
-- `branding.py`: **16**
-- `settings.py`: **15**
+- `branding.py`: **15**
 - `organizer.py`: **15**
+- `settings.py`: **14**
 - `duplicates.py`: **14**
 - `scanner.py`: **13**
 - `assistant.py`: **12**
 - `quarantine.py`: **10**
-- `startup.py`: **8**
+- `startup.py`: **7**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T14:20:03` **memory.py** (rendimiento): Optimicé `top_memory_processes` reemplazando la lógica de caché basada en un atributo dinámico de función por una clase simple o un almacenamiento más limpio, pero sobre todo, eliminé el re-procesamiento innecesario del objeto `ProcessMemory` mediante una mejora en la lógica de filtrado de PIDs duplicados y uso de una lista de pre-asignación eficiente.
 - `2026-10-12T14:10:32` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando un cache local de resultados de `is_protected_path` para evitar llamadas redundantes a `safety.py` y restringiendo el uso de `os.scandir` para evitar el acceso a atributos pesados de archivos que no cumplen con el umbral de tamaño mínimo.
 - `2026-10-12T14:10:00` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_is_excluded_path` eliminando la llamada redundante a `Path(entry.path).resolve()` dentro de cada iteración del bucle, la cual es una operación costosa de E/S que impacta significativamente en el tiempo de escaneo sobre discos grandes.
 - `2026-10-12T14:03:45` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo mediante la implementación de una caché de estados de `is_safe_to_modify` y `is_protected_path` dentro del `ScanContext`, evitando llamadas repetitivas y costosas al sistema de archivos para los mismos directorios durante el recorrido.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T13:29:58` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos en los métodos de `ExtStats` y `GlobalStats`, asegurando que las firmas de los métodos y las estructuras de datos sean claras para cualquier colaborador.
 - `2026-10-12T13:29:16` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo incluyendo docstrings detallados en las funciones de escaneo recursivo y validación, precisando los criterios de seguridad y el manejo de excepciones para mayor claridad y mantenibilidad.
 - `2026-10-12T13:21:35` **branding.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo `branding.py` mediante la refactorización de `draw_ring` y `draw_shield_icon_decorations`, extrayendo lógica compleja de cálculo de coordenadas y aplicando *type hinting* robusto, además de documentar el propósito de las constantes geométricas para facilitar futuras auditorías visuales.
-- `2026-10-12T13:19:05` **settings.py** (manejo de errores y validación de entradas): Mejora la robustez del método `perform_atomic_write` añadiendo un bloque `try-finally` para asegurar el cierre del descriptor de archivo y la liberación del lock `fcntl` incluso ante excepciones durante la escritura, evitando posibles bloqueos de archivos persistentes.

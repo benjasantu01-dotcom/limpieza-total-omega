@@ -296,16 +296,14 @@ def _query_working_set_bytes(pid: int, kernel32: ctypes.WinDLL, psapi: ctypes.Wi
         kernel32.CloseHandle(process_handle)
     return None
 
+_CACHE_TOP_PROC: Dict[str, any] = {"time": 0.0, "data": []}
+
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Lista los procesos más pesados enumerando la tabla de procesos del sistema."""
-    if not hasattr(top_memory_processes, "_cache"):
-        top_memory_processes._cache = (0.0, [])
-    
     if not _is_windows: return []
     now = time.time()
-    cache_time, cache_data = top_memory_processes._cache
     
-    if (now - cache_time) > 60:
+    if (now - _CACHE_TOP_PROC["time"]) > 60:
         kernel32 = getattr(ctypes.windll, "kernel32", None)
         psapi = getattr(ctypes.windll, "psapi", None)
         if not kernel32 or not psapi or not hasattr(psapi, "EnumProcesses"): 
@@ -328,12 +326,12 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
                         if ws:
                             found_procs.append(ProcessMemory(f"PID {pid}", pid, ws))
                 
-                cache_data = sorted(found_procs, key=lambda p: p.working_set, reverse=True)[:limit]
-                top_memory_processes._cache = (now, cache_data)
+                _CACHE_TOP_PROC["data"] = sorted(found_procs, key=lambda p: p.working_set, reverse=True)[:limit]
+                _CACHE_TOP_PROC["time"] = now
         except (ctypes.ArgumentError, OSError):
             return []
             
-    return cache_data
+    return _CACHE_TOP_PROC["data"]
 
 @lru_cache(maxsize=8)
 def pressure_level(snapshot: MemorySnapshot) -> str:
