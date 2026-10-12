@@ -234,7 +234,7 @@ def _process_file_node(entry: os.DirEntry, visited_files: Set[tuple[int, int]]) 
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
     """Realiza un recorrido recursivo controlado de directorios."""
-    if depth > MAX_SCAN_DEPTH:
+    if depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN:
         return ScanResult(0, True)
     
     if not os.access(root_path, os.R_OK):

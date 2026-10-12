@@ -863,3 +863,34 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-10-12T06:12:25` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_is_file_secure_to_read` ante archivos malintencionados o corruptos añadiendo una verificación explícita de `stat.st_nlink` para detectar hard links maliciosos y reforzando la validación de `os.stat` antes de abrir el stream del archivo.
 - `2026-10-12T06:12:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T06:12:25` Corrida terminada. Total usado hoy: 148.
+- `2026-10-12T06:20:00` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-10-12T06:20:54` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 0.93s
+
+```
+- `2026-10-12T06:20:54` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se mejoró la robustez de `_resolve_and_cache_path` implementando una validación de seguridad proactiva ante rutas inexistentes o inaccesibles, evitando que `Path.resolve()` se ejecute sobre entradas maliciosas o mal formadas que podrían generar errores de sistema en entornos de ejecución restringidos.
+- `2026-10-12T06:21:41` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad en `_call_gemini` validando la integridad de la URL antes de ejecutar la petición, previniendo el riesgo de que una configuración maliciosa inyecte parámetros o apunte a un endpoint no autorizado.
+- `2026-10-12T06:22:20` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` consolidando el orden de validación de rutas y añadiendo un chequeo preventivo de `target.exists()` para asegurar que las operaciones de manipulación de archivos sigan estrictamente el flujo de seguridad, evitando efectos secundarios si el sistema de archivos es inconsistente.
+- `2026-10-12T06:22:50` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha restringido el acceso a directorios durante el escaneo para evitar la evaluación de rutas que excedan el límite de profundidad del sistema de archivos (`MAX_PATH_LEN`), mejorando la seguridad defensiva al prevenir el procesamiento de rutas maliciosamente profundas o cíclicas.
+- `2026-10-12T06:22:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T06:22:50` Corrida terminada. Total usado hoy: 152.

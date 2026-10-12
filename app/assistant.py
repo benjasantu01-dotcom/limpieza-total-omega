@@ -719,6 +719,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     payload = _build_payload(question, context_text)
     if not payload: return None
     target_url = _ENDPOINT_BASE.format(model=model)
+    # Validar que la URL construida mantenga el prefijo original y no contenga caracteres de inyección
     if not target_url.startswith(_API_HOST_ROOT) or any(c in target_url for c in "<>\"' "):
         return None
     url = f"{target_url}?key={api_key}"

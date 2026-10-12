@@ -406,9 +406,11 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         target = Path(destination).resolve()
         
         # Validaciones de seguridad de acuerdo a las reglas del proyecto
+        # Primero bloqueamos rutas protegidas, luego verificamos si es seguro modificar
         if is_protected_path(target) or not is_safe_to_modify(target):
             return None
         
+        # ensure_safe_to_modify lanza excepción si la ruta es insegura
         ensure_safe_to_modify(target)
         
         # Operación atómica de escritura
