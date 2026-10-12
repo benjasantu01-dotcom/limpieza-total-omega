@@ -338,6 +338,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         try:
             real_base: Path = base.resolve(strict=True)
             real_base_str: str = str(real_base)
+            # Reutilizamos el contexto para todos los navegadores bajo la misma base para cachear resultados comunes
             ctx = ScanContext(os.path.normcase(real_base_str), _get_kernel32(), _IS_JUNCTION_FN, set(), {})
             
             for browser_name, rel_str in browser_map.items():

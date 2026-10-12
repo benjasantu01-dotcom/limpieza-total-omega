@@ -1333,3 +1333,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-12T00:35:41` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se introdujo una cache Lru en `color()` para evitar búsquedas repetitivas en el `MappingProxyType` durante ciclos de renderizado de UI, reduciendo el costo de acceso a diccionarios en llamadas frecuentes.
 - `2026-10-12T00:35:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T00:35:41` Corrida terminada. Total usado hoy: 16.
+- `2026-10-12T00:43:48` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-10-12T00:44:17` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé el rendimiento de `detect_profiles` reutilizando el `ScanContext` y su caché de directorios (`visited_dirs`) a través de todos los navegadores, evitando el re-procesamiento de carpetas compartidas (como `User Data`) que son comunes a múltiples navegadores en `LOCALAPPDATA`.
+- `2026-10-12T00:44:57` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-10-12T00:45:21` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-12T00:45:29` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: HealthResult.is_healthy, SystemMetrics.is_finite, SystemMetrics.safe_get
+- `2026-10-12T00:45:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T00:45:29` Corrida terminada. Total usado hoy: 20.

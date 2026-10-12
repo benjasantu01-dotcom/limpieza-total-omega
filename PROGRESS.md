@@ -7,34 +7,34 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **202** (40.1% de aceptación)
-- Rechazadas por tests: 32
+- Rechazadas por tests: 31
 - Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 199
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-10 | 60 | 9 | 13 | 4 | 52 |
+| 2026-10-10 | 59 | 8 | 12 | 4 | 51 |
 | 2026-10-11 | 130 | 23 | 34 | 16 | 147 |
-| 2026-10-12 | 12 | 0 | 3 | 1 | 0 |
+| 2026-10-12 | 13 | 0 | 4 | 1 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
 - legibilidad y documentación: **44**
-- robustez ante casos límite: **40**
 - manejo de errores y validación de entradas: **40**
-- rendimiento: **29**
+- robustez ante casos límite: **39**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
+- `browser.py`: **19**
 - `memory.py`: **19**
-- `safety.py`: **18**
 - `healthscore.py`: **18**
-- `browser.py`: **18**
+- `safety.py`: **17**
 - `branding.py`: **16**
 - `settings.py`: **15**
 - `scanner.py`: **14**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T00:44:17` **browser.py** (rendimiento): Optimizé el rendimiento de `detect_profiles` reutilizando el `ScanContext` y su caché de directorios (`visited_dirs`) a través de todos los navegadores, evitando el re-procesamiento de carpetas compartidas (como `User Data`) que son comunes a múltiples navegadores en `LOCALAPPDATA`.
 - `2026-10-12T00:35:41` **branding.py** (rendimiento): Se introdujo una cache Lru en `color()` para evitar búsquedas repetitivas en el `MappingProxyType` durante ciclos de renderizado de UI, reduciendo el costo de acceso a diccionarios en llamadas frecuentes.
 - `2026-10-12T00:35:21` **assistant.py** (rendimiento): Optimicé el método `SystemContext.metrics_snapshot` para evitar recrear el diccionario en cada acceso (recalculándolo solo cuando el estado cambia) y reemplacé el `hash()` interno por una tupla cacheada, reduciendo la carga de CPU en bucles de la interfaz.
 - `2026-10-12T00:25:34` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de tipado explícito en estructuras complejas, la aclaración de las responsabilidades de los métodos mediante docstrings más precisos y la estandarización de la terminología en los comentarios del motor heurístico, facilitando el mantenimiento futuro y la legibilidad para futuros colaboradores.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T00:03:52` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `branding.py` mediante docstrings detallados en las funciones de renderizado, explicando el propósito de cada parámetro geométrico, y añadí `TypeAlias` explícitos para las estructuras de datos de coordenadas, mejorando la claridad de la intención del diseño sin alterar la lógica de ejecución.
 - `2026-10-11T14:39:10` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en la resolución de rutas mediante la implementación de una técnica de doble validación (existencia + permiso) dentro de `ensure_safe_to_modify`, previniendo errores de sistema al intentar operar sobre rutas inexistentes pero aparentemente válidas, y refinando el manejo de excepciones para evitar el colapso del bucle de validación ante estados de carrera (`Race Conditions`).
 - `2026-10-11T14:30:18` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` y `load_manifest` mediante el manejo explícito de `OSError` al realizar operaciones atómicas, asegurando que cualquier fallo en la escritura de metadatos no deje el estado interno del módulo en una inconsistencia lógica, además de fortalecer la validación de tipos en la serialización.
-- `2026-10-11T14:19:02` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` añadiendo validaciones explícitas de tipo y estado para evitar errores en tiempo de ejecución si los archivos son eliminados o modificados por procesos externos durante el análisis.
