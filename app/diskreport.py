@@ -309,6 +309,9 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre el sistema de archivos (DFS) usando inodos para prevenir bucles.
+    
+    Yields:
+        Tuplas conteniendo el objeto Path y el tamaño en bytes del archivo.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -370,17 +373,15 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     if root is None: return []
     stats: Dict[str, FolderMetrics] = defaultdict(FolderMetrics)
     root_str = str(root)
-    root_len = len(root_str)
     
     for path, size in walk_files(root, skip_protected):
         try:
-            rel = str(path.parent)[root_len:].lstrip(os.sep)
-            if not rel: continue
-            top_folder = rel.split(os.sep)[0]
-            if not top_folder: continue
+            # Obtener subcarpeta de primer nivel relativa al root
+            relative_parts = path.relative_to(root).parts
+            if not relative_parts: continue
             
-            target = root / top_folder
-            curr = stats[str(target)]
+            top_folder = root / relative_parts[0]
+            curr = stats[str(top_folder)]
             curr.size += size
             curr.file_count += 1
         except (ValueError, IndexError, OSError, AttributeError):

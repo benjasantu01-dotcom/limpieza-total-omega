@@ -391,25 +391,32 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optional[Path]:
     """
-    Guarda el logo en disco usando validaciones de seguridad atómicas pre-escritura.
+    Guarda el archivo SVG del logo en el destino especificado.
+
+    Args:
+        destination: Ruta destino donde guardar el archivo.
+        size: Dimensiones en píxeles del logo.
+
+    Returns:
+        La ruta del archivo guardado si la operación es exitosa, None en caso contrario.
     """
     if destination is None:
         return None
+
     try:
         target = Path(destination).resolve()
-        # Validación de seguridad estricta
+        
+        # Validaciones de seguridad de acuerdo a las reglas del proyecto
         if is_protected_path(target) or not is_safe_to_modify(target):
             return None
         
         ensure_safe_to_modify(target)
         
-        parent = target.parent
-        if not parent.exists():
-            parent.mkdir(parents=True, exist_ok=True)
-            
+        # Operación atómica de escritura
+        target.parent.mkdir(parents=True, exist_ok=True)
         validated_size = max(16, min(1024, int(size)))
-        content = logo_svg(validated_size)
-        target.write_text(content, encoding="utf-8")
+        target.write_text(logo_svg(validated_size), encoding="utf-8")
+        
         return target if target.is_file() else None
         
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError, AttributeError, IOError):
