@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
-- Rechazadas por tests: 31
-- Rechazadas por guardia de seguridad: 53
+- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Rechazadas por tests: 30
+- Rechazadas por guardia de seguridad: 54
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 108 | 16 | 28 | 14 | 122 |
-| 2026-10-12 | 86 | 15 | 25 | 8 | 82 |
+| 2026-10-11 | 106 | 15 | 28 | 14 | 121 |
+| 2026-10-12 | 89 | 15 | 26 | 8 | 82 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **45**
-- robustez ante casos límite: **44**
+- robustez ante casos límite: **43**
+- legibilidad y documentación: **43**
 - manejo de errores y validación de entradas: **42**
-- legibilidad y documentación: **40**
-- rendimiento: **23**
+- rendimiento: **22**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **21**
-- `memory.py`: **20**
+- `memory.py`: **21**
 - `diskreport.py`: **19**
-- `settings.py`: **16**
+- `organizer.py`: **17**
 - `healthscore.py`: **16**
-- `organizer.py`: **16**
+- `settings.py`: **15**
 - `safety.py`: **15**
 - `branding.py`: **15**
-- `assistant.py`: **12**
 - `scanner.py`: **12**
+- `assistant.py`: **11**
 - `duplicates.py`: **11**
 - `startup.py`: **8**
 - `main.py`: **7**
-- `quarantine.py`: **6**
+- `quarantine.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T09:15:41` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `quarantine.py` mediante la adición de docstrings estructurados, la clarificación de las responsabilidades en funciones de bajo nivel y la organización lógica del módulo, garantizando que cada función explique claramente su propósito y sus precondiciones de seguridad.
+- `2026-10-12T09:14:44` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de Type Hints detallados, docstrings descriptivos que explican el propósito de las funciones auxiliares y se ha refactorizado la lógica de `_is_safe_for_disk_op` para separar la validación de estados de archivo de las verificaciones de seguridad del sistema, mejorando así la legibilidad y mantenibilidad del código sin alterar su comportamiento funcional.
+- `2026-10-12T09:14:05` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de diagnóstico al extraer la creación del reporte de estado a una estructura de datos clara y documentada, asegurando que los tipos de datos sean consistentes con el resto del módulo.
 - `2026-10-12T09:05:11` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones clave (`grade_for_score`, `compute_score`, `_render_bar`) y mejorando los docstrings para clarificar el flujo de datos, haciendo el código más mantenible sin alterar su comportamiento funcional.
 - `2026-10-12T09:04:30` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de hashing y el procesamiento de grupos para clarificar la lógica de "Estrategia en tres pasos" declarada en el encabezado, asegurando que los Type Hints y docstrings reflejen con precisión las precondiciones de seguridad.
 - `2026-10-12T09:03:50` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas y la estandarización de type hints, facilitando la auditoría de seguridad sobre el comportamiento de las operaciones de disco.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T08:24:54` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` agregando validaciones preventivas sobre `_PIPELINE` y asegurando que las funciones de `score` reciban siempre los tipos esperados, evitando errores de ejecución si una métrica llega fuera de rango o como tipo inesperado.
 - `2026-10-12T08:24:26` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_file_locked` capturando una gama más amplia de excepciones de I/O y validando explícitamente el tipo de entrada para evitar fallos silenciosos al procesar rutas malformadas o inaccesibles.
 - `2026-10-12T08:23:45` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `_validate_root` y `_is_excluded_path` añadiendo validaciones explícitas contra rutas inexistentes, vacías o mal formadas, y se encapsuló `_get_local_windows_drives` en un bloque `try-except` para prevenir fallos críticos ante permisos restringidos en el sistema de archivos.
-- `2026-10-12T08:23:03` **browser.py** (manejo de errores y validación de entradas): Se reforzó la validación de los parámetros de entrada en `detect_profiles` y `summarize` para evitar errores en tiempo de ejecución si se pasan tipos inesperados, además de asegurar que `_resolve_browser_path` maneje correctamente las rutas relativas vacías o mal formadas.
-- `2026-10-12T08:15:29` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` mejorando la validación del destino mediante el uso de `is_safe_to_modify` antes de cualquier operación, asegurando un manejo de errores más específico y consistente con las reglas de seguridad del proyecto.
-- `2026-10-12T06:52:43` **settings.py** (seguridad defensiva): Se reforzó la seguridad del método `_is_file_secure_to_read` para prevenir ataques de denegación de servicio o manipulación mediante enlaces simbólicos, añadiendo una verificación explícita mediante `os.path.islink` sobre la ruta resuelta para evitar que el archivo de configuración sea un punto de reparse que apunte fuera del directorio seguro.

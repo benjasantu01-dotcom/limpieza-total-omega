@@ -197,13 +197,14 @@ def _is_system_hidden(entry: os.DirEntry) -> bool:
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Auditoría final de seguridad antes de mover un archivo.
-    Verifica estado, permisos, espacio en disco, bloqueos y consistencia de inodos.
+    Realiza una validación combinada de metadatos, seguridad de ruta y recursos del sistema.
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     try:
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         
+        # Validaciones de identidad y estado base
         if src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         if src_real.is_symlink() or (os.name == 'nt' and bool(src_real.stat().st_file_attributes & WIN_ATTR_JUNCTION)): return False
         
@@ -211,6 +212,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         if (junk_file._ino is not None and stat_result.st_ino != junk_file._ino) or \
            (junk_file._dev is not None and stat_result.st_dev != junk_file._dev): return False
         
+        # Verificaciones de seguridad y permisos
         if not src_real.is_file() or is_protected_path(src_real) or is_protected_path(dest_real): return False
         if not is_safe_to_modify(src_real) or not _validate_path_security(src_real, dest_real): return False
         
@@ -218,6 +220,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         if not target_dir.is_dir() or not os.access(target_dir, os.W_OK): return False
         if _is_recursive_violation(src_real, dest_real) or _is_file_locked(src_real): return False
         
+        # Validación de recursos
         usage = shutil.disk_usage(target_dir)
         return usage.free >= (stat_result.st_size + MIN_FREE_SPACE_BYTES)
     except (OSError, AttributeError, ValueError, FileNotFoundError):

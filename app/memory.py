@@ -359,20 +359,24 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
     """Genera una descripción legible sobre el estado de la memoria para el usuario."""
     if snapshot.total <= 0: return ["No se pudo leer el estado de la memoria."]
-    diagnostics = {
+    
+    diagnostics: Dict[str, str] = {
         "ok": "Estado: holgado. La memoria ocupada por caché mejora la velocidad.",
         "info": "Estado: normal. Windows gestiona la memoria de forma eficiente.",
         "warning": "Estado: ajustado. Conviene cerrar aplicaciones innecesarias.",
         "danger": "Estado: crítico. El sistema recurre al archivo de paginación."
     }
-    report = [
+    
+    report: List[str] = [
         f"Memoria total: {format_bytes(snapshot.total)}",
         f"En uso: {format_bytes(snapshot.used)} ({snapshot.used_percent}%)",
         f"Disponible: {format_bytes(snapshot.available)} ({snapshot.available_percent}%)",
         diagnostics.get(pressure_level(snapshot), "")
     ]
+    
     if processes:
         report.extend(f"  Mayor consumo: {p.name} (PID {p.pid}) — {p.working_set_mb} MB" for p in processes[:3])
+        
     return report
 
 def _is_process_executable_safe(pid: int) -> bool:
