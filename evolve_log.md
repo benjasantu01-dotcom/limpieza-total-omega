@@ -808,3 +808,25 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-12T05:52:17` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: SystemMetrics.safe_get
 - `2026-10-12T05:52:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T05:52:17` Corrida terminada. Total usado hoy: 140.
+- `2026-10-12T05:59:42` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-10-12T06:00:44` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-12T06:01:48` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-12T06:01:54` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-12T06:03:06` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-12T06:03:22` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T06:04:05` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejora la robustez de `top_memory_processes` añadiendo un manejo de excepciones más granular ante procesos que terminan durante la iteración (`ERROR_ACCESS_DENIED` o `OSError` al consultar), evitando que el bucle completo falle ante la desaparición de un proceso efímero.
+- `2026-10-12T06:04:52` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_is_file_locked` para manejar adecuadamente casos de permisos denegados o archivos inaccesibles en sistemas Windows, evitando excepciones no controladas durante el escaneo y garantizando que el uso de `ctypes` no interrumpa el bucle principal.
+- `2026-10-12T06:05:32` Tests FALLARON:
+```
+ly_where_it_was - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: [Errno 9] Bad file descriptor
+8 failed, 291 passed in 2.15s
+
+```
+- `2026-10-12T06:05:32` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejora la robustez de `quarantine_file` añadiendo una verificación de existencia y estado del archivo origen justo antes de la operación de escritura atómica para evitar estados inconsistentes (TOCTOU) y asegura el cierre de descriptores en caso de error durante el registro del manifiesto.
+- `2026-10-12T06:05:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T06:05:32` Corrida terminada. Total usado hoy: 144.

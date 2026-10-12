@@ -329,9 +329,12 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
                 for i in range(count):
                     pid = pids[i]
                     if pid > 4 and pid != own_pid:
-                        ws = _query_working_set_bytes(pid, kernel32, psapi)
-                        if ws:
-                            found_procs.append(ProcessMemory(f"PID {pid}", pid, ws))
+                        try:
+                            ws = _query_working_set_bytes(pid, kernel32, psapi)
+                            if ws:
+                                found_procs.append(ProcessMemory(f"PID {pid}", pid, ws))
+                        except (OSError, ctypes.ArgumentError):
+                            continue
                 
                 cache_data = sorted(found_procs, key=lambda p: p.working_set, reverse=True)[:limit]
                 top_memory_processes._cache = (now, cache_data)

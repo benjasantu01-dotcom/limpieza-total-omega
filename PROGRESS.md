@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
-- Rechazadas por tests: 33
+- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Rechazadas por tests: 34
 - Rechazadas por guardia de seguridad: 54
 - Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 203
@@ -16,37 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-10 | 3 | 0 | 0 | 0 | 11 |
+| 2026-10-10 | 0 | 0 | 0 | 0 | 10 |
 | 2026-10-11 | 130 | 23 | 34 | 16 | 147 |
-| 2026-10-12 | 59 | 10 | 20 | 6 | 45 |
+| 2026-10-12 | 61 | 11 | 20 | 6 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
-- robustez ante casos límite: **40**
-- seguridad defensiva: **39**
+- robustez ante casos límite: **42**
 - manejo de errores y validación de entradas: **38**
+- seguridad defensiva: **36**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **19**
+- `memory.py`: **20**
 - `browser.py`: **19**
 - `diskreport.py`: **18**
 - `safety.py`: **16**
-- `settings.py`: **15**
 - `branding.py`: **15**
 - `healthscore.py`: **15**
-- `organizer.py`: **14**
-- `scanner.py`: **13**
+- `organizer.py`: **15**
+- `settings.py`: **14**
 - `assistant.py`: **13**
-- `startup.py`: **10**
+- `scanner.py`: **12**
 - `duplicates.py`: **10**
 - `main.py`: **9**
+- `startup.py`: **9**
 - `quarantine.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T06:04:52` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_locked` para manejar adecuadamente casos de permisos denegados o archivos inaccesibles en sistemas Windows, evitando excepciones no controladas durante el escaneo y garantizando que el uso de `ctypes` no interrumpa el bucle principal.
+- `2026-10-12T06:04:05` **memory.py** (robustez ante casos límite): Mejora la robustez de `top_memory_processes` añadiendo un manejo de excepciones más granular ante procesos que terminan durante la iteración (`ERROR_ACCESS_DENIED` o `OSError` al consultar), evitando que el bucle completo falle ante la desaparición de un proceso efímero.
 - `2026-10-12T05:50:46` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` ante casos límite mediante la validación estricta de rutas relativas y la captura de excepciones durante la resolución de `Path`, evitando el procesamiento de nodos huérfanos o con rutas resueltas fuera del árbol objetivo.
 - `2026-10-12T05:50:18` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante errores de acceso a archivos al añadir una validación de `os.access` con `os.R_OK` antes de intentar realizar operaciones de lectura, evitando excepciones innecesarias en carpetas protegidas por el SO o con permisos denegados.
 - `2026-10-12T05:31:29` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` reemplazando la lógica de resolución iterativa de padres (`p.parents`) por un chequeo de prefijo de cadena más eficiente (`os.path.commonpath`), reduciendo drásticamente las llamadas al sistema operativo (syscalls) al evitar validaciones innecesarias de rutas inexistentes durante el recorrido del árbol.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T04:59:26` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y la mantenibilidad del escáner añadiendo type hints precisos, documentando el propósito de cada método y estandarizando las docstrings para seguir las directrices del proyecto, facilitando así la auditoría de seguridad del código.
 - `2026-10-12T04:49:57` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones críticas de manipulación de archivos y la clarificación de los tipos de datos en la clase `QuarantineItem` para asegurar que el código sea más legible y mantenible según el enfoque de documentación actual.
 - `2026-10-12T04:49:02` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de `organizer.py` mediante type hints explícitos, la corrección de una inconsistencia en `_is_safe_for_disk_op` (donde se comprobaba la seguridad antes de obtener el `resolve()`), y la adición de docstrings precisos que clarifican las salvaguardas de seguridad en el flujo de archivos, cumpliendo estrictamente con el enfoque de legibilidad.
-- `2026-10-12T04:41:42` **memory.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando las estructuras Win32 mediante type hints en los campos y normalizando la creación de objetos de memoria, además de añadir un docstring detallado para la función de bajo nivel `_query_working_set_bytes` que clarifica su interacción con `psapi`.
-- `2026-10-12T04:31:12` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints explícitos, la corrección de una inconsistencia en el manejo de `pathlib.Path` y la mejora de los docstrings en las funciones críticas para clarificar el flujo de datos.

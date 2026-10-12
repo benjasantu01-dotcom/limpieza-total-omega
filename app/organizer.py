@@ -152,14 +152,15 @@ def _is_file_locked(path: Path) -> bool:
     if not path or not path.is_file(): return True
     if os.name == 'nt':
         try:
+            # FILE_SHARE_READ|FILE_SHARE_WRITE para probar disponibilidad sin bloquear
             handle = ctypes.windll.kernel32.CreateFileW(
-                str(path), 0, 0, None, 3, 0x80, None
+                str(path), 0x80000000, 3, None, 3, 0x00000080, None
             )
             if handle == wintypes.HANDLE(-1).value:
                 return True
             ctypes.windll.kernel32.CloseHandle(handle)
             return False
-        except (AttributeError, TypeError, OSError):
+        except (AttributeError, TypeError, OSError, Exception):
             return True
     try:
         with open(path, "rb"): return False
