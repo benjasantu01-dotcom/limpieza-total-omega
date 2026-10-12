@@ -332,7 +332,7 @@ def _is_file_secure_to_read(st: os.stat_result, file_obj: Any) -> bool:
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
         # No permitir ejecución, ni escritura grupal/pública
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
-        # Evitar SUID/SGID y enlaces duros múltiples
+        # Evitar SUID/SGID y enlaces duros múltiples (ataques de persistencia/traversal)
         if st.st_mode & (stat.S_ISUID | stat.S_ISGID) or st.st_nlink != 1: return False
         # Verificar dueño
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False

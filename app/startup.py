@@ -385,17 +385,18 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
     if os.name != "nt":
         return []
     
-    safe_keys: List[str] = []
+    # Validar rigurosamente las claves permitidas antes de construir la cadena del comando
     allowed_set = set(REGISTRY_RUN_KEYS)
-    for key in keys:
-        if isinstance(key, str) and key in allowed_set:
-            safe_keys.append(f"'{key}'")
+    safe_keys: List[str] = [k for k in keys if k in allowed_set]
             
     if not safe_keys:
         return []
         
-    target_registry_keys: str = ", ".join(safe_keys)
-    ps_cmd: str = f"Get-ItemProperty -LiteralPath {target_registry_keys} -ErrorAction SilentlyContinue | Select-Object * -ExcludeProperty PS* | ConvertTo-Csv -NoTypeInformation"
+    # Uso de -LiteralPath para evitar que la shell interprete caracteres especiales en los nombres de clave
+    ps_cmd: str = (
+        "Get-ItemProperty -LiteralPath " + ",".join([f"'{k}'" for k in safe_keys]) + 
+        " -ErrorAction SilentlyContinue | Select-Object * -ExcludeProperty PS* | ConvertTo-Csv -NoTypeInformation"
+    )
     
     try:
         process: subprocess.CompletedProcess = subprocess.run(

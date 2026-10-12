@@ -1468,3 +1468,38 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-12T02:18:24` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `is_protected_path` al incluir la resolución de rutas mediante `_get_final_path_normalized` para asegurar que las rutas protegidas sean detectadas correctamente incluso si acceden a través de puntos de reparse o rutas normalizadas inconsistentes, fortaleciendo la defensa contra bypass de seguridad.
 - `2026-10-12T02:18:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T02:18:24` Corrida terminada. Total usado hoy: 56.
+- `2026-10-12T02:25:39` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-10-12T02:26:21` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+_________________ ERROR collecting evolve/tests/test_basic.py __________________
+ImportError while importing test module '/home/runner/work/limpieza-total-omega/limpieza-total-omega/evolve/tests/test_basic.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+evolve/tests/test_basic.py:23: in <module>
+    import scanner    # noqa: E402
+    ^^^^^^^^^^^^^^
+app/scanner.py:17: in <module>
+    import msvcrt
+E   ModuleNotFoundError: No module named 'msvcrt'
+=========================== short test summary info ============================
+ERROR evolve/tests/test_basic.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.30s
+
+```
+- `2026-10-12T02:26:21` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `scanner.py` reemplazando el uso de `os.open` con `os.O_EXCL` por `msvcrt.locking` en `_is_file_in_use`, ya que `O_EXCL` requiere `O_CREAT` (lo cual es destructivo/inapropiado para un escáner solo lectura) y `msvcrt.locking` es la forma estándar de verificar bloqueos de acceso exclusivo en Windows sin modificar el archivo.
+- `2026-10-12T02:27:06` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad en `_is_file_secure_to_read` mediante la validación explícita de `st_nlink == 1` para prevenir ataques de enlaces duros (hard links), asegurando que el archivo leído sea el único descriptor en el sistema de archivos.
+- `2026-10-12T02:27:43` ✅ Mejora aceptada en startup.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `entries_from_registry` al añadir un control de validación estricto sobre las claves de registro (`REGISTRY_RUN_KEYS`) antes de pasarlas a la shell, asegurando que la entrada sea sanitizada y evitando inyecciones de comandos al tratar los parámetros de PowerShell como literales (`-LiteralPath`).
+- `2026-10-12T02:27:43` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-12T02:27:43` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-12T02:28:03` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-12T02:28:03` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-12T02:28:34` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-12T02:28:34` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-12T02:28:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T02:28:34` Corrida terminada. Total usado hoy: 60.

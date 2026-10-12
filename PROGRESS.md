@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
-- Rechazadas por tests: 33
+- Mejoras aceptadas: **210** (41.7% de aceptación)
+- Rechazadas por tests: 34
 - Rechazadas por guardia de seguridad: 54
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 185
+- Sin respuesta de la IA (error o límite): 182
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-10 | 46 | 7 | 11 | 4 | 30 |
+| 2026-10-10 | 46 | 7 | 11 | 4 | 26 |
 | 2026-10-11 | 130 | 23 | 34 | 16 | 147 |
-| 2026-10-12 | 32 | 3 | 9 | 4 | 8 |
+| 2026-10-12 | 34 | 4 | 9 | 4 | 9 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **48**
+- seguridad defensiva: **46**
 - legibilidad y documentación: **44**
-- seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **40**
 - rendimiento: **32**
 
@@ -37,16 +37,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **17**
 - `assistant.py`: **15**
 - `branding.py`: **15**
+- `settings.py`: **15**
 - `scanner.py`: **14**
-- `settings.py`: **14**
 - `organizer.py`: **13**
 - `duplicates.py`: **12**
 - `main.py`: **11**
-- `startup.py`: **9**
+- `startup.py`: **10**
 - `quarantine.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T02:27:43` **startup.py** (seguridad defensiva): Mejoré la seguridad defensiva en `entries_from_registry` al añadir un control de validación estricto sobre las claves de registro (`REGISTRY_RUN_KEYS`) antes de pasarlas a la shell, asegurando que la entrada sea sanitizada y evitando inyecciones de comandos al tratar los parámetros de PowerShell como literales (`-LiteralPath`).
+- `2026-10-12T02:27:06` **settings.py** (seguridad defensiva): Se reforzó la seguridad en `_is_file_secure_to_read` mediante la validación explícita de `st_nlink == 1` para prevenir ataques de enlaces duros (hard links), asegurando que el archivo leído sea el único descriptor en el sistema de archivos.
 - `2026-10-12T02:17:09` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` implementando una validación estricta en `purge_all` para asegurar que solo se eliminen archivos que están explícitamente registrados en el manifiesto, evitando el borrado accidental de archivos huérfanos o maliciosos que pudieran haber sido inyectados en la carpeta de cuarentena.
 - `2026-10-12T02:16:14` **organizer.py** (seguridad defensiva): Mejoré la seguridad de la función `_is_safe_for_disk_op` añadiendo una validación explícita para asegurar que el archivo fuente no sea un punto de reparse (junction), evitando así que la lógica de limpieza siga accidentalmente enlaces simbólicos hacia carpetas de sistema fuera de los directorios permitidos.
 - `2026-10-12T02:10:32` **memory.py** (seguridad defensiva): Mejoré `_is_process_executable_safe` añadiendo una validación explícita de `is_protected_path` sobre la ruta resuelta antes de cualquier interacción, asegurando que el proceso a manipular no se encuentre en las zonas restringidas del sistema, y refiné el manejo de errores para garantizar el cierre correcto del `handle` en todas las rutas de código mediante `finally`.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T01:36:10` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera (TOCTOU) en `delete_reviewed` implementando la verificación de inodos antes de la eliminación, asegurando que el archivo eliminado sea el mismo que fue validado por las protecciones de seguridad.
 - `2026-10-12T01:26:51` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante posibles excepciones durante la inicialización de widgets y el manejo de hilos, asegurando que si un componente crítico falla al crearse o al actualizarse (debido a estados de carrera o cierres prematuros), la aplicación no colapse silenciosamente ni deje hilos colgados, reforzando la validación de `winfo_exists` en puntos clave de la interfaz.
 - `2026-10-12T01:25:56` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `_evaluate_rules` reemplazando la validación manual de strings por una lógica de filtrado de rutas mediante `pathlib`, eliminando el riesgo de dejar pasar rutas relativas o mal formadas, y reforzando la integridad al prevenir excepciones ante entradas inesperadas en `message_factory`.
-- `2026-10-12T01:25:29` **duplicates.py** (robustez ante casos límite): Se introdujo una gestión robusta de permisos y estados de archivo en `suggest_keeper` y `format_group`, utilizando `is_safe_to_modify` antes de cualquier acceso de escritura o lectura sensible para prevenir excepciones en archivos bloqueados o con permisos denegados que rompan la UI.
-- `2026-10-12T01:25:03` **diskreport.py** (robustez ante casos límite): Mejora la robustez ante rutas de red (UNC) y dispositivos extraíbles vacíos en `_get_local_windows_drives` y `_validate_root`, evitando bloqueos inesperados o excepciones de sistema al acceder a unidades no listas.
