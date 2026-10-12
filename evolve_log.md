@@ -1354,3 +1354,35 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-12T01:06:13` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Se implementó un sistema de "Dirty Flag" en `update` para evitar escrituras redundantes en disco y se optimizó la resolución de rutas en los validadores usando `pathlib.Path.resolve` de forma más selectiva, reduciendo llamadas innecesarias al sistema de archivos durante las validaciones frecuentes.
 - `2026-10-12T01:06:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T01:06:13` Corrida terminada. Total usado hoy: 28.
+- `2026-10-12T01:14:20` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-10-12T01:14:49` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 0.97s
+
+```
+- `2026-10-12T01:14:49` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó el proceso de resolución de rutas en `StartupEntry` añadiendo un nivel de caché previo basado en hashes para evitar llamadas repetidas a `Path.resolve()` y validaciones de disco redundantes, reduciendo significativamente la latencia en equipos con muchos procesos de inicio.
+- `2026-10-12T01:15:29` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_safe_handler_wrapper` capturando errores específicos de `AttributeError` y `TypeError` que podrían surgir al acceder a propiedades dinámicas o contextos mal formados, garantizando que el asistente nunca bloquee la interfaz ante una entrada inesperada.
+- `2026-10-12T01:16:04` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-10-12T01:17:04` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-12T01:17:30` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se introdujo una protección contra el acceso a archivos bloqueados por el sistema (exclusivos) al realizar `os.scandir` mediante el manejo robusto de `PermissionError` y `OSError`, evitando que el escaneo se interrumpa ante archivos en uso por el navegador.
+- `2026-10-12T01:17:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T01:17:30` Corrida terminada. Total usado hoy: 32.

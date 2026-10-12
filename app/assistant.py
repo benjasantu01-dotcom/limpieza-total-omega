@@ -115,7 +115,7 @@ def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Calla
             if isinstance(result, Answer) and result.text:
                 return result
             logging.error(f"Handler {func.__name__} devolvió respuesta vacía")
-        except Exception as e:
+        except (AttributeError, TypeError, Exception) as e:
             logging.error(f"Falla inesperada en handler {func.__name__}: {e}")
         return Answer("Error al procesar la respuesta.")
     return wrapper

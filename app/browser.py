@@ -23,8 +23,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import (
     Iterable, Sequence, Dict, List, Optional, Callable, 
-    Union, TypeAlias, NamedTuple, Set, TypeGuard, Any, functools
+    Union, TypeAlias, NamedTuple, Set, TypeGuard, Any
 )
+import functools
 
 from safety import is_protected_path, is_safe_to_modify
 
@@ -231,7 +232,7 @@ def _process_file_node(entry: os.DirEntry, visited_files: Set[tuple[int, int]]) 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
     """
     Escaneo recursivo de directorios con límite de profundidad y cacheo de estados.
-    Usa ScanContext para mantener consistencia y detectar ciclos de directorios.
+    Maneja excepciones de acceso a archivos bloqueados por el SO.
     """
     if depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)
@@ -246,8 +247,9 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
     total_bytes: int = 0
     try:
         with os.scandir(root_path) as it:
-            for entry in it:
+            while True:
                 try:
+                    entry = next(it)
                     if _should_skip_entry(entry, ctx):
                         continue
                         
@@ -256,6 +258,8 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
                         total_bytes += res.bytes_found
                     else:
                         total_bytes += _process_file_node(entry, ctx.visited_files)
+                except StopIteration:
+                    break
                 except (OSError, PermissionError):
                     continue
         
