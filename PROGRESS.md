@@ -5,10 +5,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **502**
-- Mejoras aceptadas: **195** (38.8% de aceptación)
-- Rechazadas por tests: 34
-- Rechazadas por guardia de seguridad: 48
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Rechazadas por tests: 33
+- Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 203
 
@@ -16,29 +16,30 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-10 | 65 | 11 | 14 | 6 | 56 |
+| 2026-10-10 | 65 | 10 | 13 | 6 | 56 |
 | 2026-10-11 | 130 | 23 | 34 | 16 | 147 |
+| 2026-10-12 | 4 | 0 | 0 | 0 | 0 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
 - robustez ante casos límite: **43**
 - manejo de errores y validación de entradas: **40**
-- legibilidad y documentación: **34**
+- legibilidad y documentación: **38**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
+- `diskreport.py`: **21**
+- `browser.py`: **19**
 - `safety.py`: **18**
-- `browser.py`: **18**
 - `memory.py`: **18**
 - `healthscore.py`: **17**
 - `settings.py`: **15**
+- `branding.py`: **15**
 - `scanner.py`: **14**
 - `assistant.py`: **14**
-- `branding.py`: **14**
-- `duplicates.py`: **11**
+- `duplicates.py`: **12**
 - `main.py`: **11**
 - `organizer.py`: **11**
 - `startup.py`: **9**
@@ -46,6 +47,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T00:04:57` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y precisos en las funciones críticas de detección y procesamiento de duplicados, clarificando las precondiciones y el flujo de los datos para facilitar el mantenimiento.
+- `2026-10-12T00:04:47` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación del motor de escaneo y sus dependencias mediante la actualización de los docstrings, incorporando explicaciones claras sobre la lógica de inodos para la prevención de bucles y clarificando las responsabilidades de las clases auxiliares para facilitar el mantenimiento futuro.
+- `2026-10-12T00:04:22` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave, aclarando las precondiciones de seguridad y el comportamiento ante errores, facilitando la auditoría del código bajo las reglas de seguridad exigidas.
+- `2026-10-12T00:03:52` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `branding.py` mediante docstrings detallados en las funciones de renderizado, explicando el propósito de cada parámetro geométrico, y añadí `TypeAlias` explícitos para las estructuras de datos de coordenadas, mejorando la claridad de la intención del diseño sin alterar la lógica de ejecución.
 - `2026-10-11T14:39:10` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en la resolución de rutas mediante la implementación de una técnica de doble validación (existencia + permiso) dentro de `ensure_safe_to_modify`, previniendo errores de sistema al intentar operar sobre rutas inexistentes pero aparentemente válidas, y refinando el manejo de excepciones para evitar el colapso del bucle de validación ante estados de carrera (`Race Conditions`).
 - `2026-10-11T14:30:18` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` y `load_manifest` mediante el manejo explícito de `OSError` al realizar operaciones atómicas, asegurando que cualquier fallo en la escritura de metadatos no deje el estado interno del módulo en una inconsistencia lógica, además de fortalecer la validación de tipos en la serialización.
 - `2026-10-11T14:19:02` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` añadiendo validaciones explícitas de tipo y estado para evitar errores en tiempo de ejecución si los archivos son eliminados o modificados por procesos externos durante el análisis.
@@ -57,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-11T12:47:07` **safety.py** (seguridad defensiva): Se ha añadido una verificación de "propietario" mediante el SID del archivo en `ensure_safe_to_modify` para detectar rutas que, aunque no tengan atributos de sistema, pertenecen a grupos como `TrustedInstaller` (S-1-5-80), bloqueando preventivamente la manipulación de archivos gestionados exclusivamente por el instalador de Windows.
 - `2026-10-11T12:36:57` **organizer.py** (seguridad defensiva): Se ha mejorado la integridad del proceso de escaneo recursivo mediante la validación obligatoria de `is_safe_to_modify` en cada nivel de directorio procesado, evitando que el escáner intente descender por rutas que el sistema de seguridad considere inapropiadas, incluso si no están explícitamente en la `BLOCKLIST`.
 - `2026-10-11T12:36:25` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` reemplazando la verificación simple mediante `Path.exists()` por una validación que utiliza `is_protected_path` sobre la ruta normalizada, previniendo el seguimiento de enlaces simbólicos o puntos de reparse que podrían apuntar a rutas críticas fuera del alcance esperado.
-- `2026-10-11T12:28:11` **main.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `main.py` reforzando la validación de rutas mediante la integración del chequeo `safety.ensure_safe_to_modify` antes de cualquier operación de escritura en disco, incluyendo el guardado de reportes y ajustes, asegurando que las rutas de destino pasen por el filtro de seguridad global de la aplicación.
-- `2026-10-11T12:27:14` **healthscore.py** (seguridad defensiva): Se ha implementado un filtrado de seguridad en la composición de recomendaciones dentro de `_evaluate_rules` para asegurar que los mensajes no contengan datos sensibles, validando la integridad del contenido antes de su procesamiento.
-- `2026-10-11T12:26:40` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de `_collect_candidates` aplicando el filtrado de seguridad `is_safe_to_modify` antes de añadir directorios a la cola, previniendo que el escáner intente acceder a rutas cuya validación de seguridad fallaría recursivamente, protegiendo así la integridad del bucle de exploración.
-- `2026-10-11T12:26:10` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` mediante la validación estricta de rutas con `Path.resolve()` antes de realizar cualquier operación de escaneo, asegurando que los enlaces simbólicos y los escapes fuera del directorio raíz sean bloqueados explícitamente antes de entrar al bucle.

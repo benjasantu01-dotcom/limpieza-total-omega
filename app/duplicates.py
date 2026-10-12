@@ -83,6 +83,7 @@ def is_system_or_hidden(path: Path) -> bool:
 class DuplicateGroup:
     """
     Contenedor de datos para grupos de archivos con contenido idéntico.
+    Mantiene la referencia a los archivos y calcula el impacto de espacio.
     """
     digest: str
     size_bytes: int
@@ -154,6 +155,7 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
 def _validate_and_resolve_path(path_input: PathLike) -> Optional[Path]:
     """
     Normaliza, resuelve y valida que una ruta sea un archivo procesable.
+    Retorna el objeto Path resuelto si es válido, None en caso contrario.
     """
     if not path_input:
         return None
@@ -238,7 +240,7 @@ def _resolve_and_verify_root(directory_path: PathLike) -> Optional[Path]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Recorre rutas de forma iterativa (BFS) para identificar archivos candidatos,
-    usando set de inodos para evitar el procesamiento redundante de enlaces físicos.
+    usando un set de dispositivos/inodos para evitar procesar enlaces físicos múltiples veces.
     """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     queue: deque[Tuple[Path, int]] = deque()
@@ -280,8 +282,8 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
-    Helper genérico para agrupar una lista de rutas mediante una función de hash
-    especificada (puede ser parcial o completa).
+    Helper genérico: agrupa una lista de rutas mediante una función de hash
+    (parcial o completa) y filtra grupos con un solo elemento.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
@@ -292,8 +294,8 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
     """
-    Ejecuta filtrado jerárquico para optimizar rendimiento en archivos grandes:
-    primero reduce el espacio de búsqueda con hash parcial, luego confirma con hash completo.
+    Filtrado jerárquico: optimiza el rendimiento realizando un hash parcial 
+    inicial y confirmando coincidencias únicamente con hash completo.
     """
     partial_groups = _group_paths_by_hash(paths, partial_hash)
     final_results: Dict[str, List[Path]] = {}
@@ -303,11 +305,10 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 
 
 def _decide_hash_strategy_and_process(size_bytes: int, file_paths: List[Path]) -> List[DuplicateGroup]:
-    """Selecciona el método de hashing más eficiente según el tamaño del archivo."""
+    """Selecciona la estrategia de hashing basada en el tamaño del archivo."""
     if not file_paths or size_bytes <= 0:
         return []
 
-    # Archivos muy pequeños se hashean directamente, los grandes viajan por filtrado jerárquico
     if size_bytes <= PARTIAL_READ_BYTES:
         final_groups = _group_paths_by_hash(file_paths, hash_file)
     else:
@@ -332,8 +333,8 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     """
-    Calcula un score basado en antigüedad (mtime) y longitud de ruta (preferencia 
-    por carpetas más profundas). Útil para heurística de 'original'.
+    Calcula un score de antigüedad (mtime) y longitud de ruta para determinar 
+    qué archivo debería ser el 'original' a conservar.
     """
     if not isinstance(path, Path) or not path.exists():
         return None
@@ -346,8 +347,8 @@ def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
-    Selecciona el mejor archivo candidato a preservar basándose en métricas:
-    preferencia por el archivo más antiguo y con ruta de acceso más larga.
+    Selecciona el mejor archivo candidato a preservar basándose en 
+    heurísticas de antigüedad y profundidad de ruta.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
@@ -373,7 +374,7 @@ def _get_path_label(path: Path, keeper: Optional[Path]) -> str:
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
-    """Genera informe textual del grupo para la interfaz de usuario."""
+    """Genera una representación textual formateada del grupo para la UI."""
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return ["Error: Grupo inválido o vacío"]
         

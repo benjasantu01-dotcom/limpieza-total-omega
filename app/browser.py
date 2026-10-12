@@ -70,10 +70,11 @@ class ScanContext:
 
 def safe_path_operation(default: Any) -> Callable:
     """
-    Decorador para envolver operaciones de E/S propensas a errores de SO.
+    Decorador que envuelve operaciones de E/S en un bloque try-except.
+    Garantiza que errores de permisos o SO no interrumpan el flujo de ejecución.
     
     Args:
-        default: Valor de retorno si ocurre una excepción de sistema.
+        default: Valor retornado si ocurre cualquier error durante la ejecución.
     """
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
@@ -153,9 +154,11 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
     return dll if hasattr(dll, 'GetFileAttributesW') else None
 
 def _is_unc_path(path_str: Optional[str]) -> TypeGuard[str]:
+    """Valida si una cadena de ruta representa una ruta UNC (red)."""
     return isinstance(path_str, str) and (path_str.startswith(r"\\") or path_str.startswith("//"))
 
 def _ensure_within_base(target_norm: str, base_norm: str) -> bool:
+    """Valida que la ruta objetivo sea hija de la ruta base, evitando saltos de directorio."""
     return target_norm.startswith(base_norm)
 
 def base_directories() -> List[Path]:
@@ -175,17 +178,22 @@ def base_directories() -> List[Path]:
     return []
 
 def _is_excluded_file(name: Optional[str]) -> TypeGuard[str]:
+    """Verifica si un nombre de archivo está en la lista negra de `NEVER_TOUCH`."""
     return name is not None and name.lower() in NEVER_TOUCH
 
 @safe_path_operation(False)
 def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
-    """Valida atributos de sistema de archivos vía Win32 API."""
+    """Valida atributos de sistema de archivos usando Win32 API."""
     if kernel32 is None: return False
     attrs: int = kernel32.GetFileAttributesW(entry_path)
     return attrs != 0xFFFFFFFF and bool(attrs & SYSTEM_HIDDEN_FLAGS)
 
 def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
-    """Filtra entradas según políticas de seguridad y aislamiento."""
+    """
+    Evalúa si una entrada de disco debe ser ignorada por seguridad.
+    Verifica: archivos protegidos, rutas UNC, profundidad, caracteres prohibidos,
+    confinamiento al perfil, puntos de reparse y archivos ocultos de sistema.
+    """
     if _is_excluded_file(entry.name):
         return True
     
@@ -205,6 +213,7 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     return False
 
 def _process_file_node(entry: os.DirEntry, visited_files: Set[tuple[int, int]]) -> int:
+    """Calcula el tamaño de un archivo, evitando procesar duplicados mediante (dev, ino)."""
     try:
         if not is_safe_to_modify(Path(entry.path)) or is_protected_path(Path(entry.path)):
             return 0
@@ -220,7 +229,10 @@ def _process_file_node(entry: os.DirEntry, visited_files: Set[tuple[int, int]]) 
         return 0
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
-    """Realiza un recorrido DFS limitado con detección de ciclos y nodos visitados."""
+    """
+    Escaneo recursivo de directorios con límite de profundidad y cacheo de estados.
+    Usa ScanContext para mantener consistencia y detectar ciclos de directorios.
+    """
     if depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)
     
@@ -254,7 +266,7 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
 
 @safe_path_operation(0)
 def directory_size(path: Optional[OSPath]) -> int:
-    """Calcula el tamaño total de un directorio, respetando restricciones de seguridad."""
+    """Calcula el tamaño total de un directorio, aplicando validaciones de seguridad previas."""
     if not isinstance(path, (str, Path)): return 0
     path_obj: Path = Path(path)
     if not path_obj.exists() or not path_obj.is_dir(): return 0
@@ -269,7 +281,7 @@ def directory_size(path: Optional[OSPath]) -> int:
 
 @safe_path_operation(False)
 def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
-    """Verifica si la ruta candidata pertenece al perfil de usuario y es segura."""
+    """Verifica la integridad de la ruta candidata, confirmando que es una carpeta segura dentro del perfil."""
     if not isinstance(candidate, Path) or not candidate.is_dir(): 
         return False
     try:
@@ -285,7 +297,7 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
 
 @safe_path_operation(Path())
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
-    """Construye una ruta absoluta validando que no escape del perfil base."""
+    """Resuelve la ruta absoluta del caché validando que el resultado permanezca confinado al perfil base."""
     if not isinstance(real_base, Path) or not isinstance(rel_str, str) or not rel_str: 
         return Path()
     
@@ -311,7 +323,10 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     return Path()
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
-    """Descubre perfiles de navegador y mide el uso de disco de sus cachés."""
+    """
+    Descubre perfiles de navegador y mide el uso de disco de sus cachés.
+    Es el punto de entrada principal para el escaneo de navegadores instalados.
+    """
     raw_bases = list(bases) if bases is not None else base_directories()
     if not raw_bases: return []
 
@@ -338,10 +353,11 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     return found
 
 def total_cache_bytes(caches: Optional[Iterable[BrowserCache]] = None) -> int:
+    """Suma total de bytes detectados en todas las cachés."""
     return sum(c.size_bytes for c in caches) if caches else 0
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
-    """Genera un reporte legible sobre el uso de disco de las cachés."""
+    """Genera un reporte legible sobre el uso de disco de las cachés para la interfaz."""
     current_caches = caches if isinstance(caches, list) else detect_profiles()
     if not current_caches:
         return ["No se detectaron cachés de navegador en este sistema."]
