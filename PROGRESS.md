@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 53
-- Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 204
+- Rechazadas por guardia de seguridad: 54
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 78 | 10 | 20 | 9 | 79 |
-| 2026-10-12 | 119 | 17 | 33 | 14 | 125 |
+| 2026-10-11 | 78 | 9 | 20 | 7 | 78 |
+| 2026-10-12 | 121 | 18 | 34 | 14 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **46**
 - seguridad defensiva: **46**
-- manejo de errores y validación de entradas: **40**
+- manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **38**
 - rendimiento: **27**
 
@@ -31,14 +31,14 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `memory.py`: **21**
 - `diskreport.py`: **19**
+- `safety.py`: **18**
 - `browser.py`: **18**
 - `organizer.py`: **17**
-- `safety.py`: **17**
 - `healthscore.py`: **17**
 - `branding.py`: **16**
 - `settings.py`: **14**
 - `duplicates.py`: **13**
-- `scanner.py`: **12**
+- `scanner.py`: **13**
 - `assistant.py`: **11**
 - `quarantine.py`: **9**
 - `startup.py`: **7**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T13:10:38` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `scanner.py` reemplazando los bloques `except Exception` genéricos por capturas de excepciones específicas (`OSError`, `PermissionError`, etc.) y añadiendo validaciones de entrada (`None`/`path`) para evitar fallos de ejecución en condiciones de borde.
+- `2026-10-12T13:10:28` **safety.py** (manejo de errores y validación de entradas): Se introdujo un manejo robusto de errores mediante bloques `try-except` específicos en la función `_get_security_descriptor`, evitando que fallos inesperados al consultar metadatos de sistema (como errores de privilegios o I/O) retornen valores por defecto incorrectos que podrían enmascarar riesgos.
 - `2026-10-12T13:00:30` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_locked` para manejar fallos de tipos en la llamada a `ctypes` y añadí una validación de `None` en `scan_for_junk` para prevenir `AttributeError` si `Path(d)` recibe un valor inesperado, fortaleciendo el manejo de errores del bucle de escaneo.
 - `2026-10-12T13:00:14` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_process_executable_safe` y `_query_working_set_bytes` implementando una validación de `None` más rigurosa para los handles de procesos y un manejo explícito de errores que evita el uso de bloques `try-except` vacíos, asegurando que cualquier fallo en la API nativa sea gestionado o ignorado explícitamente sin enmascarar errores de lógica.
 - `2026-10-12T12:49:14` **duplicates.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `hash_file` y `partial_hash` asegurando que cualquier fallo durante la lectura de archivos (como errores de hardware o bloqueos repentinos) devuelva `None` de forma controlada sin propagar excepciones que interrumpan el bucle principal de escaneo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T10:57:08` **healthscore.py** (seguridad defensiva): Se endureció la seguridad defensiva en `_sanitize_msg` para incluir una lista de bloqueo de caracteres especiales y patrones de rutas más estricta, previniendo inyecciones de texto que pudieran ser interpretadas erróneamente en la UI o registros.
 - `2026-10-12T10:56:54` **duplicates.py** (seguridad defensiva): Mejoré la robustez de `is_junction` y `is_system_or_hidden` añadiendo una validación explícita mediante `path.exists()` antes de llamar a la API de Windows, evitando excepciones innecesarias en rutas que cambiaron de estado o fueron eliminadas por otros procesos durante el escaneo.
 - `2026-10-12T10:56:27` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_excluded_path` asegurando que la resolución de rutas mediante `os.scandir` se realice de forma segura, validando explícitamente que los archivos encontrados pertenecen al árbol de directorios que se está escaneando, previniendo posibles ataques por desbordamiento de ruta o manipulaciones de enlaces simbólicos maliciosos.
-- `2026-10-12T10:45:48` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `settings.py` ante errores de concurrencia y bloqueos de disco mediante la implementación de un mecanismo de reintento (`exponential backoff`) en `perform_atomic_write`, mitigando fallos transitorios en operaciones de entrada/salida que ocurren frecuentemente en sistemas Windows con antivirus activos.
-- `2026-10-12T10:38:34` **safety.py** (robustez ante casos límite): Se ha implementado una mejora en la robustez ante rutas inexistentes dentro de `is_protected_path`, evitando que una `Path.resolve()` sobre una ruta no presente en el disco lance un error (`OSError` o similar) y comprometa el flujo de validación, asegurando que la app siga siendo capaz de evaluar la seguridad incluso sobre objetos pendientes de creación o eliminados.

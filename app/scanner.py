@@ -132,7 +132,7 @@ def _is_target_extension(name: str) -> bool:
     """Determina si la extensión del archivo es un objetivo relevante para heurísticas."""
     try:
         return Path(name).suffix.lower() in SUSPICIOUS_ALL_EXTS
-    except Exception:
+    except (ValueError, TypeError):
         return False
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
@@ -172,7 +172,7 @@ def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: fl
     try:
         if _get_file_size(path) == 0:
             return Suspicion(path, "Ejecutable vacío detectado", "warning")
-    except Exception as e:
+    except (OSError, PermissionError, AttributeError) as e:
         logger.debug(f"Error verificando tamaño en {path}: {e}")
     return None
 
@@ -281,7 +281,7 @@ class Scanner:
                 finding: Optional[Suspicion] = check_fn(path, entry, self.now_ts)
                 if finding is not None:
                     self.results.append(finding)
-            except Exception as e:
+            except (OSError, PermissionError, AttributeError, ValueError) as e:
                 logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
@@ -295,7 +295,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
         try:
             res = check_fn(path, entry, now_ts)
             if res is not None: findings.append(res)
-        except Exception as e:
+        except (OSError, PermissionError, AttributeError, ValueError) as e:
             logger.debug(f"Heurística individual fallida en {path}: {e}")
     return findings
 

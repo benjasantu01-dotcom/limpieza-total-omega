@@ -53,17 +53,21 @@ class SecurityDescriptor(NamedTuple):
         """Factoría que consolida los atributos del sistema y el estado de bloqueo."""
         if not path_str:
             return cls(0, True, True, True, True)
-        attrs = _get_file_attrs(path_str)
-        is_protected = bool(attrs & (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | Win32Attr.TEMPORARY | Win32Attr.REPARSE_POINT))
-        is_in_use = is_protected or (attrs != INVALID_FILE_ATTRIBUTES and _is_file_locked_by_other_process(path_str))
-        
-        return cls(
-            attrs=attrs,
-            is_protected_system=is_protected,
-            is_in_use=is_in_use,
-            is_readonly=bool(attrs & Win32Attr.READONLY),
-            is_reparse=bool(attrs & Win32Attr.REPARSE_POINT)
-        )
+        try:
+            attrs = _get_file_attrs(path_str)
+            is_protected = bool(attrs & (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | Win32Attr.TEMPORARY | Win32Attr.REPARSE_POINT))
+            is_in_use = is_protected or (attrs != INVALID_FILE_ATTRIBUTES and _is_file_locked_by_other_process(path_str))
+            
+            return cls(
+                attrs=attrs,
+                is_protected_system=is_protected,
+                is_in_use=is_in_use,
+                is_readonly=bool(attrs & Win32Attr.READONLY),
+                is_reparse=bool(attrs & Win32Attr.REPARSE_POINT)
+            )
+        except Exception:
+            # En caso de error al leer metadatos, se asume el estado más restrictivo
+            return cls(0, True, True, True, True)
 
 class FileMetadata(TypedDict):
     """Estructura de datos simplificada para exportar el perfil de seguridad de un archivo."""
