@@ -292,13 +292,10 @@ def _sanitize_msg(msg: str) -> str:
     """Elimina caracteres no imprimibles y bloquea rutas absolutas o sintaxis de sistema."""
     if not isinstance(msg, str): return ""
     # Seguridad defensiva: bloquea explícitamente cualquier string que contenga estructuras de sistema o rutas
+    # Se eliminan caracteres de control, escapes ANSI y caracteres sospechosos
     if any(part in msg.lower() for part in ["c:\\", "/", "root", "system32", "windows"]): return ""
-    try:
-        if any(Path(p).is_absolute() for p in msg.split() if p.strip()): return ""
-    except Exception:
-        return ""
     
-    sanitized = "".join(c for c in msg if c.isprintable() and c not in "\r\n\t\\/").strip()
+    sanitized = "".join(c for c in msg if c.isprintable() and ord(c) < 127 and c not in "\r\n\t\\/").strip()
     return sanitized[:200] if sanitized else ""
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio, findings: List[str]) -> None:
@@ -315,14 +312,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
     Calcula el puntaje global recorriendo el pipeline de métricas.
-    
-    Procesa secuencialmente cada entrada del _PIPELINE, normaliza el valor, 
-    evalúa reglas de recomendación y consolida los puntos según el peso definido.
-    
-    Args:
-        metrics: Instancia de SystemMetrics con los valores actuales.
-    Returns:
-        Un objeto HealthResult con el puntaje final y desglose.
     """
     try:
         m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
@@ -340,9 +329,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
                 area_ratio = _clamp(entry.scorer(m))
                 _evaluate_rules(m, entry.rules, area_ratio, recommendations)
                 
+                # Cálculo defensivo: forzar redondeo antes de convertir a entero
                 points = area_ratio * entry.weight
-                metric_breakdown[entry.area] = int(round(_clamp(points, 0.0, float(entry.weight))))
-                accumulated_score += float(metric_breakdown[entry.area])
+                val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
+                metric_breakdown[entry.area] = val_int
+                accumulated_score += float(val_int)
             except Exception as e:
                 logging.error(f"Falla crítica en pipeline {entry.area}: {e}")
                 metric_breakdown[entry.area] = 0

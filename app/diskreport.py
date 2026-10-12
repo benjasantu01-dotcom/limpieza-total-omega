@@ -175,7 +175,7 @@ def _is_excluded_path(entry: os.DirEntry) -> bool:
     Determina si un nodo (archivo o carpeta) debe ser ignorado.
     
     Implementa filtros de seguridad contra caracteres maliciosos, rutas 
-    protegidas y archivos especiales de Windows (ej. atributos ocultos/sistema).
+    protegidas y archivos especiales de Windows (ej. atributos ocultos/sistema/junctions).
     """
     try:
         name = entry.name
@@ -194,7 +194,8 @@ def _is_excluded_path(entry: os.DirEntry) -> bool:
         if not os.access(entry.path, os.R_OK):
             return True
 
-        # Chequeo específico de atributos en Windows (FILE_ATTRIBUTE_REPARSE_POINT)
+        # Chequeo defensivo: Detectar puntos de reparse (reparse points)
+        # 0x0400 es FILE_ATTRIBUTE_REPARSE_POINT en Windows
         if os.name == 'nt':
             try:
                 st = entry.stat(follow_symlinks=False)

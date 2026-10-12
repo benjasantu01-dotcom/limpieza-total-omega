@@ -142,6 +142,8 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
     if not isinstance(path, Path) or st_size <= 0:
         return False
     
+    if is_protected_path(path):
+        return False
     if not _safe_path_check(path):
         return False
     if is_system_or_hidden(path):

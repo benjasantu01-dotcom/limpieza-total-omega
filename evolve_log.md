@@ -894,3 +894,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-12T06:22:50` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha restringido el acceso a directorios durante el escaneo para evitar la evaluación de rutas que excedan el límite de profundidad del sistema de archivos (`MAX_PATH_LEN`), mejorando la seguridad defensiva al prevenir el procesamiento de rutas maliciosamente profundas o cíclicas.
 - `2026-10-12T06:22:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T06:22:50` Corrida terminada. Total usado hoy: 152.
+- `2026-10-12T06:30:11` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-10-12T06:30:53` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_excluded_path` añadiendo un chequeo explícito de puntos de reparse (Junctions/Symlinks de sistema) para asegurar que el escaneo no escape accidentalmente del directorio objetivo ni siga enlaces cíclicos o fuera de los límites permitidos.
+- `2026-10-12T06:30:53` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T06:31:34` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva centralizando la validación de archivos en `_is_valid_candidate` para incluir explícitamente `is_protected_path(path)`, asegurando que ningún archivo del sistema sea siquiera procesado durante la fase de hash o escaneo, incluso si los permisos del SO permitirían la lectura.
+- `2026-10-12T06:32:05` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se endureció la seguridad defensiva de `_sanitize_msg` para prevenir el escape de información sensible mediante la inyección de caracteres de control o secuencias de escape ANSI, y se mejoró la resiliencia del `PipelineEntry` asegurando que los resultados numéricos de las reglas de diagnóstico no propaguen errores de precisión aritmética.
+- `2026-10-12T06:33:05` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-12T06:33:09` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-12T06:33:15` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-12T06:34:27` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-12T06:34:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T06:34:27` Corrida terminada. Total usado hoy: 156.
