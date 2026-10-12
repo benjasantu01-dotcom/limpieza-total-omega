@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 35
-- Rechazadas por guardia de seguridad: 50
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 201
 
@@ -16,37 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-10 | 14 | 4 | 2 | 1 | 13 |
+| 2026-10-10 | 13 | 3 | 1 | 1 | 12 |
 | 2026-10-11 | 130 | 23 | 34 | 16 | 147 |
-| 2026-10-12 | 52 | 8 | 14 | 5 | 41 |
+| 2026-10-12 | 54 | 9 | 14 | 5 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **46**
 - legibilidad y documentación: **46**
-- robustez ante casos límite: **42**
+- robustez ante casos límite: **41**
 - manejo de errores y validación de entradas: **38**
-- rendimiento: **24**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **20**
+- `memory.py`: **19**
 - `diskreport.py`: **18**
 - `browser.py`: **18**
 - `safety.py`: **17**
 - `settings.py`: **16**
+- `branding.py`: **16**
 - `healthscore.py`: **16**
-- `branding.py`: **15**
 - `scanner.py`: **14**
 - `assistant.py`: **14**
 - `organizer.py`: **14**
 - `startup.py`: **10**
-- `duplicates.py`: **9**
+- `duplicates.py`: **10**
 - `main.py`: **9**
 - `quarantine.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T05:11:22` **duplicates.py** (rendimiento): Optimicé el método `_collect_candidates` utilizando un cache local para `is_protected_path` durante el recorrido, evitando llamadas redundantes a la lógica de validación de seguridad dentro del bucle de archivos.
+- `2026-10-12T05:09:38` **branding.py** (rendimiento): Optimicé el rendimiento de `branding.py` mediante la refactorización de `gradient_colors` para evitar la creación innecesaria de listas y tuplas intermedias en cada iteración, consolidando la lógica de cálculo dentro de un bucle simple que minimiza la carga sobre la memoria y las llamadas a funciones auxiliares.
 - `2026-10-12T05:01:19` **assistant.py** (rendimiento): Optimicé el método `ingest` de `SystemContext` para evitar iteraciones redundantes y re-cálculos de caché mediante un enfoque de "actualización diferencial" transaccional, mejorando el rendimiento en el bucle de procesamiento de métricas.
 - `2026-10-12T05:00:45` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones de procesamiento de datos, explicitando los contratos de entrada/salida y las justificaciones de seguridad aplicadas, facilitando así la auditoría del código sin alterar su lógica funcional.
 - `2026-10-12T05:00:07` **settings.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo `settings.py` al extraer la lógica compleja de persistencia atómica a un método de clase `_SettingsManager`, lo que reduce la carga cognitiva de la función `save` y organiza mejor el estado interno.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T04:20:25` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` añadiendo una validación explícita de `dir_fd` antes de intentar realizar `fsync` sobre el directorio, previniendo errores de sistema al intentar operar sobre descriptores inválidos en entornos con permisos restringidos.
 - `2026-10-12T04:19:42` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `scanner.py` centralizando la validación de archivos en `_is_readable`, asegurando que todas las operaciones de lectura en heurísticas (como tamaño o metadatos) manejen correctamente las excepciones de E/S evitando paradas abruptas.
 - `2026-10-12T04:19:00` **safety.py** (manejo de errores y validación de entradas): Mejora el manejo de excepciones y la validación de parámetros en las funciones de bajo nivel de `safety.py` para evitar que errores inesperados de la API de Windows se propaguen como errores genéricos o corrompan el estado del flujo de seguridad.
-- `2026-10-12T04:09:00` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` mediante la captura explícita de excepciones específicas en las operaciones de entrada/salida y la validación de rutas, evitando que fallos parciales (como archivos inexistentes o bloqueados) interrumpan el proceso completo de organización o borrado.
-- `2026-10-12T04:08:20` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `top_memory_processes` añadiendo una validación explícita para la disponibilidad de las funciones requeridas (`EnumProcesses`) y manejo de errores ante cambios inesperados en los buffers del sistema, evitando excepciones no capturadas.

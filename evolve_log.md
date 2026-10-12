@@ -709,3 +709,50 @@ ERROR evolve/tests/test_safety.py - TypeError: _rule() got an unexpected keyword
 - `2026-10-12T05:01:19` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el método `ingest` de `SystemContext` para evitar iteraciones redundantes y re-cálculos de caché mediante un enfoque de "actualización diferencial" transaccional, mejorando el rendimiento en el bucle de procesamiento de métricas.
 - `2026-10-12T05:01:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T05:01:19` Corrida terminada. Total usado hoy: 120.
+- `2026-10-12T05:08:45` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-10-12T05:09:38` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el rendimiento de `branding.py` mediante la refactorización de `gradient_colors` para evitar la creación innecesaria de listas y tuplas intermedias en cada iteración, consolidando la lógica de cálculo dentro de un bucle simple que minimiza la carga sobre la memoria y las llamadas a funciones auxiliares.
+- `2026-10-12T05:10:15` Tests FALLARON:
+```
+eligrosa.mkdir(parents=True)
+        (peligrosa / "x").write_text("secreto")
+>       assert browser.detect_profiles(
+            bases=[tmp_path], cache_paths={"Chrome": r"Perfil\Cookies"}
+        ) == []
+E       AssertionError: assert [BrowserCache...size_bytes=7)] == []
+E         
+E         Left contains one more item: BrowserCache(browser='Chrome', path=PosixPath('/tmp/pytest-of-runner/pytest-2/test_detect_profiles_never_rep0/Perfil/Cookies'), size_bytes=7)
+E         
+E         Full diff:
+E         - []
+E         + [
+E         +     BrowserCache(
+E         +         browser='Chrome',
+E         +         path=PosixPath('/tmp/pytest-of-runner/pytest-2/test_detect_profiles_never_rep0/Perfil/Cookies'),
+E         +         size_bytes=7,
+E         +     ),
+E         + ]
+
+evolve/tests/test_modules.py:755: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_data_folders - AssertionError: assert [BrowserCache...size_bytes=7)] == []
+  
+  Left contains one more item: BrowserCache(browser='Chrome', path=PosixPath('/tmp/pytest-of-runner/pytest-2/test_detect_profiles_never_rep0/Perfil/Cookies'), size_bytes=7)
+  
+  Full diff:
+  - []
+  + [
+  +     BrowserCache(
+  +         browser='Chrome',
+  +         path=PosixPath('/tmp/pytest-of-runner/pytest-2/test_detect_profiles_never_rep0/Perfil/Cookies'),
+  +         size_bytes=7,
+  +     ),
+  + ]
+1 failed, 298 passed in 1.60s
+
+```
+- `2026-10-12T05:10:15` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se ha optimizado `_sum_directory_recursive` para evitar el uso intensivo de `os.path.normcase` y `os.path.normpath` mediante la reutilización del contexto de escaneo, además de centralizar la resolución de rutas para minimizar llamadas redundantes a `Path.resolve()`, mejorando drásticamente el rendimiento en escaneos profundos.
+- `2026-10-12T05:10:16` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T05:10:58` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-10-12T05:11:22` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el método `_collect_candidates` utilizando un cache local para `is_protected_path` durante el recorrido, evitando llamadas redundantes a la lógica de validación de seguridad dentro del bucle de archivos.
+- `2026-10-12T05:11:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T05:11:22` Corrida terminada. Total usado hoy: 124.
