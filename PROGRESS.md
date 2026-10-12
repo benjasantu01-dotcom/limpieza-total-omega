@@ -8,24 +8,24 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 30
-- Rechazadas por guardia de seguridad: 55
-- Sin cambios (nada sustancial que mejorar): 23
+- Rechazadas por guardia de seguridad: 54
+- Sin cambios (nada sustancial que mejorar): 24
 - Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 102 | 15 | 28 | 14 | 117 |
-| 2026-10-12 | 94 | 15 | 27 | 9 | 83 |
+| 2026-10-11 | 101 | 15 | 27 | 14 | 115 |
+| 2026-10-12 | 95 | 15 | 27 | 10 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - seguridad defensiva: **45**
 - manejo de errores y validación de entradas: **42**
-- robustez ante casos límite: **39**
-- rendimiento: **24**
+- robustez ante casos límite: **38**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,9 +34,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **18**
 - `organizer.py`: **17**
 - `safety.py`: **16**
-- `settings.py`: **15**
+- `healthscore.py`: **16**
 - `branding.py`: **15**
-- `healthscore.py`: **15**
+- `settings.py`: **14**
 - `scanner.py`: **13**
 - `assistant.py`: **12**
 - `duplicates.py`: **11**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T09:45:17` **healthscore.py** (rendimiento): Optimizé el cálculo de `compute_score` mediante la pre-validación de `_PIPELINE` y el uso de `tuple` y `dict` para evitar recorridos redundantes y validaciones de tipo innecesarias dentro del bucle de procesamiento.
 - `2026-10-12T09:36:12` **browser.py** (rendimiento): Optimizé el rendimiento de `detect_profiles` reutilizando el `ScanContext` para todo el proceso de descubrimiento, evitando la recreación redundante de diccionarios de caché y sets de archivos visitados durante el escaneo de múltiples rutas de caché.
 - `2026-10-12T09:34:40` **assistant.py** (rendimiento): Optimicé el rendimiento de `SystemContext` reemplazando la serialización iterativa basada en `getattr` por un acceso directo al diccionario `__dict__` con filtrado previo, reduciendo la carga de introspección en `metrics_snapshot` y `ingest`.
 - `2026-10-12T09:26:12` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de las constantes en `startup.py`, añadiendo tipos de retorno específicos y detallando el propósito de las heurísticas de seguridad para facilitar futuras auditorías.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T08:55:48` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings detallados en las funciones de escaneo recursivo y se han renombrado variables clave para clarificar el propósito de las restricciones de seguridad (sandbox) en el recorrido de archivos.
 - `2026-10-12T08:46:38` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `_read_and_parse_json()` añadiendo validaciones preventivas sobre el contenido JSON, asegurando que `json.loads` no procese archivos vacíos o sobredimensionados, y evitando excepciones no controladas al cerrar el archivo durante la lectura.
 - `2026-10-12T08:45:49` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez del escáner ante rutas malformadas o inaccesibles mediante la normalización de rutas y la implementación de un manejo de errores más específico y preventivo, evitando que la ejecución se detenga ante fallos menores en `Path.resolve()` o conversiones de tipo.
-- `2026-10-12T08:45:14` **safety.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `ensure_safe_to_modify` y funciones auxiliares añadiendo validaciones proactivas para objetos `None`, capturando errores específicos de `ctypes` y `OSError` que antes se ignoraban, y asegurando que las llamadas a la API de Windows no operen sobre punteros nulos o tipos incorrectos, evitando así cierres inesperados de la aplicación.

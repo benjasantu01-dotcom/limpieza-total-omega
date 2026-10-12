@@ -301,7 +301,6 @@ def _sanitize_msg(msg: str) -> str:
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio, findings: List[str]) -> None:
     """Ejecuta las reglas de diagnóstico para una métrica y agrega hallazgos si es necesario."""
-    if not isinstance(metrics, SystemMetrics): return
     for rule in rules:
         try:
             if rule.check(metrics, normalized_ratio):
@@ -313,9 +312,6 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
     Calcula el puntaje global recorriendo el pipeline de métricas.
-    
-    Procesa cada entrada de _PIPELINE, calcula el ratio, evalúa reglas,
-    y consolida el resultado final del sistema.
     """
     try:
         m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
@@ -329,12 +325,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         accumulated_score: float = 0.0
         
         for entry in _PIPELINE:
-            if not isinstance(entry, PipelineEntry): continue
             try:
                 area_ratio = _clamp(entry.scorer(m))
                 _evaluate_rules(m, entry.rules, area_ratio, recommendations)
                 
-                # Cálculo defensivo: forzar redondeo antes de convertir a entero
                 points = area_ratio * entry.weight
                 val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
                 metric_breakdown[entry.area] = val_int
@@ -360,10 +354,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 def _render_bar(points: int, max_val: int) -> str:
     """
     Genera representación visual (ASCII) de barras para la interfaz.
-    
-    Args:
-        points: Puntos obtenidos en el área.
-        max_val: Valor máximo posible del peso de esta área.
     """
     try:
         p = int(points)
