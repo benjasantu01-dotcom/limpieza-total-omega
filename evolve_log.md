@@ -1444,3 +1444,27 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-12T02:10:32` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré `_is_process_executable_safe` añadiendo una validación explícita de `is_protected_path` sobre la ruta resuelta antes de cualquier interacción, asegurando que el proceso a manipular no se encuentre en las zonas restringidas del sistema, y refiné el manejo de errores para garantizar el cierre correcto del `handle` en todas las rutas de código mediante `finally`.
 - `2026-10-12T02:10:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T02:10:32` Corrida terminada. Total usado hoy: 52.
+- `2026-10-12T02:15:28` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-10-12T02:15:31` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T02:16:14` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré la seguridad de la función `_is_safe_for_disk_op` añadiendo una validación explícita para asegurar que el archivo fuente no sea un punto de reparse (junction), evitando así que la lógica de limpieza siga accidentalmente enlaces simbólicos hacia carpetas de sistema fuera de los directorios permitidos.
+- `2026-10-12T02:17:09` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad del módulo `quarantine.py` implementando una validación estricta en `purge_all` para asegurar que solo se eliminen archivos que están explícitamente registrados en el manifiesto, evitando el borrado accidental de archivos huérfanos o maliciosos que pudieran haber sido inyectados en la carpeta de cuarentena.
+- `2026-10-12T02:17:14` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T02:17:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-12T02:18:24` Tests FALLARON:
+```
+directory_same_0'), allow_equal=True)
+ +    where <functools._lru_cache_wrapper object at 0x7fcdfb5c8880> = safety.is_within_directory
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - safety.UnsafePathError: [GENERIC] La ruta origen está en una zona protegida.
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - safety.UnsafePathError: [GENERIC] La ruta origen está en una zona protegida.
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - safety.UnsafePathError: [GENERIC] La ruta origen está en una zona protegida.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - safety.UnsafePathError: [GENERIC] La ruta origen está en una zona protegida.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - safety.UnsafePathError: [GENERIC] La ruta origen está en una zona protegida.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - safety.UnsafePathError: [GENERIC] La ruta origen está en una zona protegida.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - safety.UnsafePathError: [GENERIC] La ruta origen está en una zona protegida.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - safety.UnsafePathError: [GENERIC] La ruta origen está en una zona protegida.
+41 failed, 258 passed in 2.18s
+
+```
+- `2026-10-12T02:18:24` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `is_protected_path` al incluir la resolución de rutas mediante `_get_final_path_normalized` para asegurar que las rutas protegidas sean detectadas correctamente incluso si acceden a través de puntos de reparse o rutas normalizadas inconsistentes, fortaleciendo la defensa contra bypass de seguridad.
+- `2026-10-12T02:18:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T02:18:24` Corrida terminada. Total usado hoy: 56.

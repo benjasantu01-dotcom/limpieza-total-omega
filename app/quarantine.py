@@ -978,11 +978,15 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             if f.name == MANIFEST_NAME or not f.is_file():
                 continue
             
+            # Solo procesar si el archivo es parte del manifiesto
+            if f.name not in item_map:
+                continue
+            
             if not is_within_directory(f.resolve(), quarantine_root.resolve()):
                 continue
             
-            item = item_map.get(f.name)
-            if item and _is_item_purgable(f, item, quarantine_root):
+            item = item_map[f.name]
+            if _is_item_purgable(f, item, quarantine_root):
                 purged_ids.add(item.item_id)
         
         if purged_ids:

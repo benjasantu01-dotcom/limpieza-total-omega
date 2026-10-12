@@ -205,6 +205,9 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         src_real = junk_file.path.resolve(strict=True)
         if src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         
+        # Bloqueo explícito contra puntos de reparse (junctions/symlinks)
+        if src_real.is_symlink() or (os.name == 'nt' and bool(src_real.stat().st_file_attributes & WIN_ATTR_JUNCTION)): return False
+        
         stat_result = src_real.stat()
         # Verificación de integridad: el archivo en disco debe ser el mismo que el detectado
         if (junk_file._ino is not None and stat_result.st_ino != junk_file._ino) or \
