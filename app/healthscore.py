@@ -251,6 +251,11 @@ class SystemMetrics:
     )
 
     def __post_init__(self) -> None:
+        # Asegurar tipos básicos antes de validación profunda
+        for field_name in self._FIELDS_TO_VALIDATE:
+            val = getattr(self, field_name)
+            if not isinstance(val, (int, float)):
+                setattr(self, field_name, 0.0)
         self.validate()
 
     def safe_get(self, field_name: str, default: Any = 0) -> Any:

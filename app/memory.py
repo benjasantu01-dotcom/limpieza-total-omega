@@ -59,8 +59,8 @@ FILE_ATTRIBUTE_REPARSE_POINT: Final[int] = 0x0400
 DRIVE_FIXED: Final[int] = 3
 INVALID_HANDLE_VALUE: Final[int] = -1
 
-# TRIM_ACCESS_MASK combina Query para validar estado y SetQuota para ejecutar EmptyWorkingSet.
-TRIM_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
+# TRIM_ACCESS_MASK requiere solo acceso de escritura para EmptyWorkingSet.
+TRIM_ACCESS_MASK: Final[int] = 0x00020000 | PROCESS_SET_QUOTA
 
 SYSTEM_CRITICAL_PIDS: Final[Set[int]] = {0, 4}
 ERROR_ACCESS_DENIED: Final[int] = 5
@@ -394,7 +394,6 @@ def _is_process_executable_safe(pid: int) -> bool:
             path_str = buf.value
             normalized_path = str(Path(path_str).resolve())
             if not normalized_path or normalized_path.startswith("\\\\"): return False
-            # Bloqueo estricto: la ruta debe pasar los filtros de seguridad del sistema.
             return not is_protected_path(normalized_path)
     except (ctypes.ArgumentError, OSError):
         return False
@@ -418,9 +417,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError):
         return False, "PID no numérico."
     
-    if target_pid <= 0:
-        return False, "PID inválido."
-        
     is_safe, error_msg = _is_safe_to_trim(target_pid)
     if not is_safe: return False, error_msg or "Verificación de seguridad fallida."
     

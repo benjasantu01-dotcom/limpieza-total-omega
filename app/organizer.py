@@ -152,8 +152,9 @@ def _is_file_locked(path: Path) -> bool:
     if not path or not path.is_file(): return True
     if os.name == 'nt':
         try:
+            # GENERIC_READ (0x80000000), FILE_SHARE_NONE (0), OPEN_EXISTING (3)
             handle = ctypes.windll.kernel32.CreateFileW(
-                str(path), 0x80000000, 3, None, 3, 0x00000080, None
+                str(path), 0x80000000, 0, None, 3, 0x00000080, None
             )
             if handle == wintypes.HANDLE(-1).value:
                 return True
@@ -199,7 +200,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     Auditoría final de seguridad antes de mover un archivo.
     Realiza una validación combinada de metadatos, seguridad de ruta y recursos del sistema.
     """
-    if not junk_file or not isinstance(junk_file.path, Path): return False
+    if not junk_file or not isinstance(junk_file.path, Path) or not junk_file.path.exists(): return False
     try:
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
