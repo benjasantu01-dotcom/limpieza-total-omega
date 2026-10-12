@@ -12,7 +12,7 @@ Estrategia en tres pasos para detección de duplicados:
 | 3 | Hash Completo | Confirmación final mediante SHA256. | O(K) |
 
 REGLA DE ORO: Toda operación de acceso a disco debe pasar por `is_safe_to_modify`
-o `is_protected_path` para garantizar que no se interactúe con zonas críticas.
+o `is_protected_path para garantizar que no se interactúe con zonas críticas.
 """
 
 from __future__ import annotations
@@ -336,7 +336,7 @@ def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     Calcula un score de antigüedad (mtime) y longitud de ruta para determinar 
     qué archivo debería ser el 'original' a conservar.
     """
-    if not isinstance(path, Path) or not path.exists():
+    if not isinstance(path, Path) or not is_safe_to_modify(path):
         return None
     try:
         stat = path.stat()
@@ -355,7 +355,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     
     candidates: List[Tuple[Tuple[float, int], Path]] = []
     for p in group.paths:
-        if isinstance(p, Path) and p.exists() and is_safe_to_modify(p):
+        if isinstance(p, Path) and is_safe_to_modify(p):
             if (score := _calculate_keeper_heuristic(p)) is not None:
                 candidates.append((score, p))
             
@@ -364,9 +364,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 def _get_path_label(path: Path, keeper: Optional[Path]) -> str:
     """Devuelve una etiqueta legible según el estado de la ruta en el grupo."""
-    if not isinstance(path, Path) or not path.exists():
-        return "[desaparecido]"
-    if not _safe_path_check(path):
+    if not isinstance(path, Path) or not is_safe_to_modify(path):
         return "[inaccesible]"
     if keeper is not None and path == keeper:
         return "[conservar]"

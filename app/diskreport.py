@@ -158,10 +158,11 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     if directory is None:
         return None
     try:
-        p = Path(directory).resolve()
+        p = Path(directory).expanduser().resolve()
         
         if not p.exists() or p.is_symlink():
             return None
+        # Validar acceso de lectura y protección de ruta
         if not p.is_dir() or is_protected_path(p) or not os.access(p, os.R_OK):
             return None
         return p
@@ -212,6 +213,7 @@ def _get_local_windows_drives() -> List[str]:
     drives: List[str] = []
     for letter in string.ascii_uppercase:
         drive = f"{letter}:\\"
+        # Verificar unidad física usando os.path.exists (no llama a errores de disco vacío)
         if os.path.exists(drive) and not is_protected_path(Path(drive)):
             drives.append(drive)
     return drives

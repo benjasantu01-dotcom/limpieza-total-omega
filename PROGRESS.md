@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 31
-- Rechazadas por guardia de seguridad: 52
+- Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 200
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-10 | 50 | 7 | 12 | 4 | 49 |
+| 2026-10-10 | 48 | 7 | 11 | 4 | 48 |
 | 2026-10-11 | 130 | 23 | 34 | 16 | 147 |
-| 2026-10-12 | 17 | 1 | 6 | 4 | 4 |
+| 2026-10-12 | 21 | 1 | 6 | 4 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **44**
-- seguridad defensiva: **42**
+- robustez ante casos límite: **43**
+- seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **40**
-- robustez ante casos límite: **39**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **20**
+- `diskreport.py`: **20**
 - `memory.py`: **20**
-- `diskreport.py`: **19**
-- `safety.py`: **17**
-- `healthscore.py`: **17**
+- `healthscore.py`: **18**
+- `safety.py`: **16**
 - `branding.py`: **15**
 - `settings.py`: **14**
 - `assistant.py`: **14**
 - `scanner.py`: **13**
-- `duplicates.py`: **11**
+- `duplicates.py`: **12**
+- `main.py`: **11**
 - `organizer.py`: **11**
-- `main.py`: **10**
 - `startup.py`: **9**
-- `quarantine.py`: **7**
+- `quarantine.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T01:26:51` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante posibles excepciones durante la inicialización de widgets y el manejo de hilos, asegurando que si un componente crítico falla al crearse o al actualizarse (debido a estados de carrera o cierres prematuros), la aplicación no colapse silenciosamente ni deje hilos colgados, reforzando la validación de `winfo_exists` en puntos clave de la interfaz.
+- `2026-10-12T01:25:56` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `_evaluate_rules` reemplazando la validación manual de strings por una lógica de filtrado de rutas mediante `pathlib`, eliminando el riesgo de dejar pasar rutas relativas o mal formadas, y reforzando la integridad al prevenir excepciones ante entradas inesperadas en `message_factory`.
+- `2026-10-12T01:25:29` **duplicates.py** (robustez ante casos límite): Se introdujo una gestión robusta de permisos y estados de archivo en `suggest_keeper` y `format_group`, utilizando `is_safe_to_modify` antes de cualquier acceso de escritura o lectura sensible para prevenir excepciones en archivos bloqueados o con permisos denegados que rompan la UI.
+- `2026-10-12T01:25:03` **diskreport.py** (robustez ante casos límite): Mejora la robustez ante rutas de red (UNC) y dispositivos extraíbles vacíos en `_get_local_windows_drives` y `_validate_root`, evitando bloqueos inesperados o excepciones de sistema al acceder a unidades no listas.
 - `2026-10-12T01:17:30` **browser.py** (robustez ante casos límite): Se introdujo una protección contra el acceso a archivos bloqueados por el sistema (exclusivos) al realizar `os.scandir` mediante el manejo robusto de `PermissionError` y `OSError`, evitando que el escaneo se interrumpa ante archivos en uso por el navegador.
 - `2026-10-12T01:15:29` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_safe_handler_wrapper` capturando errores específicos de `AttributeError` y `TypeError` que podrían surgir al acceder a propiedades dinámicas o contextos mal formados, garantizando que el asistente nunca bloquee la interfaz ante una entrada inesperada.
 - `2026-10-12T00:56:24` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto eliminando la recolección de estadísticas de sistema (mtime, size, inode) mediante llamadas `stat()` repetidas, aprovechando que `load_manifest` ya valida la integridad contra el caché existente; además, centralicé la lógica de lectura de manifiesto para reducir I/O redundante al realizar múltiples operaciones de purga o listado.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T00:25:22` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_get_file_attrs` para eliminar el manejo de `0xFFFFFFFF` mediante un `if` directo, integrando la lógica en un flujo más claro, y renombré internamente los predicados de validación para que coincidan explícitamente con su motivo de protección (`ProtectionReason`), reduciendo la ambigüedad en la configuración de la tabla de reglas.
 - `2026-10-12T00:24:08` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_is_file_in_use_by_system` y `_is_file_exclusive`, extrayendo la lógica de bloqueo específica de Windows a un método privado más descriptivo, y añadiendo docstrings técnicos sobre las garantías de concurrencia.
 - `2026-10-12T00:15:31` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` mediante la adición de Type Hints detallados, docstrings específicos que explican las decisiones de diseño (especialmente en las validaciones de seguridad de bajo nivel) y la clarificación de nombres en funciones críticas para evitar ambigüedades.
-- `2026-10-12T00:15:05` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando docstrings descriptivos a las funciones de bajo nivel y detallando el propósito de los tipos semánticos (`BytesValue`, `MegabytesValue`) para facilitar la auditoría del código, manteniendo intacta la lógica funcional.
-- `2026-10-12T00:14:00` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `healthscore.py` mediante la adición de docstrings estructurados y detallados en las funciones clave, clarificando el propósito, argumentos y comportamiento ante errores de cada componente del pipeline de puntuación.
-- `2026-10-12T00:04:57` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y precisos en las funciones críticas de detección y procesamiento de duplicados, clarificando las precondiciones y el flujo de los datos para facilitar el mantenimiento.
-- `2026-10-12T00:04:47` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación del motor de escaneo y sus dependencias mediante la actualización de los docstrings, incorporando explicaciones claras sobre la lógica de inodos para la prevención de bucles y clarificando las responsabilidades de las clases auxiliares para facilitar el mantenimiento futuro.

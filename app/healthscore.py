@@ -15,6 +15,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, List, Any, Final, NamedTuple, Annotated, Callable, TypeAlias, Protocol, Tuple
 from enum import Enum
+from pathlib import Path
 import math
 import logging
 
@@ -301,8 +302,9 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
         try:
             if rule.check(metrics, normalized_ratio):
                 raw_msg = rule.message_factory(metrics)
-                # Seguridad defensiva: validar mensaje contra el modelo de datos
-                if any(k in raw_msg for k in ["C:\\", "/", "root"]): continue
+                # Seguridad defensiva: bloquea explícitamente cualquier string que contenga estructuras de sistema
+                if any(part in raw_msg.lower() for part in ["c:\\", "/", "root", "system32"]): continue
+                if any(Path(p).is_absolute() for p in raw_msg.split()): continue
                 clean_msg = _sanitize_msg(raw_msg)
                 if clean_msg: findings.append(clean_msg)
         except Exception as e:
