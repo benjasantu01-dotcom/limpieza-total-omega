@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 58
+- Rechazadas por guardia de seguridad: 57
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 200
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 83 | 10 | 25 | 10 | 80 |
-| 2026-10-12 | 113 | 17 | 33 | 13 | 120 |
+| 2026-10-11 | 80 | 10 | 24 | 10 | 80 |
+| 2026-10-12 | 114 | 17 | 33 | 13 | 123 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **46**
 - seguridad defensiva: **46**
-- legibilidad y documentación: **43**
-- manejo de errores y validación de entradas: **34**
+- legibilidad y documentación: **40**
+- manejo de errores y validación de entradas: **35**
 - rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
-- `diskreport.py`: **19**
-- `healthscore.py`: **18**
 - `browser.py`: **18**
+- `diskreport.py`: **18**
 - `safety.py`: **17**
+- `healthscore.py`: **17**
 - `organizer.py`: **16**
 - `branding.py`: **15**
 - `settings.py`: **14**
-- `duplicates.py`: **13**
+- `duplicates.py`: **12**
 - `scanner.py`: **12**
-- `assistant.py`: **10**
+- `assistant.py`: **11**
 - `quarantine.py`: **9**
 - `startup.py`: **8**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T12:41:01` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_path_input` al incluir explícitamente el chequeo de rutas con prefijo `\\` (UNC) y la detección de caracteres Unicode de control bidireccional (RTL/LTR), además de centralizar la lógica de seguridad para evitar silenciamiento de errores en el parsing de configuración.
 - `2026-10-12T11:17:26` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en la escritura atómica y la creación de directorios mediante una verificación de "reparse points" (puntos de reanálisis) más rigurosa y consistente antes de realizar cualquier operación sobre el sistema de archivos, siguiendo el enfoque defensivo.
 - `2026-10-12T11:16:46` **safety.py** (seguridad defensiva): Se añadió la validación `_is_volume_restricted` dentro de `_validate_preconditions` para asegurar que volúmenes comprimidos o cifrados (donde las operaciones de movimiento/borrado pueden fallar o corromper datos) sean bloqueados preventivamente, manteniendo la consistencia con las reglas de seguridad defensiva.
 - `2026-10-12T11:07:57` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `quarantine.py` añadiendo una validación estricta de nombres de archivo y caracteres de control antes de cualquier operación de I/O en `_atomic_isolate_file`, centralizando la protección contra ataques de "Path Traversal" o creación de archivos con nombres malformados que intenten evadir filtros de seguridad del sistema operativo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T10:25:34` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes o nulos en las `SystemMetrics` mediante la adición de una comprobación de tipo y valores predeterminados en `__post_init__`, garantizando que el pipeline nunca trabaje con datos parcialmente inicializados o de tipos inesperados.
 - `2026-10-12T10:17:14` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar archivos inaccesibles o inexistentes mediante una gestión de excepciones más granular y defensiva, evitando falsos positivos cuando el acceso está restringido por permisos del sistema operativo.
 - `2026-10-12T10:16:51` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o inaccesibles añadiendo manejo explícito de errores durante la obtención del tamaño (`st_size`) y mejorando la consistencia de los tipos de datos al procesar rutas, evitando posibles `AttributeError` o `OSError` que detendrían un escaneo profundo prematuramente.
-- `2026-10-12T10:15:20` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada en `destination` y se añadió una validación defensiva en la conversión de colores RGB para evitar desbordamientos o valores fuera de rango antes de cualquier operación de dibujo, garantizando que estados inesperados no interrumpan el hilo de renderizado.

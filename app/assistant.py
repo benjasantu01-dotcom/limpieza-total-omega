@@ -669,7 +669,7 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
             model=str(model) if isinstance(model, str) and len(model) < 64 else "gemini-3.1-flash-lite",
             allow_metrics=bool(metrics_val) if isinstance(metrics_val, bool) else True
         )
-    except Exception:
+    except (TypeError, ValueError, AttributeError):
         return default
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
@@ -719,7 +719,6 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     payload = _build_payload(question, context_text)
     if not payload: return None
     target_url = _ENDPOINT_BASE.format(model=model)
-    # Validar que la URL construida mantenga el prefijo original y no contenga caracteres de inyección
     if not target_url.startswith(_API_HOST_ROOT) or any(c in target_url for c in "<>\"' "):
         return None
     url = f"{target_url}?key={api_key}"
@@ -761,5 +760,5 @@ def ask(question: str, context: SystemContext | None = None,
             respaldo.notice = "No se pudo consultar al asistente en línea, respondí con el motor local."
             return respaldo
         return Answer(remoto, source="gemini", notice=PRIVACY_NOTICE)
-    except Exception:
+    except (Exception, TypeError, ValueError):
         return respaldo
