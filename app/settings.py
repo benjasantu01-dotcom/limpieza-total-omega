@@ -463,7 +463,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             ensure_safe_to_modify(str(bak_path.resolve()))
             os.replace(config_path, bak_path)
         
-        os.replace(temp_path, config_path)
+        try:
+            os.replace(temp_path, config_path)
+        except (OSError, PermissionError):
+            return None
         
         if not config_path.exists() or config_path.stat().st_size == 0:
             raise OSError("Error crítico: archivo de configuración truncado tras persistencia")

@@ -137,7 +137,8 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(_to_long_path(path_str))
         if attrs == INVALID_FILE_ATTRIBUTES:
-            if ctypes.windll.kernel32.GetLastError() == ERROR_ACCESS_DENIED:
+            err = ctypes.windll.kernel32.GetLastError()
+            if err == ERROR_ACCESS_DENIED:
                 return Win32Attr.SYSTEM
             return 0
         return attrs
@@ -366,7 +367,7 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
         )
         if handle == -1: 
             err = kernel32.GetLastError()
-            return err == ERROR_SHARING_VIOLATION
+            return err in (ERROR_SHARING_VIOLATION, ERROR_INVALID_NAME)
         kernel32.CloseHandle(handle)
         return False
     except (OSError, ctypes.ArgumentError, AttributeError):

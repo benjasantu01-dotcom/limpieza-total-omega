@@ -88,11 +88,11 @@ def _is_file_in_use(path: Path) -> bool:
 def _is_readable(path: Path) -> bool:
     """Valida si la ruta es un archivo regular, legible y sin bloqueos de acceso."""
     try:
-        if not path.exists():
+        # Validación temprana de existencia y acceso básico
+        if not path.is_file() or not os.access(path, os.R_OK):
             return False
-        if not path.is_file():
-            return False
-        return os.access(path, os.R_OK) and not _is_file_in_use(path)
+        # Verificación final de bloqueo exclusivo
+        return not _is_file_in_use(path)
     except (OSError, PermissionError, ValueError, FileNotFoundError):
         return False
 
@@ -260,7 +260,6 @@ class Scanner:
                 if self._is_safe_entry(entry):
                     self._handle_directory(entry, directory_stack, current_depth)
             elif entry.is_file(follow_symlinks=False) and self._is_relevant_extension(entry.name):
-                # Validación adicional para evitar rutas excesivamente largas tras resolución
                 if self._is_safe_entry(entry):
                     self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError) as e:
@@ -282,7 +281,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     """Ejecuta un escaneo heurístico individual sobre un archivo específico."""
     if not isinstance(path, Path) or is_protected_path(path): return []
     try:
-        if not path.exists() or not _is_readable(path): 
+        if not _is_readable(path): 
             return []
     except (OSError, RuntimeError) as e:
         logger.debug(f"Error accediendo a archivo {path}: {e}")

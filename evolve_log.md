@@ -1413,3 +1413,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-12T01:38:33` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-10-12T01:38:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T01:38:33` Corrida terminada. Total usado hoy: 40.
+- `2026-10-12T01:44:55` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-10-12T01:45:58` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite mediante la refactorización de `_get_file_attrs` y `_is_file_locked_by_other_process` para manejar de forma explícita errores de sistema (`ERROR_INVALID_NAME` y `ERROR_INSUFFICIENT_BUFFER`) que podrían causar fallos impredecibles en rutas mal formadas, asegurando que la app no aborte ante condiciones inesperadas del SO.
+- `2026-10-12T01:45:58` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T01:46:02` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-12T01:46:47` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). He mejorado la robustez de `_is_readable` al prevenir excepciones por bloqueos de acceso, integrando una validación previa de existencia y permisos sin forzar la apertura de archivo, lo cual es crítico para evitar fallos en entornos con alta concurrencia de I/O o archivos bloqueados por el sistema operativo.
+- `2026-10-12T01:46:47` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T01:47:33` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita de `OSError` y `PermissionError` en el bloque de `os.replace` dentro de `save()` para mejorar la robustez ante fallos de concurrencia o bloqueos de sistema de archivos al atomizar la configuración.
+- `2026-10-12T01:48:00` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante permisos denegados durante la resolución de rutas en `StartupEntry._resolve_and_cache_path` y la lectura de directorios en `startup_folders`, añadiendo un manejo de excepciones más granular para evitar que bloqueos de acceso parciales en el disco aborten el escaneo completo.
+- `2026-10-12T01:48:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T01:48:00` Corrida terminada. Total usado hoy: 44.

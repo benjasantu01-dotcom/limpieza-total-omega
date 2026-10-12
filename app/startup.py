@@ -261,15 +261,14 @@ def startup_folders() -> List[Path]:
     valid_folders: List[Path] = []
     seen_paths: Set[str] = set()
     for c in candidates:
-        if c and c.is_dir():
-            try:
-                resolved_str = str(c.resolve())
-                # Bloquear symlinks y puntos de reparse de directorio
+        try:
+            if c and c.is_dir():
+                resolved_str = str(c.resolve(strict=False))
                 if resolved_str not in seen_paths and not c.is_symlink() and not is_protected_path(c):
                     seen_paths.add(resolved_str)
                     valid_folders.append(c)
-            except (OSError, RuntimeError):
-                continue
+        except (OSError, RuntimeError, PermissionError):
+            continue
     return valid_folders
 
 
