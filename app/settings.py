@@ -472,13 +472,14 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             raise OSError("Error crítico: archivo de configuración truncado tras persistencia")
         
         dir_fd = os.open(str(parent), os.O_RDONLY)
-        os.fsync(dir_fd)
+        if dir_fd >= 0:
+            os.fsync(dir_fd)
         _MANAGER.clear()
         return config_path
     except (OSError, IOError, PermissionError, TypeError): 
         return None
     finally:
-        if dir_fd is not None:
+        if dir_fd is not None and dir_fd >= 0:
             try: os.close(dir_fd)
             except OSError: pass
         if temp_path.exists():

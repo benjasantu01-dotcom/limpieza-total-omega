@@ -611,3 +611,37 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-12T04:10:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
 - `2026-10-12T04:10:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T04:10:07` Corrida terminada. Total usado hoy: 100.
+- `2026-10-12T04:17:45` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-10-12T04:17:56` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T04:19:00` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejora el manejo de excepciones y la validación de parámetros en las funciones de bajo nivel de `safety.py` para evitar que errores inesperados de la API de Windows se propaguen como errores genéricos o corrompan el estado del flujo de seguridad.
+- `2026-10-12T04:19:00` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T04:19:42` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez del manejo de errores en `scanner.py` centralizando la validación de archivos en `_is_readable`, asegurando que todas las operaciones de lectura en heurísticas (como tamaño o metadatos) manejen correctamente las excepciones de E/S evitando paradas abruptas.
+- `2026-10-12T04:20:25` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` añadiendo una validación explícita de `dir_fd` antes de intentar realizar `fsync` sobre el directorio, previniendo errores de sistema al intentar operar sobre descriptores inválidos en entornos con permisos restringidos.
+- `2026-10-12T04:20:58` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+........................................F............................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+1 failed, 298 passed in 1.58s
+
+```
+- `2026-10-12T04:20:58` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `StartupEntry._extract_quoted_path` mediante la validación explícita de `p.exists()` antes de retornar la ruta, evitando procesar cadenas malformadas como rutas válidas y mejorando la consistencia del manejo de errores al evitar excepciones innecesarias.
+- `2026-10-12T04:20:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T04:20:58` Corrida terminada. Total usado hoy: 104.

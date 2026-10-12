@@ -117,13 +117,15 @@ DRIVE_RAMDISK: Final[int] = 6
 @lru_cache(maxsize=4096)
 def _to_long_path(path_str: str) -> str:
     """Transforma la ruta al formato '\\?\' para permitir el acceso a rutas que exceden los 260 caracteres."""
-    if os.name != 'nt' or not isinstance(path_str, str) or not path_str:
+    if not isinstance(path_str, str) or not path_str:
         return path_str
-    if path_str.startswith("\\\\?\\"):
-        return path_str
-    if path_str.startswith("\\\\"):
-        return "\\\\?\\UNC" + path_str[1:]
-    return "\\\\?\\" + path_str
+    if os.name == 'nt':
+        if path_str.startswith("\\\\?\\"):
+            return path_str
+        if path_str.startswith("\\\\"):
+            return "\\\\?\\UNC" + path_str[1:]
+        return "\\\\?\\" + os.path.abspath(path_str)
+    return path_str
 
 def _is_path_too_long(path_str: str) -> bool:
     """Verifica si la longitud de la cadena excede el estándar MAX_PATH."""
@@ -638,6 +640,7 @@ def normalize(path: PathLike) -> Path:
          raise UnsafePathError("Ruta contiene secuencias Unicode sospechosas.", SafetyValidationErrorCode.SUSPICIOUS_ENCODING)
     try:
         p = Path(path_str)
+        # Validación de componentes para evitar puntos de reparse
         current_subpath = Path(p.anchor)
         for part in p.parts:
             if part in (os.sep, os.altsep): continue
@@ -693,7 +696,6 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         p_path = normalize(parent)
         if is_drive_root(c_path) or is_protected_path(str(c_path)): return False
         
-        # Validar ruta relativa mediante commonpath para evitar manipulación de sandbox
         common = os.path.commonpath([str(c_path), str(p_path)])
         if common != str(p_path): return False
         
@@ -784,6 +786,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
 
 def _get_final_path_normalized(path: Path) -> Optional[Path]:
     """Resuelve la ruta física real (canonical path) a través de los handles del sistema."""
+    if os.name != 'nt': return path.resolve()
     kernel32 = ctypes.windll.kernel32
     try:
         handle = kernel32.CreateFileW(_to_long_path(str(path)), 0, 0, None, 3, 0x02000000, None)

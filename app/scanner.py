@@ -88,10 +88,8 @@ def _is_file_in_use(path: Path) -> bool:
 def _is_readable(path: Path) -> bool:
     """Valida si la ruta es un archivo regular, legible y sin bloqueos de acceso."""
     try:
-        # Validación temprana de existencia y acceso básico
         if not path.is_file() or not os.access(path, os.R_OK):
             return False
-        # Verificación final de bloqueo exclusivo
         return not _is_file_in_use(path)
     except (OSError, PermissionError, ValueError, FileNotFoundError):
         return False
@@ -171,8 +169,8 @@ def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: fl
     try:
         if _get_file_size(path) == 0:
             return Suspicion(path, "Ejecutable vacío detectado", "warning")
-    except OSError:
-        pass
+    except Exception as e:
+        logger.debug(f"Error verificando tamaño en {path}: {e}")
     return None
 
 ALL_CHECKS: Final[Sequence[SuspicionCheck]] = [
@@ -274,17 +272,13 @@ class Scanner:
                 finding = check_fn(path, entry, self.now_ts)
                 if finding is not None:
                     self.results.append(finding)
-            except (OSError, PermissionError, AttributeError, ValueError, TypeError) as e:
+            except Exception as e:
                 logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Ejecuta un escaneo heurístico individual sobre un archivo específico."""
     if not isinstance(path, Path) or is_protected_path(path): return []
-    try:
-        if not _is_readable(path): 
-            return []
-    except (OSError, RuntimeError) as e:
-        logger.debug(f"Error accediendo a archivo {path}: {e}")
+    if not _is_readable(path): 
         return []
     
     findings: ScanResult = []
@@ -292,7 +286,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
         try:
             res = check_fn(path, entry, now_ts)
             if res is not None: findings.append(res)
-        except (OSError, PermissionError, AttributeError, ValueError, TypeError) as e:
+        except Exception as e:
             logger.debug(f"Heurística individual fallida en {path}: {e}")
     return findings
 
