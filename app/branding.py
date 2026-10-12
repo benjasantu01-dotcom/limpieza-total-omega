@@ -361,10 +361,12 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
         idx = min(int(pos), n_segments - 1)
         delta = pos - idx
         s1, s2 = rgb_stops[idx], rgb_stops[idx + 1]
+        
+        # Validacion defensiva de saturacion de color
         colors.append(_rgb_to_hex((
-            int(s1[0] + (s2[0] - s1[0]) * delta),
-            int(s1[1] + (s2[1] - s1[1]) * delta),
-            int(s1[2] + (s2[2] - s1[2]) * delta)
+            max(0, min(255, int(s1[0] + (s2[0] - s1[0]) * delta))),
+            max(0, min(255, int(s1[1] + (s2[1] - s1[1]) * delta))),
+            max(0, min(255, int(s1[2] + (s2[2] - s1[2]) * delta)))
         )))
     return tuple(colors)
 
@@ -399,10 +401,10 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     Returns:
         La ruta del archivo guardado si la operación es exitosa, None en caso contrario.
     """
-    if destination is None:
-        return None
-
     try:
+        if destination is None:
+            return None
+            
         target = Path(destination).resolve()
         
         # Validaciones de seguridad: prevenir escritura en rutas protegidas y validar seguridad

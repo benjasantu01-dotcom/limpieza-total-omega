@@ -414,16 +414,16 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = [] 
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        stats.register_file(size_bytes, path.suffix)
-        
-        if limit > 0:
-            try:
+        try:
+            stats.register_file(size_bytes, path.suffix)
+            
+            if limit > 0:
                 if len(top_heap) < limit: 
                     heapq.heappush(top_heap, (size_bytes, path))
                 elif size_bytes > top_heap[0][0]: 
                     heapq.heapreplace(top_heap, (size_bytes, path))
-            except (IndexError, TypeError):
-                continue
+        except (Exception):
+            continue
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
