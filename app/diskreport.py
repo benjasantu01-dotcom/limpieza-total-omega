@@ -406,6 +406,9 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     """
     Motor central: recorre el directorio, consolida métricas globales y mantiene
     un heap (cola de prioridad) para identificar los archivos más pesados.
+    
+    El uso de un heap permite mantener un ordenamiento parcial eficiente 
+    sin cargar en memoria toda la estructura de archivos del sistema.
     """
     stats = GlobalStats()
     top_heap: List[Tuple[int, Path]] = [] 

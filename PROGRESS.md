@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
-- Rechazadas por tests: 32
-- Rechazadas por guardia de seguridad: 54
+- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Rechazadas por tests: 31
+- Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 110 | 17 | 29 | 14 | 122 |
-| 2026-10-12 | 83 | 15 | 25 | 8 | 81 |
+| 2026-10-11 | 108 | 16 | 28 | 14 | 122 |
+| 2026-10-12 | 86 | 15 | 25 | 8 | 82 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **45**
 - robustez ante casos límite: **44**
 - manejo de errores y validación de entradas: **42**
-- legibilidad y documentación: **37**
-- rendimiento: **25**
+- legibilidad y documentación: **40**
+- rendimiento: **23**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **21**
 - `memory.py`: **20**
-- `diskreport.py`: **18**
-- `safety.py`: **16**
+- `diskreport.py`: **19**
 - `settings.py`: **16**
+- `healthscore.py`: **16**
 - `organizer.py`: **16**
-- `healthscore.py`: **15**
+- `safety.py`: **15**
 - `branding.py`: **15**
-- `scanner.py`: **13**
 - `assistant.py`: **12**
-- `duplicates.py`: **10**
+- `scanner.py`: **12**
+- `duplicates.py`: **11**
 - `startup.py`: **8**
 - `main.py`: **7**
 - `quarantine.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T09:05:11` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones clave (`grade_for_score`, `compute_score`, `_render_bar`) y mejorando los docstrings para clarificar el flujo de datos, haciendo el código más mantenible sin alterar su comportamiento funcional.
+- `2026-10-12T09:04:30` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de hashing y el procesamiento de grupos para clarificar la lógica de "Estrategia en tres pasos" declarada en el encabezado, asegurando que los Type Hints y docstrings reflejen con precisión las precondiciones de seguridad.
+- `2026-10-12T09:03:50` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas y la estandarización de type hints, facilitando la auditoría de seguridad sobre el comportamiento de las operaciones de disco.
 - `2026-10-12T08:55:48` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings detallados en las funciones de escaneo recursivo y se han renombrado variables clave para clarificar el propósito de las restricciones de seguridad (sandbox) en el recorrido de archivos.
 - `2026-10-12T08:46:38` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `_read_and_parse_json()` añadiendo validaciones preventivas sobre el contenido JSON, asegurando que `json.loads` no procese archivos vacíos o sobredimensionados, y evitando excepciones no controladas al cerrar el archivo durante la lectura.
 - `2026-10-12T08:45:49` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez del escáner ante rutas malformadas o inaccesibles mediante la normalización de rutas y la implementación de un manejo de errores más específico y preventivo, evitando que la ejecución se detenga ante fallos menores en `Path.resolve()` o conversiones de tipo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T08:23:03` **browser.py** (manejo de errores y validación de entradas): Se reforzó la validación de los parámetros de entrada en `detect_profiles` y `summarize` para evitar errores en tiempo de ejecución si se pasan tipos inesperados, además de asegurar que `_resolve_browser_path` maneje correctamente las rutas relativas vacías o mal formadas.
 - `2026-10-12T08:15:29` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` mejorando la validación del destino mediante el uso de `is_safe_to_modify` antes de cualquier operación, asegurando un manejo de errores más específico y consistente con las reglas de seguridad del proyecto.
 - `2026-10-12T06:52:43` **settings.py** (seguridad defensiva): Se reforzó la seguridad del método `_is_file_secure_to_read` para prevenir ataques de denegación de servicio o manipulación mediante enlaces simbólicos, añadiendo una verificación explícita mediante `os.path.islink` sobre la ruta resuelta para evitar que el archivo de configuración sea un punto de reparse que apunte fuera del directorio seguro.
-- `2026-10-12T06:41:53` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` al integrar explícitamente `is_protected_path` sobre la ruta de destino resuelta, evitando que el movimiento a directorios críticos sea posible incluso si el usuario configura mal la carpeta de revisión.
-- `2026-10-12T06:41:05` **memory.py** (seguridad defensiva): Se ha mejorado la robustez del manejo de handles de procesos al incluir un chequeo de `INVALID_HANDLE_VALUE` explícito y asegurarse de que `CloseHandle` solo se invoque sobre handles válidos, evitando posibles errores de acceso a memoria o estados indefinidos en la API de Win32.
-- `2026-10-12T06:32:05` **healthscore.py** (seguridad defensiva): Se endureció la seguridad defensiva de `_sanitize_msg` para prevenir el escape de información sensible mediante la inyección de caracteres de control o secuencias de escape ANSI, y se mejoró la resiliencia del `PipelineEntry` asegurando que los resultados numéricos de las reglas de diagnóstico no propaguen errores de precisión aritmética.

@@ -172,8 +172,8 @@ def _validate_and_resolve_path(path_input: PathLike) -> Optional[Path]:
 
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
-    Calcula el hash SHA256 completo del archivo usando buffers de memoria controlados.
-    Retorna None si el archivo es inaccesible o si el hash falla.
+    Paso 3 (Hash Completo): Calcula el SHA256 completo.
+    Requiere una ruta validada por _validate_and_resolve_path.
     """
     valid_path: Optional[Path] = _validate_and_resolve_path(path)
     if valid_path is None or not is_safe_to_modify(valid_path):
@@ -194,8 +194,8 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
-    Genera el hash SHA256 solo de los primeros N bytes para filtrado rápido.
-    Reduce drásticamente el tiempo de IO para archivos grandes.
+    Paso 2 (Hash Parcial): Calcula SHA256 sobre un prefijo para filtrado rápido.
+    Reduce drásticamente el uso de I/O al descartar duplicados antes del paso 3.
     """
     valid_path: Optional[Path] = _validate_and_resolve_path(path)
     if valid_path is None or not is_safe_to_modify(valid_path):
@@ -212,7 +212,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
 
 def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
-    """Agrupa rutas según el tamaño del archivo tras una validación inicial."""
+    """Paso 1: Agrupa rutas según el tamaño del archivo (stat)."""
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
         if not p: continue
@@ -241,8 +241,8 @@ def _resolve_and_verify_root(directory_path: PathLike) -> Optional[Path]:
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
-    Recorre rutas de forma iterativa (BFS) para identificar archivos candidatos,
-    usando caches para evitar procesar enlaces físicos y redundancia en seguridad.
+    Realiza un recorrido BFS iterativo para recolectar archivos candidatos.
+    Implementa el Paso 1 al clasificar archivos por tamaño en el diccionario de retorno.
     """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     queue: deque[Tuple[Path, int]] = deque()
@@ -286,8 +286,8 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
-    Helper genérico: agrupa una lista de rutas mediante una función de hash
-    (parcial o completa) y filtra grupos con un solo elemento.
+    Helper genérico: agrupa rutas mediante una función de hash proporcionada
+    (Paso 2 o Paso 3). Descarta grupos con un solo elemento.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
@@ -298,8 +298,8 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
     """
-    Filtrado jerárquico: optimiza el rendimiento realizando un hash parcial 
-    inicial y confirmando coincidencias únicamente con hash completo.
+    Ejecuta el filtrado jerárquico (Paso 2 -> Paso 3) para optimizar
+    la identificación de duplicados en archivos grandes.
     """
     partial_groups = _group_paths_by_hash(paths, partial_hash)
     final_results: Dict[str, List[Path]] = {}
@@ -309,7 +309,7 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 
 
 def _decide_hash_strategy_and_process(size_bytes: int, file_paths: List[Path]) -> List[DuplicateGroup]:
-    """Selecciona la estrategia de hashing basada en el tamaño del archivo."""
+    """Selecciona la estrategia de hashing: solo paso 3 para pequeños, 2+3 para grandes."""
     if not file_paths or size_bytes <= 0:
         return []
 

@@ -286,6 +286,7 @@ class HealthResult:
         return 80 <= self.score <= 100
 
 def grade_for_score(score: float | int) -> str: 
+    """Wrapper de conveniencia para invocar el selector de grados según puntaje."""
     return Grade.from_score(score)
 
 def _sanitize_msg(msg: str) -> str:
@@ -312,6 +313,9 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
     Calcula el puntaje global recorriendo el pipeline de métricas.
+    
+    Procesa cada entrada de _PIPELINE, calcula el ratio, evalúa reglas,
+    y consolida el resultado final del sistema.
     """
     try:
         m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
@@ -354,7 +358,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error interno al calcular salud del sistema."])
 
 def _render_bar(points: int, max_val: int) -> str:
-    """Genera representación visual (ASCII) de barras para la interfaz."""
+    """
+    Genera representación visual (ASCII) de barras para la interfaz.
+    
+    Args:
+        points: Puntos obtenidos en el área.
+        max_val: Valor máximo posible del peso de esta área.
+    """
     try:
         p = int(points)
         m = int(max_val)
