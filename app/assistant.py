@@ -360,9 +360,8 @@ class SystemContext:
 
     @cached_property
     def metrics_snapshot(self) -> dict[str, float]:
-        """Snapshot cacheado de las métricas numéricas usando acceso directo a __dict__."""
-        d = self.__dict__
-        return {k: float(d[k]) for k in _VALIDATORS if k in d and _check_metric_integrity(d[k])}
+        """Snapshot cacheado de las métricas numéricas usando acceso seguro."""
+        return {k: float(v) for k in _VALIDATORS if (v := getattr(self, k, -1.0)) is not None and _check_metric_integrity(v)}
 
     @cached_property
     def active_problems(self) -> tuple[str, ...]:
@@ -374,21 +373,19 @@ class SystemContext:
     @cached_property
     def _hash_tuple(self) -> tuple:
         """Tupla cacheada para representar el estado actual para hashing."""
-        d = self.__dict__
-        return (d.get("score"), d.get("grade"), d.get("junk_mb"), d.get("suspicious_count"), 
-                d.get("memory_available_percent"), d.get("disk_free_percent"),
-                d.get("duplicate_mb"), d.get("startup_count"))
+        return (self.score, self.grade, self.junk_mb, self.suspicious_count, 
+                self.memory_available_percent, self.disk_free_percent,
+                self.duplicate_mb, self.startup_count)
 
     def get_metric(self, key: str, default: float) -> float:
         """Retorna una métrica numérica validada o el valor por defecto si falla."""
-        val = self.__dict__.get(key)
+        val = getattr(self, key, None)
         return float(val) if _check_metric_integrity(val) else default
 
     @property
     def is_empty(self) -> bool:
         """Verifica si el contexto contiene información válida tras el análisis."""
-        d = self.__dict__
-        return not d.get("analyzed") or not isinstance(d.get("score"), int) or d.get("score", -1) < 0
+        return not self.analyzed or not isinstance(self.score, int) or self.score < 0
 
     def __hash__(self) -> int:
         return hash(self._hash_tuple)
@@ -403,13 +400,8 @@ class SystemContext:
         val = _get_source_value(source, key)
         if val is None or not spec.is_valid_type(val):
             return None
-        try:
-            float_val = float(val)
-            if not _is_metric_within_bounds(float_val, spec):
-                return None
-            return spec.type_hint(float_val)
-        except (ValueError, TypeError):
-            return None
+        float_val = float(val)
+        return spec.type_hint(float_val) if _is_metric_within_bounds(float_val, spec) else None
 
     def _clean_grade(self, val: Any) -> str:
         """Limpia el string de calificación eliminando caracteres de control no seguros."""
@@ -421,32 +413,27 @@ class SystemContext:
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad sobre el objeto fuente."""
         if source is None: return False
-        if isinstance(source, dict):
-            return not _is_input_too_deep_or_complex(source)
-        return hasattr(source, "__dict__") and not _is_input_too_deep_or_complex(source.__dict__)
+        return not _is_input_too_deep_or_complex(source if isinstance(source, dict) else source.__dict__)
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
         """Aplica cambios al contexto y limpia cachés internas."""
-        d = self.__dict__
         for k, v in updates.items():
-            d[k] = v
-        d["analyzed"] = True
-        self.__dict__.pop("metrics_snapshot", None)
-        self.__dict__.pop("active_problems", None)
-        self.__dict__.pop("_hash_tuple", None)
+            setattr(self, k, v)
+        self.analyzed = True
+        for attr in ["metrics_snapshot", "active_problems", "_hash_tuple"]:
+            self.__dict__.pop(attr, None)
 
     def ingest(self, source: Any) -> bool:
         """Normaliza e importa datos externos al contexto de manera transaccional."""
         if not self._validate_ingestion_source(source):
             return False
         updates: dict[str, Any] = {}
-        d = self.__dict__
         for key, spec in _VALIDATORS.items():
             value = self._apply_field(source, key, spec)
-            if value is not None and value != d.get(key):
+            if value is not None and value != getattr(self, key):
                 updates[key] = value
         grade_val = self._clean_grade(_get_source_value(source, "grade"))
-        if grade_val and grade_val != d.get("grade"):
+        if grade_val and grade_val != self.grade:
             updates["grade"] = grade_val
         if updates:
             self._apply_updates(updates)
@@ -491,11 +478,8 @@ def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
     try:
         if isinstance(source, dict):
             return source.get(key)
-        if not hasattr(source, "__dict__"): return None
         val = getattr(source, key, None)
-        if callable(val) or isinstance(val, (type,)):
-            return None
-        return val
+        return None if callable(val) or isinstance(val, (type,)) else val
     except (AttributeError, ValueError, TypeError):
         return None
 

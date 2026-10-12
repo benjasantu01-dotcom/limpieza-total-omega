@@ -441,3 +441,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-12T13:51:31` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints faltantes en el gestor de caché `_SettingsManager`, mejorando la legibilidad técnica y la trazabilidad de las operaciones de persistencia.
 - `2026-10-12T13:51:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T13:51:31` Corrida terminada. Total usado hoy: 328.
+- `2026-10-12T13:59:02` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-12T13:59:53` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones de acceso público y privado, siguiendo las convenciones de Google, lo cual facilita el mantenimiento y la comprensión de las responsabilidades de cada componente sin alterar la lógica.
+- `2026-10-12T13:59:55` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T14:00:51` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `SystemContext` reemplazando los accesos repetitivos a `__dict__` en bucles mediante el uso de `getattr` con un acceso cacheado a las claves permitidas, evitando la reconstrucción innecesaria de diccionarios en `metrics_snapshot` y `ingest`.
+- `2026-10-12T14:01:51` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-12T14:02:46` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-10-12T14:03:45` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo recursivo mediante la implementación de una caché de estados de `is_safe_to_modify` y `is_protected_path` dentro del `ScanContext`, evitando llamadas repetitivas y costosas al sistema de archivos para los mismos directorios durante el recorrido.
+- `2026-10-12T14:03:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T14:03:45` Corrida terminada. Total usado hoy: 332.

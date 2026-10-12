@@ -92,7 +92,7 @@ class StartupEntry:
 
     @property
     def is_valid(self) -> bool:
-        """Valida que la entrada sea estructuralmente coherente y segura."""
+        """Determina si la entrada es estructuralmente segura para su procesamiento."""
         if not self.command or self._is_path_suspicious(self.command):
             return False
         if self._is_reserved_device_name(self.command):
@@ -100,7 +100,7 @@ class StartupEntry:
         return True
 
     def _is_reserved_device_name(self, path_str: str) -> bool:
-        """Detecta si una ruta apunta a un dispositivo lógico de sistema."""
+        """Verifica si la ruta coincide con alias de dispositivos reservados por Windows."""
         try:
             if "\0" in path_str:
                 return True
@@ -111,25 +111,25 @@ class StartupEntry:
             return True
 
     def _is_path_suspicious(self, path_string: str) -> bool:
-        """Detecta caracteres de inyección o rutas UNC de red no permitidas."""
+        """Analiza la cadena en busca de caracteres de inyección o rutas de red no permitidas."""
         return any(c in path_string for c in SUSPICIOUS_CHARS) or path_string.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Confirma extensión y verifica ausencia de hijacking mediante symlinks."""
+        """Valida que el archivo posea una extensión ejecutable y no sea un enlace simbólico."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_command: str) -> str:
-        """Limpia caracteres de control (ASCII < 32) de la cadena de comando."""
+        """Elimina caracteres de control y espacios en blanco de la cadena de comando."""
         if not isinstance(raw_command, str):
             return ""
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae rutas encerradas entre comillas aplicando límites de seguridad (MAX_PATH).
+        Extrae y valida rutas encerradas entre comillas de una línea de comandos compleja.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
@@ -154,7 +154,7 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """Verifica la existencia y accesibilidad del ejecutable."""
+        """Comprueba permisos y existencia del archivo en el sistema de archivos."""
         try:
             if is_protected_path(p) or p.is_symlink() or (p.exists() and p.is_mount()):
                 return False
@@ -163,7 +163,7 @@ class StartupEntry:
             return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
-        """Resuelve la ruta absoluta usando caché para evitar redundancia de disco."""
+        """Resuelve una ruta absoluta y almacena el resultado en el caché de sesión."""
         if not path_string or not isinstance(path_string, str) or not self.is_valid:
             return ""
         
@@ -196,7 +196,7 @@ class StartupEntry:
             return ""
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Determina la ruta del archivo ejecutable dentro de una línea de comandos."""
+        """Analiza la línea de comando para aislar y resolver la ruta del ejecutable principal."""
         if not command_line or not isinstance(command_line, str):
             return ""
         
@@ -219,7 +219,7 @@ class StartupEntry:
         
     @property
     def executable(self) -> str:
-        """Devuelve la ruta absoluta del ejecutable tras procesar y validar."""
+        """Obtiene la ruta absoluta del ejecutable tras la resolución diferida."""
         if self._checked_exists:
             return self._exec_cache or ""
             
@@ -234,7 +234,7 @@ class StartupEntry:
 
 
 def startup_folders() -> List[Path]:
-    """Retorna rutas de carpetas 'Startup' de Windows válidas."""
+    """Identifica y valida las rutas del sistema donde residen los accesos directos de inicio."""
     if os.name != "nt":
         return []
     candidates: List[Path] = []
@@ -263,7 +263,7 @@ def startup_folders() -> List[Path]:
 
 
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
-    """Valida un archivo en carpeta Startup como posible ejecutable."""
+    """Verifica si un elemento de archivo en una carpeta de inicio es un ejecutable válido."""
     try:
         if not entry.is_file(follow_symlinks=False) or entry.is_symlink():
             return None
@@ -282,7 +282,7 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
 
 
 def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> StartupEntries:
-    """Explora carpetas de inicio en busca de ejecutables."""
+    """Escanea las carpetas de inicio detectadas para listar ejecutables."""
     found_entries: StartupEntries = []
     scan_folders = folders if folders is not None else startup_folders()
     
@@ -299,7 +299,7 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> StartupEnt
 
 
 def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
-    """Valida integridad de datos leídos del registro."""
+    """Valida la integridad de una entrada recuperada desde el registro de Windows."""
     if not isinstance(name, str) or not isinstance(cmd, str):
         return False
     if not name.strip() or not cmd.strip() or cmd.startswith(r"\\") or cmd in seen:
@@ -323,7 +323,7 @@ def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
-    """Convierte salida CSV de PowerShell en objetos StartupEntry."""
+    """Procesa el flujo CSV proveniente de PowerShell para crear objetos StartupEntry."""
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
         
@@ -363,7 +363,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
 
 
 def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEntries:
-    """Consulta las claves 'Run' mediante una llamada aislada de PowerShell."""
+    """Interroga mediante PowerShell las claves de registro para obtener programas de inicio."""
     if os.name != "nt":
         return []
     
@@ -392,7 +392,7 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
 
 
 def list_startup_entries() -> StartupEntries:
-    """Obtiene el inventario consolidado usando caché de sesión."""
+    """Retorna el inventario completo, consolidando registros y carpetas locales."""
     global _FULL_SCAN_CACHE
     if _FULL_SCAN_CACHE is not None:
         return _FULL_SCAN_CACHE
@@ -411,7 +411,7 @@ def list_startup_entries() -> StartupEntries:
 
 
 def estimate_impact(entries: Sequence[StartupEntry]) -> str:
-    """Categoriza el rendimiento esperado según el número de entradas."""
+    """Determina la carga operativa estimada basada en el volumen de programas hallados."""
     count: int = len(entries)
     thresholds: List[Tuple[int, str]] = [(5, "ok"), (10, "info"), (18, "warning")]
     for limit, label in thresholds:
@@ -421,7 +421,7 @@ def estimate_impact(entries: Sequence[StartupEntry]) -> str:
 
 
 def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
-    """Genera la vista de reporte para el usuario."""
+    """Crea una vista textual legible de los resultados para la interfaz de usuario."""
     entries_list: Sequence[StartupEntry] = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)
         
