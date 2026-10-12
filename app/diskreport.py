@@ -77,6 +77,8 @@ class ExtStats:
 
     def add(self, size: int) -> None:
         """Incrementa el peso total y el contador de archivos para esta extensión."""
+        if not isinstance(size, int) or size < 0:
+            return
         self.total_bytes += size
         self.count += 1
 
@@ -98,9 +100,11 @@ class GlobalStats:
         Actualiza los contadores globales y segrega el tamaño según la 
         extensión del archivo, normalizando a minúsculas.
         """
+        if not isinstance(size, int) or size < 0:
+            return
         self.total_bytes += size
         self.total_files += 1
-        ext = suffix.lower() or "(sin extensión)"
+        ext = (str(suffix) if suffix else "(sin extensión)").lower()
         self.ext_stats[ext].add(size)
 
 
@@ -415,6 +419,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[Tuple[int, Path]] = [] 
     
     for path, size_bytes in walk_files(directory, skip_protected):
+        if not isinstance(size_bytes, int) or size_bytes < 0:
+            continue
         try:
             stats.register_file(size_bytes, path.suffix)
             
@@ -423,7 +429,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
                     heapq.heappush(top_heap, (size_bytes, path))
                 elif size_bytes > top_heap[0][0]: 
                     heapq.heapreplace(top_heap, (size_bytes, path))
-        except (Exception):
+        except (AttributeError, TypeError, ValueError):
             continue
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)

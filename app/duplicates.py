@@ -110,14 +110,11 @@ def _is_file_locked(path: Path) -> bool:
     if not isinstance(path, Path) or not is_safe_to_modify(path):
         return True
     try:
-        # Intentamos abrir solo para lectura, si falla con error de acceso está bloqueado
         with open(path, "rb") as f:
             return False
     except (PermissionError, OSError):
-        # Un error de permiso al abrir suele indicar que el SO tiene el archivo bloqueado
         return True
     except Exception:
-        # Ante cualquier error inesperado, asumimos que es mejor no tocarlo
         return True
 
 
@@ -180,7 +177,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
     Paso 3 (Hash Completo): Calcula el SHA256 completo.
     Requiere una ruta validada por _validate_and_resolve_path.
     """
-    valid_path: Optional[Path] = _validate_and_resolve_path(path)
+    valid_path = _validate_and_resolve_path(path)
     if valid_path is None or not is_safe_to_modify(valid_path):
         return None
             
@@ -202,7 +199,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
     Paso 2 (Hash Parcial): Calcula SHA256 sobre un prefijo para filtrado rápido.
     Reduce drásticamente el uso de I/O al descartar duplicados antes del paso 3.
     """
-    valid_path: Optional[Path] = _validate_and_resolve_path(path)
+    valid_path = _validate_and_resolve_path(path)
     if valid_path is None or not is_safe_to_modify(valid_path):
         return None
 

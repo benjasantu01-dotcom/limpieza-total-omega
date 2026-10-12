@@ -310,6 +310,8 @@ def _hex_to_rgb(value: Optional[str]) -> RGBTuple:
 @lru_cache(maxsize=512)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
     """Transforma una tupla RGB (r, g, b) a una cadena HEX; asegura valores dentro de [0, 255]."""
+    if not isinstance(rgb, tuple) or len(rgb) != 3:
+        return "#000000"
     r, g, b = [max(0, min(255, int(c))) for c in rgb]
     return "#{:02x}{:02x}{:02x}".format(r, g, b)
 
@@ -364,9 +366,9 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
         
         # Validacion defensiva de saturacion de color
         colors.append(_rgb_to_hex((
-            max(0, min(255, int(s1[0] + (s2[0] - s1[0]) * delta))),
-            max(0, min(255, int(s1[1] + (s2[1] - s1[1]) * delta))),
-            max(0, min(255, int(s1[2] + (s2[2] - s1[2]) * delta)))
+            int(s1[0] + (s2[0] - s1[0]) * delta),
+            int(s1[1] + (s2[1] - s1[1]) * delta),
+            int(s1[2] + (s2[2] - s1[2]) * delta)
         )))
     return tuple(colors)
 

@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 57
+- Rechazadas por guardia de seguridad: 55
 - Sin cambios (nada sustancial que mejorar): 23
 - Sin respuesta de la IA (error o límite): 203
 
@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 80 | 10 | 24 | 10 | 80 |
-| 2026-10-12 | 114 | 17 | 33 | 13 | 123 |
+| 2026-10-11 | 79 | 10 | 22 | 10 | 79 |
+| 2026-10-12 | 117 | 17 | 33 | 13 | 124 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **46**
 - seguridad defensiva: **46**
-- legibilidad y documentación: **40**
-- manejo de errores y validación de entradas: **35**
+- legibilidad y documentación: **39**
+- manejo de errores y validación de entradas: **38**
 - rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **21**
+- `memory.py`: **20**
+- `diskreport.py`: **19**
 - `browser.py`: **18**
-- `diskreport.py`: **18**
 - `safety.py`: **17**
 - `healthscore.py`: **17**
 - `organizer.py`: **16**
-- `branding.py`: **15**
+- `branding.py`: **16**
 - `settings.py`: **14**
-- `duplicates.py`: **12**
+- `duplicates.py`: **13**
 - `scanner.py`: **12**
 - `assistant.py`: **11**
 - `quarantine.py`: **9**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T12:49:14` **duplicates.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `hash_file` y `partial_hash` asegurando que cualquier fallo durante la lectura de archivos (como errores de hardware o bloqueos repentinos) devuelva `None` de forma controlada sin propagar excepciones que interrumpan el bucle principal de escaneo.
+- `2026-10-12T12:49:03` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_summary_data` y `_is_excluded_path` añadiendo validaciones de tipo y capturas de excepciones más granulares para prevenir que el escaneo se detenga silenciosamente ante errores de acceso a disco o rutas malformadas.
+- `2026-10-12T12:48:11` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `_hex_to_rgb` y `_rgb_to_hex` validando explícitamente los tipos y rangos de entrada antes de operar, evitando posibles errores de desbordamiento o excepciones inesperadas al procesar valores de color mal formados.
 - `2026-10-12T12:41:01` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_path_input` al incluir explícitamente el chequeo de rutas con prefijo `\\` (UNC) y la detección de caracteres Unicode de control bidireccional (RTL/LTR), además de centralizar la lógica de seguridad para evitar silenciamiento de errores en el parsing de configuración.
 - `2026-10-12T11:17:26` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en la escritura atómica y la creación de directorios mediante una verificación de "reparse points" (puntos de reanálisis) más rigurosa y consistente antes de realizar cualquier operación sobre el sistema de archivos, siguiendo el enfoque defensivo.
 - `2026-10-12T11:16:46` **safety.py** (seguridad defensiva): Se añadió la validación `_is_volume_restricted` dentro de `_validate_preconditions` para asegurar que volúmenes comprimidos o cifrados (donde las operaciones de movimiento/borrado pueden fallar o corromper datos) sean bloqueados preventivamente, manteniendo la consistencia con las reglas de seguridad defensiva.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T10:38:34` **safety.py** (robustez ante casos límite): Se ha implementado una mejora en la robustez ante rutas inexistentes dentro de `is_protected_path`, evitando que una `Path.resolve()` sobre una ruta no presente en el disco lance un error (`OSError` o similar) y comprometa el flujo de validación, asegurando que la app siga siendo capaz de evaluar la seguridad incluso sobre objetos pendientes de creación o eliminados.
 - `2026-10-12T10:28:59` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente archivos inexistentes o bloqueos por permisos en sistemas Windows (evitando excepciones en el `ctypes.windll` al recibir rutas inválidas), y se añadió una verificación de estado de archivo en `_is_safe_for_disk_op` para prevenir operaciones sobre archivos que fueron eliminados o movidos por otros procesos entre el escaneo y la ejecución, cerrando una potencial race condition.
 - `2026-10-12T10:28:32` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` al evitar el uso de una máscara de acceso demasiado permisiva (que incluía `PROCESS_SET_QUOTA` innecesariamente) y agregando una verificación explícita para descartar procesos de sistema antes de intentar abrir un handle, cumpliendo con las mejores prácticas de seguridad de API de Windows.
-- `2026-10-12T10:25:34` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes o nulos en las `SystemMetrics` mediante la adición de una comprobación de tipo y valores predeterminados en `__post_init__`, garantizando que el pipeline nunca trabaje con datos parcialmente inicializados o de tipos inesperados.
-- `2026-10-12T10:17:14` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar archivos inaccesibles o inexistentes mediante una gestión de excepciones más granular y defensiva, evitando falsos positivos cuando el acceso está restringido por permisos del sistema operativo.
-- `2026-10-12T10:16:51` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o inaccesibles añadiendo manejo explícito de errores durante la obtención del tamaño (`st_size`) y mejorando la consistencia de los tipos de datos al procesar rutas, evitando posibles `AttributeError` o `OSError` que detendrían un escaneo profundo prematuramente.
