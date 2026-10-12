@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
-- Rechazadas por tests: 33
-- Rechazadas por guardia de seguridad: 52
+- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Rechazadas por tests: 32
+- Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 113 | 18 | 29 | 15 | 125 |
-| 2026-10-12 | 79 | 15 | 23 | 8 | 79 |
+| 2026-10-11 | 112 | 17 | 29 | 15 | 123 |
+| 2026-10-12 | 82 | 15 | 24 | 8 | 79 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **45**
 - robustez ante casos límite: **44**
-- manejo de errores y validación de entradas: **39**
+- manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **36**
-- rendimiento: **28**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,19 +33,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **20**
 - `diskreport.py`: **18**
 - `healthscore.py`: **16**
+- `safety.py`: **16**
+- `settings.py`: **16**
 - `organizer.py`: **16**
-- `safety.py`: **15**
-- `settings.py`: **15**
 - `branding.py`: **15**
-- `scanner.py`: **12**
+- `scanner.py`: **13**
 - `assistant.py`: **12**
-- `duplicates.py`: **11**
+- `duplicates.py`: **10**
 - `main.py`: **8**
 - `startup.py`: **8**
 - `quarantine.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T08:46:38` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `_read_and_parse_json()` añadiendo validaciones preventivas sobre el contenido JSON, asegurando que `json.loads` no procese archivos vacíos o sobredimensionados, y evitando excepciones no controladas al cerrar el archivo durante la lectura.
+- `2026-10-12T08:45:49` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez del escáner ante rutas malformadas o inaccesibles mediante la normalización de rutas y la implementación de un manejo de errores más específico y preventivo, evitando que la ejecución se detenga ante fallos menores en `Path.resolve()` o conversiones de tipo.
+- `2026-10-12T08:45:14` **safety.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `ensure_safe_to_modify` y funciones auxiliares añadiendo validaciones proactivas para objetos `None`, capturando errores específicos de `ctypes` y `OSError` que antes se ignoraban, y asegurando que las llamadas a la API de Windows no operen sobre punteros nulos o tipos incorrectos, evitando así cierres inesperados de la aplicación.
 - `2026-10-12T08:35:12` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez en `stage_for_review` y `delete_reviewed` reemplazando los chequeos de seguridad implícitos por validaciones explícitas antes de `ensure_safe_to_modify`, evitando que la ejecución se detenga por excepciones no controladas en rutas mal formadas o inaccesibles.
 - `2026-10-12T08:34:32` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `top_memory_processes` añadiendo validaciones de tipo y estructura a los resultados de `EnumProcesses` para evitar excepciones en entornos donde la API devuelve valores inconsistentes o handles truncados.
 - `2026-10-12T08:24:54` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` agregando validaciones preventivas sobre `_PIPELINE` y asegurando que las funciones de `score` reciban siempre los tipos esperados, evitando errores de ejecución si una métrica llega fuera de rango o como tipo inesperado.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T06:41:05` **memory.py** (seguridad defensiva): Se ha mejorado la robustez del manejo de handles de procesos al incluir un chequeo de `INVALID_HANDLE_VALUE` explícito y asegurarse de que `CloseHandle` solo se invoque sobre handles válidos, evitando posibles errores de acceso a memoria o estados indefinidos en la API de Win32.
 - `2026-10-12T06:32:05` **healthscore.py** (seguridad defensiva): Se endureció la seguridad defensiva de `_sanitize_msg` para prevenir el escape de información sensible mediante la inyección de caracteres de control o secuencias de escape ANSI, y se mejoró la resiliencia del `PipelineEntry` asegurando que los resultados numéricos de las reglas de diagnóstico no propaguen errores de precisión aritmética.
 - `2026-10-12T06:31:34` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva centralizando la validación de archivos en `_is_valid_candidate` para incluir explícitamente `is_protected_path(path)`, asegurando que ningún archivo del sistema sea siquiera procesado durante la fase de hash o escaneo, incluso si los permisos del SO permitirían la lectura.
-- `2026-10-12T06:30:53` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` añadiendo un chequeo explícito de puntos de reparse (Junctions/Symlinks de sistema) para asegurar que el escaneo no escape accidentalmente del directorio objetivo ni siga enlaces cíclicos o fuera de los límites permitidos.
-- `2026-10-12T06:22:50` **browser.py** (seguridad defensiva): Se ha restringido el acceso a directorios durante el escaneo para evitar la evaluación de rutas que excedan el límite de profundidad del sistema de archivos (`MAX_PATH_LEN`), mejorando la seguridad defensiva al prevenir el procesamiento de rutas maliciosamente profundas o cíclicas.
-- `2026-10-12T06:22:20` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` consolidando el orden de validación de rutas y añadiendo un chequeo preventivo de `target.exists()` para asegurar que las operaciones de manipulación de archivos sigan estrictamente el flujo de seguridad, evitando efectos secundarios si el sistema de archivos es inconsistente.

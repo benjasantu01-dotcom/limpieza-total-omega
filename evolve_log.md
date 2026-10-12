@@ -1166,3 +1166,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-12T08:35:53` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se mejora la robustez de `quarantine_file` validando el estado del sistema de archivos mediante `os.access` antes de realizar operaciones de movimiento y se implementa una captura de errores más específica en el ciclo de limpieza de huérfanos para evitar que fallos de I/O bloqueen la integridad del manifiesto.
 - `2026-10-12T08:35:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T08:35:53` Corrida terminada. Total usado hoy: 204.
+- `2026-10-12T08:42:47` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-10-12T08:43:21` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-10-12T08:44:07` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T08:45:14` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se mejora el manejo de errores en `ensure_safe_to_modify` y funciones auxiliares añadiendo validaciones proactivas para objetos `None`, capturando errores específicos de `ctypes` y `OSError` que antes se ignoraban, y asegurando que las llamadas a la API de Windows no operen sobre punteros nulos o tipos incorrectos, evitando así cierres inesperados de la aplicación.
+- `2026-10-12T08:45:49` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del escáner ante rutas malformadas o inaccesibles mediante la normalización de rutas y la implementación de un manejo de errores más específico y preventivo, evitando que la ejecución se detenga ante fallos menores en `Path.resolve()` o conversiones de tipo.
+- `2026-10-12T08:45:50` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T08:45:54` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-12T08:46:38` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` y `_read_and_parse_json()` añadiendo validaciones preventivas sobre el contenido JSON, asegurando que `json.loads` no procese archivos vacíos o sobredimensionados, y evitando excepciones no controladas al cerrar el archivo durante la lectura.
+- `2026-10-12T08:46:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T08:46:38` Corrida terminada. Total usado hoy: 208.

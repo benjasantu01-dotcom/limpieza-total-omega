@@ -88,7 +88,7 @@ def _is_file_in_use(path: Path) -> bool:
 def _is_readable(path: Path) -> bool:
     """Valida si la ruta es un archivo regular, legible y sin bloqueos de acceso."""
     try:
-        if not path.is_file() or not os.access(path, os.R_OK):
+        if not path.exists() or not path.is_file() or not os.access(path, os.R_OK):
             return False
         return not _is_file_in_use(path)
     except (OSError, PermissionError, ValueError, FileNotFoundError):
@@ -193,7 +193,10 @@ class Scanner:
         self.results: ScanResult = []
         self.seen: set[str] = set()
         self.safe_cache: set[str] = set()
-        self.base_root_str: str = str(base_root.resolve()).lower()
+        try:
+            self.base_root_str: str = str(base_root.resolve()).lower()
+        except OSError:
+            self.base_root_str = str(base_root).lower()
         self.now_ts: float = datetime.now().timestamp()
 
     @lru_cache(maxsize=2048)

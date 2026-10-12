@@ -352,7 +352,6 @@ def _is_file_secure_to_read(st: os.stat_result, file_obj: Any) -> bool:
         if st.st_mode & (stat.S_ISUID | stat.S_ISGID) or st.st_nlink != 1: return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if os.path.islink(file_obj.name): return False
-        if os.path.islink(os.path.realpath(file_obj.name)): return False
         return True
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
@@ -367,12 +366,13 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
             try:
                 fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
                 content = f.read(MAX_SETTINGS_SIZE + 1)
-                data = json.loads(content) if content and len(content) <= MAX_SETTINGS_SIZE else None
+                if not content or len(content) > MAX_SETTINGS_SIZE: return None
+                data = json.loads(content)
                 return data if _is_dict(data) else None
             finally:
                 try: fcntl.flock(f.fileno(), fcntl.LOCK_UN)
                 except (OSError, IOError): pass
-    except (OSError, PermissionError, ValueError, AttributeError, RuntimeError): return None
+    except (OSError, PermissionError, ValueError, AttributeError, RuntimeError, json.JSONDecodeError): return None
 
 def _is_dir_safe(path: Path) -> bool:
     """Verifica seguridad básica del directorio padre antes de operaciones de escritura."""
