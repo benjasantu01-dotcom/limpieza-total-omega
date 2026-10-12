@@ -328,7 +328,10 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
                 own_pid = os.getpid()
                 
                 for i in range(count):
-                    pid = pids[i]
+                    try:
+                        pid = int(pids[i])
+                    except (ValueError, TypeError):
+                        continue
                     if pid > 4 and pid != own_pid:
                         try:
                             ws = _query_working_set_bytes(pid, kernel32, psapi)

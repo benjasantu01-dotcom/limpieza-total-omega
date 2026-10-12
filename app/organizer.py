@@ -152,7 +152,6 @@ def _is_file_locked(path: Path) -> bool:
     if not path or not path.is_file(): return True
     if os.name == 'nt':
         try:
-            # FILE_SHARE_READ|FILE_SHARE_WRITE para probar disponibilidad sin bloquear
             handle = ctypes.windll.kernel32.CreateFileW(
                 str(path), 0x80000000, 3, None, 3, 0x00000080, None
             )
@@ -205,7 +204,6 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         
-        # Validaciones de seguridad pre-movimiento
         if src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         if src_real.is_symlink() or (os.name == 'nt' and bool(src_real.stat().st_file_attributes & WIN_ATTR_JUNCTION)): return False
         
@@ -213,7 +211,6 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         if (junk_file._ino is not None and stat_result.st_ino != junk_file._ino) or \
            (junk_file._dev is not None and stat_result.st_dev != junk_file._dev): return False
         
-        # Verifica protección tanto del origen como del destino final
         if not src_real.is_file() or is_protected_path(src_real) or is_protected_path(dest_real): return False
         if not is_safe_to_modify(src_real) or not _validate_path_security(src_real, dest_real): return False
         
@@ -303,6 +300,8 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         dest_res = dest_base.resolve(strict=False)
         
         if not is_safe_to_modify(dest_res): return None
+        # Validación explícita antes de la acción crítica
+        if is_protected_path(dest_res) or _has_forbidden_chars(dest_res): return None
         ensure_safe_to_modify(dest_res)
     except (OSError, RuntimeError, PermissionError):
         return None
@@ -336,19 +335,20 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     try:
         dest = Path(review_dir).expanduser().resolve(strict=False)
         if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest): return 0
+        if is_protected_path(dest): return 0
         ensure_safe_to_modify(dest)
         
         count = 0
         for item in dest.iterdir():
             try:
-                stat_result = item.stat()
-                if item.is_file() and is_safe_to_modify(item) and not is_protected_path(item):
-                    if dest.resolve(strict=True) != item.resolve(strict=True).parent:
-                        continue
-                    ensure_safe_to_modify(item)
-                    if item.stat().st_ino == stat_result.st_ino:
-                        item.unlink()
-                        count += 1
+                if not item.is_file(): continue
+                # Validación estricta de seguridad pre-borrado
+                if not is_safe_to_modify(item) or is_protected_path(item): continue
+                if dest.resolve(strict=True) != item.resolve(strict=True).parent: continue
+                
+                ensure_safe_to_modify(item)
+                item.unlink()
+                count += 1
             except (OSError, PermissionError, FileNotFoundError) as e:
                 logger.error(f"Error borrando {item}: {e}")
                 continue

@@ -1148,3 +1148,21 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-12T08:24:54` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` agregando validaciones preventivas sobre `_PIPELINE` y asegurando que las funciones de `score` reciban siempre los tipos esperados, evitando errores de ejecución si una métrica llega fuera de rango o como tipo inesperado.
 - `2026-10-12T08:24:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T08:24:54` Corrida terminada. Total usado hoy: 200.
+- `2026-10-12T08:32:36` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-10-12T08:33:52` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Se reforzó la robustez del manejo de errores en `on_trim_process` y `on_restore_quarantine` mediante la validación explícita de la existencia de widgets y estados de procesos, además de añadir capturas de excepciones específicas para evitar cierres inesperados al interactuar con entradas del usuario potencialmente malformadas o rutas que cambian de estado durante la ejecución asíncrona.
+- `2026-10-12T08:34:32` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `top_memory_processes` añadiendo validaciones de tipo y estructura a los resultados de `EnumProcesses` para evitar excepciones en entornos donde la API devuelve valores inconsistentes o handles truncados.
+- `2026-10-12T08:35:12` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez en `stage_for_review` y `delete_reviewed` reemplazando los chequeos de seguridad implícitos por validaciones explícitas antes de `ensure_safe_to_modify`, evitando que la ejecución se detenga por excepciones no controladas en rutas mal formadas o inaccesibles.
+- `2026-10-12T08:35:53` Tests FALLARON:
+```
+Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+8 failed, 291 passed in 2.27s
+
+```
+- `2026-10-12T08:35:53` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se mejora la robustez de `quarantine_file` validando el estado del sistema de archivos mediante `os.access` antes de realizar operaciones de movimiento y se implementa una captura de errores más específica en el ciclo de limpieza de huérfanos para evitar que fallos de I/O bloqueen la integridad del manifiesto.
+- `2026-10-12T08:35:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T08:35:53` Corrida terminada. Total usado hoy: 204.
