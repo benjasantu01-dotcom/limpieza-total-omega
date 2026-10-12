@@ -178,7 +178,7 @@ class _SettingsManager:
                     fcntl.flock(f.fileno(), fcntl.LOCK_UN)
                 
                 if config_path.exists():
-                    ensure_safe_to_modify(str(bak_path.resolve()))
+                    ensure_safe_to_modify(str(config_path.resolve()))
                     os.replace(config_path, bak_path)
                 
                 os.replace(temp_path, config_path)
@@ -213,7 +213,9 @@ class _Validators:
     def _is_reparse_point(path: Path) -> bool:
         """Detecta si la ruta es un punto de reparse (symlink o junction) para evitar traversal."""
         try:
-            return path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction())
+            if path.is_symlink(): return True
+            if not path.exists(): return False
+            return bool(path.stat().st_file_attributes & 0x400) if hasattr(path.stat(), 'st_file_attributes') else False
         except (OSError, PermissionError):
             return True
 
@@ -361,6 +363,7 @@ def _is_file_secure_to_read(st: os.stat_result, file_obj: Any) -> bool:
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     """Helper que encapsula la apertura, lock y lectura segura del archivo."""
     try:
+        if _Validators._is_reparse_point(file_path): return None
         ensure_safe_to_modify(str(file_path.resolve()))
         if not _is_dir_safe(file_path.parent): return None
         with open(file_path, "r", encoding="utf-8") as f:
@@ -380,7 +383,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
 def _is_dir_safe(path: Path) -> bool:
     """Verifica seguridad básica del directorio padre antes de operaciones de escritura."""
     try:
-        if not path.is_dir(): return False
+        if not path.is_dir() or _Validators._is_reparse_point(path): return False
         st = path.stat()
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if st.st_mode & (stat.S_IWGRP | stat.S_IWOTH): return False
@@ -434,7 +437,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if shutil.disk_usage(parent).free < MAX_SETTINGS_SIZE * 2 or not os.access(parent, os.W_OK): return None
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
-        if config_path.exists(): ensure_safe_to_modify(str(config_path.resolve()))
         return config_path if _MANAGER.perform_atomic_write(config_path, serialized) else None
     except (TypeError, ValueError, OSError, PermissionError, AttributeError): return None
 

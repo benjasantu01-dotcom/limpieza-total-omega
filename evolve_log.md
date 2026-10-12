@@ -1340,3 +1340,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-12T11:07:57` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `quarantine.py` añadiendo una validación estricta de nombres de archivo y caracteres de control antes de cualquier operación de I/O en `_atomic_isolate_file`, centralizando la protección contra ataques de "Path Traversal" o creación de archivos con nombres malformados que intenten evadir filtros de seguridad del sistema operativo.
 - `2026-10-12T11:07:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T11:07:57` Corrida terminada. Total usado hoy: 264.
+- `2026-10-12T11:15:42` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-10-12T11:16:03` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-12T11:16:46` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se añadió la validación `_is_volume_restricted` dentro de `_validate_preconditions` para asegurar que volúmenes comprimidos o cifrados (donde las operaciones de movimiento/borrado pueden fallar o corromper datos) sean bloqueados preventivamente, manteniendo la consistencia con las reglas de seguridad defensiva.
+- `2026-10-12T11:17:11` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-10-12T11:17:26` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en la escritura atómica y la creación de directorios mediante una verificación de "reparse points" (puntos de reanálisis) más rigurosa y consistente antes de realizar cualquier operación sobre el sistema de archivos, siguiendo el enfoque defensivo.
+- `2026-10-12T11:17:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T11:17:26` Corrida terminada. Total usado hoy: 268.

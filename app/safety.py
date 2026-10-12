@@ -797,7 +797,7 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
     if os.name == 'nt':
         if _is_volume_readonly(str(target_path)) or _is_volume_compressed_or_encrypted(str(target_path)) or \
            _is_virtual_drive(str(target_path)) or _is_volume_busy_or_invalid(str(target_path)):
-            raise UnsafePathError(f"Volumen restringido/inaccesible: {target_path.anchor}", SafetyValidationErrorCode.VOLUME_READ_ONLY)
+            raise UnsafePathError(f"Volumen restringido/inaccesible: {target_path.anchor}", SafetyValidationErrorCode.VOLUME_RESTRICTED)
         if os.path.ismount(target_path):
             raise UnsafePathError(f"Punto de montaje bloqueado: {target_path}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED)
         _validate_drive_restrictions(target_path)
