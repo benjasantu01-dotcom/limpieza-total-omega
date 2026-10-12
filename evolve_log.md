@@ -1326,3 +1326,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-12T10:47:41` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
 - `2026-10-12T10:47:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T10:47:41` Corrida terminada. Total usado hoy: 256.
+- `2026-10-12T10:55:14` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-10-12T10:55:45` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-10-12T10:56:27` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_is_excluded_path` asegurando que la resolución de rutas mediante `os.scandir` se realice de forma segura, validando explícitamente que los archivos encontrados pertenecen al árbol de directorios que se está escaneando, previniendo posibles ataques por desbordamiento de ruta o manipulaciones de enlaces simbólicos maliciosos.
+- `2026-10-12T10:56:54` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Mejoré la robustez de `is_junction` y `is_system_or_hidden` añadiendo una validación explícita mediante `path.exists()` antes de llamar a la API de Windows, evitando excepciones innecesarias en rutas que cambiaron de estado o fueron eliminadas por otros procesos durante el escaneo.
+- `2026-10-12T10:57:08` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se endureció la seguridad defensiva en `_sanitize_msg` para incluir una lista de bloqueo de caracteres especiales y patrones de rutas más estricta, previniendo inyecciones de texto que pudieran ser interpretadas erróneamente en la UI o registros.
+- `2026-10-12T10:57:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T10:57:08` Corrida terminada. Total usado hoy: 260.

@@ -297,11 +297,13 @@ def grade_for_score(score: float | int) -> str:
 def _sanitize_msg(msg: str) -> str:
     """Elimina caracteres no imprimibles y bloquea rutas absolutas o sintaxis de sistema."""
     if not isinstance(msg, str): return ""
-    # Seguridad defensiva: bloquea explícitamente cualquier string que contenga estructuras de sistema o rutas
-    # Se eliminan caracteres de control, escapes ANSI y caracteres sospechosos
-    if any(part in msg.lower() for part in ["c:\\", "/", "root", "system32", "windows"]): return ""
     
-    sanitized = "".join(c for c in msg if c.isprintable() and ord(c) < 127 and c not in "\r\n\t\\/").strip()
+    # Bloqueo de patrones peligrosos
+    blocked_patterns = ["c:\\", "/", "root", "system32", "windows", "program files", "admin"]
+    if any(part in msg.lower() for part in blocked_patterns): return ""
+    
+    # Filtro: solo imprimibles ASCII, longitud controlada, prohibir caracteres de control
+    sanitized = "".join(c for c in msg if c.isprintable() and ord(c) < 127 and c not in "\r\n\t\\/<>|:\"*?").strip()
     return sanitized[:200] if sanitized else ""
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio, findings: List[str]) -> None:

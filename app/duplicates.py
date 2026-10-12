@@ -54,7 +54,7 @@ def is_junction(path: Path) -> bool:
     Verifica mediante la API de Windows si una ruta es un punto de reanálisis.
     Evita la recursión infinita en enlaces de sistema.
     """
-    if not isinstance(path, Path) or not is_safe_to_modify(path):
+    if not isinstance(path, Path) or not is_safe_to_modify(path) or not path.exists():
         return False
     try:
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
@@ -68,7 +68,7 @@ def is_system_or_hidden(path: Path) -> bool:
     Determina si un archivo tiene atributos de sistema u oculto en Windows.
     Utiliza atributos de archivo para descartar archivos críticos del SO.
     """
-    if not isinstance(path, Path) or not is_safe_to_modify(path):
+    if not isinstance(path, Path) or not is_safe_to_modify(path) or not path.exists():
         return True
     try:
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))

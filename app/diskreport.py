@@ -172,22 +172,27 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
 
 
-def _is_excluded_path(entry: os.DirEntry) -> bool:
+def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     """
     Determina si un nodo (archivo o carpeta) debe ser ignorado.
     
     Implementa filtros de seguridad contra caracteres maliciosos, rutas 
-    protegidas y archivos especiales de Windows (ej. atributos ocultos/sistema/junctions).
+    protegidas y archivos especiales de Windows, verificando que la ruta
+    resulte dentro del árbol raíz de escaneo.
     """
     try:
         name = entry.name
-        # Prevenir errores de ruta con caracteres nulos o nombres reservados inválidos
         if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
             return True
         if any(char in name for char in ('<', '>', ':', '"', '|', '?', '*')):
             return True
         
-        if is_protected_path(Path(entry.path)):
+        # Seguridad: verificar que la ruta absoluta resida bajo el root
+        abs_entry_path = Path(entry.path).resolve()
+        if not str(abs_entry_path).startswith(str(root_path)):
+            return True
+        
+        if is_protected_path(abs_entry_path):
             return True
         
         if entry.is_symlink():
@@ -330,15 +335,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if skip_protected and _is_excluded_path(entry):
+                        if skip_protected and _is_excluded_path(entry, root_resolved):
                             continue
                         
                         entry_path = Path(entry.path).resolve()
                         
-                        # Seguridad: verificar que la resolución no escape del raíz
-                        if not str(entry_path).startswith(str(root_resolved)):
-                            continue
-
                         if entry.is_dir(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             inode = (st.st_dev, st.st_ino)
