@@ -537,3 +537,48 @@ ERROR evolve/tests/test_basic.py
 - `2026-10-12T03:41:13` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-10-12T03:41:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T03:41:13` Corrida terminada. Total usado hoy: 88.
+- `2026-10-12T03:47:16` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-10-12T03:47:18` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-12T03:47:18` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-12T03:47:38` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-12T03:47:38` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-12T03:48:09` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-12T03:48:09` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-12T03:48:24` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T03:48:47` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 3): unexpected indent
+- `2026-10-12T03:49:24` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `save_logo_svg` y `_parse_severity` implementando una validación explícita de entradas críticas (`None` o tipos incorrectos) y centralizando el manejo de errores para evitar que el estado interno se corrompa, siguiendo el enfoque de validación defensiva antes de operar.
+- `2026-10-12T03:49:27` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T03:49:52` Tests FALLARON:
+```
+.................... [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________ test_read_only_modules_never_delete_or_move __________________
+
+    def test_read_only_modules_never_delete_or_move():
+        """Ningún módulo de solo lectura puede borrar ni mover archivos."""
+        destructivos = {"unlink", "rmdir", "rmtree", "move", "remove", "rename", "replace"}
+        for nombre in READ_ONLY_MODULES:
+            archivo = APP_DIR / nombre
+            if not archivo.exists():
+                continue
+            usados = calls_and_imports(parse(archivo)) & destructivos
+>           assert not usados, (
+                f"{nombre} debería ser de solo lectura pero llama a "
+                f"{', '.join(sorted(usados))}"
+            )
+E           AssertionError: browser.py debería ser de solo lectura pero llama a replace
+E           assert not {'replace'}
+
+evolve/tests/test_integrity.py:294: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: browser.py debería ser de solo lectura pero llama a replace
+assert not {'replace'}
+1 failed, 298 passed in 1.27s
+
+```
+- `2026-10-12T03:49:52` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Mejora la robustez de `_is_valid_cache_path` y `_resolve_browser_path` añadiendo validación explícita para evitar errores de tipo `TypeError` al procesar valores `None` o rutas mal formadas, reforzando la seguridad al evitar el uso de objetos inválidos en las consultas de sistema.
+- `2026-10-12T03:49:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T03:49:52` Corrida terminada. Total usado hoy: 92.

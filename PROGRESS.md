@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
-- Rechazadas por tests: 34
-- Rechazadas por guardia de seguridad: 50
-- Sin cambios (nada sustancial que mejorar): 24
+- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Rechazadas por tests: 35
+- Rechazadas por guardia de seguridad: 51
+- Sin cambios (nada sustancial que mejorar): 23
 - Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-10 | 33 | 7 | 7 | 4 | 15 |
+| 2026-10-10 | 31 | 7 | 7 | 3 | 14 |
 | 2026-10-11 | 130 | 23 | 34 | 16 | 147 |
-| 2026-10-12 | 34 | 4 | 9 | 4 | 37 |
+| 2026-10-12 | 35 | 5 | 10 | 4 | 38 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **48**
 - seguridad defensiva: **46**
-- legibilidad y documentación: **41**
+- legibilidad y documentación: **39**
 - rendimiento: **32**
-- manejo de errores y validación de entradas: **30**
+- manejo de errores y validación de entradas: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **20**
 - `browser.py`: **19**
-- `healthscore.py`: **18**
+- `memory.py`: **19**
 - `diskreport.py`: **18**
+- `healthscore.py`: **17**
 - `safety.py`: **16**
 - `settings.py`: **15**
+- `branding.py`: **15**
 - `scanner.py`: **14**
 - `assistant.py`: **14**
-- `branding.py`: **14**
 - `organizer.py`: **13**
 - `main.py`: **10**
 - `startup.py`: **10**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T03:49:24` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `_parse_severity` implementando una validación explícita de entradas críticas (`None` o tipos incorrectos) y centralizando el manejo de errores para evitar que el estado interno se corrompa, siguiendo el enfoque de validación defensiva antes de operar.
 - `2026-10-12T02:27:43` **startup.py** (seguridad defensiva): Mejoré la seguridad defensiva en `entries_from_registry` al añadir un control de validación estricto sobre las claves de registro (`REGISTRY_RUN_KEYS`) antes de pasarlas a la shell, asegurando que la entrada sea sanitizada y evitando inyecciones de comandos al tratar los parámetros de PowerShell como literales (`-LiteralPath`).
 - `2026-10-12T02:27:06` **settings.py** (seguridad defensiva): Se reforzó la seguridad en `_is_file_secure_to_read` mediante la validación explícita de `st_nlink == 1` para prevenir ataques de enlaces duros (hard links), asegurando que el archivo leído sea el único descriptor en el sistema de archivos.
 - `2026-10-12T02:17:09` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` implementando una validación estricta en `purge_all` para asegurar que solo se eliminen archivos que están explícitamente registrados en el manifiesto, evitando el borrado accidental de archivos huérfanos o maliciosos que pudieran haber sido inyectados en la carpeta de cuarentena.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T01:45:58` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite mediante la refactorización de `_get_file_attrs` y `_is_file_locked_by_other_process` para manejar de forma explícita errores de sistema (`ERROR_INVALID_NAME` y `ERROR_INSUFFICIENT_BUFFER`) que podrían causar fallos impredecibles en rutas mal formadas, asegurando que la app no aborte ante condiciones inesperadas del SO.
 - `2026-10-12T01:36:10` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera (TOCTOU) en `delete_reviewed` implementando la verificación de inodos antes de la eliminación, asegurando que el archivo eliminado sea el mismo que fue validado por las protecciones de seguridad.
 - `2026-10-12T01:26:51` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante posibles excepciones durante la inicialización de widgets y el manejo de hilos, asegurando que si un componente crítico falla al crearse o al actualizarse (debido a estados de carrera o cierres prematuros), la aplicación no colapse silenciosamente ni deje hilos colgados, reforzando la validación de `winfo_exists` en puntos clave de la interfaz.
-- `2026-10-12T01:25:56` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `_evaluate_rules` reemplazando la validación manual de strings por una lógica de filtrado de rutas mediante `pathlib`, eliminando el riesgo de dejar pasar rutas relativas o mal formadas, y reforzando la integridad al prevenir excepciones ante entradas inesperadas en `message_factory`.

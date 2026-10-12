@@ -231,12 +231,12 @@ def tab_label(section: Optional[str]) -> str:
 
 def _parse_severity(severity: Optional[str]) -> Optional[SeverityType]:
     """Valida y convierte una cadena a un enum de tipo SeverityType; absorbe excepciones de formato."""
-    if isinstance(severity, str):
-        try:
-            return SeverityType(severity.lower())
-        except ValueError:
-            pass
-    return None
+    if not isinstance(severity, str) or not severity.strip():
+        return None
+    try:
+        return SeverityType(severity.strip().lower())
+    except ValueError:
+        return None
 
 @lru_cache(maxsize=16)
 def _get_severity_style(severity_key: Optional[SeverityType]) -> Tuple[ColorHex, str]:
@@ -255,7 +255,7 @@ def severity_label(severity: Optional[str]) -> str:
     style = SEVERITY_STYLES.get(sev)
     if style:
         return style[1]
-    return severity.capitalize() if isinstance(severity, str) else "Desconocido"
+    return severity.strip().capitalize() if isinstance(severity, str) else "Desconocido"
 
 def severity_icon(severity: Optional[str]) -> str:
     """Retorna el glifo unicode específico de la severidad, delegando en el mapa de constantes."""
@@ -408,7 +408,8 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
             parent.mkdir(parents=True, exist_ok=True)
             
         validated_size = max(16, min(1024, int(size)))
-        target.write_text(logo_svg(validated_size), encoding="utf-8")
+        content = logo_svg(validated_size)
+        target.write_text(content, encoding="utf-8")
         return target if target.is_file() else None
         
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError, AttributeError, IOError):
