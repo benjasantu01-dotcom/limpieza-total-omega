@@ -203,7 +203,7 @@ class Scanner:
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica si la ruta analizada se mantiene dentro del árbol de escaneo definido."""
         try:
-            resolved = str(Path(entry_path).resolve()).lower()
+            resolved: str = str(Path(entry_path).resolve()).lower()
             return resolved.startswith(self.base_root_str)
         except (OSError, RuntimeError):
             return False
@@ -221,7 +221,7 @@ class Scanner:
         if not isinstance(entry, os.DirEntry) or entry.path is None:
             return False
         
-        path_str = entry.path
+        path_str: str = entry.path
         if path_str in self.safe_cache:
             return True
         
@@ -232,7 +232,7 @@ class Scanner:
             if entry.is_symlink() or self._is_reparse_point(entry):
                 return False
                 
-            real_path = Path(path_str).resolve(strict=True)
+            real_path: Path = Path(path_str).resolve(strict=True)
             if len(str(real_path)) > SCAN_LIMITS.max_path or not str(real_path).lower().startswith(self.base_root_str):
                 return False
                 
@@ -246,7 +246,7 @@ class Scanner:
         if current_depth >= SCAN_LIMITS.max_depth or entry.path is None:
             return
         
-        path_lower = entry.path.lower()
+        path_lower: str = entry.path.lower()
         if path_lower not in self.seen:
             self.seen.add(path_lower)
             directory_stack.append((entry.path, current_depth + 1))
@@ -278,7 +278,7 @@ class Scanner:
             return
         for check_fn in ALL_CHECKS:
             try:
-                finding = check_fn(path, entry, self.now_ts)
+                finding: Optional[Suspicion] = check_fn(path, entry, self.now_ts)
                 if finding is not None:
                     self.results.append(finding)
             except Exception as e:
@@ -306,12 +306,12 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
     if directory is None: return []
     try:
-        path_str = str(directory).strip()
+        path_str: str = str(directory).strip()
         if not path_str or not _is_valid_path_structure(path_str): return []
-        base_path = Path(path_str).resolve(strict=True)
+        base_path: Path = Path(path_str).resolve(strict=True)
         if not base_path.is_dir() or base_path.is_symlink() or not os.access(base_path, os.R_OK) or is_protected_path(base_path):
             return []
-        scanner = Scanner(base_root=base_path)
+        scanner: Scanner = Scanner(base_root=base_path)
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError) as e:
         logger.error(f"Error inicializando escaneo en {directory}: {e}")
         return []

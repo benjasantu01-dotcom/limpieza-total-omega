@@ -1201,3 +1201,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-12T09:15:50` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
 - `2026-10-12T09:15:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T09:15:50` Corrida terminada. Total usado hoy: 220.
+- `2026-10-12T09:23:29` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-10-12T09:24:22` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad y mantenibilidad del módulo `safety.py` mediante la refactorización de las comprobaciones dispersas en `ensure_safe_to_modify` hacia una estructura delegada en `_check_preconditions`, permitiendo una validación más limpia, escalable y fácil de auditar según los requisitos de seguridad definidos.
+- `2026-10-12T09:25:01` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se han aplicado type hints faltantes en el estado del escáner y se han extraído bloques de lógica interna hacia métodos con nombres descriptivos para mejorar la mantenibilidad y claridad del flujo de trabajo, sin alterar la lógica de seguridad preexistente.
+- `2026-10-12T09:25:45` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-12T09:26:12` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y la claridad de las constantes en `startup.py`, añadiendo tipos de retorno específicos y detallando el propósito de las heurísticas de seguridad para facilitar futuras auditorías.
+- `2026-10-12T09:26:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T09:26:12` Corrida terminada. Total usado hoy: 224.

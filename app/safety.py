@@ -778,11 +778,24 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     except (AttributeError, TypeError, ValueError):
         raise UnsafePathError("Estructura de ruta inválida.", SafetyValidationErrorCode.GENERIC)
 
-def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
-    """Valida si la ruta está dentro del sandbox permitido y cumple las restricciones del sistema."""
+def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> None:
+    """Valida precondiciones de sistema, bloqueos de kernel y restricciones de volumen."""
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
-        
+    
+    if _is_kernel_managed(str(target_path)):
+        raise UnsafePathError(f"Archivo de sistema crítico: {target_path.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
+    
+    if os.name == 'nt':
+        if _is_volume_readonly(str(target_path)) or _is_volume_compressed_or_encrypted(str(target_path)) or \
+           _is_virtual_drive(str(target_path)) or _is_volume_busy_or_invalid(str(target_path)):
+            raise UnsafePathError(f"Volumen restringido/inaccesible: {target_path.anchor}", SafetyValidationErrorCode.VOLUME_READ_ONLY)
+        if os.path.ismount(target_path):
+            raise UnsafePathError(f"Punto de montaje bloqueado: {target_path}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED)
+        _validate_drive_restrictions(target_path)
+
+def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
+    """Valida si la ruta está dentro del sandbox permitido."""
     if root_directory:
         if not isinstance(root_directory, (str, Path, os.PathLike)):
              raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC)
@@ -797,10 +810,6 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
 
     if is_protected_path(str(target_path)):
         raise UnsafePathError("Ruta en directorio del sistema bloqueada.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
-    
-    if os.name == 'nt':
-        try: _validate_drive_restrictions(target_path)
-        except (OSError, AttributeError, ctypes.ArgumentError): pass
     
     try:
         app_root = Path(os.getcwd()).resolve()
@@ -908,12 +917,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
                 raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC)
         
         _validate_path_components(p)
-        if os.name == 'nt' and os.path.ismount(p):
-            raise UnsafePathError(f"Punto de montaje bloqueado: {p}", SafetyValidationErrorCode.MOUNT_POINT_DETECTED)
-        if _is_kernel_managed(str(p)):
-            raise UnsafePathError(f"Archivo de sistema crítico: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
-        if os.name == 'nt' and (_is_volume_readonly(str(p)) or _is_volume_compressed_or_encrypted(str(p)) or _is_virtual_drive(str(p)) or _is_volume_busy_or_invalid(str(p))):
-            raise UnsafePathError(f"Volumen restringido/solo lectura/virtual/inaccesible: {p.anchor}", SafetyValidationErrorCode.VOLUME_READ_ONLY)
+        _validate_preconditions(p, base_dir)
+        
         if not allow_sensitive and is_sensitive_file(p):
             raise UnsafePathError(f"Extensión bloqueada '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION)
             
