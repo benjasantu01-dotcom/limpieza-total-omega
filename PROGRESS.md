@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 55
+- Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 79 | 10 | 22 | 10 | 79 |
-| 2026-10-12 | 117 | 17 | 33 | 13 | 124 |
+| 2026-10-11 | 78 | 10 | 20 | 9 | 79 |
+| 2026-10-12 | 119 | 17 | 33 | 14 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **46**
 - seguridad defensiva: **46**
-- legibilidad y documentación: **39**
-- manejo de errores y validación de entradas: **38**
+- manejo de errores y validación de entradas: **40**
+- legibilidad y documentación: **38**
 - rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **20**
+- `memory.py`: **21**
 - `diskreport.py`: **19**
 - `browser.py`: **18**
+- `organizer.py`: **17**
 - `safety.py`: **17**
 - `healthscore.py`: **17**
-- `organizer.py`: **16**
 - `branding.py`: **16**
 - `settings.py`: **14**
 - `duplicates.py`: **13**
 - `scanner.py`: **12**
 - `assistant.py`: **11**
 - `quarantine.py`: **9**
-- `startup.py`: **8**
+- `startup.py`: **7**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T13:00:30` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_locked` para manejar fallos de tipos en la llamada a `ctypes` y añadí una validación de `None` en `scan_for_junk` para prevenir `AttributeError` si `Path(d)` recibe un valor inesperado, fortaleciendo el manejo de errores del bucle de escaneo.
+- `2026-10-12T13:00:14` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_process_executable_safe` y `_query_working_set_bytes` implementando una validación de `None` más rigurosa para los handles de procesos y un manejo explícito de errores que evita el uso de bloques `try-except` vacíos, asegurando que cualquier fallo en la API nativa sea gestionado o ignorado explícitamente sin enmascarar errores de lógica.
 - `2026-10-12T12:49:14` **duplicates.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `hash_file` y `partial_hash` asegurando que cualquier fallo durante la lectura de archivos (como errores de hardware o bloqueos repentinos) devuelva `None` de forma controlada sin propagar excepciones que interrumpan el bucle principal de escaneo.
 - `2026-10-12T12:49:03` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_summary_data` y `_is_excluded_path` añadiendo validaciones de tipo y capturas de excepciones más granulares para prevenir que el escaneo se detenga silenciosamente ante errores de acceso a disco o rutas malformadas.
 - `2026-10-12T12:48:11` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `_hex_to_rgb` y `_rgb_to_hex` validando explícitamente los tipos y rangos de entrada antes de operar, evitando posibles errores de desbordamiento o excepciones inesperadas al procesar valores de color mal formados.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T10:56:27` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_excluded_path` asegurando que la resolución de rutas mediante `os.scandir` se realice de forma segura, validando explícitamente que los archivos encontrados pertenecen al árbol de directorios que se está escaneando, previniendo posibles ataques por desbordamiento de ruta o manipulaciones de enlaces simbólicos maliciosos.
 - `2026-10-12T10:45:48` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `settings.py` ante errores de concurrencia y bloqueos de disco mediante la implementación de un mecanismo de reintento (`exponential backoff`) en `perform_atomic_write`, mitigando fallos transitorios en operaciones de entrada/salida que ocurren frecuentemente en sistemas Windows con antivirus activos.
 - `2026-10-12T10:38:34` **safety.py** (robustez ante casos límite): Se ha implementado una mejora en la robustez ante rutas inexistentes dentro de `is_protected_path`, evitando que una `Path.resolve()` sobre una ruta no presente en el disco lance un error (`OSError` o similar) y comprometa el flujo de validación, asegurando que la app siga siendo capaz de evaluar la seguridad incluso sobre objetos pendientes de creación o eliminados.
-- `2026-10-12T10:28:59` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente archivos inexistentes o bloqueos por permisos en sistemas Windows (evitando excepciones en el `ctypes.windll` al recibir rutas inválidas), y se añadió una verificación de estado de archivo en `_is_safe_for_disk_op` para prevenir operaciones sobre archivos que fueron eliminados o movidos por otros procesos entre el escaneo y la ejecución, cerrando una potencial race condition.
-- `2026-10-12T10:28:32` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` al evitar el uso de una máscara de acceso demasiado permisiva (que incluía `PROCESS_SET_QUOTA` innecesariamente) y agregando una verificación explícita para descartar procesos de sistema antes de intentar abrir un handle, cumpliendo con las mejores prácticas de seguridad de API de Windows.

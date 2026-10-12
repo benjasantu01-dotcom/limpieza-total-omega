@@ -153,7 +153,7 @@ class ProcessMemory:
         return self.working_set < other.working_set
 
 def format_bytes(num: Optional[int | float]) -> str:
-    """Convierte bytes numéricos en una cadena humanamente legible con unidades."""
+    """Convierta bytes numéricos en una cadena humanamente legible con unidades."""
     if not isinstance(num, (int, float)) or num < 0:
         return "0 B"
     if num == 0:
@@ -283,12 +283,9 @@ def read_snapshot() -> MemorySnapshot:
     return _get_cached_snapshot(int(time.time() / 5))
 
 def _query_working_set_bytes(pid: int, kernel32: ctypes.WinDLL, psapi: ctypes.WinDLL) -> Optional[BytesValue]:
-    """
-    Consulta los contadores de memoria de un proceso externo utilizando la API PSAPI GetProcessMemoryInfo.
-    Requiere un handle con acceso limitado para ser seguro.
-    """
+    """Consulta contadores de memoria mediante API externa con validación de handle."""
     process_handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
-    if not process_handle or process_handle == INVALID_HANDLE_VALUE:
+    if process_handle is None or process_handle == INVALID_HANDLE_VALUE:
         return None
     try:
         pmc = PROCESS_MEMORY_COUNTERS()
@@ -297,7 +294,7 @@ def _query_working_set_bytes(pid: int, kernel32: ctypes.WinDLL, psapi: ctypes.Wi
             val = pmc.WorkingSetSize
             return BytesValue(val) if 0 < val < MAX_VALID_PROCESS_MEM else None
     except (ctypes.ArgumentError, OSError, AttributeError):
-        pass
+        return None
     finally:
         kernel32.CloseHandle(process_handle)
     return None
@@ -328,17 +325,11 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
                 own_pid = os.getpid()
                 
                 for i in range(count):
-                    try:
-                        pid = int(pids[i])
-                    except (ValueError, TypeError):
-                        continue
+                    pid = int(pids[i])
                     if pid > 4 and pid != own_pid:
-                        try:
-                            ws = _query_working_set_bytes(pid, kernel32, psapi)
-                            if ws:
-                                found_procs.append(ProcessMemory(f"PID {pid}", pid, ws))
-                        except (OSError, ctypes.ArgumentError):
-                            continue
+                        ws = _query_working_set_bytes(pid, kernel32, psapi)
+                        if ws:
+                            found_procs.append(ProcessMemory(f"PID {pid}", pid, ws))
                 
                 cache_data = sorted(found_procs, key=lambda p: p.working_set, reverse=True)[:limit]
                 top_memory_processes._cache = (now, cache_data)
@@ -386,7 +377,7 @@ def _is_process_executable_safe(pid: int) -> bool:
     if not kernel32 or not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return False
     
     handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
-    if not handle or handle == INVALID_HANDLE_VALUE: return False
+    if handle is None or handle == INVALID_HANDLE_VALUE: return False
     try:
         buf = ctypes.create_unicode_buffer(512)
         bytes_copied = psapi.GetModuleFileNameExW(handle, None, buf, 512)
@@ -394,9 +385,8 @@ def _is_process_executable_safe(pid: int) -> bool:
             path_str = buf.value
             if path_str.startswith("\\\\"): return False
             normalized_path = str(Path(path_str).resolve())
-            if not normalized_path: return False
             return not is_protected_path(normalized_path)
-    except (ctypes.ArgumentError, OSError):
+    except (ctypes.ArgumentError, OSError, ValueError):
         return False
     finally:
         kernel32.CloseHandle(handle)
@@ -427,7 +417,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "API no disponible."
     
     proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
-    if not proc_handle or proc_handle == INVALID_HANDLE_VALUE:
+    if proc_handle is None or proc_handle == INVALID_HANDLE_VALUE:
         return False, "No se pudo acceder al proceso (requiere privilegios elevados)."
         
     try:

@@ -149,7 +149,7 @@ def _is_file_locked(path: Path) -> bool:
     Verifica si un archivo está bloqueado mediante un intento de apertura exclusiva.
     En Windows se usan handles de Kernel32; en otros sistemas se intenta un acceso de lectura.
     """
-    if not path or not path.is_file(): return True
+    if not path or not isinstance(path, Path) or not path.is_file(): return True
     if os.name == 'nt':
         try:
             # GENERIC_READ (0x80000000), FILE_SHARE_NONE (0), OPEN_EXISTING (3)
@@ -280,7 +280,7 @@ def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[Ju
     visited: set[Path] = set()
     scan_list: Sequence[str | Path] = directories or DEFAULT_SCAN_DIRS
     for d in scan_list:
-        if not d: continue
+        if d is None: continue
         try:
             p = Path(d).expanduser()
             if p.is_dir() and not _is_unc_path(p) and is_safe_to_modify(p):
