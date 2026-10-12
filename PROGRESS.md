@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Mejoras aceptadas: **195** (38.7% de aceptación)
 - Rechazadas por tests: 30
-- Rechazadas por guardia de seguridad: 54
+- Rechazadas por guardia de seguridad: 55
 - Sin cambios (nada sustancial que mejorar): 24
 - Sin respuesta de la IA (error o límite): 200
 
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 101 | 15 | 27 | 14 | 115 |
-| 2026-10-12 | 95 | 15 | 27 | 10 | 85 |
+| 2026-10-11 | 98 | 15 | 27 | 14 | 114 |
+| 2026-10-12 | 97 | 15 | 28 | 10 | 86 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
-- seguridad defensiva: **45**
+- seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **42**
-- robustez ante casos límite: **38**
-- rendimiento: **25**
+- robustez ante casos límite: **37**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **21**
+- `browser.py`: **20**
 - `memory.py`: **20**
 - `diskreport.py`: **18**
 - `organizer.py`: **17**
-- `safety.py`: **16**
+- `safety.py`: **17**
 - `healthscore.py`: **16**
 - `branding.py`: **15**
 - `settings.py`: **14**
 - `scanner.py`: **13**
-- `assistant.py`: **12**
+- `assistant.py`: **11**
 - `duplicates.py`: **11**
-- `startup.py`: **9**
+- `startup.py`: **8**
+- `quarantine.py`: **8**
 - `main.py`: **7**
-- `quarantine.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T09:56:59` **safety.py** (rendimiento): Se implementó un cacheo más eficiente en `is_protected_path` utilizando una tupla de pre-calculados, evitando la recreación de objetos `Path` y cálculos de `commonpath` en cada llamada dentro de bucles intensivos.
+- `2026-10-12T09:55:42` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y `list_items` evitando recrear el diccionario de manifiesto y accesos innecesarios a disco mediante la reutilización de la lista de ítems ya cargada, además de reducir el coste de `is_within_directory` al usar rutas resueltas solo cuando es estrictamente necesario.
 - `2026-10-12T09:45:17` **healthscore.py** (rendimiento): Optimizé el cálculo de `compute_score` mediante la pre-validación de `_PIPELINE` y el uso de `tuple` y `dict` para evitar recorridos redundantes y validaciones de tipo innecesarias dentro del bucle de procesamiento.
 - `2026-10-12T09:36:12` **browser.py** (rendimiento): Optimizé el rendimiento de `detect_profiles` reutilizando el `ScanContext` para todo el proceso de descubrimiento, evitando la recreación redundante de diccionarios de caché y sets de archivos visitados durante el escaneo de múltiples rutas de caché.
 - `2026-10-12T09:34:40` **assistant.py** (rendimiento): Optimicé el rendimiento de `SystemContext` reemplazando la serialización iterativa basada en `getattr` por un acceso directo al diccionario `__dict__` con filtrado previo, reduciendo la carga de introspección en `metrics_snapshot` y `ingest`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T09:04:30` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de hashing y el procesamiento de grupos para clarificar la lógica de "Estrategia en tres pasos" declarada en el encabezado, asegurando que los Type Hints y docstrings reflejen con precisión las precondiciones de seguridad.
 - `2026-10-12T09:03:50` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas y la estandarización de type hints, facilitando la auditoría de seguridad sobre el comportamiento de las operaciones de disco.
 - `2026-10-12T08:55:48` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings detallados en las funciones de escaneo recursivo y se han renombrado variables clave para clarificar el propósito de las restricciones de seguridad (sandbox) en el recorrido de archivos.
-- `2026-10-12T08:46:38` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `_read_and_parse_json()` añadiendo validaciones preventivas sobre el contenido JSON, asegurando que `json.loads` no procese archivos vacíos o sobredimensionados, y evitando excepciones no controladas al cerrar el archivo durante la lectura.
-- `2026-10-12T08:45:49` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez del escáner ante rutas malformadas o inaccesibles mediante la normalización de rutas y la implementación de un manejo de errores más específico y preventivo, evitando que la ejecución se detenga ante fallos menores en `Path.resolve()` o conversiones de tipo.

@@ -255,6 +255,8 @@ _SYSTEM_ROOT_PATHS: Final[set[Path]] = {
     if os.environ.get(v)
 }
 
+# Cache auxiliar para comparación rápida de rutas
+_SYSTEM_ROOT_PATHS_TUPLE: Final[tuple[str, ...]] = tuple(str(p).lower() for p in _SYSTEM_ROOT_PATHS)
 _SYSTEM_ROOT_STRS: Final[set[str]] = {str(p).lower() for p in _SYSTEM_ROOT_PATHS}
 
 _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
@@ -699,18 +701,21 @@ def is_protected_path(path: PathLike) -> bool:
     if not isinstance(path, (str, Path)) or not path: return True
     try:
         p_str = str(path).lower()
-        if any(p_str.startswith(r) for r in _SYSTEM_ROOT_STRS): return True
+        if any(p_str.startswith(r) for r in _SYSTEM_ROOT_PATHS_TUPLE): return True
         if _is_kernel_managed(p_str): return True
         if _get_file_attrs(p_str) & (Win32Attr.SYSTEM | Win32Attr.HIDDEN): return True
         
         p = Path(path)
         if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts): return True
         
-        p_str_norm = str(p.resolve()).lower()
-        if any(p_str_norm == root or os.path.commonpath([p_str_norm, str(root)]) == str(root) for root in _SYSTEM_ROOT_PATHS):
-            return True
+        p_norm = p.resolve()
+        p_str_norm = str(p_norm).lower()
+        
+        for root in _SYSTEM_ROOT_PATHS:
+            if p_str_norm == str(root).lower() or p_norm.is_relative_to(root):
+                return True
             
-        return p_str_norm == Path(p_str_norm).anchor
+        return p_str_norm == p_norm.anchor
     except Exception: return True
 
 @lru_cache(maxsize=4096)

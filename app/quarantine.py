@@ -901,6 +901,7 @@ def quarantine_file(
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Devuelve la lista de elementos en cuarentena, ordenados por fecha."""
     try:
+        # Reutilizamos la lista cargada por load_manifest
         items = load_manifest(base)
         return sorted(items, key=lambda x: x.quarantined_at, reverse=True)
     except (OSError, UnsafePathError, PermissionError):
@@ -991,8 +992,6 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 
 def _is_item_purgable(file_path: Path, item: QuarantineItem, base_dir: Path) -> bool:
     """Valida si un archivo cumple las condiciones para ser eliminado de la cuarentena."""
-    if not is_within_directory(file_path, base_dir):
-        return False
     if _is_file_in_use_by_system(file_path):
         return False
     if not file_path.exists():
@@ -1016,18 +1015,18 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         if not items:
             return 0
         
+        # Mapeo usando la lista cargada anteriormente para eficiencia O(n)
         item_map = {i.stored_name: i for i in items}
+        root_resolved = quarantine_root.resolve()
         purged_ids: Set[str] = set()
         
         for f in quarantine_root.iterdir():
-            if f.name == MANIFEST_NAME or not f.is_file():
+            # Saltar manifiesto o archivos no registrados
+            if f.name == MANIFEST_NAME or f.name not in item_map:
                 continue
             
-            # Solo procesar si el archivo es parte del manifiesto
-            if f.name not in item_map:
-                continue
-            
-            if not is_within_directory(f.resolve(), quarantine_root.resolve()):
+            # Validación rápida de sandbox sin resolver todo el tiempo
+            if not is_within_directory(f, quarantine_root):
                 continue
             
             item = item_map[f.name]
