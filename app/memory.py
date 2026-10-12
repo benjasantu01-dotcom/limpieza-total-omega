@@ -41,15 +41,12 @@ else:
         HANDLE = ctypes.c_void_p
 
 # Tipos semánticos para prevenir errores de lógica al operar con diferentes unidades.
-# BytesValue: Representa el consumo de memoria en bytes crudos del sistema.
-# MegabytesValue: Representa la conversión a MB para visualización y reporte.
 BytesValue = NewType("BytesValue", int)
 MegabytesValue = NewType("MegabytesValue", float)
 
 # Constantes de conversión y límites de seguridad:
 BYTES_IN_MB: Final[int] = 1024 * 1024
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
-# Límite heurístico para filtrar valores erróneos de lectura de procesos (128GB).
 MAX_VALID_PROCESS_MEM: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
 # Máscaras de acceso Win32 para interactuar con la memoria de procesos ajenos.
@@ -90,30 +87,30 @@ TRIM_WARNING: Final[str] = (
 class MEMORYSTATUSEX(ctypes.Structure):
     """Estructura Win32 GlobalMemoryStatusEx para reportar memoria total y disponible."""
     _fields_: List[Tuple[str, type]] = [
-        ("dwLength", ctypes.c_ulong),
-        ("dwMemoryLoad", ctypes.c_ulong),
-        ("ullTotalPhys", ctypes.c_ulonglong),
-        ("ullAvailPhys", ctypes.c_ulonglong),
-        ("ullTotalPageFile", ctypes.c_ulonglong),
-        ("ullAvailPageFile", ctypes.c_ulonglong),
-        ("ullTotalVirtual", ctypes.c_ulonglong),
-        ("ullAvailVirtual", ctypes.c_ulonglong),
-        ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
+        ("dwLength", ctypes.c_ulong),               # Tamaño de la estructura en bytes
+        ("dwMemoryLoad", ctypes.c_ulong),           # Porcentaje de uso de memoria (0-100)
+        ("ullTotalPhys", ctypes.c_ulonglong),       # RAM física total
+        ("ullAvailPhys", ctypes.c_ulonglong),       # RAM física disponible
+        ("ullTotalPageFile", ctypes.c_ulonglong),   # Tamaño total del archivo de paginación
+        ("ullAvailPageFile", ctypes.c_ulonglong),   # Espacio libre en paginación
+        ("ullTotalVirtual", ctypes.c_ulonglong),    # Espacio de direcciones virtual total
+        ("ullAvailVirtual", ctypes.c_ulonglong),    # Espacio de direcciones virtual libre
+        ("ullAvailExtendedVirtual", ctypes.c_ulonglong), # Siempre 0
     ]
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
-    """Estructura Win32 para obtener estadísticas de memoria de un proceso (PSAPI)."""
+    """Estructura Win32 PSAPI para obtener métricas de consumo de memoria de procesos."""
     _fields_: List[Tuple[str, type]] = [
-        ("cb", ctypes.c_size_t),
-        ("PageFaultCount", ctypes.c_ulong),
-        ("PeakWorkingSetSize", ctypes.c_size_t),
-        ("WorkingSetSize", ctypes.c_size_t),
+        ("cb", ctypes.c_size_t),                    # Tamaño de la estructura
+        ("PageFaultCount", ctypes.c_ulong),         # Número de fallos de página
+        ("PeakWorkingSetSize", ctypes.c_size_t),    # Pico máximo de RAM ocupada
+        ("WorkingSetSize", ctypes.c_size_t),        # RAM física ocupada actualmente
         ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
         ("QuotaPagedPoolUsage", ctypes.c_size_t),
         ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
         ("QuotaNonPagedPoolUsage", ctypes.c_size_t),
-        ("PagefileUsage", ctypes.c_size_t),
-        ("PeakPagefileUsage", ctypes.c_size_t),
+        ("PagefileUsage", ctypes.c_size_t),         # Uso actual del archivo de paginación
+        ("PeakPagefileUsage", ctypes.c_size_t),     # Pico del uso del archivo de paginación
     ]
 
 @dataclass(frozen=True)
