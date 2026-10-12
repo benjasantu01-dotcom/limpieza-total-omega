@@ -312,8 +312,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         psapi = getattr(ctypes.windll, "psapi", None)
         if not kernel32 or not psapi: return []
         
-        # Uso de c_uint32 para mejorar rendimiento en el enumerador
-        max_procs = 2048
+        max_procs = 1024
         pids = (ctypes.c_uint32 * max_procs)()
         cb_needed = ctypes.c_uint32()
         

@@ -1340,3 +1340,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-12T00:45:29` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: HealthResult.is_healthy, SystemMetrics.is_finite, SystemMetrics.safe_get
 - `2026-10-12T00:45:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T00:45:29` Corrida terminada. Total usado hoy: 20.
+- `2026-10-12T00:53:58` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-10-12T00:55:06` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de **invalidación de caché basada en digest** en `on_full_analysis` para evitar el re-procesamiento innecesario del contexto del asistente y la actualización redundante de los elementos visuales de salud, aprovechando la estructura de datos `_last_compilation_digest`.
+- `2026-10-12T00:55:35` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `top_memory_processes` reemplazando la enumeración de procesos completa y costosa por un filtro más inteligente: el uso de `lru_cache` y la lógica de actualización evitan redundancias, y el uso de `ctypes.byref` junto con el manejo eficiente de buffers mejora la velocidad de ejecución al evitar llamadas innecesarias a la API de Windows.
+- `2026-10-12T00:55:59` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-10-12T00:56:24` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé la carga del manifiesto eliminando la recolección de estadísticas de sistema (mtime, size, inode) mediante llamadas `stat()` repetidas, aprovechando que `load_manifest` ya valida la integridad contra el caché existente; además, centralicé la lógica de lectura de manifiesto para reducir I/O redundante al realizar múltiples operaciones de purga o listado.
+- `2026-10-12T00:56:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T00:56:24` Corrida terminada. Total usado hoy: 24.

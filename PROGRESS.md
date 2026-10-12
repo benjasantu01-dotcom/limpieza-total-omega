@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **202** (40.1% de aceptación)
-- Rechazadas por tests: 31
+- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Rechazadas por tests: 30
 - Rechazadas por guardia de seguridad: 50
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 200
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-10 | 59 | 8 | 12 | 4 | 51 |
+| 2026-10-10 | 56 | 7 | 12 | 4 | 51 |
 | 2026-10-11 | 130 | 23 | 34 | 16 | 147 |
-| 2026-10-12 | 13 | 0 | 4 | 1 | 2 |
+| 2026-10-12 | 15 | 0 | 4 | 2 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **49**
+- seguridad defensiva: **48**
 - legibilidad y documentación: **44**
 - manejo de errores y validación de entradas: **40**
-- robustez ante casos límite: **39**
-- rendimiento: **30**
+- robustez ante casos límite: **37**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
+- `memory.py`: **20**
 - `browser.py`: **19**
-- `memory.py`: **19**
 - `healthscore.py`: **18**
 - `safety.py`: **17**
 - `branding.py`: **16**
-- `settings.py`: **15**
-- `scanner.py`: **14**
-- `assistant.py`: **14**
+- `settings.py`: **14**
+- `assistant.py`: **13**
+- `scanner.py`: **13**
 - `duplicates.py`: **12**
 - `organizer.py`: **12**
 - `main.py`: **11**
 - `startup.py`: **9**
-- `quarantine.py`: **6**
+- `quarantine.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T00:56:24` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto eliminando la recolección de estadísticas de sistema (mtime, size, inode) mediante llamadas `stat()` repetidas, aprovechando que `load_manifest` ya valida la integridad contra el caché existente; además, centralicé la lógica de lectura de manifiesto para reducir I/O redundante al realizar múltiples operaciones de purga o listado.
+- `2026-10-12T00:55:35` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la enumeración de procesos completa y costosa por un filtro más inteligente: el uso de `lru_cache` y la lógica de actualización evitan redundancias, y el uso de `ctypes.byref` junto con el manejo eficiente de buffers mejora la velocidad de ejecución al evitar llamadas innecesarias a la API de Windows.
 - `2026-10-12T00:44:17` **browser.py** (rendimiento): Optimizé el rendimiento de `detect_profiles` reutilizando el `ScanContext` y su caché de directorios (`visited_dirs`) a través de todos los navegadores, evitando el re-procesamiento de carpetas compartidas (como `User Data`) que son comunes a múltiples navegadores en `LOCALAPPDATA`.
 - `2026-10-12T00:35:41` **branding.py** (rendimiento): Se introdujo una cache Lru en `color()` para evitar búsquedas repetitivas en el `MappingProxyType` durante ciclos de renderizado de UI, reduciendo el costo de acceso a diccionarios en llamadas frecuentes.
 - `2026-10-12T00:35:21` **assistant.py** (rendimiento): Optimicé el método `SystemContext.metrics_snapshot` para evitar recrear el diccionario en cada acceso (recalculándolo solo cuando el estado cambia) y reemplacé el `hash()` interno por una tupla cacheada, reduciendo la carga de CPU en bucles de la interfaz.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T00:04:47` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación del motor de escaneo y sus dependencias mediante la actualización de los docstrings, incorporando explicaciones claras sobre la lógica de inodos para la prevención de bucles y clarificando las responsabilidades de las clases auxiliares para facilitar el mantenimiento futuro.
 - `2026-10-12T00:04:22` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave, aclarando las precondiciones de seguridad y el comportamiento ante errores, facilitando la auditoría del código bajo las reglas de seguridad exigidas.
 - `2026-10-12T00:03:52` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `branding.py` mediante docstrings detallados en las funciones de renderizado, explicando el propósito de cada parámetro geométrico, y añadí `TypeAlias` explícitos para las estructuras de datos de coordenadas, mejorando la claridad de la intención del diseño sin alterar la lógica de ejecución.
-- `2026-10-11T14:39:10` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en la resolución de rutas mediante la implementación de una técnica de doble validación (existencia + permiso) dentro de `ensure_safe_to_modify`, previniendo errores de sistema al intentar operar sobre rutas inexistentes pero aparentemente válidas, y refinando el manejo de excepciones para evitar el colapso del bucle de validación ante estados de carrera (`Race Conditions`).
-- `2026-10-11T14:30:18` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` y `load_manifest` mediante el manejo explícito de `OSError` al realizar operaciones atómicas, asegurando que cualquier fallo en la escritura de metadatos no deje el estado interno del módulo en una inconsistencia lógica, además de fortalecer la validación de tipos en la serialización.
