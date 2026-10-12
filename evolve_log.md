@@ -582,3 +582,14 @@ assert not {'replace'}
 - `2026-10-12T03:49:52` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Mejora la robustez de `_is_valid_cache_path` y `_resolve_browser_path` añadiendo validación explícita para evitar errores de tipo `TypeError` al procesar valores `None` o rutas mal formadas, reforzando la seguridad al evitar el uso de objetos inválidos en las consultas de sistema.
 - `2026-10-12T03:49:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T03:49:52` Corrida terminada. Total usado hoy: 92.
+- `2026-10-12T03:57:25` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-10-12T03:58:10` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó el manejo de errores en `walk_files` y `summarize` integrando validaciones de tipo `None` y capturas de excepciones específicas en las operaciones de entrada/salida de disco, garantizando que el escaneo no se detenga abruptamente ante archivos bloqueados o con metadatos inaccesibles.
+- `2026-10-12T03:58:51` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-12T03:58:52` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T03:59:35` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_render_bar` y `summarize` implementando chequeos explícitos para evitar excepciones por tipos inesperados o divisiones por cero, siguiendo el enfoque de manejo de errores.
+- `2026-10-12T04:00:35` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-12T04:01:38` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-12T04:02:44` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-12T04:03:57` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-12T04:03:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T04:03:57` Corrida terminada. Total usado hoy: 96.

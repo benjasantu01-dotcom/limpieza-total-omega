@@ -309,11 +309,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre el sistema de archivos (DFS) usando inodos para prevenir bucles.
-    
-    Mantiene un conjunto de (dispositivo, inodo) visitados. Si detecta un inodo 
-    ya procesado, omite la entrada para evitar duplicados o ciclos infinitos. 
-    Verifica también la integridad de la ruta para asegurar que no se escape 
-    del raíz original.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -333,7 +328,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         
                         entry_path = Path(entry.path).resolve()
                         
-                        # Seguridad Defensiva: verificar que la resolución no escape del raíz
+                        # Seguridad: verificar que la resolución no escape del raíz
                         if not str(entry_path).startswith(str(root_resolved)):
                             continue
 
@@ -348,7 +343,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             yield entry_path, int(f_stat.st_size)
                     except (OSError, PermissionError):
                         continue
-        except (PermissionError, OSError): 
+        except (PermissionError, OSError, FileNotFoundError): 
             continue
 
 
@@ -407,14 +402,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     """
     Motor central: recorre el directorio, consolida métricas globales y mantiene
     un heap (cola de prioridad) para identificar los archivos más pesados.
-    
-    Args:
-        directory: Ruta raíz a escanear.
-        skip_protected: Si es True, ignora rutas de sistema.
-        limit: Cantidad máxima de archivos pesados a monitorear.
-    
-    Returns:
-        SummaryData consolidado con métricas y top archivos.
     """
     stats = GlobalStats()
     top_heap: List[Tuple[int, Path]] = [] 
@@ -422,7 +409,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     for path, size_bytes in walk_files(directory, skip_protected):
         stats.register_file(size_bytes, path.suffix)
         
-        # Mantener el heap del top N: eficiencia O(log K) por inserción
         if limit > 0:
             try:
                 if len(top_heap) < limit: 
@@ -443,7 +429,7 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     
     try:
         data = _collect_summary_data(root, skip_protected, limit=20)
-    except (OSError, PermissionError, ValueError, TypeError):
+    except (OSError, PermissionError, ValueError, TypeError, AttributeError):
         return ["Error: Falló inesperadamente el escaneo del directorio raíz."]
         
     if data.total_files == 0: 

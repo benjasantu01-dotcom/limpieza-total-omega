@@ -362,21 +362,14 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error interno al calcular salud del sistema."])
 
 def _render_bar(points: int, max_val: int) -> str:
-    """
-    Genera representación visual (ASCII) de barras para la interfaz.
-    
-    Args:
-        points: Puntos actuales del área.
-        max_val: Valor máximo permitido (peso).
-    Returns:
-        String con barra de progreso.
-    """
+    """Genera representación visual (ASCII) de barras para la interfaz."""
     try:
-        if not isinstance(points, int) or not isinstance(max_val, int) or max_val <= 0:
-            return ".........."
-        p = max(0, min(points, max_val))
-        return "#" * p + "." * (max_val - p)
-    except Exception:
+        p = int(points)
+        m = int(max_val)
+        if m <= 0: return ".........."
+        p = max(0, min(p, m))
+        return "#" * p + "." * (m - p)
+    except (TypeError, ValueError):
         return ".........."
 
 def summarize(result: HealthResult | None) -> List[str]:
