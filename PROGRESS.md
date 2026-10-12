@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Mejoras aceptadas: **206** (40.9% de aceptación)
 - Rechazadas por tests: 32
 - Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 191
+- Sin respuesta de la IA (error o límite): 189
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-10 | 46 | 7 | 11 | 4 | 38 |
+| 2026-10-10 | 46 | 7 | 11 | 4 | 34 |
 | 2026-10-11 | 130 | 23 | 34 | 16 | 147 |
-| 2026-10-12 | 28 | 2 | 8 | 4 | 6 |
+| 2026-10-12 | 30 | 2 | 8 | 4 | 8 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **48**
 - legibilidad y documentación: **44**
+- seguridad defensiva: **42**
 - manejo de errores y validación de entradas: **40**
-- seguridad defensiva: **40**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **21**
+- `memory.py`: **21**
 - `diskreport.py`: **20**
-- `memory.py`: **20**
-- `healthscore.py`: **18**
+- `healthscore.py`: **19**
 - `safety.py`: **17**
 - `assistant.py`: **15**
 - `branding.py`: **15**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T02:10:32` **memory.py** (seguridad defensiva): Mejoré `_is_process_executable_safe` añadiendo una validación explícita de `is_protected_path` sobre la ruta resuelta antes de cualquier interacción, asegurando que el proceso a manipular no se encuentre en las zonas restringidas del sistema, y refiné el manejo de errores para garantizar el cierre correcto del `handle` en todas las rutas de código mediante `finally`.
+- `2026-10-12T02:06:34` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva al evitar el procesamiento de mensajes de error de diagnóstico que puedan contener rutas absolutas o caracteres de control, moviendo la validación de `_evaluate_rules` a `_sanitize_msg` para un filtrado centralizado y robusto que previene cualquier inyección de información del sistema en la UI.
 - `2026-10-12T01:57:30` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la sanitización de la lista de rutas relativas de caché (`BROWSER_CACHE_PATHS`), asegurando que ninguna ruta contenga caracteres de escape o secuencias de ascenso de directorio (`..`) que pudieran intentar evadir el confinamiento al perfil de usuario.
 - `2026-10-12T01:56:02` **assistant.py** (seguridad defensiva): Mejoré la seguridad de la ingesta de datos en `SystemContext` mediante la implementación de una validación explícita de tipos para cada campo al momento de la ingesta, evitando que valores inesperados (o inyecciones de tipos maliciosos) afecten el estado interno, reforzando la integridad de los datos antes de que el asistente los procese.
 - `2026-10-12T01:48:00` **startup.py** (robustez ante casos límite): Se ha mejorado la robustez ante permisos denegados durante la resolución de rutas en `StartupEntry._resolve_and_cache_path` y la lectura de directorios en `startup_folders`, añadiendo un manejo de excepciones más granular para evitar que bloqueos de acceso parciales en el disco aborten el escaneo completo.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T01:25:03` **diskreport.py** (robustez ante casos límite): Mejora la robustez ante rutas de red (UNC) y dispositivos extraíbles vacíos en `_get_local_windows_drives` y `_validate_root`, evitando bloqueos inesperados o excepciones de sistema al acceder a unidades no listas.
 - `2026-10-12T01:17:30` **browser.py** (robustez ante casos límite): Se introdujo una protección contra el acceso a archivos bloqueados por el sistema (exclusivos) al realizar `os.scandir` mediante el manejo robusto de `PermissionError` y `OSError`, evitando que el escaneo se interrumpa ante archivos en uso por el navegador.
 - `2026-10-12T01:15:29` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_safe_handler_wrapper` capturando errores específicos de `AttributeError` y `TypeError` que podrían surgir al acceder a propiedades dinámicas o contextos mal formados, garantizando que el asistente nunca bloquee la interfaz ante una entrada inesperada.
-- `2026-10-12T00:56:24` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto eliminando la recolección de estadísticas de sistema (mtime, size, inode) mediante llamadas `stat()` repetidas, aprovechando que `load_manifest` ya valida la integridad contra el caché existente; además, centralicé la lógica de lectura de manifiesto para reducir I/O redundante al realizar múltiples operaciones de purga o listado.
-- `2026-10-12T00:55:35` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la enumeración de procesos completa y costosa por un filtro más inteligente: el uso de `lru_cache` y la lógica de actualización evitan redundancias, y el uso de `ctypes.byref` junto con el manejo eficiente de buffers mejora la velocidad de ejecución al evitar llamadas innecesarias a la API de Windows.

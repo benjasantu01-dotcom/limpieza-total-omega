@@ -1433,3 +1433,14 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-12T01:57:52` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-10-12T01:57:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T01:57:52` Corrida terminada. Total usado hoy: 48.
+- `2026-10-12T02:05:14` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-10-12T02:05:52` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-10-12T02:05:53` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T02:06:34` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al evitar el procesamiento de mensajes de error de diagnóstico que puedan contener rutas absolutas o caracteres de control, moviendo la validación de `_evaluate_rules` a `_sanitize_msg` para un filtrado centralizado y robusto que previene cualquier inyección de información del sistema en la UI.
+- `2026-10-12T02:07:34` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-12T02:08:37` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-12T02:09:43` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-12T02:09:56` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-12T02:10:32` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré `_is_process_executable_safe` añadiendo una validación explícita de `is_protected_path` sobre la ruta resuelta antes de cualquier interacción, asegurando que el proceso a manipular no se encuentre en las zonas restringidas del sistema, y refiné el manejo de errores para garantizar el cierre correcto del `handle` en todas las rutas de código mediante `finally`.
+- `2026-10-12T02:10:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T02:10:32` Corrida terminada. Total usado hoy: 52.

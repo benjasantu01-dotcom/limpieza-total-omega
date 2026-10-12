@@ -289,9 +289,15 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _sanitize_msg(msg: str) -> str:
-    """Elimina caracteres no imprimibles y trunca el mensaje de recomendación."""
+    """Elimina caracteres no imprimibles y bloquea rutas absolutas o sintaxis de sistema."""
     if not isinstance(msg, str): return ""
-    # Evitar fugas de rutas o contenido sensible mediante limpieza estricta
+    # Seguridad defensiva: bloquea explícitamente cualquier string que contenga estructuras de sistema o rutas
+    if any(part in msg.lower() for part in ["c:\\", "/", "root", "system32", "windows"]): return ""
+    try:
+        if any(Path(p).is_absolute() for p in msg.split() if p.strip()): return ""
+    except Exception:
+        return ""
+    
     sanitized = "".join(c for c in msg if c.isprintable() and c not in "\r\n\t\\/").strip()
     return sanitized[:200] if sanitized else ""
 
@@ -301,11 +307,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     for rule in rules:
         try:
             if rule.check(metrics, normalized_ratio):
-                raw_msg = rule.message_factory(metrics)
-                # Seguridad defensiva: bloquea explícitamente cualquier string que contenga estructuras de sistema
-                if any(part in raw_msg.lower() for part in ["c:\\", "/", "root", "system32"]): continue
-                if any(Path(p).is_absolute() for p in raw_msg.split()): continue
-                clean_msg = _sanitize_msg(raw_msg)
+                clean_msg = _sanitize_msg(rule.message_factory(metrics))
                 if clean_msg: findings.append(clean_msg)
         except Exception as e:
             logging.warning(f"Salteando regla de diagnóstico en {rule.area} por error: {e}")
