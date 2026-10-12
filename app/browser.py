@@ -217,6 +217,8 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
 def _process_file_node(entry: os.DirEntry, visited_files: Set[tuple[int, int]]) -> int:
     """Calcula el tamaño de archivo asegurando integridad y evitando duplicados."""
     try:
+        if not os.access(entry.path, os.R_OK):
+            return 0
         if not is_safe_to_modify(Path(entry.path)) or is_protected_path(Path(entry.path)):
             return 0
         st = entry.stat(follow_symlinks=False)
@@ -235,6 +237,9 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
     if depth > MAX_SCAN_DEPTH:
         return ScanResult(0, True)
     
+    if not os.access(root_path, os.R_OK):
+        return ScanResult(0, True)
+
     if not is_safe_to_modify(Path(root_path)) or is_protected_path(Path(root_path)):
         return ScanResult(0, True)
     
@@ -271,7 +276,7 @@ def directory_size(path: Optional[OSPath]) -> int:
     """Calcula el tamaño acumulado de un directorio tras validar su seguridad."""
     if not isinstance(path, (str, Path)): return 0
     path_obj: Path = Path(path)
-    if not path_obj.exists() or not path_obj.is_dir(): return 0
+    if not path_obj.exists() or not path_obj.is_dir() or not os.access(path_obj, os.R_OK): return 0
     
     resolved_p: Path = path_obj.resolve(strict=True)
     if not is_safe_to_modify(resolved_p) or is_protected_path(resolved_p):
@@ -284,7 +289,7 @@ def directory_size(path: Optional[OSPath]) -> int:
 @safe_path_operation(False)
 def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
     """Valida la integridad de una ruta de caché frente a la base configurada."""
-    if not isinstance(candidate, Path) or not candidate.is_dir(): 
+    if not isinstance(candidate, Path) or not candidate.is_dir() or not os.access(candidate, os.R_OK): 
         return False
     try:
         real: Path = candidate.resolve(strict=True)

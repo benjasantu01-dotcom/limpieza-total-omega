@@ -372,7 +372,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     root = _validate_root(directory)
     if root is None: return []
     stats: Dict[str, FolderMetrics] = defaultdict(FolderMetrics)
-    root_str = str(root)
     
     for path, size in walk_files(root, skip_protected):
         try:

@@ -797,3 +797,14 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-12T05:42:23` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-10-12T05:42:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T05:42:23` Corrida terminada. Total usado hoy: 136.
+- `2026-10-12T05:49:29` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-10-12T05:49:32` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T05:50:18` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante errores de acceso a archivos al añadir una validación de `os.access` con `os.R_OK` antes de intentar realizar operaciones de lectura, evitando excepciones innecesarias en carpetas protegidas por el SO o con permisos denegados.
+- `2026-10-12T05:50:46` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `largest_folders` ante casos límite mediante la validación estricta de rutas relativas y la captura de excepciones durante la resolución de `Path`, evitando el procesamiento de nodos huérfanos o con rutas resueltas fuera del árbol objetivo.
+- `2026-10-12T05:50:48` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T05:50:52` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-12T05:51:02` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-12T05:51:58` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-12T05:52:17` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: SystemMetrics.safe_get
+- `2026-10-12T05:52:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T05:52:17` Corrida terminada. Total usado hoy: 140.
