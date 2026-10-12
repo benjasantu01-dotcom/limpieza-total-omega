@@ -5,10 +5,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **198** (39.4% de aceptación)
 - Rechazadas por tests: 25
-- Rechazadas por guardia de seguridad: 56
+- Rechazadas por guardia de seguridad: 54
 - Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 204
 
@@ -16,15 +16,15 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 56 | 6 | 15 | 5 | 74 |
-| 2026-10-12 | 142 | 19 | 41 | 16 | 130 |
+| 2026-10-11 | 54 | 6 | 13 | 5 | 74 |
+| 2026-10-12 | 144 | 19 | 41 | 16 | 130 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **39**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **40**
+- seguridad defensiva: **37**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
@@ -32,13 +32,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **20**
 - `browser.py`: **19**
 - `diskreport.py`: **19**
-- `safety.py`: **18**
+- `healthscore.py`: **17**
+- `safety.py`: **17**
 - `branding.py`: **16**
-- `healthscore.py`: **16**
 - `organizer.py`: **15**
-- `settings.py`: **14**
+- `duplicates.py`: **15**
 - `scanner.py`: **14**
-- `duplicates.py`: **14**
+- `settings.py`: **13**
 - `assistant.py`: **13**
 - `quarantine.py`: **9**
 - `startup.py`: **7**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T14:51:37` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` y `compute_score` ante valores atípicos, asegurando que `suspicious_count` no pueda ser negativo y que la validación inicial de `SystemMetrics` sea estricta, evitando errores de cálculo en cascada.
+- `2026-10-12T14:50:40` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez ante errores de I/O en el proceso de hash integrando un chequeo preventivo de tamaño y accesibilidad dentro de los bloques `try-except` para evitar que archivos con permisos cambiantes o bloqueos repentinos interrumpan el proceso completo de escaneo.
 - `2026-10-12T14:42:16` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo frente a archivos bloqueados por procesos activos u otros hilos, añadiendo un manejo de excepciones específico en `_process_file_node` y garantizando que `_sum_directory_recursive` trate los errores de acceso de forma más granular para no interrumpir el conteo total ante fallos menores en subcarpetas.
 - `2026-10-12T14:41:38` **branding.py** (robustez ante casos límite): Se reforzó la robustez de las operaciones de dibujo en `branding.py` mediante la validación estricta de las coordenadas y dimensiones de entrada, asegurando que valores extremos o `NaN` no provoquen errores en el motor de renderizado `Canvas`, manteniendo la estabilidad de la interfaz ante configuraciones inusuales.
 - `2026-10-12T14:40:49` **assistant.py** (robustez ante casos límite): Mejora la robustez en la ingesta de datos del `SystemContext` agregando validaciones para manejar valores `None` o malformados en `ingest` sin abortar el proceso, asegurando que los datos externos no corrompan el estado interno.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T13:59:53` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones de acceso público y privado, siguiendo las convenciones de Google, lo cual facilita el mantenimiento y la comprensión de las responsabilidades de cada componente sin alterar la lógica.
 - `2026-10-12T13:51:31` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el gestor de caché `_SettingsManager`, mejorando la legibilidad técnica y la trazabilidad de las operaciones de persistencia.
 - `2026-10-12T13:50:58` **scanner.py** (legibilidad y documentación): Se han aplicado type hints faltantes en funciones clave (`scan_directory`, `scan_file`) y se han documentado con mayor precisión las responsabilidades de los métodos del controlador `Scanner`, mejorando la legibilidad técnica y facilitando el mantenimiento futuro.
-- `2026-10-12T13:45:48` **quarantine.py** (legibilidad y documentación): Se ha mejorado la legibilidad y la seguridad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas, la mejora de la nomenclatura de variables para evitar ambigüedades en las comprobaciones de seguridad (`is_file_locked` vs `is_file_in_use_by_system`) y la unificación de la lógica de validación de rutas mediante la consolidación de `_check_path_for_junctions` como una práctica estandarizada en el flujo de aislamiento.
-- `2026-10-12T13:44:05` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las estructuras de datos nativas (Win32 API) añadiendo docstrings descriptivos y type hints explícitos en los campos para clarificar el propósito de cada miembro y evitar confusiones en el acceso a la memoria de bajo nivel.

@@ -273,7 +273,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                                 if not (skip_protected and is_prot):
                                     queue.append((p_entry, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
-                            # Acceder a stat solo si el archivo supera el umbral para ahorrar I/O
                             st = entry.stat()
                             if st.st_size >= min_size and (st.st_dev, st.st_ino) not in visited_inodes:
                                 if _is_valid_candidate(p_entry, st.st_size):
@@ -294,8 +293,13 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if isinstance(path, Path) and is_safe_to_modify(path) and (digest := hash_func(path)):
-            groups_by_digest[digest].append(path)
+        if isinstance(path, Path) and is_safe_to_modify(path):
+            try:
+                # Verificación extra para asegurar que el archivo sigue siendo elegible
+                if path.exists() and (digest := hash_func(path)):
+                    groups_by_digest[digest].append(path)
+            except (OSError, PermissionError):
+                continue
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
 

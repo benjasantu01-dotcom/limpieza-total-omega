@@ -191,14 +191,10 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
     """Calcula salud: Penaliza el score según hallazgos sospechosos y advertencias de seguridad."""
-    try:
-        s_count = float(suspicious_count) if isinstance(suspicious_count, (int, float)) else 0.0
-        w_count = float(warnings) if isinstance(warnings, (int, float)) else 0.0
-        if not math.isfinite(s_count) or not math.isfinite(w_count): return 0.0
-        penalization = (s_count * 0.05) + (w_count * 0.25)
-        return _clamp(1.0 - penalization)
-    except (TypeError, ValueError, OverflowError):
-        return 0.0
+    s_count = max(0, int(suspicious_count))
+    w_count = max(0, int(warnings))
+    penalization = (s_count * 0.05) + (w_count * 0.25)
+    return _clamp(1.0 - penalization)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
     """Calcula salud: Normaliza el porcentaje de RAM libre frente al umbral crítico definido."""
@@ -251,11 +247,6 @@ class SystemMetrics:
     )
 
     def __post_init__(self) -> None:
-        # Asegurar tipos básicos antes de validación profunda
-        for field_name in self._FIELDS_TO_VALIDATE:
-            val = getattr(self, field_name)
-            if not isinstance(val, (int, float)):
-                setattr(self, field_name, 0.0)
         self.validate()
 
     def safe_get(self, field_name: str, default: Any = 0) -> Any:

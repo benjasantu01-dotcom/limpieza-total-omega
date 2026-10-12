@@ -496,3 +496,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-12T14:42:43` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez de `walk_files` ante errores de acceso a directorios durante el escaneo y se aseguró que el cálculo de `inode` no falle silenciosamente si el sistema de archivos no devuelve metadatos completos, protegiendo al motor de iteración contra terminaciones inesperadas.
 - `2026-10-12T14:42:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T14:42:43` Corrida terminada. Total usado hoy: 348.
+- `2026-10-12T14:50:03` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-12T14:50:40` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante errores de I/O en el proceso de hash integrando un chequeo preventivo de tamaño y accesibilidad dentro de los bloques `try-except` para evitar que archivos con permisos cambiantes o bloqueos repentinos interrumpan el proceso completo de escaneo.
+- `2026-10-12T14:50:40` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T14:50:44` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-12T14:50:51` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-12T14:51:37` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `score_security` y `compute_score` ante valores atípicos, asegurando que `suspicious_count` no pueda ser negativo y que la validación inicial de `SystemMetrics` sea estricta, evitando errores de cálculo en cascada.
+- `2026-10-12T14:51:37` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-10-12T14:51:37` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T14:51:37` Corrida terminada. Total usado hoy: 350.
