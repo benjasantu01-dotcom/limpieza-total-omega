@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
-- Rechazadas por tests: 36
-- Rechazadas por guardia de seguridad: 55
+- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Rechazadas por tests: 37
+- Rechazadas por guardia de seguridad: 56
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 192
+- Sin respuesta de la IA (error o límite): 188
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 130 | 23 | 34 | 16 | 145 |
-| 2026-10-12 | 69 | 13 | 21 | 6 | 47 |
+| 2026-10-11 | 130 | 23 | 34 | 16 | 141 |
+| 2026-10-12 | 71 | 14 | 22 | 6 | 47 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
 - robustez ante casos límite: **44**
-- seguridad defensiva: **42**
+- seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **38**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **20**
+- `memory.py`: **21**
 - `browser.py`: **20**
 - `diskreport.py`: **19**
 - `safety.py`: **17**
 - `branding.py`: **16**
 - `healthscore.py`: **16**
-- `organizer.py`: **15**
+- `organizer.py`: **16**
 - `assistant.py`: **14**
 - `settings.py`: **14**
 - `scanner.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T06:41:53` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` al integrar explícitamente `is_protected_path` sobre la ruta de destino resuelta, evitando que el movimiento a directorios críticos sea posible incluso si el usuario configura mal la carpeta de revisión.
+- `2026-10-12T06:41:05` **memory.py** (seguridad defensiva): Se ha mejorado la robustez del manejo de handles de procesos al incluir un chequeo de `INVALID_HANDLE_VALUE` explícito y asegurarse de que `CloseHandle` solo se invoque sobre handles válidos, evitando posibles errores de acceso a memoria o estados indefinidos en la API de Win32.
 - `2026-10-12T06:32:05` **healthscore.py** (seguridad defensiva): Se endureció la seguridad defensiva de `_sanitize_msg` para prevenir el escape de información sensible mediante la inyección de caracteres de control o secuencias de escape ANSI, y se mejoró la resiliencia del `PipelineEntry` asegurando que los resultados numéricos de las reglas de diagnóstico no propaguen errores de precisión aritmética.
 - `2026-10-12T06:31:34` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva centralizando la validación de archivos en `_is_valid_candidate` para incluir explícitamente `is_protected_path(path)`, asegurando que ningún archivo del sistema sea siquiera procesado durante la fase de hash o escaneo, incluso si los permisos del SO permitirían la lectura.
 - `2026-10-12T06:30:53` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` añadiendo un chequeo explícito de puntos de reparse (Junctions/Symlinks de sistema) para asegurar que el escaneo no escape accidentalmente del directorio objetivo ni siga enlaces cíclicos o fuera de los límites permitidos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T05:50:46` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` ante casos límite mediante la validación estricta de rutas relativas y la captura de excepciones durante la resolución de `Path`, evitando el procesamiento de nodos huérfanos o con rutas resueltas fuera del árbol objetivo.
 - `2026-10-12T05:50:18` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante errores de acceso a archivos al añadir una validación de `os.access` con `os.R_OK` antes de intentar realizar operaciones de lectura, evitando excepciones innecesarias en carpetas protegidas por el SO o con permisos denegados.
 - `2026-10-12T05:31:29` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` reemplazando la lógica de resolución iterativa de padres (`p.parents`) por un chequeo de prefijo de cadena más eficiente (`os.path.commonpath`), reduciendo drásticamente las llamadas al sistema operativo (syscalls) al evitar validaciones innecesarias de rutas inexistentes durante el recorrido del árbol.
-- `2026-10-12T05:26:18` **organizer.py** (rendimiento): Se optimizó el proceso de escaneo sustituyendo la llamada redundante `Path(entry.path).suffix.lower()` dentro del bucle principal por una verificación basada en `entry.name`, evitando la creación innecesaria de objetos `Path` y mejorando la eficiencia en directorios con muchos archivos.
-- `2026-10-12T05:24:48` **memory.py** (rendimiento): Se optimizó el acceso a los procesos en `top_memory_processes` eliminando la llamada innecesaria a `_query_working_set_bytes` para procesos cuyo PID ya ha sido descartado, y reutilizando el buffer de PIDs para reducir la presión en la asignación de memoria durante escaneos frecuentes.

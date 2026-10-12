@@ -57,6 +57,7 @@ PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x0400
 FILE_ATTRIBUTE_REPARSE_POINT: Final[int] = 0x0400
 DRIVE_FIXED: Final[int] = 3
+INVALID_HANDLE_VALUE: Final[int] = -1
 
 # TRIM_ACCESS_MASK combina Query para validar estado y SetQuota para ejecutar EmptyWorkingSet.
 TRIM_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
@@ -287,7 +288,7 @@ def _query_working_set_bytes(pid: int, kernel32: ctypes.WinDLL, psapi: ctypes.Wi
     Requiere un handle con acceso limitado para ser seguro.
     """
     process_handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
-    if not process_handle:
+    if not process_handle or process_handle == INVALID_HANDLE_VALUE:
         return None
     try:
         pmc = PROCESS_MEMORY_COUNTERS()
@@ -378,7 +379,7 @@ def _is_process_executable_safe(pid: int) -> bool:
     if not kernel32 or not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return False
     
     handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
-    if not handle: return False
+    if not handle or handle == INVALID_HANDLE_VALUE: return False
     try:
         buf = ctypes.create_unicode_buffer(512)
         bytes_copied = psapi.GetModuleFileNameExW(handle, None, buf, 512)
@@ -422,7 +423,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "API no disponible."
     
     proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
-    if not proc_handle:
+    if not proc_handle or proc_handle == INVALID_HANDLE_VALUE:
         return False, "No se pudo acceder al proceso (requiere privilegios elevados)."
         
     try:

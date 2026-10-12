@@ -202,24 +202,24 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     try:
-        # Resolvemos la ruta antes de cualquier chequeo de seguridad
         src_real = junk_file.path.resolve(strict=True)
+        dest_real = dest.resolve(strict=False)
         
         # Validaciones de seguridad pre-movimiento
         if src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         if src_real.is_symlink() or (os.name == 'nt' and bool(src_real.stat().st_file_attributes & WIN_ATTR_JUNCTION)): return False
         
         stat_result = src_real.stat()
-        # Verificación de integridad: el archivo detectado no debe haber sido reemplazado
         if (junk_file._ino is not None and stat_result.st_ino != junk_file._ino) or \
            (junk_file._dev is not None and stat_result.st_dev != junk_file._dev): return False
         
-        if not src_real.is_file() or is_protected_path(src_real): return False
-        if not is_safe_to_modify(src_real) or is_protected_path(dest) or not _validate_path_security(src_real, dest): return False
+        # Verifica protección tanto del origen como del destino final
+        if not src_real.is_file() or is_protected_path(src_real) or is_protected_path(dest_real): return False
+        if not is_safe_to_modify(src_real) or not _validate_path_security(src_real, dest_real): return False
         
-        target_dir = dest.parent if dest.exists() else dest
+        target_dir = dest_real.parent if dest_real.exists() else dest_real
         if not target_dir.is_dir() or not os.access(target_dir, os.W_OK): return False
-        if _is_recursive_violation(src_real, dest) or _is_file_locked(src_real): return False
+        if _is_recursive_violation(src_real, dest_real) or _is_file_locked(src_real): return False
         
         usage = shutil.disk_usage(target_dir)
         return usage.free >= (stat_result.st_size + MIN_FREE_SPACE_BYTES)
@@ -262,7 +262,6 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False):
-                        # Optimización: extraer extensión desde entry.name sin instanciar Path
                         ext = os.path.splitext(entry.name)[1].lower()
                         if ext in JUNK_EXTENSIONS:
                             stats = entry.stat(follow_symlinks=False)
@@ -342,13 +341,11 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         count = 0
         for item in dest.iterdir():
             try:
-                # Verificación de integridad adicional contra race conditions
                 stat_result = item.stat()
                 if item.is_file() and is_safe_to_modify(item) and not is_protected_path(item):
                     if dest.resolve(strict=True) != item.resolve(strict=True).parent:
                         continue
                     ensure_safe_to_modify(item)
-                    # Confirmar que no ha cambiado de inodo desde la inspección inicial
                     if item.stat().st_ino == stat_result.st_ino:
                         item.unlink()
                         count += 1
