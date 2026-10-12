@@ -55,13 +55,13 @@ class ScanContext:
     Contexto de ejecución que mantiene el estado del escaneo actual.
 
     Args:
-        base_norm: Ruta base normalizada para control de límites.
+        sandbox_base_norm: Ruta base normalizada (en minúsculas) para restringir el alcance.
         kernel32: Handle de la API de Windows o None si no es Windows.
-        is_junction: Función para detectar puntos de reparse.
-        visited_files: Historial de archivos procesados (dev, ino).
-        visited_dirs: Historial de tamaños de directorios procesados.
+        is_junction: Función para detectar puntos de reparse (Junctions/Symlinks).
+        visited_files: Historial de archivos procesados para evitar conteos duplicados.
+        visited_dirs: Cache de tamaños de directorios ya procesados.
     """
-    base_norm: str
+    sandbox_base_norm: str
     kernel32: Optional[ctypes.WinDLL]
     is_junction: JunctionChecker
     visited_files: Set[tuple[int, int]]
@@ -163,9 +163,9 @@ def _is_unc_path(path_str: Optional[str]) -> TypeGuard[str]:
     """Identifica rutas de red (UNC) para limitar el escaneo a unidades locales."""
     return isinstance(path_str, str) and (path_str.startswith(r"\\") or path_str.startswith("//"))
 
-def _ensure_within_base(target_norm: str, base_norm: str) -> bool:
-    """Verifica si el objetivo reside dentro de la jerarquía de base (Sandbox)."""
-    return target_norm.startswith(base_norm)
+def _is_within_sandbox(target_norm: str, sandbox_base_norm: str) -> bool:
+    """Verifica si la ruta destino está contenida estrictamente en la base permitida."""
+    return target_norm.startswith(sandbox_base_norm)
 
 def base_directories() -> List[Path]:
     """Retorna las rutas base permitidas para búsqueda de perfiles de usuario."""
@@ -203,7 +203,7 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     if _is_unc_path(path_str) or len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS):
         return True
     
-    if not _ensure_within_base(os.path.normcase(path_str), ctx.base_norm):
+    if not _is_within_sandbox(os.path.normcase(path_str), ctx.sandbox_base_norm):
         return True
     
     if is_protected_path(Path(path_str)) or not is_safe_to_modify(Path(path_str)):
@@ -215,7 +215,7 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     return False
 
 def _process_file_node(entry: os.DirEntry, visited_files: Set[tuple[int, int]]) -> int:
-    """Calcula el tamaño de archivo asegurando integridad y evitando duplicados."""
+    """Calcula el tamaño de un archivo individual evitando conteos duplicados por inodo."""
     try:
         if not os.access(entry.path, os.R_OK):
             return 0
@@ -233,7 +233,11 @@ def _process_file_node(entry: os.DirEntry, visited_files: Set[tuple[int, int]]) 
         return 0
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
-    """Realiza un recorrido recursivo controlado de directorios."""
+    """
+    Realiza un recorrido recursivo en profundidad limitada del sistema de archivos.
+    Utiliza el contexto de escaneo para validar límites de seguridad y evitar bucles
+    infinitos mediante la detección de puntos de reparse.
+    """
     if depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN:
         return ScanResult(0, True)
     
@@ -296,7 +300,7 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
     except (OSError, RuntimeError):
         return False
         
-    if not _ensure_within_base(os.path.normcase(str(real)), os.path.normcase(base_abs_str)):
+    if not _is_within_sandbox(os.path.normcase(str(real)), os.path.normcase(base_abs_str)):
         return False
     if not is_safe_to_modify(real) or is_protected_path(real):
         return False
@@ -321,7 +325,7 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     except (OSError, RuntimeError):
         return Path()
         
-    if _ensure_within_base(os.path.normcase(str(target_res)), os.path.normcase(str(real_base))) and \
+    if _is_within_sandbox(os.path.normcase(str(target_res)), os.path.normcase(str(real_base))) and \
        is_safe_to_modify(target_res) and not is_protected_path(target_res):
         return target_res
     return Path()
