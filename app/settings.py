@@ -14,6 +14,7 @@ import os
 import stat
 import fcntl
 import shutil
+import time
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
@@ -160,37 +161,39 @@ class _SettingsManager:
         self.settings_cache.clear()
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
-        """Escribe datos de forma atómica usando archivos temporales y fsync."""
+        """Escribe datos de forma atómica usando archivos temporales y reintentos ante bloqueos."""
         temp_path = config_path.with_suffix(".tmp")
         bak_path = config_path.with_suffix(".bak")
-        dir_fd = None
-        try:
-            with open(temp_path, "w", encoding="utf-8") as f:
-                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-                f.write(serialized)
-                f.flush()
-                os.fsync(f.fileno())
-                if not _is_file_secure_to_read(os.fstat(f.fileno()), f):
-                    raise PermissionError("Archivo temporal inseguro")
-                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-            
-            if config_path.exists():
-                ensure_safe_to_modify(str(bak_path.resolve()))
-                os.replace(config_path, bak_path)
-            
-            os.replace(temp_path, config_path)
-            
-            dir_fd = os.open(str(config_path.parent), os.O_RDONLY)
-            os.fsync(dir_fd)
-            self.clear()
-            return True
-        except (OSError, IOError, PermissionError, TypeError): 
-            return False
-        finally:
-            if dir_fd is not None: os.close(dir_fd)
-            if temp_path.exists():
-                try: os.remove(temp_path)
-                except OSError: pass
+        
+        for attempt in range(3):
+            dir_fd = None
+            try:
+                with open(temp_path, "w", encoding="utf-8") as f:
+                    fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                    f.write(serialized)
+                    f.flush()
+                    os.fsync(f.fileno())
+                    if not _is_file_secure_to_read(os.fstat(f.fileno()), f):
+                        raise PermissionError("Archivo temporal inseguro")
+                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+                
+                if config_path.exists():
+                    ensure_safe_to_modify(str(bak_path.resolve()))
+                    os.replace(config_path, bak_path)
+                
+                os.replace(temp_path, config_path)
+                dir_fd = os.open(str(config_path.parent), os.O_RDONLY)
+                os.fsync(dir_fd)
+                self.clear()
+                return True
+            except (OSError, IOError):
+                time.sleep(0.1 * (2 ** attempt))
+            finally:
+                if dir_fd is not None: os.close(dir_fd)
+                if temp_path.exists():
+                    try: os.remove(temp_path)
+                    except OSError: pass
+        return False
 
 _MANAGER = _SettingsManager()
 

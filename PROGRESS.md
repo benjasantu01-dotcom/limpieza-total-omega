@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
-- Rechazadas por tests: 28
+- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Rechazadas por tests: 29
 - Rechazadas por guardia de seguridad: 57
-- Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 196
+- Sin cambios (nada sustancial que mejorar): 25
+- Sin respuesta de la IA (error o límite): 193
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 94 | 12 | 26 | 13 | 107 |
-| 2026-10-12 | 105 | 16 | 31 | 11 | 89 |
+| 2026-10-11 | 94 | 12 | 26 | 13 | 103 |
+| 2026-10-12 | 106 | 17 | 31 | 12 | 90 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
-- robustez ante casos límite: **45**
+- robustez ante casos límite: **46**
 - manejo de errores y validación de entradas: **42**
 - seguridad defensiva: **39**
 - rendimiento: **27**
@@ -36,8 +36,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **17**
 - `healthscore.py`: **17**
 - `branding.py`: **16**
+- `settings.py`: **14**
 - `scanner.py`: **13**
-- `settings.py`: **13**
 - `assistant.py`: **12**
 - `duplicates.py`: **12**
 - `startup.py`: **8**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T10:45:48` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `settings.py` ante errores de concurrencia y bloqueos de disco mediante la implementación de un mecanismo de reintento (`exponential backoff`) en `perform_atomic_write`, mitigando fallos transitorios en operaciones de entrada/salida que ocurren frecuentemente en sistemas Windows con antivirus activos.
 - `2026-10-12T10:38:34` **safety.py** (robustez ante casos límite): Se ha implementado una mejora en la robustez ante rutas inexistentes dentro de `is_protected_path`, evitando que una `Path.resolve()` sobre una ruta no presente en el disco lance un error (`OSError` o similar) y comprometa el flujo de validación, asegurando que la app siga siendo capaz de evaluar la seguridad incluso sobre objetos pendientes de creación o eliminados.
 - `2026-10-12T10:28:59` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente archivos inexistentes o bloqueos por permisos en sistemas Windows (evitando excepciones en el `ctypes.windll` al recibir rutas inválidas), y se añadió una verificación de estado de archivo en `_is_safe_for_disk_op` para prevenir operaciones sobre archivos que fueron eliminados o movidos por otros procesos entre el escaneo y la ejecución, cerrando una potencial race condition.
 - `2026-10-12T10:28:32` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` al evitar el uso de una máscara de acceso demasiado permisiva (que incluía `PROCESS_SET_QUOTA` innecesariamente) y agregando una verificación explícita para descartar procesos de sistema antes de intentar abrir un handle, cumpliendo con las mejores prácticas de seguridad de API de Windows.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T09:36:12` **browser.py** (rendimiento): Optimizé el rendimiento de `detect_profiles` reutilizando el `ScanContext` para todo el proceso de descubrimiento, evitando la recreación redundante de diccionarios de caché y sets de archivos visitados durante el escaneo de múltiples rutas de caché.
 - `2026-10-12T09:34:40` **assistant.py** (rendimiento): Optimicé el rendimiento de `SystemContext` reemplazando la serialización iterativa basada en `getattr` por un acceso directo al diccionario `__dict__` con filtrado previo, reduciendo la carga de introspección en `metrics_snapshot` y `ingest`.
 - `2026-10-12T09:26:12` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de las constantes en `startup.py`, añadiendo tipos de retorno específicos y detallando el propósito de las heurísticas de seguridad para facilitar futuras auditorías.
-- `2026-10-12T09:25:01` **scanner.py** (legibilidad y documentación): Se han aplicado type hints faltantes en el estado del escáner y se han extraído bloques de lógica interna hacia métodos con nombres descriptivos para mejorar la mantenibilidad y claridad del flujo de trabajo, sin alterar la lógica de seguridad preexistente.

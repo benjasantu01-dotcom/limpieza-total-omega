@@ -1285,3 +1285,44 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-12T10:38:55` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-10-12T10:38:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T10:38:55` Corrida terminada. Total usado hoy: 252.
+- `2026-10-12T10:45:06` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-10-12T10:45:48` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `settings.py` ante errores de concurrencia y bloqueos de disco mediante la implementación de un mecanismo de reintento (`exponential backoff`) en `perform_atomic_write`, mitigando fallos transitorios en operaciones de entrada/salida que ocurren frecuentemente en sistemas Windows con antivirus activos.
+- `2026-10-12T10:46:21` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.15s
+
+```
+- `2026-10-12T10:46:21` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez en `_resolve_and_cache_path` y `_extract_quoted_path` añadiendo validaciones explícitas contra archivos inexistentes, rutas relativas inválidas y el uso de `is_protected_path` ante cualquier intento de resolución, evitando excepciones no controladas durante la inspección de entradas de registro malformadas.
+- `2026-10-12T10:47:13` ➖ Sin cambios en assistant.py (enfoque: seguridad defensiva). Motivo: Se endurece la validación de seguridad de los campos de texto `grade` en `SystemContext` mediante la incorporación de `is_protected_path` como chequeo adicional, evitando que entradas maliciosas en la configuración de la UI o archivos de ajustes puedan representar rutas de sistema peligrosas.
+- `2026-10-12T10:47:41` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-10-12T10:47:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T10:47:41` Corrida terminada. Total usado hoy: 256.
