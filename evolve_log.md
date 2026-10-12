@@ -1239,3 +1239,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-12T09:56:59` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un cacheo más eficiente en `is_protected_path` utilizando una tupla de pre-calculados, evitando la recreación de objetos `Path` y cálculos de `commonpath` en cada llamada dentro de bucles intensivos.
 - `2026-10-12T09:56:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T09:56:59` Corrida terminada. Total usado hoy: 236.
+- `2026-10-12T10:04:23` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-10-12T10:04:26` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T10:04:32` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-12T10:04:38` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-12T10:05:23` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._handle_directory, Scanner._is_inside_base_root, Scanner._is_relevant_extension, Scanner._is_reparse_point
+- `2026-10-12T10:06:05` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-12T10:06:44` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-10-12T10:07:20` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré `_build_payload` para manejar el caso límite donde `context_text` está vacío tras aplicar los filtros de privacidad, evitando que el payload JSON resultante sea sintácticamente válido pero semánticamente inútil o potencialmente disparador de errores en el motor remoto.
+- `2026-10-12T10:07:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T10:07:20` Corrida terminada. Total usado hoy: 240.

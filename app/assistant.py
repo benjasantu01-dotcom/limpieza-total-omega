@@ -674,7 +674,7 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
 
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     """Serializa la pregunta y el contexto en el formato JSON esperado por Gemini."""
-    if not all([_ensure_safe_text(context_text), _ensure_safe_text(SYSTEM_PROMPT)]): 
+    if not context_text or not _ensure_safe_text(context_text) or not _ensure_safe_text(SYSTEM_PROMPT): 
         return None
     q = _sanitize_query(question)
     if not q or not _ensure_safe_text(q): return None

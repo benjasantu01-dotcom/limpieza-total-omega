@@ -8,23 +8,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **195** (38.7% de aceptación)
 - Rechazadas por tests: 30
-- Rechazadas por guardia de seguridad: 55
-- Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 200
+- Rechazadas por guardia de seguridad: 57
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 98 | 15 | 27 | 14 | 114 |
-| 2026-10-12 | 97 | 15 | 28 | 10 | 86 |
+| 2026-10-11 | 97 | 15 | 27 | 13 | 112 |
+| 2026-10-12 | 98 | 15 | 30 | 10 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **46**
-- seguridad defensiva: **43**
+- seguridad defensiva: **42**
 - manejo de errores y validación de entradas: **42**
-- robustez ante casos límite: **37**
+- robustez ante casos límite: **38**
 - rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
@@ -38,14 +38,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `branding.py`: **15**
 - `settings.py`: **14**
 - `scanner.py`: **13**
-- `assistant.py`: **11**
+- `assistant.py`: **12**
 - `duplicates.py`: **11**
 - `startup.py`: **8**
 - `quarantine.py`: **8**
-- `main.py`: **7**
+- `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T10:07:20` **assistant.py** (robustez ante casos límite): Mejoré `_build_payload` para manejar el caso límite donde `context_text` está vacío tras aplicar los filtros de privacidad, evitando que el payload JSON resultante sea sintácticamente válido pero semánticamente inútil o potencialmente disparador de errores en el motor remoto.
 - `2026-10-12T09:56:59` **safety.py** (rendimiento): Se implementó un cacheo más eficiente en `is_protected_path` utilizando una tupla de pre-calculados, evitando la recreación de objetos `Path` y cálculos de `commonpath` en cada llamada dentro de bucles intensivos.
 - `2026-10-12T09:55:42` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y `list_items` evitando recrear el diccionario de manifiesto y accesos innecesarios a disco mediante la reutilización de la lista de ítems ya cargada, además de reducir el coste de `is_within_directory` al usar rutas resueltas solo cuando es estrictamente necesario.
 - `2026-10-12T09:45:17` **healthscore.py** (rendimiento): Optimizé el cálculo de `compute_score` mediante la pre-validación de `_PIPELINE` y el uso de `tuple` y `dict` para evitar recorridos redundantes y validaciones de tipo innecesarias dentro del bucle de procesamiento.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T09:05:11` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones clave (`grade_for_score`, `compute_score`, `_render_bar`) y mejorando los docstrings para clarificar el flujo de datos, haciendo el código más mantenible sin alterar su comportamiento funcional.
 - `2026-10-12T09:04:30` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de hashing y el procesamiento de grupos para clarificar la lógica de "Estrategia en tres pasos" declarada en el encabezado, asegurando que los Type Hints y docstrings reflejen con precisión las precondiciones de seguridad.
 - `2026-10-12T09:03:50` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones críticas y la estandarización de type hints, facilitando la auditoría de seguridad sobre el comportamiento de las operaciones de disco.
-- `2026-10-12T08:55:48` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings detallados en las funciones de escaneo recursivo y se han renombrado variables clave para clarificar el propósito de las restricciones de seguridad (sandbox) en el recorrido de archivos.
