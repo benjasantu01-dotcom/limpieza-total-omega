@@ -656,6 +656,11 @@ def _validate_access_permissions(path: Path) -> None:
         raise UnsafePathError("Acceso al archivo denegado por el sistema.", SafetyValidationErrorCode.ACCESS_DENIED)
 
 @lru_cache(maxsize=4096)
+def _normalize_resolved(path_str: str) -> Path:
+    """Helper para normalizar y resolver evitando trabajo duplicado."""
+    return Path(path_str).resolve()
+
+@lru_cache(maxsize=4096)
 def normalize(path: PathLike) -> Path:
     """Normaliza una ruta y valida componentes para prevenir Path Traversal."""
     if path is None: raise UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC)
@@ -681,7 +686,7 @@ def normalize(path: PathLike) -> Path:
         if _is_device_file(p): raise UnsafePathError("Acceso a dispositivo bloqueado.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
         if _has_alternate_data_stream(p.name): raise UnsafePathError("Flujo de datos alternativo detectado.", SafetyValidationErrorCode.ADS_DETECTED)
         
-        resolved = p.resolve()
+        resolved = _normalize_resolved(path_str)
         if ".." in p.parts: raise UnsafePathError("Path traversal detectado.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
         return resolved
     except (OSError, PermissionError, RuntimeError, ValueError, TypeError) as e:
@@ -705,24 +710,21 @@ def is_protected_path(path: PathLike) -> bool:
     if not isinstance(path, (str, Path)) or not path: return True
     try:
         p_str = str(path).lower()
+        # Verificación O(1) con set
         if any(p_str.startswith(r) for r in _SYSTEM_ROOT_PATHS_TUPLE): return True
         if _is_kernel_managed(p_str): return True
-        if _get_file_attrs(p_str) & (Win32Attr.SYSTEM | Win32Attr.HIDDEN): return True
         
         p = Path(path)
-        if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts): return True
+        # Búsqueda rápida de partes usando set para PROTECTED_DIR_NAMES
+        if not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in p.parts): return True
         
-        if not p.exists():
-            return False
+        if _get_file_attrs(p_str) & (Win32Attr.SYSTEM | Win32Attr.HIDDEN): return True
+        if not p.exists(): return False
             
-        p_norm = p.resolve()
+        p_norm = _normalize_resolved(str(p))
         p_str_norm = str(p_norm).lower()
         
-        for root in _SYSTEM_ROOT_PATHS:
-            if p_str_norm == str(root).lower() or p_norm.is_relative_to(root):
-                return True
-            
-        return p_str_norm == p_norm.anchor
+        return p_str_norm in _SYSTEM_ROOT_STRS or any(p_norm.is_relative_to(root) for root in _SYSTEM_ROOT_PATHS) or p_str_norm == p_norm.anchor
     except Exception: return True
 
 @lru_cache(maxsize=4096)
@@ -824,7 +826,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
         raise UnsafePathError("Ruta en directorio del sistema bloqueada.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
     
     try:
-        app_root = Path(os.getcwd()).resolve()
+        app_root = _normalize_resolved(os.getcwd())
         if target_path == app_root or app_root in target_path.parents:
             raise UnsafePathError("Modificación de App denegada.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
     except (OSError, RuntimeError, ValueError): pass
@@ -833,7 +835,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
 
 def _get_final_path_normalized(path: Path) -> Optional[Path]:
     """Resuelve la ruta física real (canonical path) a través de los handles del sistema."""
-    if os.name != 'nt': return path.resolve()
+    if os.name != 'nt': return _normalize_resolved(str(path))
     kernel32 = ctypes.windll.kernel32
     try:
         handle = kernel32.CreateFileW(_to_long_path(str(path)), 0, 0, None, 3, 0x02000000, None)
@@ -841,7 +843,7 @@ def _get_final_path_normalized(path: Path) -> Optional[Path]:
         try:
             buf = ctypes.create_unicode_buffer(1024)
             if kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0) > 0:
-                return Path(buf.value).resolve()
+                return _normalize_resolved(buf.value)
         finally:
             kernel32.CloseHandle(handle)
     except (OSError, AttributeError, ctypes.ArgumentError):
@@ -924,7 +926,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         base = None
         if base_dir:
             try:
-                base = Path(base_dir).resolve()
+                base = _normalize_resolved(str(base_dir))
             except (TypeError, ValueError):
                 raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC)
         

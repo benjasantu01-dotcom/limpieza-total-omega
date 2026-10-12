@@ -480,3 +480,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-12T14:23:27` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 99): unterminated string literal (detected at line 99)
 - `2026-10-12T14:23:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T14:23:27` Corrida terminada. Total usado hoy: 340.
+- `2026-10-12T14:29:38` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-12T14:30:41` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el rendimiento de `is_protected_path` al reemplazar iteraciones costosas sobre listas por búsquedas en sets precomputados y se implementó un `lru_cache` adicional para evitar el cálculo redundante de rutas resueltas y normalizadas.
+- `2026-10-12T14:31:18` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escaneado implementando un filtro preventivo (`is_protected_path` e `is_relevant_extension`) dentro de `process_entry` para evitar llamadas costosas a `_is_safe_entry` (que realiza `resolve()` y accesos a disco) en archivos que de todos modos serían ignorados por el motor de heurísticas.
+- `2026-10-12T14:31:56` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de la lectura de configuración implementando un mecanismo de caché con control de tiempo de modificación (mtime) en el `_SettingsManager` para evitar lecturas de disco innecesarias durante llamadas repetidas a `load()`.
+- `2026-10-12T14:31:58` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T14:33:01` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-12T14:33:50` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-12T14:33:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T14:33:50` Corrida terminada. Total usado hoy: 344.
