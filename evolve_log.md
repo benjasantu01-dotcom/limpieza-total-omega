@@ -769,3 +769,21 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-12T05:26:18` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el proceso de escaneo sustituyendo la llamada redundante `Path(entry.path).suffix.lower()` dentro del bucle principal por una verificación basada en `entry.name`, evitando la creación innecesaria de objetos `Path` y mejorando la eficiencia en directorios con muchos archivos.
 - `2026-10-12T05:26:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T05:26:18` Corrida terminada. Total usado hoy: 128.
+- `2026-10-12T05:29:09` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-10-12T05:29:57` Tests FALLARON:
+```
+ly_where_it_was - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: [Errno 9] Bad file descriptor
+8 failed, 291 passed in 2.19s
+
+```
+- `2026-10-12T05:29:57` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Optimizamos `load_manifest` mediante el uso de un caché con `lru_cache` implícito y validación de estado de archivo (`st_mtime`), evitando lecturas redundantes del disco y parseo JSON repetitivo durante las operaciones de reporte o listado frecuente.
+- `2026-10-12T05:30:30` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-12T05:31:29` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `is_protected_path` reemplazando la lógica de resolución iterativa de padres (`p.parents`) por un chequeo de prefijo de cadena más eficiente (`os.path.commonpath`), reduciendo drásticamente las llamadas al sistema operativo (syscalls) al evitar validaciones innecesarias de rutas inexistentes durante el recorrido del árbol.
+- `2026-10-12T05:31:45` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_inside_base_root
+- `2026-10-12T05:31:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T05:31:45` Corrida terminada. Total usado hoy: 132.

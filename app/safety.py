@@ -681,10 +681,13 @@ def is_protected_path(path: PathLike) -> bool:
         
         p = Path(path)
         if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts): return True
-        if not p.exists(): return False 
         
-        p_res = p.resolve()
-        return p_res == Path(p_res.anchor) or any(p_res == root or root in p_res.parents for root in _SYSTEM_ROOT_PATHS)
+        # Optimización: chequeo eficiente de prefijo evitando iterar parents innecesariamente
+        p_str_norm = str(p.resolve()).lower()
+        if any(p_str_norm == root or os.path.commonpath([p_str_norm, str(root)]) == str(root) for root in _SYSTEM_ROOT_PATHS):
+            return True
+            
+        return p_str_norm == Path(p_str_norm).anchor
     except Exception: return True
 
 @lru_cache(maxsize=4096)
