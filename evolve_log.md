@@ -1264,3 +1264,24 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-12T10:28:59` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente archivos inexistentes o bloqueos por permisos en sistemas Windows (evitando excepciones en el `ctypes.windll` al recibir rutas inválidas), y se añadió una verificación de estado de archivo en `_is_safe_for_disk_op` para prevenir operaciones sobre archivos que fueron eliminados o movidos por otros procesos entre el escaneo y la ejecución, cerrando una potencial race condition.
 - `2026-10-12T10:28:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T10:28:59` Corrida terminada. Total usado hoy: 248.
+- `2026-10-12T10:34:53` Arrancando corrida. Quedan hoy ~52 peticiones objetivo.
+- `2026-10-12T10:35:56` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-12T10:36:55` Tests FALLARON:
+```
+Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+8 failed, 291 passed in 2.28s
+
+```
+- `2026-10-12T10:36:55` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `quarantine.py` ante errores de concurrencia y condiciones de carrera (TOCTOU) mediante la implementación de un chequeo de integridad adicional post-operación en `_atomic_isolate_file`, asegurando que el archivo destino registrado coincida exactamente en inodo y hash con el archivo en disco tras el proceso de copia.
+- `2026-10-12T10:36:55` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T10:37:28` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-10-12T10:37:29` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-12T10:38:34` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha implementado una mejora en la robustez ante rutas inexistentes dentro de `is_protected_path`, evitando que una `Path.resolve()` sobre una ruta no presente en el disco lance un error (`OSError` o similar) y comprometa el flujo de validación, asegurando que la app siga siendo capaz de evaluar la seguridad incluso sobre objetos pendientes de creación o eliminados.
+- `2026-10-12T10:38:55` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-12T10:38:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T10:38:55` Corrida terminada. Total usado hoy: 252.

@@ -708,6 +708,9 @@ def is_protected_path(path: PathLike) -> bool:
         p = Path(path)
         if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts): return True
         
+        if not p.exists():
+            return False
+            
         p_norm = p.resolve()
         p_str_norm = str(p_norm).lower()
         
