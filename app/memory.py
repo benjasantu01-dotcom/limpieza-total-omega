@@ -89,14 +89,14 @@ TRIM_WARNING: Final[str] = (
 class MEMORYSTATUSEX(ctypes.Structure):
     """Estructura Win32 GlobalMemoryStatusEx para reportar memoria total y disponible."""
     _fields_: List[Tuple[str, type]] = [
-        ("dwLength", ctypes.c_ulong),            # Tamaño de esta estructura
-        ("dwMemoryLoad", ctypes.c_ulong),        # Porcentaje en uso
-        ("ullTotalPhys", ctypes.c_ulonglong),    # RAM física total
-        ("ullAvailPhys", ctypes.c_ulonglong),    # RAM física disponible
-        ("ullTotalPageFile", ctypes.c_ulonglong),# Total paginable
-        ("ullAvailPageFile", ctypes.c_ulonglong),# Disponible paginable
-        ("ullTotalVirtual", ctypes.c_ulonglong), # Espacio virtual total
-        ("ullAvailVirtual", ctypes.c_ulonglong), # Espacio virtual disponible
+        ("dwLength", ctypes.c_ulong),
+        ("dwMemoryLoad", ctypes.c_ulong),
+        ("ullTotalPhys", ctypes.c_ulonglong),
+        ("ullAvailPhys", ctypes.c_ulonglong),
+        ("ullTotalPageFile", ctypes.c_ulonglong),
+        ("ullAvailPageFile", ctypes.c_ulonglong),
+        ("ullTotalVirtual", ctypes.c_ulonglong),
+        ("ullAvailVirtual", ctypes.c_ulonglong),
         ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
     ]
 
@@ -106,7 +106,7 @@ class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
         ("cb", ctypes.c_ulong),
         ("PageFaultCount", ctypes.c_ulong),
         ("PeakWorkingSetSize", ctypes.c_size_t),
-        ("WorkingSetSize", ctypes.c_size_t),     # Memoria RAM actual (Working Set)
+        ("WorkingSetSize", ctypes.c_size_t),
         ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
         ("QuotaPagedPoolUsage", ctypes.c_size_t),
         ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
@@ -281,8 +281,11 @@ def read_snapshot() -> MemorySnapshot:
     """Devuelve un estado de memoria con una latencia de caché de 5 segundos."""
     return _get_cached_snapshot(int(time.time() / 5))
 
-def _query_working_set_bytes(pid: int, kernel32, psapi) -> Optional[BytesValue]:
-    """Consulta los contadores de memoria de un PID externo mediante PSAPI."""
+def _query_working_set_bytes(pid: int, kernel32: ctypes.WinDLL, psapi: ctypes.WinDLL) -> Optional[BytesValue]:
+    """
+    Consulta los contadores de memoria de un proceso externo utilizando la API PSAPI GetProcessMemoryInfo.
+    Requiere un handle con acceso limitado para ser seguro.
+    """
     process_handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
     if not process_handle:
         return None
