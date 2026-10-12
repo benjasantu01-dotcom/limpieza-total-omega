@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
-- Rechazadas por tests: 33
+- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Rechazadas por tests: 32
 - Rechazadas por guardia de seguridad: 54
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 203
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 121 | 19 | 31 | 15 | 126 |
-| 2026-10-12 | 72 | 14 | 23 | 6 | 77 |
+| 2026-10-11 | 118 | 18 | 31 | 15 | 126 |
+| 2026-10-12 | 73 | 14 | 23 | 7 | 79 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **45**
 - robustez ante casos límite: **44**
-- legibilidad y documentación: **43**
-- manejo de errores y validación de entradas: **32**
+- legibilidad y documentación: **40**
+- manejo de errores y validación de entradas: **33**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **20**
 - `browser.py`: **19**
+- `memory.py`: **19**
 - `diskreport.py`: **17**
 - `organizer.py`: **16**
 - `safety.py`: **16**
 - `healthscore.py`: **15**
 - `settings.py`: **15**
-- `branding.py`: **14**
+- `branding.py`: **15**
 - `scanner.py`: **13**
 - `assistant.py`: **13**
-- `duplicates.py`: **11**
-- `main.py`: **9**
+- `duplicates.py`: **10**
 - `startup.py`: **9**
+- `main.py`: **8**
 - `quarantine.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T08:15:29` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` mejorando la validación del destino mediante el uso de `is_safe_to_modify` antes de cualquier operación, asegurando un manejo de errores más específico y consistente con las reglas de seguridad del proyecto.
 - `2026-10-12T06:52:43` **settings.py** (seguridad defensiva): Se reforzó la seguridad del método `_is_file_secure_to_read` para prevenir ataques de denegación de servicio o manipulación mediante enlaces simbólicos, añadiendo una verificación explícita mediante `os.path.islink` sobre la ruta resuelta para evitar que el archivo de configuración sea un punto de reparse que apunte fuera del directorio seguro.
 - `2026-10-12T06:41:53` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` al integrar explícitamente `is_protected_path` sobre la ruta de destino resuelta, evitando que el movimiento a directorios críticos sea posible incluso si el usuario configura mal la carpeta de revisión.
 - `2026-10-12T06:41:05` **memory.py** (seguridad defensiva): Se ha mejorado la robustez del manejo de handles de procesos al incluir un chequeo de `INVALID_HANDLE_VALUE` explícito y asegurarse de que `CloseHandle` solo se invoque sobre handles válidos, evitando posibles errores de acceso a memoria o estados indefinidos en la API de Win32.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T06:04:52` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_locked` para manejar adecuadamente casos de permisos denegados o archivos inaccesibles en sistemas Windows, evitando excepciones no controladas durante el escaneo y garantizando que el uso de `ctypes` no interrumpa el bucle principal.
 - `2026-10-12T06:04:05` **memory.py** (robustez ante casos límite): Mejora la robustez de `top_memory_processes` añadiendo un manejo de excepciones más granular ante procesos que terminan durante la iteración (`ERROR_ACCESS_DENIED` o `OSError` al consultar), evitando que el bucle completo falle ante la desaparición de un proceso efímero.
 - `2026-10-12T05:50:46` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `largest_folders` ante casos límite mediante la validación estricta de rutas relativas y la captura de excepciones durante la resolución de `Path`, evitando el procesamiento de nodos huérfanos o con rutas resueltas fuera del árbol objetivo.
-- `2026-10-12T05:50:18` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante errores de acceso a archivos al añadir una validación de `os.access` con `os.R_OK` antes de intentar realizar operaciones de lectura, evitando excepciones innecesarias en carpetas protegidas por el SO o con permisos denegados.
