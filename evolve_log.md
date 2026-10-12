@@ -1347,3 +1347,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-12T00:56:24` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé la carga del manifiesto eliminando la recolección de estadísticas de sistema (mtime, size, inode) mediante llamadas `stat()` repetidas, aprovechando que `load_manifest` ya valida la integridad contra el caché existente; además, centralicé la lógica de lectura de manifiesto para reducir I/O redundante al realizar múltiples operaciones de purga o listado.
 - `2026-10-12T00:56:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T00:56:24` Corrida terminada. Total usado hoy: 24.
+- `2026-10-12T01:04:10` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-10-12T01:04:36` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 100): unterminated string literal (detected at line 100)
+- `2026-10-12T01:05:28` ➖ Sin cambios en safety.py (enfoque: rendimiento). Motivo: Se ha optimizado la validación de rutas mediante la implementación de `lru_cache` en `is_protected_path` y `is_within_directory`, además de reducir redundancias en `is_protected_path` al consolidar las comprobaciones de directorios protegidos, mejorando significativamente el rendimiento en escaneos masivos de archivos.
+- `2026-10-12T01:05:52` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_inside_base_root, Scanner._is_relevant_extension
+- `2026-10-12T01:06:13` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Se implementó un sistema de "Dirty Flag" en `update` para evitar escrituras redundantes en disco y se optimizó la resolución de rutas en los validadores usando `pathlib.Path.resolve` de forma más selectiva, reduciendo llamadas innecesarias al sistema de archivos durante las validaciones frecuentes.
+- `2026-10-12T01:06:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T01:06:13` Corrida terminada. Total usado hoy: 28.
