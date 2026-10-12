@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **202** (40.1% de aceptación)
 - Rechazadas por tests: 32
-- Rechazadas por guardia de seguridad: 49
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-10 | 60 | 9 | 13 | 5 | 55 |
+| 2026-10-10 | 60 | 9 | 13 | 4 | 52 |
 | 2026-10-11 | 130 | 23 | 34 | 16 | 147 |
-| 2026-10-12 | 10 | 0 | 2 | 0 | 0 |
+| 2026-10-12 | 12 | 0 | 3 | 1 | 0 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +26,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **44**
 - robustez ante casos límite: **40**
 - manejo de errores y validación de entradas: **40**
-- rendimiento: **27**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,10 +35,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **18**
 - `healthscore.py`: **18**
 - `browser.py`: **18**
+- `branding.py`: **16**
 - `settings.py`: **15**
-- `branding.py`: **15**
 - `scanner.py`: **14**
-- `assistant.py`: **13**
+- `assistant.py`: **14**
 - `duplicates.py`: **12**
 - `organizer.py`: **12**
 - `main.py`: **11**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-12T00:35:41` **branding.py** (rendimiento): Se introdujo una cache Lru en `color()` para evitar búsquedas repetitivas en el `MappingProxyType` durante ciclos de renderizado de UI, reduciendo el costo de acceso a diccionarios en llamadas frecuentes.
+- `2026-10-12T00:35:21` **assistant.py** (rendimiento): Optimicé el método `SystemContext.metrics_snapshot` para evitar recrear el diccionario en cada acceso (recalculándolo solo cuando el estado cambia) y reemplacé el `hash()` interno por una tupla cacheada, reduciendo la carga de CPU en bucles de la interfaz.
 - `2026-10-12T00:25:34` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de tipado explícito en estructuras complejas, la aclaración de las responsabilidades de los métodos mediante docstrings más precisos y la estandarización de la terminología en los comentarios del motor heurístico, facilitando el mantenimiento futuro y la legibilidad para futuros colaboradores.
 - `2026-10-12T00:25:22` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_get_file_attrs` para eliminar el manejo de `0xFFFFFFFF` mediante un `if` directo, integrando la lógica en un flujo más claro, y renombré internamente los predicados de validación para que coincidan explícitamente con su motivo de protección (`ProtectionReason`), reduciendo la ambigüedad en la configuración de la tabla de reglas.
 - `2026-10-12T00:24:08` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_is_file_in_use_by_system` y `_is_file_exclusive`, extrayendo la lógica de bloqueo específica de Windows a un método privado más descriptivo, y añadiendo docstrings técnicos sobre las garantías de concurrencia.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-11T14:39:10` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en la resolución de rutas mediante la implementación de una técnica de doble validación (existencia + permiso) dentro de `ensure_safe_to_modify`, previniendo errores de sistema al intentar operar sobre rutas inexistentes pero aparentemente válidas, y refinando el manejo de excepciones para evitar el colapso del bucle de validación ante estados de carrera (`Race Conditions`).
 - `2026-10-11T14:30:18` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` y `load_manifest` mediante el manejo explícito de `OSError` al realizar operaciones atómicas, asegurando que cualquier fallo en la escritura de metadatos no deje el estado interno del módulo en una inconsistencia lógica, además de fortalecer la validación de tipos en la serialización.
 - `2026-10-11T14:19:02` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` añadiendo validaciones explícitas de tipo y estado para evitar errores en tiempo de ejecución si los archivos son eliminados o modificados por procesos externos durante el análisis.
-- `2026-10-11T14:18:37` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó `walk_files` y `_collect_summary_data` para capturar errores de acceso y metadatos de forma granular, evitando que una falla en un solo archivo detenga todo el proceso de escaneo y asegurando que las funciones de alto nivel manejen correctamente las rutas mal formadas.
-- `2026-10-11T14:18:11` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de errores en `_process_file_node` y `_sum_directory_recursive` validando la existencia de `stat` y evitando excepciones mediante chequeos explícitos, protegiendo al motor de escaneo ante archivos bloqueados por el SO o accesos denegados.

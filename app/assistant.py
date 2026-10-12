@@ -374,6 +374,13 @@ class SystemContext:
         snapshot = self.metrics_snapshot
         return tuple(msg for c in _CRITERIOS_SALUD if (msg := c.format_if_triggered(snapshot.get(c.metric_key, -1.0))) is not None)
 
+    @cached_property
+    def _hash_tuple(self) -> tuple:
+        """Tupla cacheada para representar el estado actual para hashing."""
+        return (self.score, self.grade, self.junk_mb, self.suspicious_count, 
+                self.memory_available_percent, self.disk_free_percent,
+                self.duplicate_mb, self.startup_count)
+
     def get_metric(self, key: str, default: float) -> float:
         """Retorna una métrica numérica validada o el valor por defecto si falla."""
         try:
@@ -390,9 +397,7 @@ class SystemContext:
         return not self.analyzed or self.score is None or not isinstance(self.score, int) or self.score < 0
 
     def __hash__(self) -> int:
-        return hash((self.score, self.grade, self.junk_mb, self.suspicious_count, 
-                     self.memory_available_percent, self.disk_free_percent,
-                     self.duplicate_mb, self.startup_count))
+        return hash(self._hash_tuple)
 
     @property
     def is_valid_structure(self) -> bool:
@@ -432,9 +437,9 @@ class SystemContext:
         for k, v in updates.items():
             object.__setattr__(self, k, v)
         object.__setattr__(self, 'analyzed', True)
-        # Limpiar cachés manualmente tras cambios en el estado
-        self.__dict__.pop('metrics_snapshot', None)
-        self.__dict__.pop('active_problems', None)
+        # Limpiar cachés tras cambios
+        for attr in ['metrics_snapshot', 'active_problems', '_hash_tuple']:
+            self.__dict__.pop(attr, None)
 
     def ingest(self, source: Any) -> bool:
         """Normaliza e importa datos externos al contexto de manera transaccional."""
@@ -498,7 +503,6 @@ def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
             return source.get(key)
         
         # Acceso restringido para instancias de clase evitando exponer lógica interna
-        # Verificamos hasattr primero para evitar AttributeError en tipos inesperados
         if not hasattr(source, "__dict__"): return None
         val = getattr(source, key, None)
         # Impedimos acceder a métodos o atributos que no sean datos primitivos o colecciones seguras

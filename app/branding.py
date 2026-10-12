@@ -201,6 +201,7 @@ def app_title() -> str:
     """Retorna el título completo de la aplicación incluyendo la versión."""
     return f"{APP_NAME} v{APP_VERSION}"
 
+@lru_cache(maxsize=32)
 def color(name: Optional[str]) -> ColorHex:
     """Recupera un color de la paleta centralizada por nombre. Retorna gris ante llaves inexistentes o inválidas."""
     if not name or not isinstance(name, str):

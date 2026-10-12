@@ -1326,3 +1326,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-12T00:25:34` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo mediante la inclusión de tipado explícito en estructuras complejas, la aclaración de las responsabilidades de los métodos mediante docstrings más precisos y la estandarización de la terminología en los comentarios del motor heurístico, facilitando el mantenimiento futuro y la legibilidad para futuros colaboradores.
 - `2026-10-12T00:25:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-12T00:25:34` Corrida terminada. Total usado hoy: 12.
+- `2026-10-12T00:33:34` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-10-12T00:34:17` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-12T00:34:42` ➖ Sin cambios en startup.py (enfoque: legibilidad y documentación). Motivo: Se ha mejorado la documentación interna y la claridad del código en `startup.py` mediante la adición de Type Hints en retornos de funciones que carecían de ellos y la estandarización de docstrings, asegurando una mayor robustez frente a errores de tipo en tiempo de ejecución.
+- `2026-10-12T00:35:21` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el método `SystemContext.metrics_snapshot` para evitar recrear el diccionario en cada acceso (recalculándolo solo cuando el estado cambia) y reemplacé el `hash()` interno por una tupla cacheada, reduciendo la carga de CPU en bucles de la interfaz.
+- `2026-10-12T00:35:41` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se introdujo una cache Lru en `color()` para evitar búsquedas repetitivas en el `MappingProxyType` durante ciclos de renderizado de UI, reduciendo el costo de acceso a diccionarios en llamadas frecuentes.
+- `2026-10-12T00:35:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-12T00:35:41` Corrida terminada. Total usado hoy: 16.
