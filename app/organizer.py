@@ -209,8 +209,9 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     Auditoría final de seguridad antes de mover un archivo.
     Combina validación de metadatos, integridad de ruta y disponibilidad de recursos del sistema.
     """
-    if not junk_file or not isinstance(junk_file.path, Path) or not junk_file.path.exists(): return False
+    if not junk_file or not isinstance(junk_file.path, Path): return False
     try:
+        if not junk_file.path.exists(): return False
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         
@@ -230,7 +231,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         
         usage = shutil.disk_usage(target_dir)
         return usage.free >= (stat_result.st_size + MIN_FREE_SPACE_BYTES)
-    except (OSError, AttributeError, ValueError, FileNotFoundError):
+    except (OSError, AttributeError, ValueError, PermissionError):
         return False
 
 def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> bool:

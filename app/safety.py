@@ -708,17 +708,14 @@ def is_protected_path(path: PathLike) -> bool:
     if not isinstance(path, (str, Path)) or not path: return True
     try:
         p = Path(path)
-        if not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in p.parts): return True
-        
-        p_resolved = _normalize_resolved(str(p))
-        if _is_kernel_managed(str(p_resolved)): return True
-        
-        if any(p_resolved.is_relative_to(root) for root in _SYSTEM_ROOT_PATHS): return True
-        
-        attrs = _get_file_attrs(str(p))
-        if attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN): return True
-            
-        return p_resolved == Path(p_resolved.anchor)
+        if PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in p.parts):
+            p_resolved = _normalize_resolved(str(p))
+            if not _is_kernel_managed(str(p_resolved)):
+                if not any(p_resolved.is_relative_to(root) for root in _SYSTEM_ROOT_PATHS):
+                    attrs = _get_file_attrs(str(p))
+                    if not (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN)):
+                        return p_resolved == Path(p_resolved.anchor)
+        return True
     except Exception: return True
 
 @lru_cache(maxsize=4096)
