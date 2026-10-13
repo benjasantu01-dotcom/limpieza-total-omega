@@ -305,10 +305,8 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> StartupEnt
     return found_entries
 
 
-def _is_valid_registry_entry(name: str, cmd: str, seen: Set[str]) -> bool:
-    """Valida la integridad de una entrada recuperada desde el registro de Windows."""
-    if not isinstance(name, str) or not isinstance(cmd, str):
-        return False
+def _is_registry_entry_safe(name: str, cmd: str, seen: Set[str]) -> bool:
+    """Verifica la integridad de la entrada y si ha sido procesada previamente."""
     if not name.strip() or not cmd.strip() or cmd.startswith(r"\\") or cmd in seen:
         return False
     if name.upper().startswith("PS"):
@@ -360,7 +358,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             clean_name: str = "".join(c for c in raw_val_name if ord(c) >= 32).strip()
             clean_cmd: str = "".join(c for c in raw_val_cmd if ord(c) >= 32).strip()
             
-            if _is_valid_registry_entry(clean_name, clean_cmd, seen_commands):
+            if _is_registry_entry_safe(clean_name, clean_cmd, seen_commands):
                 seen_commands.add(clean_cmd)
                 parsed_entries.append(StartupEntry(name=clean_name, command=clean_cmd, source=source))
             

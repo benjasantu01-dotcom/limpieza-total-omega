@@ -201,36 +201,24 @@ def app_title() -> str:
     """Retorna el título corporativo completo incluyendo la versión actual."""
     return f"{APP_NAME} v{APP_VERSION}"
 
-@lru_cache(maxsize=32)
 def color(name: Optional[str]) -> ColorHex:
-    """Recupera un color de la paleta centralizada por nombre; retorna gris neutro en caso de error."""
-    if not name or not isinstance(name, str):
-        return "#808080"
-    return PALETTE.get(name, "#808080")
+    """Recupera un color de la paleta centralizada; retorna gris neutro en caso de error."""
+    return PALETTE.get(name, "#808080") if name else "#808080"
 
-@lru_cache(maxsize=16)
 def font_size(name: Optional[str]) -> int:
-    """Obtiene el tamaño de fuente configurado para un identificador; fallback a cuerpo estándar."""
-    if not name or not isinstance(name, str):
-        return UI_FONT_BODY_SIZE
-    return FONT_SIZES.get(name, UI_FONT_BODY_SIZE)
+    """Obtiene el tamaño de fuente configurado; fallback a cuerpo estándar."""
+    return FONT_SIZES.get(name, UI_FONT_BODY_SIZE) if name else UI_FONT_BODY_SIZE
 
-@lru_cache(maxsize=32)
 def icon(section: Optional[str]) -> str:
-    """Retorna el glifo Unicode asociado a una sección de la app; normaliza el input mediante strip()."""
-    if not section or not isinstance(section, str):
-        return "\u2022"
-    return ICONS.get(section.strip(), "\u2022")
+    """Retorna el glifo Unicode asociado a una sección."""
+    return ICONS.get(section.strip(), "\u2022") if section else "\u2022"
 
-@lru_cache(maxsize=32)
 def tab_label(section: Optional[str]) -> str:
     """Formatea la etiqueta de una pestaña combinando icono y título de sección."""
-    if not section or not isinstance(section, str): 
-        return f"\u2022  Desconocido"
-    return f"{icon(section)}  {section}"
+    return f"{icon(section)}  {section}" if section else "\u2022  Desconocido"
 
 def _parse_severity(severity: Optional[str]) -> Optional[SeverityType]:
-    """Valida y convierte una cadena de texto al enumerado SeverityType; captura excepciones de formato."""
+    """Valida y convierte una cadena de texto al enumerado SeverityType."""
     if not isinstance(severity, str) or not severity.strip():
         return None
     try:
@@ -238,24 +226,18 @@ def _parse_severity(severity: Optional[str]) -> Optional[SeverityType]:
     except ValueError:
         return None
 
-@lru_cache(maxsize=16)
 def _get_severity_style(severity_key: Optional[SeverityType]) -> Tuple[ColorHex, str]:
     """Recupera la tupla (color, nombre descriptivo) basada en la severidad; fallback neutro."""
-    if severity_key and (style := SEVERITY_STYLES.get(severity_key)):
-        return style
-    return (C_TEXT_MUTED, "Desconocido")
+    return SEVERITY_STYLES.get(severity_key, (C_TEXT_MUTED, "Desconocido"))
 
 def severity_color(severity: Optional[str]) -> ColorHex:
     """Retorna el código HEX correspondiente a la severidad proporcionada."""
     return _get_severity_style(_parse_severity(severity))[0]
 
 def severity_label(severity: Optional[str]) -> str:
-    """Retorna la etiqueta legible asociada a la severidad; capitaliza el input si es genérico."""
+    """Retorna la etiqueta legible asociada a la severidad."""
     sev = _parse_severity(severity)
-    style = SEVERITY_STYLES.get(sev)
-    if style:
-        return style[1]
-    return severity.strip().capitalize() if isinstance(severity, str) else "Desconocido"
+    return SEVERITY_STYLES.get(sev, (None, severity.strip().capitalize() if isinstance(severity, str) else "Desconocido"))[1]
 
 def severity_icon(severity: Optional[str]) -> str:
     """Retorna el glifo Unicode específico para la severidad mediante mapeo de constantes."""

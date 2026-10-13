@@ -728,3 +728,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-13T12:16:22` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad técnica mediante la inclusión de type hints precisos, la adición de docstrings detallados en funciones clave y el uso de anotaciones de tipo más rigurosas (`Sequence`, `Protocol`, `TypeAlias`), facilitando el mantenimiento y la comprensión de las heurísticas de escaneo.
 - `2026-10-13T12:16:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T12:16:22` Corrida terminada. Total usado hoy: 292.
+- `2026-10-13T12:24:28` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-10-13T12:25:03` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-13T12:25:31` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints detallados, la unificación del estilo de docstrings (siguiendo las guías de estilo de la comunidad Python) y la extracción de la lógica de validación de rutas en el registro a un método más explícito dentro de `StartupEntry`.
+- `2026-10-13T12:26:12` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó el acceso a métricas en `SystemContext` reemplazando la creación dinámica de diccionarios en cada llamada a `metrics_snapshot` por un cacheo selectivo, evitando iteraciones sobre el diccionario de validadores en cada lectura.
+- `2026-10-13T12:26:13` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-13T12:26:42` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el acceso a constantes de color y métricas tipográficas mediante la eliminación de llamadas redundantes a `lru_cache` y la conversión de `MappingProxyType` a diccionarios locales inmutables para el acceso directo, mejorando la velocidad de resolución en las funciones de renderizado crítico.
+- `2026-10-13T12:26:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T12:26:42` Corrida terminada. Total usado hoy: 296.
