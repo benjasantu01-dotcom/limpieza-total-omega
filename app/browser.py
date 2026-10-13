@@ -342,16 +342,18 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     found: List[BrowserCache] = []
     kernel32 = _get_kernel32()
     
+    # Contexto unificado para toda la iteración de navegadores
+    ctx = ScanContext("", kernel32, _IS_JUNCTION_FN, set(), {}, {})
+    
     for base in raw_bases:
         if not isinstance(base, Path) or not base.exists(): continue
         try:
             real_base: Path = base.resolve(strict=True)
-            real_base_str: str = str(real_base)
-            ctx = ScanContext(os.path.normcase(real_base_str), kernel32, _IS_JUNCTION_FN, set(), {}, {})
+            ctx.sandbox_base_norm = os.path.normcase(str(real_base))
             
             for browser_name, rel_str in browser_map.items():
                 candidate = _resolve_browser_path(real_base, rel_str)
-                if candidate != Path() and _is_valid_cache_path(candidate, real_base_str):
+                if candidate != Path() and _is_valid_cache_path(candidate, ctx.sandbox_base_norm):
                     scan_res = _sum_directory_recursive(str(candidate), ctx, 0)
                     if scan_res.bytes_found > 0:
                         found.append(BrowserCache(str(browser_name), candidate, scan_res.bytes_found))

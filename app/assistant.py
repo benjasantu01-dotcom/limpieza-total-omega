@@ -425,6 +425,7 @@ class SystemContext:
         for k, v in updates.items():
             setattr(self, k, v)
         self.analyzed = True
+        # Limpiar cachés manualmente al actualizar
         for attr in ["metrics_snapshot", "active_problems", "_hash_tuple"]:
             self.__dict__.pop(attr, None)
 
@@ -577,21 +578,14 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
         texto = f"{info} {sugerencia} La limpieza solo mueve a cuarentena."
     return Answer(_validate_response_length(texto), notice=OFFLINE_NOTICE)
 
-@lru_cache(maxsize=32)
-def _get_score_response(score: int | None, grade: str, problems: tuple[str, ...]) -> str:
-    """Genera la explicación del puntaje de salud."""
-    score_val = score if score is not None else "N/A"
-    grade_str = grade if grade else ""
-    score_display = f"Tu puntaje es {score_val}/100{f' (nota {grade_str})' if grade_str else ''}."
-    resumen = ("Lo que más te está restando: " + ", ".join(problems[:3]) + ".") if problems else "No hay nada urgente."
-    explicacion = " El puntaje combina basura, seguridad, memoria, disco, duplicados y programas de inicio."
-    return f"{score_display} {resumen}{explicacion}"
-
 @_safe_handler_wrapper
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre el puntaje de salud global."""
+    resumen = _format_problem_message(ctx.active_problems, ctx.score if ctx.score is not None else "N/A")
+    grade_str = f" (nota {ctx.grade})" if ctx.grade else ""
+    explicacion = " El puntaje combina basura, seguridad, memoria, disco, duplicados y programas de inicio."
     return Answer(
-        _validate_response_length(_get_score_response(ctx.score, ctx.grade, ctx.active_problems)), 
+        _validate_response_length(f"{resumen}{grade_str}{explicacion}"), 
         notice=OFFLINE_NOTICE
     )
 

@@ -971,3 +971,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-13T03:26:14` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._extract_quoted_path, StartupEntry._is_valid_executable, StartupEntry._sanitize_command
 - `2026-10-13T03:26:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T03:26:14` Corrida terminada. Total usado hoy: 84.
+- `2026-10-13T03:34:25` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-10-13T03:35:12` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimizé la detección de problemas y el formato de la respuesta del asistente mediante el uso de una caché local en `active_problems`, evitando recorridos redundantes y formateo repetitivo de strings cada vez que se consulta el estado de salud.
+- `2026-10-13T03:35:51` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el método `gradient_colors` reemplazando la lógica de cálculo de gradiente lineal en tiempo real dentro del loop por una estrategia de pre-segmentación indexada, reduciendo la complejidad computacional en cada iteración del dibujo.
+- `2026-10-13T03:36:20` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `detect_profiles` eliminando la creación redundante de objetos `ScanContext` por cada navegador; ahora se utiliza un único contexto compartido por ejecución, reutilizando la caché de tamaños (`visited_dirs`) para evitar re-escanear subdirectorios comunes o compartidos.
+- `2026-10-13T03:36:30` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-10-13T03:36:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T03:36:30` Corrida terminada. Total usado hoy: 88.

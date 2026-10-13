@@ -355,12 +355,14 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
         return (stops[0] if (stops and isinstance(stops[0], str)) else C_TEXT_MUTED,) * n
     
     rgb_stops = [_hex_to_rgb(s) for s in stops]
-    n_segments = len(stops) - 1
+    n_stops = len(stops)
     colors: List[ColorHex] = []
     
+    # Pre-calculo de indices de segmentación
     for i in range(n):
-        pos = (i / (n - 1) if n > 1 else 0) * n_segments
-        idx = min(int(pos), n_segments - 1)
+        ratio = i / (n - 1) if n > 1 else 0
+        pos = ratio * (n_stops - 1)
+        idx = min(int(pos), n_stops - 2)
         delta = pos - idx
         s1, s2 = rgb_stops[idx], rgb_stops[idx + 1]
         
