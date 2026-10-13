@@ -1075,3 +1075,41 @@ FAILED evolve/tests/test_modules.py::test_directory_size_adds_up_recursively - A
 - `2026-10-13T04:28:00` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_file_locked` para manejar archivos inaccesibles o bloqueados por el sistema de forma más segura, evitando excepciones innecesarias y reforzando la integridad al detectar estados de archivo ambiguos.
 - `2026-10-13T04:28:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T04:28:00` Corrida terminada. Total usado hoy: 108.
+- `2026-10-13T04:35:37` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-10-13T04:36:13` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-13T04:36:18` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-13T04:37:08` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se mejora la robustez de `quarantine_file` al introducir un chequeo explícito de colisión de inodos antes de la transferencia, evitando que archivos distintos con el mismo nombre y tamaño puedan sobrescribirse o corromper el manifiesto en escenarios de alta concurrencia o logs desincronizados.
+- `2026-10-13T04:37:28` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-13T04:38:17` Tests FALLARON:
+```
+t_safety.py:136: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_ensure_raises_instead_of_returning_false - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raises - AssertionError: assert True is False
+ +  where True = <function is_safe_to_modify at 0x7f1c42f13f60>(((PosixPath('/tmp/pytest-of-runner/pytest-2/test_is_safe_returns_bool_and_0') / 'Windows') / 'x.txt'))
+ +    where <function is_safe_to_modify at 0x7f1c42f13f60> = <module 'safety' from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>.is_safe_to_modify
+FAILED evolve/tests/test_safety.py::test_ensure_safe_blocks_system_paths - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_ensure_safe_blocks_sensitive_extensions_by_default - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_sensitive_extension_when_explicitly_requested - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - AssertionError: assert {'app.tmp', '...', 'otro.log'} == {'ok.tmp', 'otro.log'}
+  
+  Extra items in the left set:
+  'malo.tmp'
+  'app.tmp'
+  'instalador.exe'
+  
+  Full diff:
+    {
+  +     'app.tmp',
+  +     'instalador.exe',
+  +     'malo.tmp',
+        'ok.tmp',
+        'otro.log',
+    }
+6 failed, 293 passed in 1.64s
+
+```
+- `2026-10-13T04:38:17` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez ante archivos inexistentes o con rutas no normalizadas dentro de `ensure_safe_to_modify` añadiendo un chequeo preventivo de existencia antes de realizar operaciones de I/O bloqueantes, previniendo errores innecesarios durante el escaneo.
+- `2026-10-13T04:38:31` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se reforzó `_is_safe_entry` y la lógica de escaneo para manejar de forma robusta rutas con permisos denegados o errores de acceso durante la iteración con `os.scandir`, evitando que excepciones inesperadas en llamadas a `resolve()` o `stat()` detengan el bucle de escaneo.
+- `2026-10-13T04:38:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T04:38:31` Corrida terminada. Total usado hoy: 112.

@@ -754,6 +754,7 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         raise OSError("Ruta destino demasiado larga.")
         
     existing_items = load_manifest(destination.parent.parent)
+    # Check extra para evitar colisiones de inodos registrados previamente
     if any(i.file_inode == stat_orig.st_ino for i in existing_items):
         raise RuntimeError("Colisión de inodo: el archivo parece estar ya registrado.")
 

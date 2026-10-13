@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
-- Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 59
+- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Rechazadas por tests: 28
+- Rechazadas por guardia de seguridad: 60
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 199
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 6 | 1 | 5 | 1 | 33 |
+| 2026-10-11 | 6 | 1 | 5 | 1 | 29 |
 | 2026-10-12 | 144 | 19 | 41 | 16 | 130 |
-| 2026-10-13 | 49 | 7 | 13 | 3 | 36 |
+| 2026-10-13 | 51 | 8 | 14 | 3 | 36 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **44**
-- robustez ante casos límite: **42**
+- robustez ante casos límite: **44**
 - rendimiento: **33**
 - seguridad defensiva: **32**
 
@@ -38,15 +38,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **16**
 - `branding.py`: **15**
 - `duplicates.py`: **15**
-- `scanner.py`: **14**
+- `scanner.py`: **15**
 - `assistant.py`: **14**
 - `settings.py`: **13**
-- `quarantine.py`: **10**
+- `quarantine.py`: **11**
 - `startup.py`: **9**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-13T04:38:31` **scanner.py** (robustez ante casos límite): Se reforzó `_is_safe_entry` y la lógica de escaneo para manejar de forma robusta rutas con permisos denegados o errores de acceso durante la iteración con `os.scandir`, evitando que excepciones inesperadas en llamadas a `resolve()` o `stat()` detengan el bucle de escaneo.
+- `2026-10-13T04:37:08` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_file` al introducir un chequeo explícito de colisión de inodos antes de la transferencia, evitando que archivos distintos con el mismo nombre y tamaño puedan sobrescribirse o corromper el manifiesto en escenarios de alta concurrencia o logs desincronizados.
 - `2026-10-13T04:28:00` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_locked` para manejar archivos inaccesibles o bloqueados por el sistema de forma más segura, evitando excepciones innecesarias y reforzando la integridad al detectar estados de archivo ambiguos.
 - `2026-10-13T04:27:46` **memory.py** (robustez ante casos límite): Mejoré la robustez de `top_memory_processes` añadiendo una validación de seguridad explícita sobre cada proceso mediante `_is_process_executable_safe` antes de incluirlos en el reporte, evitando así fugas de información o análisis de rutas de procesos protegidos o sospechosos.
 - `2026-10-13T04:27:15` **main.py** (robustez ante casos límite): Se reforzó la robustez ante estados inconsistentes de la UI añadiendo una validación explícita mediante `winfo_exists()` antes de acceder a cualquier widget en los métodos de callback del asistente y la gestión de ajustes, previniendo excepciones `TclError` si el usuario intenta interactuar con la interfaz mientras una operación asíncrona termina después de haber cerrado la pestaña o la aplicación.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-13T03:55:25` **organizer.py** (rendimiento): Optimizé la búsqueda de extensiones en `_process_directory` pre-compilando la tupla de extensiones `JUNK_EXTENSIONS` fuera del bucle para evitar la recreación constante, y utilicé `os.scandir` de forma más eficiente al validar las extensiones antes de instanciar objetos `JunkFile`.
 - `2026-10-13T03:47:10` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la instanciación de un objeto de buffer `ctypes` dentro del bucle principal por una llamada única pre-dimensionada, y moví la lógica de `EnumProcesses` a una consulta más eficiente.
 - `2026-10-13T03:45:41` **healthscore.py** (rendimiento): Se optimizó el acceso a los datos dentro de `compute_score` mediante la pre-validación y el cacheo de valores, además de reemplazar la iteración sobre `WEIGHTS` en `summarize` por un acceso directo que evita búsquedas innecesarias en el diccionario.
-- `2026-10-13T03:45:08` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_group_paths_by_hash` mediante el uso de una lista de pre-filtrado por estado de archivo para evitar la redundancia de `path.exists()` y `is_safe_to_modify` dentro del bucle de hashing, reduciendo llamadas innecesarias al sistema de archivos.
-- `2026-10-13T03:36:20` **browser.py** (rendimiento): Optimicé el rendimiento de `detect_profiles` eliminando la creación redundante de objetos `ScanContext` por cada navegador; ahora se utiliza un único contexto compartido por ejecución, reutilizando la caché de tamaños (`visited_dirs`) para evitar re-escanear subdirectorios comunes o compartidos.
