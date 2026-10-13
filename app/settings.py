@@ -407,8 +407,8 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     primary_path = settings_path(custom_base)
     backup_path = primary_path.with_suffix(".bak")
     for path in [primary_path, backup_path]:
-        if path.exists() and path.is_file():
-            try:
+        try:
+            if path.exists() and path.is_file():
                 st = path.stat()
                 mtime = st.st_mtime
                 cache_key = str(path)
@@ -417,7 +417,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
                 settings = _load_impl(path)
                 _MANAGER.settings_cache[cache_key] = (mtime, settings)
                 return settings
-            except (OSError, PermissionError): continue
+        except (OSError, PermissionError): continue
     return DEFAULTS.copy()
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:

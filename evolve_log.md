@@ -806,3 +806,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-13T13:27:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-10-13T13:27:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T13:27:48` Corrida terminada. Total usado hoy: 320.
+- `2026-10-13T13:35:54` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-13T13:36:48` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante fallos de permisos al acceder a metadatos de archivos (especialmente en entornos con antivirus o seguridad estricta) mediante un bloque de reintento con espera exponencial exponencial simple en `_get_path_stat_robust`, mitigando errores transitorios de "archivo en uso" sin comprometer la seguridad.
+- `2026-10-13T13:37:17` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia ante errores de sistema en `scan_directory` y `_is_readable` mediante una gestión más granular de `OSError` y `PermissionError`, asegurando que el scanner no aborte ante archivos bloqueados por el SO o metadatos inalcanzables.
+- `2026-10-13T13:37:17` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-13T13:38:26` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante estados inconsistentes del sistema de archivos agregando un chequeo preventivo de `OSError` al realizar operaciones de lectura y metadatos en `_is_file_secure_to_read` y `load`, evitando que fallos transitorios en el acceso al disco bloqueen la inicialización de la app.
+- `2026-10-13T13:38:40` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-13T13:38:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T13:38:40` Corrida terminada. Total usado hoy: 324.

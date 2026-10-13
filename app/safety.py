@@ -11,6 +11,7 @@ import os
 import stat
 import re
 import ctypes
+import time
 from enum import Enum, auto, IntEnum
 from pathlib import Path
 from typing import Union, Iterable, TypeAlias, Final, NamedTuple, Callable, Optional, TypedDict
@@ -650,35 +651,39 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
         raise UnsafePathError(f"Error evaluando reglas: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 def _get_path_stat_robust(path: Path) -> os.stat_result:
-    """Obtención segura de metadatos de archivos usando estructuras nativas (Win32)."""
-    if not isinstance(path, Path):
-        raise UnsafePathError("Tipo de objeto de ruta inválido", SafetyValidationErrorCode.GENERIC)
-    if _is_device_file(path):
-        raise UnsafePathError(f"Acceso a dispositivo bloqueado: {path.name}", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
-        
-    try:
-        if os.name == 'nt':
-            class WIN32_FILE_ATTRIBUTE_DATA(ctypes.Structure):
-                _fields_ = [("dwFileAttributes", ctypes.c_uint32),
-                            ("ftCreationTime", ctypes.c_uint64),
-                            ("ftLastAccessTime", ctypes.c_uint64),
-                            ("ftLastWriteTime", ctypes.c_uint64),
-                            ("nFileSizeHigh", ctypes.c_uint32),
-                            ("nFileSizeLow", ctypes.c_uint32)]
-            
-            data = WIN32_FILE_ATTRIBUTE_DATA()
-            if not ctypes.windll.kernel32.GetFileAttributesExW(_to_long_path(str(path)), 0, ctypes.byref(data)):
-                raise UnsafePathError(f"Acceso denegado o archivo inexistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
-        return path.stat()
-    except (PermissionError, FileNotFoundError):
-        raise UnsafePathError(f"Acceso denegado o archivo inexistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
-    except OSError as e:
-        win_err = getattr(e, 'winerror', None)
-        if win_err in (ERROR_SHARING_VIOLATION, 1920) or e.errno == 13:
-             raise UnsafePathError(f"Archivo bloqueado por otro proceso: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
-        raise UnsafePathError(f"Acceso fallido: {path.name}", SafetyValidationErrorCode.IO_ERROR)
-    except Exception as e:
-        raise UnsafePathError(f"Error inesperado al leer metadatos de {path.name}: {e}", SafetyValidationErrorCode.IO_ERROR)
+    """Obtención segura de metadatos con reintento para fallos transitorios."""
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            if not isinstance(path, Path):
+                raise UnsafePathError("Tipo de objeto de ruta inválido", SafetyValidationErrorCode.GENERIC)
+            if _is_device_file(path):
+                raise UnsafePathError(f"Acceso a dispositivo bloqueado: {path.name}", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
+                
+            if os.name == 'nt':
+                class WIN32_FILE_ATTRIBUTE_DATA(ctypes.Structure):
+                    _fields_ = [("dwFileAttributes", ctypes.c_uint32),
+                                ("ftCreationTime", ctypes.c_uint64),
+                                ("ftLastAccessTime", ctypes.c_uint64),
+                                ("ftLastWriteTime", ctypes.c_uint64),
+                                ("nFileSizeHigh", ctypes.c_uint32),
+                                ("nFileSizeLow", ctypes.c_uint32)]
+                
+                data = WIN32_FILE_ATTRIBUTE_DATA()
+                if not ctypes.windll.kernel32.GetFileAttributesExW(_to_long_path(str(path)), 0, ctypes.byref(data)):
+                    raise UnsafePathError(f"Acceso denegado o archivo inexistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+            return path.stat()
+        except (PermissionError, FileNotFoundError):
+            raise UnsafePathError(f"Acceso denegado o archivo inexistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+        except OSError as e:
+            win_err = getattr(e, 'winerror', None)
+            if win_err in (ERROR_SHARING_VIOLATION, 1920) or e.errno == 13:
+                 if attempt < max_retries - 1:
+                     time.sleep(0.05 * (2 ** attempt))
+                     continue
+                 raise UnsafePathError(f"Archivo bloqueado por otro proceso: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
+            raise UnsafePathError(f"Acceso fallido: {path.name}", SafetyValidationErrorCode.IO_ERROR)
+    raise UnsafePathError(f"Error tras reintentos leyendo metadatos: {path.name}", SafetyValidationErrorCode.IO_ERROR)
 
 def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
     """Valida que no existan inconsistencias (ataques TOCTOU) comparando metadatos iniciales y finales."""

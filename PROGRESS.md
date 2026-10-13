@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 53
+- Rechazadas por guardia de seguridad: 54
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 196
+- Sin respuesta de la IA (error o límite): 192
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-12 | 72 | 5 | 18 | 10 | 79 |
-| 2026-10-13 | 141 | 15 | 35 | 12 | 117 |
+| 2026-10-12 | 72 | 5 | 18 | 10 | 75 |
+| 2026-10-13 | 144 | 15 | 36 | 12 | 117 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **50**
-- robustez ante casos límite: **40**
+- robustez ante casos límite: **43**
 - rendimiento: **36**
 - seguridad defensiva: **35**
 
@@ -34,18 +34,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **18**
 - `diskreport.py`: **18**
 - `duplicates.py`: **18**
-- `scanner.py`: **16**
+- `scanner.py`: **17**
+- `safety.py`: **16**
 - `assistant.py`: **16**
-- `safety.py`: **15**
 - `branding.py`: **13**
 - `organizer.py`: **13**
-- `settings.py`: **12**
+- `settings.py`: **13**
 - `quarantine.py`: **12**
 - `startup.py`: **12**
 - `main.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-13T13:38:26` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes del sistema de archivos agregando un chequeo preventivo de `OSError` al realizar operaciones de lectura y metadatos en `_is_file_secure_to_read` y `load`, evitando que fallos transitorios en el acceso al disco bloqueen la inicialización de la app.
+- `2026-10-13T13:37:17` **scanner.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante errores de sistema en `scan_directory` y `_is_readable` mediante una gestión más granular de `OSError` y `PermissionError`, asegurando que el scanner no aborte ante archivos bloqueados por el SO o metadatos inalcanzables.
+- `2026-10-13T13:36:48` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante fallos de permisos al acceder a metadatos de archivos (especialmente en entornos con antivirus o seguridad estricta) mediante un bloque de reintento con espera exponencial exponencial simple en `_get_path_stat_robust`, mitigando errores transitorios de "archivo en uso" sin comprometer la seguridad.
 - `2026-10-13T13:17:13` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `summarize` y `compute_score` ante datos malformados, garantizando que el bucle de renderizado nunca falle si un área no está presente en el desglose, y añadiendo una validación de coherencia en el pipeline para evitar comportamientos indefinidos por claves faltantes.
 - `2026-10-13T13:16:02` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `walk_files` ante archivos que desaparecen entre la detección y la lectura de metadatos (condición de carrera) y se añadió una verificación explícita para evitar que `os.scandir` intente procesar rutas extremadamente largas o inválidas que superen los límites de longitud del sistema de archivos.
 - `2026-10-13T13:07:19` **browser.py** (robustez ante casos límite): Se introdujo una validación de rutas que evita el procesamiento de nombres de archivos que contengan caracteres nulos o secuencias de control potencialmente maliciosas, mejorando la robustez frente a entradas de disco inesperadas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-13T12:26:42` **branding.py** (rendimiento): Se optimizó el acceso a constantes de color y métricas tipográficas mediante la eliminación de llamadas redundantes a `lru_cache` y la conversión de `MappingProxyType` a diccionarios locales inmutables para el acceso directo, mejorando la velocidad de resolución en las funciones de renderizado crítico.
 - `2026-10-13T12:26:12` **assistant.py** (rendimiento): Se optimizó el acceso a métricas en `SystemContext` reemplazando la creación dinámica de diccionarios en cada llamada a `metrics_snapshot` por un cacheo selectivo, evitando iteraciones sobre el diccionario de validadores en cada lectura.
 - `2026-10-13T12:25:31` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints detallados, la unificación del estilo de docstrings (siguiendo las guías de estilo de la comunidad Python) y la extracción de la lógica de validación de rutas en el registro a un método más explícito dentro de `StartupEntry`.
-- `2026-10-13T12:16:22` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica mediante la inclusión de type hints precisos, la adición de docstrings detallados en funciones clave y el uso de anotaciones de tipo más rigurosas (`Sequence`, `Protocol`, `TypeAlias`), facilitando el mantenimiento y la comprensión de las heurísticas de escaneo.
-- `2026-10-13T12:16:09` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings técnicos detallados en los predicados de seguridad y funciones de validación crítica, y se han añadido type hints explícitos en los delegados de validación para clarificar las expectativas de tipos de datos, facilitando el mantenimiento y la auditabilidad del código.
-- `2026-10-13T12:06:33` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la adición de docstrings técnicos detallados en funciones críticas y la clarificación de tipos, asegurando que las decisiones de diseño (como las comprobaciones de bajo nivel en Windows) estén explícitamente documentadas para el equipo.

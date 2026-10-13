@@ -83,8 +83,9 @@ def _is_readable(path: Path) -> bool:
     if not isinstance(path, Path):
         return False
     try:
-        return path.is_file() and os.access(path, os.R_OK)
-    except (OSError, PermissionError, ValueError, FileNotFoundError):
+        # Usamos os.access sobre la ruta resuelta para evitar conflictos de sistema
+        return path.exists() and os.access(path, os.R_OK)
+    except (OSError, PermissionError, ValueError):
         return False
 
 def _get_file_attributes(entry: os.DirEntry) -> int:
@@ -327,7 +328,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
                     if entry is not None:
                         scanner.process_entry(entry, directory_stack, depth)
         except (PermissionError, OSError) as e:
-            logger.debug(f"Error accediendo al directorio {current_dir}: {e}")
+            logger.debug(f"Directorio inaccesible omitido {current_dir}: {e}")
             continue
     return scanner.results
 
