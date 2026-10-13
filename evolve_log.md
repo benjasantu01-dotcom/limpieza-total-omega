@@ -851,3 +851,62 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-13T02:06:54` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-10-13T02:06:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T02:06:54` Corrida terminada. Total usado hoy: 52.
+- `2026-10-13T02:12:55` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-10-13T02:12:57` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-13T02:12:57` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-13T02:13:17` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-13T02:13:17` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-13T02:13:47` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-13T02:13:47` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-13T02:14:02` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-13T02:14:02` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-13T02:14:22` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-13T02:14:22` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-13T02:14:52` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-13T02:14:52` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-13T02:16:07` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-13T02:16:48` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Se mejoró la robustez de `ingest` al manejar excepciones durante la validación de campos, evitando que un solo dato malformado detenga la ingesta completa, y se reforzó la validación de `SystemContext` para asegurar que las métricas negativas o inválidas no contaminen el estado interno.
+- `2026-10-13T02:17:08` Tests FALLARON:
+```
+............................................................... [ 24%]
+.....................................................F.................. [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_____________ test_ring_ignores_garbage_percent_and_missing_canvas _____________
+
+    def test_ring_ignores_garbage_percent_and_missing_canvas():
+        canvas = _CanvasFalso()
+        branding.draw_ring(canvas, "mucho", size=120)
+        branding.draw_ring(None, 50)
+>       assert canvas.llamadas == [], "un porcentaje inválido no debe dibujar nada"
+E       AssertionError: un porcentaje inválido no debe dibujar nada
+E       assert ['arc'] == []
+E         
+E         Left contains one more item: 'arc'
+E         
+E         Full diff:
+E         - []
+E         + [
+E         +     'arc',
+E         + ]
+
+evolve/tests/test_modules.py:258: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missing_canvas - AssertionError: un porcentaje inválido no debe dibujar nada
+assert ['arc'] == []
+  
+  Left contains one more item: 'arc'
+  
+  Full diff:
+  - []
+  + [
+  +     'arc',
+  + ]
+1 failed, 298 passed in 1.20s
+
+```
+- `2026-10-13T02:17:08` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `save_logo_svg` y `draw_ring` validando explícitamente la integridad de los datos de entrada (`size`, `percent`) antes de operar, evitando casos donde valores `NaN` o fuera de rango pudieran corromper el renderizado o causar comportamientos inesperados en las operaciones de disco.
+- `2026-10-13T02:17:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T02:17:08` Corrida terminada. Total usado hoy: 56.

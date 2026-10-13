@@ -438,7 +438,7 @@ class SystemContext:
                 value = self._apply_field(source, key, spec)
                 if value is not None and value != getattr(self, key):
                     updates[key] = value
-            except Exception:
+            except (ValueError, TypeError, AttributeError):
                 continue
         grade_val = self._clean_grade(_get_source_value(source, "grade"))
         if grade_val and grade_val != self.grade:

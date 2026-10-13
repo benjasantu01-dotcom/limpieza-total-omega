@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
-- Rechazadas por tests: 27
+- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Rechazadas por tests: 28
 - Rechazadas por guardia de seguridad: 56
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 40 | 5 | 11 | 3 | 43 |
+| 2026-10-11 | 36 | 5 | 11 | 3 | 43 |
 | 2026-10-12 | 144 | 19 | 41 | 16 | 130 |
-| 2026-10-13 | 12 | 3 | 4 | 2 | 31 |
+| 2026-10-13 | 13 | 4 | 4 | 2 | 33 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **45**
 - robustez ante casos límite: **44**
 - seguridad defensiva: **44**
-- manejo de errores y validación de entradas: **33**
+- legibilidad y documentación: **41**
+- manejo de errores y validación de entradas: **34**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **20**
+- `memory.py`: **19**
 - `diskreport.py`: **18**
 - `safety.py`: **18**
 - `browser.py`: **17**
-- `healthscore.py`: **16**
-- `duplicates.py`: **15**
 - `organizer.py`: **15**
 - `branding.py`: **15**
+- `healthscore.py`: **15**
 - `scanner.py`: **14**
 - `settings.py`: **14**
-- `assistant.py`: **13**
+- `assistant.py`: **14**
+- `duplicates.py`: **14**
 - `quarantine.py`: **9**
 - `startup.py`: **7**
-- `main.py`: **5**
+- `main.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-13T02:16:48` **assistant.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `ingest` al manejar excepciones durante la validación de campos, evitando que un solo dato malformado detenga la ingesta completa, y se reforzó la validación de `SystemContext` para asegurar que las métricas negativas o inválidas no contaminen el estado interno.
 - `2026-10-13T00:53:28` **startup.py** (seguridad defensiva): Se ha mejorado `_resolve_and_cache_path` y `_resolve_path_from_command` para prevenir la resolución de rutas mediante el uso del flag `follow_symlinks=False` (implícito en el manejo de Path) y una verificación explícita contra ataques de "Path Traversal" y rutas relativas inseguras, asegurando que el ejecutable siempre se valide dentro de un contexto absoluto y seguro antes de su resolución.
 - `2026-10-13T00:53:15` **settings.py** (seguridad defensiva): Se endurecieron las validaciones de seguridad en `save` y `_read_and_parse_json` al verificar explícitamente que la ruta del archivo sea un archivo regular y no un enlace simbólico o un punto de reparse antes de realizar cualquier operación de E/S, protegiendo contra ataques de confusión de rutas (path confusion) o symlink races.
 - `2026-10-13T00:52:17` **safety.py** (seguridad defensiva): Se ha añadido una verificación explícita para detectar y prevenir el uso de rutas que contienen puntos de reparse (junctions/symlinks) en los niveles intermedios de la jerarquía de directorios (no solo el destino final), cerrando un vector de escalada de privilegios/fuga de sandbox mediante "path traversal" a través de links maliciosos.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-13T00:12:00` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `safety.py` ante errores de sistema al encapsular las llamadas de `ctypes` dentro de un bloque `try-except` más amplio y añadir una validación temprana contra `PermissionError` en `_is_file_owned_by_system`, evitando que excepciones inesperadas del SO (como el acceso denegado a descriptores de seguridad) rompan el flujo de la aplicación.
 - `2026-10-12T14:51:37` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` y `compute_score` ante valores atípicos, asegurando que `suspicious_count` no pueda ser negativo y que la validación inicial de `SystemMetrics` sea estricta, evitando errores de cálculo en cascada.
 - `2026-10-12T14:50:40` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez ante errores de I/O en el proceso de hash integrando un chequeo preventivo de tamaño y accesibilidad dentro de los bloques `try-except` para evitar que archivos con permisos cambiantes o bloqueos repentinos interrumpan el proceso completo de escaneo.
-- `2026-10-12T14:42:16` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo frente a archivos bloqueados por procesos activos u otros hilos, añadiendo un manejo de excepciones específico en `_process_file_node` y garantizando que `_sum_directory_recursive` trate los errores de acceso de forma más granular para no interrumpir el conteo total ante fallos menores en subcarpetas.
