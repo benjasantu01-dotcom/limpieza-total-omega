@@ -438,8 +438,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     cleaned_settings = _coerce_and_verify(validate(values))
     parent = config_path.parent
     try:
+        ensure_safe_to_modify(str(config_path.resolve()))
         if not parent.exists() or not _is_dir_safe(parent) or _Validators._is_reparse_point(parent) or is_protected_path(str(parent.resolve())): return None
-        ensure_safe_to_modify(str(parent.resolve()))
         if shutil.disk_usage(parent).free < MAX_SETTINGS_SIZE * 2 or not os.access(parent, os.W_OK): return None
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
@@ -463,6 +463,8 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
     """Restaura los valores predeterminados y limpia la caché."""
+    config_path = settings_path(custom_base)
+    ensure_safe_to_modify(str(config_path.resolve()))
     save(DEFAULTS, custom_base)
     _MANAGER.clear()
     return DEFAULTS.copy()

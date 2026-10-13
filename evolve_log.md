@@ -1136,3 +1136,10 @@ FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_o
 - `2026-10-13T05:09:06` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `quarantine.py` reforzando la validación del estado del archivo origen antes del aislamiento, integrando un chequeo estricto de los atributos de sistema/oculto mediante la API de Windows tanto en la validación inicial como durante el proceso de transferencia atómica para evitar manipulación de archivos críticos.
 - `2026-10-13T05:09:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T05:09:06` Corrida terminada. Total usado hoy: 124.
+- `2026-10-13T05:16:23` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-10-13T05:16:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-13T05:17:30` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación temprana contra `LONG_PATH_PREFIX` en la función `_validate_structural_safety` para prevenir ataques de *path traversal* o manipulación de namespaces mediante rutas largas (`\\?\`) no autorizadas, reforzando la seguridad defensiva sin cambiar la funcionalidad actual.
+- `2026-10-13T05:17:55` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-10-13T05:18:11` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se endureció la seguridad defensiva al invocar `ensure_safe_to_modify` antes de cualquier operación de escritura en `save` y `reset`, asegurando que no se pueda corromper la configuración o escribir fuera del directorio permitido, incluso si el path fue validado previamente.
+- `2026-10-13T05:18:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T05:18:11` Corrida terminada. Total usado hoy: 128.

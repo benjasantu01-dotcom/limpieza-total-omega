@@ -24,6 +24,7 @@ ERROR_ACCESS_DENIED: Final[int] = 5
 ERROR_INSUFFICIENT_BUFFER: Final[int] = 122
 ERROR_INVALID_NAME: Final[int] = 123
 INVALID_FILE_ATTRIBUTES: Final[int] = 0xFFFFFFFF
+LONG_PATH_PREFIX: Final[str] = "\\\\?\\"
 
 PathLike: TypeAlias = Union[str, os.PathLike]
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
@@ -126,13 +127,13 @@ def _to_long_path(path_str: str) -> str:
     if not isinstance(path_str, str) or not path_str:
         return ""
     if os.name == 'nt':
-        if path_str.startswith("\\\\?\\"):
+        if path_str.startswith(LONG_PATH_PREFIX):
             return path_str
         if path_str.startswith("\\\\"):
             return "\\\\?\\UNC" + path_str[1:]
         try:
             abs_path = os.path.abspath(path_str)
-            return "\\\\?\\" + abs_path
+            return LONG_PATH_PREFIX + abs_path
         except (OSError, ValueError):
             return path_str
     return path_str
@@ -668,7 +669,7 @@ def normalize(path: PathLike) -> Path:
     path_str = str(path).strip()
     
     if os.name == 'nt' and _is_path_too_long(path_str):
-        if not path_str.startswith("\\\\?\\"):
+        if not path_str.startswith(LONG_PATH_PREFIX):
              raise UnsafePathError("Ruta demasiado larga.", SafetyValidationErrorCode.PATH_TOO_LONG)
 
     if _is_path_empty_or_whitespace(path_str): raise UnsafePathError("Entrada de ruta vacía o inválida.", SafetyValidationErrorCode.GENERIC)
@@ -758,7 +759,7 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     """Realiza una validación estructural de la ruta para detectar ataques de bajo nivel."""
     if not isinstance(path_string, str):
         raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC)
-    if path_string.startswith(("\\\\.\\", "//./", "\\\\?\\")) and not path_string.startswith("\\\\?\\"):
+    if path_string.startswith(("\\\\.\\", "//./", LONG_PATH_PREFIX)) and not path_string.startswith(LONG_PATH_PREFIX):
         raise UnsafePathError("Acceso a Namespace de dispositivos prohibido.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
     if _is_unc_path(path_string):
         raise UnsafePathError("Rutas UNC/Red bloqueadas.", SafetyValidationErrorCode.UNC_PATH)
