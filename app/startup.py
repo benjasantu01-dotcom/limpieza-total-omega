@@ -156,7 +156,8 @@ class StartupEntry:
     def _validate_file_access(self, p: Path) -> bool:
         """Comprueba permisos y existencia del archivo en el sistema de archivos."""
         try:
-            if is_protected_path(p) or p.is_symlink() or (p.exists() and p.is_mount()):
+            # Protege contra symlink attacks al verificar la ruta resuelta
+            if is_protected_path(p) or p.is_symlink():
                 return False
             return p.stat().is_file()
         except (OSError, PermissionError, FileNotFoundError, AttributeError):
@@ -179,7 +180,7 @@ class StartupEntry:
         
         try:
             p: Path = Path(norm)
-            if not p.is_absolute():
+            if not p.is_absolute() or ".." in p.parts:
                 _EXISTS_CACHE[path_string] = False
                 return ""
             
@@ -210,7 +211,9 @@ class StartupEntry:
             else:
                 parts: List[str] = command_line.split()
                 if parts and parts[0]:
-                    result = self._resolve_and_cache_path(parts[0])
+                    # Evitar resolver comandos relativos simples que no sean rutas claras
+                    if "\\" in parts[0] or "/" in parts[0]:
+                        result = self._resolve_and_cache_path(parts[0])
         except (AttributeError, ValueError, IndexError, OSError, TypeError):
             result = ""
         

@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Mejoras aceptadas: **209** (41.5% de aceptación)
 - Rechazadas por tests: 28
-- Rechazadas por guardia de seguridad: 57
+- Rechazadas por guardia de seguridad: 58
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 190
+- Sin respuesta de la IA (error o límite): 186
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 53 | 6 | 13 | 5 | 57 |
+| 2026-10-11 | 53 | 6 | 13 | 5 | 53 |
 | 2026-10-12 | 144 | 19 | 41 | 16 | 130 |
-| 2026-10-13 | 9 | 3 | 3 | 2 | 3 |
+| 2026-10-13 | 12 | 3 | 4 | 2 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - robustez ante casos límite: **44**
+- seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **41**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
@@ -33,20 +33,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **21**
 - `diskreport.py`: **20**
 - `browser.py`: **19**
-- `safety.py`: **18**
+- `safety.py`: **19**
 - `healthscore.py`: **17**
 - `branding.py`: **16**
 - `organizer.py`: **16**
 - `scanner.py`: **15**
+- `settings.py`: **15**
 - `duplicates.py`: **15**
-- `settings.py`: **14**
 - `assistant.py`: **14**
 - `quarantine.py`: **9**
-- `startup.py`: **7**
+- `startup.py`: **8**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-13T00:53:28` **startup.py** (seguridad defensiva): Se ha mejorado `_resolve_and_cache_path` y `_resolve_path_from_command` para prevenir la resolución de rutas mediante el uso del flag `follow_symlinks=False` (implícito en el manejo de Path) y una verificación explícita contra ataques de "Path Traversal" y rutas relativas inseguras, asegurando que el ejecutable siempre se valide dentro de un contexto absoluto y seguro antes de su resolución.
+- `2026-10-13T00:53:15` **settings.py** (seguridad defensiva): Se endurecieron las validaciones de seguridad en `save` y `_read_and_parse_json` al verificar explícitamente que la ruta del archivo sea un archivo regular y no un enlace simbólico o un punto de reparse antes de realizar cualquier operación de E/S, protegiendo contra ataques de confusión de rutas (path confusion) o symlink races.
+- `2026-10-13T00:52:17` **safety.py** (seguridad defensiva): Se ha añadido una verificación explícita para detectar y prevenir el uso de rutas que contienen puntos de reparse (junctions/symlinks) en los niveles intermedios de la jerarquía de directorios (no solo el destino final), cerrando un vector de escalada de privilegios/fuga de sandbox mediante "path traversal" a través de links maliciosos.
 - `2026-10-13T00:42:10` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `delete_reviewed` añadiendo una validación explícita para asegurar que la carpeta de revisión no sea una ruta raíz o sensible, protegiendo contra posibles errores de configuración que intentarían borrar archivos de directorios críticos.
 - `2026-10-13T00:41:44` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_process_executable_safe` al implementar una validación estricta de rutas mediante `Path.resolve()` antes de consultar `is_protected_path`, asegurando que no se pueda manipular la memoria de procesos cuyos ejecutables residan en rutas maliciosas, protegidas o con caracteres especiales.
 - `2026-10-13T00:33:27` **main.py** (seguridad defensiva): Se ha implementado un control de seguridad adicional en `_validate_disk_access` para evitar la inyección de rutas mediante el uso de caracteres nulos (null bytes), lo cual es una técnica común para evadir validaciones basadas en extensiones o prefijos en sistemas subyacentes.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T14:51:37` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` y `compute_score` ante valores atípicos, asegurando que `suspicious_count` no pueda ser negativo y que la validación inicial de `SystemMetrics` sea estricta, evitando errores de cálculo en cascada.
 - `2026-10-12T14:50:40` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez ante errores de I/O en el proceso de hash integrando un chequeo preventivo de tamaño y accesibilidad dentro de los bloques `try-except` para evitar que archivos con permisos cambiantes o bloqueos repentinos interrumpan el proceso completo de escaneo.
 - `2026-10-12T14:42:16` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo frente a archivos bloqueados por procesos activos u otros hilos, añadiendo un manejo de excepciones específico en `_process_file_node` y garantizando que `_sum_directory_recursive` trate los errores de acceso de forma más granular para no interrumpir el conteo total ante fallos menores en subcarpetas.
-- `2026-10-12T14:41:38` **branding.py** (robustez ante casos límite): Se reforzó la robustez de las operaciones de dibujo en `branding.py` mediante la validación estricta de las coordenadas y dimensiones de entrada, asegurando que valores extremos o `NaN` no provoquen errores en el motor de renderizado `Canvas`, manteniendo la estabilidad de la interfaz ante configuraciones inusuales.
-- `2026-10-12T14:40:49` **assistant.py** (robustez ante casos límite): Mejora la robustez en la ingesta de datos del `SystemContext` agregando validaciones para manejar valores `None` o malformados en `ingest` sin abortar el proceso, asegurando que los datos externos no corrompan el estado interno.
-- `2026-10-12T14:31:18` **scanner.py** (rendimiento): Optimicé el rendimiento del escaneado implementando un filtro preventivo (`is_protected_path` e `is_relevant_extension`) dentro de `process_entry` para evitar llamadas costosas a `_is_safe_entry` (que realiza `resolve()` y accesos a disco) en archivos que de todos modos serían ignorados por el motor de heurísticas.

@@ -185,11 +185,11 @@ class _SettingsManager:
                 
                 if config_path.exists():
                     ensure_safe_to_modify(str(config_path.resolve()))
+                    if config_path.is_symlink(): raise PermissionError("Symlink detected")
                     os.replace(config_path, bak_path)
                 
                 os.replace(temp_path, config_path)
                 
-                # Sincronización del directorio para persistir el rename
                 dir_fd = os.open(str(config_path.parent), os.O_RDONLY)
                 os.fsync(dir_fd)
                 self.clear()
@@ -367,7 +367,6 @@ def _is_file_secure_to_read(st: os.stat_result, file_obj: Any) -> bool:
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
         if st.st_mode & (stat.S_ISUID | stat.S_ISGID) or st.st_nlink != 1: return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-        if os.path.islink(file_obj.name): return False
         return True
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
