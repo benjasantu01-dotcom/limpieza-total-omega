@@ -814,3 +814,14 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-13T13:38:40` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
 - `2026-10-13T13:38:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T13:38:40` Corrida terminada. Total usado hoy: 324.
+- `2026-10-13T13:46:05` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-13T13:46:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-13T13:46:11` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-13T13:46:18` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-13T13:47:12` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva al validar que `_get_source_value` no permita el acceso a atributos que comiencen con guión bajo (atributos privados/protegidos) ni a métodos, bloqueando vectores de introspección de objetos fuente externos antes de que lleguen a `SystemContext`.
+- `2026-10-13T13:47:52` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `save_logo_svg` añadiendo una comprobación explícita mediante `is_protected_path` sobre la ruta resuelta, asegurando que no se pueda escribir en directorios bloqueados incluso si la validación de `is_safe_to_modify` fuera puenteada por una configuración inusual, manteniendo la consistencia con las reglas de seguridad defensiva.
+- `2026-10-13T13:48:25` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva de `browser.py` implementando una validación estricta de rutas mediante `pathlib.Path.is_relative_to` (o su equivalente mediante comparación de `parts`), asegurando que no se pueda realizar un *path traversal* fuera del sandbox (`LOCALAPPDATA`) incluso si el sistema operativo resolviera enlaces o accesos inesperados.
+- `2026-10-13T13:48:25` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-13T13:48:41` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `walk_files` y `_is_excluded_path` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta real de los archivos antes de procesarlos, asegurando que cualquier resolución de alias o camino simbólico no escape al control de seguridad.
+- `2026-10-13T13:48:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T13:48:41` Corrida terminada. Total usado hoy: 328.

@@ -160,9 +160,9 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
             except (OSError, PermissionError):
                 return True
 
-        entry_path = Path(entry.path)
+        entry_path = Path(entry.path).resolve()
         try:
-            entry_path.resolve().relative_to(root_path.resolve())
+            entry_path.relative_to(root_path.resolve())
         except (ValueError, RuntimeError):
             return True
 
@@ -309,21 +309,24 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if skip_protected and _is_excluded_path(entry, root_path):
                             continue
                         
+                        entry_path = Path(entry.path).resolve()
+                        if skip_protected and is_protected_path(entry_path):
+                            continue
+                        
                         if entry.is_dir(follow_symlinks=False):
                             try:
                                 st = entry.stat(follow_symlinks=False)
                                 inode = (st.st_dev, st.st_ino)
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
-                                    stack.append(Path(entry.path))
+                                    stack.append(entry_path)
                             except (OSError, PermissionError):
                                 continue
                         elif entry.is_file(follow_symlinks=False):
                             try:
                                 f_stat = entry.stat(follow_symlinks=False)
-                                # El archivo pudo haber sido borrado entre el escaneo y el stat
                                 if f_stat:
-                                    yield Path(entry.path), int(f_stat.st_size)
+                                    yield entry_path, int(f_stat.st_size)
                             except (OSError, PermissionError, TypeError, FileNotFoundError):
                                 continue
                     except (OSError, PermissionError, FileNotFoundError):

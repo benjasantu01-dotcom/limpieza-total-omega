@@ -494,8 +494,11 @@ def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
     try:
         if isinstance(source, dict):
             return source.get(key)
+        # Se asegura que no se acceda a nada que empiece con '_' y no sea ejecutable
         val = getattr(source, key, None)
-        return None if callable(val) or isinstance(val, (type,)) else val
+        if (isinstance(key, str) and key.startswith("_")) or callable(val) or isinstance(val, (type,)):
+            return None
+        return val
     except (AttributeError, ValueError, TypeError):
         return None
 

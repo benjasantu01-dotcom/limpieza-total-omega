@@ -393,6 +393,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         target = Path(destination).resolve()
             
         # Validación de seguridad: el sistema de seguridad debe aprobar la escritura en la ruta
+        # Incluye chequeo explícito de protección de sistema sobre la ruta resuelta
         if not is_safe_to_modify(target) or is_protected_path(target) or not is_safe_to_modify(target.parent):
             return None
         

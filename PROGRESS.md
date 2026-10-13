@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 54
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 192
+- Sin respuesta de la IA (error o límite): 188
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-12 | 72 | 5 | 18 | 10 | 75 |
-| 2026-10-13 | 144 | 15 | 36 | 12 | 117 |
+| 2026-10-12 | 72 | 5 | 18 | 10 | 71 |
+| 2026-10-13 | 148 | 15 | 36 | 12 | 117 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **50**
 - robustez ante casos límite: **43**
+- seguridad defensiva: **39**
 - rendimiento: **36**
-- seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **20**
 - `memory.py`: **20**
-- `browser.py`: **18**
-- `diskreport.py`: **18**
+- `browser.py`: **19**
+- `diskreport.py`: **19**
 - `duplicates.py`: **18**
 - `scanner.py`: **17**
+- `assistant.py`: **17**
 - `safety.py`: **16**
-- `assistant.py`: **16**
-- `branding.py`: **13**
+- `branding.py`: **14**
 - `organizer.py`: **13**
 - `settings.py`: **13**
 - `quarantine.py`: **12**
@@ -46,6 +46,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-13T13:48:41` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` y `_is_excluded_path` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta real de los archivos antes de procesarlos, asegurando que cualquier resolución de alias o camino simbólico no escape al control de seguridad.
+- `2026-10-13T13:48:25` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva de `browser.py` implementando una validación estricta de rutas mediante `pathlib.Path.is_relative_to` (o su equivalente mediante comparación de `parts`), asegurando que no se pueda realizar un *path traversal* fuera del sandbox (`LOCALAPPDATA`) incluso si el sistema operativo resolviera enlaces o accesos inesperados.
+- `2026-10-13T13:47:52` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `save_logo_svg` añadiendo una comprobación explícita mediante `is_protected_path` sobre la ruta resuelta, asegurando que no se pueda escribir en directorios bloqueados incluso si la validación de `is_safe_to_modify` fuera puenteada por una configuración inusual, manteniendo la consistencia con las reglas de seguridad defensiva.
+- `2026-10-13T13:47:12` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al validar que `_get_source_value` no permita el acceso a atributos que comiencen con guión bajo (atributos privados/protegidos) ni a métodos, bloqueando vectores de introspección de objetos fuente externos antes de que lleguen a `SystemContext`.
 - `2026-10-13T13:38:26` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes del sistema de archivos agregando un chequeo preventivo de `OSError` al realizar operaciones de lectura y metadatos en `_is_file_secure_to_read` y `load`, evitando que fallos transitorios en el acceso al disco bloqueen la inicialización de la app.
 - `2026-10-13T13:37:17` **scanner.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante errores de sistema en `scan_directory` y `_is_readable` mediante una gestión más granular de `OSError` y `PermissionError`, asegurando que el scanner no aborte ante archivos bloqueados por el SO o metadatos inalcanzables.
 - `2026-10-13T13:36:48` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante fallos de permisos al acceder a metadatos de archivos (especialmente en entornos con antivirus o seguridad estricta) mediante un bloque de reintento con espera exponencial exponencial simple en `_get_path_stat_robust`, mitigando errores transitorios de "archivo en uso" sin comprometer la seguridad.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-13T13:05:47` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` sustituyendo la concatenación de listas (que genera copias innecesarias) por una iteración directa sobre generadores y un set de control, evitando además el uso de `+` con colecciones grandes.
 - `2026-10-13T12:46:32` **memory.py** (rendimiento): Optimizé `top_memory_processes` reemplazando la creación de una nueva lista de procesos en cada iteración por una actualización eficiente de la caché, y pre-calculando el tamaño de los buffers para evitar reasignaciones innecesarias durante la enumeración de procesos.
 - `2026-10-13T12:36:14` **duplicates.py** (rendimiento): Se optimizó el acceso a disco en `_collect_candidates` evitando llamadas redundantes a `stat()` y `is_protected_path` mediante el uso del objeto `os.DirEntry` ya existente, lo cual reduce drásticamente las syscalls innecesarias durante el escaneo de directorios.
-- `2026-10-13T12:35:09` **browser.py** (rendimiento): Se implementó un sistema de memoización mediante `ScanContext` para las validaciones de `is_safe_to_modify` y `is_protected_path`, evitando llamadas repetitivas y costosas al sistema de archivos durante el escaneo de múltiples subcarpetas dentro de una misma jerarquía.
-- `2026-10-13T12:26:42` **branding.py** (rendimiento): Se optimizó el acceso a constantes de color y métricas tipográficas mediante la eliminación de llamadas redundantes a `lru_cache` y la conversión de `MappingProxyType` a diccionarios locales inmutables para el acceso directo, mejorando la velocidad de resolución en las funciones de renderizado crítico.
-- `2026-10-13T12:26:12` **assistant.py** (rendimiento): Se optimizó el acceso a métricas en `SystemContext` reemplazando la creación dinámica de diccionarios en cada llamada a `metrics_snapshot` por un cacheo selectivo, evitando iteraciones sobre el diccionario de validadores en cada lectura.
-- `2026-10-13T12:25:31` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints detallados, la unificación del estilo de docstrings (siguiendo las guías de estilo de la comunidad Python) y la extracción de la lógica de validación de rutas en el registro a un método más explícito dentro de `StartupEntry`.
