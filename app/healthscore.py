@@ -204,34 +204,34 @@ _PIPELINE: Final[Tuple[PipelineEntry, ...]] = (
 _verify_pipeline_integrity(WEIGHTS, _PIPELINE)
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
-    """Calcula salud: Normaliza el volumen de basura (MB) comparándolo contra el límite total."""
+    """Normaliza la cantidad de archivos temporales contra el límite de volumen tolerado."""
     return _JUNK_SCORER(float(junk_mb) if isinstance(junk_mb, (int, float)) else 0.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
-    """Calcula salud: Penaliza el score según hallazgos sospechosos y advertencias de seguridad."""
+    """Calcula salud: Penaliza según hallazgos sospechosos y advertencias (modelo de deducción)."""
     s_count = max(0, int(suspicious_count))
     w_count = max(0, int(warnings))
     penalization = (s_count * 0.05) + (w_count * 0.25)
     return _clamp(1.0 - penalization)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
-    """Calcula salud: Normaliza el porcentaje de RAM libre frente al umbral crítico definido."""
+    """Normaliza el porcentaje de RAM disponible frente al umbral de criticidad definido."""
     val = float(available_percent) if isinstance(available_percent, (int, float)) else 0.0
     if _LIMIT_RAM_PERCENT <= 0 or not math.isfinite(val): return 0.0
     return _clamp(val / _LIMIT_RAM_PERCENT)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
-    """Calcula salud: Normaliza el porcentaje de disco libre frente al umbral de advertencia."""
+    """Normaliza el porcentaje de espacio libre en disco frente al límite operativo deseado."""
     val = float(free_percent) if isinstance(free_percent, (int, float)) else 0.0
     if _LIMIT_DISK_PERCENT <= 0 or not math.isfinite(val): return 0.0
     return _clamp(val / _LIMIT_DISK_PERCENT)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
-    """Calcula salud: Normaliza el volumen de duplicados detectados frente a la capacidad de recuperación."""
+    """Normaliza el volumen de duplicados frente a la capacidad de recuperación total."""
     return _DUP_SCORER(float(duplicate_mb) if isinstance(duplicate_mb, (int, float)) else 0.0)
 
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
-    """Calcula salud: Normaliza la cantidad de elementos de inicio contra el límite de tolerancia."""
+    """Normaliza el número de entradas de inicio frente al umbral máximo de rendimiento."""
     return _STARTUP_SCORER(float(startup_count) if isinstance(startup_count, (int, float)) else 0.0)
 
 def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) -> float:
@@ -336,28 +336,28 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
-    accumulated_score: float = 0.0
+    total_points = 0.0
     
+    # Procesamiento del pipeline de métricas
     for entry in _PIPELINE:
         try:
             area_ratio = _clamp(entry.scorer(m))
-        except Exception as e:
-            logging.error(f"Error procesando normalizador para {entry.area}: {e}")
-            area_ratio = 0.0
+            _evaluate_rules(m, entry.rules, area_ratio, recommendations)
             
-        _evaluate_rules(m, entry.rules, area_ratio, recommendations)
-        
-        # Cálculo discreto defensivo
-        points = area_ratio * float(entry.weight)
-        val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
-        metric_breakdown[entry.area] = val_int
-        if math.isfinite(val_int):
-            accumulated_score += float(val_int)
-                
+            # Cálculo de puntaje discreto para la métrica actual
+            points = area_ratio * float(entry.weight)
+            val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
+            
+            metric_breakdown[entry.area] = val_int
+            total_points += float(val_int)
+        except Exception as e:
+            logging.error(f"Error procesando pipeline para {entry.area}: {e}")
+            metric_breakdown[entry.area] = 0
+            
     if m.quarantined_count > 0:
         recommendations.append(f"Tenés {m.quarantined_count} archivo(s) en cuarentena.")
         
-    final_score = int(round(_clamp(accumulated_score, 0.0, 100.0)))
+    final_score = int(round(_clamp(total_points, 0.0, 100.0)))
     return HealthResult(
         score=final_score,
         grade=grade_for_score(final_score),
