@@ -381,10 +381,10 @@ def summarize(result: HealthResult | None) -> List[str]:
     
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
-    # Iteración sobre breakdown pre-calculado, con fallback para claves faltantes
+    # Iteración sobre WEIGHTS para asegurar consistencia visual, con fallback para keys del breakdown
     for area in WEIGHTS:
         p = result.breakdown.get(area, 0)
-        maximo = WEIGHTS[area]
+        maximo = WEIGHTS.get(area, 1)
         lines.append(f"  {area.capitalize():<12} {p:>2}/{maximo:<2} [{_render_bar(p, maximo)}]")
     
     lines.extend(("", "Recomendaciones:", *(f"  - {_sanitize_msg(r)}" for r in result.recommendations if _sanitize_msg(r))))

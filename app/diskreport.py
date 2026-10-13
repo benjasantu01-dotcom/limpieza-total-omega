@@ -298,6 +298,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     
     while stack:
         current_dir = stack.pop()
+        # Verificar longitud de ruta para evitar excepciones de sistema operativo
+        if len(str(current_dir)) > 32767:
+            continue
+            
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
@@ -317,9 +321,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         elif entry.is_file(follow_symlinks=False):
                             try:
                                 f_stat = entry.stat(follow_symlinks=False)
-                                if f_stat is not None:
+                                # El archivo pudo haber sido borrado entre el escaneo y el stat
+                                if f_stat:
                                     yield Path(entry.path), int(f_stat.st_size)
-                            except (OSError, PermissionError, TypeError):
+                            except (OSError, PermissionError, TypeError, FileNotFoundError):
                                 continue
                     except (OSError, PermissionError, FileNotFoundError):
                         continue

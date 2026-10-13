@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **212** (42.1% de aceptación)
-- Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 54
-- Sin cambios (nada sustancial que mejorar): 21
+- Mejoras aceptadas: **214** (42.5% de aceptación)
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 52
+- Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-12 | 73 | 6 | 20 | 10 | 83 |
-| 2026-10-13 | 139 | 14 | 34 | 11 | 114 |
+| 2026-10-12 | 73 | 5 | 18 | 10 | 82 |
+| 2026-10-13 | 141 | 14 | 34 | 12 | 115 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **50**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **40**
 - seguridad defensiva: **36**
 - rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
+- `healthscore.py`: **20**
 - `memory.py`: **20**
-- `healthscore.py`: **19**
 - `browser.py`: **18**
+- `diskreport.py`: **18**
 - `duplicates.py`: **18**
-- `diskreport.py`: **17**
 - `scanner.py`: **16**
 - `assistant.py`: **16**
 - `safety.py`: **15**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-13T13:17:13` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `summarize` y `compute_score` ante datos malformados, garantizando que el bucle de renderizado nunca falle si un área no está presente en el desglose, y añadiendo una validación de coherencia en el pipeline para evitar comportamientos indefinidos por claves faltantes.
+- `2026-10-13T13:16:02` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `walk_files` ante archivos que desaparecen entre la detección y la lectura de metadatos (condición de carrera) y se añadió una verificación explícita para evitar que `os.scandir` intente procesar rutas extremadamente largas o inválidas que superen los límites de longitud del sistema de archivos.
 - `2026-10-13T13:07:19` **browser.py** (robustez ante casos límite): Se introdujo una validación de rutas que evita el procesamiento de nombres de archivos que contengan caracteres nulos o secuencias de control potencialmente maliciosas, mejorando la robustez frente a entradas de disco inesperadas.
 - `2026-10-13T13:07:04` **branding.py** (robustez ante casos límite): Se ha robustecido el manejo de rutas en `save_logo_svg` y se han añadido validaciones de tipo/finitud en `draw_ring` para prevenir errores de renderizado ante entradas numéricas extremas o inesperadas, manteniendo la estabilidad de la interfaz ante datos malformados.
 - `2026-10-13T13:06:28` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `ingest` y `_apply_field` implementando validaciones más estrictas contra desbordamientos y valores inesperados, protegiendo al sistema de posibles estados inconsistentes tras el análisis de disco.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-13T12:16:22` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica mediante la inclusión de type hints precisos, la adición de docstrings detallados en funciones clave y el uso de anotaciones de tipo más rigurosas (`Sequence`, `Protocol`, `TypeAlias`), facilitando el mantenimiento y la comprensión de las heurísticas de escaneo.
 - `2026-10-13T12:16:09` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings técnicos detallados en los predicados de seguridad y funciones de validación crítica, y se han añadido type hints explícitos en los delegados de validación para clarificar las expectativas de tipos de datos, facilitando el mantenimiento y la auditabilidad del código.
 - `2026-10-13T12:06:33` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la adición de docstrings técnicos detallados en funciones críticas y la clarificación de tipos, asegurando que las decisiones de diseño (como las comprobaciones de bajo nivel en Windows) estén explícitamente documentadas para el equipo.
-- `2026-10-13T12:06:19` **memory.py** (legibilidad y documentación): Se introdujeron type hints en funciones críticas, se reemplazaron los `try-except` genéricos por bloques más específicos y se documentó con docstrings el propósito técnico de las estructuras `Win32` para mejorar la mantenibilidad y claridad del código.
-- `2026-10-13T12:04:40` **healthscore.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos en las funciones de puntuación (`score_*`) para aclarar el propósito de cada métrica y se refactorizó `compute_score` para separar el flujo de control (iteración sobre el pipeline) de la lógica de acumulado, mejorando la legibilidad.
