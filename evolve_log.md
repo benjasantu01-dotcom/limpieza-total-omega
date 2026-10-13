@@ -1479,3 +1479,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-13T08:42:11` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
 - `2026-10-13T08:42:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T08:42:11` Corrida terminada. Total usado hoy: 208.
+- `2026-10-13T08:50:22` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-10-13T08:50:26` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-13T08:50:59` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). He robustecido la tolerancia a fallos del módulo integrando una gestión explícita de `OSError` (específicamente `ERROR_ACCESS_DENIED` y `ERROR_SHARING_VIOLATION`) en las operaciones de I/O, evitando que el escaneo se detenga abruptamente al encontrar archivos bloqueados por el sistema o procesos concurrentes.
+- `2026-10-13T08:51:29` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del motor ante valores atípicos y potenciales errores de ejecución mediante la adición de un chequeo defensivo (`math.isfinite`) en la agregación de `accumulated_score` y la protección del acceso al breakdown, garantizando que el sistema siempre retorne un estado válido incluso si los componentes del pipeline fallan.
+- `2026-10-13T08:52:40` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se mejora la robustez ante estados inconsistentes del sistema de archivos al añadir una validación de existencia (`exists()`) en `_check_environment_integrity` y `_validate_environment`, previniendo errores durante el inicio de la app si las rutas críticas han sido eliminadas por procesos externos.
+- `2026-10-13T08:52:41` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-13T08:52:57` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-13T08:52:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T08:52:57` Corrida terminada. Total usado hoy: 212.

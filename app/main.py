@@ -193,6 +193,8 @@ def validated_ui_operation(func: Callable) -> Callable:
 def _check_environment_integrity() -> None:
     """Valida requisitos de seguridad críticos al arrancar el proceso."""
     cwd = Path.cwd().resolve()
+    if not cwd.exists():
+        raise RuntimeError("Directorio de trabajo actual no existe.")
     # Prevenir ejecución desde rutas de red o sistema volátiles
     if str(cwd).startswith(r"\\"):
         raise RuntimeError("Ejecución en ruta UNC prohibida.")
@@ -303,6 +305,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             cwd = Path.cwd().resolve()
             home = Path.home()
             
+            if not app_root.exists() or not cwd.exists() or not home.exists():
+                raise RuntimeError("Rutas base críticas no accesibles.")
+
             if not os.access(app_root, os.W_OK) and not os.access(home, os.W_OK):
                 raise RuntimeError("Permisos insuficientes en rutas críticas.")
                 

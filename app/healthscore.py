@@ -346,11 +346,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             
         _evaluate_rules(m, entry.rules, area_ratio, recommendations)
         
-        # Cálculo discreto
+        # Cálculo discreto defensivo
         points = area_ratio * float(entry.weight)
         val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
         metric_breakdown[entry.area] = val_int
-        accumulated_score += float(val_int)
+        if math.isfinite(val_int):
+            accumulated_score += float(val_int)
                 
     if m.quarantined_count > 0:
         recommendations.append(f"Tenés {m.quarantined_count} archivo(s) en cuarentena.")
