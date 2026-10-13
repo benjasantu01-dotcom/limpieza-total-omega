@@ -221,7 +221,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         if (junk_file._ino is not None and stat_result.st_ino != junk_file._ino) or \
            (junk_file._dev is not None and stat_result.st_dev != junk_file._dev): return False
         
-        if not src_real.is_file() or is_protected_path(src_real) or is_protected_path(dest_real): return False
+        if not src_real.is_file() or is_protected_path(src_real) or is_protected_path(dest_real) or is_protected_path(dest_real.parent): return False
         if not is_safe_to_modify(src_real) or not _validate_path_security(src_real, dest_real): return False
         
         target_dir = dest_real.parent if dest_real.exists() else dest_real

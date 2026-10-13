@@ -364,9 +364,13 @@ def _is_process_executable_safe(pid: int) -> bool:
     try:
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0 and buf.value:
-            path_str = buf.value
-            if not path_str.startswith("\\\\"):
-                return not is_protected_path(path_str) and len(filter_safe_paths([path_str])) > 0
+            path_str = str(buf.value).strip()
+            # Bloqueo estricto: rutas UNC o sospechosas no son seguras
+            if not path_str or path_str.startswith("\\\\"):
+                return False
+            # Validar integridad contra lista de protegidas y normalizar
+            normalized = str(Path(path_str).resolve())
+            return not is_protected_path(normalized) and len(filter_safe_paths([normalized])) > 0
     except (ctypes.ArgumentError, OSError, ValueError, RuntimeError):
         return False
     finally:

@@ -27,6 +27,7 @@ MetricKey: TypeAlias = str
 # Constantes de rendimiento para validación
 _ALLOWED_CHARS: Final[set[str]] = set(string.ascii_letters + string.digits + " .,:()-_%")
 _BLOCKED_TERMS: Final[frozenset[str]] = frozenset(["system32", "windows", "admin", "c:\\"])
+_MAX_MSG_LEN: Final[int] = 128
 
 class Scorer(Protocol):
     """
@@ -300,16 +301,13 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _sanitize_msg(msg: str) -> str:
-    """Limpia el mensaje usando una whitelist estricta de caracteres permitidos."""
+    """Limpia el mensaje usando una whitelist estricta y limitación de longitud."""
     if not isinstance(msg, str): return ""
-    
     sanitized = "".join(c for c in msg if c in _ALLOWED_CHARS)
-    
     lower_msg = sanitized.lower()
     if any(b in lower_msg for b in _BLOCKED_TERMS):
         return ""
-        
-    return sanitized.strip()[:200]
+    return sanitized.strip()[:_MAX_MSG_LEN]
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio, findings: List[str]) -> None:
     """Ejecuta las reglas de diagnóstico para una métrica y agrega hallazgos si es necesario."""
@@ -379,7 +377,7 @@ def summarize(result: HealthResult | None) -> List[str]:
     """Genera una lista de líneas legible para el informe de estado final del sistema."""
     if not isinstance(result, HealthResult): 
         return ["Error: Informe de salud no disponible."]
-        
+    
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
     # Iteración sobre breakdown pre-calculado, con fallback para claves faltantes
@@ -388,5 +386,5 @@ def summarize(result: HealthResult | None) -> List[str]:
         maximo = WEIGHTS[area]
         lines.append(f"  {area.capitalize():<12} {p:>2}/{maximo:<2} [{_render_bar(p, maximo)}]")
     
-    lines.extend(("", "Recomendaciones:", *(f"  - {r}" for r in result.recommendations)))
+    lines.extend(("", "Recomendaciones:", *(f"  - {_sanitize_msg(r)}" for r in result.recommendations if _sanitize_msg(r))))
     return lines

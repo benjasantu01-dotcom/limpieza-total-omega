@@ -333,21 +333,21 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _validate_disk_access(self, path: Union[str, Path]) -> Path:
         """Valida la integridad de la ruta y permisos para prevenir inyecciones."""
-        clean_p = self._sanitize_path(path)
         try:
+            clean_p = self._sanitize_path(path)
             p = Path(clean_p).resolve(strict=True)
-        except (OSError, RuntimeError):
-            raise safety.UnsafePathError(f"Ruta inaccesible o inexistente: {clean_p}")
-
-        app_dir = Path(__file__).resolve().parent
-        if app_dir in p.parents or p == app_dir:
-             raise safety.UnsafePathError("Operación denegada: Acceso a estructura interna de la App.")
-
-        if p.is_symlink():
-            raise safety.UnsafePathError("Ruta inválida: se detectó un enlace simbólico.")
             
-        safety.ensure_safe_to_modify(p)
-        return p
+            app_dir = Path(__file__).resolve().parent
+            if app_dir in p.parents or p == app_dir:
+                 raise safety.UnsafePathError("Operación denegada: Acceso a estructura interna de la App.")
+
+            if p.is_symlink():
+                raise safety.UnsafePathError("Ruta inválida: se detectó un enlace simbólico.")
+                
+            safety.ensure_safe_to_modify(p)
+            return p
+        except (OSError, RuntimeError) as e:
+            raise safety.UnsafePathError(f"Ruta inaccesible o inexistente: {path}")
 
     def _ensure_path_writable_and_clean(self, path: Union[str, Path]) -> None:
         """Verifica la seguridad y limpieza de la ruta antes de escribir."""
@@ -1764,15 +1764,19 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not folder:
             return
         
-        self.analysis_folder = folder
+        try:
+            # Validar de nuevo explícitamente antes de procesar
+            self.analysis_folder = str(self._validate_disk_access(folder))
+        except Exception:
+            return
 
         def task() -> None:
-            self.set_status(f"Analizando {folder}...")
+            self.set_status(f"Analizando {self.analysis_folder}...")
             self.clear("Disco")
-            self.log(f"Analizando {folder} (solo lectura, puede tardar)...", "Disco")
-            self.log_lines(diskreport.summarize(folder), "Disco")
+            self.log(f"Analizando {self.analysis_folder} (solo lectura, puede tardar)...", "Disco")
+            self.log_lines(diskreport.summarize(self.analysis_folder), "Disco")
 
-        self.run_async(task, target=folder)
+        self.run_async(task, target=self.analysis_folder)
 
     @validated_ui_operation
     @ensure_safety

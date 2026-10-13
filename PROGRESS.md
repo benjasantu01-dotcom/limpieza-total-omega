@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Mejoras aceptadas: **217** (43.1% de aceptación)
 - Rechazadas por tests: 27
 - Rechazadas por guardia de seguridad: 55
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 190
+- Sin respuesta de la IA (error o límite): 186
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-12 | 110 | 15 | 32 | 12 | 111 |
-| 2026-10-13 | 103 | 12 | 23 | 7 | 79 |
+| 2026-10-12 | 110 | 15 | 32 | 12 | 107 |
+| 2026-10-13 | 107 | 12 | 23 | 7 | 79 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
 - manejo de errores y validación de entradas: **48**
+- seguridad defensiva: **43**
 - robustez ante casos límite: **41**
-- seguridad defensiva: **39**
 - rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **21**
+- `memory.py`: **22**
 - `diskreport.py`: **19**
-- `healthscore.py`: **18**
+- `healthscore.py`: **19**
 - `scanner.py`: **17**
 - `browser.py`: **17**
 - `duplicates.py`: **17**
+- `organizer.py`: **16**
 - `safety.py`: **16**
-- `organizer.py`: **15**
 - `assistant.py`: **15**
 - `branding.py`: **14**
 - `settings.py`: **14**
 - `quarantine.py`: **12**
 - `startup.py`: **10**
-- `main.py`: **8**
+- `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-13T09:34:16` **organizer.py** (seguridad defensiva): Mejoré la seguridad de `_is_safe_for_disk_op` al añadir una verificación explícita de `is_protected_path` sobre el directorio destino y su padre, y encapsulé la lógica de resolución de rutas en un bloque `try-except` más robusto para evitar que fallos en la resolución de enlaces simbólicos o rutas inexistentes causen un escape de la validación.
+- `2026-10-13T09:34:00` **memory.py** (seguridad defensiva): Se ha mejorado la robustez del manejo de rutas en `_is_process_executable_safe` añadiendo una comprobación explícita para evitar posibles ataques de rutas UNC (recursos de red), delegando la validación final a las funciones de seguridad centralizadas `is_protected_path` y `filter_safe_paths` sobre rutas normalizadas.
+- `2026-10-13T09:33:28` **main.py** (seguridad defensiva): Mejoré la seguridad en la validación de directorios para operaciones de disco, implementando `pathlib.Path.resolve(strict=True)` en `_validate_disk_access` y `on_disk_analysis` para asegurar que las rutas sean reales y absolutas antes de procesarlas, previniendo inyecciones de rutas inexistentes o mal formadas.
+- `2026-10-13T09:32:12` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva en `healthscore.py` restringiendo la exposición de datos del sistema mediante la centralización de la validación en `_sanitize_msg`, añadiendo una comprobación adicional de longitud para evitar ataques de inyección de texto masivo, y fortaleciendo la integridad de los resultados mediante un pre-chequeo estricto de tipos en el `summarize` para prevenir la propagación de datos corruptos antes del renderizado.
 - `2026-10-13T09:23:15` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `is_junction` y `is_system_or_hidden` añadiendo `path.is_symlink()` como chequeo adicional, asegurando que la lógica no solo dependa de atributos de Windows, sino también de la estructura de archivos de Python, previniendo así posibles errores en la resolución de rutas.
 - `2026-10-13T09:23:02` **diskreport.py** (seguridad defensiva): Se introdujo una comprobación de puntos de reparse (reparse points) en `_is_excluded_path` para evitar que el escáner siga junctions o symlinks fuera del árbol de directorios analizado, reforzando el aislamiento del escaneo en el sistema de archivos.
 - `2026-10-13T09:12:48` **assistant.py** (seguridad defensiva): Se endureció la validación de seguridad en `_call_gemini` al verificar que `target_url` no contenga caracteres potencialmente peligrosos de inyección de comandos o manipulación de protocolos, protegiendo aún más la construcción de la petición HTTP hacia el endpoint externo.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-13T08:41:59` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_is_valid_rel_path` para incluir una validación estricta de rutas absolutas que intenten disfrazarse de relativas, previniendo el escalamiento de privilegios o navegación fuera de los directorios permitidos durante la resolución de rutas de caché.
 - `2026-10-13T08:40:52` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_safe_payload_structure` y `_is_input_too_deep_or_complex` para manejar colecciones vacías o estructuras profundas de forma más segura, evitando posibles errores de desbordamiento en la serialización y validación de tipos anidados.
 - `2026-10-13T08:31:57` **startup.py** (rendimiento): Se implementó un mecanismo de filtrado temprano en `entries_from_folders` mediante un conjunto de rutas ya procesadas para evitar el escaneo redundante y reducir el impacto de I/O innecesario sobre directorios compartidos.
-- `2026-10-13T08:31:14` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de un `frozenset` para `self.safe_cache` en `Scanner`, permitiendo búsquedas en O(1) en lugar de verificar repetidamente la pertenencia en colecciones, y se eliminó la llamada redundante a `is_protected_path` dentro de `process_entry` al delegar la validación completa en `_is_safe_entry`.
-- `2026-10-13T08:30:48` **safety.py** (rendimiento): Optimizé la validación de rutas `is_protected_path` reemplazando la lógica de bucle `any(p_str.startswith(...) for ...)` por una búsqueda eficiente en conjunto con el uso de `pathlib.Path.is_relative_to` (disponible desde Python 3.9) y evitando múltiples resoluciones de disco para la misma ruta mediante el uso de caché.
-- `2026-10-13T08:21:24` **quarantine.py** (rendimiento): Optimizé `purge_all` para evitar lecturas redundantes del sistema de archivos mediante el uso de `set` para búsquedas O(1) y reestructuré el bucle para reducir llamadas costosas a `stat()` e integridad al procesar el directorio.
-- `2026-10-13T08:20:17` **memory.py** (rendimiento): Se optimizó `top_memory_processes` reemplazando la creación de una nueva lista de procesos en cada ciclo por una actualización selectiva, y se eliminó la redundancia en `_is_process_executable_safe` al evitar la conversión innecesaria a `Path` y `resolve()` en cada iteración, utilizando operaciones de cadena más rápidas.
