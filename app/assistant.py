@@ -317,28 +317,28 @@ def _validate_response_length(text: Any) -> str:
     return text[:_MAX_TEXT_LENGTH]
 
 def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
-    """Valida la estructura del JSON remoto para impedir ataques de desbordamiento (Bomba JSON)."""
+    """Valida la estructura del JSON remoto para impedir ataques de desbordamiento."""
     if depth > _MAX_NESTING_DEPTH: return False
-    if val is None: return True
+    if val is None or isinstance(val, (int, float, bool, str)): return True
     if isinstance(val, (list, tuple, set)):
         if len(val) > _MAX_COLLECTION_SIZE: return False
         return all(_is_safe_payload_structure(i, depth + 1) for i in val)
     if isinstance(val, dict):
         if len(val) > _MAX_COLLECTION_SIZE: return False
         return all(isinstance(k, str) and _is_safe_payload_structure(v, depth + 1) for k, v in val.items())
-    return isinstance(val, (str, int, float, bool))
+    return False
 
 def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
-    """Detecta si una estructura de datos excede los límites de seguridad."""
+    """Detecta si una estructura de datos excede los límites de profundidad o complejidad."""
     if depth > _MAX_NESTING_DEPTH: return True
-    if val is None: return False
+    if val is None or isinstance(val, (int, float, bool, str)): return False
     if isinstance(val, (list, tuple, set)):
         if len(val) > _MAX_COLLECTION_SIZE: return True
         return any(_is_input_too_deep_or_complex(item, depth + 1) for item in val)
     if isinstance(val, dict):
         if len(val) > _MAX_COLLECTION_SIZE: return True
-        return any(not isinstance(k, str) or _is_input_too_deep_or_complex(k, depth + 1) or _is_input_too_deep_or_complex(v, depth + 1) for k, v in val.items())
-    return False
+        return any(not isinstance(k, str) or _is_input_too_deep_or_complex(v, depth + 1) for k, v in val.items())
+    return True
 
 def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
     """Verifica si un valor numérico está dentro del rango lógico definido por su especificación."""
@@ -421,7 +421,8 @@ class SystemContext:
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad sobre el objeto fuente."""
         if source is None: return False
-        return not _is_input_too_deep_or_complex(source if isinstance(source, dict) else source.__dict__)
+        obj = source if isinstance(source, dict) else getattr(source, "__dict__", {})
+        return not _is_input_too_deep_or_complex(obj)
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
         """Aplica cambios al contexto y limpia cachés internas."""
@@ -429,7 +430,6 @@ class SystemContext:
             if _is_safe_key(k):
                 setattr(self, k, v)
         self.analyzed = True
-        # Limpiar cachés manualmente al actualizar
         for attr in ["metrics_snapshot", "active_problems", "_hash_tuple"]:
             self.__dict__.pop(attr, None)
 

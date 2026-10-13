@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
+- Mejoras aceptadas: **207** (41.1% de aceptación)
 - Rechazadas por tests: 27
 - Rechazadas por guardia de seguridad: 55
-- Sin cambios (nada sustancial que mejorar): 18
+- Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-12 | 115 | 17 | 33 | 12 | 123 |
-| 2026-10-13 | 93 | 10 | 22 | 6 | 73 |
+| 2026-10-12 | 112 | 17 | 33 | 12 | 122 |
+| 2026-10-13 | 95 | 10 | 22 | 7 | 74 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
 - manejo de errores y validación de entradas: **48**
-- seguridad defensiva: **41**
+- seguridad defensiva: **38**
 - rendimiento: **36**
-- robustez ante casos límite: **34**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **22**
+- `memory.py`: **21**
 - `diskreport.py`: **18**
 - `healthscore.py`: **17**
-- `organizer.py`: **16**
+- `browser.py`: **17**
 - `safety.py`: **16**
 - `scanner.py`: **16**
-- `browser.py`: **16**
 - `settings.py`: **15**
+- `organizer.py`: **15**
 - `duplicates.py`: **15**
 - `branding.py`: **14**
-- `assistant.py`: **13**
-- `quarantine.py`: **12**
+- `assistant.py`: **14**
 - `startup.py`: **11**
+- `quarantine.py`: **11**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-13T08:41:59` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_is_valid_rel_path` para incluir una validación estricta de rutas absolutas que intenten disfrazarse de relativas, previniendo el escalamiento de privilegios o navegación fuera de los directorios permitidos durante la resolución de rutas de caché.
+- `2026-10-13T08:40:52` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_safe_payload_structure` y `_is_input_too_deep_or_complex` para manejar colecciones vacías o estructuras profundas de forma más segura, evitando posibles errores de desbordamiento en la serialización y validación de tipos anidados.
 - `2026-10-13T08:31:57` **startup.py** (rendimiento): Se implementó un mecanismo de filtrado temprano en `entries_from_folders` mediante un conjunto de rutas ya procesadas para evitar el escaneo redundante y reducir el impacto de I/O innecesario sobre directorios compartidos.
 - `2026-10-13T08:31:14` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de un `frozenset` para `self.safe_cache` en `Scanner`, permitiendo búsquedas en O(1) en lugar de verificar repetidamente la pertenencia en colecciones, y se eliminó la llamada redundante a `is_protected_path` dentro de `process_entry` al delegar la validación completa en `_is_safe_entry`.
 - `2026-10-13T08:30:48` **safety.py** (rendimiento): Optimizé la validación de rutas `is_protected_path` reemplazando la lógica de bucle `any(p_str.startswith(...) for ...)` por una búsqueda eficiente en conjunto con el uso de `pathlib.Path.is_relative_to` (disponible desde Python 3.9) y evitando múltiples resoluciones de disco para la misma ruta mediante el uso de caché.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-13T07:41:43` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_safe_unlink` y la consolidación de la lógica de validación de estado del sistema, extrayendo lógica repetitiva a funciones con nombres descriptivos y actualizando los docstrings para reflejar con mayor claridad las garantías de seguridad.
 - `2026-10-13T07:41:15` **organizer.py** (legibilidad y documentación): Se introdujeron type hints en funciones críticas, se reemplazaron los comentarios vagos por docstrings detallados que explican el "porqué" de las validaciones de seguridad, y se extrajeron las constantes de configuración de los límites de escaneo para mejorar la legibilidad y mantenibilidad del módulo.
 - `2026-10-13T07:40:45` **memory.py** (legibilidad y documentación): He mejorado la legibilidad del código documentando los tipos de datos complejos en las estructuras de la API de Win32, corrigiendo inconsistencias en type hints (ej. `Any` por `Any` real, `Dict` por dict) y añadiendo docstrings descriptivos a funciones críticas, asegurando que el código sea mantenible bajo los estándares exigentes del proyecto.
-- `2026-10-13T07:40:16` **main.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la inclusión de docstrings detallados en métodos críticos y la normalización de la estructura de las clases internas (`AppSettings` y `TABS`) para que el flujo de control sea más predecible ante futuros cambios.
-- `2026-10-13T07:30:35` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a las funciones `_clamp` y `_render_bar`, además de estandarizar la nomenclatura de los argumentos en el pipeline para mejorar la legibilidad y coherencia técnica.
