@@ -856,3 +856,19 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-13T14:09:00` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación preventiva contra puntos de reparse (junctions) y enlaces simbólicos dentro de `_is_protected_path` para asegurar que no se sigan accesos fuera del árbol esperado, reforzando la seguridad defensiva contra el escape de directorios mediante manipulaciones del sistema de archivos.
 - `2026-10-13T14:09:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T14:09:00` Corrida terminada. Total usado hoy: 336.
+- `2026-10-13T14:16:43` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-13T14:16:46` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-13T14:17:19` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha restringido el acceso a metadatos mediante la adición de `_is_locked_by_os` en `scanner.py`, permitiendo identificar archivos bloqueados por otros procesos antes de intentar cualquier lectura pesada, mejorando la robustez defensiva y evitando excepciones innecesarias durante el escaneo.
+- `2026-10-13T14:17:20` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-13T14:17:23` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-13T14:17:30` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-13T14:17:48` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-13T14:18:34` ✅ Mejora aceptada en startup.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al invocar `subprocess.run` en `entries_from_registry`, reemplazando la construcción manual de la cadena de comandos mediante el uso de una lista de argumentos (`args`), lo cual neutraliza el riesgo de inyección de comandos en el shell de PowerShell al ejecutar las claves del registro.
+- `2026-10-13T14:18:34` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-13T14:18:34` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-13T14:18:54` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-13T14:18:54` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-13T14:19:25` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-13T14:19:25` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-13T14:19:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T14:19:25` Corrida terminada. Total usado hoy: 340.

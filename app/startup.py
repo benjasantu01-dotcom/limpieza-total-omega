@@ -378,16 +378,16 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
     if not safe_keys:
         return []
         
-    # Usar -LiteralPath para evitar que PowerShell expanda caracteres especiales en las rutas de registro
-    ps_cmd: str = (
+    # Usar argumentos separados en subprocess para evitar inyección en el shell
+    ps_args = [
+        "powershell", "-NoProfile", "-NonInteractive", "-Command",
         "Get-ItemProperty -LiteralPath " + ",".join([f"'{k}'" for k in safe_keys]) + 
         " -ErrorAction SilentlyContinue | Select-Object * -ExcludeProperty PS* | ConvertTo-Csv -NoTypeInformation"
-    )
+    ]
     
     try:
         process: subprocess.CompletedProcess = subprocess.run(
-            ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_cmd],
-            capture_output=True, text=True, timeout=30, check=False
+            ps_args, capture_output=True, text=True, timeout=30, check=False
         )
         if process.returncode == 0 and process.stdout:
             clean_output: str = "".join(c for c in process.stdout if ord(c) >= 32 or c in "\r\n")

@@ -14,6 +14,7 @@ import subprocess
 import re
 import logging
 import os
+import ctypes
 from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime
@@ -76,6 +77,18 @@ TARGETED_DOWNLOAD_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp
 
 SYSTEM32_LOWER: Final[str] = "system32"
 
+def _is_locked_by_os(path: Path) -> bool:
+    """Intenta abrir un handle exclusivo para detectar si el archivo está siendo usado por otro proceso."""
+    try:
+        handle = ctypes.windll.kernel32.CreateFileW(
+            str(path), 0x80000000, 0, None, 3, 0x00000080, None
+        )
+        if handle == -1: return True
+        ctypes.windll.kernel32.CloseHandle(handle)
+        return False
+    except Exception:
+        return True
+
 def _is_readable(path: Path) -> bool:
     """
     Valida si el archivo existe y posee permisos de lectura mediante el sistema operativo.
@@ -83,7 +96,6 @@ def _is_readable(path: Path) -> bool:
     if not isinstance(path, Path):
         return False
     try:
-        # Usamos os.access sobre la ruta resuelta para evitar conflictos de sistema
         return path.exists() and os.access(path, os.R_OK)
     except (OSError, PermissionError, ValueError):
         return False
@@ -273,7 +285,7 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta toda la suite de heurísticas sobre un archivo validado."""
-        if not _is_readable(path):
+        if not _is_readable(path) or _is_locked_by_os(path):
             return
         for check_fn in ALL_CHECKS:
             try:
@@ -289,7 +301,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     permisos y estructura de seguridad.
     """
     if not isinstance(path, Path) or is_protected_path(path): return []
-    if not _is_readable(path): 
+    if not _is_readable(path) or _is_locked_by_os(path): 
         return []
     
     findings: ScanResult = []
