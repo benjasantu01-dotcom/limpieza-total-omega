@@ -196,7 +196,7 @@ class Scanner:
 
     @lru_cache(maxsize=2048)
     def _is_inside_base_root(self, entry_path: str) -> bool:
-        """Verifica si la ruta analizada se mantiene dentro del árbol de escaneo definido."""
+        """Verifica mediante resolución de ruta si el elemento pertenece al árbol de escaneo."""
         try:
             resolved: str = str(Path(entry_path).resolve()).lower()
             return resolved.startswith(self.base_root_str)
@@ -204,15 +204,18 @@ class Scanner:
             return False
 
     def _has_invalid_name(self, name: str) -> bool:
-        """Valida que el nombre de archivo no sea un alias de dispositivo reservado."""
+        """Valida que el nombre no sea un alias reservado de dispositivo Windows."""
         return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Identifica si una entrada es un punto de reanálisis para evitar ciclos."""
+        """Identifica puntos de reanálisis (Junctions) mediante atributos de archivo."""
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Valida si la entrada es transitable y cumple con las políticas de seguridad."""
+        """
+        Evalúa si la entrada debe ser procesada según políticas de seguridad y límites.
+        Retorna False si la entrada es protegida, un enlace, o supera los límites de profundidad.
+        """
         if not isinstance(entry, os.DirEntry) or entry.path is None:
             return False
         
@@ -237,7 +240,7 @@ class Scanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        """Añade subdirectorios válidos a la pila para continuar el recorrido recursivo."""
+        """Registra subdirectorios válidos en la pila de procesamiento si no se excede el límite de profundidad."""
         if current_depth >= SCAN_LIMITS.max_depth or entry.path is None:
             return
         
@@ -249,11 +252,11 @@ class Scanner:
     @staticmethod
     @lru_cache(maxsize=1024)
     def _is_relevant_extension(name: str) -> bool:
-        """Filtra archivos relevantes por extensión para optimizar el análisis heurístico."""
+        """Determina si un nombre de archivo requiere inspección heurística completa."""
         return _is_target_extension(name)
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        """Clasifica la entrada para proceder con recursión (si es directorio) o heurísticas (si es archivo)."""
+        """Gestiona la ramificación del escaneo entre directorios recursivos y archivos a analizar."""
         if not isinstance(entry, os.DirEntry) or entry.path is None:
             return
             
@@ -266,10 +269,10 @@ class Scanner:
                     if not is_protected_path(Path(entry.path)) and self._is_safe_entry(entry):
                         self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError) as e:
-            logger.debug(f"Acceso denegado o error en entrada {entry.path}: {e}")
+            logger.debug(f"Error de acceso en entrada {entry.path}: {e}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta secuencialmente todas las heurísticas registradas sobre un archivo validado."""
+        """Aplica todas las heurísticas registradas a un archivo individual capturando errores de ejecución."""
         if not _is_readable(path):
             return
         for check_fn in ALL_CHECKS:
@@ -300,9 +303,8 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
-    Inicia el recorrido recursivo de un directorio mediante una pila, 
-    aplicando validaciones de seguridad en cada nodo y retornando una lista 
-    de sospechas encontradas.
+    Realiza el escaneo recursivo de un directorio, utilizando una estructura de pila.
+    Gestiona errores de acceso inicial y errores durante el recorrido de archivos.
     """
     if directory is None: return []
     try:

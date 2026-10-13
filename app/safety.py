@@ -51,7 +51,10 @@ class SecurityDescriptor(NamedTuple):
 
     @classmethod
     def from_path(cls, path_str: str) -> SecurityDescriptor:
-        """Factoría que consolida los atributos del sistema y el estado de bloqueo."""
+        """
+        Factoría que consolida atributos del sistema y estado de bloqueo I/O.
+        El bloqueo se asume si el archivo está en uso por otra API de escritura.
+        """
         if not path_str:
             return cls(0, True, True, True, True)
         try:
@@ -67,7 +70,6 @@ class SecurityDescriptor(NamedTuple):
                 is_reparse=bool(attrs & Win32Attr.REPARSE_POINT)
             )
         except Exception:
-            # En caso de error al leer metadatos, se asume el estado más restrictivo
             return cls(0, True, True, True, True)
 
 class FileMetadata(TypedDict):
@@ -93,7 +95,6 @@ __all__ = [
     "is_running_as_admin",
 ]
 
-# Máscaras de bits para FileAttributes (Win32 API)
 class Win32Attr(IntEnum):
     """Atributos de archivo del sistema de archivos Windows (Win32)."""
     READONLY: int = 0x01
@@ -109,10 +110,9 @@ class Win32Attr(IntEnum):
 
 MAX_PATH_LENGTH: Final[int] = 260
 MAX_FILENAME_LENGTH: Final[int] = 255
-MAX_FILE_SIZE: Final[int] = 2 * 1024 * 1024 * 1024  # 2GB: Evita procesamiento de archivos gigantes para prevenir DoS.
+MAX_FILE_SIZE: Final[int] = 2 * 1024 * 1024 * 1024  # 2GB: Prevención de DoS por procesamiento de archivos.
 MAX_DIRECTORY_DEPTH: Final[int] = 32
 
-# Constantes Win32 Drive Types
 DRIVE_UNKNOWN: Final[int] = 0
 DRIVE_NO_ROOT_DIR: Final[int] = 1
 DRIVE_REMOVABLE: Final[int] = 2 
@@ -123,7 +123,7 @@ DRIVE_RAMDISK: Final[int] = 6
 
 @lru_cache(maxsize=4096)
 def _to_long_path(path_str: str) -> str:
-    """Transforma la ruta al formato '\\?\' para permitir el acceso a rutas que exceden los 260 caracteres."""
+    """Transforma una ruta a formato '\\?\' para gestionar rutas superiores a 260 chars."""
     if not isinstance(path_str, str) or not path_str:
         return ""
     if os.name == 'nt':
@@ -139,12 +139,12 @@ def _to_long_path(path_str: str) -> str:
     return path_str
 
 def _is_path_too_long(path_str: str) -> bool:
-    """Verifica si la longitud de la cadena excede el estándar MAX_PATH."""
+    """Valida si la longitud de la ruta excede los límites históricos del API Win32."""
     return len(path_str) > MAX_PATH_LENGTH
 
 @lru_cache(maxsize=4096)
 def _get_file_attrs(path_str: Optional[str]) -> int:
-    """Consulta los atributos de archivo mediante la API Win32 GetFileAttributesW."""
+    """Consulta atributos nativos de Windows mediante GetFileAttributesW."""
     if not isinstance(path_str, str) or not path_str or not os.path.isabs(path_str): 
         return 0
     try:
@@ -159,7 +159,7 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
         return 0
 
 class SafetyValidationErrorCode(IntEnum):
-    """Códigos de error detallados para diagnósticos de fallo en integridad."""
+    """Códigos de error detallados para diagnósticos de integridad."""
     GENERIC = 0
     NULL_CHAR = 1
     INVALID_CHARS = 2
@@ -197,13 +197,13 @@ class SafetyValidationErrorCode(IntEnum):
     BIDI_SPOOFING = 34
 
 class UnsafePathError(Exception):
-    """Excepción lanzada cuando una ruta no supera los filtros de seguridad."""
+    """Excepción lanzada cuando una ruta viola las reglas de integridad."""
     def __init__(self, message: str, code: SafetyValidationErrorCode = SafetyValidationErrorCode.GENERIC):
         super().__init__(f"[{code.name}] {message}")
         self.code = code
 
 class ProtectionReason(Enum):
-    """Categorías de riesgo utilizadas para clasificar violaciones de seguridad."""
+    """Categorías de riesgo para clasificar violaciones de seguridad."""
     INACCESSIBLE = auto()
     REPARSE_POINT = auto()
     READ_ONLY = auto()
@@ -232,11 +232,11 @@ class ProtectionReason(Enum):
     VIRTUAL_DRIVE = auto()
 
 class ValidationContext(Enum):
-    """Contexto de la validación: Estructural (nombres) o Integridad (disco)."""
+    """Contexto de validación: Estructural (nombres) o Integridad (disco)."""
     STRUCTURAL = auto()
     INTEGRITY = auto()
 
-# Directorios críticos del sistema que la aplicación NUNCA debe modificar
+# Listado de nombres de directorios protegidos por el sistema.
 PROTECTED_DIR_NAMES: Final[set[str]] = {
     "windows", "winnt", "system32", "syswow64", "system", "boot",
     "program files", "program files (x86)", "programdata",
@@ -249,7 +249,7 @@ PROTECTED_DIR_NAMES: Final[set[str]] = {
     "config.msi", "installer",
 }
 
-# Extensiones ejecutables y configuraciones de seguridad críticas
+# Extensiones cuya modificación puede comprometer la estabilidad del SO.
 SENSITIVE_EXTENSIONS: Final[set[str]] = {
     ".sys", ".dll", ".exe", ".msi", ".drv", ".ocx", ".cpl", ".efi",
     ".reg", ".pol", ".key", ".pem", ".pfx", ".p12", ".crt", ".cer",
@@ -260,7 +260,6 @@ _SYSTEM_ROOT_PATHS: Final[set[Path]] = {
     if os.environ.get(v)
 }
 
-# Cache auxiliar para comparación rápida de rutas
 _SYSTEM_ROOT_PATHS_TUPLE: Final[tuple[str, ...]] = tuple(str(p).lower() for p in _SYSTEM_ROOT_PATHS)
 _SYSTEM_ROOT_STRS: Final[set[str]] = {str(p).lower() for p in _SYSTEM_ROOT_PATHS}
 
@@ -275,18 +274,18 @@ _KERNEL_BLOCKED_FILES: Final[frozenset[str]] = frozenset(
 _KERNEL_BLOCKED_DIRS: Final[frozenset[str]] = frozenset(("config.msi", "installer"))
 
 class _IntegrityCheck(NamedTuple):
-    """Regla de seguridad que vincula un motivo de protección a un predicado evaluable."""
+    """Enlace entre un riesgo de seguridad y el predicado que lo evalúa."""
     reason: ProtectionReason
     predicate: ViolationPredicate
 
 class _CheckResult(NamedTuple):
-    """Resultado del chequeo de integridad."""
+    """Resultado del chequeo."""
     is_safe: bool
     reason: Optional[ProtectionReason] = None
 
 @lru_cache(maxsize=1)
 def is_running_as_admin() -> bool:
-    """Verifica si el proceso actual cuenta con privilegios elevados (Administrador)."""
+    """Verifica privilegios elevados para detectar potenciales riesgos de ejecución."""
     if os.name != 'nt':
         try: return os.geteuid() == 0
         except (AttributeError, OSError): return False
@@ -297,7 +296,7 @@ def is_running_as_admin() -> bool:
         return False
 
 def _is_virtual_drive(path_str: str) -> bool:
-    """Verifica si el volumen raíz es un mapeo virtual (SUBST)."""
+    """Detecta volúmenes mapeados vía 'subst' que podrían enmascarar rutas."""
     if os.name != 'nt' or not isinstance(path_str, str) or not os.path.isabs(path_str): return False
     drive = os.path.splitdrive(path_str)[0]
     if not drive: return False
@@ -313,7 +312,7 @@ def _is_virtual_drive(path_str: str) -> bool:
     return False
 
 def _is_file_owned_by_system(path_str: str) -> bool:
-    """Verifica si el propietario del archivo es el grupo SYSTEM o TrustedInstaller (Windows)."""
+    """Verifica si el propietario del archivo es el grupo SYSTEM o TrustedInstaller."""
     if os.name != 'nt' or not isinstance(path_str, str): return False
     try:
         advapi32 = ctypes.windll.advapi32
@@ -335,44 +334,44 @@ def _is_file_owned_by_system(path_str: str) -> bool:
     return False
 
 def _has_invalid_chars(path_str: Optional[str]) -> bool:
-    """Detecta caracteres de control invisibles o prohibidos en rutas de Windows."""
+    """Filtra caracteres de control o invisibles que facilitan ataques de spoofing."""
     if not isinstance(path_str, str) or not path_str: return True
     return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E\u206A-\u206F]', path_str))
 
 def _is_path_empty_or_whitespace(path_str: str) -> bool:
-    """Valida si la cadena está vacía o solo contiene espacios en blanco."""
+    """Valida la integridad de la entrada de texto de una ruta."""
     return not path_str or path_str.strip() == ""
 
 def _is_unc_path(path_str: str) -> bool:
-    """Verifica si la ruta apunta a un recurso de red mediante formato UNC."""
+    """Identifica rutas de red (UNC), las cuales requieren manejo de permisos especial."""
     if not isinstance(path_str, str): return False
     return path_str.startswith(("\\\\", "//"))
 
 @lru_cache(maxsize=128)
 def _is_reserved_device_name(name: str) -> bool:
-    """Verifica si el nombre corresponde a un dispositivo reservado."""
+    """Detecta nombres reservados de dispositivos (ej. CON, NUL) para evitar inyecciones."""
     if not name: return False
     return bool(_RESERVED_NAMES_PATTERN.fullmatch(name))
 
 def _is_device_file(path: Path) -> bool:
-    """Detecta si la ruta es un acceso directo a un dispositivo."""
+    """Detecta acceso a dispositivos hardware directamente (formato \\.\)."""
     path_str = str(path).upper()
     return path_str.startswith(("\\\\.\\", "//./"))
 
 @lru_cache(maxsize=512)
 def _has_alternate_data_stream(path_name: str) -> bool:
-    """Detecta flujos de datos alternativos (ADS) NTFS."""
+    """Detecta ADS, una técnica NTFS usada para ocultar contenido malicioso en archivos."""
     return ":" in path_name and len(path_name.split(":")) > 2
 
 def _is_system_directory_junction(path_str: str) -> bool:
-    """Verifica si la ruta apunta a un punto de reparse del sistema."""
+    """Valida si la ruta es un punto de unión o reparse que altera el comportamiento del sistema."""
     if os.name != 'nt' or not isinstance(path_str, str): return False
     attrs = _get_file_attrs(path_str)
     return bool(attrs & Win32Attr.REPARSE_POINT)
 
 @lru_cache(maxsize=1024)
 def _is_file_locked_by_other_process(path_str: str) -> bool:
-    """Verifica si un archivo está en uso exclusivo mediante la API CreateFile."""
+    """Usa CreateFileW con acceso nulo para verificar si el archivo está bajo exclusividad de otro proceso."""
     if not isinstance(path_str, str) or os.name != 'nt' or not os.path.isabs(path_str): return False
     if os.path.isdir(path_str) or not os.path.exists(path_str): return False
     
@@ -387,15 +386,14 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
         kernel32.CloseHandle(handle)
         return False
     except (OSError, ctypes.ArgumentError, AttributeError, MemoryError, PermissionError):
-        # Ante un error inesperado al intentar abrir el archivo, asumimos el estado más seguro
         return True
 
 def _get_security_descriptor(path: Path) -> SecurityDescriptor:
-    """Construye un descriptor de seguridad para evaluar el archivo."""
+    """Genera el descriptor de seguridad para evaluar la ruta."""
     return SecurityDescriptor.from_path(str(path))
 
 def _is_file_in_use_by_system(path_str: str) -> bool:
-    """Verifica si el archivo está siendo referenciado por módulos cargados del sistema."""
+    """Verifica si el sistema tiene un handle activo sobre el archivo."""
     if os.name != 'nt' or not isinstance(path_str, str): return False
     try:
         h_module = ctypes.windll.kernel32.GetModuleHandleW(path_str)
@@ -404,7 +402,7 @@ def _is_file_in_use_by_system(path_str: str) -> bool:
 
 @lru_cache(maxsize=128)
 def _is_volume_readonly(path_str: Optional[str]) -> bool:
-    """Verifica flags de solo lectura del volumen."""
+    """Consulta al sistema si el volumen tiene marcado un atributo de solo lectura."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str or not os.path.isabs(path_str): return False
     try:
         drive = os.path.splitdrive(path_str)[0]
@@ -419,7 +417,7 @@ def _is_volume_readonly(path_str: Optional[str]) -> bool:
 
 @lru_cache(maxsize=128)
 def _is_volume_busy_or_invalid(path_str: Optional[str]) -> bool:
-    """Verifica si el volumen raíz es accesible para operaciones de I/O."""
+    """Verifica accesibilidad del volumen antes de ejecutar operaciones I/O."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
     try:
         drive = os.path.splitdrive(path_str)[0] + "\\"
@@ -431,7 +429,7 @@ def _is_volume_busy_or_invalid(path_str: Optional[str]) -> bool:
 
 @lru_cache(maxsize=128)
 def _is_volume_removable_media(path_str: Optional[str]) -> bool:
-    """Verifica si el volumen es extraíble."""
+    """Identifica volúmenes extraíbles para prevenir desconexiones durante I/O."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str or not os.path.isabs(path_str): return False
     try:
         root = os.path.splitdrive(path_str)[0] + "\\"
@@ -442,7 +440,7 @@ def _is_volume_removable_media(path_str: Optional[str]) -> bool:
 
 @lru_cache(maxsize=128)
 def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
-    """Verifica flags de compresión o cifrado del volumen."""
+    """Valida flags de compresión/cifrado que afectan la integridad de metadatos."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str or not os.path.isabs(path_str): return False
     try:
         root = os.path.splitdrive(path_str)[0] + "\\"
@@ -455,7 +453,7 @@ def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
 
 @lru_cache(maxsize=1024)
 def _is_kernel_managed(path_str: str) -> bool:
-    """Identifica archivos del núcleo o del sistema bloqueados por el SO."""
+    """Identifica rutas críticas gestionadas exclusivamente por el núcleo."""
     if not path_str: return False
     path = Path(path_str)
     try:
@@ -475,15 +473,15 @@ def _is_kernel_managed(path_str: str) -> bool:
 
 @lru_cache(maxsize=1024)
 def _is_sensitive_extension(ext: str) -> bool:
-    """Valida si la extensión es crítica."""
+    """Valida si la extensión coincide con archivos críticos del sistema."""
     return ext.lower() in SENSITIVE_EXTENSIONS
 
 def _rule(reason: ProtectionReason, predicate: ViolationPredicate) -> _IntegrityCheck:
-    """Helper de fábrica para definir una nueva regla de integridad."""
+    """Helper de fábrica para definir reglas de seguridad."""
     return _IntegrityCheck(reason, predicate)
 
 def _validate_drive_restrictions(target_path: Path) -> None:
-    """Verifica que el volumen raíz del archivo no tenga restricciones de sistema."""
+    """Verifica que el volumen raíz sea seguro para operar."""
     anchor = target_path.anchor
     if not anchor: return
     
@@ -578,7 +576,7 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
 }
 
 def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
-    """Ejecuta el conjunto de reglas de integridad sobre un archivo."""
+    """Verifica iterativamente las reglas de integridad configuradas."""
     if not path.exists():
          raise UnsafePathError("Archivo eliminado antes de la validación.", SafetyValidationErrorCode.IO_ERROR)
     try:
@@ -593,7 +591,7 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
         raise UnsafePathError(f"Error evaluando reglas: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 def _get_path_stat_robust(path: Path) -> os.stat_result:
-    """Obtiene los metadatos de un archivo de manera segura."""
+    """Obtención segura de metadatos de archivos usando estructuras nativas (Win32)."""
     if not isinstance(path, Path):
         raise UnsafePathError("Tipo de objeto de ruta inválido", SafetyValidationErrorCode.GENERIC)
     if _is_device_file(path):
@@ -624,7 +622,7 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
         raise UnsafePathError(f"Error inesperado al leer metadatos de {path.name}: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
-    """Previene ataques TOCTOU validando la estabilidad."""
+    """Valida que no existan inconsistencias (ataques TOCTOU) comparando metadatos iniciales y finales."""
     if not path.exists():
         raise UnsafePathError("El archivo ya no existe (TOCTOU).", SafetyValidationErrorCode.IO_ERROR)
     current_stat = _get_path_stat_robust(path)
@@ -636,7 +634,7 @@ def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
 
 @lru_cache(maxsize=2048)
 def _is_readonly(path_str: str) -> bool:
-    """Determina si un archivo es de solo lectura mediante el estado de sus permisos POSIX."""
+    """Determina si un archivo es de solo lectura mediante permisos POSIX."""
     if not path_str: return True
     try:
         path = Path(path_str)
@@ -646,7 +644,7 @@ def _is_readonly(path_str: str) -> bool:
         return True
 
 def _validate_access_permissions(path: Path) -> None:
-    """Valida los permisos de lectura y escritura del usuario actual."""
+    """Confirma que la app tenga permisos de lectura y escritura efectivos."""
     if not path.exists():
         raise UnsafePathError("Archivo inexistente, no se pueden validar permisos.", SafetyValidationErrorCode.ACCESS_DENIED)
     try:
@@ -659,12 +657,12 @@ def _validate_access_permissions(path: Path) -> None:
 
 @lru_cache(maxsize=4096)
 def _normalize_resolved(path_str: str) -> Path:
-    """Helper para normalizar y resolver evitando trabajo duplicado."""
+    """Resuelve la ruta absoluta evitando múltiples llamadas al sistema."""
     return Path(path_str).resolve()
 
 @lru_cache(maxsize=4096)
 def normalize(path: PathLike) -> Path:
-    """Normaliza una ruta y valida componentes para prevenir Path Traversal."""
+    """Normaliza y valida rutas para evitar ataques de Path Traversal."""
     if path is None: raise UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC)
     path_str = str(path).strip()
     
@@ -677,7 +675,6 @@ def normalize(path: PathLike) -> Path:
          raise UnsafePathError("Ruta contiene secuencias Unicode sospechosas.", SafetyValidationErrorCode.SUSPICIOUS_ENCODING)
     try:
         p = Path(path_str)
-        # Validación estricta de componentes para evitar puntos de reparse intermedios
         current_subpath = Path(p.anchor)
         for part in p.parts:
             if part in (os.sep, os.altsep): continue
@@ -695,12 +692,12 @@ def normalize(path: PathLike) -> Path:
         raise UnsafePathError(f"Error al normalizar ruta {path_str}: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 def is_absolute_path_allowed(path: PathLike) -> bool:
-    """Verifica si la ruta provista cumple con el requisito de ser absoluta."""
+    """Valida que la ruta sea absoluta para evitar riesgos de rutas relativas impredecibles."""
     try: return Path(path).is_absolute()
     except (TypeError, ValueError): return False
 
 def is_drive_root(path: PathLike) -> bool:
-    """Verifica si la ruta apunta a la raíz de un volumen físico."""
+    """Identifica si la ruta corresponde a una raíz de unidad (ej. C:\)."""
     try:
         p = normalize(path)
         return p == Path(p.anchor)
@@ -708,16 +705,14 @@ def is_drive_root(path: PathLike) -> bool:
 
 @lru_cache(maxsize=4096)
 def is_protected_path(path: PathLike) -> bool:
-    """Valida si la ruta está marcada como protegida contra modificaciones."""
+    """Filtra rutas que pertenecen a directorios críticos del SO."""
     if not isinstance(path, (str, Path)) or not path: return True
     try:
         p_str = str(path).lower()
-        # Verificación O(1) con set
         if any(p_str.startswith(r) for r in _SYSTEM_ROOT_PATHS_TUPLE): return True
         if _is_kernel_managed(p_str): return True
         
         p = Path(path)
-        # Búsqueda rápida de partes usando set para PROTECTED_DIR_NAMES
         if not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in p.parts): return True
         
         if _get_file_attrs(p_str) & (Win32Attr.SYSTEM | Win32Attr.HIDDEN): return True
@@ -731,7 +726,7 @@ def is_protected_path(path: PathLike) -> bool:
 
 @lru_cache(maxsize=4096)
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
-    """Valida que una ruta resida dentro de los límites del sandbox definido por el directorio padre."""
+    """Comprueba que una ruta resida dentro del sandbox permitido."""
     if child is None or parent is None: return False
     try:
         c_path = normalize(child)
@@ -748,7 +743,7 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
 
 @lru_cache(maxsize=2048)
 def is_sensitive_file(path: PathLike) -> bool:
-    """Identifica si la extensión del archivo es crítica."""
+    """Identifica extensiones bloqueadas para modificación."""
     if not path: return True
     try: 
         p_str = str(path)
@@ -756,7 +751,7 @@ def is_sensitive_file(path: PathLike) -> bool:
     except (TypeError, ValueError, OSError): return True 
 
 def _validate_structural_safety(target_path: Path, path_string: str) -> None:
-    """Realiza una validación estructural de la ruta para detectar ataques de bajo nivel."""
+    """Validación de bajo nivel para prevenir inyecciones de caracteres o spoofing."""
     if not isinstance(path_string, str):
         raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC)
     if path_string.startswith(("\\\\.\\", "//./", LONG_PATH_PREFIX)) and not path_string.startswith(LONG_PATH_PREFIX):
@@ -795,7 +790,7 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         raise UnsafePathError("Estructura de ruta inválida.", SafetyValidationErrorCode.GENERIC)
 
 def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> None:
-    """Valida precondiciones de sistema, bloqueos de kernel y restricciones de volumen."""
+    """Valida bloqueos de kernel, restricciones de volumen y estado de la unidad."""
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
     
@@ -811,7 +806,7 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
         _validate_drive_restrictions(target_path)
 
 def _validate_boundary_conditions(target_path: Path, root_directory: Optional[PathLike]) -> None:
-    """Valida si la ruta está dentro del sandbox permitido."""
+    """Aplica restricciones de sandbox sobre el directorio base."""
     if root_directory:
         if not isinstance(root_directory, (str, Path, os.PathLike)):
              raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC)
@@ -836,7 +831,7 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
         raise UnsafePathError("Acceso a raíz denegado.", SafetyValidationErrorCode.ROOT_ACCESS)
 
 def _get_final_path_normalized(path: Path) -> Optional[Path]:
-    """Resuelve la ruta física real (canonical path) a través de los handles del sistema."""
+    """Resuelve la ruta canónica para detectar redirecciones de junctions."""
     if os.name != 'nt': return _normalize_resolved(str(path))
     try:
         kernel32 = ctypes.windll.kernel32
@@ -853,19 +848,19 @@ def _get_final_path_normalized(path: Path) -> Optional[Path]:
     return None
 
 def _is_junction_target_outside_base(path: Path, base_dir: Path) -> bool:
-    """Verifica que si la ruta es un punto de reparse, su destino real no escape del directorio base."""
+    """Detecta si una redirección apunta fuera del sandbox base."""
     final_path = _get_final_path_normalized(path)
     if not final_path: return False
     return not str(final_path).startswith(str(base_dir))
 
 def _is_reparse_point_safe(path: Path, base_dir: Optional[Path]) -> bool:
-    """Verifica si la redirección es segura dentro del sandbox."""
+    """Valida la seguridad de un punto de reparse."""
     if not base_dir: return True
     final_path = _get_final_path_normalized(path)
     return final_path is not None and str(final_path).startswith(str(base_dir))
 
 def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> None:
-    """Verifica que las redirecciones NTFS no apunten fuera de la jerarquía permitida."""
+    """Verifica que las redirecciones NTFS no escapen del directorio base."""
     if not path.exists(): return
     if _is_system_directory_junction(str(path)):
         if not _is_reparse_point_safe(path, base_dir):
@@ -878,7 +873,7 @@ def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> 
             if parent == base_dir: break
 
 def _validate_path_components(path: Path) -> None:
-    """Itera sobre la estructura de la ruta para detectar puntos de reparse intermedios."""
+    """Iteración de componentes para detectar junctions en niveles intermedios."""
     current_check = Path(path.anchor)
     for part in path.parts:
         if part in (os.sep, os.altsep): continue
@@ -887,12 +882,12 @@ def _validate_path_components(path: Path) -> None:
             raise UnsafePathError(f"Punto de reparse detectado en el camino: {current_check}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
 
 def _check_hard_link_security(path: Path, stat_res: os.stat_result) -> None:
-    """Verifica que el archivo no posea múltiples enlaces físicos (hard links)."""
+    """Previene manipulación de archivos vinculados mediante múltiples hard links."""
     if path.is_file() and stat_res.st_nlink > 1:
         raise UnsafePathError(f"Archivo con múltiples hard links detectado: {path.name}", SafetyValidationErrorCode.HARD_LINK_DETECTED)
 
 def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Optional[Path]) -> None:
-    """Valida los requisitos específicos para archivos existentes."""
+    """Verificaciones de seguridad finales antes de permitir acceso de escritura."""
     if not os.access(p, os.W_OK):
         raise UnsafePathError(f"Permisos de escritura insuficientes: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
     
@@ -910,7 +905,10 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
     _check_file_integrity(p, initial_stat)
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
-    """Valida exhaustivamente una ruta para garantizar que es segura de modificar."""
+    """
+    Función principal de seguridad: Valida exhaustivamente si una ruta puede modificarse.
+    Lanza UnsafePathError en caso de riesgo detectado.
+    """
     if not isinstance(path, (str, Path, os.PathLike)):
         raise UnsafePathError(f"Tipo de ruta no soportado: {type(path).__name__}", SafetyValidationErrorCode.GENERIC)
     try:
@@ -956,14 +954,14 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         raise UnsafePathError(f"Error crítico durante la validación: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> bool:
-    """Verifica si una ruta es segura mediante un booleano (útil para filtrado en bucles)."""
+    """Verificador booleano rápido: seguro para filtrado de listas."""
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive, base_dir=base_dir)
         return True
     except (UnsafePathError, ValueError, TypeError, OSError, PermissionError): return False
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> list[Path]:
-    """Filtra una colección de rutas retornando solo aquellas que son seguras."""
+    """Retorna lista filtrada de rutas que pasaron los controles de integridad."""
     results = []
     if paths is None: return results
     for p in paths:
@@ -973,7 +971,7 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
     return results
 
 def describe_protection(path: PathLike) -> str:
-    """Retorna una descripción legible y descriptiva sobre la causa de una restricción de seguridad."""
+    """Diagnóstico legible del porqué una ruta fue clasificada como protegida."""
     if path is None: return "Ruta nula."
     try:
         p = normalize(path)
