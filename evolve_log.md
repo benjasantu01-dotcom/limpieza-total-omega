@@ -1451,3 +1451,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-13T08:01:33` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas repetidas a `is_safe_to_modify` y `is_protected_path` mediante el uso del diccionario `safety_cache` ya existente en el contexto, reduciendo drásticamente la carga de I/O al escanear árboles de directorios profundos.
 - `2026-10-13T08:01:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T08:01:33` Corrida terminada. Total usado hoy: 192.
+- `2026-10-13T08:09:37` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-10-13T08:10:06` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-10-13T08:10:33` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el rendimiento de `_collect_candidates` sustituyendo las repetidas llamadas a `is_protected_path(p_entry)` por un `set` de rutas protegidas pre-calculado, evitando así cálculos redundantes y accesos innecesarios al sistema de archivos durante el recorrido BFS.
+- `2026-10-13T08:11:00` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento del pipeline convirtiendo la lista de caracteres permitidos en un `set` y pre-compilando el bloqueador de palabras como un conjunto de strings, evitando re-crear colecciones en cada validación de mensaje.
+- `2026-10-13T08:11:51` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se implementó un sistema de "invalidación perezosa" en las tarjetas de salud y el gauge mediante digests de estado, evitando llamadas redundantes a métodos de redibujo (`_render_gauge`, `_apply_card_updates`) cuando los datos no han cambiado, optimizando significativamente la carga en el hilo principal durante actualizaciones recurrentes.
+- `2026-10-13T08:11:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T08:11:51` Corrida terminada. Total usado hoy: 196.

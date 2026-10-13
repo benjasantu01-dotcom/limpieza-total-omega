@@ -24,6 +24,10 @@ ScoreMap: TypeAlias = Dict[str, float]
 NormalizedRatio: TypeAlias = Annotated[float, "Valor de salud normalizado entre 0.0 (crítico) y 1.0 (óptimo)"]
 MetricKey: TypeAlias = str
 
+# Constantes de rendimiento para validación
+_ALLOWED_CHARS: Final[set[str]] = set(string.ascii_letters + string.digits + " .,:()-_%")
+_BLOCKED_TERMS: Final[frozenset[str]] = frozenset(["system32", "windows", "admin", "c:\\"])
+
 class Scorer(Protocol):
     """
     Protocolo funcional para transformar SystemMetrics en un ratio de salud [0.0, 1.0].
@@ -299,14 +303,10 @@ def _sanitize_msg(msg: str) -> str:
     """Limpia el mensaje usando una whitelist estricta de caracteres permitidos."""
     if not isinstance(msg, str): return ""
     
-    # Whitelist: caracteres alfanuméricos básicos, espacios y puntuación mínima segura
-    allowed = string.ascii_letters + string.digits + " .,:()-_%"
+    sanitized = "".join(c for c in msg if c in _ALLOWED_CHARS)
     
-    sanitized = "".join(c for c in msg if c in allowed)
-    
-    # Bloqueo de palabras clave prohibidas independientemente de los caracteres
-    blocked = ["system32", "windows", "admin", "c:\\"]
-    if any(b in sanitized.lower() for b in blocked):
+    lower_msg = sanitized.lower()
+    if any(b in lower_msg for b in _BLOCKED_TERMS):
         return ""
         
     return sanitized.strip()[:200]

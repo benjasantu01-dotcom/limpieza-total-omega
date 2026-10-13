@@ -251,14 +251,14 @@ def _resolve_and_verify_root(directory_path: PathLike) -> Optional[Path]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido BFS iterativo para recolectar archivos candidatos.
-    Utiliza un caché de protección y un set de inodos visitados para evitar
-    ciclos y re-procesamiento (redundancia).
+    Utiliza un set de inodos visitados para evitar ciclos y re-procesamiento.
     """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     queue: deque[Tuple[Path, int]] = deque()
     visited_dirs: set[Path] = set()
     visited_inodes: set[Tuple[int, int]] = set()
-    protected_cache: Dict[Path, bool] = {}
+    # Cache local para optimizar chequeos de seguridad recurrentes
+    prot_set: set[Path] = set()
 
     for d in directories:
         if (root := _resolve_and_verify_root(d)):
@@ -277,7 +277,8 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                         p_entry = Path(entry.path)
                         if entry.is_dir(follow_symlinks=False):
                             if is_safe_to_modify(p_entry):
-                                is_prot = protected_cache.setdefault(p_entry, is_protected_path(p_entry))
+                                is_prot = p_entry in prot_set or is_protected_path(p_entry)
+                                if is_prot: prot_set.add(p_entry)
                                 if not (skip_protected and is_prot):
                                     queue.append((p_entry, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
