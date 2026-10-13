@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Mejoras aceptadas: **204** (40.5% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 57
+- Rechazadas por guardia de seguridad: 56
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 195
+- Sin respuesta de la IA (error o límite): 198
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-12 | 142 | 19 | 41 | 16 | 130 |
-| 2026-10-13 | 64 | 8 | 16 | 3 | 65 |
+| 2026-10-12 | 139 | 19 | 40 | 16 | 130 |
+| 2026-10-13 | 65 | 8 | 16 | 3 | 68 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **46**
 - robustez ante casos límite: **45**
 - seguridad defensiva: **44**
-- manejo de errores y validación de entradas: **38**
+- legibilidad y documentación: **43**
+- manejo de errores y validación de entradas: **39**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
-- `diskreport.py`: **18**
-- `healthscore.py`: **17**
 - `organizer.py`: **17**
+- `diskreport.py`: **17**
 - `safety.py`: **16**
+- `assistant.py`: **16**
 - `browser.py`: **16**
-- `duplicates.py`: **15**
+- `healthscore.py`: **16**
 - `scanner.py`: **15**
-- `assistant.py`: **15**
 - `settings.py`: **15**
 - `branding.py`: **14**
+- `duplicates.py`: **14**
 - `quarantine.py`: **11**
 - `startup.py`: **10**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-13T06:41:39` **assistant.py** (manejo de errores y validación de entradas): Reforcé la robustez de `ingest` capturando errores en `_apply_field` para evitar que una sola métrica corrupta o con tipo inesperado aborte la ingesta completa de datos del sistema, asegurando que el contexto permanezca consistente incluso ante lecturas parciales o inesperadas.
 - `2026-10-13T05:27:08` **startup.py** (seguridad defensiva): Se endureció la seguridad defensiva al invocar `Get-ItemProperty` en el registro usando `-LiteralPath` en lugar de `-Path` para prevenir ataques de expansión de caracteres especiales (globbing) y se añadió una validación adicional mediante `is_protected_path` al procesar los resultados de PowerShell para asegurar que ninguna ruta del sistema escape al filtrado, incluso si el registro fuera manipulado externamente.
 - `2026-10-13T05:18:11` **settings.py** (seguridad defensiva): Se endureció la seguridad defensiva al invocar `ensure_safe_to_modify` antes de cualquier operación de escritura en `save` y `reset`, asegurando que no se pueda corromper la configuración o escribir fuera del directorio permitido, incluso si el path fue validado previamente.
 - `2026-10-13T05:17:30` **safety.py** (seguridad defensiva): Se ha añadido una validación temprana contra `LONG_PATH_PREFIX` en la función `_validate_structural_safety` para prevenir ataques de *path traversal* o manipulación de namespaces mediante rutas largas (`\\?\`) no autorizadas, reforzando la seguridad defensiva sin cambiar la funcionalidad actual.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-13T04:47:33` **assistant.py** (seguridad defensiva): Mejoré la seguridad del motor de consulta remota en `_call_gemini` añadiendo una validación explícita mediante `is_protected_path` sobre la URL generada, reforzando la protección contra posibles inyecciones de parámetros que intenten redirigir la petición a endpoints internos o locales, manteniendo la integridad del proceso incluso si fallara el regex de la constante `_API_HOST_ROOT`.
 - `2026-10-13T04:46:24` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera y fallos de E/S en la persistencia de `settings.py`, asegurando que `_MANAGER.perform_atomic_write` maneje correctamente el caso de archivos bloqueados por otros procesos sin colapsar, mediante una mejora en la lógica de reintento con backoff exponencial.
 - `2026-10-13T04:38:31` **scanner.py** (robustez ante casos límite): Se reforzó `_is_safe_entry` y la lógica de escaneo para manejar de forma robusta rutas con permisos denegados o errores de acceso durante la iteración con `os.scandir`, evitando que excepciones inesperadas en llamadas a `resolve()` o `stat()` detengan el bucle de escaneo.
-- `2026-10-13T04:37:08` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_file` al introducir un chequeo explícito de colisión de inodos antes de la transferencia, evitando que archivos distintos con el mismo nombre y tamaño puedan sobrescribirse o corromper el manifiesto en escenarios de alta concurrencia o logs desincronizados.

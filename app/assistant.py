@@ -405,8 +405,11 @@ class SystemContext:
         val = _get_source_value(source, key)
         if val is None or not spec.is_valid_type(val):
             return None
-        float_val = float(val)
-        return spec.type_hint(float_val) if _is_metric_within_bounds(float_val, spec) else None
+        try:
+            float_val = float(val)
+            return spec.type_hint(float_val) if _is_metric_within_bounds(float_val, spec) else None
+        except (ValueError, TypeError):
+            return None
 
     def _clean_grade(self, val: Any) -> str:
         """Limpia el string de calificación eliminando caracteres de control no seguros."""
@@ -440,7 +443,7 @@ class SystemContext:
                 value = self._apply_field(source, key, spec)
                 if value is not None and value != getattr(self, key):
                     updates[key] = value
-            except (ValueError, TypeError, AttributeError):
+            except Exception:
                 continue
         grade_val = self._clean_grade(_get_source_value(source, "grade"))
         if grade_val and grade_val != self.grade:
