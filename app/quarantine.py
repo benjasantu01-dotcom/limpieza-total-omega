@@ -749,7 +749,7 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         if destination.exists():
             raise FileExistsError("Colisión de ruta: archivo destino ya presente.")
         return _write_temp_to_final(source, destination)
-    except (OSError, IOError) as e:
+    except (OSError, IOError, RuntimeError) as e:
         if destination.exists():
             _safe_unlink(destination)
         raise RuntimeError(f"Error durante aislamiento: {e}")
