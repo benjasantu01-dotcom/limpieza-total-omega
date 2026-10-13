@@ -57,6 +57,8 @@ def is_junction(path: Path) -> bool:
     """
     if not isinstance(path, Path) or not is_safe_to_modify(path) or not path.exists():
         return False
+    if path.is_symlink():
+        return True
     try:
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         return bool(attrs != -1 and (attrs & FILE_ATTRIBUTE_REPARSE_POINT))
@@ -69,6 +71,8 @@ def is_system_or_hidden(path: Path) -> bool:
     Determina si un archivo tiene atributos de sistema u oculto en Windows.
     """
     if not isinstance(path, Path) or not is_safe_to_modify(path) or not path.exists():
+        return True
+    if path.is_symlink():
         return True
     try:
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))

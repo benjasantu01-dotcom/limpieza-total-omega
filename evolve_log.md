@@ -427,3 +427,13 @@ FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration
 - `2026-10-13T09:12:48` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la validación de seguridad en `_call_gemini` al verificar que `target_url` no contenga caracteres potencialmente peligrosos de inyección de comandos o manipulación de protocolos, protegiendo aún más la construcción de la petición HTTP hacia el endpoint externo.
 - `2026-10-13T09:12:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T09:12:48` Corrida terminada. Total usado hoy: 220.
+- `2026-10-13T09:20:58` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-10-13T09:21:38` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-10-13T09:21:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-13T09:21:42` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-13T09:21:49` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-13T09:22:33` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-10-13T09:23:02` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se introdujo una comprobación de puntos de reparse (reparse points) en `_is_excluded_path` para evitar que el escáner siga junctions o symlinks fuera del árbol de directorios analizado, reforzando el aislamiento del escaneo en el sistema de archivos.
+- `2026-10-13T09:23:15` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `is_junction` y `is_system_or_hidden` añadiendo `path.is_symlink()` como chequeo adicional, asegurando que la lógica no solo dependa de atributos de Windows, sino también de la estructura de archivos de Python, previniendo así posibles errores en la resolución de rutas.
+- `2026-10-13T09:23:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T09:23:15` Corrida terminada. Total usado hoy: 224.

@@ -147,6 +147,15 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     """Verifica si un nodo debe ser ignorado por políticas de seguridad."""
     try:
+        # Evitar reparse points (junctions/symlinks de directorios) para contener el escaneo
+        if entry.is_dir(follow_symlinks=False):
+            try:
+                st = entry.stat(follow_symlinks=False)
+                if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x0400):
+                    return True
+            except (OSError, PermissionError):
+                return True
+
         entry_path = Path(entry.path)
         try:
             entry_path.resolve().relative_to(root_path.resolve())
@@ -161,14 +170,6 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         
         if is_protected_path(entry_path) or entry.is_symlink() or not os.access(entry.path, os.R_OK):
             return True
-
-        if os.name == 'nt':
-            try:
-                st = entry.stat(follow_symlinks=False)
-                if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x0400):
-                     return True
-            except (OSError, PermissionError):
-                return True
             
         return False
     except (OSError, PermissionError, AttributeError, TypeError):
