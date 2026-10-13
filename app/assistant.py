@@ -421,8 +421,12 @@ class SystemContext:
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad sobre el objeto fuente."""
         if source is None: return False
-        obj = source if isinstance(source, dict) else getattr(source, "__dict__", {})
-        return not _is_input_too_deep_or_complex(obj)
+        # Si es un objeto, validar __dict__; si es dict, validar estructura
+        if isinstance(source, dict):
+            return not _is_input_too_deep_or_complex(source)
+        if hasattr(source, "__dict__"):
+            return not _is_input_too_deep_or_complex(source.__dict__)
+        return False
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
         """Aplica cambios al contexto y limpia cachés internas."""
@@ -441,9 +445,9 @@ class SystemContext:
         for key, spec in _VALIDATORS.items():
             try:
                 value = self._apply_field(source, key, spec)
-                if value is not None and value != getattr(self, key):
+                if value is not None and value != getattr(self, key, None):
                     updates[key] = value
-            except Exception:
+            except (AttributeError, ValueError):
                 continue
         grade_val = self._clean_grade(_get_source_value(source, "grade"))
         if grade_val and grade_val != self.grade:
@@ -491,6 +495,7 @@ def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
     try:
         if isinstance(source, dict):
             return source.get(key)
+        # Solo acceder a atributos de datos, nunca a métodos
         val = getattr(source, key, None)
         return None if callable(val) or isinstance(val, (type,)) else val
     except (AttributeError, ValueError, TypeError):

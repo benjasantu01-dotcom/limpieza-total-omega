@@ -147,7 +147,6 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     """Verifica si un nodo debe ser ignorado por políticas de seguridad."""
     try:
-        # Evitar reparse points (junctions/symlinks de directorios) para contener el escaneo
         if entry.is_dir(follow_symlinks=False):
             try:
                 st = entry.stat(follow_symlinks=False)
@@ -284,13 +283,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre el sistema de archivos (DFS) usando inodos para prevenir ciclos.
-    
-    Args:
-        directory: Ruta raíz a escanear.
-        skip_protected: Si es True, omite rutas protegidas.
-        
-    Yields:
-        Tuplas (Path, int) con la ruta del archivo y su tamaño en bytes.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -319,8 +311,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         elif entry.is_file(follow_symlinks=False):
                             try:
                                 f_stat = entry.stat(follow_symlinks=False)
-                                yield Path(entry.path), int(f_stat.st_size)
-                            except (OSError, PermissionError):
+                                if f_stat is not None:
+                                    yield Path(entry.path), int(f_stat.st_size)
+                            except (OSError, PermissionError, TypeError):
                                 continue
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
@@ -415,8 +408,10 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
         return ["Aviso: No se encontraron archivos accesibles en la ruta seleccionada."]
     
     lines = [f"Carpeta: {root}", f"Total: {format_size(data.total_bytes)} en {data.total_files} archivos", "", "Por tipo:"]
-    for ext, stats in heapq.nlargest(8, data.ext_stats.items(), key=lambda x: x[1].total_bytes):
-        lines.append(f"  {ext:<18} {format_size(stats.total_bytes):>10}  ({stats.count} archivos)")
+    
+    if data.ext_stats:
+        for ext, stats in heapq.nlargest(8, data.ext_stats.items(), key=lambda x: x[1].total_bytes):
+            lines.append(f"  {ext:<18} {format_size(stats.total_bytes):>10}  ({stats.count} archivos)")
     
     if data.top_files:
         lines.extend(["", "Mayores archivos:"])

@@ -288,13 +288,16 @@ def directory_size(path: Optional[OSPath]) -> int:
     path_obj: Path = Path(path)
     if not path_obj.exists() or not path_obj.is_dir(): return 0
     
-    resolved_p: Path = path_obj.resolve(strict=True)
+    try:
+        resolved_p: Path = path_obj.resolve(strict=True)
+    except (OSError, RuntimeError):
+        return 0
+        
     if not is_safe_to_modify(resolved_p) or is_protected_path(resolved_p):
         return 0
     
     path_str = str(resolved_p)
     ctx = ScanContext(os.path.normcase(path_str), _get_kernel32(), _IS_JUNCTION_FN, set(), {}, {})
-    # Pre-cargamos el caché de seguridad para el nodo raíz
     ctx.safety_cache[path_str] = True
     return _sum_directory_recursive(path_str, ctx, 0).bytes_found
 
@@ -304,7 +307,11 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
     if not isinstance(candidate, Path) or not isinstance(base_abs_str, str): return False
     if not candidate.is_dir() or not os.access(candidate, os.R_OK): return False
     
-    real: Path = candidate.resolve(strict=True)
+    try:
+        real: Path = candidate.resolve(strict=True)
+    except (OSError, RuntimeError):
+        return False
+        
     if not _is_within_sandbox(os.path.normcase(str(real)), os.path.normcase(base_abs_str)):
         return False
     if not is_safe_to_modify(real) or is_protected_path(real):
@@ -323,7 +330,11 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     target: Path = real_base.joinpath(*parts)
     if not target.exists() or not target.is_dir(): return Path()
     
-    target_res = target.resolve(strict=True)
+    try:
+        target_res = target.resolve(strict=True)
+    except (OSError, RuntimeError):
+        return Path()
+        
     if _is_within_sandbox(os.path.normcase(str(target_res)), os.path.normcase(str(real_base))) and \
        is_safe_to_modify(target_res) and not is_protected_path(target_res) and \
        not (target_res.is_symlink() or _IS_JUNCTION_FN(str(target_res))):
