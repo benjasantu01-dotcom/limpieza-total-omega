@@ -377,6 +377,7 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
     if not safe_keys:
         return []
         
+    # Usar -LiteralPath para evitar que PowerShell expanda caracteres especiales en las rutas de registro
     ps_cmd: str = (
         "Get-ItemProperty -LiteralPath " + ",".join([f"'{k}'" for k in safe_keys]) + 
         " -ErrorAction SilentlyContinue | Select-Object * -ExcludeProperty PS* | ConvertTo-Csv -NoTypeInformation"

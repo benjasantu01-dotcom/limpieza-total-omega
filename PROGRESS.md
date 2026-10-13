@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Mejoras aceptadas: **214** (42.5% de aceptación)
 - Rechazadas por tests: 28
 - Rechazadas por guardia de seguridad: 62
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 181
+- Sin respuesta de la IA (error o límite): 180
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 6 | 1 | 5 | 1 | 13 |
+| 2026-10-11 | 6 | 1 | 5 | 1 | 9 |
 | 2026-10-12 | 144 | 19 | 41 | 16 | 130 |
-| 2026-10-13 | 63 | 8 | 16 | 3 | 38 |
+| 2026-10-13 | 64 | 8 | 16 | 3 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - robustez ante casos límite: **45**
 - manejo de errores y validación de entradas: **44**
-- seguridad defensiva: **43**
+- seguridad defensiva: **44**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
@@ -42,11 +42,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **15**
 - `settings.py`: **15**
 - `quarantine.py`: **12**
-- `startup.py`: **9**
+- `startup.py`: **10**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-13T05:27:08` **startup.py** (seguridad defensiva): Se endureció la seguridad defensiva al invocar `Get-ItemProperty` en el registro usando `-LiteralPath` en lugar de `-Path` para prevenir ataques de expansión de caracteres especiales (globbing) y se añadió una validación adicional mediante `is_protected_path` al procesar los resultados de PowerShell para asegurar que ninguna ruta del sistema escape al filtrado, incluso si el registro fuera manipulado externamente.
 - `2026-10-13T05:18:11` **settings.py** (seguridad defensiva): Se endureció la seguridad defensiva al invocar `ensure_safe_to_modify` antes de cualquier operación de escritura en `save` y `reset`, asegurando que no se pueda corromper la configuración o escribir fuera del directorio permitido, incluso si el path fue validado previamente.
 - `2026-10-13T05:17:30` **safety.py** (seguridad defensiva): Se ha añadido una validación temprana contra `LONG_PATH_PREFIX` en la función `_validate_structural_safety` para prevenir ataques de *path traversal* o manipulación de namespaces mediante rutas largas (`\\?\`) no autorizadas, reforzando la seguridad defensiva sin cambiar la funcionalidad actual.
 - `2026-10-13T05:09:06` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `quarantine.py` reforzando la validación del estado del archivo origen antes del aislamiento, integrando un chequeo estricto de los atributos de sistema/oculto mediante la API de Windows tanto en la validación inicial como durante el proceso de transferencia atómica para evitar manipulación de archivos críticos.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-13T04:46:24` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera y fallos de E/S en la persistencia de `settings.py`, asegurando que `_MANAGER.perform_atomic_write` maneje correctamente el caso de archivos bloqueados por otros procesos sin colapsar, mediante una mejora en la lógica de reintento con backoff exponencial.
 - `2026-10-13T04:38:31` **scanner.py** (robustez ante casos límite): Se reforzó `_is_safe_entry` y la lógica de escaneo para manejar de forma robusta rutas con permisos denegados o errores de acceso durante la iteración con `os.scandir`, evitando que excepciones inesperadas en llamadas a `resolve()` o `stat()` detengan el bucle de escaneo.
 - `2026-10-13T04:37:08` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_file` al introducir un chequeo explícito de colisión de inodos antes de la transferencia, evitando que archivos distintos con el mismo nombre y tamaño puedan sobrescribirse o corromper el manifiesto en escenarios de alta concurrencia o logs desincronizados.
-- `2026-10-13T04:28:00` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_locked` para manejar archivos inaccesibles o bloqueados por el sistema de forma más segura, evitando excepciones innecesarias y reforzando la integridad al detectar estados de archivo ambiguos.
