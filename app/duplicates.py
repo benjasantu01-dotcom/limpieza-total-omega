@@ -233,7 +233,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     """BFS iterativo con aislamiento de errores de sistema para recolectar archivos."""
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     queue: deque[Tuple[Path, int]] = deque()
-    visited_dirs, visited_inodes, prot_set = set(), set(), set()
+    visited_dirs, visited_inodes = set(), set()
 
     for d in directories:
         if (root := _resolve_and_verify_root(d)):
@@ -249,16 +249,16 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        p_entry = Path(entry.path)
                         if entry.is_dir(follow_symlinks=False):
+                            p_entry = Path(entry.path)
+                            if skip_protected and is_protected_path(p_entry):
+                                continue
                             if is_safe_to_modify(p_entry):
-                                is_prot = p_entry in prot_set or is_protected_path(p_entry)
-                                if is_prot: prot_set.add(p_entry)
-                                if not (skip_protected and is_prot):
-                                    queue.append((p_entry, depth + 1))
+                                queue.append((p_entry, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat()
                             if st.st_size >= min_size and (st.st_dev, st.st_ino) not in visited_inodes:
+                                p_entry = Path(entry.path)
                                 if _is_valid_candidate(p_entry, st.st_size):
                                     visited_inodes.add((st.st_dev, st.st_ino))
                                     size_to_paths_map[st.st_size].append(p_entry)

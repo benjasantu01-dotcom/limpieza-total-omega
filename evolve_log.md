@@ -736,3 +736,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-13T12:26:42` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el acceso a constantes de color y métricas tipográficas mediante la eliminación de llamadas redundantes a `lru_cache` y la conversión de `MappingProxyType` a diccionarios locales inmutables para el acceso directo, mejorando la velocidad de resolución en las funciones de renderizado crítico.
 - `2026-10-13T12:26:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T12:26:42` Corrida terminada. Total usado hoy: 296.
+- `2026-10-13T12:34:40` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-10-13T12:35:09` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se implementó un sistema de memoización mediante `ScanContext` para las validaciones de `is_safe_to_modify` y `is_protected_path`, evitando llamadas repetitivas y costosas al sistema de archivos durante el escaneo de múltiples subcarpetas dentro de una misma jerarquía.
+- `2026-10-13T12:35:13` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-13T12:35:44` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-10-13T12:36:14` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se optimizó el acceso a disco en `_collect_candidates` evitando llamadas redundantes a `stat()` y `is_protected_path` mediante el uso del objeto `os.DirEntry` ya existente, lo cual reduce drásticamente las syscalls innecesarias durante el escaneo de directorios.
+- `2026-10-13T12:36:27` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics.is_finite, SystemMetrics.safe_get
+- `2026-10-13T12:36:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T12:36:27` Corrida terminada. Total usado hoy: 300.

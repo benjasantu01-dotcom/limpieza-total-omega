@@ -126,7 +126,6 @@ BROWSER_CACHE_PATHS: BrowserMap = {
 def _is_valid_rel_path(p: str) -> bool:
     """Valida que una ruta relativa no contenga secuencias de escape, caracteres ilegales o referencias absolutas."""
     if not p or not isinstance(p, str): return False
-    # Detecta referencias a unidades o raíces absolutas
     if os.path.isabs(p) or p.startswith(('\\', '/')): return False
     if '..' in p or any(c in p for c in PATH_FORBIDDEN_CHARS): return False
     return True
@@ -241,7 +240,7 @@ def _process_file_node(entry: os.DirEntry, ctx: ScanContext) -> int:
     (para evitar conteos cíclicos o recursivos en sistemas con links).
     """
     try:
-        if not os.access(entry.path, os.R_OK) or not _is_path_safe(entry.path, ctx):
+        if not _is_path_safe(entry.path, ctx):
             return 0
         st = entry.stat(follow_symlinks=False)
         if not hasattr(st, 'st_dev') or not hasattr(st, 'st_ino'):
@@ -296,12 +295,9 @@ def directory_size(path: Optional[OSPath]) -> int:
     except (OSError, RuntimeError):
         return 0
         
-    if not is_safe_to_modify(resolved_p) or is_protected_path(resolved_p):
-        return 0
-    
     path_str = str(resolved_p)
     ctx = ScanContext(os.path.normcase(path_str), _get_kernel32(), _IS_JUNCTION_FN, set(), {}, {})
-    ctx.safety_cache[path_str] = True
+    ctx.safety_cache[path_str] = is_safe_to_modify(resolved_p) and not is_protected_path(resolved_p)
     return _sum_directory_recursive(path_str, ctx, 0).bytes_found
 
 @safe_path_operation(False)
