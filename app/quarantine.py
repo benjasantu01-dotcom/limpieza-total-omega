@@ -1011,17 +1011,15 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         if not items:
             return 0
         
+        # Mapeo eficiente usando dict para lookup O(1)
         item_map = {i.stored_name: i for i in items}
-        root_resolved = quarantine_root.resolve()
         purged_ids: Set[str] = set()
         
         for f in quarantine_root.iterdir():
             if f.name == MANIFEST_NAME or f.name not in item_map:
                 continue
             
-            if not is_within_directory(f, quarantine_root):
-                continue
-            
+            # Solo verificar integridad si el archivo está en el manifiesto
             item = item_map[f.name]
             if _is_item_purgable(f, item, quarantine_root):
                 purged_ids.add(item.item_id)

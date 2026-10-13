@@ -42,6 +42,7 @@ SYSTEM_CRITICAL_NAMES: Final[frozenset[str]] = frozenset({"pagefile.sys", "hiber
 JUNK_EXTENSIONS: Final[frozenset[str]] = frozenset({
     ".tmp", ".temp", ".log", ".bak", ".old", ".dmp", ".chk", ".cache",
 })
+JUNK_EXTENSIONS_TUPLE: Final[tuple[str, ...]] = tuple(JUNK_EXTENSIONS)
 
 class SortConfig(NamedTuple):
     """Configuración que mapea un campo de ordenamiento con su función de extracción."""
@@ -261,11 +262,10 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
-                    elif entry.is_file(follow_symlinks=False):
-                        if entry.name.lower().endswith(tuple(JUNK_EXTENSIONS)):
-                            stats = entry.stat(follow_symlinks=False)
-                            if _is_candidate_junk(stats, entry, now_ts):
-                                found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
+                    elif entry.is_file(follow_symlinks=False) and entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE):
+                        stats = entry.stat(follow_symlinks=False)
+                        if _is_candidate_junk(stats, entry, now_ts):
+                            found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
                 except (PermissionError, OSError):
                     continue
     except (PermissionError, OSError, RuntimeError):

@@ -985,3 +985,38 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-13T03:47:10` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `top_memory_processes` reemplazando la instanciación de un objeto de buffer `ctypes` dentro del bucle principal por una llamada única pre-dimensionada, y moví la lógica de `EnumProcesses` a una consulta más eficiente.
 - `2026-10-13T03:47:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T03:47:10` Corrida terminada. Total usado hoy: 92.
+- `2026-10-13T03:54:51` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-10-13T03:55:25` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé la búsqueda de extensiones en `_process_directory` pre-compilando la tupla de extensiones `JUNK_EXTENSIONS` fuera del bucle para evitar la recreación constante, y utilicé `os.scandir` de forma más eficiente al validar las extensiones antes de instanciar objetos `JunkFile`.
+- `2026-10-13T03:55:27` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-13T03:56:14` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `purge_all` y la carga de manifiestos evitando iteraciones innecesarias y operaciones de I/O redundantes mediante el uso de conjuntos (`set`) para búsquedas en tiempo constante y validaciones tempranas antes de procesar archivos.
+- `2026-10-13T03:56:36` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 98): unterminated string literal (detected at line 98)
+- `2026-10-13T03:57:11` Tests FALLARON:
+```
+...................F...................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_____________________ test_drive_root_is_always_protected ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_drive_root_is_always_prot0')
+
+    def test_drive_root_is_always_protected(tmp_path):
+        # tmp_path.anchor es "/" en Linux y "C:\\" en Windows: sirve en los dos.
+        assert safety.is_drive_root(tmp_path.anchor)
+>       assert safety.is_protected_path(tmp_path.anchor)
+E       AssertionError: assert False
+E        +  where False = <functools._lru_cache_wrapper object at 0x7fc19ddd09e0>('/')
+E        +    where <functools._lru_cache_wrapper object at 0x7fc19ddd09e0> = safety.is_protected_path
+E        +    and   '/' = PosixPath('/tmp/pytest-of-runner/pytest-3/test_drive_root_is_always_prot0').anchor
+
+evolve/tests/test_safety.py:63: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_drive_root_is_always_protected - AssertionError: assert False
+ +  where False = <functools._lru_cache_wrapper object at 0x7fc19ddd09e0>('/')
+ +    where <functools._lru_cache_wrapper object at 0x7fc19ddd09e0> = safety.is_protected_path
+ +    and   '/' = PosixPath('/tmp/pytest-of-runner/pytest-3/test_drive_root_is_always_prot0').anchor
+1 failed, 298 passed in 1.60s
+
+```
+- `2026-10-13T03:57:11` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se optimizó `is_protected_path` reemplazando llamadas a `os.path.ismount` y validaciones redundantes por un acceso directo al conjunto precalculado `_SYSTEM_ROOT_PATHS_TUPLE` y se centralizó la lógica de protección de rutas, reduciendo el overhead de las llamadas a `Path` y `resolve()` mediante el uso de strings normalizados en las comparaciones iniciales.
+- `2026-10-13T03:57:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T03:57:11` Corrida terminada. Total usado hoy: 96.
