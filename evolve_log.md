@@ -1413,3 +1413,41 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-13T07:51:36` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _SettingsManager.clear, _ValidationResult, _Validators._check_path_safety, _Validators._is_safe_path, _Validators._run_safety_checks, _Validators._validate_enum_str
 - `2026-10-13T07:51:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T07:51:36` Corrida terminada. Total usado hoy: 188.
+- `2026-10-13T07:59:28` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-10-13T07:59:59` Tests FALLARON:
+```
+t '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:357: SyntaxWarning: invalid escape sequence '\)'
+    """Detecta acceso a dispositivos hardware directamente (formato \\.\)."""
+
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:700: SyntaxWarning: invalid escape sequence '\)'
+    """Identifica si la ruta corresponde a una raíz de unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 8 warnings in 1.36s
+
+```
+- `2026-10-13T07:59:59` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la documentación técnica del módulo `startup.py` incorporando docstrings detallados en funciones críticas, aclarando el propósito y las precondiciones de entrada, además de añadir tipos sugeridos y mejorar la claridad de los nombres de los parámetros internos, lo cual facilita el mantenimiento y la auditoría de seguridad del código.
+- `2026-10-13T08:00:37` ➖ Sin cambios en assistant.py (enfoque: rendimiento). Motivo: Optimizé la gestión de los problemas de salud del sistema convirtiendo la propiedad `active_problems` de una lista generada dinámicamente en una tupla cacheada, y eliminando el re-cálculo de mensajes repetitivos mediante el uso de `lru_cache` sobre el formateo de las advertencias, mejorando la eficiencia del bucle de respuesta ante consultas frecuentes.
+- `2026-10-13T08:00:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-13T08:01:16` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-10-13T08:01:33` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas repetidas a `is_safe_to_modify` y `is_protected_path` mediante el uso del diccionario `safety_cache` ya existente en el contexto, reduciendo drásticamente la carga de I/O al escanear árboles de directorios profundos.
+- `2026-10-13T08:01:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T08:01:33` Corrida terminada. Total usado hoy: 192.

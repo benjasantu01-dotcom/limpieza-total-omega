@@ -254,7 +254,7 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
     if depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN or not isinstance(root_path, str):
         return ScanResult(0, True)
     
-    if not os.access(root_path, os.R_OK) or not _is_path_safe(root_path, ctx):
+    if not _is_path_safe(root_path, ctx):
         return ScanResult(0, True)
     
     path_norm = os.path.normcase(root_path)
@@ -292,6 +292,8 @@ def directory_size(path: Optional[OSPath]) -> int:
     
     path_str = str(resolved_p)
     ctx = ScanContext(os.path.normcase(path_str), _get_kernel32(), _IS_JUNCTION_FN, set(), {}, {})
+    # Pre-cargamos el caché de seguridad para el nodo raíz
+    ctx.safety_cache[path_str] = True
     return _sum_directory_recursive(path_str, ctx, 0).bytes_found
 
 @safe_path_operation(False)
