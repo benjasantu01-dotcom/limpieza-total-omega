@@ -189,7 +189,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         # Seguridad: verificar containment para prevenir escapes del root original
         try:
             entry_path.resolve().relative_to(root_path.resolve())
-        except ValueError:
+        except (ValueError, RuntimeError):
             return True
 
         name = entry.name
@@ -352,13 +352,13 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
                                     stack.append(Path(entry.path))
-                            except OSError:
+                            except (OSError, PermissionError):
                                 continue
                         elif entry.is_file(follow_symlinks=False):
                             try:
                                 f_stat = entry.stat(follow_symlinks=False)
                                 yield Path(entry.path), int(f_stat.st_size)
-                            except OSError:
+                            except (OSError, PermissionError):
                                 continue
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
