@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 54
+- Rechazadas por guardia de seguridad: 55
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 198
+- Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-12 | 117 | 17 | 33 | 12 | 125 |
-| 2026-10-13 | 90 | 10 | 21 | 6 | 73 |
+| 2026-10-12 | 115 | 17 | 33 | 12 | 123 |
+| 2026-10-13 | 93 | 10 | 22 | 6 | 73 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
 - manejo de errores y validación de entradas: **48**
-- seguridad defensiva: **43**
+- seguridad defensiva: **41**
+- rendimiento: **36**
 - robustez ante casos límite: **34**
-- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **22**
-- `healthscore.py`: **18**
 - `diskreport.py`: **18**
-- `browser.py`: **17**
+- `healthscore.py`: **17**
 - `organizer.py`: **16**
+- `safety.py`: **16**
+- `scanner.py`: **16**
+- `browser.py`: **16**
 - `settings.py`: **15**
-- `safety.py`: **15**
-- `scanner.py`: **15**
 - `duplicates.py`: **15**
 - `branding.py`: **14**
 - `assistant.py`: **13**
 - `quarantine.py`: **12**
-- `startup.py`: **10**
+- `startup.py`: **11**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-13T08:31:57` **startup.py** (rendimiento): Se implementó un mecanismo de filtrado temprano en `entries_from_folders` mediante un conjunto de rutas ya procesadas para evitar el escaneo redundante y reducir el impacto de I/O innecesario sobre directorios compartidos.
+- `2026-10-13T08:31:14` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de un `frozenset` para `self.safe_cache` en `Scanner`, permitiendo búsquedas en O(1) en lugar de verificar repetidamente la pertenencia en colecciones, y se eliminó la llamada redundante a `is_protected_path` dentro de `process_entry` al delegar la validación completa en `_is_safe_entry`.
+- `2026-10-13T08:30:48` **safety.py** (rendimiento): Optimizé la validación de rutas `is_protected_path` reemplazando la lógica de bucle `any(p_str.startswith(...) for ...)` por una búsqueda eficiente en conjunto con el uso de `pathlib.Path.is_relative_to` (disponible desde Python 3.9) y evitando múltiples resoluciones de disco para la misma ruta mediante el uso de caché.
 - `2026-10-13T08:21:24` **quarantine.py** (rendimiento): Optimizé `purge_all` para evitar lecturas redundantes del sistema de archivos mediante el uso de `set` para búsquedas O(1) y reestructuré el bucle para reducir llamadas costosas a `stat()` e integridad al procesar el directorio.
 - `2026-10-13T08:20:17` **memory.py** (rendimiento): Se optimizó `top_memory_processes` reemplazando la creación de una nueva lista de procesos en cada ciclo por una actualización selectiva, y se eliminó la redundancia en `_is_process_executable_safe` al evitar la conversión innecesaria a `Path` y `resolve()` en cada iteración, utilizando operaciones de cadena más rápidas.
 - `2026-10-13T08:11:00` **healthscore.py** (rendimiento): Optimicé el rendimiento del pipeline convirtiendo la lista de caracteres permitidos en un `set` y pre-compilando el bloqueador de palabras como un conjunto de strings, evitando re-crear colecciones en cada validación de mensaje.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-13T07:40:45` **memory.py** (legibilidad y documentación): He mejorado la legibilidad del código documentando los tipos de datos complejos en las estructuras de la API de Win32, corrigiendo inconsistencias en type hints (ej. `Any` por `Any` real, `Dict` por dict) y añadiendo docstrings descriptivos a funciones críticas, asegurando que el código sea mantenible bajo los estándares exigentes del proyecto.
 - `2026-10-13T07:40:16` **main.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la inclusión de docstrings detallados en métodos críticos y la normalización de la estructura de las clases internas (`AppSettings` y `TABS`) para que el flujo de control sea más predecible ante futuros cambios.
 - `2026-10-13T07:30:35` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a las funciones `_clamp` y `_render_bar`, además de estandarizar la nomenclatura de los argumentos en el pipeline para mejorar la legibilidad y coherencia técnica.
-- `2026-10-13T07:30:21` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el "porqué" de las decisiones de diseño (como las estrategias de hashing y la persistencia de caché), y añadí type hints y aclaraciones en funciones críticas para asegurar la legibilidad del flujo de control ante futuras auditorías.
-- `2026-10-13T07:29:52` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (usando el formato Google Style) que explican el propósito, parámetros y comportamiento de las funciones públicas, eliminando ambigüedades en la tipificación.
-- `2026-10-13T07:29:23` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en parámetros críticos y actualizando docstrings para reflejar con mayor precisión las restricciones de seguridad y el manejo de excepciones, facilitando la comprensión del flujo de control ante errores de E/S.

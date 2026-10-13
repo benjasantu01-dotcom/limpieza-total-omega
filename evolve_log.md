@@ -1465,3 +1465,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-13T08:21:27` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 100): unterminated string literal (detected at line 100)
 - `2026-10-13T08:21:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T08:21:27` Corrida terminada. Total usado hoy: 200.
+- `2026-10-13T08:29:59` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-10-13T08:30:48` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimizé la validación de rutas `is_protected_path` reemplazando la lógica de bucle `any(p_str.startswith(...) for ...)` por una búsqueda eficiente en conjunto con el uso de `pathlib.Path.is_relative_to` (disponible desde Python 3.9) y evitando múltiples resoluciones de disco para la misma ruta mediante el uso de caché.
+- `2026-10-13T08:31:14` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo recursivo mediante el uso de un `frozenset` para `self.safe_cache` en `Scanner`, permitiendo búsquedas en O(1) en lugar de verificar repetidamente la pertenencia en colecciones, y se eliminó la llamada redundante a `is_protected_path` dentro de `process_entry` al delegar la validación completa en `_is_safe_entry`.
+- `2026-10-13T08:31:44` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._check_path_safety
+- `2026-10-13T08:31:57` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se implementó un mecanismo de filtrado temprano en `entries_from_folders` mediante un conjunto de rutas ya procesadas para evitar el escaneo redundante y reducir el impacto de I/O innecesario sobre directorios compartidos.
+- `2026-10-13T08:31:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T08:31:57` Corrida terminada. Total usado hoy: 204.

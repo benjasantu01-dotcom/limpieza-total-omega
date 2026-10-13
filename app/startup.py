@@ -288,14 +288,18 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> StartupEnt
     """Escanea las carpetas de inicio detectadas para listar ejecutables."""
     found_entries: StartupEntries = []
     scan_folders = folders if folders is not None else startup_folders()
+    processed_paths: Set[str] = set()
     
     for folder in scan_folders:
         try:
             with os.scandir(folder) as it:
                 for entry in it:
+                    if entry.path in processed_paths:
+                        continue
                     processed = _process_folder_entry(entry)
                     if processed:
                         found_entries.append(processed)
+                        processed_paths.add(entry.path)
         except (OSError, PermissionError):
             continue
     return found_entries

@@ -265,9 +265,8 @@ class Scanner:
                 if self._is_safe_entry(entry):
                     self._handle_directory(entry, directory_stack, current_depth)
             elif entry.is_file(follow_symlinks=False):
-                if self._is_relevant_extension(entry.name):
-                    if not is_protected_path(Path(entry.path)) and self._is_safe_entry(entry):
-                        self._run_file_heuristics(Path(entry.path), entry)
+                if self._is_relevant_extension(entry.name) and self._is_safe_entry(entry):
+                    self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError) as e:
             logger.debug(f"Error de acceso en entrada {entry.path}: {e}")
 

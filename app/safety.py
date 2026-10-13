@@ -261,7 +261,6 @@ _SYSTEM_ROOT_PATHS: Final[set[Path]] = {
 }
 
 _SYSTEM_ROOT_PATHS_TUPLE: Final[tuple[str, ...]] = tuple(str(p).lower() for p in _SYSTEM_ROOT_PATHS)
-_SYSTEM_ROOT_STRS: Final[set[str]] = {str(p).lower() for p in _SYSTEM_ROOT_PATHS}
 
 _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
     r'^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$', re.IGNORECASE
@@ -708,20 +707,18 @@ def is_protected_path(path: PathLike) -> bool:
     """Filtra rutas que pertenecen a directorios críticos del SO."""
     if not isinstance(path, (str, Path)) or not path: return True
     try:
-        p_str = str(path).lower()
-        if any(p_str.startswith(r) for r in _SYSTEM_ROOT_PATHS_TUPLE): return True
-        if _is_kernel_managed(p_str): return True
-        
         p = Path(path)
         if not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in p.parts): return True
         
-        if _get_file_attrs(p_str) & (Win32Attr.SYSTEM | Win32Attr.HIDDEN): return True
-        if not p.exists(): return False
-            
-        p_norm = _normalize_resolved(str(p))
-        p_str_norm = str(p_norm).lower()
+        p_resolved = _normalize_resolved(str(p))
+        if _is_kernel_managed(str(p_resolved)): return True
         
-        return p_str_norm in _SYSTEM_ROOT_STRS or any(p_norm.is_relative_to(root) for root in _SYSTEM_ROOT_PATHS) or p_str_norm == p_norm.anchor
+        if any(p_resolved.is_relative_to(root) for root in _SYSTEM_ROOT_PATHS): return True
+        
+        attrs = _get_file_attrs(str(p))
+        if attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN): return True
+            
+        return p_resolved == Path(p_resolved.anchor)
     except Exception: return True
 
 @lru_cache(maxsize=4096)
@@ -733,13 +730,8 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         p_path = normalize(parent)
         if is_drive_root(c_path) or is_protected_path(str(c_path)): return False
         
-        common = os.path.commonpath([str(c_path), str(p_path)])
-        if common != str(p_path): return False
-        
-        c_str = str(c_path)
-        p_str = str(p_path)
-        return c_str.startswith(p_str) if allow_equal else (c_str.startswith(p_str) and c_str != p_str)
-    except (UnsafePathError, TypeError, OSError, RuntimeError, ValueError): return False
+        return c_path.is_relative_to(p_path) if allow_equal else (c_path.is_relative_to(p_path) and c_path != p_path)
+    except (UnsafePathError, TypeError, OSError, RuntimeError, ValueError, ValueError): return False
 
 @lru_cache(maxsize=2048)
 def is_sensitive_file(path: PathLike) -> bool:
@@ -851,13 +843,13 @@ def _is_junction_target_outside_base(path: Path, base_dir: Path) -> bool:
     """Detecta si una redirección apunta fuera del sandbox base."""
     final_path = _get_final_path_normalized(path)
     if not final_path: return False
-    return not str(final_path).startswith(str(base_dir))
+    return not final_path.is_relative_to(base_dir)
 
 def _is_reparse_point_safe(path: Path, base_dir: Optional[Path]) -> bool:
     """Valida la seguridad de un punto de reparse."""
     if not base_dir: return True
     final_path = _get_final_path_normalized(path)
-    return final_path is not None and str(final_path).startswith(str(base_dir))
+    return final_path is not None and final_path.is_relative_to(base_dir)
 
 def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> None:
     """Verifica que las redirecciones NTFS no escapen del directorio base."""
@@ -867,7 +859,7 @@ def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> 
             raise UnsafePathError("Redirección de reparse point fuera de base.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         
         for parent in path.parents:
-            if _is_system_directory_junction( rather := str(parent)):
+            if _is_system_directory_junction(str(parent)):
                 if not _is_reparse_point_safe(parent, base_dir):
                     raise UnsafePathError("Reparse point anidado detectado.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
             if parent == base_dir: break
