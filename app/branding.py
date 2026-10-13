@@ -409,17 +409,16 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
             return None
             
         target = Path(destination).resolve()
-        
+            
         # Validaciones de seguridad: prevenir escritura en rutas protegidas y validar seguridad
-        if not is_safe_to_modify(target) or is_protected_path(target):
+        # Se requiere is_safe_to_modify(target) para el archivo final y asegurar que el padre sea seguro
+        if not is_safe_to_modify(target) or is_protected_path(target) or not is_safe_to_modify(target.parent):
             return None
         
         # Prevenir sobreescritura si existe una carpeta en la ruta destino
         if target.exists() and target.is_dir():
             return None
             
-        ensure_safe_to_modify(target)
-        
         # Operación atómica de escritura
         target.parent.mkdir(parents=True, exist_ok=True)
         validated_size = max(16, min(1024, int(size)))

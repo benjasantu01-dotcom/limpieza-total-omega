@@ -168,18 +168,16 @@ class _SettingsManager:
         temp_path: Path = config_path.with_suffix(".tmp")
         bak_path: Path = config_path.with_suffix(".bak")
         
-        for attempt in range(3):
-            dir_fd: Optional[int] = None
+        for attempt in range(4):
             f = None
             try:
                 f = open(temp_path, "w", encoding="utf-8")
-                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
                 f.write(serialized)
                 f.flush()
                 os.fsync(f.fileno())
                 if not _is_file_secure_to_read(os.fstat(f.fileno()), f):
                     raise PermissionError("Archivo temporal inseguro")
-                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
                 f.close()
                 f = None
                 
@@ -189,9 +187,6 @@ class _SettingsManager:
                     os.replace(config_path, bak_path)
                 
                 os.replace(temp_path, config_path)
-                
-                dir_fd = os.open(str(config_path.parent), os.O_RDONLY)
-                os.fsync(dir_fd)
                 self.clear()
                 return True
             except (OSError, IOError):
@@ -200,7 +195,6 @@ class _SettingsManager:
                 if f is not None:
                     try: f.close()
                     except: pass
-                if dir_fd is not None: os.close(dir_fd)
                 if temp_path.exists():
                     try: os.remove(temp_path)
                     except OSError: pass
