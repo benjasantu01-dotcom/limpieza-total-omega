@@ -308,16 +308,21 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         pmc = PROCESS_MEMORY_COUNTERS()
         pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
         
-        if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
-            found_procs = []
-            for pid in pids[:cb_needed.value // 4]:
-                if pid > 4 and not _is_system_process(pid):
-                    ws = _query_working_set_bytes(pid, kernel32, psapi, pmc)
-                    if ws and _is_process_executable_safe(pid):
-                        found_procs.append(ProcessMemory(f"PID {pid}", pid, ws))
-            
-            _CACHE_TOP_PROC["data"] = sorted(found_procs, key=lambda p: p.working_set, reverse=True)[:limit]
-            _CACHE_TOP_PROC["time"] = now
+        try:
+            if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
+                found_procs = []
+                count = min(1024, cb_needed.value // 4)
+                for i in range(count):
+                    pid = pids[i]
+                    if pid > 4 and not _is_system_process(pid):
+                        ws = _query_working_set_bytes(pid, kernel32, psapi, pmc)
+                        if ws and _is_process_executable_safe(pid):
+                            found_procs.append(ProcessMemory(f"PID {pid}", pid, ws))
+                
+                _CACHE_TOP_PROC["data"] = sorted(found_procs, key=lambda p: p.working_set, reverse=True)[:limit]
+                _CACHE_TOP_PROC["time"] = now
+        except (ctypes.ArgumentError, OSError):
+            pass
             
     return _CACHE_TOP_PROC["data"]
 

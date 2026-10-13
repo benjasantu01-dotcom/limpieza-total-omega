@@ -959,10 +959,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             font=ctk.CTkFont(size=branding.font_size("body")),
         ).grid(row=row, column=column, sticky="w", padx=(0, 24), pady=6)
 
-    def _safe_get_entry_value(self, entry_widget: ctk.CTkEntry, default: Any, numeric: bool = False) -> Any:
-        """Extrae valor de entrada validando seguridad."""
+    def _safe_get_entry_value(self, entry_widget: Any, default: Any, numeric: bool = False) -> Any:
+        """Extrae valor de entrada validando seguridad y estado del widget."""
         try:
-            if entry_widget is None or not entry_widget.winfo_exists():
+            if not hasattr(entry_widget, 'winfo_exists') or not entry_widget.winfo_exists():
                 return default
             raw = entry_widget.get().strip()
             if not raw:
@@ -1977,6 +1977,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 continue
         
         try:
+            # Validar widgets antes de intentar leer valores
             if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists():
                 valores["duplicados_tamano_minimo_kb"] = self._get_numeric_setting_from_widget(self.min_dup_entry, "duplicados_tamano_minimo_kb", 64)
                 
@@ -2066,7 +2067,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                         (getattr(self, 'top_files_entry', None), "top_archivos", 15)
                     ]
                     for widget, key, default in widgets:
-                        if widget and widget.winfo_exists():
+                        if widget and hasattr(widget, 'winfo_exists') and widget.winfo_exists():
                             widget.delete(0, "end")
                             widget.insert(0, str(settings_mod.DEFAULTS.get(key, default)))
                     self.log_lines(["Ajustes restaurados a los valores de fábrica.", ""] + settings_mod.describe(), "Ajustes")

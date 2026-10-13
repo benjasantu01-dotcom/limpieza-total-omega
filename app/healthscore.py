@@ -155,12 +155,13 @@ WEIGHTS: Final[Dict[MetricKey, int]] = {
     "arranque": 8,
 }
 
-def _verify_weights(weights: Dict[str, int]) -> None:
-    """Valida que la suma de pesos configurados sea exactamente 100."""
+def _verify_pipeline_integrity(weights: Dict[str, int], pipeline: Tuple[PipelineEntry, ...]) -> None:
+    """Valida la integridad estructural: pesos suman 100 y áreas coinciden."""
     if sum(weights.values()) != 100:
         raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
-
-_verify_weights(WEIGHTS)
+    pipeline_areas = {e.area for e in pipeline}
+    if set(weights.keys()) != pipeline_areas:
+        raise ValueError("Inconsistencia entre áreas en WEIGHTS y _PIPELINE.")
 
 _JUNK_SCORER = create_linear_scorer(_LIMIT_JUNK_MB, inverse=True)
 _DUP_SCORER = create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)
@@ -199,6 +200,8 @@ _PIPELINE: Final[Tuple[PipelineEntry, ...]] = (
         (RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),)
     ),
 )
+
+_verify_pipeline_integrity(WEIGHTS, _PIPELINE)
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
     """Calcula salud: Normaliza el volumen de basura (MB) comparándolo contra el límite total."""
@@ -363,15 +366,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     )
 
 def _render_bar(points: int, max_val: int) -> str:
-    """
-    Genera una barra de progreso visual en formato ASCII para la interfaz.
-    
-    Args:
-        points: Puntos actuales alcanzados.
-        max_val: Valor máximo esperado para el área.
-    """
-    p = max(0, min(int(points), int(max_val)))
-    return "#" * p + "." * (int(max_val) - p) if max_val > 0 else ".........."
+    """Genera una barra de progreso visual en formato ASCII para la interfaz."""
+    try:
+        p = max(0, min(int(points), int(max_val)))
+        if max_val <= 0: return ".........."
+        return "#" * p + "." * (max_val - p)
+    except (TypeError, ValueError):
+        return ".........."
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera una lista de líneas legible para el informe de estado final del sistema."""
