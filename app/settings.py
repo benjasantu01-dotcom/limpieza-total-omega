@@ -445,7 +445,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
         return config_path if _MANAGER.perform_atomic_write(config_path, serialized) else None
-    except (TypeError, ValueError, OSError, PermissionError, AttributeError): return None
+    except (TypeError, ValueError, OSError, PermissionError, AttributeError):
+        return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
     """Actualiza campos específicos en la configuración y persiste solo si hay cambios."""

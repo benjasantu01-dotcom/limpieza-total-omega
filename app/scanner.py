@@ -99,7 +99,7 @@ def _get_file_size(path: Path) -> int:
     """Retorna el tamaño en bytes del archivo. Devuelve -1 si el archivo es inaccesible."""
     try:
         return int(path.stat().st_size)
-    except (OSError, PermissionError, FileNotFoundError, AttributeError, ValueError):
+    except (OSError, PermissionError, FileNotFoundError, AttributeError, ValueError, TypeError):
         return -1
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
@@ -115,8 +115,9 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     """Valida integridad de la ruta contra límites API y caracteres inseguros/RTL."""
-    if not isinstance(path_str, str) or not path_str:
+    if not isinstance(path_str, str) or not path_str.strip():
         return False
+    # La validación de len debe hacerse sobre la cadena original, no sobre None
     if len(path_str) > SCAN_LIMITS.max_path or "\0" in path_str:
         return False
     if UNC_PATH_RE.match(path_str) or RTL_CHAR_RE.search(path_str):
@@ -126,6 +127,7 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
 def _is_target_extension(name: str) -> bool:
     """Determina si la extensión del archivo es un objetivo relevante para heurísticas."""
     try:
+        if not name: return False
         return Path(name).suffix.lower() in SUSPICIOUS_ALL_EXTS
     except (ValueError, TypeError):
         return False
