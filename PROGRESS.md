@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Mejoras aceptadas: **198** (39.3% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 54
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 206
+- Rechazadas por guardia de seguridad: 55
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 31 | 3 | 8 | 2 | 42 |
+| 2026-10-11 | 29 | 3 | 8 | 1 | 41 |
 | 2026-10-12 | 144 | 19 | 41 | 16 | 130 |
-| 2026-10-13 | 22 | 5 | 5 | 2 | 34 |
+| 2026-10-13 | 25 | 5 | 6 | 2 | 34 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **44**
 - seguridad defensiva: **44**
-- manejo de errores y validación de entradas: **43**
-- legibilidad y documentación: **39**
-- rendimiento: **27**
+- manejo de errores y validación de entradas: **44**
+- legibilidad y documentación: **41**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **20**
 - `safety.py`: **19**
+- `memory.py`: **19**
+- `browser.py`: **18**
 - `diskreport.py`: **18**
-- `browser.py`: **17**
-- `healthscore.py`: **16**
 - `settings.py`: **15**
+- `branding.py`: **15**
+- `healthscore.py`: **15**
 - `organizer.py`: **15**
 - `assistant.py`: **14**
-- `branding.py`: **14**
 - `scanner.py`: **14**
 - `duplicates.py`: **14**
 - `quarantine.py`: **9**
-- `startup.py`: **7**
+- `startup.py`: **8**
 - `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-13T02:55:32` **browser.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints refinados en `_sum_directory_recursive` y `_should_skip_entry`, clarificando la lógica de filtrado de seguridad y el manejo de los estados de recursión para mejorar la mantenibilidad del escáner de archivos.
+- `2026-10-13T02:55:18` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de Type Hints explícitos en los métodos de `CanvasElement` y se ha sustituido la unión de tipos `tuple[...] | str` por la forma estándar `Union[Tuple[...], str]` para garantizar compatibilidad total y legibilidad en las especificaciones de interfaz, facilitando el trabajo del motor de análisis estático del proyecto.
+- `2026-10-13T02:54:10` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita sobre `fieldnames` para evitar `IndexError` ante salidas de PowerShell inesperadas (vacías o malformadas) y añadí un manejo de excepciones más granular en `_is_valid_registry_entry` para capturar fallos al instanciar `Path` con caracteres prohibidos.
 - `2026-10-13T02:46:22` **settings.py** (manejo de errores y validación de entradas): Se mejoró la robustez de la validación al añadir un chequeo de tipos estricto y explícito en `_coerce_and_verify` para prevenir que valores corrompidos o de tipos inesperados (inyectados por edición manual del JSON) se propaguen al resto de la aplicación, manteniendo el criterio de reemplazo silencioso por defaults.
 - `2026-10-13T02:46:05` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_valid_path_structure` y las funciones de escaneo para manejar entradas `None` o rutas vacías antes de procesarlas, evitando excepciones en el procesamiento de directorios.
 - `2026-10-13T02:44:33` **safety.py** (manejo de errores y validación de entradas): Se introdujo una captura selectiva de excepciones en `_is_file_locked_by_other_process` y `_get_file_attrs` para evitar que errores inesperados de API (como `MemoryError` o `PermissionError`) se propaguen como valores por defecto "inseguros" (falsos positivos de bloqueo), mejorando la robustez sin debilitar la seguridad.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-13T02:16:48` **assistant.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `ingest` al manejar excepciones durante la validación de campos, evitando que un solo dato malformado detenga la ingesta completa, y se reforzó la validación de `SystemContext` para asegurar que las métricas negativas o inválidas no contaminen el estado interno.
 - `2026-10-13T00:53:28` **startup.py** (seguridad defensiva): Se ha mejorado `_resolve_and_cache_path` y `_resolve_path_from_command` para prevenir la resolución de rutas mediante el uso del flag `follow_symlinks=False` (implícito en el manejo de Path) y una verificación explícita contra ataques de "Path Traversal" y rutas relativas inseguras, asegurando que el ejecutable siempre se valide dentro de un contexto absoluto y seguro antes de su resolución.
 - `2026-10-13T00:53:15` **settings.py** (seguridad defensiva): Se endurecieron las validaciones de seguridad en `save` y `_read_and_parse_json` al verificar explícitamente que la ruta del archivo sea un archivo regular y no un enlace simbólico o un punto de reparse antes de realizar cualquier operación de E/S, protegiendo contra ataques de confusión de rutas (path confusion) o symlink races.
-- `2026-10-13T00:52:17` **safety.py** (seguridad defensiva): Se ha añadido una verificación explícita para detectar y prevenir el uso de rutas que contienen puntos de reparse (junctions/symlinks) en los niveles intermedios de la jerarquía de directorios (no solo el destino final), cerrando un vector de escalada de privilegios/fuga de sandbox mediante "path traversal" a través de links maliciosos.
-- `2026-10-13T00:42:10` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `delete_reviewed` añadiendo una validación explícita para asegurar que la carpeta de revisión no sea una ruta raíz o sensible, protegiendo contra posibles errores de configuración que intentarían borrar archivos de directorios críticos.
-- `2026-10-13T00:41:44` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_process_executable_safe` al implementar una validación estricta de rutas mediante `Path.resolve()` antes de consultar `is_protected_path`, asegurando que no se pueda manipular la memoria de procesos cuyos ejecutables residan en rutas maliciosas, protegidas o con caracteres especiales.

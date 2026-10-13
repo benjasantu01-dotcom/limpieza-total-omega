@@ -59,7 +59,7 @@ class ScanContext:
         sandbox_base_norm: Ruta base normalizada (en minúsculas) para restringir el alcance.
         kernel32: Handle de la API de Windows o None si no es Windows.
         is_junction: Función para detectar puntos de reparse (Junctions/Symlinks).
-        visited_files: Historial de archivos procesados para evitar conteos duplicados.
+        visited_files: Historial de archivos procesados para evitar conteos duplicados (dev, ino).
         visited_dirs: Cache de tamaños de directorios ya procesados.
         safety_cache: Cache de validaciones de seguridad para evitar redundancia.
     """
@@ -71,9 +71,7 @@ class ScanContext:
     safety_cache: SafetyCache
 
 def safe_path_operation(default: Any) -> Callable:
-    """
-    Decorador para capturar errores de E/S y evitar interrupciones de flujo.
-    """
+    """Decorador para capturar errores de E/S y evitar interrupciones de flujo."""
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -205,7 +203,12 @@ def _is_path_safe(path_str: str, ctx: ScanContext) -> bool:
     return ctx.safety_cache[path_str]
 
 def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
-    """Valida si una entrada debe omitirse basándose en restricciones de sandbox y seguridad."""
+    """
+    Evalúa si una entrada debe omitirse.
+    
+    Aplica filtros de seguridad (sandbox, protecciones), integridad de ruta
+    y heurísticas de sistema (Junctions, atributos ocultos).
+    """
     if _is_excluded_file(entry.name):
         return True
     
@@ -241,7 +244,12 @@ def _process_file_node(entry: os.DirEntry, ctx: ScanContext) -> int:
         return 0
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
-    """Realiza un recorrido recursivo controlado del sistema de archivos."""
+    """
+    Realiza un recorrido recursivo del sistema de archivos limitado por profundidad.
+    
+    Utiliza una caché (ctx.visited_dirs) para evitar re-procesar subárboles y
+    garantiza que cada entrada pase por los filtros de seguridad del contexto.
+    """
     if depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN:
         return ScanResult(0, True)
     
