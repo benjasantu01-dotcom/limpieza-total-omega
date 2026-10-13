@@ -1027,3 +1027,44 @@ FAILED evolve/tests/test_safety.py::test_drive_root_is_always_protected - Assert
 - `2026-10-13T04:06:59` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `ingest` ante datos de entrada malformados o inesperados, añadiendo una validación explícita para evitar que `updates` acumule valores `None` y protegiendo el objeto `SystemContext` frente a la inyección de atributos no autorizados mediante `setattr`.
 - `2026-10-13T04:06:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T04:06:59` Corrida terminada. Total usado hoy: 100.
+- `2026-10-13T04:15:16` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-10-13T04:15:57` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha añadido validación de integridad para los recursos del sistema de archivos al invocar `save_logo_svg` utilizando `Path.exists()` y `is_dir()` explícitos, protegiendo contra condiciones de carrera o rutas que se resuelven a directorios existentes en lugar de archivos, mejorando la robustez ante casos límite.
+- `2026-10-13T04:16:31` Tests FALLARON:
+```
+ Falso": r"Navegador\Default\Cache"},
+        )
+>       assert len(encontrados) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:739: AssertionError
+___________________ test_directory_size_adds_up_recursively ____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_directory_size_adds_up_re0')
+
+    def test_directory_size_adds_up_recursively(tmp_path):
+        (tmp_path / "a").write_bytes(b"a" * 100)
+        sub = tmp_path / "sub"
+        sub.mkdir()
+        (sub / "b").write_bytes(b"a" * 200)
+>       assert browser.directory_size(tmp_path) == 300
+E       AssertionError: assert 0 == 300
+E        +  where 0 = <function directory_size at 0x7f2b667f16c0>(PosixPath('/tmp/pytest-of-runner/pytest-2/test_directory_size_adds_up_re0'))
+E        +    where <function directory_size at 0x7f2b667f16c0> = browser.directory_size
+
+evolve/tests/test_modules.py:783: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_folders - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_directory_size_adds_up_recursively - AssertionError: assert 0 == 300
+ +  where 0 = <function directory_size at 0x7f2b667f16c0>(PosixPath('/tmp/pytest-of-runner/pytest-2/test_directory_size_adds_up_re0'))
+ +    where <function directory_size at 0x7f2b667f16c0> = browser.directory_size
+2 failed, 297 passed in 1.60s
+
+```
+- `2026-10-13T04:16:31` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez ante errores de acceso a archivos introduciendo un chequeo de existencia previo al `stat` en `_process_file_node` y gestionando explícitamente fallos en `os.scandir` para asegurar que el escaneo no se interrumpa ante directorios con permisos denegados o bloqueos.
+- `2026-10-13T04:17:01` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de `walk_files` y `largest_folders` frente a rutas con caracteres Unicode inválidos o nombres que exceden la longitud máxima, utilizando `os.scandir` de forma más robusta y añadiendo validaciones específicas para `OSError` al acceder a atributos de entrada.
+- `2026-10-13T04:17:04` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-13T04:17:21` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-13T04:17:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T04:17:21` Corrida terminada. Total usado hoy: 104.

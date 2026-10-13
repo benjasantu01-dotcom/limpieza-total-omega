@@ -413,6 +413,10 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         # Validaciones de seguridad: prevenir escritura en rutas protegidas y validar seguridad
         if not is_safe_to_modify(target) or is_protected_path(target):
             return None
+        
+        # Prevenir sobreescritura si existe una carpeta en la ruta destino
+        if target.exists() and target.is_dir():
+            return None
             
         ensure_safe_to_modify(target)
         
