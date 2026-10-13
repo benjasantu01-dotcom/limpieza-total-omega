@@ -216,7 +216,7 @@ class Scanner:
         Evalúa si la entrada debe ser procesada según políticas de seguridad y límites.
         Retorna False si la entrada es protegida, un enlace, o supera los límites de profundidad.
         """
-        if not isinstance(entry, os.DirEntry) or entry.path is None:
+        if not isinstance(entry, os.DirEntry) or not entry.path:
             return False
         
         path_str: str = entry.path
@@ -241,7 +241,7 @@ class Scanner:
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
         """Registra subdirectorios válidos en la pila de procesamiento si no se excede el límite de profundidad."""
-        if current_depth >= SCAN_LIMITS.max_depth or entry.path is None:
+        if current_depth >= SCAN_LIMITS.max_depth or not entry.path:
             return
         
         path_lower: str = entry.path.lower()
@@ -257,7 +257,7 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
         """Gestiona la ramificación del escaneo entre directorios recursivos y archivos a analizar."""
-        if not isinstance(entry, os.DirEntry) or entry.path is None:
+        if not isinstance(entry, os.DirEntry) or not entry.path:
             return
             
         try:

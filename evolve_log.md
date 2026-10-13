@@ -402,3 +402,28 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-13T09:02:49` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se introdujo `_check_path_permission_access` para validar de forma atómica la disponibilidad de acceso al sistema de archivos, previniendo excepciones innecesarias en `_get_path_stat_robust` y mejorando la robustez ante archivos inexistentes o bloqueados, integrándolo en el flujo de validación para asegurar que el acceso sea verificado antes de cualquier operación de metadatos.
 - `2026-10-13T09:02:49` Rotación — log: 1109 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T09:02:49` Corrida terminada. Total usado hoy: 216.
+- `2026-10-13T09:10:48` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-10-13T09:11:17` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la validación de nombres de archivo y la integridad de la pila de directorios, añadiendo una verificación explícita para evitar procesar entradas con rutas absolutas nulas o rutas que se resuelven a ubicaciones fuera del árbol de escaneo debido a manipulaciones inesperadas en `os.scandir`.
+- `2026-10-13T09:11:51` Tests FALLARON:
+```
+LED evolve/tests/test_assistant.py::test_unknown_keys_are_discarded - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_update_applies_partial_changes - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_get_reads_a_single_value - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_env_var_wins_over_the_config_file - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_config_key_is_used_when_there_is_no_env_var - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_ask_stays_local_when_the_assistant_is_off - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_online_failure_falls_back_to_local - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration - KeyError: 'asistente_activado'
+17 failed, 282 passed, 8 warnings in 1.48s
+
+```
+- `2026-10-13T09:11:51` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se añadió una verificación de integridad basada en `st_ino` (número de inodo) y `st_dev` (ID de dispositivo) en el gestor de caché de `settings.py` para prevenir condiciones de carrera y ataques de tipo "Time-of-Check to Time-of-Use" (TOCTOU) al leer o reemplazar el archivo de configuración.
+- `2026-10-13T09:12:21` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-10-13T09:12:48` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la validación de seguridad en `_call_gemini` al verificar que `target_url` no contenga caracteres potencialmente peligrosos de inyección de comandos o manipulación de protocolos, protegiendo aún más la construcción de la petición HTTP hacia el endpoint externo.
+- `2026-10-13T09:12:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T09:12:48` Corrida terminada. Total usado hoy: 220.

@@ -709,8 +709,8 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     payload = _build_payload(question, context_text)
     if not payload: return None
     target_url = _ENDPOINT_BASE.format(model=model)
-    # Seguridad: validar que la URL resultante no contenga rutas sospechosas o saltos de directorio
-    if not target_url.startswith(_API_HOST_ROOT) or is_protected_path(target_url) or any(c in target_url for c in "<>\"' "):
+    # Seguridad: validar el target_url contra inyecciones y caracteres prohibidos
+    if not target_url.startswith(_API_HOST_ROOT) or is_protected_path(target_url) or any(c in target_url for c in "<>\"' \t\n\r"):
         return None
     url = f"{target_url}?key={api_key}"
     try:
