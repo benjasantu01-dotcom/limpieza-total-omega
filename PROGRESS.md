@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **202** (40.1% de aceptación)
+- Mejoras aceptadas: **204** (40.5% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 55
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 198
+- Rechazadas por guardia de seguridad: 56
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 194
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 53 | 6 | 13 | 5 | 65 |
+| 2026-10-11 | 53 | 6 | 13 | 5 | 61 |
 | 2026-10-12 | 144 | 19 | 41 | 16 | 130 |
-| 2026-10-13 | 5 | 2 | 1 | 1 | 3 |
+| 2026-10-13 | 7 | 2 | 2 | 2 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - robustez ante casos límite: **44**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **37**
+- seguridad defensiva: **39**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **20**
 - `memory.py`: **20**
 - `browser.py`: **19**
-- `diskreport.py`: **19**
 - `safety.py`: **18**
 - `healthscore.py`: **17**
 - `branding.py`: **16**
@@ -43,10 +43,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **14**
 - `quarantine.py`: **9**
 - `startup.py`: **7**
-- `main.py`: **4**
+- `main.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-13T00:33:27` **main.py** (seguridad defensiva): Se ha implementado un control de seguridad adicional en `_validate_disk_access` para evitar la inyección de rutas mediante el uso de caracteres nulos (null bytes), lo cual es una técnica común para evadir validaciones basadas en extensiones o prefijos en sistemas subyacentes.
+- `2026-10-13T00:31:37` **diskreport.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_is_excluded_path` verificando explícitamente que la ruta del archivo esté contenida dentro del `root_path` original antes de procesarlo, evitando posibles ataques de "path traversal" o seguimientos no deseados de enlaces simbólicos mediante nombres de rutas manipulados.
 - `2026-10-13T00:22:57` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva de `assistant.py` al implementar `_is_safe_key` en los accesos dinámicos del motor de IA, asegurando que no se pueda acceder accidentalmente a atributos protegidos o métodos de Python (como `__init__` o `__dict__`) mediante inyección de claves, reforzando el aislamiento de datos.
 - `2026-10-13T00:21:21` **startup.py** (robustez ante casos límite): Se ha mejorado `_process_folder_entry` para capturar `OSError` de forma más granular y manejar rutas que puedan fallar al ser convertidas a `Path` o al ser procesadas por `is_protected_path`, evitando que un permiso denegado en una entrada única interrumpa el escaneo del directorio completo.
 - `2026-10-13T00:12:52` **settings.py** (robustez ante casos límite): Se mejora la robustez de `save` ante condiciones de carrera y fallos parciales de escritura mediante la verificación explícita de `os.fsync` sobre el directorio padre, asegurando que la metadatos del archivo queden persistidos antes de retornar éxito, siguiendo las mejores prácticas de robustez frente a caídas del sistema.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T14:31:18` **scanner.py** (rendimiento): Optimicé el rendimiento del escaneado implementando un filtro preventivo (`is_protected_path` e `is_relevant_extension`) dentro de `process_entry` para evitar llamadas costosas a `_is_safe_entry` (que realiza `resolve()` y accesos a disco) en archivos que de todos modos serían ignorados por el motor de heurísticas.
 - `2026-10-12T14:30:41` **safety.py** (rendimiento): Se optimizó el rendimiento de `is_protected_path` al reemplazar iteraciones costosas sobre listas por búsquedas en sets precomputados y se implementó un `lru_cache` adicional para evitar el cálculo redundante de rutas resueltas y normalizadas.
 - `2026-10-12T14:20:03` **memory.py** (rendimiento): Optimicé `top_memory_processes` reemplazando la lógica de caché basada en un atributo dinámico de función por una clase simple o un almacenamiento más limpio, pero sobre todo, eliminé el re-procesamiento innecesario del objeto `ProcessMemory` mediante una mejora en la lógica de filtrado de PIDs duplicados y uso de una lista de pre-asignación eficiente.
-- `2026-10-12T14:10:32` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando un cache local de resultados de `is_protected_path` para evitar llamadas redundantes a `safety.py` y restringiendo el uso de `os.scandir` para evitar el acceso a atributos pesados de archivos que no cumplen con el umbral de tamaño mínimo.
-- `2026-10-12T14:10:00` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_is_excluded_path` eliminando la llamada redundante a `Path(entry.path).resolve()` dentro de cada iteración del bucle, la cual es una operación costosa de E/S que impacta significativamente en el tiempo de escaneo sobre discos grandes.

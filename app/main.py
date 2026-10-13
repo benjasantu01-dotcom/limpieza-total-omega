@@ -332,9 +332,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         except (OSError, RuntimeError):
             raise safety.UnsafePathError(f"Ruta inaccesible o inexistente: {path}")
 
-        # Prevenir Path Traversal e inyecciones: solo caracteres imprimibles
-        if not all(c.isprintable() for c in str(p)):
-            raise safety.UnsafePathError("Ruta contiene caracteres no imprimibles.")
+        # Prevenir Path Traversal e inyecciones: solo caracteres imprimibles y sin null bytes
+        if not all(c.isprintable() for c in str(p)) or "\x00" in str(p):
+            raise safety.UnsafePathError("Ruta contiene caracteres inválidos o inseguros.")
 
         # Evitar tocar la estructura interna de la App
         app_dir = Path(__file__).resolve().parent

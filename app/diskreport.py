@@ -185,6 +185,13 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     resulte dentro del árbol raíz de escaneo.
     """
     try:
+        entry_path = Path(entry.path)
+        # Seguridad: verificar containment para prevenir escapes del root original
+        try:
+            entry_path.resolve().relative_to(root_path.resolve())
+        except ValueError:
+            return True
+
         name = entry.name
         if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
             return True
@@ -192,7 +199,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
             return True
         
         # Seguridad: verificar que la ruta sea segura sin resolverla constantemente
-        if is_protected_path(Path(entry.path)):
+        if is_protected_path(entry_path):
             return True
         
         if entry.is_symlink():
