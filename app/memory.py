@@ -49,14 +49,16 @@ BYTES_IN_MB: Final[int] = 1024 * 1024
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 MAX_VALID_PROCESS_MEM: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
-# Máscaras de acceso Win32 para interactuar con la memoria de procesos ajenos.
+# Máscaras de acceso Win32:
+# PROCESS_QUERY_LIMITED_INFORMATION: Acceso mínimo para obtener info básica sin elevar privilegios excesivos.
+# PROCESS_SET_QUOTA: Requerido obligatoriamente por la API EmptyWorkingSet.
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x0400
 FILE_ATTRIBUTE_REPARSE_POINT: Final[int] = 0x0400
 DRIVE_FIXED: Final[int] = 3
 INVALID_HANDLE_VALUE: Final[int] = -1
 
-# TRIM_ACCESS_MASK requiere solo acceso de escritura para EmptyWorkingSet.
+# TRIM_ACCESS_MASK requiere acceso de escritura/modificación para EmptyWorkingSet.
 TRIM_ACCESS_MASK: Final[int] = 0x00020000 | PROCESS_SET_QUOTA
 
 SYSTEM_CRITICAL_PIDS: Final[Set[int]] = {0, 4}
@@ -87,30 +89,30 @@ TRIM_WARNING: Final[str] = (
 class MEMORYSTATUSEX(ctypes.Structure):
     """Estructura Win32 GlobalMemoryStatusEx para reportar memoria total y disponible."""
     _fields_: List[Tuple[str, type]] = [
-        ("dwLength", ctypes.c_ulong),               # Tamaño de la estructura en bytes
-        ("dwMemoryLoad", ctypes.c_ulong),           # Porcentaje de uso de memoria (0-100)
-        ("ullTotalPhys", ctypes.c_ulonglong),       # RAM física total
-        ("ullAvailPhys", ctypes.c_ulonglong),       # RAM física disponible
-        ("ullTotalPageFile", ctypes.c_ulonglong),   # Tamaño total del archivo de paginación
-        ("ullAvailPageFile", ctypes.c_ulonglong),   # Espacio libre en paginación
-        ("ullTotalVirtual", ctypes.c_ulonglong),    # Espacio de direcciones virtual total
-        ("ullAvailVirtual", ctypes.c_ulonglong),    # Espacio de direcciones virtual libre
-        ("ullAvailExtendedVirtual", ctypes.c_ulonglong), # Siempre 0
+        ("dwLength", ctypes.c_ulong),
+        ("dwMemoryLoad", ctypes.c_ulong),
+        ("ullTotalPhys", ctypes.c_ulonglong),
+        ("ullAvailPhys", ctypes.c_ulonglong),
+        ("ullTotalPageFile", ctypes.c_ulonglong),
+        ("ullAvailPageFile", ctypes.c_ulonglong),
+        ("ullTotalVirtual", ctypes.c_ulonglong),
+        ("ullAvailVirtual", ctypes.c_ulonglong),
+        ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
     ]
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
-    """Estructura Win32 PSAPI para obtener métricas de consumo de memoria de procesos."""
+    """Estructura Win32 PSAPI (GetProcessMemoryInfo) para métricas de procesos."""
     _fields_: List[Tuple[str, type]] = [
-        ("cb", ctypes.c_size_t),                    # Tamaño de la estructura
-        ("PageFaultCount", ctypes.c_ulong),         # Número de fallos de página
-        ("PeakWorkingSetSize", ctypes.c_size_t),    # Pico máximo de RAM ocupada
-        ("WorkingSetSize", ctypes.c_size_t),        # RAM física ocupada actualmente
+        ("cb", ctypes.c_size_t),
+        ("PageFaultCount", ctypes.c_ulong),
+        ("PeakWorkingSetSize", ctypes.c_size_t),
+        ("WorkingSetSize", ctypes.c_size_t),
         ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
         ("QuotaPagedPoolUsage", ctypes.c_size_t),
         ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
         ("QuotaNonPagedPoolUsage", ctypes.c_size_t),
-        ("PagefileUsage", ctypes.c_size_t),         # Uso actual del archivo de paginación
-        ("PeakPagefileUsage", ctypes.c_size_t),     # Pico del uso del archivo de paginación
+        ("PagefileUsage", ctypes.c_size_t),
+        ("PeakPagefileUsage", ctypes.c_size_t),
     ]
 
 @dataclass(frozen=True)
@@ -223,7 +225,7 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         pid = int(pid_str)
     except (ValueError, TypeError):
         return None
-        
+    
     ws = _safe_int_conversion(ws_str)
         
     if _is_system_process(pid) or pid <= 0: 
@@ -299,7 +301,10 @@ def _query_working_set_bytes(pid: int, kernel32: ctypes.WinDLL, psapi: ctypes.Wi
 _CACHE_TOP_PROC: Dict[str, any] = {"time": 0.0, "data": []}
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Lista los procesos más pesados enumerando la tabla de procesos del sistema."""
+    """
+    Lista los procesos más pesados enumerando la tabla de procesos del sistema.
+    Usa una caché de 60 segundos para evitar impacto excesivo en CPU.
+    """
     if not _is_windows: return []
     now = time.time()
     
@@ -388,14 +393,17 @@ def _is_process_executable_safe(pid: int) -> bool:
     return False
 
 def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
-    """Capa de seguridad antes de modificar el working set del proceso."""
+    """Capa de seguridad: Verifica que el PID sea apto para recibir comandos de gestión de memoria."""
     if pid <= 0: return False, "PID inválido."
     if _is_system_process(pid): return False, "Proceso protegido."
     if not _is_process_executable_safe(pid): return False, "Ruta de proceso restringida."
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Ejecuta EmptyWorkingSet sobre un proceso bajo estrictas normas de seguridad."""
+    """
+    Ejecuta EmptyWorkingSet sobre un proceso bajo estrictas normas de seguridad.
+    Nota: Requiere privilegios elevados y debe usarse únicamente ante sospecha de fugas.
+    """
     if not _is_windows: return False, "Solo soportado en Windows."
     
     try:

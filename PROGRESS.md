@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
-- Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 54
+- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Rechazadas por tests: 26
+- Rechazadas por guardia de seguridad: 56
 - Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 203
 
@@ -16,37 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 28 | 3 | 7 | 1 | 39 |
+| 2026-10-11 | 25 | 2 | 7 | 1 | 39 |
 | 2026-10-12 | 144 | 19 | 41 | 16 | 130 |
-| 2026-10-13 | 29 | 5 | 6 | 2 | 34 |
+| 2026-10-13 | 31 | 5 | 8 | 2 | 34 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **45**
-- robustez ante casos límite: **44**
+- legibilidad y documentación: **47**
 - seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **44**
-- rendimiento: **24**
+- robustez ante casos límite: **42**
+- rendimiento: **23**
 
 ## Mejoras aceptadas por archivo
 
+- `memory.py`: **20**
 - `diskreport.py`: **19**
-- `memory.py`: **19**
 - `browser.py`: **18**
 - `safety.py`: **18**
 - `healthscore.py`: **16**
-- `settings.py`: **15**
-- `branding.py`: **15**
+- `organizer.py`: **16**
 - `duplicates.py`: **15**
-- `organizer.py`: **15**
-- `assistant.py`: **14**
 - `scanner.py`: **14**
+- `branding.py`: **14**
+- `settings.py`: **14**
+- `assistant.py`: **13**
 - `quarantine.py`: **9**
 - `startup.py`: **8**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-13T03:15:02` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la adición de Type Hints en retornos de funciones, docstrings detallados que explican el propósito de las validaciones críticas y la consolidación de constantes de tipo de archivo para reducir la redundancia en los chequeos.
+- `2026-10-13T03:14:31` **memory.py** (legibilidad y documentación): Mejoré la documentación de los tipos de datos y estructuras Win32 para facilitar la auditoría, y añadí docstrings específicos a las funciones críticas que operan con APIs de bajo nivel, aclarando los riesgos y precondiciones de cada una.
 - `2026-10-13T03:06:43` **main.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `main.py` mediante la adición de docstrings estructurados y precisos en todos los métodos que carecían de ellos, además de consolidar la lógica de tipos y nombres de funciones clave para reflejar mejor su intención funcional.
 - `2026-10-13T03:05:50` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a las constantes de umbral y a la lógica del pipeline, clarificando la intención detrás de cada límite y facilitando el mantenimiento futuro del motor analítico.
 - `2026-10-13T03:05:24` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de recorrido de archivos y procesamiento de grupos, aclarando las responsabilidades de cada etapa del pipeline de detección y el flujo de los datos para facilitar el mantenimiento futuro.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-13T02:35:12` **organizer.py** (manejo de errores y validación de entradas): Se han reforzado las validaciones de entrada en los métodos públicos `stage_for_review`, `scan_for_junk` y `delete_reviewed` mediante el uso de guardas defensivas y chequeos de tipo, evitando así excepciones inesperadas al procesar valores `None` o rutas mal formadas.
 - `2026-10-13T02:34:47` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `trim_working_set` y sus funciones auxiliares al reemplazar chequeos implícitos por validaciones explícitas de estados de error, asegurando que `kernel32.OpenProcess` sea verificado correctamente frente a `None` y errores de acceso antes de proceder.
 - `2026-10-13T02:34:21` **main.py** (manejo de errores y validación de entradas): Mejoré `on_trim_process` para asegurar que el `PID` ingresado sea validado no solo como numérico, sino contra la existencia real del proceso en el sistema antes de ejecutar cualquier operación potencialmente riesgosa o lanzar errores de sistema.
-- `2026-10-13T02:24:36` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` asegurando que el cálculo de `accumulated_score` no dependa de operaciones en coma flotante inestables al redondear y evitando el uso de valores `None` durante la ejecución del pipeline.
-- `2026-10-13T02:23:59` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` implementando una captura de excepciones más específica y validando explícitamente los estados intermedios para evitar fallos por rutas que cambian o desaparecen durante el escaneo, asegurando que el bucle de procesamiento sea resiliente ante cambios en el sistema de archivos.
