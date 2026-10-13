@@ -20,7 +20,6 @@ import os
 import subprocess
 import csv
 import io
-import itertools
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import (
@@ -405,7 +404,8 @@ def list_startup_entries() -> StartupEntries:
     seen_items: Set[Tuple[str, str]] = set()
     unique_entries: StartupEntries = []
     
-    for entry in itertools.chain(entries_from_folders(), entries_from_registry()):
+    # Recorrido eficiente sin chain para facilitar el control de duplicados
+    for entry in entries_from_folders() + entries_from_registry():
         key = (entry.name.lower(), entry.command.lower())
         if key not in seen_items:
             seen_items.add(key)

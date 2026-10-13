@@ -263,9 +263,10 @@ class Scanner:
                 if self._is_safe_entry(entry):
                     self._handle_directory(entry, directory_stack, current_depth)
             elif entry.is_file(follow_symlinks=False):
-                # Filtro rápido antes de validaciones pesadas
-                if self._is_relevant_extension(entry.name) and not is_protected_path(Path(entry.path)):
-                    if self._is_safe_entry(entry):
+                # Filtro rápido usando el método cacheado
+                if self._is_relevant_extension(entry.name):
+                    # Validación de seguridad solo si la extensión es relevante
+                    if not is_protected_path(Path(entry.path)) and self._is_safe_entry(entry):
                         self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError) as e:
             logger.debug(f"Acceso denegado o error en entrada {entry.path}: {e}")

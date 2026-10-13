@@ -423,7 +423,8 @@ class SystemContext:
     def _apply_updates(self, updates: dict[str, Any]) -> None:
         """Aplica cambios al contexto y limpia cachés internas."""
         for k, v in updates.items():
-            setattr(self, k, v)
+            if _is_safe_key(k):
+                setattr(self, k, v)
         self.analyzed = True
         # Limpiar cachés manualmente al actualizar
         for attr in ["metrics_snapshot", "active_problems", "_hash_tuple"]:
