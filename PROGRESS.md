@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **217** (43.1% de aceptación)
+- Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 55
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 186
+- Rechazadas por guardia de seguridad: 57
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 182
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-12 | 110 | 15 | 32 | 12 | 107 |
-| 2026-10-13 | 107 | 12 | 23 | 7 | 79 |
+| 2026-10-12 | 110 | 15 | 32 | 12 | 103 |
+| 2026-10-13 | 108 | 12 | 25 | 8 | 79 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
 - manejo de errores y validación de entradas: **48**
-- seguridad defensiva: **43**
+- seguridad defensiva: **44**
 - robustez ante casos límite: **41**
 - rendimiento: **36**
 
@@ -40,12 +40,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **15**
 - `branding.py`: **14**
 - `settings.py`: **14**
-- `quarantine.py`: **12**
+- `quarantine.py`: **13**
 - `startup.py`: **10**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-13T09:42:07` **quarantine.py** (seguridad defensiva): Se introdujo una validación de profundidad de ruta absoluta en `quarantine_dir` y `_validate_input_path` para prevenir ataques de desbordamiento de buffer o rutas maliciosas que excedan los límites del sistema operativo (MAX_PATH en Windows), asegurando que ninguna operación de cuarentena procese rutas que contengan caracteres sospechosos o longitudes peligrosas.
 - `2026-10-13T09:34:16` **organizer.py** (seguridad defensiva): Mejoré la seguridad de `_is_safe_for_disk_op` al añadir una verificación explícita de `is_protected_path` sobre el directorio destino y su padre, y encapsulé la lógica de resolución de rutas en un bloque `try-except` más robusto para evitar que fallos en la resolución de enlaces simbólicos o rutas inexistentes causen un escape de la validación.
 - `2026-10-13T09:34:00` **memory.py** (seguridad defensiva): Se ha mejorado la robustez del manejo de rutas en `_is_process_executable_safe` añadiendo una comprobación explícita para evitar posibles ataques de rutas UNC (recursos de red), delegando la validación final a las funciones de seguridad centralizadas `is_protected_path` y `filter_safe_paths` sobre rutas normalizadas.
 - `2026-10-13T09:33:28` **main.py** (seguridad defensiva): Mejoré la seguridad en la validación de directorios para operaciones de disco, implementando `pathlib.Path.resolve(strict=True)` en `_validate_disk_access` y `on_disk_analysis` para asegurar que las rutas sean reales y absolutas antes de procesarlas, previniendo inyecciones de rutas inexistentes o mal formadas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-13T08:50:59` **duplicates.py** (robustez ante casos límite): He robustecido la tolerancia a fallos del módulo integrando una gestión explícita de `OSError` (específicamente `ERROR_ACCESS_DENIED` y `ERROR_SHARING_VIOLATION`) en las operaciones de I/O, evitando que el escaneo se detenga abruptamente al encontrar archivos bloqueados por el sistema o procesos concurrentes.
 - `2026-10-13T08:41:59` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_is_valid_rel_path` para incluir una validación estricta de rutas absolutas que intenten disfrazarse de relativas, previniendo el escalamiento de privilegios o navegación fuera de los directorios permitidos durante la resolución de rutas de caché.
 - `2026-10-13T08:40:52` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_safe_payload_structure` y `_is_input_too_deep_or_complex` para manejar colecciones vacías o estructuras profundas de forma más segura, evitando posibles errores de desbordamiento en la serialización y validación de tipos anidados.
-- `2026-10-13T08:31:57` **startup.py** (rendimiento): Se implementó un mecanismo de filtrado temprano en `entries_from_folders` mediante un conjunto de rutas ya procesadas para evitar el escaneo redundante y reducir el impacto de I/O innecesario sobre directorios compartidos.

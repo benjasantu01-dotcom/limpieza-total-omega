@@ -320,6 +320,8 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
 def _check_path_syntax_integrity(path: Path) -> None:
     """Valida la sintaxis de la ruta y prohíbe flujos de datos alternos (ADS)."""
     path_str = str(path)
+    if len(path_str) > 260:
+        raise UnsafePathError("Ruta de sistema demasiado larga.")
     if any(ord(c) < 32 for c in path_str) or "\0" in path_str:
         raise UnsafePathError("Ruta con caracteres de control.")
     if len(path.parts) > 32:
@@ -378,6 +380,9 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         raise ValueError("El directorio base no puede estar vacío.")
     try:
         path = Path(str(base)).expanduser().resolve()
+        
+        if len(str(path)) > 240:
+             raise UnsafePathError("Ruta de cuarentena excede límites de seguridad.")
         
         if not path.name.strip() or path == path.parent:
             raise UnsafePathError("Ruta de cuarentena inválida: raíz o vacía.")
@@ -817,6 +822,8 @@ def _validate_input_path(source: PathLike) -> Path:
     if not source or not str(source).strip():
         raise ValueError("Ruta de origen nula o vacía.")
     p_source = Path(str(source))
+    if len(str(p_source)) > 260:
+        raise UnsafePathError("Ruta de entrada excede límites del sistema.")
     if not p_source.is_absolute():
         try:
             p_source = p_source.resolve(strict=True)
