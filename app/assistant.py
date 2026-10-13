@@ -90,8 +90,13 @@ _CONTEXT_SCHEMA: Final = (
 )
 
 def _is_safe_key(key: str) -> bool:
-    """Valida que una clave de diccionario o atributo no sea privada o interna."""
-    return isinstance(key, str) and not (key.startswith("__") or key.startswith("_"))
+    """Valida que una clave de diccionario o atributo no sea privada, interna o un método."""
+    if not isinstance(key, str): return False
+    # Evita acceso a atributos mágicos, internos o protegidos
+    if key.startswith("__") or key.startswith("_"): return False
+    # Bloqueo estricto para impedir acceso a métodos de la clase vía reflectividad
+    forbidden = {"__dict__", "__class__", "__init__", "__setattr__", "__getattribute__", "ingest", "get_metric"}
+    return key not in forbidden
 
 def _check_metric_integrity(val: Any) -> bool:
     """Verifica que un valor numérico sea seguro, finito y coherente para el asistente."""

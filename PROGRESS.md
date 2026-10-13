@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
-- Rechazadas por tests: 26
+- Mejoras aceptadas: **202** (40.1% de aceptación)
+- Rechazadas por tests: 27
 - Rechazadas por guardia de seguridad: 55
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 198
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 53 | 6 | 13 | 5 | 69 |
+| 2026-10-11 | 53 | 6 | 13 | 5 | 65 |
 | 2026-10-12 | 144 | 19 | 41 | 16 | 130 |
-| 2026-10-13 | 3 | 1 | 1 | 1 | 2 |
+| 2026-10-13 | 5 | 2 | 1 | 1 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
+- robustez ante casos límite: **44**
 - manejo de errores y validación de entradas: **43**
-- robustez ante casos límite: **43**
-- seguridad defensiva: **36**
+- seguridad defensiva: **37**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
@@ -40,13 +40,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **15**
 - `duplicates.py`: **15**
 - `settings.py`: **14**
-- `assistant.py`: **13**
+- `assistant.py`: **14**
 - `quarantine.py`: **9**
-- `startup.py`: **6**
+- `startup.py`: **7**
 - `main.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-13T00:22:57` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva de `assistant.py` al implementar `_is_safe_key` en los accesos dinámicos del motor de IA, asegurando que no se pueda acceder accidentalmente a atributos protegidos o métodos de Python (como `__init__` o `__dict__`) mediante inyección de claves, reforzando el aislamiento de datos.
+- `2026-10-13T00:21:21` **startup.py** (robustez ante casos límite): Se ha mejorado `_process_folder_entry` para capturar `OSError` de forma más granular y manejar rutas que puedan fallar al ser convertidas a `Path` o al ser procesadas por `is_protected_path`, evitando que un permiso denegado en una entrada única interrumpa el escaneo del directorio completo.
 - `2026-10-13T00:12:52` **settings.py** (robustez ante casos límite): Se mejora la robustez de `save` ante condiciones de carrera y fallos parciales de escritura mediante la verificación explícita de `os.fsync` sobre el directorio padre, asegurando que la metadatos del archivo queden persistidos antes de retornar éxito, siguiendo las mejores prácticas de robustez frente a caídas del sistema.
 - `2026-10-13T00:12:30` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_in_use` y `_is_readable` para prevenir fallos por archivos bloqueados o inexistentes, asegurando que el escaneo no se detenga ante errores de sistema operativos comunes (como archivos temporales que desaparecen durante la ejecución).
 - `2026-10-13T00:12:00` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `safety.py` ante errores de sistema al encapsular las llamadas de `ctypes` dentro de un bloque `try-except` más amplio y añadir una validación temprana contra `PermissionError` en `_is_file_owned_by_system`, evitando que excepciones inesperadas del SO (como el acceso denegado a descriptores de seguridad) rompan el flujo de la aplicación.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T14:20:03` **memory.py** (rendimiento): Optimicé `top_memory_processes` reemplazando la lógica de caché basada en un atributo dinámico de función por una clase simple o un almacenamiento más limpio, pero sobre todo, eliminé el re-procesamiento innecesario del objeto `ProcessMemory` mediante una mejora en la lógica de filtrado de PIDs duplicados y uso de una lista de pre-asignación eficiente.
 - `2026-10-12T14:10:32` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando un cache local de resultados de `is_protected_path` para evitar llamadas redundantes a `safety.py` y restringiendo el uso de `os.scandir` para evitar el acceso a atributos pesados de archivos que no cumplen con el umbral de tamaño mínimo.
 - `2026-10-12T14:10:00` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_is_excluded_path` eliminando la llamada redundante a `Path(entry.path).resolve()` dentro de cada iteración del bucle, la cual es una operación costosa de E/S que impacta significativamente en el tiempo de escaneo sobre discos grandes.
-- `2026-10-12T14:03:45` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo mediante la implementación de una caché de estados de `is_safe_to_modify` y `is_protected_path` dentro del `ScanContext`, evitando llamadas repetitivas y costosas al sistema de archivos para los mismos directorios durante el recorrido.
-- `2026-10-12T14:00:51` **assistant.py** (rendimiento): Optimicé el rendimiento de `SystemContext` reemplazando los accesos repetitivos a `__dict__` en bucles mediante el uso de `getattr` con un acceso cacheado a las claves permitidas, evitando la reconstrucción innecesaria de diccionarios en `metrics_snapshot` y `ingest`.

@@ -272,12 +272,13 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
         if ext.lower() not in EXECUTABLE_EXTS:
             return None
             
-        if is_protected_path(Path(entry.path)):
+        p = Path(entry.path)
+        if is_protected_path(p):
             return None
             
         name = os.path.splitext(entry.name)[0]
         return StartupEntry(name=name, command=entry.path, source="carpeta")
-    except (OSError, PermissionError, ValueError):
+    except (OSError, PermissionError, ValueError, TypeError):
         return None
 
 
