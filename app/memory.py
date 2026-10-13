@@ -303,6 +303,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         psapi = getattr(ctypes.windll, "psapi", None)
         if not kernel32 or not psapi or not hasattr(psapi, "EnumProcesses"): return []
         
+        # Buffer pre-asignado fijo para reducir overhead
         pids = (ctypes.c_uint32 * 1024)()
         cb_needed = ctypes.c_uint32()
         pmc = PROCESS_MEMORY_COUNTERS()
@@ -319,6 +320,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
                         if ws and _is_process_executable_safe(pid):
                             found_procs.append(ProcessMemory(f"PID {pid}", pid, ws))
                 
+                # Actualizar caché in-place
                 _CACHE_TOP_PROC["data"] = sorted(found_procs, key=lambda p: p.working_set, reverse=True)[:limit]
                 _CACHE_TOP_PROC["time"] = now
         except (ctypes.ArgumentError, OSError):

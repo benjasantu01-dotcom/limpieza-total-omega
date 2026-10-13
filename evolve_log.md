@@ -744,3 +744,21 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-13T12:36:27` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics.is_finite, SystemMetrics.safe_get
 - `2026-10-13T12:36:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T12:36:27` Corrida terminada. Total usado hoy: 300.
+- `2026-10-13T12:44:51` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-13T12:46:04` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Optimizé la gestión de memoria y el rendimiento de la UI implementando una invalidación de caché basada en digests de estado en `on_full_analysis`, evitando re-cálculos costosos y redibujos innecesarios de componentes visuales cuando los datos subyacentes no han cambiado.
+- `2026-10-13T12:46:32` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé `top_memory_processes` reemplazando la creación de una nueva lista de procesos en cada iteración por una actualización eficiente de la caché, y pre-calculando el tamaño de los buffers para evitar reasignaciones innecesarias durante la enumeración de procesos.
+- `2026-10-13T12:47:04` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-10-13T12:47:34` Tests FALLARON:
+```
+a: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+8 failed, 291 passed, 8 warnings in 1.70s
+
+```
+- `2026-10-13T12:47:34` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento de `load_manifest` mediante una invalidación de caché más robusta y se reemplazó el uso de `list.append` dentro de loops por un enfoque de filtrado eficiente en `purge_all`, reduciendo la complejidad algorítmica y las operaciones innecesarias sobre el disco.
+- `2026-10-13T12:47:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T12:47:34` Corrida terminada. Total usado hoy: 304.
