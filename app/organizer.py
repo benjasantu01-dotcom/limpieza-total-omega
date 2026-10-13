@@ -105,6 +105,7 @@ class JunkFile:
 
 def is_valid_junk_extension(filename: str) -> bool:
     """Valida si el nombre de archivo corresponde a una extensión de tipo basura."""
+    if not filename: return False
     return Path(filename).suffix.lower() in JUNK_EXTENSIONS
 
 def _get_win_attributes(entry: os.DirEntry) -> int:
@@ -142,6 +143,7 @@ def _generate_unique_target(target: Path) -> Path:
 
 def _is_allowed_directory(name: str) -> bool:
     """Filtra directorios basados en la blocklist definida de rutas críticas del sistema."""
+    if not name: return False
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _is_file_locked(path: Path) -> bool:
@@ -179,6 +181,7 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 
 def _has_forbidden_chars(path: Path) -> bool:
     """Detecta caracteres reservados por NTFS que causan errores de manejo de archivos."""
+    if not path: return True
     path_str = str(path).lower()
     return any(c in path_str for c in ["<", ">", "|", "\0"])
 
@@ -278,7 +281,7 @@ def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[Ju
     found: List[JunkFile] = []
     protected_cache: set[str] = set()
     visited: set[Path] = set()
-    scan_list: Sequence[str | Path] = directories or DEFAULT_SCAN_DIRS
+    scan_list: Sequence[str | Path] = directories if directories is not None else DEFAULT_SCAN_DIRS
     for d in scan_list:
         if d is None: continue
         try:
@@ -303,9 +306,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             dest_base.mkdir(parents=True, exist_ok=True)
         dest_res = dest_base.resolve(strict=False)
         
-        if not is_safe_to_modify(dest_res): return None
-        # Validación explícita antes de la acción crítica
-        if is_protected_path(dest_res) or _has_forbidden_chars(dest_res): return None
+        if not is_safe_to_modify(dest_res) or is_protected_path(dest_res) or _has_forbidden_chars(dest_res): return None
         ensure_safe_to_modify(dest_res)
     except (OSError, RuntimeError, PermissionError):
         return None
@@ -338,7 +339,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     if not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser().resolve(strict=False)
-        # Seguridad extra: evitar borrar si la ruta apunta a raíz o es demasiado genérica
         if not dest.exists() or not dest.is_dir() or len(dest.parts) <= 2: return 0
         if not is_safe_to_modify(dest) or is_protected_path(dest): return 0
         ensure_safe_to_modify(dest)
@@ -347,7 +347,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         for item in dest.iterdir():
             try:
                 if not item.is_file(): continue
-                # Validación estricta de seguridad pre-borrado
                 if not is_safe_to_modify(item) or is_protected_path(item): continue
                 if dest.resolve(strict=True) != item.resolve(strict=True).parent: continue
                 

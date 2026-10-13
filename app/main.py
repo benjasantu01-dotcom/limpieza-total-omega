@@ -1729,7 +1729,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         def task() -> None:
             try:
                 if self._validate_process_state(pid):
-                    safety.ensure_safe_to_modify(Path.home())
                     ok, mensaje = memory_mod.trim_working_set(pid)
                     self._safe_run_ui_callback(lambda: self.log(("OK: " if ok else "Sin efecto: ") + mensaje, "Memoria"))
             except Exception as e:

@@ -379,7 +379,6 @@ def _is_process_executable_safe(pid: int) -> bool:
         if bytes_copied > 0:
             path_str = buf.value
             if path_str.startswith("\\\\"): return False
-            # Resolvemos la ruta antes de verificar para evitar bypass por symlinks o puntos de reparse
             normalized_path = str(Path(path_str).resolve())
             return not is_protected_path(normalized_path)
     except (ctypes.ArgumentError, OSError, ValueError):

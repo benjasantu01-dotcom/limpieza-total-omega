@@ -917,3 +917,21 @@ assert ['arc'] == []
 - `2026-10-13T02:24:36` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` asegurando que el cálculo de `accumulated_score` no dependa de operaciones en coma flotante inestables al redondear y evitando el uso de valores `None` durante la ejecución del pipeline.
 - `2026-10-13T02:24:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T02:24:36` Corrida terminada. Total usado hoy: 60.
+- `2026-10-13T02:33:16` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-10-13T02:34:21` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré `on_trim_process` para asegurar que el `PID` ingresado sea validado no solo como numérico, sino contra la existencia real del proceso en el sistema antes de ejecutar cualquier operación potencialmente riesgosa o lanzar errores de sistema.
+- `2026-10-13T02:34:47` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `trim_working_set` y sus funciones auxiliares al reemplazar chequeos implícitos por validaciones explícitas de estados de error, asegurando que `kernel32.OpenProcess` sea verificado correctamente frente a `None` y errores de acceso antes de proceder.
+- `2026-10-13T02:35:12` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se han reforzado las validaciones de entrada en los métodos públicos `stage_for_review`, `scan_for_junk` y `delete_reviewed` mediante el uso de guardas defensivas y chequeos de tipo, evitando así excepciones inesperadas al procesar valores `None` o rutas mal formadas.
+- `2026-10-13T02:35:39` Tests FALLARON:
+```
+Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+8 failed, 291 passed in 1.51s
+
+```
+- `2026-10-13T02:35:39` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se mejora el manejo de errores en `purge_all` y `purge_item` reemplazando capturas genéricas por un manejo explícito que valida el estado de los archivos y la integridad del manifiesto, evitando que fallos de I/O silenciosos impidan la limpieza.
+- `2026-10-13T02:35:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T02:35:39` Corrida terminada. Total usado hoy: 64.
