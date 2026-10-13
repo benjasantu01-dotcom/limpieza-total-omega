@@ -438,9 +438,9 @@ def _validate_quarantine_path(path: Path, base: Path) -> Path:
         raise UnsafePathError("Intento de manipulación de ruta detectado.")
     return resolved_path
 
-def _check_windows_file_attributes(path_str: str) -> None:
+def _check_windows_file_attributes(path: Path) -> None:
     """Valida que el archivo no tenga atributos de sistema ocultos."""
-    if _win_has_system_attributes(Path(path_str)):
+    if _win_has_system_attributes(path):
         raise UnsafePathError("Archivo con atributos del sistema/oculto no permitido.")
 
 def _check_device_consistency(source: Path, target_dir: Path) -> None:
@@ -495,7 +495,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     if not dest_dir.is_dir():
         raise UnsafePathError("Destino de cuarentena debe ser un directorio.")
     _check_path_syntax_integrity(source_path)
-    _check_windows_file_attributes(str(source_path))
+    _check_windows_file_attributes(source_path)
     if source_path.is_symlink():
         raise UnsafePathError("Aislamiento de enlaces simbólicos denegado.")
     try:
@@ -613,7 +613,7 @@ def _validate_file_transfer_preconditions(source: Path, destination: Path) -> No
     if not is_safe_to_modify(destination.parent):
         raise UnsafePathError("Directorio destino no seguro.")
     _check_device_consistency(source, destination.parent.resolve())
-    _check_windows_file_attributes(str(destination))
+    _check_windows_file_attributes(destination)
     if not source.is_file():
         raise OSError("Archivo origen inaccesible para copia.")
     

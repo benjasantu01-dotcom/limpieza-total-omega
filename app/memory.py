@@ -32,7 +32,7 @@ from pathlib import Path
 from functools import lru_cache
 from dataclasses import dataclass, field
 from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, Final, Set, NewType
-from safety import is_protected_path
+from safety import is_protected_path, filter_safe_paths
 
 if TYPE_CHECKING:
     from ctypes import wintypes
@@ -384,7 +384,10 @@ def _is_process_executable_safe(pid: int) -> bool:
             path_str = buf.value
             if path_str.startswith("\\\\"): return False
             normalized_path = str(Path(path_str).resolve())
-            return not is_protected_path(normalized_path)
+            # Verifica contra seguridad centralizada
+            if is_protected_path(normalized_path): return False
+            # Debe estar en la lista de rutas seguras permitidas
+            return len(filter_safe_paths([normalized_path])) > 0
     except (ctypes.ArgumentError, OSError, ValueError):
         return False
     finally:

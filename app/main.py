@@ -232,6 +232,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._init_component_registry()
         self._setup_application()
 
+    def _sanitize_path(self, path: Union[str, Path]) -> str:
+        """Filtra caracteres no imprimibles de rutas para evitar inyecciones de control."""
+        return "".join(c for c in str(path) if c.isprintable())
+
     def _init_component_registry(self) -> None:
         """Inicializa estructuras de datos, caché, colas y estado inicial."""
         self._initialized_tabs: Dict[str, bool] = {name: False for name in TABS}
@@ -327,13 +331,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _validate_disk_access(self, path: Union[str, Path]) -> Path:
         """Valida la integridad de la ruta y permisos de seguridad (previene inyecciones)."""
+        clean_p = self._sanitize_path(path)
         try:
-            p = Path(path).resolve(strict=True)
+            p = Path(clean_p).resolve(strict=True)
         except (OSError, RuntimeError):
-            raise safety.UnsafePathError(f"Ruta inaccesible o inexistente: {path}")
-
-        if not all(c.isprintable() for c in str(p)) or "\x00" in str(p):
-            raise safety.UnsafePathError("Ruta contiene caracteres inválidos o inseguros.")
+            raise safety.UnsafePathError(f"Ruta inaccesible o inexistente: {clean_p}")
 
         # Evitar tocar la estructura interna de la App
         app_dir = Path(__file__).resolve().parent
@@ -964,7 +966,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             raw = entry_widget.get().strip()
             if not raw:
                 return default
-            clean_raw = "".join(c for c in raw if c.isprintable())
+            clean_raw = self._sanitize_path(raw)
             if numeric:
                 return self._validate_numeric_setting(clean_raw, default)
             return clean_raw
@@ -1004,7 +1006,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not path:
             return False
         try:
-            p = Path(path).resolve(strict=True)
+            p = Path(self._sanitize_path(path)).resolve(strict=True)
             return p.is_dir()
         except (OSError, RuntimeError):
             return False
@@ -1211,8 +1213,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 return None
             
             # Validación reforzada de seguridad en la selección
-            self._validate_disk_access(folder)
-            return str(Path(folder).resolve())
+            return str(self._validate_disk_access(folder))
         except Exception:
             messagebox.showwarning("Ruta no segura", "Operación no permitida en esta ruta.")
             return None
@@ -1885,7 +1886,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                                 "Empezá por la pestaña Salud."], "Informe")
                 return
             
-            sanitized_data = {k: [str(line).replace('\x00', '') for line in v] for k, v in self.report_data.items()}
+            sanitized_data = {k: [self._sanitize_path(line) for line in v] for k, v in self.report_data.items()}
             texto = reporting.build_report(sanitized_data)
             
             self.clear("Informe")
@@ -1913,7 +1914,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def task() -> None:
             try:
-                ruta_destino = Path(destino).resolve()
+                ruta_destino = Path(self._sanitize_path(destino)).resolve()
                 self._ensure_path_writable_and_clean(ruta_destino.parent)
                 
                 ruta = reporting.save_report(self.report_data, str(ruta_destino), as_markdown=as_markdown)
@@ -1971,7 +1972,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 if hasattr(variable, 'get'):
                     val = variable.get()
                     if isinstance(val, str):
-                        val = "".join(c for c in val if c.isprintable())
+                        val = self._sanitize_path(val)
                     valores[clave] = val  # type: ignore
             except (tk.TclError, Exception):
                 continue
@@ -1986,7 +1987,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if hasattr(self, 'api_key_entry') and self.api_key_entry.winfo_exists():
                 clave_raw = self._safe_get_entry_value(self.api_key_entry, "")
                 if clave_raw:
-                    valores["asistente_clave_api"] = "".join(c for c in clave_raw if c.isprintable() and len(c) < 128)
+                    valores["asistente_clave_api"] = self._sanitize_path(clave_raw)[:128]
         except Exception as e:
             logging.error("Fallo durante recolección segura de parámetros UI: %s", e)
             
