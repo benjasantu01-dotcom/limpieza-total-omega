@@ -374,11 +374,12 @@ def _is_process_executable_safe(pid: int) -> bool:
     handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
     if handle is None or handle == INVALID_HANDLE_VALUE: return False
     try:
-        buf = ctypes.create_unicode_buffer(512)
-        bytes_copied = psapi.GetModuleFileNameExW(handle, None, buf, 512)
+        buf = ctypes.create_unicode_buffer(1024)
+        bytes_copied = psapi.GetModuleFileNameExW(handle, None, buf, 1024)
         if bytes_copied > 0:
             path_str = buf.value
             if path_str.startswith("\\\\"): return False
+            # Resolvemos la ruta antes de verificar para evitar bypass por symlinks o puntos de reparse
             normalized_path = str(Path(path_str).resolve())
             return not is_protected_path(normalized_path)
     except (ctypes.ArgumentError, OSError, ValueError):

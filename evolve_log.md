@@ -636,3 +636,22 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-10-13T00:33:27` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha implementado un control de seguridad adicional en `_validate_disk_access` para evitar la inyección de rutas mediante el uso de caracteres nulos (null bytes), lo cual es una técnica común para evadir validaciones basadas en extensiones o prefijos en sistemas subyacentes.
 - `2026-10-13T00:33:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T00:33:27` Corrida terminada. Total usado hoy: 16.
+- `2026-10-13T00:41:14` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-10-13T00:41:44` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_process_executable_safe` al implementar una validación estricta de rutas mediante `Path.resolve()` antes de consultar `is_protected_path`, asegurando que no se pueda manipular la memoria de procesos cuyos ejecutables residan en rutas maliciosas, protegidas o con caracteres especiales.
+- `2026-10-13T00:42:10` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `delete_reviewed` añadiendo una validación explícita para asegurar que la carpeta de revisión no sea una ruta raíz o sensible, protegiendo contra posibles errores de configuración que intentarían borrar archivos de directorios críticos.
+- `2026-10-13T00:43:10` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-13T00:43:51` Tests FALLARON:
+```
+Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+8 failed, 291 passed in 2.00s
+
+```
+- `2026-10-13T00:43:51` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad en `_atomic_isolate_file` para evitar la manipulación de rutas (`path traversal`) al normalizar los nombres de archivo mediante `os.path.basename` y una validación estricta contra el directorio destino, asegurando que el nombre del archivo en cuarentena no pueda contener caracteres de navegación de directorios.
+- `2026-10-13T00:43:55` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-13T00:43:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T00:43:55` Corrida terminada. Total usado hoy: 20.
