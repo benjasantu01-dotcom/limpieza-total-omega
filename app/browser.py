@@ -307,6 +307,7 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
         return False
     if not is_safe_to_modify(real) or is_protected_path(real):
         return False
+    # Evitar seguir enlaces simbólicos o puntos de reparse durante la validación
     return not (real.is_symlink() or _IS_JUNCTION_FN(str(real)) or _is_excluded_file(real.name))
 
 @safe_path_operation(Path())
@@ -320,7 +321,7 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
         return Path()
         
     target: Path = real_base.joinpath(*parts)
-    if not target.is_dir(): 
+    if not target.exists() or not target.is_dir(): 
         return Path()
     
     try:
@@ -329,7 +330,8 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
         return Path()
         
     if _is_within_sandbox(os.path.normcase(str(target_res)), os.path.normcase(str(real_base))) and \
-       is_safe_to_modify(target_res) and not is_protected_path(target_res):
+       is_safe_to_modify(target_res) and not is_protected_path(target_res) and \
+       not (target_res.is_symlink() or _IS_JUNCTION_FN(str(target_res))):
         return target_res
     return Path()
 

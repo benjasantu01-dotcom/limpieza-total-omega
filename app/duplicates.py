@@ -274,11 +274,13 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                                 if not (skip_protected and is_prot):
                                     queue.append((p_entry, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
-                            st = entry.stat()
-                            if st.st_size >= min_size and (st.st_dev, st.st_ino) not in visited_inodes:
-                                if _is_valid_candidate(p_entry, st.st_size):
-                                    visited_inodes.add((st.st_dev, st.st_ino))
-                                    size_to_paths_map[st.st_size].append(p_entry)
+                            # Refuerzo: verificar seguridad antes de acceder a stat
+                            if is_safe_to_modify(p_entry):
+                                st = entry.stat()
+                                if st.st_size >= min_size and (st.st_dev, st.st_ino) not in visited_inodes:
+                                    if _is_valid_candidate(p_entry, st.st_size):
+                                        visited_inodes.add((st.st_dev, st.st_ino))
+                                        size_to_paths_map[st.st_size].append(p_entry)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

@@ -396,6 +396,10 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             if not relative_parts: continue
             
             top_folder = root / relative_parts[0]
+            # Validación defensiva de seguridad antes de procesar la subcarpeta
+            if skip_protected and is_protected_path(top_folder):
+                continue
+                
             curr = stats[str(top_folder)]
             curr.size += size
             curr.file_count += 1

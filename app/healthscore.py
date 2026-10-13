@@ -18,6 +18,7 @@ from enum import Enum
 from pathlib import Path
 import math
 import logging
+import string
 
 ScoreMap: TypeAlias = Dict[str, float]
 NormalizedRatio: TypeAlias = Annotated[float, "Valor de salud normalizado entre 0.0 (crítico) y 1.0 (óptimo)"]
@@ -288,16 +289,20 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _sanitize_msg(msg: str) -> str:
-    """Elimina caracteres no imprimibles y bloquea rutas absolutas o sintaxis de sistema."""
+    """Limpia el mensaje usando una whitelist estricta de caracteres permitidos."""
     if not isinstance(msg, str): return ""
     
-    # Bloqueo de patrones peligrosos
-    blocked_patterns = ["c:\\", "/", "root", "system32", "windows", "program files", "admin"]
-    if any(part in msg.lower() for part in blocked_patterns): return ""
+    # Whitelist: caracteres alfanuméricos básicos, espacios y puntuación mínima segura
+    allowed = string.ascii_letters + string.digits + " .,:()-_%"
     
-    # Filtro: solo imprimibles ASCII, longitud controlada, prohibir caracteres de control
-    sanitized = "".join(c for c in msg if c.isprintable() and ord(c) < 127 and c not in "\r\n\t\\/<>|:\"*?").strip()
-    return sanitized[:200] if sanitized else ""
+    sanitized = "".join(c for c in msg if c in allowed)
+    
+    # Bloqueo de palabras clave prohibidas independientemente de los caracteres
+    blocked = ["system32", "windows", "admin", "c:\\"]
+    if any(b in sanitized.lower() for b in blocked):
+        return ""
+        
+    return sanitized.strip()[:200]
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio, findings: List[str]) -> None:
     """Ejecuta las reglas de diagnóstico para una métrica y agrega hallazgos si es necesario."""
