@@ -76,22 +76,15 @@ TARGETED_DOWNLOAD_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp
 
 SYSTEM32_LOWER: Final[str] = "system32"
 
-def _is_file_in_use(path: Path) -> bool:
-    """Verifica si el archivo está bloqueado por otro proceso abriéndolo en modo exclusivo."""
-    try:
-        # Usar flags de acceso compartido para verificar exclusividad sin corromper el estado
-        fd = os.open(path, os.O_RDONLY | os.O_BINARY)
-        os.close(fd)
-        return False
-    except (OSError, PermissionError):
-        return True
-
 def _is_readable(path: Path) -> bool:
-    """Valida si la ruta es un archivo regular, legible y sin bloqueos de acceso."""
+    """
+    Valida la accesibilidad del archivo mediante permisos de sistema.
+    
+    Comprueba si la ruta existe, es un archivo regular y tiene permisos
+    de lectura habilitados para el contexto actual.
+    """
     try:
-        if not path.is_file() or not os.access(path, os.R_OK):
-            return False
-        return not _is_file_in_use(path)
+        return path.is_file() and os.access(path, os.R_OK)
     except (OSError, PermissionError, ValueError, FileNotFoundError):
         return False
 
@@ -139,7 +132,7 @@ def _is_target_extension(name: str) -> bool:
         return False
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta el uso de doble extensión como técnica común de enmascaramiento."""
+    """Detecta archivos con extensiones dobles engañosas (ej: imagen.jpg.exe)."""
     try:
         if path.name and DOUBLE_EXTENSION_RE.search(path.name):
             return Suspicion(path, "Doble extensión detectada como técnica de enmascaramiento", "warning")
@@ -148,7 +141,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Analiza si un ejecutable fue creado recientemente dentro de carpetas de alto riesgo."""
+    """Flag de advertencia para ejecutables nuevos en carpetas volátiles comunes."""
     try:
         if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
             return None
@@ -161,7 +154,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Identifica ejecutables que intentan suplantar procesos críticos fuera de System32."""
+    """Detecta binarios con nombres de procesos del sistema ubicados fuera de System32."""
     try:
         if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
             if SYSTEM32_LOWER not in str(path).lower():
@@ -171,7 +164,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Identifica archivos ejecutables con tamaño cero."""
+    """Detecta archivos ejecutables con tamaño 0, indicativo de potenciales shells o placeholders."""
     try:
         if _get_file_size(path) == 0:
             return Suspicion(path, "Ejecutable vacío detectado", "warning")

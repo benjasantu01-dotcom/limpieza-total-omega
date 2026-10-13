@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **198** (39.3% de aceptación)
 - Rechazadas por tests: 26
-- Rechazadas por guardia de seguridad: 56
+- Rechazadas por guardia de seguridad: 59
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 25 | 2 | 7 | 1 | 39 |
+| 2026-10-11 | 22 | 2 | 7 | 1 | 38 |
 | 2026-10-12 | 144 | 19 | 41 | 16 | 130 |
-| 2026-10-13 | 31 | 5 | 8 | 2 | 34 |
+| 2026-10-13 | 32 | 5 | 11 | 2 | 34 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **47**
+- legibilidad y documentación: **48**
 - seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **44**
-- robustez ante casos límite: **42**
+- robustez ante casos límite: **39**
 - rendimiento: **23**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **20**
-- `diskreport.py`: **19**
-- `browser.py`: **18**
 - `safety.py`: **18**
-- `healthscore.py`: **16**
+- `diskreport.py`: **18**
+- `browser.py`: **17**
 - `organizer.py`: **16**
+- `scanner.py`: **15**
 - `duplicates.py`: **15**
-- `scanner.py`: **14**
+- `healthscore.py`: **15**
 - `branding.py`: **14**
 - `settings.py`: **14**
 - `assistant.py`: **13**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-13T03:25:35` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados a las funciones de heurística y tipos explícitos, además de refactorizar `_is_readable` para consolidar la lógica de validación de acceso y evitar el uso de `os.open` para verificar legibilidad cuando `os.access` es suficiente y más seguro.
 - `2026-10-13T03:15:02` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la adición de Type Hints en retornos de funciones, docstrings detallados que explican el propósito de las validaciones críticas y la consolidación de constantes de tipo de archivo para reducir la redundancia en los chequeos.
 - `2026-10-13T03:14:31` **memory.py** (legibilidad y documentación): Mejoré la documentación de los tipos de datos y estructuras Win32 para facilitar la auditoría, y añadí docstrings específicos a las funciones críticas que operan con APIs de bajo nivel, aclarando los riesgos y precondiciones de cada una.
 - `2026-10-13T03:06:43` **main.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `main.py` mediante la adición de docstrings estructurados y precisos en todos los métodos que carecían de ellos, además de consolidar la lógica de tipos y nombres de funciones clave para reflejar mejor su intención funcional.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-13T02:44:33` **safety.py** (manejo de errores y validación de entradas): Se introdujo una captura selectiva de excepciones en `_is_file_locked_by_other_process` y `_get_file_attrs` para evitar que errores inesperados de API (como `MemoryError` o `PermissionError`) se propaguen como valores por defecto "inseguros" (falsos positivos de bloqueo), mejorando la robustez sin debilitar la seguridad.
 - `2026-10-13T02:35:12` **organizer.py** (manejo de errores y validación de entradas): Se han reforzado las validaciones de entrada en los métodos públicos `stage_for_review`, `scan_for_junk` y `delete_reviewed` mediante el uso de guardas defensivas y chequeos de tipo, evitando así excepciones inesperadas al procesar valores `None` o rutas mal formadas.
 - `2026-10-13T02:34:47` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `trim_working_set` y sus funciones auxiliares al reemplazar chequeos implícitos por validaciones explícitas de estados de error, asegurando que `kernel32.OpenProcess` sea verificado correctamente frente a `None` y errores de acceso antes de proceder.
-- `2026-10-13T02:34:21` **main.py** (manejo de errores y validación de entradas): Mejoré `on_trim_process` para asegurar que el `PID` ingresado sea validado no solo como numérico, sino contra la existencia real del proceso en el sistema antes de ejecutar cualquier operación potencialmente riesgosa o lanzar errores de sistema.

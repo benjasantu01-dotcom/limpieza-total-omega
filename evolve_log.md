@@ -964,3 +964,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-13T03:15:42` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 112): unterminated string literal (detected at line 112)
 - `2026-10-13T03:15:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T03:15:42` Corrida terminada. Total usado hoy: 80.
+- `2026-10-13T03:24:12` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-10-13T03:25:06` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _CheckResult
+- `2026-10-13T03:25:35` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados a las funciones de heurística y tipos explícitos, además de refactorizar `_is_readable` para consolidar la lógica de validación de acceso y evitar el uso de `os.open` para verificar legibilidad cuando `os.access` es suficiente y más seguro.
+- `2026-10-13T03:26:05` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-13T03:26:14` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._extract_quoted_path, StartupEntry._is_valid_executable, StartupEntry._sanitize_command
+- `2026-10-13T03:26:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T03:26:14` Corrida terminada. Total usado hoy: 84.
