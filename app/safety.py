@@ -773,6 +773,9 @@ def is_protected_path(path: PathLike) -> bool:
     if not isinstance(path, (str, Path)) or not path: return True
     try:
         p = Path(path)
+        # Prevención de seguir junctions hacia fuera
+        if p.is_symlink() or _is_system_directory_junction(str(p)): return True
+        
         if PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in p.parts):
             p_resolved = _normalize_resolved(str(p))
             if not _is_kernel_managed(str(p_resolved)):

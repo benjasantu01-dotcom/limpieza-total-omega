@@ -833,3 +833,26 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-13T13:58:55` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_process_executable_safe` añadiendo una comprobación explícita de puntos de reparse (junctions) mediante `Path.is_symlink()`, evitando que la app siga enlaces inesperados al validar procesos, cumpliendo así con las prioridades de `safety.py`.
 - `2026-10-13T13:58:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T13:58:55` Corrida terminada. Total usado hoy: 332.
+- `2026-10-13T14:06:31` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-13T14:06:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-13T14:06:38` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-13T14:06:44` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-13T14:06:57` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-13T14:07:58` Tests FALLARON:
+```
+moves_the_file_without_deleting_it - RuntimeError: Error durante aislamiento: El archivo cambió durante la validación inicial (TOCTOU).
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - RuntimeError: Error durante aislamiento: El archivo cambió durante la validación inicial (TOCTOU).
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - RuntimeError: Error durante aislamiento: El archivo cambió durante la validación inicial (TOCTOU).
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error durante aislamiento: El archivo cambió durante la validación inicial (TOCTOU).
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error durante aislamiento: El archivo cambió durante la validación inicial (TOCTOU).
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error durante aislamiento: El archivo cambió durante la validación inicial (TOCTOU).
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error durante aislamiento: El archivo cambió durante la validación inicial (TOCTOU).
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error durante aislamiento: El archivo cambió durante la validación inicial (TOCTOU).
+8 failed, 291 passed, 8 warnings in 1.87s
+
+```
+- `2026-10-13T14:07:58` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_atomic_isolate_file` y `quarantine_file` mediante la validación estricta de que el archivo de origen no haya sido sustituido por un enlace simbólico, junction o archivo distinto entre la validación inicial y la operación de transferencia, cerrando una ventana de oportunidad de tipo TOCTOU (Time-of-Check to Time-of-Use).
+- `2026-10-13T14:08:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-13T14:09:00` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación preventiva contra puntos de reparse (junctions) y enlaces simbólicos dentro de `_is_protected_path` para asegurar que no se sigan accesos fuera del árbol esperado, reforzando la seguridad defensiva contra el escape de directorios mediante manipulaciones del sistema de archivos.
+- `2026-10-13T14:09:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T14:09:00` Corrida terminada. Total usado hoy: 336.
