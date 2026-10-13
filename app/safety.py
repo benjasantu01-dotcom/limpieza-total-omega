@@ -27,6 +27,7 @@ INVALID_FILE_ATTRIBUTES: Final[int] = 0xFFFFFFFF
 LONG_PATH_PREFIX: Final[str] = "\\\\?\\"
 
 PathLike: TypeAlias = Union[str, os.PathLike]
+# Delegado de validación que recibe el archivo, metadatos y descriptor de seguridad
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
 
 class SafetyAction(Enum):
@@ -508,26 +509,85 @@ def _validate_drive_restrictions(target_path: Path) -> None:
 # PREDICADOS DE SEGURIDAD (Reglas de Integridad)
 # ==============================================================================
 
-def _check_symlink(p: Path, _, __) -> bool: return p.is_symlink()
-def _check_reparse(p: Path, _, sd: SecurityDescriptor) -> bool: return sd.is_reparse
-def _check_kernel_locked(p: Path, _, __) -> bool: return _is_kernel_managed(str(p))
-def _check_read_only(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return not bool(st.st_mode & stat.S_IWRITE) or sd.is_readonly
-def _check_vol_read_only(p: Path, _, __) -> bool: return _is_volume_readonly(str(p))
-def _check_vol_removable(p: Path, _, __) -> bool: return _is_volume_removable_media(str(p))
-def _check_vol_restricted(p: Path, _, __) -> bool: return _is_volume_compressed_or_encrypted(str(p))
-def _check_in_use(_, __, sd: SecurityDescriptor) -> bool: return sd.is_in_use
-def _check_sys_hidden(_, __, sd: SecurityDescriptor) -> bool: return sd.is_protected_system
-def _check_offline(_, __, sd: SecurityDescriptor) -> bool: return sd.has_flag(Win32Attr.OFFLINE)
-def _check_enc_comp(_, __, sd: SecurityDescriptor) -> bool: return bool(sd.attrs & (Win32Attr.COMPRESSED | Win32Attr.ENCRYPTED))
-def _check_sparse(_, __, sd: SecurityDescriptor) -> bool: return sd.has_flag(Win32Attr.SPARSE_FILE)
-def _check_hard_link(p: Path, st: os.stat_result, __) -> bool: return p.is_file() and st.st_nlink > 1
-def _check_ads(p: Path, _, __) -> bool: return _has_alternate_data_stream(p.name)
-def _check_empty(p: Path, st: os.stat_result, __) -> bool: return p.is_file() and st.st_size == 0
-def _check_size(p: Path, st: os.stat_result, __) -> bool: return p.is_file() and st.st_size > MAX_FILE_SIZE
-def _check_mount(p: Path, _, __) -> bool: return os.path.ismount(p)
-def _check_type(_, st: os.stat_result, __) -> bool: return not (stat.S_ISREG(st.st_mode) or stat.S_ISDIR(st.st_mode))
-def _check_owner(p: Path, _, __) -> bool: return _is_file_owned_by_system(str(p))
-def _check_virtual(p: Path, _, __) -> bool: return _is_virtual_drive(str(p))
+def _check_symlink(p: Path, _, __) -> bool: 
+    """Valida si la ruta es un enlace simbólico que podría causar escapes."""
+    return p.is_symlink()
+
+def _check_reparse(p: Path, _, sd: SecurityDescriptor) -> bool: 
+    """Valida puntos de reparse (Junctions) que pueden redirigir el acceso."""
+    return sd.is_reparse
+
+def _check_kernel_locked(p: Path, _, __) -> bool: 
+    """Identifica archivos bloqueados o gestionados por el kernel de Windows."""
+    return _is_kernel_managed(str(p))
+
+def _check_read_only(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: 
+    """Verifica si el archivo está marcado como solo lectura en metadatos o atributos."""
+    return not bool(st.st_mode & stat.S_IWRITE) or sd.is_readonly
+
+def _check_vol_read_only(p: Path, _, __) -> bool: 
+    """Valida si el volumen contenedor tiene el flag de solo lectura activo."""
+    return _is_volume_readonly(str(p))
+
+def _check_vol_removable(p: Path, _, __) -> bool: 
+    """Evita operaciones en medios extraíbles que podrían causar errores durante I/O."""
+    return _is_volume_removable_media(str(p))
+
+def _check_vol_restricted(p: Path, _, __) -> bool: 
+    """Detecta volúmenes cifrados o comprimidos que pueden ser inestables."""
+    return _is_volume_compressed_or_encrypted(str(p))
+
+def _check_in_use(_, __, sd: SecurityDescriptor) -> bool: 
+    """Verifica si el descriptor de seguridad indica que el archivo está bloqueado."""
+    return sd.is_in_use
+
+def _check_sys_hidden(_, __, sd: SecurityDescriptor) -> bool: 
+    """Detecta si el archivo posee atributos ocultos o de sistema críticos."""
+    return sd.is_protected_system
+
+def _check_offline(_, __, sd: SecurityDescriptor) -> bool: 
+    """Verifica si el archivo reside en almacenamiento offline o nube."""
+    return sd.has_flag(Win32Attr.OFFLINE)
+
+def _check_enc_comp(_, __, sd: SecurityDescriptor) -> bool: 
+    """Valida si el archivo está comprimido o cifrado a nivel de sistema de archivos."""
+    return bool(sd.attrs & (Win32Attr.COMPRESSED | Win32Attr.ENCRYPTED))
+
+def _check_sparse(_, __, sd: SecurityDescriptor) -> bool: 
+    """Identifica archivos dispersos (sparse) que pueden tener estructuras complejas."""
+    return sd.has_flag(Win32Attr.SPARSE_FILE)
+
+def _check_hard_link(p: Path, st: os.stat_result, __) -> bool: 
+    """Previene manipulación de archivos que tienen múltiples hard links."""
+    return p.is_file() and st.st_nlink > 1
+
+def _check_ads(p: Path, _, __) -> bool: 
+    """Detecta flujos de datos alternativos (ADS) sospechosos."""
+    return _has_alternate_data_stream(p.name)
+
+def _check_empty(p: Path, st: os.stat_result, __) -> bool: 
+    """Identifica archivos vacíos que podrían ser marcadores de sistema."""
+    return p.is_file() and st.st_size == 0
+
+def _check_size(p: Path, st: os.stat_result, __) -> bool: 
+    """Valida que el tamaño del archivo no exceda los límites de procesamiento."""
+    return p.is_file() and st.st_size > MAX_FILE_SIZE
+
+def _check_mount(p: Path, _, __) -> bool: 
+    """Detecta si la ruta es un punto de montaje de sistema."""
+    return os.path.ismount(p)
+
+def _check_type(_, st: os.stat_result, __) -> bool: 
+    """Valida que solo se operen archivos regulares o directorios."""
+    return not (stat.S_ISREG(st.st_mode) or stat.S_ISDIR(st.st_mode))
+
+def _check_owner(p: Path, _, __) -> bool: 
+    """Verifica que el propietario no sea un grupo de sistema privilegiado."""
+    return _is_file_owned_by_system(str(p))
+
+def _check_virtual(p: Path, _, __) -> bool: 
+    """Detecta unidades virtuales mapeadas vía SUBST."""
+    return _is_virtual_drive(str(p))
 
 _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _rule(ProtectionReason.SYMLINK, _check_symlink),
