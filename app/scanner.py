@@ -123,7 +123,9 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     """Valida integridad de la ruta contra límites API y caracteres inseguros/RTL."""
-    if not path_str or len(path_str) > SCAN_LIMITS.max_path or "\0" in path_str:
+    if not path_str or not isinstance(path_str, str):
+        return False
+    if len(path_str) > SCAN_LIMITS.max_path or "\0" in path_str:
         return False
     if UNC_PATH_RE.match(path_str) or RTL_CHAR_RE.search(path_str):
         return False

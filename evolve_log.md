@@ -935,3 +935,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-13T02:35:39` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se mejora el manejo de errores en `purge_all` y `purge_item` reemplazando capturas genéricas por un manejo explícito que valida el estado de los archivos y la integridad del manifiesto, evitando que fallos de I/O silenciosos impidan la limpieza.
 - `2026-10-13T02:35:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T02:35:39` Corrida terminada. Total usado hoy: 64.
+- `2026-10-13T02:43:28` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-10-13T02:43:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-10-13T02:44:33` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se introdujo una captura selectiva de excepciones en `_is_file_locked_by_other_process` y `_get_file_attrs` para evitar que errores inesperados de API (como `MemoryError` o `PermissionError`) se propaguen como valores por defecto "inseguros" (falsos positivos de bloqueo), mejorando la robustez sin debilitar la seguridad.
+- `2026-10-13T02:45:33` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-13T02:46:05` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_valid_path_structure` y las funciones de escaneo para manejar entradas `None` o rutas vacías antes de procesarlas, evitando excepciones en el procesamiento de directorios.
+- `2026-10-13T02:46:22` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se mejoró la robustez de la validación al añadir un chequeo de tipos estricto y explícito en `_coerce_and_verify` para prevenir que valores corrompidos o de tipos inesperados (inyectados por edición manual del JSON) se propaguen al resto de la aplicación, manteniendo el criterio de reemplazo silencioso por defaults.
+- `2026-10-13T02:46:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T02:46:22` Corrida terminada. Total usado hoy: 68.

@@ -426,11 +426,13 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     return DEFAULTS.copy()
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
-    """Asegura consistencia de tipos y reglas de negocio."""
+    """Asegura consistencia de tipos y reglas de negocio, rechazando valores con tipo incorrecto."""
     final: AppSettings = DEFAULTS.copy()
     for key, val in settings.items():
-        if key in DEFAULTS and val is not None and isinstance(val, type(DEFAULTS[key])):
-            final[key] = val
+        if key in DEFAULTS:
+            expected_type = type(DEFAULTS[key])
+            if val is not None and isinstance(val, expected_type):
+                final[key] = val
     if final["asistente_activado"] and not (final["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         final["asistente_activado"] = False
     return final

@@ -385,7 +385,8 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
             return err in (ERROR_SHARING_VIOLATION, ERROR_INVALID_NAME)
         kernel32.CloseHandle(handle)
         return False
-    except (OSError, ctypes.ArgumentError, AttributeError):
+    except (OSError, ctypes.ArgumentError, AttributeError, MemoryError, PermissionError):
+        # Ante un error inesperado al intentar abrir el archivo, asumimos el estado más seguro
         return True
 
 def _get_security_descriptor(path: Path) -> SecurityDescriptor:
@@ -870,7 +871,7 @@ def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> 
             raise UnsafePathError("Redirección de reparse point fuera de base.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
         
         for parent in path.parents:
-            if _is_system_directory_junction(str(parent)):
+            if _is_system_directory_junction( rather := str(parent)):
                 if not _is_reparse_point_safe(parent, base_dir):
                     raise UnsafePathError("Reparse point anidado detectado.", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
             if parent == base_dir: break
