@@ -326,13 +326,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             raise RuntimeError(f"Violación de seguridad de entorno: {e}")
 
     def _validate_disk_access(self, path: Union[str, Path]) -> Path:
-        """Valida la integridad de la ruta y permisos de seguridad."""
+        """Valida la integridad de la ruta y permisos de seguridad (previene inyecciones)."""
         try:
             p = Path(path).resolve(strict=True)
         except (OSError, RuntimeError):
             raise safety.UnsafePathError(f"Ruta inaccesible o inexistente: {path}")
 
-        # Prevenir Path Traversal e inyecciones: solo caracteres imprimibles y sin null bytes
         if not all(c.isprintable() for c in str(p)) or "\x00" in str(p):
             raise safety.UnsafePathError("Ruta contiene caracteres inválidos o inseguros.")
 

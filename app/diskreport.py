@@ -324,10 +324,11 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre el sistema de archivos (DFS) usando inodos para prevenir bucles.
+    Recorre el sistema de archivos (DFS) usando inodos para prevenir bucles de recursión.
     
-    Yields:
-        Tuplas conteniendo el objeto Path y el tamaño en bytes del archivo.
+    Utiliza una pila (stack) para realizar el recorrido en profundidad (DFS) y
+    almacena (dispositivo, inodo) en `visited_inodes` para detectar enlaces 
+    duros que puedan causar ciclos infinitos.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -410,10 +411,11 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Motor central: recorre el directorio, consolida métricas globales y mantiene
-    un heap (cola de prioridad) para identificar los archivos más pesados.
+    un heap de tamaño fijo (`limit`) para identificar los archivos más pesados.
     
-    El uso de un heap permite mantener un ordenamiento parcial eficiente 
-    sin cargar en memoria toda la estructura de archivos del sistema.
+    El uso de un heap permite mantener un ordenamiento parcial (top-N) con una
+    complejidad de tiempo O(N log K) y una memoria constante respecto al total,
+    evitando cargar la lista completa de archivos en memoria.
     """
     stats = GlobalStats()
     top_heap: List[Tuple[int, Path]] = [] 
@@ -425,6 +427,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
             stats.register_file(size_bytes, path.suffix)
             
             if limit > 0:
+                # Si el heap está lleno, comparamos con el menor elemento (raíz)
                 if len(top_heap) < limit: 
                     heapq.heappush(top_heap, (size_bytes, path))
                 elif size_bytes > top_heap[0][0]: 

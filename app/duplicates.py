@@ -244,7 +244,8 @@ def _resolve_and_verify_root(directory_path: PathLike) -> Optional[Path]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido BFS iterativo para recolectar archivos candidatos.
-    Implementa el Paso 1 al clasificar archivos por tamaño en el diccionario de retorno.
+    Gestiona el estado de directorios visitados e inodos para evitar ciclos o 
+    procesamiento redundante, clasificando los archivos encontrados por tamaño.
     """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     queue: deque[Tuple[Path, int]] = deque()
@@ -288,8 +289,8 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
-    Helper genérico: agrupa rutas mediante una función de hash proporcionada
-    (Paso 2 o Paso 3). Descarta grupos con un solo elemento.
+    Helper genérico: agrupa una lista de rutas existentes aplicando la función de 
+    hash proporcionada. Filtra descartando cualquier grupo de tamaño 1 (no duplicado).
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
@@ -306,7 +307,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
     """
     Ejecuta el filtrado jerárquico (Paso 2 -> Paso 3) para optimizar
-    la identificación de duplicados en archivos grandes.
+    la identificación de duplicados en archivos de gran tamaño.
     """
     partial_groups = _group_paths_by_hash(paths, partial_hash)
     final_results: Dict[str, List[Path]] = {}

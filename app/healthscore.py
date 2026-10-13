@@ -100,12 +100,12 @@ __all__ = [
     "summarize",
 ]
 
-# Umbrales máximos tolerables antes de penalizar totalmente el score
-_LIMIT_JUNK_MB: Final[float] = 5000.0
-_LIMIT_DUPLICATE_MB: Final[float] = 2000.0
-_LIMIT_STARTUP_COUNT: Final[int] = 20
-_LIMIT_RAM_PERCENT: Final[float] = 35.0
-_LIMIT_DISK_PERCENT: Final[float] = 25.0
+# Umbrales críticos para la normalización de métricas
+_LIMIT_JUNK_MB: Final[float] = 5000.0        # Límite superior de basura (MB) antes de puntaje 0
+_LIMIT_DUPLICATE_MB: Final[float] = 2000.0   # Límite superior de duplicados (MB) antes de puntaje 0
+_LIMIT_STARTUP_COUNT: Final[int] = 20        # Cantidad máxima tolerada de programas de inicio
+_LIMIT_RAM_PERCENT: Final[float] = 35.0      # Porcentaje de RAM libre base considerado "saludable"
+_LIMIT_DISK_PERCENT: Final[float] = 25.0     # Porcentaje de espacio libre base considerado "saludable"
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
     """Asegura que un valor se mantenga dentro del intervalo de normalización [0.0, 1.0]."""
@@ -132,6 +132,7 @@ WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
 
+# Pesos relativos de cada área en el score global (debe sumar 100)
 WEIGHTS: Final[Dict[MetricKey, int]] = {
     "seguridad": 30,
     "disco": 20,
@@ -152,6 +153,7 @@ _JUNK_SCORER = create_linear_scorer(_LIMIT_JUNK_MB, inverse=True)
 _DUP_SCORER = create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)
 _STARTUP_SCORER = create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inverse=True)
 
+# Pipeline de procesamiento central: define cómo se computa cada métrica y sus reglas de alerta
 _PIPELINE: Final[Tuple[PipelineEntry, ...]] = (
     PipelineEntry(
         "seguridad", 30, 
