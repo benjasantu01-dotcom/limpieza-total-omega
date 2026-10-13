@@ -375,8 +375,14 @@ def _is_process_executable_safe(pid: int) -> bool:
             # Bloqueo estricto: rutas UNC o sospechosas no son seguras
             if not path_str or path_str.startswith("\\\\"):
                 return False
+            
+            p = Path(path_str)
+            # Detección de puntos de reparse (Junctions/Symlinks) para evitar saltos inesperados
+            if p.is_symlink():
+                return False
+                
             # Validar integridad contra lista de protegidas y normalizar
-            normalized = str(Path(path_str).resolve())
+            normalized = str(p.resolve())
             return not is_protected_path(normalized) and len(filter_safe_paths([normalized])) > 0
     except (ctypes.ArgumentError, OSError, ValueError, RuntimeError):
         return False

@@ -303,10 +303,11 @@ def grade_for_score(score: float | int) -> str:
     """Wrapper de conveniencia para invocar el selector de grados según puntaje."""
     return Grade.from_score(score)
 
-def _sanitize_msg(msg: str) -> str:
+def _sanitize_msg(msg: str | Any) -> str:
     """Limpia el mensaje usando una whitelist estricta y limitación de longitud."""
     if not isinstance(msg, str): return ""
-    sanitized = "".join(c for c in msg if c in _ALLOWED_CHARS)
+    raw_snapshot = str(msg)
+    sanitized = "".join(c for c in raw_snapshot if c in _ALLOWED_CHARS)
     lower_msg = sanitized.lower()
     if any(b in lower_msg for b in _BLOCKED_TERMS):
         return ""
@@ -387,5 +388,6 @@ def summarize(result: HealthResult | None) -> List[str]:
         maximo = WEIGHTS.get(area, 1)
         lines.append(f"  {area.capitalize():<12} {p:>2}/{maximo:<2} [{_render_bar(p, maximo)}]")
     
-    lines.extend(("", "Recomendaciones:", *(f"  - {_sanitize_msg(r)}" for r in result.recommendations if _sanitize_msg(r))))
+    # Se filtra preventivamente cada recomendación al volcar el informe
+    lines.extend(("", "Recomendaciones:", *(f"  - {s}" for s in (_sanitize_msg(r) for r in result.recommendations) if s)))
     return lines
