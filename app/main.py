@@ -1926,13 +1926,17 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @validated_ui_operation
     def on_ask_assistant(self, question: Optional[str] = None) -> None:
         """Callback: Envía una consulta al motor del asistente local."""
-        texto = self._safe_get_entry_value(getattr(self, 'question_entry', None), (question or "").strip())
+        # Validación de existencia de UI antes de operar
+        if not hasattr(self, 'question_entry') or not self.question_entry.winfo_exists():
+            return
+
+        texto = self._safe_get_entry_value(self.question_entry, (question or "").strip())
         
         if not texto:
             self.log("Escribí una pregunta válida.", "Asistente")
             return
         
-        if question is None and hasattr(self, 'question_entry'):
+        if question is None:
             self.question_entry.delete(0, "end")
 
         def task() -> None:

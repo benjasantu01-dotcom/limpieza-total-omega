@@ -322,7 +322,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     accumulated_score: float = 0.0
     
     for entry in _PIPELINE:
-        area_ratio = _clamp(entry.scorer(m))
+        try:
+            area_ratio = _clamp(entry.scorer(m))
+        except Exception as e:
+            logging.error(f"Error procesando normalizador para {entry.area}: {e}")
+            area_ratio = 0.0
+            
         _evaluate_rules(m, entry.rules, area_ratio, recommendations)
         
         # Cálculo discreto

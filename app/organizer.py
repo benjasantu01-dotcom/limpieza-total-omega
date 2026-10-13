@@ -149,14 +149,15 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si un archivo está bloqueado mediante un intento de apertura exclusiva.
-    En Windows se usan handles de Kernel32; en otros sistemas se intenta un acceso de lectura.
+    Verifica si un archivo está bloqueado.
+    En Windows utiliza CreateFileW con acceso nulo y modo de compartición 0 para detectar uso exclusivo.
     """
     if not path or not isinstance(path, Path) or not path.is_file(): return True
     if os.name == 'nt':
         try:
+            # GENERIC_READ = 0x80000000, FILE_SHARE_READ = 0x00000001, OPEN_EXISTING = 3
             handle = ctypes.windll.kernel32.CreateFileW(
-                str(path), 0x80000000, 0, None, 3, 0x00000080, None
+                str(path), 0x80000000, 0x00000001, None, 3, 0x00000080, None
             )
             if handle == wintypes.HANDLE(-1).value:
                 return True

@@ -322,13 +322,12 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
             if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
                 count = min(cb_needed.value // ctypes.sizeof(ctypes.c_uint32), max_procs)
                 found_procs = []
-                own_pid = os.getpid()
                 
                 for i in range(count):
                     pid = int(pids[i])
-                    if pid > 4 and pid != own_pid:
+                    if not _is_system_process(pid) and pid > 4:
                         ws = _query_working_set_bytes(pid, kernel32, psapi, pmc)
-                        if ws:
+                        if ws and _is_process_executable_safe(pid):
                             found_procs.append(ProcessMemory(f"PID {pid}", pid, ws))
                 
                 _CACHE_TOP_PROC["data"] = sorted(found_procs, key=lambda p: p.working_set, reverse=True)[:limit]
