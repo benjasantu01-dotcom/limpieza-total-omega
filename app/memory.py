@@ -294,41 +294,30 @@ def _query_working_set_bytes(pid: int, kernel32: ctypes.WinDLL, psapi: ctypes.Wi
 _CACHE_TOP_PROC: Dict[str, Any] = {"time": 0.0, "data": []}
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """
-    Lista los procesos más pesados enumerando la tabla de procesos del sistema.
-    Usa una caché de 60 segundos para evitar impacto excesivo en CPU.
-    """
+    """Lista los procesos más pesados enumerando la tabla de procesos del sistema."""
     if not _is_windows: return []
     now = time.time()
     
     if (now - _CACHE_TOP_PROC["time"]) > 60:
         kernel32 = getattr(ctypes.windll, "kernel32", None)
         psapi = getattr(ctypes.windll, "psapi", None)
-        if not kernel32 or not psapi or not hasattr(psapi, "EnumProcesses"): 
-            return []
+        if not kernel32 or not psapi or not hasattr(psapi, "EnumProcesses"): return []
         
-        max_procs = 1024
-        pids = (ctypes.c_uint32 * max_procs)()
+        pids = (ctypes.c_uint32 * 1024)()
         cb_needed = ctypes.c_uint32()
         pmc = PROCESS_MEMORY_COUNTERS()
         pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
         
-        try:
-            if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
-                count = min(cb_needed.value // ctypes.sizeof(ctypes.c_uint32), max_procs)
-                found_procs = []
-                
-                for i in range(count):
-                    pid = int(pids[i])
-                    if not _is_system_process(pid) and pid > 4:
-                        ws = _query_working_set_bytes(pid, kernel32, psapi, pmc)
-                        if ws and _is_process_executable_safe(pid):
-                            found_procs.append(ProcessMemory(f"PID {pid}", pid, ws))
-                
-                _CACHE_TOP_PROC["data"] = sorted(found_procs, key=lambda p: p.working_set, reverse=True)[:limit]
-                _CACHE_TOP_PROC["time"] = now
-        except (ctypes.ArgumentError, OSError):
-            return []
+        if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
+            found_procs = []
+            for pid in pids[:cb_needed.value // 4]:
+                if pid > 4 and not _is_system_process(pid):
+                    ws = _query_working_set_bytes(pid, kernel32, psapi, pmc)
+                    if ws and _is_process_executable_safe(pid):
+                        found_procs.append(ProcessMemory(f"PID {pid}", pid, ws))
+            
+            _CACHE_TOP_PROC["data"] = sorted(found_procs, key=lambda p: p.working_set, reverse=True)[:limit]
+            _CACHE_TOP_PROC["time"] = now
             
     return _CACHE_TOP_PROC["data"]
 
@@ -374,13 +363,10 @@ def _is_process_executable_safe(pid: int) -> bool:
     if handle is None or handle == INVALID_HANDLE_VALUE: return False
     try:
         buf = ctypes.create_unicode_buffer(1024)
-        bytes_copied = psapi.GetModuleFileNameExW(handle, None, buf, 1024)
-        if bytes_copied > 0 and buf.value:
+        if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0 and buf.value:
             path_str = buf.value
-            if path_str.startswith("\\\\"): return False
-            normalized_path = str(Path(path_str).resolve())
-            if is_protected_path(normalized_path): return False
-            return len(filter_safe_paths([normalized_path])) > 0
+            if not path_str.startswith("\\\\"):
+                return not is_protected_path(path_str) and len(filter_safe_paths([path_str])) > 0
     except (ctypes.ArgumentError, OSError, ValueError, RuntimeError):
         return False
     finally:

@@ -976,12 +976,8 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
     return False
 
 
-def _is_item_purgable(file_path: Path, item: QuarantineItem, base_dir: Path) -> bool:
+def _is_item_purgable(file_path: Path, item: QuarantineItem) -> bool:
     """Valida si un archivo cumple las condiciones para ser purgado."""
-    if _is_file_in_use_by_system(file_path):
-        return False
-    if not file_path.exists():
-        return True
     return (
         file_path.is_file() and 
         not file_path.is_symlink() and
@@ -1001,7 +997,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         if not items:
             return 0
         
-        # Mapeo eficiente usando dict para lookup O(1)
+        # Mapeo eficiente para lookup O(1)
         item_map = {i.stored_name: i for i in items}
         purged_ids: Set[str] = set()
         
@@ -1009,10 +1005,8 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             if f.name == MANIFEST_NAME or f.name not in item_map:
                 continue
             
-            # Solo verificar integridad si el archivo está en el manifiesto
-            item = item_map[f.name]
-            if _is_item_purgable(f, item, quarantine_root):
-                purged_ids.add(item.item_id)
+            if _is_item_purgable(f, item_map[f.name]):
+                purged_ids.add(item_map[f.name].item_id)
         
         if purged_ids:
             new_items = [i for i in items if i.item_id not in purged_ids]
