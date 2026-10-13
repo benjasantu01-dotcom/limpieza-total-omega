@@ -213,7 +213,7 @@ def _is_system_process(pid: int) -> bool:
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     """Parsea una línea CSV para crear un objeto ProcessMemory tras validar el PID."""
-    if not isinstance(line, str) or "," not in line: 
+    if not isinstance(line, str) or not line or "," not in line: 
         return None
         
     parts = [p.strip().strip("'\"") for p in line.split(",")]
@@ -223,16 +223,13 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     name, pid_str, ws_str = parts[0], parts[1], parts[2]
     try:
         pid = int(pid_str)
+        ws = _safe_int_conversion(ws_str)
+        if pid <= 0 or _is_system_process(pid):
+            return None
+        if 0 < ws < MAX_VALID_PROCESS_MEM:
+            return ProcessMemory(name, pid, BytesValue(ws))
     except (ValueError, TypeError):
         return None
-    
-    ws = _safe_int_conversion(ws_str)
-        
-    if _is_system_process(pid) or pid <= 0: 
-        return None
-    
-    if 0 < ws < MAX_VALID_PROCESS_MEM:
-        return ProcessMemory(name, pid, BytesValue(ws))
     return None
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
@@ -380,15 +377,13 @@ def _is_process_executable_safe(pid: int) -> bool:
     try:
         buf = ctypes.create_unicode_buffer(1024)
         bytes_copied = psapi.GetModuleFileNameExW(handle, None, buf, 1024)
-        if bytes_copied > 0:
+        if bytes_copied > 0 and buf.value:
             path_str = buf.value
             if path_str.startswith("\\\\"): return False
             normalized_path = str(Path(path_str).resolve())
-            # Verifica contra seguridad centralizada
             if is_protected_path(normalized_path): return False
-            # Debe estar en la lista de rutas seguras permitidas
             return len(filter_safe_paths([normalized_path])) > 0
-    except (ctypes.ArgumentError, OSError, ValueError):
+    except (ctypes.ArgumentError, OSError, ValueError, RuntimeError):
         return False
     finally:
         kernel32.CloseHandle(handle)

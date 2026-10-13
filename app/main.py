@@ -2052,26 +2052,29 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            self.settings = settings_mod.reset()
-            for clave, variable in self.setting_vars.items():
-                if clave in settings_mod.DEFAULTS:
-                    try:
-                        variable.set(settings_mod.DEFAULTS[clave])
-                    except (tk.TclError, RuntimeError, Exception):
-                        continue
-            
-            def restore_ui():
-                widgets = [
-                    (getattr(self, 'min_dup_entry', None), "duplicados_tamano_minimo_kb", 64),
-                    (getattr(self, 'top_files_entry', None), "top_archivos", 15)
-                ]
-                for widget, key, default in widgets:
-                    if widget and widget.winfo_exists():
-                        widget.delete(0, "end")
-                        widget.insert(0, str(settings_mod.DEFAULTS.get(key, default)))
-                self.log_lines(["Ajustes restaurados a los valores de fábrica.", ""] + settings_mod.describe(), "Ajustes")
-            
-            self._safe_run_ui_callback(restore_ui)
+            try:
+                self.settings = settings_mod.reset()
+                for clave, variable in self.setting_vars.items():
+                    if clave in settings_mod.DEFAULTS:
+                        try:
+                            variable.set(settings_mod.DEFAULTS[clave])
+                        except (tk.TclError, RuntimeError, Exception):
+                            continue
+                
+                def restore_ui():
+                    widgets = [
+                        (getattr(self, 'min_dup_entry', None), "duplicados_tamano_minimo_kb", 64),
+                        (getattr(self, 'top_files_entry', None), "top_archivos", 15)
+                    ]
+                    for widget, key, default in widgets:
+                        if widget and widget.winfo_exists():
+                            widget.delete(0, "end")
+                            widget.insert(0, str(settings_mod.DEFAULTS.get(key, default)))
+                    self.log_lines(["Ajustes restaurados a los valores de fábrica.", ""] + settings_mod.describe(), "Ajustes")
+                
+                self._safe_run_ui_callback(restore_ui)
+            except Exception as e:
+                logging.error("Fallo durante reseteo de ajustes: %s", e)
 
         self.run_async(task)
 

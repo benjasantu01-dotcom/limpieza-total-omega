@@ -317,7 +317,11 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Calcula el puntaje global recorriendo el pipeline de métricas."""
     m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
-    m.validate()
+    try:
+        m.validate()
+    except Exception as e:
+        logging.error(f"Fallo en validación de métricas: {e}")
+        return HealthResult(0, "F", {}, ["Error interno en validación de métricas."])
     
     if not m.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Métricas inestables detectadas."])
@@ -364,9 +368,10 @@ def summarize(result: HealthResult | None) -> List[str]:
         
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
-    # Iteración sobre breakdown pre-calculado para evitar busquedas extras
-    for area, p in result.breakdown.items():
-        maximo = WEIGHTS.get(area, 10)
+    # Iteración sobre breakdown pre-calculado, con fallback para claves faltantes
+    for area in WEIGHTS:
+        p = result.breakdown.get(area, 0)
+        maximo = WEIGHTS[area]
         lines.append(f"  {area.capitalize():<12} {p:>2}/{maximo:<2} [{_render_bar(p, maximo)}]")
     
     lines.extend(("", "Recomendaciones:", *(f"  - {r}" for r in result.recommendations)))

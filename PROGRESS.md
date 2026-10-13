@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Mejoras aceptadas: **204** (40.5% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 55
+- Rechazadas por guardia de seguridad: 54
 - Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 200
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-12 | 136 | 19 | 39 | 16 | 130 |
-| 2026-10-13 | 67 | 8 | 16 | 3 | 70 |
+| 2026-10-12 | 134 | 19 | 38 | 15 | 130 |
+| 2026-10-13 | 70 | 8 | 16 | 4 | 70 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **45**
 - seguridad defensiva: **44**
-- manejo de errores y validación de entradas: **41**
-- legibilidad y documentación: **40**
+- manejo de errores y validación de entradas: **44**
+- legibilidad y documentación: **38**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **20**
+- `memory.py`: **21**
 - `diskreport.py`: **18**
 - `browser.py`: **17**
-- `safety.py`: **16**
+- `healthscore.py`: **17**
 - `assistant.py`: **16**
-- `healthscore.py`: **16**
 - `organizer.py`: **16**
-- `scanner.py`: **15**
+- `safety.py`: **15**
 - `settings.py`: **15**
 - `branding.py`: **14**
 - `duplicates.py`: **14**
+- `scanner.py`: **14**
 - `quarantine.py`: **10**
 - `startup.py`: **10**
-- `main.py`: **6**
+- `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-13T07:00:31` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_process_executable_safe` y `_extract_process_info` añadiendo validación explícita de `None` y manejo de excepciones específicas, siguiendo el enfoque de prevenir errores silenciosos en el procesamiento de datos del sistema.
+- `2026-10-13T07:00:01` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de los decoradores de UI y las operaciones asíncronas añadiendo una verificación de estado `_closing` más explícita y robusta en `_worker_thread_logic`, además de asegurar que cualquier error ocurrido dentro de `on_save_settings` y `on_reset_settings` sea capturado mediante bloques `try/except` que protegen la integridad de la UI, evitando que la aplicación quede en un estado bloqueado ante excepciones de escritura o conversión.
+- `2026-10-13T06:58:52` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `summarize` implementando chequeos defensivos ante entradas `None` y valores inesperados, evitando que una métrica mal formada detenga la ejecución de todo el motor de análisis.
 - `2026-10-13T06:49:54` **diskreport.py** (manejo de errores y validación de entradas): Mejora la robustez del motor de escaneo capturando excepciones específicas en `walk_files` y `largest_folders` para evitar que errores inesperados de E/S o permisos durante la iteración interrumpan el proceso completo, asegurando que el análisis continúe de forma resiliente.
 - `2026-10-13T06:49:24` **browser.py** (manejo de errores y validación de entradas): Se reforzó la validación de parámetros en las funciones de entrada del módulo `browser.py` utilizando verificaciones explícitas de tipo y estado para evitar errores en tiempo de ejecución al recibir inputs inesperados (como `None` o rutas mal formadas), cumpliendo con el enfoque de manejo de errores y validación.
 - `2026-10-13T06:41:39` **assistant.py** (manejo de errores y validación de entradas): Reforcé la robustez de `ingest` capturando errores en `_apply_field` para evitar que una sola métrica corrupta o con tipo inesperado aborte la ingesta completa de datos del sistema, asegurando que el contexto permanezca consistente incluso ante lecturas parciales o inesperadas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-13T04:57:50` **healthscore.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_sanitize_msg` implementando un esquema de "lista blanca" (whitelist) de caracteres permitidos en lugar de una "lista negra" (blacklist), evitando bypasses por caracteres exóticos o de control y consolidando la lógica de limpieza de mensajes para prevenir cualquier inyección de texto sospechoso en la interfaz.
 - `2026-10-13T04:57:35` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` añadiendo una validación explícita mediante `is_safe_to_modify` para cada archivo antes de procesar sus atributos, previniendo así errores de acceso en rutas protegidas por el sistema que podrían causar excepciones no controladas o lecturas no autorizadas.
 - `2026-10-13T04:57:08` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `largest_folders` añadiendo un filtro de validación de `is_protected_path` sobre la ruta de la subcarpeta candidata antes de procesarla, asegurando que el análisis de carpetas no agregue rutas que hayan sido marcadas como protegidas durante la iteración o debido a cambios en el sistema de archivos.
-- `2026-10-13T04:56:37` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_valid_cache_path` y `_resolve_browser_path` añadiendo una validación explícita para prevenir el seguimiento de enlaces simbólicos o puntos de reparse (junctions) al momento de validar rutas, evitando así el posible acceso fuera del sandbox permitido incluso si la resolución de ruta parece correcta.
-- `2026-10-13T04:47:51` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` implementando una validación de ruta absoluta antes de cualquier operación de disco y asegurando que las subcarpetas creadas no contengan elementos peligrosos mediante la normalización de la ruta de destino, mitigando riesgos de inyección de rutas y sobreescritura accidental.
-- `2026-10-13T04:47:33` **assistant.py** (seguridad defensiva): Mejoré la seguridad del motor de consulta remota en `_call_gemini` añadiendo una validación explícita mediante `is_protected_path` sobre la URL generada, reforzando la protección contra posibles inyecciones de parámetros que intenten redirigir la petición a endpoints internos o locales, manteniendo la integridad del proceso incluso si fallara el regex de la constante `_API_HOST_ROOT`.
