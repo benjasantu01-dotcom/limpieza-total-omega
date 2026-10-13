@@ -281,14 +281,12 @@ def read_snapshot() -> MemorySnapshot:
     """Devuelve un estado de memoria con una latencia de caché de 5 segundos."""
     return _get_cached_snapshot(int(time.time() / 5))
 
-def _query_working_set_bytes(pid: int, kernel32: ctypes.WinDLL, psapi: ctypes.WinDLL) -> Optional[BytesValue]:
+def _query_working_set_bytes(pid: int, kernel32: ctypes.WinDLL, psapi: ctypes.WinDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
     """Consulta contadores de memoria mediante API externa con validación de handle."""
     process_handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
     if process_handle is None or process_handle == INVALID_HANDLE_VALUE:
         return None
     try:
-        pmc = PROCESS_MEMORY_COUNTERS()
-        pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
         if psapi.GetProcessMemoryInfo(process_handle, ctypes.byref(pmc), pmc.cb):
             val = pmc.WorkingSetSize
             return BytesValue(val) if 0 < val < MAX_VALID_PROCESS_MEM else None
@@ -317,6 +315,8 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         max_procs = 1024
         pids = (ctypes.c_uint32 * max_procs)()
         cb_needed = ctypes.c_uint32()
+        pmc = PROCESS_MEMORY_COUNTERS()
+        pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
         
         try:
             if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
@@ -327,7 +327,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
                 for i in range(count):
                     pid = int(pids[i])
                     if pid > 4 and pid != own_pid:
-                        ws = _query_working_set_bytes(pid, kernel32, psapi)
+                        ws = _query_working_set_bytes(pid, kernel32, psapi, pmc)
                         if ws:
                             found_procs.append(ProcessMemory(f"PID {pid}", pid, ws))
                 

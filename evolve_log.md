@@ -978,3 +978,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-13T03:36:30` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
 - `2026-10-13T03:36:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T03:36:30` Corrida terminada. Total usado hoy: 88.
+- `2026-10-13T03:44:37` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-10-13T03:45:08` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_group_paths_by_hash` mediante el uso de una lista de pre-filtrado por estado de archivo para evitar la redundancia de `path.exists()` y `is_safe_to_modify` dentro del bucle de hashing, reduciendo llamadas innecesarias al sistema de archivos.
+- `2026-10-13T03:45:41` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el acceso a los datos dentro de `compute_score` mediante la pre-validación y el cacheo de valores, además de reemplazar la iteración sobre `WEIGHTS` en `summarize` por un acceso directo que evita búsquedas innecesarias en el diccionario.
+- `2026-10-13T03:46:55` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de invalidación de caché basado en `digests` de estado en `on_full_analysis` para evitar el re-procesamiento innecesario del contexto del asistente y el re-cálculo de métricas de salud cuando los datos subyacentes no han cambiado, mejorando el rendimiento de la interfaz.
+- `2026-10-13T03:47:10` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `top_memory_processes` reemplazando la instanciación de un objeto de buffer `ctypes` dentro del bucle principal por una llamada única pre-dimensionada, y moví la lógica de `EnumProcesses` a una consulta más eficiente.
+- `2026-10-13T03:47:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T03:47:10` Corrida terminada. Total usado hoy: 92.

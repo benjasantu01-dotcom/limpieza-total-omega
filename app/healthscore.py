@@ -310,60 +310,42 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             logging.warning(f"Salteando regla de diagnóstico en {rule.area} por error: {e}")
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """
-    Calcula el puntaje global recorriendo el pipeline de métricas.
-    """
-    try:
-        m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
-        m.validate()
+    """Calcula el puntaje global recorriendo el pipeline de métricas."""
+    m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
+    m.validate()
+    
+    if not m.is_finite:
+        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Métricas inestables detectadas."])
         
-        if not m.is_finite:
-            raise ValueError("Métricas inestables detectadas tras validación.")
-            
-        recommendations: List[str] = []
-        metric_breakdown: Dict[MetricKey, int] = {}
-        accumulated_score: float = 0.0
+    recommendations: List[str] = []
+    metric_breakdown: Dict[MetricKey, int] = {}
+    accumulated_score: float = 0.0
+    
+    for entry in _PIPELINE:
+        area_ratio = _clamp(entry.scorer(m))
+        _evaluate_rules(m, entry.rules, area_ratio, recommendations)
         
-        for entry in _PIPELINE:
-            try:
-                area_ratio = _clamp(entry.scorer(m))
-                _evaluate_rules(m, entry.rules, area_ratio, recommendations)
+        # Cálculo discreto
+        points = area_ratio * float(entry.weight)
+        val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
+        metric_breakdown[entry.area] = val_int
+        accumulated_score += float(val_int)
                 
-                # Cálculo discreto: normalizar ratio, multiplicar y redondear explícitamente
-                points = area_ratio * float(entry.weight)
-                val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
-                metric_breakdown[entry.area] = val_int
-                accumulated_score += float(val_int)
-            except Exception as e:
-                logging.error(f"Falla crítica en pipeline {entry.area}: {e}")
-                metric_breakdown[entry.area] = 0
-                    
-        if m.quarantined_count > 0:
-            recommendations.append(f"Tenés {m.quarantined_count} archivo(s) en cuarentena.")
-            
-        final_score = int(round(_clamp(accumulated_score, 0.0, 100.0)))
-        return HealthResult(
-            score=final_score,
-            grade=grade_for_score(final_score),
-            breakdown=metric_breakdown,
-            recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
-        )
-    except Exception as e:
-        logging.critical(f"Error fatal al calcular puntaje: {e}")
-        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error interno al calcular salud del sistema."])
+    if m.quarantined_count > 0:
+        recommendations.append(f"Tenés {m.quarantined_count} archivo(s) en cuarentena.")
+        
+    final_score = int(round(_clamp(accumulated_score, 0.0, 100.0)))
+    return HealthResult(
+        score=final_score,
+        grade=grade_for_score(final_score),
+        breakdown=metric_breakdown,
+        recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
+    )
 
 def _render_bar(points: int, max_val: int) -> str:
-    """
-    Genera representación visual (ASCII) de barras para la interfaz.
-    """
-    try:
-        p = int(points)
-        m = int(max_val)
-        if m <= 0: return ".........."
-        p = max(0, min(p, m))
-        return "#" * p + "." * (m - p)
-    except (TypeError, ValueError):
-        return ".........."
+    """Genera representación visual (ASCII) de barras para la interfaz."""
+    p = max(0, min(int(points), int(max_val)))
+    return "#" * p + "." * (int(max_val) - p) if max_val > 0 else ".........."
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera una lista de líneas legible para el informe de estado final del sistema."""
@@ -372,8 +354,9 @@ def summarize(result: HealthResult | None) -> List[str]:
         
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
-    for area, maximo in WEIGHTS.items():
-        p = result.breakdown.get(area, 0)
+    # Iteración sobre breakdown pre-calculado para evitar busquedas extras
+    for area, p in result.breakdown.items():
+        maximo = WEIGHTS.get(area, 10)
         lines.append(f"  {area.capitalize():<12} {p:>2}/{maximo:<2} [{_render_bar(p, maximo)}]")
     
     lines.extend(("", "Recomendaciones:", *(f"  - {r}" for r in result.recommendations)))

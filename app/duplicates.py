@@ -293,14 +293,15 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     hash proporcionada. Filtra descartando cualquier grupo de tamaño 1 (no duplicado).
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
-    for path in paths:
-        if isinstance(path, Path) and is_safe_to_modify(path):
-            try:
-                # Verificación extra para asegurar que el archivo sigue siendo elegible
-                if path.exists() and (digest := hash_func(path)):
-                    groups_by_digest[digest].append(path)
-            except (OSError, PermissionError):
-                continue
+    # Pre-filtrar por seguridad antes de invocar funciones pesadas de hashing
+    valid_paths = [p for p in paths if isinstance(p, Path) and is_safe_to_modify(p)]
+    
+    for path in valid_paths:
+        try:
+            if (digest := hash_func(path)):
+                groups_by_digest[digest].append(path)
+        except (OSError, PermissionError):
+            continue
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
 
