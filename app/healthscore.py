@@ -109,7 +109,14 @@ _LIMIT_RAM_PERCENT: Final[float] = 35.0      # Porcentaje de RAM libre base cons
 _LIMIT_DISK_PERCENT: Final[float] = 25.0     # Porcentaje de espacio libre base considerado "saludable"
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
-    """Asegura que un valor se mantenga dentro del intervalo de normalización [0.0, 1.0]."""
+    """
+    Recorta un valor numérico para que se encuentre dentro de un rango inclusivo.
+    
+    Args:
+        value: Valor numérico a evaluar.
+        min_val: Límite inferior permitido.
+        max_val: Límite superior permitido.
+    """
     if not math.isfinite(value): return min_val
     return max(min_val, min(max_val, value))
 
@@ -357,7 +364,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     )
 
 def _render_bar(points: int, max_val: int) -> str:
-    """Genera representación visual (ASCII) de barras para la interfaz."""
+    """
+    Genera una barra de progreso visual en formato ASCII para la interfaz.
+    
+    Args:
+        points: Puntos actuales alcanzados.
+        max_val: Valor máximo esperado para el área.
+    """
     p = max(0, min(int(points), int(max_val)))
     return "#" * p + "." * (int(max_val) - p) if max_val > 0 else ".........."
 

@@ -52,7 +52,8 @@ MAX_PATH_LIMIT: int = 260
 def is_junction(path: Path) -> bool:
     """
     Verifica mediante la API de Windows si una ruta es un punto de reanálisis.
-    Evita la recursión infinita en enlaces de sistema.
+    Se requiere para evitar seguir 'junctions' o 'mount points' que podrían 
+    causar bucles infinitos o escaneos sobre unidades de red/sistema montadas.
     """
     if not isinstance(path, Path) or not is_safe_to_modify(path) or not path.exists():
         return False
@@ -66,7 +67,8 @@ def is_junction(path: Path) -> bool:
 def is_system_or_hidden(path: Path) -> bool:
     """
     Determina si un archivo tiene atributos de sistema u oculto en Windows.
-    Utiliza atributos de archivo para descartar archivos críticos del SO.
+    Es una medida de seguridad pasiva para evitar que la herramienta moleste 
+    al usuario con archivos críticos del SO que no deberían manipularse.
     """
     if not isinstance(path, Path) or not is_safe_to_modify(path) or not path.exists():
         return True
@@ -96,7 +98,10 @@ class DuplicateGroup:
 
     @property
     def wasted_bytes(self) -> int:
-        """Calcula el espacio total recuperable excluyendo una copia (el keeper)."""
+        """
+        Calcula el espacio total recuperable excluyendo una copia (el keeper).
+        El keeper es la versión original que decidimos conservar.
+        """
         if not self.paths or self.count <= 1 or self.size_bytes < 0:
             return 0
         return (self.count - 1) * self.size_bytes
@@ -105,7 +110,8 @@ class DuplicateGroup:
 def _is_file_locked(path: Path) -> bool:
     """
     Verifica si un archivo está en uso intentando abrirlo en modo exclusivo.
-    Útil para no procesar archivos que están siendo escritos por otros procesos.
+    Es necesario porque `os.stat` no indica si un archivo está bloqueado 
+    para escritura por otro proceso (típico en archivos temporales o logs).
     """
     if not isinstance(path, Path) or not is_safe_to_modify(path):
         return True
@@ -121,7 +127,7 @@ def _is_file_locked(path: Path) -> bool:
 def _safe_path_check(path: Path) -> bool:
     """
     Validación de seguridad: verifica existencia, protección contra escritura,
-    puntos de reanálisis y symlinks.
+    puntos de reanálisis y symlinks. Actúa como gatekeeper antes de cualquier I/O.
     """
     if not isinstance(path, Path):
         return False
@@ -175,7 +181,7 @@ def _validate_and_resolve_path(path_input: PathLike) -> Optional[Path]:
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Paso 3: Calcula el SHA256 completo del contenido de un archivo.
-    Requiere una ruta validada; es una operación de lectura intensiva.
+    Se usa solo cuando los hashes parciales coinciden para evitar I/O innecesario.
     """
     valid_path = _validate_and_resolve_path(path)
     if valid_path is None or not is_safe_to_modify(valid_path):
@@ -197,7 +203,8 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Paso 2: Calcula SHA256 sobre el inicio de un archivo (prefijo).
-    Optimiza el rendimiento descartando candidatos dispares antes del hashing completo.
+    Estrategia de optimización: la mayoría de los archivos duplicados 
+    pueden distinguirse por sus primeros 64KB, ahorrando lecturas pesadas.
     """
     valid_path = _validate_and_resolve_path(path)
     if valid_path is None or not is_safe_to_modify(valid_path):
@@ -244,8 +251,8 @@ def _resolve_and_verify_root(directory_path: PathLike) -> Optional[Path]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido BFS iterativo para recolectar archivos candidatos.
-    Gestiona el estado de directorios visitados e inodos para evitar ciclos o 
-    procesamiento redundante, clasificando los archivos encontrados por tamaño.
+    Utiliza un caché de protección y un set de inodos visitados para evitar
+    ciclos y re-procesamiento (redundancia).
     """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     queue: deque[Tuple[Path, int]] = deque()
@@ -274,7 +281,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                                 if not (skip_protected and is_prot):
                                     queue.append((p_entry, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
-                            # Refuerzo: verificar seguridad antes de acceder a stat
                             if is_safe_to_modify(p_entry):
                                 st = entry.stat()
                                 if st.st_size >= min_size and (st.st_dev, st.st_ino) not in visited_inodes:
@@ -292,10 +298,9 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
     Helper genérico: agrupa una lista de rutas existentes aplicando la función de 
-    hash proporcionada. Filtra descartando cualquier grupo de tamaño 1 (no duplicado).
+    hash proporcionada. Filtra descartando cualquier grupo de tamaño 1.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
-    # Pre-filtrar por seguridad antes de invocar funciones pesadas de hashing
     valid_paths = [p for p in paths if isinstance(p, Path) and is_safe_to_modify(p)]
     
     for path in valid_paths:
@@ -309,8 +314,9 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
     """
-    Ejecuta el filtrado jerárquico (Paso 2 -> Paso 3) para optimizar
-    la identificación de duplicados en archivos de gran tamaño.
+    Ejecuta el filtrado jerárquico (Paso 2 -> Paso 3).
+    Dividir el proceso en etapas de hash parcial y luego completo permite 
+    minimizar el acceso a disco en archivos muy grandes.
     """
     partial_groups = _group_paths_by_hash(paths, partial_hash)
     final_results: Dict[str, List[Path]] = {}
@@ -348,8 +354,9 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     """
-    Calcula un score de antigüedad (mtime) y longitud de ruta para determinar 
-    qué archivo debería ser el 'original' a conservar.
+    Cálculo de puntuación para elegir el "keeper":
+    1. Preferimos archivos más antiguos (mtime) como el original.
+    2. Preferimos rutas más cortas para evitar problemas de PATH_MAX.
     """
     if not isinstance(path, Path) or not is_safe_to_modify(path):
         return None

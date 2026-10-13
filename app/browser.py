@@ -55,13 +55,13 @@ class ScanContext:
     """
     Contexto de ejecución que mantiene el estado del escaneo actual.
 
-    Args:
-        sandbox_base_norm: Ruta base normalizada (en minúsculas) para restringir el alcance.
-        kernel32: Handle de la API de Windows o None si no es Windows.
-        is_junction: Función para detectar puntos de reparse (Junctions/Symlinks).
-        visited_files: Historial de archivos procesados para evitar conteos duplicados (dev, ino).
-        visited_dirs: Cache de tamaños de directorios ya procesados.
-        safety_cache: Cache de validaciones de seguridad para evitar redundancia.
+    Attributes:
+        sandbox_base_norm: Ruta base normalizada (en minúsculas) usada para restringir el alcance.
+        kernel32: Handle de la API de Windows para consultas de bajo nivel o None.
+        is_junction: Función callback para detectar puntos de reparse (Junctions/Symlinks).
+        visited_files: Historial de tuplas (dev, ino) para evitar procesar el mismo archivo dos veces.
+        visited_dirs: Cache de tamaños de directorios ya procesados para evitar re-escaneo.
+        safety_cache: Diccionario con resultados previos de validación de seguridad (is_safe_to_modify).
     """
     sandbox_base_norm: str
     kernel32: Optional[ctypes.WinDLL]
@@ -71,7 +71,11 @@ class ScanContext:
     safety_cache: SafetyCache
 
 def safe_path_operation(default: Any) -> Callable:
-    """Decorador para capturar errores de E/S y evitar interrupciones de flujo."""
+    """
+    Decorador que envuelve funciones de E/S.
+    Si ocurre una excepción de sistema o permisos, retorna el valor 'default'
+    en lugar de propagar el error, permitiendo que el escaneo continúe.
+    """
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -88,7 +92,7 @@ class ScanResult(NamedTuple):
     success: bool
 
 class FileAttributes(NamedTuple):
-    """Máscaras de bits para la Win32 API."""
+    """Máscaras de bits constantes para la Win32 API."""
     READONLY: int = 0x01
     HIDDEN: int = 0x02
     SYSTEM: int = 0x04
@@ -117,7 +121,7 @@ BROWSER_CACHE_PATHS: BrowserMap = {
 }
 
 def _is_valid_rel_path(p: str) -> bool:
-    """Valida que una ruta no contenga secuencias de escape ni caracteres ilegales."""
+    """Valida que una ruta relativa no contenga secuencias de escape o caracteres ilegales."""
     if not p or not isinstance(p, str) or '..' in p or any(c in p for c in PATH_FORBIDDEN_CHARS):
         return False
     return True
@@ -142,34 +146,34 @@ BYTES_TO_MB: float = 1024 * 1024
 
 @dataclass
 class BrowserCache:
-    """Modelo para representar una instancia de caché de navegador detectada."""
+    """Modelo de datos para representar una instancia de caché de navegador detectada."""
     browser: str
     path: Path
     size_bytes: int
 
     @property
     def size_mb(self) -> float:
-        """Retorna el tamaño en MB redondeado."""
+        """Retorna el tamaño en MB convertido y redondeado."""
         return round(self.size_bytes / BYTES_TO_MB, 2)
 
 @safe_path_operation(None)
 def _get_kernel32() -> Optional[ctypes.WinDLL]:
-    """Carga kernel32.dll bajo demanda para consultas de atributos en Windows."""
+    """Carga kernel32.dll bajo demanda para consultas de atributos específicos de Windows."""
     if os.name != 'nt':
         return None
     dll = ctypes.WinDLL('kernel32.dll', use_last_error=True)
     return dll if hasattr(dll, 'GetFileAttributesW') else None
 
 def _is_unc_path(path_str: Optional[str]) -> TypeGuard[str]:
-    """Identifica rutas de red (UNC) para limitar el escaneo a unidades locales."""
+    """Identifica rutas de red (UNC) para limitar el escaneo solo a unidades locales."""
     return isinstance(path_str, str) and (path_str.startswith(r"\\") or path_str.startswith("//"))
 
 def _is_within_sandbox(target_norm: str, sandbox_base_norm: str) -> bool:
-    """Verifica si la ruta destino está contenida estrictamente en la base permitida."""
+    """Verifica si la ruta destino está contenida estrictamente en la base de datos permitida."""
     return target_norm.startswith(sandbox_base_norm)
 
 def base_directories() -> List[Path]:
-    """Retorna las rutas base permitidas para búsqueda de perfiles de usuario."""
+    """Retorna la lista de rutas base permitidas (LOCALAPPDATA) para búsqueda de perfiles."""
     local_env = os.environ.get("LOCALAPPDATA")
     if not isinstance(local_env, str) or not local_env or _is_unc_path(local_env):
         return []
@@ -185,18 +189,18 @@ def base_directories() -> List[Path]:
     return []
 
 def _is_excluded_file(name: Optional[str]) -> TypeGuard[str]:
-    """Comprueba si el archivo está en la lista de exclusión definitiva."""
+    """Verifica si el nombre de archivo o carpeta está en la lista de exclusión (NEVER_TOUCH)."""
     return isinstance(name, str) and name.lower() in NEVER_TOUCH
 
 @safe_path_operation(False)
 def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
-    """Determina si un archivo tiene atributos de sistema u oculto via Win32."""
+    """Determina si un archivo tiene atributos de sistema u oculto mediante la Win32 API."""
     if kernel32 is None: return False
     attrs: int = kernel32.GetFileAttributesW(entry_path)
     return attrs != 0xFFFFFFFF and bool(attrs & SYSTEM_HIDDEN_FLAGS)
 
 def _is_path_safe(path_str: str, ctx: ScanContext) -> bool:
-    """Valida seguridad de ruta usando caché interna del contexto."""
+    """Valida seguridad de una ruta utilizando el caché de validaciones del contexto actual."""
     if not isinstance(path_str, str): return False
     if path_str not in ctx.safety_cache:
         p = Path(path_str)
@@ -205,7 +209,8 @@ def _is_path_safe(path_str: str, ctx: ScanContext) -> bool:
 
 def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     """
-    Evalúa si una entrada debe omitirse.
+    Reglas de filtrado: omite entradas bloqueadas, fuera de sandbox, 
+    links simbólicos, junctions, o archivos del sistema.
     """
     if _is_excluded_file(entry.name):
         return True
@@ -226,7 +231,10 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     return False
 
 def _process_file_node(entry: os.DirEntry, ctx: ScanContext) -> int:
-    """Calcula el tamaño de archivo asegurando la integridad mediante inodos para evitar ciclos."""
+    """
+    Calcula el tamaño de archivo detectando inodos duplicados 
+    (para evitar conteos cíclicos o recursivos en sistemas con links).
+    """
     try:
         if not os.access(entry.path, os.R_OK) or not _is_path_safe(entry.path, ctx):
             return 0
@@ -242,7 +250,7 @@ def _process_file_node(entry: os.DirEntry, ctx: ScanContext) -> int:
         return 0
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
-    """Recorrido recursivo del sistema de archivos limitado por profundidad."""
+    """Recorrido recursivo del sistema de archivos limitado por MAX_SCAN_DEPTH."""
     if depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN or not isinstance(root_path, str):
         return ScanResult(0, True)
     
@@ -273,7 +281,7 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
 
 @safe_path_operation(0)
 def directory_size(path: Optional[OSPath]) -> int:
-    """Calcula el tamaño acumulado de un directorio, garantizando que sea una ruta segura."""
+    """Calcula el tamaño total en bytes de un directorio, garantizando seguridad de acceso."""
     if not isinstance(path, (str, Path)): return 0
     path_obj: Path = Path(path)
     if not path_obj.exists() or not path_obj.is_dir(): return 0
@@ -288,7 +296,7 @@ def directory_size(path: Optional[OSPath]) -> int:
 
 @safe_path_operation(False)
 def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
-    """Valida que la ruta de caché resuelta se mantenga dentro del sandbox definido."""
+    """Valida que una ruta candidata resuelta permanezca dentro del sandbox."""
     if not isinstance(candidate, Path) or not isinstance(base_abs_str, str): return False
     if not candidate.is_dir() or not os.access(candidate, os.R_OK): return False
     
@@ -301,7 +309,7 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
 
 @safe_path_operation(Path())
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
-    """Resuelve la ruta absoluta del caché garantizando confinamiento al perfil."""
+    """Resuelve la ruta absoluta del caché garantizando confinamiento estricto al perfil del usuario."""
     if not isinstance(real_base, Path) or not isinstance(rel_str, str) or not _is_valid_rel_path(rel_str): 
         return Path()
     
@@ -347,12 +355,12 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     return found
 
 def total_cache_bytes(caches: Optional[Iterable[BrowserCache]] = None) -> int:
-    """Calcula el total de bytes ocupados por el conjunto de cachés proporcionado."""
+    """Calcula el total de bytes ocupados por el conjunto de objetos BrowserCache."""
     if caches is None: return 0
     return sum(c.size_bytes for c in caches)
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
-    """Genera una representación textual de los resultados del escaneo."""
+    """Genera una representación textual formateada de los resultados del escaneo."""
     current_caches = caches if isinstance(caches, list) else detect_profiles()
     if not current_caches:
         return ["No se detectaron cachés de navegador en este sistema."]
