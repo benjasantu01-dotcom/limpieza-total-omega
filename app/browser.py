@@ -227,7 +227,6 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
 def _process_file_node(entry: os.DirEntry, ctx: ScanContext) -> int:
     """Calcula el tamaño de archivo asegurando la integridad mediante inodos para evitar ciclos."""
     try:
-        # Verificación explícita de lectura y seguridad antes de stat
         if not os.access(entry.path, os.R_OK) or not _is_path_safe(entry.path, ctx):
             return 0
         st = entry.stat(follow_symlinks=False)
@@ -238,8 +237,7 @@ def _process_file_node(entry: os.DirEntry, ctx: ScanContext) -> int:
             return 0
         ctx.visited_files.add(file_id)
         return st.st_size
-    except (OSError, PermissionError, FileNotFoundError):
-        # Captura errores de archivos bloqueados por el sistema operativo
+    except (OSError, PermissionError, FileNotFoundError, AttributeError):
         return 0
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
@@ -270,7 +268,6 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
         ctx.visited_dirs[path_norm] = total_bytes
         return ScanResult(total_bytes, True)
     except (OSError, PermissionError):
-        # Fallo parcial en directorio; retornamos lo acumulado hasta el momento
         return ScanResult(total_bytes, False)
 
 @safe_path_operation(0)

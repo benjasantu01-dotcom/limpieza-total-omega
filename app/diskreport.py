@@ -353,7 +353,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         elif entry.is_file(follow_symlinks=False):
                             f_stat = entry.stat(follow_symlinks=False)
                             yield Path(entry.path), int(f_stat.st_size)
-                    except (OSError, PermissionError):
+                    except (OSError, PermissionError, FileNotFoundError):
                         continue
         except (PermissionError, OSError, FileNotFoundError): 
             continue
@@ -443,7 +443,7 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     
     try:
         data = _collect_summary_data(root, skip_protected, limit=20)
-    except (OSError, PermissionError, ValueError, TypeError, AttributeError):
+    except Exception:
         return ["Error: Falló inesperadamente el escaneo del directorio raíz."]
         
     if data.total_files == 0: 

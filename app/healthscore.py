@@ -327,7 +327,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
                 area_ratio = _clamp(entry.scorer(m))
                 _evaluate_rules(m, entry.rules, area_ratio, recommendations)
                 
-                points = area_ratio * entry.weight
+                # Cálculo discreto: normalizar ratio, multiplicar y redondear explícitamente
+                points = area_ratio * float(entry.weight)
                 val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
                 metric_breakdown[entry.area] = val_int
                 accumulated_score += float(val_int)

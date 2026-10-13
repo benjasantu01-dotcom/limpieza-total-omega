@@ -910,3 +910,10 @@ assert ['arc'] == []
 - `2026-10-13T02:17:08` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `save_logo_svg` y `draw_ring` validando explícitamente la integridad de los datos de entrada (`size`, `percent`) antes de operar, evitando casos donde valores `NaN` o fuera de rango pudieran corromper el renderizado o causar comportamientos inesperados en las operaciones de disco.
 - `2026-10-13T02:17:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T02:17:08` Corrida terminada. Total usado hoy: 56.
+- `2026-10-13T02:23:06` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-10-13T02:23:33` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_process_file_node` al capturar `OSError` y otras excepciones de forma explícita antes de acceder a atributos de `stat`, garantizando que un archivo inaccesible no interrumpa el cálculo total de la caché.
+- `2026-10-13T02:23:59` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` implementando una captura de excepciones más específica y validando explícitamente los estados intermedios para evitar fallos por rutas que cambian o desaparecen durante el escaneo, asegurando que el bucle de procesamiento sea resiliente ante cambios en el sistema de archivos.
+- `2026-10-13T02:24:24` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-13T02:24:36` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` asegurando que el cálculo de `accumulated_score` no dependa de operaciones en coma flotante inestables al redondear y evitando el uso de valores `None` durante la ejecución del pipeline.
+- `2026-10-13T02:24:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T02:24:36` Corrida terminada. Total usado hoy: 60.
