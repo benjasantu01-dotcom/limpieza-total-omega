@@ -126,6 +126,8 @@ BROWSER_CACHE_PATHS: BrowserMap = {
 def _is_valid_rel_path(p: str) -> bool:
     """Valida que una ruta relativa no contenga secuencias de escape, caracteres ilegales o referencias absolutas."""
     if not p or not isinstance(p, str): return False
+    # Evitar caracteres nulos o de control que pueden corromper llamadas a APIs nativas
+    if any(ord(c) < 32 for c in p): return False
     if os.path.isabs(p) or p.startswith(('\\', '/')): return False
     if '..' in p or any(c in p for c in PATH_FORBIDDEN_CHARS): return False
     return True

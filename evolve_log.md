@@ -774,3 +774,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-13T12:57:20` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
 - `2026-10-13T12:57:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T12:57:21` Corrida terminada. Total usado hoy: 308.
+- `2026-10-13T13:05:16` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-13T13:05:47` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `list_startup_entries` sustituyendo la concatenación de listas (que genera copias innecesarias) por una iteración directa sobre generadores y un set de control, evitando además el uso de `+` con colecciones grandes.
+- `2026-10-13T13:06:28` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `ingest` y `_apply_field` implementando validaciones más estrictas contra desbordamientos y valores inesperados, protegiendo al sistema de posibles estados inconsistentes tras el análisis de disco.
+- `2026-10-13T13:07:04` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha robustecido el manejo de rutas en `save_logo_svg` y se han añadido validaciones de tipo/finitud en `draw_ring` para prevenir errores de renderizado ante entradas numéricas extremas o inesperadas, manteniendo la estabilidad de la interfaz ante datos malformados.
+- `2026-10-13T13:07:19` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se introdujo una validación de rutas que evita el procesamiento de nombres de archivos que contengan caracteres nulos o secuencias de control potencialmente maliciosas, mejorando la robustez frente a entradas de disco inesperadas.
+- `2026-10-13T13:07:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T13:07:19` Corrida terminada. Total usado hoy: 312.

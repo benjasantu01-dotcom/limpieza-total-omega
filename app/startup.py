@@ -406,8 +406,11 @@ def list_startup_entries() -> StartupEntries:
     seen_items: Set[Tuple[str, str]] = set()
     unique_entries: StartupEntries = []
     
-    # Recorrido eficiente sin chain para facilitar el control de duplicados
-    for entry in entries_from_folders() + entries_from_registry():
+    def entry_generator() -> Iterator[StartupEntry]:
+        yield from entries_from_folders()
+        yield from entries_from_registry()
+
+    for entry in entry_generator():
         key = (entry.name.lower(), entry.command.lower())
         if key not in seen_items:
             seen_items.add(key)

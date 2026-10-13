@@ -396,8 +396,8 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         if not is_safe_to_modify(target) or is_protected_path(target) or not is_safe_to_modify(target.parent):
             return None
         
-        # Prevenir sobreescritura si la ruta destino es un directorio
-        if target.exists() and target.is_dir():
+        # Prevenir sobreescritura si la ruta destino es un directorio o punto de montaje
+        if target.exists() and (target.is_dir() or target.is_symlink()):
             return None
             
         # Operación atómica de escritura
@@ -515,7 +515,9 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
     """Dibuja un anillo circular indicativo de progreso o estado según porcentaje."""
     try:
         if canvas is None: return
-        val = max(0.0, min(100.0, float(percent))) if percent is not None and math.isfinite(float(percent)) else 0.0
+        val_f = float(percent) if percent is not None and math.isfinite(float(percent)) else 0.0
+        val = max(0.0, min(100.0, val_f))
+        
         diameter = max(20, min(2048, int(size)))
         thickness_val = max(2, min(int(thickness), (diameter // 2) - 1))
         offset_x = float(canvas_x or 0.0)

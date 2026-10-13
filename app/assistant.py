@@ -406,9 +406,12 @@ class SystemContext:
         if val is None or not spec.is_valid_type(val):
             return None
         try:
+            # Forzar conversión numérica segura
             float_val = float(val)
-            return spec.type_hint(float_val) if _is_metric_within_bounds(float_val, spec) else None
-        except (ValueError, TypeError):
+            if math.isfinite(float_val) and _is_metric_within_bounds(float_val, spec):
+                return spec.type_hint(float_val)
+            return None
+        except (ValueError, TypeError, OverflowError):
             return None
 
     def _clean_grade(self, val: Any) -> str:
@@ -421,7 +424,6 @@ class SystemContext:
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad sobre el objeto fuente."""
         if source is None: return False
-        # Si es un objeto, validar __dict__; si es dict, validar estructura
         if isinstance(source, dict):
             return not _is_input_too_deep_or_complex(source)
         if hasattr(source, "__dict__"):
@@ -443,12 +445,9 @@ class SystemContext:
             return False
         updates: dict[str, Any] = {}
         for key, spec in _VALIDATORS.items():
-            try:
-                value = self._apply_field(source, key, spec)
-                if value is not None and value != getattr(self, key, None):
-                    updates[key] = value
-            except (AttributeError, ValueError):
-                continue
+            value = self._apply_field(source, key, spec)
+            if value is not None and value != getattr(self, key, None):
+                updates[key] = value
         grade_val = self._clean_grade(_get_source_value(source, "grade"))
         if grade_val and grade_val != self.grade:
             updates["grade"] = grade_val
@@ -495,7 +494,6 @@ def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
     try:
         if isinstance(source, dict):
             return source.get(key)
-        # Solo acceder a atributos de datos, nunca a métodos
         val = getattr(source, key, None)
         return None if callable(val) or isinstance(val, (type,)) else val
     except (AttributeError, ValueError, TypeError):
@@ -714,7 +712,6 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     payload = _build_payload(question, context_text)
     if not payload: return None
     target_url = _ENDPOINT_BASE.format(model=model)
-    # Seguridad: validar el target_url contra inyecciones y caracteres prohibidos
     if not target_url.startswith(_API_HOST_ROOT) or is_protected_path(target_url) or any(c in target_url for c in "<>\"' \t\n\r"):
         return None
     url = f"{target_url}?key={api_key}"
