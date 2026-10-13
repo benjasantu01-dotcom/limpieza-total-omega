@@ -851,7 +851,11 @@ def quarantine_file(
     base: PathLike = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
     """Aísla un archivo sospechoso de manera segura."""
+    if not source:
+        raise ValueError("La ruta origen proporcionada es nula o vacía.")
+        
     p_source = _validate_input_path(source)
+    clean_reason = str(reason).strip() if reason else "Marcado como sospechoso"
     
     try:
         st_info = _check_io_error_context(p_source.stat)
@@ -889,7 +893,7 @@ def quarantine_file(
             except OSError as e:
                 raise RuntimeError(f"Aislamiento exitoso, pero falla al remover origen: {e}")
                 
-        item = _register_quarantine_item(destination, source_path, file_hash, file_inode, reason, st_info.st_size, base)
+        item = _register_quarantine_item(destination, source_path, file_hash, file_inode, clean_reason, st_info.st_size, base)
         _verify_transaction_integrity(item, destination)
         return item
     except (OSError, IOError, RuntimeError) as e:

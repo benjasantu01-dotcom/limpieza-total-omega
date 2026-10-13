@@ -79,10 +79,9 @@ SYSTEM32_LOWER: Final[str] = "system32"
 def _is_readable(path: Path) -> bool:
     """
     Valida la accesibilidad del archivo mediante permisos de sistema.
-    
-    Comprueba si la ruta existe, es un archivo regular y tiene permisos
-    de lectura habilitados para el contexto actual.
     """
+    if not isinstance(path, Path):
+        return False
     try:
         return path.is_file() and os.access(path, os.R_OK)
     except (OSError, PermissionError, ValueError, FileNotFoundError):
@@ -116,7 +115,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
     """Valida integridad de la ruta contra límites API y caracteres inseguros/RTL."""
-    if not path_str or not isinstance(path_str, str):
+    if not isinstance(path_str, str) or not path_str:
         return False
     if len(path_str) > SCAN_LIMITS.max_path or "\0" in path_str:
         return False
@@ -228,7 +227,6 @@ class Scanner:
             if entry.is_symlink() or self._is_reparse_point(entry):
                 return False
                 
-            # Usar try-except robusto para resolve pues puede fallar en accesos restringidos
             real_path: Path = Path(path_str).resolve()
             if len(str(real_path)) > SCAN_LIMITS.max_path or not str(real_path).lower().startswith(self.base_root_str):
                 return False

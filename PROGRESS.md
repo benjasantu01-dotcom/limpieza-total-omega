@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **204** (40.5% de aceptación)
-- Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 54
+- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Rechazadas por tests: 28
+- Rechazadas por guardia de seguridad: 55
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 200
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-12 | 134 | 19 | 38 | 15 | 130 |
-| 2026-10-13 | 70 | 8 | 16 | 4 | 70 |
+| 2026-10-12 | 131 | 19 | 38 | 15 | 129 |
+| 2026-10-13 | 72 | 9 | 17 | 4 | 70 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **46**
 - robustez ante casos límite: **45**
 - seguridad defensiva: **44**
-- manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **38**
-- rendimiento: **33**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
 - `diskreport.py`: **18**
-- `browser.py`: **17**
 - `healthscore.py`: **17**
-- `assistant.py`: **16**
+- `browser.py`: **16**
 - `organizer.py`: **16**
+- `assistant.py`: **15**
 - `safety.py`: **15**
+- `scanner.py`: **15**
 - `settings.py`: **15**
-- `branding.py`: **14**
 - `duplicates.py`: **14**
-- `scanner.py`: **14**
-- `quarantine.py`: **10**
+- `branding.py`: **13**
+- `quarantine.py`: **11**
 - `startup.py`: **10**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-13T07:11:39` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de errores en `_is_valid_path_structure` y `_is_readable` para garantizar que parámetros de entrada inválidos (como `None` o tipos inesperados) no provoquen fallos silenciosos, utilizando validaciones explícitas de tipo y estructura antes de realizar operaciones de IO.
+- `2026-10-13T07:10:24` **quarantine.py** (manejo de errores y validación de entradas): Se mejora la robustez de `quarantine_file` agregando validaciones preventivas contra parámetros `None` o cadenas vacías en la entrada, asegurando que el proceso de aislamiento falle de forma controlada antes de intentar cualquier operación de I/O crítica.
 - `2026-10-13T07:00:31` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_process_executable_safe` y `_extract_process_info` añadiendo validación explícita de `None` y manejo de excepciones específicas, siguiendo el enfoque de prevenir errores silenciosos en el procesamiento de datos del sistema.
 - `2026-10-13T07:00:01` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de los decoradores de UI y las operaciones asíncronas añadiendo una verificación de estado `_closing` más explícita y robusta en `_worker_thread_logic`, además de asegurar que cualquier error ocurrido dentro de `on_save_settings` y `on_reset_settings` sea capturado mediante bloques `try/except` que protegen la integridad de la UI, evitando que la aplicación quede en un estado bloqueado ante excepciones de escritura o conversión.
 - `2026-10-13T06:58:52` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `summarize` implementando chequeos defensivos ante entradas `None` y valores inesperados, evitando que una métrica mal formada detenga la ejecución de todo el motor de análisis.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-13T05:07:57` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_process_executable_safe` añadiendo una validación explícita mediante `filter_safe_paths` (de `safety.py`) antes de considerar una ruta como apta para el seguimiento, asegurando que cualquier proceso que interactúe con el sistema cumpla con las políticas de protección de archivos antes de permitir operaciones o lecturas detalladas.
 - `2026-10-13T05:07:29` **main.py** (seguridad defensiva): Se ha implementado un mecanismo de "sanitize" explícito para las rutas de archivos que atraviesan la interfaz antes de ser utilizadas por las funciones de lógica, evitando que caracteres de control o rutas no imprimibles escapen hacia las capas inferiores del sistema, reforzando así la seguridad defensiva frente a manipulaciones de entrada.
 - `2026-10-13T04:57:50` **healthscore.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_sanitize_msg` implementando un esquema de "lista blanca" (whitelist) de caracteres permitidos en lugar de una "lista negra" (blacklist), evitando bypasses por caracteres exóticos o de control y consolidando la lógica de limpieza de mensajes para prevenir cualquier inyección de texto sospechoso en la interfaz.
-- `2026-10-13T04:57:35` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` añadiendo una validación explícita mediante `is_safe_to_modify` para cada archivo antes de procesar sus atributos, previniendo así errores de acceso en rutas protegidas por el sistema que podrían causar excepciones no controladas o lecturas no autorizadas.
-- `2026-10-13T04:57:08` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `largest_folders` añadiendo un filtro de validación de `is_protected_path` sobre la ruta de la subcarpeta candidata antes de procesarla, asegurando que el análisis de carpetas no agregue rutas que hayan sido marcadas como protegidas durante la iteración o debido a cambios en el sistema de archivos.

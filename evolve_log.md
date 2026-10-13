@@ -1363,3 +1363,23 @@ FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_o
 - `2026-10-13T07:00:43` ➖ Sin cambios en organizer.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez en `_process_directory` y `stage_for_review` capturando excepciones específicas (`PermissionError`, `OSError`) al manipular rutas y resoluciones de archivos, asegurando que los fallos en un nodo individual no detengan la operación global ni dejen el estado en un punto inconsistente.
 - `2026-10-13T07:00:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-13T07:00:43` Corrida terminada. Total usado hoy: 168.
+- `2026-10-13T07:08:32` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-10-13T07:09:34` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-13T07:10:24` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez de `quarantine_file` agregando validaciones preventivas contra parámetros `None` o cadenas vacías en la entrada, asegurando que el proceso de aislamiento falle de forma controlada antes de intentar cualquier operación de I/O crítica.
+- `2026-10-13T07:10:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-10-13T07:11:29` Tests FALLARON:
+```
+ne_records_the_original_path_for_restoring - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-2/test_quarantine_records_the_or0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-2/test_restore_puts_the_file_bac0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-2/test_restore_into_a_system_pat0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-2/test_purge_item_cannot_delete_0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-2/test_purge_all_only_deletes_in0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-2/test_quarantine_two_files_with0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-2/test_quarantine_summary_report0/_Cuarentena
+29 failed, 270 passed in 1.15s
+
+```
+- `2026-10-13T07:11:29` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se introdujo una captura selectiva de excepciones en `_get_security_descriptor` y se añadieron chequeos de `None` en los flujos de creación de rutas, eliminando el riesgo de excepciones silenciosas que derivaban en un estado de "protección por defecto" demasiado agresivo.
+- `2026-10-13T07:11:39` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del manejo de errores en `_is_valid_path_structure` y `_is_readable` para garantizar que parámetros de entrada inválidos (como `None` o tipos inesperados) no provoquen fallos silenciosos, utilizando validaciones explícitas de tipo y estructura antes de realizar operaciones de IO.
+- `2026-10-13T07:11:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-13T07:11:39` Corrida terminada. Total usado hoy: 172.
