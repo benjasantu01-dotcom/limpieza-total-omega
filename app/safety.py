@@ -314,10 +314,10 @@ def _is_virtual_drive(path_str: str) -> bool:
 def _is_file_owned_by_system(path_str: str) -> bool:
     """Verifica si el propietario del archivo es el grupo SYSTEM o TrustedInstaller (Windows)."""
     if os.name != 'nt' or not isinstance(path_str, str): return False
-    advapi32 = ctypes.windll.advapi32
-    kernel32 = ctypes.windll.kernel32
-    sid_ptr = ctypes.c_void_p()
     try:
+        advapi32 = ctypes.windll.advapi32
+        kernel32 = ctypes.windll.kernel32
+        sid_ptr = ctypes.c_void_p()
         res = advapi32.GetNamedSecurityInfoW(
             path_str, 1, 0x00000001, ctypes.byref(sid_ptr), None, None, None, None
         )
@@ -329,7 +329,7 @@ def _is_file_owned_by_system(path_str: str) -> bool:
                     return sid_val.startswith("S-1-5-18") or sid_val.startswith("S-1-5-80")
             finally:
                 kernel32.LocalFree(sid_ptr)
-    except (AttributeError, OSError, ctypes.ArgumentError):
+    except (AttributeError, OSError, ctypes.ArgumentError, PermissionError):
         pass
     return False
 
@@ -375,8 +375,8 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
     if not isinstance(path_str, str) or os.name != 'nt' or not os.path.isabs(path_str): return False
     if os.path.isdir(path_str) or not os.path.exists(path_str): return False
     
-    kernel32 = ctypes.windll.kernel32
     try:
+        kernel32 = ctypes.windll.kernel32
         handle = kernel32.CreateFileW(
             _to_long_path(path_str), 0, 0, None, 3, 0x00000080, None
         )
@@ -485,8 +485,8 @@ def _validate_drive_restrictions(target_path: Path) -> None:
     anchor = target_path.anchor
     if not anchor: return
     
-    kernel32 = ctypes.windll.kernel32
     try:
+        kernel32 = ctypes.windll.kernel32
         if _is_volume_busy_or_invalid(str(target_path)):
              raise UnsafePathError("Volumen inaccesible.", SafetyValidationErrorCode.IO_ERROR)
         drive_type = kernel32.GetDriveTypeW(anchor)
@@ -836,8 +836,8 @@ def _validate_boundary_conditions(target_path: Path, root_directory: Optional[Pa
 def _get_final_path_normalized(path: Path) -> Optional[Path]:
     """Resuelve la ruta física real (canonical path) a través de los handles del sistema."""
     if os.name != 'nt': return _normalize_resolved(str(path))
-    kernel32 = ctypes.windll.kernel32
     try:
+        kernel32 = ctypes.windll.kernel32
         handle = kernel32.CreateFileW(_to_long_path(str(path)), 0, 0, None, 3, 0x02000000, None)
         if handle == -1: return None
         try:

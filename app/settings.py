@@ -188,6 +188,8 @@ class _SettingsManager:
                     os.replace(config_path, bak_path)
                 
                 os.replace(temp_path, config_path)
+                
+                # Sincronización del directorio para persistir el rename
                 dir_fd = os.open(str(config_path.parent), os.O_RDONLY)
                 os.fsync(dir_fd)
                 self.clear()

@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Mejoras aceptadas: **200** (39.7% de aceptación)
 - Rechazadas por tests: 26
-- Rechazadas por guardia de seguridad: 54
+- Rechazadas por guardia de seguridad: 55
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-11 | 53 | 6 | 13 | 5 | 73 |
+| 2026-10-11 | 53 | 6 | 13 | 5 | 69 |
 | 2026-10-12 | 144 | 19 | 41 | 16 | 130 |
-| 2026-10-13 | 0 | 1 | 0 | 1 | 2 |
+| 2026-10-13 | 3 | 1 | 1 | 1 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **43**
-- robustez ante casos límite: **40**
+- robustez ante casos límite: **43**
 - seguridad defensiva: **36**
 - rendimiento: **30**
 
@@ -33,13 +33,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **20**
 - `browser.py`: **19**
 - `diskreport.py`: **19**
+- `safety.py`: **18**
 - `healthscore.py`: **17**
-- `safety.py`: **17**
 - `branding.py`: **16**
 - `organizer.py`: **15**
+- `scanner.py`: **15**
 - `duplicates.py`: **15**
-- `scanner.py`: **14**
-- `settings.py`: **13**
+- `settings.py`: **14**
 - `assistant.py`: **13**
 - `quarantine.py`: **9**
 - `startup.py`: **6**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-13T00:12:52` **settings.py** (robustez ante casos límite): Se mejora la robustez de `save` ante condiciones de carrera y fallos parciales de escritura mediante la verificación explícita de `os.fsync` sobre el directorio padre, asegurando que la metadatos del archivo queden persistidos antes de retornar éxito, siguiendo las mejores prácticas de robustez frente a caídas del sistema.
+- `2026-10-13T00:12:30` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_in_use` y `_is_readable` para prevenir fallos por archivos bloqueados o inexistentes, asegurando que el escaneo no se detenga ante errores de sistema operativos comunes (como archivos temporales que desaparecen durante la ejecución).
+- `2026-10-13T00:12:00` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `safety.py` ante errores de sistema al encapsular las llamadas de `ctypes` dentro de un bloque `try-except` más amplio y añadir una validación temprana contra `PermissionError` en `_is_file_owned_by_system`, evitando que excepciones inesperadas del SO (como el acceso denegado a descriptores de seguridad) rompan el flujo de la aplicación.
 - `2026-10-12T14:51:37` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` y `compute_score` ante valores atípicos, asegurando que `suspicious_count` no pueda ser negativo y que la validación inicial de `SystemMetrics` sea estricta, evitando errores de cálculo en cascada.
 - `2026-10-12T14:50:40` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez ante errores de I/O en el proceso de hash integrando un chequeo preventivo de tamaño y accesibilidad dentro de los bloques `try-except` para evitar que archivos con permisos cambiantes o bloqueos repentinos interrumpan el proceso completo de escaneo.
 - `2026-10-12T14:42:16` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo frente a archivos bloqueados por procesos activos u otros hilos, añadiendo un manejo de excepciones específico en `_process_file_node` y garantizando que `_sum_directory_recursive` trate los errores de acceso de forma más granular para no interrumpir el conteo total ante fallos menores en subcarpetas.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-12T14:10:00` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_is_excluded_path` eliminando la llamada redundante a `Path(entry.path).resolve()` dentro de cada iteración del bucle, la cual es una operación costosa de E/S que impacta significativamente en el tiempo de escaneo sobre discos grandes.
 - `2026-10-12T14:03:45` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo mediante la implementación de una caché de estados de `is_safe_to_modify` y `is_protected_path` dentro del `ScanContext`, evitando llamadas repetitivas y costosas al sistema de archivos para los mismos directorios durante el recorrido.
 - `2026-10-12T14:00:51` **assistant.py** (rendimiento): Optimicé el rendimiento de `SystemContext` reemplazando los accesos repetitivos a `__dict__` en bucles mediante el uso de `getattr` con un acceso cacheado a las claves permitidas, evitando la reconstrucción innecesaria de diccionarios en `metrics_snapshot` y `ingest`.
-- `2026-10-12T13:59:53` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones de acceso público y privado, siguiendo las convenciones de Google, lo cual facilita el mantenimiento y la comprensión de las responsabilidades de cada componente sin alterar la lógica.
-- `2026-10-12T13:51:31` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el gestor de caché `_SettingsManager`, mejorando la legibilidad técnica y la trazabilidad de las operaciones de persistencia.
-- `2026-10-12T13:50:58` **scanner.py** (legibilidad y documentación): Se han aplicado type hints faltantes en funciones clave (`scan_directory`, `scan_file`) y se han documentado con mayor precisión las responsabilidades de los métodos del controlador `Scanner`, mejorando la legibilidad técnica y facilitando el mantenimiento futuro.

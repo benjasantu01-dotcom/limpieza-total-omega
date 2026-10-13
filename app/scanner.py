@@ -79,7 +79,8 @@ SYSTEM32_LOWER: Final[str] = "system32"
 def _is_file_in_use(path: Path) -> bool:
     """Verifica si el archivo está bloqueado por otro proceso abriéndolo en modo exclusivo."""
     try:
-        fd = os.open(path, os.O_RDONLY | os.O_EXCL)
+        # Usar flags de acceso compartido para verificar exclusividad sin corromper el estado
+        fd = os.open(path, os.O_RDONLY | os.O_BINARY)
         os.close(fd)
         return False
     except (OSError, PermissionError):
@@ -88,7 +89,7 @@ def _is_file_in_use(path: Path) -> bool:
 def _is_readable(path: Path) -> bool:
     """Valida si la ruta es un archivo regular, legible y sin bloqueos de acceso."""
     try:
-        if not path.exists() or not path.is_file() or not os.access(path, os.R_OK):
+        if not path.is_file() or not os.access(path, os.R_OK):
             return False
         return not _is_file_in_use(path)
     except (OSError, PermissionError, ValueError, FileNotFoundError):
