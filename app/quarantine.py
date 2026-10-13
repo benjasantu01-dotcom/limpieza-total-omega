@@ -74,10 +74,7 @@ WINDOWS_RESERVED_NAMES: Set[str] = {
 }
 
 def _check_path_for_junctions(path: Path) -> None:
-    """
-    Verifica mediante la API de Windows que una ruta no sea un punto de reparse
-    o junction point, previniendo el seguimiento de enlaces a rutas del sistema.
-    """
+    """Verifica si la ruta es un punto de reparse (Windows) para evitar bucles o acceso fuera de sandbox."""
     if os.name != 'nt':
         return
     try:
@@ -109,10 +106,7 @@ def _is_filesystem_read_only(path: Path) -> bool:
         return True
 
 def _check_io_error_context(func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
-    """
-    Ejecuta operaciones de I/O con reintentos exponenciales para mitigar bloqueos 
-    transitorios causados por servicios externos como indexadores de Windows.
-    """
+    """Ejecuta I/O con reintentos para mitigar bloqueos temporales por indexadores."""
     max_retries = 3
     for i in range(max_retries):
         try:
@@ -132,10 +126,7 @@ def _win_has_system_attributes(path: Path) -> bool:
         return True
 
 def _is_file_exclusive(path: Path) -> bool:
-    """
-    Verifica si el archivo está libre de bloqueos exclusivos mediante la apertura
-    de un handle no destructivo (Windows) o flock (Unix).
-    """
+    """Verifica si el archivo está libre de bloqueos exclusivos (Windows) o flock (Unix)."""
     if os.name == 'nt':
         k32 = ctypes.windll.kernel32
         handle = k32.CreateFileW(str(path), 0x80000000, 0, None, 3, 0x00000080, None)
@@ -296,27 +287,21 @@ def _is_file_in_use_by_system(path: Path) -> bool:
     return not _is_file_exclusive(path)
 
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0) -> bool:
-    """Eliminación segura validando metadatos antes de la operación unlink."""
+    """Eliminación segura validando metadatos y uso antes de llamar a unlink."""
     if is_protected_path(path):
         return False
         
-    if not path.exists() or not path.is_file():
-        return False
-    if path.is_symlink():
+    if not path.exists() or not path.is_file() or path.is_symlink():
         return False
     
     try:
         st = path.stat()
-        if st.st_nlink > 1:
-            return False
-        if expected_inode != 0 and st.st_ino != expected_inode:
+        if st.st_nlink > 1 or (expected_inode != 0 and st.st_ino != expected_inode):
             return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid():
             return False
-            
         if expected_hash and _get_sha256(path) != expected_hash:
             return False
-            
         if _is_file_in_use_by_system(path):
             return False
             

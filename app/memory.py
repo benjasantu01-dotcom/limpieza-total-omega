@@ -31,7 +31,7 @@ import time
 from pathlib import Path
 from functools import lru_cache
 from dataclasses import dataclass, field
-from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, Final, Set, NewType
+from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, Final, Set, NewType, Any
 from safety import is_protected_path, filter_safe_paths
 
 if TYPE_CHECKING:
@@ -50,8 +50,6 @@ BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 MAX_VALID_PROCESS_MEM: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
 # Máscaras de acceso Win32:
-# PROCESS_QUERY_LIMITED_INFORMATION: Acceso mínimo para obtener info básica sin elevar privilegios excesivos.
-# PROCESS_SET_QUOTA: Requerido obligatoriamente por la API EmptyWorkingSet.
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x0400
 FILE_ATTRIBUTE_REPARSE_POINT: Final[int] = 0x0400
@@ -101,7 +99,7 @@ class MEMORYSTATUSEX(ctypes.Structure):
     ]
 
 class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
-    """Estructura Win32 PSAPI (GetProcessMemoryInfo) para métricas de procesos."""
+    """Estructura Win32 PSAPI GetProcessMemoryInfo para métricas de procesos."""
     _fields_: List[Tuple[str, type]] = [
         ("cb", ctypes.c_size_t),
         ("PageFaultCount", ctypes.c_ulong),
@@ -152,7 +150,7 @@ class ProcessMemory:
         return self.working_set < other.working_set
 
 def format_bytes(num: Optional[int | float]) -> str:
-    """Convierta bytes numéricos en una cadena humanamente legible con unidades."""
+    """Convierte bytes numéricos en una cadena humanamente legible con unidades."""
     if not isinstance(num, (int, float)) or num < 0:
         return "0 B"
     if num == 0:
@@ -293,7 +291,7 @@ def _query_working_set_bytes(pid: int, kernel32: ctypes.WinDLL, psapi: ctypes.Wi
         kernel32.CloseHandle(process_handle)
     return None
 
-_CACHE_TOP_PROC: Dict[str, any] = {"time": 0.0, "data": []}
+_CACHE_TOP_PROC: Dict[str, Any] = {"time": 0.0, "data": []}
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """

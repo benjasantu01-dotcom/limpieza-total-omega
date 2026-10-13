@@ -37,6 +37,7 @@ WIN_ATTR_MASK: Final[int] = WIN_ATTR_SYSTEM | WIN_ATTR_HIDDEN
 MAX_PATH_LENGTH: Final[int] = 260
 MAX_FILE_SIZE_BYTES: Final[int] = 100_000_000_000
 MIN_FREE_SPACE_BYTES: Final[int] = 52_428_800
+MAX_SCAN_DEPTH: Final[int] = 50
 SYSTEM_CRITICAL_NAMES: Final[frozenset[str]] = frozenset({"pagefile.sys", "hiberfil.sys", "swapfile.sys"})
 
 JUNK_EXTENSIONS: Final[frozenset[str]] = frozenset({
@@ -133,7 +134,10 @@ def _is_unc_path(path: Path) -> bool:
         return True
 
 def _generate_unique_target(target: Path) -> Path:
-    """Añade un sufijo numérico al nombre si el archivo existe para evitar sobreescritura."""
+    """
+    Añade un sufijo numérico al nombre si el archivo destino ya existe en la 
+    carpeta de revisión para evitar la sobreescritura accidental de datos.
+    """
     if not isinstance(target, Path): return target
     base_target = target
     counter = 1
@@ -143,14 +147,15 @@ def _generate_unique_target(target: Path) -> Path:
     return target
 
 def _is_allowed_directory(name: str) -> bool:
-    """Filtra directorios basados en la blocklist definida de rutas críticas del sistema."""
+    """Filtra directorios basándose en la blocklist definida de rutas críticas del sistema."""
     if not name: return False
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si un archivo está bloqueado.
-    En Windows utiliza CreateFileW con acceso nulo y modo de compartición 0 para detectar uso exclusivo.
+    Verifica si un archivo está bloqueado por otro proceso.
+    En Windows utiliza CreateFileW con acceso nulo y modo de compartición 0 para 
+    detectar uso exclusivo sin modificar el estado del archivo.
     """
     if not path or not isinstance(path, Path) or not path.is_file(): return True
     if os.name == 'nt':
@@ -171,7 +176,7 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
-    """Previene movimientos donde el destino es una carpeta dentro del origen."""
+    """Previene movimientos de archivos donde la ruta de destino es una subcarpeta de la de origen."""
     try:
         src_resolved = src.resolve(strict=False)
         dest_resolved = dest.resolve(strict=False)
@@ -189,7 +194,7 @@ def _has_forbidden_chars(path: Path) -> bool:
 def _validate_path_security(src: Path, dest: Path) -> bool:
     """
     Realiza una auditoría exhaustiva antes de permitir la interacción con el archivo.
-    Comprueba rutas UNC, caracteres ilegales, longitud de ruta y protección global.
+    Valida: rutas UNC, caracteres ilegales, longitud de ruta y protección global.
     """
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     if len(str(src)) > MAX_PATH_LENGTH or len(str(dest)) > MAX_PATH_LENGTH: return False
@@ -202,7 +207,7 @@ def _is_system_hidden(entry: os.DirEntry) -> bool:
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Auditoría final de seguridad antes de mover un archivo.
-    Realiza una validación combinada de metadatos, seguridad de ruta y recursos del sistema.
+    Combina validación de metadatos, integridad de ruta y disponibilidad de recursos del sistema.
     """
     if not junk_file or not isinstance(junk_file.path, Path) or not junk_file.path.exists(): return False
     try:
@@ -249,8 +254,8 @@ def _is_candidate_junk(stats: os.stat_result, entry: os.DirEntry, now_ts: float)
             not _is_system_hidden(entry))
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
-    """Realiza un escaneo recursivo limitado a una profundidad de 50 niveles."""
-    if depth > 50: return
+    """Realiza un escaneo recursivo limitado para evitar desbordamiento de pila y ciclos infinitos."""
+    if depth > MAX_SCAN_DEPTH: return
     try:
         resolved_dir = current_dir.resolve(strict=False)
         if resolved_dir in visited: return
