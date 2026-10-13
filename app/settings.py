@@ -350,7 +350,8 @@ def validate(raw_values: Any) -> AppSettings:
             if (key_enum := _KEY_TO_ENUM.get(key_str)):
                 validated_val = validators[key_enum].func(key_enum, raw_val)
                 if validated_val is not None: config[key_enum.value] = validated_val
-        except (AttributeError, KeyError, Exception): continue
+        except Exception:
+            continue
     return config 
 
 def _is_file_secure_to_read(st: os.stat_result, file_obj: Any) -> bool:

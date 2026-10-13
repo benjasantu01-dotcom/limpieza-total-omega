@@ -337,7 +337,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
         f: io.StringIO = io.StringIO(csv_text.strip())
         reader: csv.DictReader = csv.DictReader(f)
         
-        # Validar existencia de al menos dos columnas antes de acceder por índice
+        # Validar existencia de datos y columnas esperadas antes de procesar
         if not reader or not reader.fieldnames or len(reader.fieldnames) < 2:
             return []
         

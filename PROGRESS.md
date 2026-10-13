@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Mejoras aceptadas: **205** (40.7% de aceptación)
 - Rechazadas por tests: 28
 - Rechazadas por guardia de seguridad: 55
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 199
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 198
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-12 | 131 | 19 | 38 | 15 | 129 |
-| 2026-10-13 | 72 | 9 | 17 | 4 | 70 |
+| 2026-10-12 | 130 | 19 | 37 | 14 | 128 |
+| 2026-10-13 | 75 | 9 | 18 | 4 | 70 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **46**
+- manejo de errores y validación de entradas: **48**
 - robustez ante casos límite: **45**
 - seguridad defensiva: **44**
-- legibilidad y documentación: **38**
-- rendimiento: **30**
+- legibilidad y documentación: **39**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **21**
+- `memory.py`: **20**
 - `diskreport.py`: **18**
 - `healthscore.py`: **17**
 - `browser.py`: **16**
 - `organizer.py`: **16**
+- `settings.py`: **16**
 - `assistant.py`: **15**
 - `safety.py`: **15**
 - `scanner.py`: **15**
-- `settings.py`: **15**
 - `duplicates.py`: **14**
-- `branding.py`: **13**
+- `branding.py`: **14**
 - `quarantine.py`: **11**
-- `startup.py`: **10**
+- `startup.py`: **11**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-13T07:20:42` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación y la robustez tipográfica añadiendo docstrings técnicos con Type Hints específicos en las constantes y funciones de utilidad, clarificando la jerarquía de los elementos visuales sin alterar la funcionalidad.
+- `2026-10-13T07:19:48` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita de `DictReader` para asegurar que las columnas esperadas existan antes de acceder a ellas, previniendo errores de `KeyError` o `IndexError` ante un CSV mal formado o vacío.
+- `2026-10-13T07:19:20` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `validate` envolviendo la llamada al validador individual en un bloque `try-except` específico para prevenir que una excepción inesperada en una regla de validación detenga el proceso completo de configuración.
 - `2026-10-13T07:11:39` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de errores en `_is_valid_path_structure` y `_is_readable` para garantizar que parámetros de entrada inválidos (como `None` o tipos inesperados) no provoquen fallos silenciosos, utilizando validaciones explícitas de tipo y estructura antes de realizar operaciones de IO.
 - `2026-10-13T07:10:24` **quarantine.py** (manejo de errores y validación de entradas): Se mejora la robustez de `quarantine_file` agregando validaciones preventivas contra parámetros `None` o cadenas vacías en la entrada, asegurando que el proceso de aislamiento falle de forma controlada antes de intentar cualquier operación de I/O crítica.
 - `2026-10-13T07:00:31` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_process_executable_safe` y `_extract_process_info` añadiendo validación explícita de `None` y manejo de excepciones específicas, siguiendo el enfoque de prevenir errores silenciosos en el procesamiento de datos del sistema.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-13T05:18:11` **settings.py** (seguridad defensiva): Se endureció la seguridad defensiva al invocar `ensure_safe_to_modify` antes de cualquier operación de escritura en `save` y `reset`, asegurando que no se pueda corromper la configuración o escribir fuera del directorio permitido, incluso si el path fue validado previamente.
 - `2026-10-13T05:17:30` **safety.py** (seguridad defensiva): Se ha añadido una validación temprana contra `LONG_PATH_PREFIX` en la función `_validate_structural_safety` para prevenir ataques de *path traversal* o manipulación de namespaces mediante rutas largas (`\\?\`) no autorizadas, reforzando la seguridad defensiva sin cambiar la funcionalidad actual.
 - `2026-10-13T05:09:06` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `quarantine.py` reforzando la validación del estado del archivo origen antes del aislamiento, integrando un chequeo estricto de los atributos de sistema/oculto mediante la API de Windows tanto en la validación inicial como durante el proceso de transferencia atómica para evitar manipulación de archivos críticos.
-- `2026-10-13T05:07:57` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_process_executable_safe` añadiendo una validación explícita mediante `filter_safe_paths` (de `safety.py`) antes de considerar una ruta como apta para el seguimiento, asegurando que cualquier proceso que interactúe con el sistema cumpla con las políticas de protección de archivos antes de permitir operaciones o lecturas detalladas.
-- `2026-10-13T05:07:29` **main.py** (seguridad defensiva): Se ha implementado un mecanismo de "sanitize" explícito para las rutas de archivos que atraviesan la interfaz antes de ser utilizadas por las funciones de lógica, evitando que caracteres de control o rutas no imprimibles escapen hacia las capas inferiores del sistema, reforzando así la seguridad defensiva frente a manipulaciones de entrada.
-- `2026-10-13T04:57:50` **healthscore.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_sanitize_msg` implementando un esquema de "lista blanca" (whitelist) de caracteres permitidos en lugar de una "lista negra" (blacklist), evitando bypasses por caracteres exóticos o de control y consolidando la lógica de limpieza de mensajes para prevenir cualquier inyección de texto sospechoso en la interfaz.
