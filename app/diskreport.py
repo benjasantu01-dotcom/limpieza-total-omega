@@ -49,6 +49,8 @@ SUSPICIOUS_CHARS: Tuple[str, ...] = ('\u202E', '\u202D', '\u200E', '\u200F')
 Inode: TypeAlias = Tuple[int, int]
 # Métricas básicas: (tamaño_total_en_bytes, cantidad_total_de_archivos)
 SizeReport: TypeAlias = Tuple[int, int]
+# Representa un archivo en el heap de archivos más grandes: (tamaño, ruta)
+FileRecord: TypeAlias = Tuple[int, Path]
 
 
 def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
@@ -107,7 +109,7 @@ class SummaryData(NamedTuple):
     total_bytes: int
     total_files: int
     ext_stats: Dict[str, ExtStats]
-    top_files: List[Tuple[int, Path]]
+    top_files: List[FileRecord]
 
 
 def _bytes_to_mb(size_bytes: int | float | None) -> float:
@@ -145,7 +147,10 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 
 def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
-    """Verifica si un nodo debe ser ignorado por políticas de seguridad."""
+    """
+    Verifica si un nodo debe ser ignorado por políticas de seguridad o corrupción.
+    Analiza inodos, permisos, caracteres sospechosos y reglas de `safety.py`.
+    """
     try:
         if entry.is_dir(follow_symlinks=False):
             try:
@@ -282,7 +287,8 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre el sistema de archivos (DFS) usando inodos para prevenir ciclos.
+    Recorre el sistema de archivos (DFS) usando inodos para prevenir ciclos de symlinks.
+    Yields: Tupla de (ruta_archivo, tamaño_en_bytes).
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -372,9 +378,12 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """Escanea el directorio y consolida métricas usando un heap para los top archivos."""
+    """
+    Escanea el directorio raíz y consolida métricas. 
+    Usa un min-heap para mantener solo los 'limit' archivos más grandes eficientemente.
+    """
     stats = GlobalStats()
-    top_heap: List[Tuple[int, Path]] = [] 
+    top_heap: List[FileRecord] = [] 
     
     for path, size_bytes in walk_files(directory, skip_protected):
         if not isinstance(size_bytes, int) or size_bytes < 0:

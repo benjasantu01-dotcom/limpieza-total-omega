@@ -453,14 +453,14 @@ def _get_cached_stripe_data(scale: float, franjas_count: int) -> Tuple[Tuple[Tup
     """Caché optimizado de parámetros de geometría y color para franjas."""
     return _get_stripe_params(scale, franjas_count), get_gradient_segments(franjas_count)
 
-def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
+def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Renderiza franjas geométricas internas del escudo usando optimización de caché."""
     try:
-        if canvas is None or not math.isfinite(scale) or scale <= 0 or not math.isfinite(canvas_x) or not math.isfinite(canvas_y): return
+        if canvas is None or not math.isfinite(scale) or scale <= 0 or not math.isfinite(x) or not math.isfinite(y): return
         
         franjas_count = max(6, int(STRIPE_COUNT_FACTOR * scale))
-        base_y_coord = canvas_y + STRIPE_BASE_Y_OFFSET * scale
-        center_x_coord = canvas_x + 64 * scale
+        base_y_coord = y + STRIPE_BASE_Y_OFFSET * scale
+        center_x_coord = x + 64 * scale
         
         stripe_dims, color_segments = _get_cached_stripe_data(scale, franjas_count)
         
@@ -476,24 +476,24 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
             )
     except (TypeError, ValueError, ZeroDivisionError, IndexError, AttributeError): pass
 
-def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
+def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     """Dibuja elementos decorativos sobre la superficie del escudo (lineas y glifos)."""
     try:
-        if canvas is None or not math.isfinite(scale) or scale <= 0 or not math.isfinite(canvas_x) or not math.isfinite(canvas_y): return
+        if canvas is None or not math.isfinite(scale) or scale <= 0 or not math.isfinite(x) or not math.isfinite(y): return
         
         line_width = max(2, int(8.0 * scale))
         text_size = max(8, int(UI_FONT_HEADER_SIZE * scale))
         
-        canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, 
-                           canvas_x + 75 * scale, canvas_y + 41 * scale, 
+        canvas.create_line(x + 41 * scale, y + 75 * scale, 
+                           x + 75 * scale, y + 41 * scale, 
                            fill=C_BACKGROUND, width=line_width, capstyle="round")
         
-        canvas.create_polygon(canvas_x + 75 * scale, canvas_y + 41 * scale, 
-                              canvas_x + 89 * scale, canvas_y + 38 * scale, 
-                              canvas_x + 92 * scale, canvas_y + 52 * scale, 
+        canvas.create_polygon(x + 75 * scale, y + 41 * scale, 
+                              x + 89 * scale, y + 38 * scale, 
+                              x + 92 * scale, y + 52 * scale, 
                               fill=C_BACKGROUND, outline="")
                               
-        canvas.create_text(canvas_x + 64 * scale, canvas_y + 96 * scale, text="\u03a9", 
+        canvas.create_text(x + 64 * scale, y + 96 * scale, text="\u03a9", 
                            fill=C_BACKGROUND, font=(UI_FONT_FAMILY, text_size, UI_FONT_BOLD))
     except (TypeError, ValueError, AttributeError): pass
 
@@ -504,14 +504,15 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         s = float(size) if size is not None else 56.0
         x, y = float(canvas_x or 0.0), float(canvas_y or 0.0)
         if not math.isfinite(s) or s <= 0 or not math.isfinite(x) or not math.isfinite(y): return
-        scale = max(0.1, min(10.0, s / 128.0))
         
-        canvas.create_oval(x + (64 - 75) * scale, y + (58 - 75) * scale, 
-                           x + (64 + 75) * scale, y + (58 + 75) * scale, 
+        _scale_factor = max(0.1, min(10.0, s / 128.0))
+        
+        canvas.create_oval(x + (64 - 75) * _scale_factor, y + (58 - 75) * _scale_factor, 
+                           x + (64 + 75) * _scale_factor, y + (58 + 75) * _scale_factor, 
                            fill=blend(C_SURFACE, C_GLOW, 0.15), outline="")
-        canvas.create_polygon(*_get_scaled_poly(scale, x, y), fill=GRADIENT_STOPS[1], outline="")
-        _draw_shield_stripes(canvas, x, y, scale)
-        _draw_shield_icon_decorations(canvas, x, y, scale)
+        canvas.create_polygon(*_get_scaled_poly(_scale_factor, x, y), fill=GRADIENT_STOPS[1], outline="")
+        _draw_shield_stripes(canvas, x, y, _scale_factor)
+        _draw_shield_icon_decorations(canvas, x, y, _scale_factor)
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:

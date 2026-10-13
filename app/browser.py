@@ -53,15 +53,15 @@ PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|', '"'}
 @dataclass
 class ScanContext:
     """
-    Contexto de ejecución que mantiene el estado del escaneo actual.
+    Contexto compartido durante el escaneo para evitar redundancias y garantizar confinamiento.
 
     Attributes:
-        sandbox_base_norm: Ruta base normalizada (en minúsculas) usada para restringir el alcance.
-        kernel32: Handle de la API de Windows para consultas de bajo nivel o None.
-        is_junction: Función callback para detectar puntos de reparse (Junctions/Symlinks).
-        visited_files: Historial de tuplas (dev, ino) para evitar procesar el mismo archivo dos veces.
-        visited_dirs: Cache de tamaños de directorios ya procesados para evitar re-escaneo.
-        safety_cache: Diccionario con resultados previos de validación de seguridad (is_safe_to_modify).
+        sandbox_base_norm: Ruta base normalizada (lower case) usada como raíz del sandbox.
+        kernel32: Instancia ctypes de la API Win32 para consulta de atributos de archivo.
+        is_junction: Predicado para detectar si un directorio es un punto de reparse.
+        visited_files: Historial de identificadores (dev, ino) para prevenir ciclos.
+        visited_dirs: Diccionario de resultados memoizados para tamaños de directorios.
+        safety_cache: Caché booleana de resultados de `is_safe_to_modify` para rutas visitadas.
     """
     sandbox_base_norm: str
     kernel32: Optional[ctypes.WinDLL]
@@ -92,7 +92,10 @@ class ScanResult(NamedTuple):
     success: bool
 
 class FileAttributes(NamedTuple):
-    """Máscaras de bits constantes para la Win32 API."""
+    """
+    Máscaras de bits para `GetFileAttributesW` de la Win32 API.
+    Ref: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileattributesw
+    """
     READONLY: int = 0x01
     HIDDEN: int = 0x02
     SYSTEM: int = 0x04
