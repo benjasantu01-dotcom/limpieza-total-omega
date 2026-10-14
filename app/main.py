@@ -149,14 +149,17 @@ logging.basicConfig(
 def ensure_safety(func: Callable) -> Callable:
     """
     Decorador: invoca `safety.ensure_safe_to_modify` antes de delegar
-    ejecución a cualquier método que realice escrituras o modificaciones.
-    Lanza excepción si la ruta base del hogar no es segura.
+    ejecución a cualquier método que realice operaciones de disco.
     """
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
-        home_path = Path.home().resolve()
-        safety.ensure_safe_to_modify(home_path)
-        return func(*args, **kwargs)
+        try:
+            home_path = Path.home().resolve()
+            safety.ensure_safe_to_modify(home_path)
+            return func(*args, **kwargs)
+        except safety.UnsafePathError as e:
+            logging.error("Violación de seguridad: %s", e)
+            raise
     return wrapper
 
 def safe_ui_operation(func: Callable) -> Callable:
@@ -1877,6 +1880,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task)
 
     @validated_ui_operation
+    @ensure_safety
     def on_build_report(self) -> None:
         """Compila los resultados obtenidos en un informe final."""
         def task() -> None:
@@ -1893,7 +1897,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             for linea in texto.splitlines():
                 self.log(linea, "Informe")
 
-        self.run_async(task)
+        self.run_async(task, target=str(Path.home()))
 
     @validated_ui_operation
     @ensure_safety
@@ -2047,6 +2051,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task)
 
     @validated_ui_operation
+    @ensure_safety
     def on_reset_settings(self) -> None:
         """Restaura los valores por defecto de la aplicación."""
         if not self._confirm(
@@ -2081,7 +2086,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except Exception as e:
                 logging.error("Fallo durante reseteo de ajustes: %s", e)
 
-        self.run_async(task)
+        self.run_async(task, target=str(Path.home()))
 
 
 if __name__ == "__main__":

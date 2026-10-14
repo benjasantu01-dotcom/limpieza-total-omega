@@ -152,12 +152,15 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         if any(char in name for char in ('<', '>', ':', '"', '|', '?', '*')):
             return True
         
+        # Verificar si es un punto de reparse (junctions, enlaces simbólicos a carpetas)
+        if entry.is_symlink() or (os.name == 'nt' and entry.is_dir() and entry.stat().st_file_attributes & 0x400):
+            return True
+        
         entry_path = Path(entry.path).resolve()
-        # Verificar contención: evitar escapes simbólicos o subidas de nivel
         if not str(entry_path).startswith(str(root_path)):
             return True
         
-        if is_protected_path(entry_path) or entry.is_symlink() or not os.access(entry.path, os.R_OK):
+        if is_protected_path(entry_path) or not os.access(entry.path, os.R_OK):
             return True
             
         return False
@@ -275,7 +278,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             continue
                         
                         entry_p = Path(entry.path)
-                        # OSError 32 (Sharing Violation) es común al leer archivos bloqueados por el sistema
                         if entry.is_dir(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             inode = (st.st_dev, st.st_ino)

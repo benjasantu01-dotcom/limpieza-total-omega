@@ -315,17 +315,22 @@ def _sanitize_msg(msg: str | Any) -> str:
         return ""
     return sanitized.strip()[:_MAX_MSG_LEN]
 
+def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:
+    """Envoltorio seguro para ejecutar factories de reglas sin exponer errores."""
+    try:
+        return _sanitize_msg(rule.message_factory(metrics))
+    except Exception:
+        return ""
+
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio, findings: List[str]) -> None:
     """Ejecuta reglas de diagnóstico y registra advertencias halladas."""
     if not math.isfinite(normalized_ratio):
         return
     for rule in rules:
-        try:
-            if rule.check(metrics, normalized_ratio):
-                clean_msg = _sanitize_msg(rule.message_factory(metrics))
-                if clean_msg: findings.append(clean_msg)
-        except Exception as e:
-            logging.warning(f"Error evaluando regla en {rule.area}: {e}")
+        if rule.check(metrics, normalized_ratio):
+            clean_msg = _apply_rule_safely(metrics, rule)
+            if clean_msg:
+                findings.append(clean_msg)
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
