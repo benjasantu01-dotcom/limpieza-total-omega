@@ -1134,3 +1134,43 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-14T11:26:57` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se implementó un mecanismo de caché local (`self.path_stat_cache`) en el escáner para evitar llamadas redundantes a `stat` y `is_locked_by_os` sobre la misma ruta durante una iteración, mejorando el rendimiento en directorios con alta densidad de archivos.
 - `2026-10-14T11:26:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T11:26:57` Corrida terminada. Total usado hoy: 272.
+- `2026-10-14T11:35:08` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-10-14T11:35:40` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
+- `2026-10-14T11:36:07` Tests FALLARON:
+```
+ests/test_modules.py _________________
+/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/_pytest/python.py:508: in importtestmodule
+    mod = import_path(
+/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/_pytest/pathlib.py:596: in import_path
+    importlib.import_module(module_name)
+/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1331: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:935: in _load_unlocked
+    ???
+/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/_pytest/assertion/rewrite.py:188: in exec_module
+    exec(co, module.__dict__)
+evolve/tests/test_modules.py:29: in <module>
+    import startup  # noqa: E402
+    ^^^^^^^^^^^^^^
+E     File "/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py", line 421
+E       global _FULL_SCAN_CACHE
+E       ^^^^^^^^^^^^^^^^^^^^^^^
+E   SyntaxError: name '_FULL_SCAN_CACHE' is used prior to global declaration
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.37s
+
+```
+- `2026-10-14T11:36:07` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `list_startup_entries` y `entries_from_folders` evitando la resolución redundante de rutas mediante el uso de un conjunto de rutas normalizadas (`seen_paths`), acelerando el escaneo al procesar cada archivo exactamente una vez.
+- `2026-10-14T11:37:03` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejora la robustez ante estados inesperados o corrupciones en la entrada mediante la implementación de `_get_safe_attr` con validación de tipos, evitando que el acceso a datos (especialmente en `ingest` y `_build_payload`) lance excepciones por atributos inesperados o tipos no soportados.
+- `2026-10-14T11:37:21` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-10-14T11:37:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-14T11:37:21` Corrida terminada. Total usado hoy: 276.

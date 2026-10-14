@@ -100,6 +100,15 @@ def _check_metric_integrity(val: Any) -> bool:
     """Verifica que un valor numérico sea seguro, finito y coherente para el asistente."""
     return isinstance(val, (int, float)) and not isinstance(val, bool) and math.isfinite(val) and not math.isnan(val)
 
+def _get_safe_attr(obj: Any, name: str, default: Any = None) -> Any:
+    """Acceso defensivo a atributos validando tipo y seguridad."""
+    if not _is_safe_key(name): return default
+    try:
+        val = getattr(obj, name, default)
+        return val if not callable(val) else default
+    except Exception:
+        return default
+
 def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
     """
     Decorador protector para manejadores de consulta (query handlers).
@@ -364,7 +373,7 @@ class SystemContext:
     @cached_property
     def metrics_snapshot(self) -> dict[str, float]:
         """Snapshot cacheado de las métricas numéricas usando acceso seguro."""
-        return {k: float(v) for k, spec in _VALIDATORS.items() if (v := getattr(self, k, -1.0)) is not None and _check_metric_integrity(v)}
+        return {k: float(v) for k, spec in _VALIDATORS.items() if (v := _get_safe_attr(self, k, -1.0)) is not None and _check_metric_integrity(v)}
 
     @cached_property
     def active_problems(self) -> tuple[str, ...]:
@@ -382,7 +391,7 @@ class SystemContext:
 
     def get_metric(self, key: str, default: float) -> float:
         """Retorna una métrica numérica validada o el valor por defecto si falla."""
-        val = getattr(self, key, None)
+        val = _get_safe_attr(self, key)
         return float(val) if _check_metric_integrity(val) else default
 
     @property
@@ -444,7 +453,7 @@ class SystemContext:
         updates: dict[str, Any] = {}
         for key, spec in _VALIDATORS.items():
             value = self._apply_field(source, key, spec)
-            if value is not None and value != getattr(self, key, None):
+            if value is not None and value != _get_safe_attr(self, key):
                 updates[key] = value
         grade_val = self._clean_grade(_get_source_value(source, "grade"))
         if grade_val and grade_val != self.grade:
@@ -492,13 +501,7 @@ def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
     try:
         if isinstance(source, dict):
             return source.get(key)
-        # Verificamos específicamente el atributo antes de intentar acceder
-        if hasattr(source, key):
-            val = getattr(source, key, None)
-            if callable(val) or isinstance(val, (type,)):
-                return None
-            return val
-        return None
+        return _get_safe_attr(source, key)
     except (AttributeError, ValueError, TypeError):
         return None
 
