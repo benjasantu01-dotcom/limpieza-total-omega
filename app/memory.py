@@ -303,7 +303,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         psapi = getattr(ctypes.windll, "psapi", None)
         if not kernel32 or not psapi or not hasattr(psapi, "EnumProcesses"): return []
         
-        # Buffer pre-asignado fijo para reducir overhead
         pids = (ctypes.c_uint32 * 1024)()
         cb_needed = ctypes.c_uint32()
         pmc = PROCESS_MEMORY_COUNTERS()
@@ -313,15 +312,23 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
             if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
                 found_procs = []
                 count = min(1024, cb_needed.value // 4)
+                # Recolectar candidatos primero para reducir llamadas de seguridad costosas
+                candidates = []
                 for i in range(count):
                     pid = pids[i]
                     if pid > 4 and not _is_system_process(pid):
                         ws = _query_working_set_bytes(pid, kernel32, psapi, pmc)
-                        if ws and _is_process_executable_safe(pid):
-                            found_procs.append(ProcessMemory(f"PID {pid}", pid, ws))
+                        if ws:
+                            candidates.append((pid, ws))
                 
-                # Actualizar caché in-place
-                _CACHE_TOP_PROC["data"] = sorted(found_procs, key=lambda p: p.working_set, reverse=True)[:limit]
+                # Filtrar solo los más pesados por seguridad
+                candidates.sort(key=lambda x: x[1], reverse=True)
+                for pid, ws in candidates[:limit * 2]:
+                    if _is_process_executable_safe(pid):
+                        found_procs.append(ProcessMemory(f"PID {pid}", pid, ws))
+                        if len(found_procs) >= limit: break
+                
+                _CACHE_TOP_PROC["data"] = found_procs
                 _CACHE_TOP_PROC["time"] = now
         except (ctypes.ArgumentError, OSError):
             pass
@@ -375,16 +382,13 @@ def _is_process_executable_safe(pid: int) -> bool:
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0 and buf.value:
             path_str = str(buf.value).strip()
-            # Bloqueo estricto: rutas UNC (red) son inseguras por naturaleza
             if not path_str or path_str.startswith("\\\\"):
                 return False
             
             p = Path(path_str)
-            # Prevenir seguimiento de enlaces simbólicos que escapan del contexto permitido
             if p.is_symlink():
                 return False
                 
-            # Validar integridad contra lista protegida y normalizar para evitar path traversal
             normalized = str(p.resolve())
             return not is_protected_path(normalized) and len(filter_safe_paths([normalized])) > 0
     except (ctypes.ArgumentError, OSError, ValueError, RuntimeError):

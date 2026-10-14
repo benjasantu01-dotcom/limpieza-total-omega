@@ -243,8 +243,7 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> boo
     if _is_system_hidden(entry): return False
     if entry.path in protected_cache: return False
     try:
-        p = Path(entry.path)
-        if not is_safe_to_modify(p) or is_protected_path(p):
+        if is_protected_path(Path(entry.path)) or not is_safe_to_modify(Path(entry.path)):
             protected_cache.add(entry.path)
             return False
     except (OSError, RuntimeError):
@@ -273,6 +272,9 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False) and entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE):
+                        # Pre-check de protección antes de stats pesados
+                        if entry.path in protected_cache or is_protected_path(Path(entry.path)):
+                            continue
                         stats = entry.stat(follow_symlinks=False)
                         if _is_candidate_junk(stats, entry, now_ts):
                             found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))

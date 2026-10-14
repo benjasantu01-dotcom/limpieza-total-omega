@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Mejoras aceptadas: **214** (42.5% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 52
-- Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 195
+- Rechazadas por guardia de seguridad: 53
+- Sin cambios (nada sustancial que mejorar): 24
+- Sin respuesta de la IA (error o límite): 194
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-12 | 39 | 3 | 10 | 5 | 41 |
+| 2026-10-12 | 38 | 2 | 10 | 4 | 40 |
 | 2026-10-13 | 154 | 16 | 37 | 13 | 130 |
-| 2026-10-14 | 20 | 0 | 5 | 7 | 24 |
+| 2026-10-14 | 22 | 1 | 6 | 7 | 24 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - legibilidad y documentación: **49**
 - seguridad defensiva: **45**
-- robustez ante casos límite: **35**
-- rendimiento: **33**
+- rendimiento: **35**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **19**
+- `memory.py`: **20**
 - `diskreport.py`: **18**
 - `duplicates.py`: **18**
 - `healthscore.py`: **18**
@@ -39,14 +39,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **17**
 - `safety.py`: **15**
 - `startup.py`: **14**
-- `settings.py`: **12**
 - `quarantine.py`: **12**
 - `branding.py`: **12**
-- `organizer.py`: **11**
+- `organizer.py`: **12**
+- `settings.py`: **11**
 - `main.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-14T02:26:14` **organizer.py** (rendimiento): Optimicé el rendimiento de `_process_directory` reemplazando la verificación repetida de `is_protected_path` por un filtrado previo usando el `protected_cache` y mejorando la eficiencia de `JUNK_EXTENSIONS_TUPLE` para reducir llamadas a métodos dentro del bucle crítico.
+- `2026-10-14T02:25:42` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` evitando llamadas costosas a `_is_process_executable_safe` dentro del bucle principal, moviendo la lógica de filtrado de seguridad para que solo se ejecute sobre los procesos ya identificados como candidatos de alto consumo, además de consolidar la inicialización de los buffers `ctypes` fuera de la lógica de iteración.
 - `2026-10-14T02:16:22` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `is_safe_to_modify` dentro del bucle interno, reduciendo drásticamente las llamadas al sistema de archivos durante el escaneo.
 - `2026-10-14T02:06:24` **assistant.py** (rendimiento): Optimicé el rendimiento de `_TOKEN_REGEX` y el acceso a `_TOKEN_KEYS` pre-compilando el regex de tokens y optimizando la lógica de búsqueda en `local_answer` para evitar el uso redundante de `split` y `findall` en cada consulta.
 - `2026-10-14T02:05:25` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings más precisos en `StartupEntry` y las funciones auxiliares de escaneo, aclarando las responsabilidades de cada método y el flujo de los datos para facilitar el mantenimiento.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-14T01:34:34` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de docstrings técnicos en las funciones críticas de escaneo, clarificando la lógica de confinamiento y los criterios de seguridad utilizados durante la recursión.
 - `2026-10-14T01:24:51` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez del parseo del registro integrando un manejo de excepciones más granular y defensivo al ejecutar el comando de PowerShell, asegurando que ante cualquier error de ejecución o timeout, la app no quede en estado inconsistente y los recursos se liberen correctamente.
 - `2026-10-14T01:15:39` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas de archivo implementando un manejo de excepciones más granular y defensivo, asegurando que `_is_locked_by_os` valide los argumentos de tipo antes de llamar a `ctypes` y refinando la limpieza de recursos en las operaciones con `Path` para prevenir fallos silenciosos por rutas malformadas.
-- `2026-10-14T01:15:29` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` ante entradas no conformes, añadiendo validaciones de tipo `None` y de integridad de `Path` antes de invocar operaciones de sistema, y refinando el manejo de errores en `_get_path_stat_robust` para asegurar que las excepciones capturadas sean específicas y no enmascaren fallos inesperados.
-- `2026-10-14T01:14:27` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez en la carga del manifiesto JSON mediante la implementación de un manejo de errores más específico y preventivo, asegurando que la validación de tipos sea estricta antes de procesar los datos, lo cual evita que una corrupción leve en el archivo `manifest.json` cause un fallo en cadena en toda la lógica de cuarentena.

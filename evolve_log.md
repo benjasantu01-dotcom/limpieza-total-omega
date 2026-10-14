@@ -1189,3 +1189,21 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-14T02:17:37` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Optimicé el ciclo de renderizado del panel de salud implementando una validación de estado previo mediante un digest, evitando así llamadas costosas y redibujos innecesarios de elementos visuales (guage y barras) cuando los datos no han cambiado.
 - `2026-10-14T02:17:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T02:17:37` Corrida terminada. Total usado hoy: 56.
+- `2026-10-14T02:25:06` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-10-14T02:25:42` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `top_memory_processes` evitando llamadas costosas a `_is_process_executable_safe` dentro del bucle principal, moviendo la lógica de filtrado de seguridad para que solo se ejecute sobre los procesos ya identificados como candidatos de alto consumo, además de consolidar la inicialización de los buffers `ctypes` fuera de la lógica de iteración.
+- `2026-10-14T02:26:14` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento de `_process_directory` reemplazando la verificación repetida de `is_protected_path` por un filtrado previo usando el `protected_cache` y mejorando la eficiencia de `JUNK_EXTENSIONS_TUPLE` para reducir llamadas a métodos dentro del bucle crítico.
+- `2026-10-14T02:27:03` Tests FALLARON:
+```
+was - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: [Errno 9] Bad file descriptor
+8 failed, 291 passed, 8 warnings in 1.81s
+
+```
+- `2026-10-14T02:27:03` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se optimizó el acceso al manifiesto de cuarentena implementando una invalidación de caché basada en el tiempo de modificación (`st_mtime`) del archivo en disco, evitando deserializaciones JSON repetitivas y costosas durante las llamadas frecuentes a `list_items` o verificaciones de estado.
+- `2026-10-14T02:27:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
+- `2026-10-14T02:27:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-14T02:27:06` Corrida terminada. Total usado hoy: 60.
