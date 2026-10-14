@@ -1252,3 +1252,32 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-14T12:28:51` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `main.py` encapsulando las operaciones que manipulan el sistema de archivos dentro de un nuevo decorador `@ensure_safety` aplicado a todos los métodos críticos (análisis, aislamiento, borrado, guardado), garantizando que cualquier intento de interactuar con rutas inseguras sea abortado inmediatamente por `safety.ensure_safe_to_modify` antes de ejecutar la lógica de negocio.
 - `2026-10-14T12:28:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T12:28:51` Corrida terminada. Total usado hoy: 296.
+- `2026-10-14T12:36:31` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-10-14T12:37:09` Tests FALLARON:
+```
+    procesos = [memory.ProcessMemory("pesado", 99, 1024 * 1024 * 300)]
+        texto = " ".join(memory.diagnose(memory.MemorySnapshot(1000, 100), procesos))
+>       assert "pesado" in texto
+E       AssertionError: assert 'pesado' in 'Memoria total: 1000 B En uso: 900 B (90.0%) Disponible: 100 B (10.0%) Estado: ajustado. Conviene cerrar aplicaciones innecesarias.   Mayor consumo: Proceso 99 — 300.0 MB'
+
+evolve/tests/test_modules.py:396: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:358: SyntaxWarning: invalid escape sequence '\)'
+    """Comprueba si la ruta accede directamente a dispositivos (namespace \\.\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_diagnose_lists_top_processes - AssertionError: assert 'pesado' in 'Memoria total: 1000 B En uso: 900 B (90.0%) Disponible: 100 B (10.0%) Estado: ajustado. Conviene cerrar aplicaciones innecesarias.   Mayor consumo: Proceso 99 — 300.0 MB'
+1 failed, 298 passed, 4 warnings in 1.55s
+
+```
+- `2026-10-14T12:37:09` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `memory.py` implementando una validación estricta de las rutas de ejecutables de procesos, asegurando que `_is_process_executable_safe` verifique mediante `is_protected_path` antes de permitir cualquier interacción, y evitando la fuga de nombres de procesos críticos en el informe final.
+- `2026-10-14T12:37:40` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_process_directory` implementando una validación estricta de `entry.path` antes de la recursión, garantizando que ninguna ruta fuera de los límites permitidos pueda ser procesada o explorada, incluso si los filtros anteriores fallan.
+- `2026-10-14T12:38:28` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad en la restauración de archivos validando explícitamente que la ruta original reconstruida (`destination`) no sea un enlace simbólico, evitando así riesgos de seguridad por desbordamiento del directorio de destino (ZipSlip/Path Traversal) durante el proceso de restauración.
+- `2026-10-14T12:38:32` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-14T12:38:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-14T12:38:32` Corrida terminada. Total usado hoy: 300.

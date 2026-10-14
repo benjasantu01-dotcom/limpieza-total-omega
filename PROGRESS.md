@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
-- Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 44
+- Mejoras aceptadas: **205** (40.7% de aceptación)
+- Rechazadas por tests: 25
+- Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 28
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-13 | 90 | 8 | 21 | 10 | 79 |
-| 2026-10-14 | 113 | 16 | 23 | 18 | 126 |
+| 2026-10-13 | 90 | 8 | 21 | 10 | 75 |
+| 2026-10-14 | 115 | 17 | 24 | 18 | 126 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **48**
-- seguridad defensiva: **41**
+- seguridad defensiva: **43**
 - robustez ante casos límite: **32**
 - rendimiento: **30**
 
@@ -39,13 +39,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `main.py`: **13**
 - `startup.py`: **13**
 - `safety.py`: **13**
-- `organizer.py`: **11**
+- `organizer.py`: **12**
+- `quarantine.py`: **10**
 - `settings.py`: **10**
-- `quarantine.py`: **9**
 - `branding.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-14T12:38:28` **quarantine.py** (seguridad defensiva): Mejoré la seguridad en la restauración de archivos validando explícitamente que la ruta original reconstruida (`destination`) no sea un enlace simbólico, evitando así riesgos de seguridad por desbordamiento del directorio de destino (ZipSlip/Path Traversal) durante el proceso de restauración.
+- `2026-10-14T12:37:40` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_process_directory` implementando una validación estricta de `entry.path` antes de la recursión, garantizando que ninguna ruta fuera de los límites permitidos pueda ser procesada o explorada, incluso si los filtros anteriores fallan.
 - `2026-10-14T12:28:51` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `main.py` encapsulando las operaciones que manipulan el sistema de archivos dentro de un nuevo decorador `@ensure_safety` aplicado a todos los métodos críticos (análisis, aislamiento, borrado, guardado), garantizando que cualquier intento de interactuar con rutas inseguras sea abortado inmediatamente por `safety.ensure_safe_to_modify` antes de ejecutar la lógica de negocio.
 - `2026-10-14T12:27:56` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del motor de salud fortaleciendo la validación de entrada en los `message_factory` mediante la creación de un envoltorio de filtrado (`_apply_rule_safely`), asegurando que cualquier mensaje generado por las reglas se sanitice antes de entrar al flujo de la UI, evitando posibles inyecciones de texto malicioso o caracteres inesperados.
 - `2026-10-14T12:27:29` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en la detección de archivos duplicados implementando un chequeo explícito de "puntos de reanálisis" (`reparse points`) y enlaces simbólicos directamente en `os.scandir` para impedir que la recursión escape del contexto definido, y añadiendo una validación adicional contra la lista de rutas protegidas antes de realizar cualquier operación de hashing.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-14T11:46:50` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `OSError` al realizar el `stat()` en `group_by_size` y `_collect_candidates` para evitar que el proceso completo se detenga ante archivos con permisos restringidos o bloqueos temporales por el sistema operativo.
 - `2026-10-14T11:46:25` **diskreport.py** (robustez ante casos límite): Mejora la robustez ante la concurrencia y los errores de sistema al introducir `is_file()` y `is_dir()` con chequeo explícito de estados "en uso" (capturando `OSError` 32 - `ERROR_SHARING_VIOLATION` en Windows), evitando que `walk_files` se interrumpa inesperadamente por bloqueos de archivos del sistema durante el escaneo.
 - `2026-10-14T11:45:59` **browser.py** (robustez ante casos límite): Mejoré la robustez ante casos límite en `_sum_directory_recursive` implementando un control de profundidad basado en el sistema de archivos real y un manejo de errores más específico para evitar que fallos en subdirectorios aislados (como el acceso denegado a una carpeta del sistema de archivos no crítica) interrumpan el cálculo del tamaño total del caché.
-- `2026-10-14T11:37:03` **assistant.py** (robustez ante casos límite): Mejora la robustez ante estados inesperados o corrupciones en la entrada mediante la implementación de `_get_safe_attr` con validación de tipos, evitando que el acceso a datos (especialmente en `ingest` y `_build_payload`) lance excepciones por atributos inesperados o tipos no soportados.
-- `2026-10-14T11:26:57` **scanner.py** (rendimiento): Se implementó un mecanismo de caché local (`self.path_stat_cache`) en el escáner para evitar llamadas redundantes a `stat` y `is_locked_by_os` sobre la misma ruta durante una iteración, mejorando el rendimiento en directorios con alta densidad de archivos.

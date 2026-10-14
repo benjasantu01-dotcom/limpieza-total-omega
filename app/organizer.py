@@ -264,7 +264,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
         visited.add(resolved_dir)
         
         # Validar nodo actual antes de iterar
-        if is_protected_path(resolved_dir) or not is_safe_to_modify(resolved_dir):
+        if not is_safe_to_modify(resolved_dir):
             protected_cache.add(str(resolved_dir))
             return
             
@@ -277,12 +277,13 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False) and entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE):
-                        # La comprobación de protección individual se realiza mediante caché o llamada directa
-                        if entry.path in protected_cache:
+                        # Validación defensiva extra antes de procesar el archivo
+                        p = Path(entry.path)
+                        if str(p) in protected_cache or not is_safe_to_modify(p):
                             continue
                         stats = entry.stat(follow_symlinks=False)
                         if _is_candidate_junk(stats, entry, now_ts):
-                            found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
+                            found.append(JunkFile(p, stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
                 except (PermissionError, OSError):
                     continue
     except (PermissionError, OSError, RuntimeError):

@@ -931,6 +931,11 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         
         destination = Path(quarantine_item.original_path).resolve()
         _check_path_syntax_integrity(destination)
+        
+        # Nueva validación de seguridad contra enlaces simbólicos en el destino
+        if destination.is_symlink():
+            raise UnsafePathError("Restauración denegada: el destino es un enlace simbólico.")
+            
         if is_protected_path(destination):
             raise UnsafePathError("Restauración denegada: destino protegido.")
         if destination.exists():
