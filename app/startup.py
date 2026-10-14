@@ -350,6 +350,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             raw_val_name = row.get(header_name)
             raw_val_cmd = row.get(header_cmd)
             
+            # Validación estricta: saltar filas incompletas o no string
             if not isinstance(raw_val_name, str) or not isinstance(raw_val_cmd, str):
                 continue
             

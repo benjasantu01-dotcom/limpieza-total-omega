@@ -576,3 +576,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-14T05:40:39` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-14T05:40:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T05:40:39` Corrida terminada. Total usado hoy: 136.
+- `2026-10-14T05:48:44` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-10-14T05:48:47` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-14T05:49:16` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las funciones `_is_readable` y `_is_locked_by_os` incorporando validaciones de entrada (`isinstance`) y manejadores de excepciones más específicos para evitar caídas inesperadas al procesar rutas mal formadas o inaccesibles, asegurando que el scanner no se interrumpa ante metadatos corruptos del sistema de archivos.
+- `2026-10-14T05:49:57` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save` y `_read_and_parse_json` reemplazando llamadas a `os.replace` y otras operaciones críticas por chequeos explícitos de seguridad con `is_safe_to_modify` y manejando excepciones de archivo ocupado de forma más específica para evitar silenciamientos de errores fatales.
+- `2026-10-14T05:50:22` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `parse_registry_csv` ante entradas de registro malformadas o inesperadas, evitando errores silenciosos al validar la existencia de campos obligatorios en el CSV antes de intentar procesar las filas, siguiendo el enfoque de manejo de errores y validación de entradas.
+- `2026-10-14T05:50:27` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): el archivo se encogió al 20% del original (posible pérdida de código)
+- `2026-10-14T05:50:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-14T05:50:27` Corrida terminada. Total usado hoy: 140.
