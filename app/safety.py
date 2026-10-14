@@ -1035,32 +1035,41 @@ def describe_protection(path: PathLike) -> str:
         p = normalize(path)
         raw_str = str(path)
     except (UnsafePathError, TypeError, ValueError): return "Ruta mal formada."
+    
     if _is_unc_path(raw_str): return f"'{raw_str}' es ruta de red."
     if _is_device_file(p): return f"'{raw_str}' es un archivo de dispositivo."
     if is_drive_root(p): return f"'{p}' es raíz de unidad."
     if is_protected_path(str(p)): return f"'{p}' protegida por sistema."
+    
     try:
         if p.exists():
             sd = _get_security_descriptor(p)
-            if p.is_symlink(): return f"'{p}' es un enlace simbólico."
-            if sd.is_reparse: return f"'{p}' es un punto de reparse (Junction/Symlink)."
-            if os.path.ismount(p): return f"'{p}' es un punto de montaje."
-            if _is_virtual_drive(str(p)): return f"'{p}' es una unidad virtual mapeada (SUBST)."
-            if sd.is_readonly: return f"'{p}' tiene atributo de solo lectura activo."
-            if _is_readonly(str(p)): return f"'{p}' es solo lectura (permisos)."
-            if _is_volume_readonly(str(p)): return f"'{p}' pertenece a un volumen de solo lectura."
-            if _is_volume_removable_media(str(p)): return f"'{p}' pertenece a un volumen extraíble."
-            if _is_volume_compressed_or_encrypted(str(p)): return f"'{p}' pertenece a un volumen cifrado/comprimido."
-            if sd.is_in_use: return f"'{p}' en uso."
-            if sd.has_flag(Win32Attr.COMPRESSED) or sd.has_flag(Win32Attr.ENCRYPTED): return f"'{p}' archivo cifrado o comprimido."
-            if sd.has_flag(Win32Attr.SPARSE_FILE): return f"'{p}' archivo disperso (sparse)."
-            if sd.has_flag(Win32Attr.OFFLINE): return f"'{p}' archivo offline/nube."
-            if sd.is_protected_system: return f"'{p}' atributo oculto/sistema/temporal."
-            if _has_alternate_data_stream(p.name): return f"'{p}' contiene ADS."
+            diagnostics = {
+                "enlace simbólico": p.is_symlink(),
+                "punto de reparse": sd.is_reparse,
+                "punto de montaje": os.path.ismount(p),
+                "unidad virtual mapeada": _is_virtual_drive(str(p)),
+                "atributo de solo lectura": sd.is_readonly,
+                "solo lectura (permisos)": _is_readonly(str(p)),
+                "volumen de solo lectura": _is_volume_readonly(str(p)),
+                "volumen extraíble": _is_volume_removable_media(str(p)),
+                "volumen cifrado/comprimido": _is_volume_compressed_or_encrypted(str(p)),
+                "archivo en uso": sd.is_in_use,
+                "archivo cifrado o comprimido": sd.has_flag(Win32Attr.COMPRESSED) or sd.has_flag(Win32Attr.ENCRYPTED),
+                "archivo disperso (sparse)": sd.has_flag(Win32Attr.SPARSE_FILE),
+                "archivo offline/nube": sd.has_flag(Win32Attr.OFFLINE),
+                "atributo oculto/sistema": sd.is_protected_system,
+                "contiene ADS": _has_alternate_data_stream(p.name),
+                "tamaño excesivo": p.is_file() and p.stat().st_size > MAX_FILE_SIZE,
+                "detectado como hard link": p.is_file() and p.stat().st_nlink > 1
+            }
+            for reason, is_active in diagnostics.items():
+                if is_active: return f"'{p}' es {reason}."
+            
             if not (p.is_file() or p.is_dir()): return f"'{p}' tipo de objeto no soportado."
             if p.is_file() and p.stat().st_size == 0: return f"'{p}' archivo vacío (potencialmente crítico)."
-            if p.is_file() and p.stat().st_size > MAX_FILE_SIZE: return f"'{p}' tamaño excesivo."
-            if p.is_file() and p.stat().st_nlink > 1: return f"'{p}' detectado como hard link."
+            
     except (OSError, FileNotFoundError, AttributeError): pass
+    
     if is_sensitive_file(p): return f"'{p.name}' extensión sensible."
     return f"'{p}' es candidata a modificación."

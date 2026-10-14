@@ -82,10 +82,12 @@ def _is_locked_by_os(path: Path) -> bool:
     if not isinstance(path, Path):
         return True
     try:
+        # 0x80000000 = GENERIC_READ; 0x00000080 = FILE_ATTRIBUTE_NORMAL
         handle = ctypes.windll.kernel32.CreateFileW(
             str(path), 0x80000000, 0, None, 3, 0x00000080, None
         )
-        if handle == -1: return True
+        if handle == -1: 
+            return True
         ctypes.windll.kernel32.CloseHandle(handle)
         return False
     except (OSError, AttributeError, TypeError):
@@ -98,7 +100,9 @@ def _is_readable(path: Path) -> bool:
     if not isinstance(path, Path):
         return False
     try:
-        return path.exists() and os.access(path, os.R_OK)
+        if path.exists() and os.access(path, os.R_OK):
+            return True
+        return False
     except (OSError, PermissionError, ValueError):
         return False
 

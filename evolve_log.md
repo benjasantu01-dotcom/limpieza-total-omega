@@ -1168,3 +1168,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-14T01:45:55` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la estandarización de los `docstrings` para que reflejen claramente la intención de cada función y los contratos de seguridad que cumplen, además de añadir `type hints` y unificar la terminología en las descripciones para mejorar la mantenibilidad de este módulo crítico.
 - `2026-10-14T01:45:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T01:45:55` Corrida terminada. Total usado hoy: 44.
+- `2026-10-14T01:54:28` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-10-14T01:54:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 115): unterminated string literal (detected at line 115)
+- `2026-10-14T01:55:31` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad y mantenibilidad del módulo `safety.py` mediante la refactorización de `describe_protection` para utilizar una estructura de diccionario de diagnósticos (mapping) en lugar de una cadena larga de bloques `if`, facilitando la lectura del porqué una ruta es considerada protegida.
+- `2026-10-14T01:56:00` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo mediante la adición de Type Hints en la firma de `_is_readable` y `_is_locked_by_os`, y se han clarificado las intenciones del código mediante la sustitución de retornos booleanos implícitos por un estilo más explícito, facilitando la comprensión de los mecanismos de seguridad ante el resto del equipo.
+- `2026-10-14T01:56:12` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-14T01:56:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-14T01:56:12` Corrida terminada. Total usado hoy: 48.
