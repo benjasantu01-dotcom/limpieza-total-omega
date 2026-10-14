@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **202** (40.1% de aceptación)
+- Mejoras aceptadas: **200** (39.7% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-13 | 127 | 11 | 31 | 11 | 96 |
-| 2026-10-14 | 75 | 9 | 17 | 11 | 116 |
+| 2026-10-13 | 123 | 11 | 31 | 11 | 96 |
+| 2026-10-14 | 77 | 9 | 17 | 11 | 118 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **47**
-- legibilidad y documentación: **46**
-- manejo de errores y validación de entradas: **40**
+- legibilidad y documentación: **42**
+- manejo de errores y validación de entradas: **42**
 - rendimiento: **35**
 - robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **20**
-- `healthscore.py`: **18**
-- `browser.py`: **18**
+- `browser.py`: **19**
+- `memory.py`: **19**
+- `assistant.py`: **17**
+- `healthscore.py`: **17**
 - `diskreport.py`: **17**
 - `scanner.py`: **16**
-- `assistant.py`: **16**
 - `duplicates.py`: **16**
-- `main.py`: **14**
 - `startup.py`: **13**
-- `organizer.py`: **11**
+- `main.py`: **13**
 - `branding.py`: **11**
 - `quarantine.py`: **11**
 - `safety.py`: **11**
+- `organizer.py`: **10**
 - `settings.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-14T09:45:39` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_process_file_node` ante errores de acceso capturando explícitamente excepciones de sistema de archivos y validando la presencia de atributos necesarios en el objeto `stat` antes de operar, evitando posibles `AttributeError` en entornos con permisos restringidos.
+- `2026-10-14T09:44:56` **assistant.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `_call_gemini` y `_build_payload` reemplazando los silenciamientos genéricos por capturas específicas de excepciones, asegurando que cualquier fallo en la serialización o conexión no deje al asistente en un estado inconsistente y mejore la depurabilidad.
 - `2026-10-14T08:23:06` **startup.py** (seguridad defensiva): Se fortalece la validación de seguridad en `entries_from_registry` pasando a usar la bandera `-LiteralPath` individualmente y eliminando la concatenación dinámica mediante comas, lo que evita riesgos de inyección de rutas al llamar a PowerShell y asegura que solo se procesen claves pre-aprobadas y sanitizadas.
 - `2026-10-14T08:22:37` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `perform_atomic_write` añadiendo una comprobación explícita mediante `is_safe_to_modify` para el archivo temporal y el backup antes de cualquier operación de reemplazo, garantizando que ninguna ruta fuera del alcance permitido sea manipulada durante el proceso atómico.
 - `2026-10-14T08:12:36` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_isolation_request` añadiendo una comprobación explícita para evitar que se ponga en cuarentena un archivo que ya reside en el directorio de cuarentena, previniendo así posibles bucles de manipulación o inconsistencias en el manifiesto.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-14T07:51:44` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al inyectar validaciones de `is_protected_path` en las rutas de red construidas dinámicamente y al mejorar la sanitización de los payloads mediante una verificación de `_ensure_safe_text` más estricta antes de cualquier operación de red o procesamiento.
 - `2026-10-14T07:42:38` **settings.py** (robustez ante casos límite): Se ha añadido un robusto manejo de excepciones y validación de estado en `_read_and_parse_json` para asegurar que el sistema no falle ante archivos JSON corruptos, vacíos o bloqueados por otros procesos, evitando así que una configuración dañada impida el inicio de la aplicación.
 - `2026-10-14T07:31:12` **memory.py** (robustez ante casos límite): Se ha añadido un robusto manejo de errores en `top_memory_processes` para evitar fallos por condiciones de carrera (procesos terminados justo antes de ser consultados) y se ha mejorado la tolerancia a fallos en la lectura de archivos del sistema (`/proc/meminfo`) mediante una lectura de texto más segura.
-- `2026-10-14T07:22:41` **main.py** (robustez ante casos límite): Se implementó un mecanismo de pre-validación de rutas en la carga de la configuración para prevenir excepciones durante el acceso a directorios protegidos o inexistentes, y se añadió un manejo de errores robusto en la inicialización de componentes mediante la verificación de la existencia de widgets (`winfo_exists`) antes de manipularlos.
-- `2026-10-14T07:21:46` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de puntaje frente a fallas en la `SystemMetrics` inicial, asegurando que `compute_score` siempre retorne un resultado válido incluso si `metrics` es `None` o contiene datos malformados, mediante un manejo de excepciones más granular y una validación defensiva en la instancia.

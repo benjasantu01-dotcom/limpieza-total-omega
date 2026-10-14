@@ -685,8 +685,10 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
         return None
     try:
         payload = json.dumps(payload_data).encode("utf-8")
-        return payload if len(payload) <= (_MAX_RESPONSE_BYTES // 2) else None
-    except (TypeError, ValueError, AttributeError):
+        if len(payload) > (_MAX_RESPONSE_BYTES // 2):
+            return None
+        return payload
+    except (TypeError, ValueError):
         return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
@@ -719,7 +721,6 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     payload = _build_payload(question, context_text)
     if not payload: return None
     target_url = _ENDPOINT_BASE.format(model=model)
-    # Verificación de seguridad adicional sobre la URL construida
     if not target_url.startswith(_API_HOST_ROOT) or is_protected_path(target_url) or any(c in target_url for c in "<>\"' \t\n\r"):
         return None
     url = f"{target_url}?key={api_key}"
@@ -728,17 +729,14 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: 
                 return None
-            content_length = res.headers.get("Content-Length")
-            if content_length and int(content_length) > _MAX_RESPONSE_BYTES: return None
+            if res.headers.get("Content-Length") and int(res.headers.get("Content-Length")) > _MAX_RESPONSE_BYTES: 
+                return None
             raw_res = res.read(_MAX_RESPONSE_BYTES + 1)
-            if not isinstance(raw_res, bytes) or len(raw_res) > _MAX_RESPONSE_BYTES: return None
+            if not isinstance(raw_res, bytes) or len(raw_res) > _MAX_RESPONSE_BYTES: 
+                return None
             data = json.loads(raw_res.decode("utf-8"))
-            if not _is_safe_payload_structure(data): return None
-            raw_text = _extract_text_from_gemini_json(data)
-            if isinstance(raw_text, str) and _ensure_safe_text(raw_text):
-                return raw_text.strip()
-            return None
-    except (urllib.error.HTTPError, urllib.error.URLError, OSError, ValueError, KeyError, json.JSONDecodeError):
+            return _extract_text_from_gemini_json(data)
+    except (urllib.error.HTTPError, urllib.error.URLError, json.JSONDecodeError, OSError):
         return None
 
 def ask(question: str, context: SystemContext | None = None,

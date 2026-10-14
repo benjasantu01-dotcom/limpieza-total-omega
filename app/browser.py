@@ -224,13 +224,13 @@ def _process_file_node(entry: os.DirEntry, ctx: ScanContext) -> int:
     """Calcula el tamaño de un archivo, asegurando unicidad mediante device/inode."""
     try:
         st = entry.stat(follow_symlinks=False)
-        if not hasattr(st, 'st_dev') or not hasattr(st, 'st_ino'):
-            return st.st_size if hasattr(st, 'st_size') else 0
+        if not hasattr(st, 'st_dev') or not hasattr(st, 'st_ino') or not hasattr(st, 'st_size'):
+            return 0
         file_id = (st.st_dev, st.st_ino)
         if file_id in ctx.visited_files:
             return 0
         ctx.visited_files.add(file_id)
-        return st.st_size
+        return int(st.st_size)
     except (OSError, PermissionError, FileNotFoundError, AttributeError):
         return 0
 
