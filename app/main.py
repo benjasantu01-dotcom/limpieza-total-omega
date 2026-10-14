@@ -117,10 +117,12 @@ def get_cached_settings() -> Dict[str, Any]:
     try:
         raw = settings_mod.load()
         if isinstance(raw, dict):
-            # Validar que carpetas guardadas en ajustes sigan siendo seguras
+            # Validar integridad: si la ruta no existe o es insegura, limpiar la variable
             for key in ["carpeta_excluida"]:
-                if key in raw and raw[key] and not safety.is_safe_to_modify(Path(raw[key]).resolve()):
-                    raw[key] = ""
+                if key in raw and raw[key]:
+                    p = Path(raw[key])
+                    if not p.exists() or not safety.is_safe_to_modify(p.resolve()):
+                        raw[key] = ""
             return raw
     except (IOError, ValueError) as e:
         logging.error("Error al cargar settings: %s", e)

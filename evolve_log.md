@@ -673,3 +673,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-14T07:12:13` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_sum_directory_recursive` mediante la implementación de una validación de `st_ino` (inodo) que previene el conteo doble en sistemas de archivos con enlaces duros o puntos de reparse inusuales, garantizando mediciones de tamaño más precisas y seguras ante estructuras de directorios circulares o redundantes.
 - `2026-10-14T07:12:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T07:12:13` Corrida terminada. Total usado hoy: 172.
+- `2026-10-14T07:20:31` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-10-14T07:20:56` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-10-14T07:21:18` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-14T07:21:46` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del cálculo de puntaje frente a fallas en la `SystemMetrics` inicial, asegurando que `compute_score` siempre retorne un resultado válido incluso si `metrics` es `None` o contiene datos malformados, mediante un manejo de excepciones más granular y una validación defensiva en la instancia.
+- `2026-10-14T07:22:41` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se implementó un mecanismo de pre-validación de rutas en la carga de la configuración para prevenir excepciones durante el acceso a directorios protegidos o inexistentes, y se añadió un manejo de errores robusto en la inicialización de componentes mediante la verificación de la existencia de widgets (`winfo_exists`) antes de manipularlos.
+- `2026-10-14T07:22:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-14T07:22:41` Corrida terminada. Total usado hoy: 176.

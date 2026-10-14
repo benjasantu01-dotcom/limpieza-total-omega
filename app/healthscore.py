@@ -273,14 +273,19 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Asegura rangos aceptables para todas las métricas, evitando inyección de datos fuera de escala."""
-        self.junk_mb = _validate_numeric(self.junk_mb, 0.0, 0.0, 1048576.0)
-        self.duplicate_mb = _validate_numeric(self.duplicate_mb, 0.0, 0.0, 1048576.0)
-        self.suspicious_count = int(_validate_numeric(self.suspicious_count, 0, 0, 5000))
-        self.suspicious_warnings = int(_validate_numeric(self.suspicious_warnings, 0, 0, 5000))
-        self.startup_count = int(_validate_numeric(self.startup_count, 0, 0, 1000))
-        self.quarantined_count = int(_validate_numeric(self.quarantined_count, 0, 0, 1000))
-        self.memory_available_percent = _validate_numeric(self.memory_available_percent, 100.0, 0.0, 100.0)
-        self.disk_free_percent = _validate_numeric(self.disk_free_percent, 100.0, 0.0, 100.0)
+        try:
+            self.junk_mb = _validate_numeric(self.junk_mb, 0.0, 0.0, 1048576.0)
+            self.duplicate_mb = _validate_numeric(self.duplicate_mb, 0.0, 0.0, 1048576.0)
+            self.suspicious_count = int(_validate_numeric(self.suspicious_count, 0, 0, 5000))
+            self.suspicious_warnings = int(_validate_numeric(self.suspicious_warnings, 0, 0, 5000))
+            self.startup_count = int(_validate_numeric(self.startup_count, 0, 0, 1000))
+            self.quarantined_count = int(_validate_numeric(self.quarantined_count, 0, 0, 1000))
+            self.memory_available_percent = _validate_numeric(self.memory_available_percent, 100.0, 0.0, 100.0)
+            self.disk_free_percent = _validate_numeric(self.disk_free_percent, 100.0, 0.0, 100.0)
+        except Exception:
+            # En caso de fallo crítico en validación, resetear a valores seguros predeterminados
+            for field_name in self._FIELDS_TO_VALIDATE:
+                setattr(self, field_name, 0.0 if "percent" not in field_name else 100.0)
 
     @property
     def is_finite(self) -> bool:
@@ -328,19 +333,12 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
     Calcula el puntaje global recorriendo el pipeline de métricas.
-    
-    Este método centraliza el flujo:
-    1. Valida métricas de entrada.
-    2. Itera el _PIPELINE calculando el ratio por área y recolectando recomendaciones.
-    3. Pondera cada ratio según su peso relativo.
-    4. Retorna el resultado consolidado.
     """
-    m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
-    try:
+    if not isinstance(metrics, SystemMetrics):
+        m = SystemMetrics()
+    else:
+        m = metrics
         m.validate()
-    except Exception as e:
-        logging.error(f"Fallo en validación de métricas: {e}")
-        return HealthResult(0, "F", {}, ["Error interno en validación de métricas."])
     
     if not m.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Métricas inestables detectadas."])
