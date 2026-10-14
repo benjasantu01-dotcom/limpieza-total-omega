@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **215** (42.7% de aceptación)
+- Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 195
+- Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-12 | 61 | 4 | 16 | 8 | 49 |
+| 2026-10-12 | 58 | 4 | 16 | 8 | 48 |
 | 2026-10-13 | 154 | 16 | 37 | 13 | 130 |
-| 2026-10-14 | 0 | 0 | 0 | 0 | 16 |
+| 2026-10-14 | 1 | 0 | 0 | 0 | 19 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **49**
+- legibilidad y documentación: **46**
 - seguridad defensiva: **45**
 - robustez ante casos límite: **43**
-- manejo de errores y validación de entradas: **42**
+- manejo de errores y validación de entradas: **43**
 - rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **20**
 - `memory.py`: **20**
-- `diskreport.py`: **18**
-- `duplicates.py`: **18**
+- `healthscore.py`: **19**
+- `assistant.py`: **18**
 - `scanner.py`: **17**
-- `assistant.py`: **17**
 - `browser.py`: **17**
+- `diskreport.py`: **17**
+- `duplicates.py`: **17**
 - `safety.py`: **16**
 - `startup.py`: **13**
 - `branding.py`: **13**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-14T00:46:59` **assistant.py** (manejo de errores y validación de entradas): Se mejoró la robustez de la ingesta de datos en `SystemContext` mediante la implementación de una validación más estricta en `_apply_field`, asegurando que los valores numéricos no solo sean del tipo correcto, sino que también se conviertan de forma segura antes de cualquier asignación, evitando así propagar valores `None` o estados inconsistentes cuando una fuente de datos proporciona tipos inesperados.
 - `2026-10-13T14:18:34` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva al invocar `subprocess.run` en `entries_from_registry`, reemplazando la construcción manual de la cadena de comandos mediante el uso de una lista de argumentos (`args`), lo cual neutraliza el riesgo de inyección de comandos en el shell de PowerShell al ejecutar las claves del registro.
 - `2026-10-13T14:17:19` **scanner.py** (seguridad defensiva): Se ha restringido el acceso a metadatos mediante la adición de `_is_locked_by_os` en `scanner.py`, permitiendo identificar archivos bloqueados por otros procesos antes de intentar cualquier lectura pesada, mejorando la robustez defensiva y evitando excepciones innecesarias durante el escaneo.
 - `2026-10-13T14:09:00` **safety.py** (seguridad defensiva): Se ha añadido una validación preventiva contra puntos de reparse (junctions) y enlaces simbólicos dentro de `_is_protected_path` para asegurar que no se sigan accesos fuera del árbol esperado, reforzando la seguridad defensiva contra el escape de directorios mediante manipulaciones del sistema de archivos.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-13T13:37:17` **scanner.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante errores de sistema en `scan_directory` y `_is_readable` mediante una gestión más granular de `OSError` y `PermissionError`, asegurando que el scanner no aborte ante archivos bloqueados por el SO o metadatos inalcanzables.
 - `2026-10-13T13:36:48` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante fallos de permisos al acceder a metadatos de archivos (especialmente en entornos con antivirus o seguridad estricta) mediante un bloque de reintento con espera exponencial exponencial simple en `_get_path_stat_robust`, mitigando errores transitorios de "archivo en uso" sin comprometer la seguridad.
 - `2026-10-13T13:17:13` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `summarize` y `compute_score` ante datos malformados, garantizando que el bucle de renderizado nunca falle si un área no está presente en el desglose, y añadiendo una validación de coherencia en el pipeline para evitar comportamientos indefinidos por claves faltantes.
-- `2026-10-13T13:16:02` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `walk_files` ante archivos que desaparecen entre la detección y la lectura de metadatos (condición de carrera) y se añadió una verificación explícita para evitar que `os.scandir` intente procesar rutas extremadamente largas o inválidas que superen los límites de longitud del sistema de archivos.

@@ -154,7 +154,7 @@ class MetricSpec:
 
     def is_valid_type(self, val: Any) -> bool:
         """Verifica que el valor sea del tipo esperado y no un booleano."""
-        return isinstance(val, self.type_hint) and not isinstance(val, bool) and _check_metric_integrity(val)
+        return isinstance(val, (int, float)) and not isinstance(val, bool) and _check_metric_integrity(val)
 
 class ProblemCriterion(NamedTuple):
     """
@@ -406,13 +406,12 @@ class SystemContext:
         if val is None or not spec.is_valid_type(val):
             return None
         try:
-            # Forzar conversión numérica segura
             float_val = float(val)
             if math.isfinite(float_val) and _is_metric_within_bounds(float_val, spec):
                 return spec.type_hint(float_val)
-            return None
         except (ValueError, TypeError, OverflowError):
-            return None
+            pass
+        return None
 
     def _clean_grade(self, val: Any) -> str:
         """Limpia el string de calificación eliminando caracteres de control no seguros."""
@@ -494,7 +493,6 @@ def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
     try:
         if isinstance(source, dict):
             return source.get(key)
-        # Se asegura que no se acceda a nada que empiece con '_' y no sea ejecutable
         val = getattr(source, key, None)
         if (isinstance(key, str) and key.startswith("_")) or callable(val) or isinstance(val, (type,)):
             return None
