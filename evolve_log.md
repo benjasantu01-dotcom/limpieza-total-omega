@@ -632,3 +632,11 @@ ERROR evolve/tests/test_modules.py - NameError: name 'ColorSegment' is not defin
 - `2026-10-14T06:31:50` ➖ Sin cambios en branding.py (enfoque: rendimiento). Motivo: Se ha optimizado `logo_svg` mediante la implementación de `lru_cache`, evitando la regeneración constante de cadenas de texto XML durante repintados frecuentes de la interfaz.
 - `2026-10-14T06:31:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T06:31:50` Corrida terminada. Total usado hoy: 156.
+- `2026-10-14T06:39:45` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-10-14T06:40:25` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas redundantes a `os.path.normcase` y `os.scandir` mediante una estructura de datos `set` para `visited_dirs` y pre-cálculos, reduciendo la carga de E/S en escaneos profundos.
+- `2026-10-14T06:40:50` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `walk_files` y `_collect_summary_data` reemplazando la creación redundante de objetos `Path` y llamadas a `resolve()` (que invocan llamadas al sistema de archivos) por operaciones sobre strings y `os.scandir` directo, reduciendo drásticamente la latencia en directorios grandes.
+- `2026-10-14T06:40:53` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-14T06:41:17` 🛑 Propuesta bloqueada por la guardia en duplicates.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: group_by_size
+- `2026-10-14T06:41:30` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics.safe_get
+- `2026-10-14T06:41:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-14T06:41:30` Corrida terminada. Total usado hoy: 160.

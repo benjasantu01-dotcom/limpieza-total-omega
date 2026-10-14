@@ -45,7 +45,7 @@ __all__ = [
 JunctionChecker: TypeAlias = Callable[[str], bool]
 BrowserMap: TypeAlias = Dict[str, str]
 OSPath: TypeAlias = Union[str, Path]
-VisitedDirs: TypeAlias = Dict[str, int]
+VisitedDirs: TypeAlias = Set[str]
 SafetyCache: TypeAlias = Dict[str, bool]
 
 PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|', '"'}
@@ -223,8 +223,6 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
 def _process_file_node(entry: os.DirEntry, ctx: ScanContext) -> int:
     """Calcula el tamaño de un archivo, asegurando unicidad mediante device/inode."""
     try:
-        if not _is_path_safe(entry.path, ctx):
-            return 0
         st = entry.stat(follow_symlinks=False)
         if not hasattr(st, 'st_dev') or not hasattr(st, 'st_ino'):
             return 0
@@ -241,12 +239,9 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
     if depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN or not isinstance(root_path, str):
         return ScanResult(0, True)
     
-    if not _is_path_safe(root_path, ctx):
-        return ScanResult(0, True)
-    
     path_norm = os.path.normcase(root_path)
     if path_norm in ctx.visited_dirs:
-        return ScanResult(ctx.visited_dirs[path_norm], True)
+        return ScanResult(0, True)
 
     total_bytes: int = 0
     try:
@@ -261,7 +256,7 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
                 else:
                     total_bytes += _process_file_node(entry, ctx)
         
-        ctx.visited_dirs[path_norm] = total_bytes
+        ctx.visited_dirs.add(path_norm)
         return ScanResult(total_bytes, True)
     except (OSError, PermissionError):
         return ScanResult(total_bytes, False)
@@ -279,7 +274,7 @@ def directory_size(path: Optional[OSPath]) -> int:
         return 0
         
     path_str = str(resolved_p)
-    ctx = ScanContext(path_str, _get_kernel32(), _IS_JUNCTION_FN, set(), {}, {})
+    ctx = ScanContext(path_str, _get_kernel32(), _IS_JUNCTION_FN, set(), set(), {})
     ctx.safety_cache[path_str] = is_safe_to_modify(resolved_p) and not is_protected_path(resolved_p)
     return _sum_directory_recursive(path_str, ctx, 0).bytes_found
 
@@ -336,7 +331,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     found: List[BrowserCache] = []
     
-    ctx = ScanContext("", _get_kernel32(), _IS_JUNCTION_FN, set(), {}, {})
+    ctx = ScanContext("", _get_kernel32(), _IS_JUNCTION_FN, set(), set(), {})
     
     for base in raw_bases:
         if not isinstance(base, Path) or not base.exists(): continue
