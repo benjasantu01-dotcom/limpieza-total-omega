@@ -150,7 +150,11 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         if any(char in name for char in ('<', '>', ':', '"', '|', '?', '*')):
             return True
         
-        entry_path = Path(entry.path)
+        entry_path = Path(entry.path).resolve()
+        # Verificar contención: evitar escapes simbólicos o subidas de nivel
+        if not str(entry_path).startswith(str(root_path)):
+            return True
+        
         if is_protected_path(entry_path) or entry.is_symlink() or not os.access(entry.path, os.R_OK):
             return True
             
@@ -256,7 +260,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     if root_path is None: return
     
     visited_inodes: set[Inode] = set()
-    stack: List[str] = [str(root_path)]
+    stack: List[Path] = [root_path]
     
     while stack:
         current_dir = stack.pop()
@@ -268,15 +272,16 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if skip_protected and _is_excluded_path(entry, root_path):
                             continue
                         
+                        entry_p = Path(entry.path)
                         if entry.is_dir(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(entry.path)
+                                stack.append(entry_p)
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
-                            yield Path(entry.path), st.st_size
+                            yield entry_p, st.st_size
                             
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
@@ -303,7 +308,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     root = _validate_root(directory)
     if root is None: return []
     stats: Dict[str, FolderMetrics] = defaultdict(FolderMetrics)
-    root_str = str(root)
     
     for path, size in walk_files(root, skip_protected):
         try:

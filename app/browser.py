@@ -239,15 +239,19 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
     if depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN or not isinstance(root_path, str):
         return ScanResult(0, True)
     
+    # Pre-chequeo defensivo contra reparse points antes de entrar a la carpeta
+    if ctx.is_junction(root_path) or _is_system_hidden(root_path, ctx.kernel32):
+        return ScanResult(0, True)
+
     try:
         root_stat = os.stat(root_path)
         if hasattr(root_stat, 'st_dev') and hasattr(root_stat, 'st_ino'):
             node_id = (root_stat.st_dev, root_stat.st_ino)
             if node_id in ctx.visited_dirs:
                 return ScanResult(0, True)
-            ctx.visited_dirs.add(node_id) # Usamos set de tuplas para evitar ciclos reales
+            ctx.visited_dirs.add(node_id)
     except OSError:
-        pass
+        return ScanResult(0, False)
 
     total_bytes: int = 0
     try:

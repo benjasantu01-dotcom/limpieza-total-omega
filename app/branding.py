@@ -382,13 +382,12 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         target = Path(destination).resolve()
         
         # Validación de seguridad: el sistema de seguridad debe aprobar la escritura en la ruta
-        if not is_safe_to_modify(target) or is_protected_path(target):
-            return None
+        ensure_safe_to_modify(target)
         
         # Validar carpeta padre antes de crear, con enfoque defensivo ante errores de sistema
         parent = target.parent
         if not parent.exists():
-            if not is_safe_to_modify(parent): return None
+            ensure_safe_to_modify(parent)
             parent.mkdir(parents=True, exist_ok=True)
             
         validated_size = max(16, min(1024, int(size)))
