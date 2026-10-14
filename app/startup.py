@@ -392,8 +392,9 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
         if process.returncode == 0 and process.stdout:
             clean_output: str = "".join(c for c in process.stdout if ord(c) >= 32 or c in "\r\n")
             return parse_registry_csv(clean_output)
-    except (OSError, subprocess.SubprocessError):
-        pass
+    except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError):
+        # Captura explícita de errores de ejecución de proceso, asegurando que no se propague
+        return []
     return []
 
 
