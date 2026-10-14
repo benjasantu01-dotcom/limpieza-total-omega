@@ -1604,11 +1604,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
         
         clean_id = "".join(c for c in raw_id if c.isalnum() or c == "-")
-        if not clean_id or not quarantine.item_exists(clean_id):
-            self.log(f"Error: El ID '{clean_id}' no existe o es inválido.", "Cuarentena")
-            return
-
+        
         def task() -> None:
+            # Validar estado del item justo antes de operar en el hilo trabajador
+            if not quarantine.item_exists(clean_id):
+                self._safe_run_ui_callback(lambda: self.log(f"Error: El ID '{clean_id}' no existe o ya fue restaurado.", "Cuarentena"))
+                return
             try:
                 item = quarantine.get_item(clean_id)
                 if not item or not hasattr(item, 'original_path'):
@@ -1642,6 +1643,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
+            # Re-verificar lista al inicio de la tarea
+            actual = quarantine.list_items()
+            if not actual:
+                self._safe_run_ui_callback(lambda: self.log("La cuarentena ya estaba vacía.", "Cuarentena"))
+                return
             try:
                 borrados = quarantine.purge_all()
                 self._safe_run_ui_callback(lambda: self.log(f"Borrados {borrados} archivo(s) de la cuarentena.", "Cuarentena"))

@@ -316,6 +316,8 @@ def _sanitize_msg(msg: str | Any) -> str:
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio, findings: List[str]) -> None:
     """Ejecuta las reglas de diagnóstico para una métrica y agrega hallazgos si es necesario."""
+    if not math.isfinite(normalized_ratio):
+        return
     for rule in rules:
         try:
             if rule.check(metrics, normalized_ratio):

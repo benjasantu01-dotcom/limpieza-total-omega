@@ -211,7 +211,7 @@ def _is_system_process(pid: int) -> bool:
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     """Parsea una línea CSV para crear un objeto ProcessMemory tras validar el PID."""
-    if not isinstance(line, str) or not line or "," not in line: 
+    if not isinstance(line, str) or not line.strip() or "," not in line: 
         return None
         
     parts = [p.strip().strip("'\"") for p in line.split(",")]
@@ -313,23 +313,21 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
                 found_procs = []
                 count = min(1024, cb_needed.value // 4)
                 
-                # Recolectar candidatos y filtrar por seguridad inmediatamente
                 candidates = []
                 for i in range(count):
                     pid = pids[i]
                     if pid > 4 and not _is_system_process(pid) and _is_process_executable_safe(pid):
                         ws = _query_working_set_bytes(pid, kernel32, psapi, pmc)
-                        if ws:
+                        if ws is not None:
                             candidates.append((pid, ws))
                 
-                # Ordenar candidatos y limitar resultados
                 candidates.sort(key=lambda x: x[1], reverse=True)
                 for pid, ws in candidates[:limit]:
                     found_procs.append(ProcessMemory(f"PID {pid}", pid, ws))
                 
                 _CACHE_TOP_PROC["data"] = found_procs
                 _CACHE_TOP_PROC["time"] = now
-        except (ctypes.ArgumentError, OSError):
+        except (ctypes.ArgumentError, OSError, TypeError):
             pass
             
     return _CACHE_TOP_PROC["data"]

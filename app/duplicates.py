@@ -150,6 +150,8 @@ def _validate_and_resolve_path(path_input: PathLike) -> Optional[Path]:
 
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Paso 3: Calcula el SHA256 completo del archivo."""
+    if chunk_size <= 0:
+        return None
     valid_path = _validate_and_resolve_path(path)
     if not valid_path:
         return None
@@ -163,12 +165,14 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
                     break
                 digest.update(chunk)
         return digest.hexdigest()
-    except (OSError, IOError, PermissionError):
+    except (OSError, PermissionError, EOFError):
         return None
 
 
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Paso 2: Calcula el SHA256 de los primeros N bytes del archivo."""
+    if read_bytes <= 0:
+        return None
     valid_path = _validate_and_resolve_path(path)
     if not valid_path:
         return None
@@ -177,7 +181,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
         with open(valid_path, "rb") as f:
             content = f.read(read_bytes)
             return hashlib.sha256(content).hexdigest() if content else None
-    except (OSError, IOError, PermissionError):
+    except (OSError, PermissionError, EOFError):
         return None
 
 
