@@ -316,6 +316,7 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
         
     if not _is_within_sandbox(real, Path(base_abs_str)):
         return False
+    # Verificación estricta mediante las reglas globales de seguridad
     if not is_safe_to_modify(real) or is_protected_path(real):
         return False
     return not (real.is_symlink() or _IS_JUNCTION_FN(str(real)) or _is_excluded_file(real.name))
@@ -337,6 +338,7 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     except (OSError, RuntimeError):
         return Path()
         
+    # Validamos pertenencia al sandbox y seguridad de la ruta resultante antes de retornar
     if _is_within_sandbox(target_res, real_base) and \
        is_safe_to_modify(target_res) and not is_protected_path(target_res) and \
        not (target_res.is_symlink() or _IS_JUNCTION_FN(str(target_res))):

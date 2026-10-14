@@ -1206,3 +1206,42 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-14T12:07:49` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: robustez ante casos límite).
 - `2026-10-14T12:07:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T12:07:50` Corrida terminada. Total usado hoy: 288.
+- `2026-10-14T12:16:07` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-10-14T12:16:37` Tests FALLARON:
+```
+.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:358: SyntaxWarning: invalid escape sequence '\)'
+    """Comprueba si la ruta accede directamente a dispositivos (namespace \\.\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed, 4 warnings in 1.61s
+
+```
+- `2026-10-14T12:16:37` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez ante rutas corruptas o nombres de archivos inválidos en `_extract_quoted_path` y `_resolve_and_cache_path` mediante la validación del largo del path y el uso de `Path.exists()` con manejo de excepciones explícito para evitar fallos catastróficos en el bucle principal.
+- `2026-10-14T12:16:42` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-14T12:17:24` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la seguridad de `_is_safe_key` y `_get_source_value` para prevenir ataques de inyección mediante la manipulación de objetos fuente, impidiendo explícitamente el acceso a atributos ocultos o dunder methods que podrían haber sido omitidos en la validación original, asegurando que solo los campos definidos en `_VALIDATORS` sean procesados.
+- `2026-10-14T12:17:57` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-10-14T12:18:11` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_valid_cache_path` y `_resolve_browser_path` para garantizar que no solo se valide la existencia de las rutas, sino que se verifique explícitamente su naturaleza como subdirectorios del sandbox mediante `is_safe_to_modify` antes de cualquier procesamiento, eliminando la posibilidad de procesar rutas externas que pudieran haber eludido chequeos previos.
+- `2026-10-14T12:18:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-14T12:18:11` Corrida terminada. Total usado hoy: 292.

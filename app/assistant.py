@@ -92,8 +92,9 @@ _CONTEXT_SCHEMA: Final = (
 def _is_safe_key(key: str) -> bool:
     """Valida que una clave de diccionario o atributo no sea privada, interna o un método."""
     if not isinstance(key, str): return False
-    if key.startswith("__") or key.startswith("_"): return False
-    forbidden = {"__dict__", "__class__", "__init__", "__setattr__", "__getattribute__", "ingest", "get_metric", "_apply_updates", "_apply_field"}
+    if key.startswith("_"): return False
+    # Bloqueo total de introspección
+    forbidden = {"__dict__", "__class__", "__init__", "__setattr__", "__getattribute__", "__delattr__", "__new__", "ingest", "get_metric", "_apply_updates", "_apply_field"}
     return key not in forbidden
 
 def _check_metric_integrity(val: Any) -> bool:
@@ -104,6 +105,8 @@ def _get_safe_attr(obj: Any, name: str, default: Any = None) -> Any:
     """Acceso defensivo a atributos validando tipo y seguridad."""
     if not _is_safe_key(name): return default
     try:
+        # Forzamos a solo acceder si está definido en los validadores conocidos
+        if name not in _VALIDATORS and name != "grade": return default
         val = getattr(obj, name, default)
         return val if not callable(val) else default
     except Exception:
@@ -501,6 +504,7 @@ def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
     try:
         if isinstance(source, dict):
             return source.get(key)
+        # Limitamos el acceso a atributos públicos que no sean métodos
         return _get_safe_attr(source, key)
     except (AttributeError, ValueError, TypeError):
         return None

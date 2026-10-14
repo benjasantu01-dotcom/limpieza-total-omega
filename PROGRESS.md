@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
-- Rechazadas por tests: 23
+- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Rechazadas por tests: 24
 - Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 28
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-13 | 90 | 8 | 21 | 10 | 87 |
-| 2026-10-14 | 107 | 15 | 23 | 18 | 125 |
+| 2026-10-13 | 90 | 8 | 21 | 10 | 83 |
+| 2026-10-14 | 109 | 16 | 23 | 18 | 126 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **48**
-- seguridad defensiva: **35**
+- seguridad defensiva: **37**
 - robustez ante casos límite: **32**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **19**
+- `browser.py`: **20**
 - `memory.py`: **19**
 - `diskreport.py`: **17**
 - `scanner.py`: **17**
 - `duplicates.py`: **17**
+- `assistant.py`: **16**
 - `healthscore.py`: **16**
-- `assistant.py`: **15**
 - `startup.py`: **13**
 - `safety.py`: **13**
 - `main.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-14T12:18:11` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_valid_cache_path` y `_resolve_browser_path` para garantizar que no solo se valide la existencia de las rutas, sino que se verifique explícitamente su naturaleza como subdirectorios del sandbox mediante `is_safe_to_modify` antes de cualquier procesamiento, eliminando la posibilidad de procesar rutas externas que pudieran haber eludido chequeos previos.
+- `2026-10-14T12:17:24` **assistant.py** (seguridad defensiva): Se endureció la seguridad de `_is_safe_key` y `_get_source_value` para prevenir ataques de inyección mediante la manipulación de objetos fuente, impidiendo explícitamente el acceso a atributos ocultos o dunder methods que podrían haber sido omitidos en la validación original, asegurando que solo los campos definidos en `_VALIDATORS` sean procesados.
 - `2026-10-14T12:07:34` **scanner.py** (robustez ante casos límite): Mejora la robustez del escaneo frente a nombres de archivo con caracteres Unicode o no normalizados mediante el uso de `Path.name` en lugar de manipulación directa de strings en los chequeos, y añade una validación de `Path.exists()` preventiva dentro de `_is_safe_entry` para evitar excepciones por condiciones de carrera en sistemas de archivos dinámicos.
 - `2026-10-14T12:07:07` **safety.py** (robustez ante casos límite): Se añadió una validación específica para detectar rutas que intentan acceder a la raíz del sistema de archivos (`C:\`, `D:\`) mediante el chequeo de `Path.parts` y `anchor`, mejorando la robustez ante intentos de manipular la raíz de unidades de disco, lo cual es crítico para evitar operaciones destructivas no deseadas.
 - `2026-10-14T11:57:21` **memory.py** (robustez ante casos límite): Se ha añadido un robusto manejo de errores en `top_memory_processes` para evitar excepciones silenciosas ante procesos que desaparecen o deniegan acceso durante la enumeración, asegurando que la lista de candidatos sea siempre íntegra.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-14T11:25:35` **quarantine.py** (rendimiento): Se implementó un mecanismo de caché en `purge_all` para evitar la sobrecarga de consultas iterativas al sistema de archivos y al manifiesto, optimizando el rendimiento de las purgas masivas al reducir las operaciones de I/O innecesarias.
 - `2026-10-14T11:17:10` **organizer.py** (rendimiento): Optimicé el rendimiento de `_process_directory` reemplazando la verificación repetitiva de `is_protected_path` (que puede ser costosa al involucrar validaciones de ruta/sistema) por una caché de resultados en el conjunto `visited`, evitando escaneos redundantes en subárboles ya validados y reduciendo llamadas a disco innecesarias durante la recursión.
 - `2026-10-14T11:16:52` **memory.py** (rendimiento): Se implementó un filtrado preventivo en `top_memory_processes` utilizando `heapq.nlargest` para evitar el re-procesamiento de listas completas y se optimizó el uso de la memoria caché mediante una estructura que evita llamadas costosas a `EnumProcesses` salvo cada 60 segundos.
-- `2026-10-14T10:55:50` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los docstrings de los métodos de `StartupEntry` y funciones auxiliares, clarificando las precondiciones de seguridad y el comportamiento de las cachés para facilitar el mantenimiento futuro.
-- `2026-10-14T10:55:22` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `_SettingsManager`, clarificando el propósito de la escritura atómica, y se han aplicado type hints faltantes en parámetros críticos para mejorar la robustez y autodocumentación del código.
