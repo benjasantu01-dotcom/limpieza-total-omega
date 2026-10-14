@@ -46,7 +46,6 @@ FILE_ATTRIBUTE_REPARSE_POINT: int = 0x400
 FILE_ATTRIBUTE_HIDDEN: int = 0x2
 FILE_ATTRIBUTE_SYSTEM: int = 0x4
 MAX_RECURSION_DEPTH: int = 100
-MAX_PATH_LIMIT: int = 260
 ERROR_SHARING_VIOLATION: int = 32
 ERROR_ACCESS_DENIED: int = 5
 
@@ -67,8 +66,6 @@ def is_junction(path: Path) -> bool:
 def is_system_or_hidden(path: Path) -> bool:
     """Determina si un archivo tiene atributos de sistema u oculto en Windows."""
     if not isinstance(path, Path) or not is_safe_to_modify(path) or not path.exists():
-        return True
-    if path.is_symlink():
         return True
     try:
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
@@ -103,17 +100,12 @@ def _is_file_locked(path: Path) -> bool:
     """Verifica si un archivo está en uso intentando abrirlo en modo exclusivo."""
     if not isinstance(path, Path) or not is_safe_to_modify(path):
         return True
-    # Verificación proactiva de acceso antes de intentar abrir
     if not os.access(path, os.R_OK):
         return True
     try:
         with open(path, "rb") as f:
             return False
-    except OSError as e:
-        if hasattr(e, 'winerror') and e.winerror in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED):
-            return True
-        return True
-    except Exception:
+    except (OSError, IOError):
         return True
 
 
@@ -173,8 +165,6 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
         return digest.hexdigest()
     except (OSError, IOError, PermissionError):
         return None
-    except Exception:
-        return None
 
 
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
@@ -188,8 +178,6 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
             content = f.read(read_bytes)
             return hashlib.sha256(content).hexdigest() if content else None
     except (OSError, IOError, PermissionError):
-        return None
-    except Exception:
         return None
 
 
@@ -222,7 +210,7 @@ def _resolve_and_verify_root(directory_path: PathLike) -> Optional[Path]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """BFS iterativo con aislamiento de errores de sistema para recolectar archivos."""
+    """BFS iterativo con aislamiento de errores para recolectar archivos."""
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     queue: deque[Tuple[Path, int]] = deque()
     visited_dirs, visited_inodes = set(), set()
@@ -243,7 +231,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                     try:
                         if entry.is_dir(follow_symlinks=False):
                             p_entry = Path(entry.path)
-                            if is_safe_to_modify(p_entry) and not is_protected_path(p_entry) and not is_junction(p_entry):
+                            if _safe_path_check(p_entry):
                                 queue.append((p_entry, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat()
@@ -252,9 +240,9 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                                 if _is_valid_candidate(p_entry, st.st_size):
                                     visited_inodes.add((st.st_dev, st.st_ino))
                                     size_to_paths_map[st.st_size].append(p_entry)
-                    except OSError:
+                    except (OSError, PermissionError):
                         continue
-        except OSError:
+        except (OSError, PermissionError):
             continue
     return {sz: files for sz, files in size_to_paths_map.items() if len(files) > 1}
 
@@ -263,11 +251,8 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Helper de agrupamiento genérico basado en una función de hash provista."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        try:
-            if (digest := hash_func(path)):
-                groups_by_digest[digest].append(path)
-        except Exception:
-            continue
+        if (digest := hash_func(path)):
+            groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
 

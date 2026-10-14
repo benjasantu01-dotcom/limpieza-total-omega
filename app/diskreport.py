@@ -154,20 +154,24 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     """
     Verifica si un nodo debe ser ignorado por políticas de seguridad o corrupción.
-    Analiza inodos, permisos, caracteres sospechosos y reglas de `safety.py`.
+    Detecta puntos de reparse (junctions) y rutas fuera del root esperado.
     """
     try:
+        # Check for Reparse Points (Junctions/Symlinks de sistema)
         if entry.is_dir(follow_symlinks=False):
             try:
                 st = entry.stat(follow_symlinks=False)
+                # 0x0400 es FILE_ATTRIBUTE_REPARSE_POINT en Windows
                 if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x0400):
                     return True
             except (OSError, PermissionError):
                 return True
 
-        entry_path = Path(entry.path).resolve()
+        # Validar consistencia de ruta
+        entry_path = Path(entry.path)
         try:
-            entry_path.relative_to(root_path.resolve())
+            if not entry_path.resolve().is_relative_to(root_path.resolve()):
+                return True
         except (ValueError, RuntimeError):
             return True
 

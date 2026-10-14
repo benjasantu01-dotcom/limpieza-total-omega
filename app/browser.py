@@ -280,6 +280,10 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
     if not isinstance(candidate, Path) or not isinstance(base_abs_str, str): return False
     if not candidate.is_dir() or not os.access(candidate, os.R_OK): return False
     
+    path_str = str(candidate)
+    if len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS):
+        return False
+        
     try:
         real: Path = candidate.resolve(strict=True)
     except (OSError, RuntimeError):

@@ -397,8 +397,8 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         if not is_safe_to_modify(target) or is_protected_path(target) or not is_safe_to_modify(target.parent):
             return None
         
-        # Prevenir sobreescritura si la ruta destino es un directorio o punto de montaje
-        if target.exists() and (target.is_dir() or target.is_symlink()):
+        # Prevenir sobreescritura accidental o modificaciones inseguras
+        if target.exists() and (target.is_dir() or target.is_symlink() or not is_safe_to_modify(target)):
             return None
             
         # Operación atómica de escritura
