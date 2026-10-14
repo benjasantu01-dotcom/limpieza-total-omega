@@ -430,3 +430,4 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-10-14T15:09:36` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-14T15:19:52` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-14T15:30:06` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-10-14T15:40:18` Presupuesto diario agotado (350 usados). Corte hasta mañana.
