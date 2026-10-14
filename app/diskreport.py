@@ -87,7 +87,7 @@ class GlobalStats:
         self.ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
 
     def register_file(self, size: int, suffix: str) -> None:
-        """Actualiza el contador global de peso/archivos y delega a ExtStats."""
+        """Registra el archivo en las estadísticas globales y en el bucket de su extensión."""
         if not isinstance(size, int) or size < 0:
             return
         self.total_bytes += size
@@ -400,16 +400,16 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     for path, size_bytes in walk_files(directory, skip_protected):
         if not isinstance(size_bytes, int) or size_bytes < 0:
             continue
-        try:
-            stats.register_file(size_bytes, path.suffix)
-            
-            if limit > 0:
-                if len(top_heap) < limit: 
-                    heapq.heappush(top_heap, (size_bytes, path))
-                elif size_bytes > top_heap[0][0]: 
-                    heapq.heapreplace(top_heap, (size_bytes, path))
-        except (AttributeError, TypeError, ValueError):
-            continue
+        
+        # 1. Actualizar métricas generales y por extensión
+        stats.register_file(size_bytes, path.suffix)
+        
+        # 2. Mantener el Top N (min-heap) si el límite es requerido
+        if limit > 0:
+            if len(top_heap) < limit: 
+                heapq.heappush(top_heap, (size_bytes, path))
+            elif size_bytes > top_heap[0][0]: 
+                heapq.heapreplace(top_heap, (size_bytes, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 

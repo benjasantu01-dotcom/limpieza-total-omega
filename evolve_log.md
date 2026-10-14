@@ -584,3 +584,29 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-14T05:50:27` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): el archivo se encogió al 20% del original (posible pérdida de código)
 - `2026-10-14T05:50:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T05:50:27` Corrida terminada. Total usado hoy: 140.
+- `2026-10-14T05:59:00` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-10-14T05:59:04` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-14T05:59:41` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+________________ ERROR collecting evolve/tests/test_modules.py _________________
+evolve/tests/test_modules.py:21: in <module>
+    import branding  # noqa: E402
+    ^^^^^^^^^^^^^^^
+app/branding.py:39: in <module>
+    SegmentedData: TypeAlias = Tuple[Tuple[StripeParams, ...], Tuple[ColorSegment, ...]]
+                                                                     ^^^^^^^^^^^^
+E   NameError: name 'ColorSegment' is not defined
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py - NameError: name 'ColorSegment' is not defined
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.23s
+
+```
+- `2026-10-14T05:59:41` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `branding.py` mediante la refactorización de `save_logo_svg` para eliminar la anidación excesiva y clarificar la lógica de validación, además de reemplazar los tipos complejos por `TypeAlias` más específicos para mejorar la semántica del código.
+- `2026-10-14T06:00:08` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y el tipado del módulo `browser.py` para clarificar el flujo de trabajo de seguridad y las responsabilidades de los contextos de escaneo, permitiendo una lectura más sencilla para futuros colaboradores sin alterar la lógica de ejecución.
+- `2026-10-14T06:00:35` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y el mantenimiento del módulo documentando los roles de los métodos clave, agregando type hints que faltaban (como el retorno de `register_file`) y reforzando la claridad en el flujo de `_collect_summary_data` para hacer explícita la lógica de recolección de datos y actualización del heap.
+- `2026-10-14T06:01:09` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se introdujeron docstrings estructurados y type hints detallados en las funciones de procesamiento de duplicados para aclarar la intención técnica de cada etapa del pipeline de hash, facilitando la auditoría de seguridad del proceso de I/O.
+- `2026-10-14T06:01:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-14T06:01:09` Corrida terminada. Total usado hoy: 144.

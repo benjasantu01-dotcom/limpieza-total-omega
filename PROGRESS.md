@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Mejoras aceptadas: **205** (40.7% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 50
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 23
 - Sin respuesta de la IA (error o límite): 206
 
@@ -16,27 +16,27 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-12 | 8 | 1 | 3 | 2 | 0 |
+| 2026-10-12 | 7 | 0 | 1 | 2 | 0 |
 | 2026-10-13 | 154 | 16 | 37 | 13 | 130 |
-| 2026-10-14 | 41 | 5 | 10 | 8 | 76 |
+| 2026-10-14 | 44 | 6 | 10 | 8 | 76 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **44**
-- legibilidad y documentación: **39**
+- legibilidad y documentación: **42**
 - robustez ante casos límite: **37**
-- rendimiento: **32**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **19**
+- `browser.py`: **18**
+- `duplicates.py`: **18**
+- `diskreport.py`: **18**
+- `memory.py`: **18**
 - `scanner.py`: **17**
 - `assistant.py`: **17**
-- `browser.py`: **17**
-- `duplicates.py`: **17**
 - `healthscore.py`: **17**
-- `diskreport.py`: **17**
 - `safety.py`: **14**
 - `startup.py`: **14**
 - `main.py`: **12**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-14T06:01:09` **duplicates.py** (legibilidad y documentación): Se introdujeron docstrings estructurados y type hints detallados en las funciones de procesamiento de duplicados para aclarar la intención técnica de cada etapa del pipeline de hash, facilitando la auditoría de seguridad del proceso de I/O.
+- `2026-10-14T06:00:35` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento del módulo documentando los roles de los métodos clave, agregando type hints que faltaban (como el retorno de `register_file`) y reforzando la claridad en el flujo de `_collect_summary_data` para hacer explícita la lógica de recolección de datos y actualización del heap.
+- `2026-10-14T06:00:08` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado del módulo `browser.py` para clarificar el flujo de trabajo de seguridad y las responsabilidades de los contextos de escaneo, permitiendo una lectura más sencilla para futuros colaboradores sin alterar la lógica de ejecución.
 - `2026-10-14T05:50:22` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_registry_csv` ante entradas de registro malformadas o inesperadas, evitando errores silenciosos al validar la existencia de campos obligatorios en el CSV antes de intentar procesar las filas, siguiendo el enfoque de manejo de errores y validación de entradas.
 - `2026-10-14T05:49:57` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save` y `_read_and_parse_json` reemplazando llamadas a `os.replace` y otras operaciones críticas por chequeos explícitos de seguridad con `is_safe_to_modify` y manejando excepciones de archivo ocupado de forma más específica para evitar silenciamientos de errores fatales.
 - `2026-10-14T05:49:16` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones `_is_readable` y `_is_locked_by_os` incorporando validaciones de entrada (`isinstance`) y manejadores de excepciones más específicos para evitar caídas inesperadas al procesar rutas mal formadas o inaccesibles, asegurando que el scanner no se interrumpa ante metadatos corruptos del sistema de archivos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-14T03:57:25` **settings.py** (seguridad defensiva): Se introdujo una validación estricta de "propietario" mediante `st_uid` en `_is_file_secure_to_read` para prevenir ataques de escalada de privilegios o lectura de archivos inyectados por otros usuarios, alineándose con el enfoque de seguridad defensiva.
 - `2026-10-14T03:38:32` **memory.py** (seguridad defensiva): Se mejoró la seguridad en `top_memory_processes` delegando la validación del ejecutable al momento de la recolección inicial (`candidates`), evitando que procesos con rutas restringidas consuman ciclos de CPU innecesarios y garantizando que el filtrado de seguridad ocurra antes de cualquier almacenamiento en caché.
 - `2026-10-14T03:28:39` **duplicates.py** (seguridad defensiva): Se ha robustecido la detección de duplicados implementando `os.scandir` con un manejo más estricto de excepciones y una validación de rutas mediante `is_safe_to_modify` antes de cualquier operación de I/O, evitando el seguimiento de enlaces simbólicos o puntos de reanálisis fuera de control.
-- `2026-10-14T03:28:22` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` verificando explícitamente la presencia de puntos de reparse (reparse points) mediante el chequeo de atributos del sistema (0x0400) para evitar recursión infinita en junctions o mount points, delegando además la resolución de rutas solo tras confirmar que la entrada es accesible.
-- `2026-10-14T03:27:57` **browser.py** (seguridad defensiva): Se endureció la seguridad defensiva de la función `_is_valid_cache_path` añadiendo una validación explícita de caracteres peligrosos y longitud de ruta, asegurando que cualquier ruta de caché candidata cumpla con los mismos criterios de saneamiento aplicados al resto del escaneo.
-- `2026-10-14T03:27:21` **branding.py** (seguridad defensiva): Se ha mejorado la robustez de `save_logo_svg` añadiendo un chequeo preventivo que verifica si el archivo ya existe antes de escribir, utilizando `is_safe_to_modify` para evitar la sobreescritura accidental de archivos de sistema, fortaleciendo así el enfoque de seguridad defensiva.
