@@ -149,7 +149,10 @@ def _is_target_extension(name: str) -> bool:
         return False
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta archivos con extensiones dobles engañosas (ej: documento.pdf.exe)."""
+    """
+    Heurística: Detecta archivos con extensiones dobles engañosas.
+    Busca patrones donde una extensión común (ej: .pdf) es seguida por una ejecutable (.exe).
+    """
     try:
         if path.name and DOUBLE_EXTENSION_RE.search(path.name):
             return Suspicion(path, "Doble extensión detectada como técnica de enmascaramiento", "warning")
@@ -158,7 +161,10 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Identifica ejecutables creados recientemente en carpetas volátiles comunes del usuario."""
+    """
+    Heurística: Identifica ejecutables creados recientemente en carpetas volátiles (Downloads, Temp).
+    La ventana de tiempo se define en SCAN_LIMITS.recent_hours.
+    """
     try:
         if not path.parent.name: return None
         if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
@@ -172,7 +178,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta binarios que usurpan nombres de procesos críticos del sistema fuera de System32."""
+    """
+    Heurística: Detecta binarios con nombres de procesos críticos del sistema (ej: svchost.exe)
+    cuando se encuentran fuera del directorio System32, lo cual es una técnica común de persistencia.
+    """
     try:
         if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
             if SYSTEM32_LOWER not in str(path).lower():
@@ -182,7 +191,10 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta archivos ejecutables con tamaño 0, indicativo de potenciales shells o placeholders."""
+    """
+    Heurística: Detecta ejecutables con tamaño 0.
+    Estos archivos suelen utilizarse como marcadores de posición o indicadores de compromiso fallidos.
+    """
     try:
         if _get_file_size(path) == 0:
             return Suspicion(path, "Ejecutable vacío detectado", "warning")
