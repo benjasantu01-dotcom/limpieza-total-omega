@@ -1898,6 +1898,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                                 "Empezá por la pestaña Salud."], "Informe")
                 return
             
+            # Sanitización exhaustiva de los datos del informe antes de renderizar
             sanitized_data = {k: [self._sanitize_path(line) for line in v] for k, v in self.report_data.items()}
             texto = reporting.build_report(sanitized_data)
             
@@ -1926,7 +1927,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def task() -> None:
             try:
-                ruta_destino = Path(self._sanitize_path(destino)).resolve()
+                # Sanitizar ruta y validar permisos antes de escribir
+                clean_dest = self._sanitize_path(destino)
+                ruta_destino = Path(clean_dest).resolve()
                 self._ensure_path_writable_and_clean(ruta_destino.parent)
                 
                 ruta = reporting.save_report(self.report_data, str(ruta_destino), as_markdown=as_markdown)

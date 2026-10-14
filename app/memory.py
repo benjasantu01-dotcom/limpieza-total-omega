@@ -379,15 +379,14 @@ def _is_process_executable_safe(pid: int) -> bool:
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0 and buf.value:
             path_str = str(buf.value).strip()
+            # Bloquea rutas UNC o vacías
             if not path_str or path_str.startswith("\\\\"):
                 return False
             
-            p = Path(path_str)
-            if p.is_symlink():
+            # Valida contra protección sin resolver enlaces (evita E/S bloqueante y escapes)
+            if is_protected_path(path_str):
                 return False
-                
-            normalized = str(p.resolve())
-            return not is_protected_path(normalized) and len(filter_safe_paths([normalized])) > 0
+            return len(filter_safe_paths([path_str])) > 0
     except (ctypes.ArgumentError, OSError, ValueError, RuntimeError):
         return False
     finally:

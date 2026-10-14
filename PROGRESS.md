@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **210** (41.7% de aceptación)
+- Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 198
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-13 | 142 | 13 | 33 | 11 | 117 |
-| 2026-10-14 | 68 | 9 | 16 | 11 | 84 |
+| 2026-10-13 | 142 | 13 | 33 | 11 | 113 |
+| 2026-10-14 | 71 | 9 | 16 | 11 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - legibilidad y documentación: **50**
-- seguridad defensiva: **40**
+- seguridad defensiva: **43**
 - rendimiento: **35**
 - robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
+- `memory.py`: **21**
 - `browser.py`: **20**
-- `memory.py`: **20**
 - `diskreport.py`: **19**
-- `healthscore.py`: **18**
+- `healthscore.py`: **19**
 - `assistant.py`: **17**
 - `scanner.py`: **17**
 - `duplicates.py`: **17**
-- `main.py`: **14**
+- `main.py`: **15**
 - `startup.py`: **13**
 - `safety.py`: **12**
 - `branding.py`: **12**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-14T08:03:37` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_process_executable_safe` al reemplazar `.resolve()` (que puede disparar accesos a disco bloqueantes o seguir enlaces de forma inesperada) por una validación de ruta estática más estricta mediante `is_protected_path` directamente sobre la ruta recuperada de la API de Windows, asegurando que el proceso evaluado no resida en directorios protegidos o rutas UNC.
+- `2026-10-14T08:03:19` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `on_build_report` y `on_save_report` para garantizar que la recolección de datos para los informes y su posterior persistencia utilicen `_sanitize_path` y `_ensure_path_writable_and_clean`, evitando el uso de rutas arbitrarias no validadas que podrían haber sido manipuladas antes de la escritura en disco.
+- `2026-10-14T08:02:10` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la incorporación de una lista de bloqueo de caracteres prohibidos (`_FORBIDDEN_CHARS`) y la validación estricta de formato en `_sanitize_msg`, asegurando que ninguna métrica procesada por el asistente pueda inyectar secuencias de escape o caracteres de control.
 - `2026-10-14T07:52:54` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `_is_excluded_path` asegurando que las rutas de los archivos encontrados no se escapan del directorio raíz original mediante el uso de `path.resolve()` y validación contra `root_path`, evitando ataques de tipo "path traversal" o desbordamiento fuera de la carpeta objetivo durante el escaneo.
 - `2026-10-14T07:52:44` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante la validación explícita de puntos de reparse en cada nivel del recorrido, asegurando que la función `_is_junction_default` y el atributo de reparse sean consultados preventivamente para evitar el escape del sandbox.
 - `2026-10-14T07:52:17` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `save_logo_svg` encapsulando la creación del archivo mediante `ensure_safe_to_modify` antes de cualquier operación de escritura, garantizando que el sistema de protección bloquee intentos de escritura en rutas no permitidas antes de realizar la manipulación del disco.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-14T07:12:02` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas `None` o mal formadas en `save_logo_svg` y se reemplazó el uso de `path.parent.mkdir` por una operación encapsulada que previene errores de concurrencia y permisos en entornos con directorios de sistema, asegurando que la app no aborte ante condiciones inesperadas del sistema de archivos.
 - `2026-10-14T07:01:44` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner implementando una caché LFU/LRU a nivel de `is_protected_path` en las comprobaciones críticas dentro del loop de `process_entry`, reduciendo drásticamente las llamadas redundantes al sistema de archivos al validar rutas ya procesadas.
 - `2026-10-14T06:52:35` **memory.py** (rendimiento): Optimicé el rendimiento del escaneo de procesos en `top_memory_processes` reemplazando la creación y ordenamiento de una lista completa de tuplas por un `heapq.nlargest`, reduciendo la carga de CPU y memoria al evitar el ordenamiento de toda la tabla de procesos del sistema cuando solo se requieren los 10 más pesados.
-- `2026-10-14T06:52:07` **main.py** (rendimiento): Se ha implementado un mecanismo de "invalidación perezosa" en el cálculo del score de salud dentro de `on_full_analysis`, utilizando un *digest* (tuple de estados) para evitar re-compilaciones del asistente y cálculos pesados si el estado del sistema no ha cambiado desde la última iteración, reduciendo significativamente la carga de CPU y el uso de memoria en análisis repetidos.
-- `2026-10-14T06:40:50` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_collect_summary_data` reemplazando la creación redundante de objetos `Path` y llamadas a `resolve()` (que invocan llamadas al sistema de archivos) por operaciones sobre strings y `os.scandir` directo, reduciendo drásticamente la latencia en directorios grandes.
-- `2026-10-14T06:40:25` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas redundantes a `os.path.normcase` y `os.scandir` mediante una estructura de datos `set` para `visited_dirs` y pre-cálculos, reduciendo la carga de E/S en escaneos profundos.

@@ -26,6 +26,7 @@ MetricKey: TypeAlias = str
 
 # Constantes de rendimiento para validación
 _ALLOWED_CHARS: Final[set[str]] = set(string.ascii_letters + string.digits + " .,:()-_%")
+_FORBIDDEN_CHARS: Final[set[str]] = {chr(i) for i in range(32) if chr(i) not in (" ", "\t")} # Bloquear caracteres de control
 _BLOCKED_TERMS: Final[frozenset[str]] = frozenset(["system32", "windows", "admin", "c:\\"])
 _MAX_MSG_LEN: Final[int] = 128
 
@@ -311,8 +312,9 @@ def grade_for_score(score: float | int) -> str:
 def _sanitize_msg(msg: str | Any) -> str:
     """Limpia el mensaje usando una whitelist estricta y limitación de longitud."""
     if not isinstance(msg, str): return ""
-    raw_snapshot = str(msg)
-    sanitized = "".join(c for c in raw_snapshot if c in _ALLOWED_CHARS)
+    # Eliminar caracteres de control y prohibidos antes de filtrar contra whitelist
+    clean = "".join(c for c in msg if c not in _FORBIDDEN_CHARS)
+    sanitized = "".join(c for c in clean if c in _ALLOWED_CHARS)
     lower_msg = sanitized.lower()
     if any(b in lower_msg for b in _BLOCKED_TERMS):
         return ""
