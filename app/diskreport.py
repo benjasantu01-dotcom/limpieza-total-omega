@@ -298,7 +298,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     
     while stack:
         current_dir = stack.pop()
-        # Verificar longitud de ruta para evitar excepciones de sistema operativo
         if len(str(current_dir)) > 32767:
             continue
             
@@ -418,8 +417,8 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     
     try:
         data = _collect_summary_data(root, skip_protected, limit=20)
-    except Exception:
-        return ["Error: Falló inesperadamente el escaneo del directorio raíz."]
+    except Exception as e:
+        return [f"Error: Falló el escaneo del directorio raíz: {str(e)}"]
         
     if data.total_files == 0: 
         return ["Aviso: No se encontraron archivos accesibles en la ruta seleccionada."]

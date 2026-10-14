@@ -257,7 +257,7 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
 
 @safe_path_operation(0)
 def directory_size(path: Optional[OSPath]) -> int:
-    if not isinstance(path, (str, Path)): return 0
+    if not isinstance(path, (str, Path)) or not path: return 0
     path_obj: Path = Path(path)
     if not path_obj.exists() or not path_obj.is_dir(): return 0
     
@@ -310,8 +310,9 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     return Path()
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
+    if bases is not None and not isinstance(bases, (list, tuple)): return []
     raw_bases = list(bases) if bases is not None else base_directories()
-    if not isinstance(raw_bases, list) or not raw_bases: return []
+    if not raw_bases: return []
 
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     found: List[BrowserCache] = []

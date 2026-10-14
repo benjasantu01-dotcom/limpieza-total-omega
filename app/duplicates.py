@@ -154,18 +154,9 @@ def _validate_and_resolve_path(path_input: PathLike) -> Optional[Path]:
 
 
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """
-    Paso 3: Calcula el SHA256 completo del archivo.
-
-    Args:
-        path: Ruta al archivo a procesar.
-        chunk_size: Tamaño de lectura del buffer.
-
-    Returns:
-        Hexdigest del hash si tiene éxito, None en caso contrario.
-    """
+    """Paso 3: Calcula el SHA256 completo del archivo."""
     valid_path = _validate_and_resolve_path(path)
-    if valid_path is None or not is_safe_to_modify(valid_path):
+    if not valid_path:
         return None
             
     try:
@@ -177,27 +168,25 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
                     break
                 digest.update(chunk)
         return digest.hexdigest()
-    except (OSError, MemoryError, ValueError, IOError):
+    except (OSError, IOError, PermissionError):
+        return None
+    except Exception:
         return None
 
 
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """
-    Paso 2: Calcula el SHA256 de los primeros N bytes del archivo.
-
-    Args:
-        path: Ruta al archivo.
-        read_bytes: Cantidad de bytes a leer para el hash preliminar.
-    """
+    """Paso 2: Calcula el SHA256 de los primeros N bytes del archivo."""
     valid_path = _validate_and_resolve_path(path)
-    if valid_path is None or not is_safe_to_modify(valid_path):
+    if not valid_path:
         return None
 
     try:
         with open(valid_path, "rb") as f:
             content = f.read(read_bytes)
             return hashlib.sha256(content).hexdigest() if content else None
-    except (OSError, ValueError, IOError):
+    except (OSError, IOError, PermissionError):
+        return None
+    except Exception:
         return None
 
 
@@ -275,7 +264,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
         try:
             if (digest := hash_func(path)):
                 groups_by_digest[digest].append(path)
-        except OSError:
+        except Exception:
             continue
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
