@@ -698,3 +698,41 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-14T07:32:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-14T07:32:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T07:32:22` Corrida terminada. Total usado hoy: 180.
+- `2026-10-14T07:40:51` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-10-14T07:41:41` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-10-14T07:42:06` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-14T07:42:38` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha añadido un robusto manejo de excepciones y validación de estado en `_read_and_parse_json` para asegurar que el sistema no falle ante archivos JSON corruptos, vacíos o bloqueados por otros procesos, evitando así que una configuración dañada impida el inicio de la aplicación.
+- `2026-10-14T07:42:50` Tests FALLARON:
+```
+.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:358: SyntaxWarning: invalid escape sequence '\)'
+    """Comprueba si la ruta accede directamente a dispositivos (namespace \\.\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed, 4 warnings in 1.25s
+
+```
+- `2026-10-14T07:42:50` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez ante rutas inválidas en `_resolve_and_cache_path` y `_extract_quoted_path` mediante la validación explícita de `Path.is_absolute()` y una gestión más estricta de excepciones de sistema para evitar que nombres de archivo malformados o rutas inaccesibles corten el procesamiento de la lista.
+- `2026-10-14T07:42:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-14T07:42:50` Corrida terminada. Total usado hoy: 184.

@@ -384,22 +384,27 @@ def _is_file_secure_to_read(st: os.stat_result, file_obj: Any) -> bool:
 
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     """Helper que encapsula la apertura, lock y lectura segura del archivo."""
+    if not file_path.exists(): return None
     try:
         if _Validators._is_reparse_point(file_path): return None
         if not is_safe_to_modify(str(file_path)): return None
         if not _is_dir_safe(file_path.parent): return None
+        
         with open(file_path, "r", encoding="utf-8") as f:
             st = os.fstat(f.fileno())
             if not _is_file_secure_to_read(st, f): return None
+            
             try:
                 fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
                 content = f.read(MAX_SETTINGS_SIZE + 1)
-                if not content or len(content) > MAX_SETTINGS_SIZE: return None
-                data = json.loads(content)
-                return data if _is_dict(data) else None
+            except (OSError, IOError): return None
             finally:
                 try: fcntl.flock(f.fileno(), fcntl.LOCK_UN)
                 except (OSError, IOError): pass
+            
+            if not content or len(content) > MAX_SETTINGS_SIZE: return None
+            data = json.loads(content)
+            return data if _is_dict(data) else None
     except (OSError, PermissionError, ValueError, AttributeError, RuntimeError, json.JSONDecodeError): return None
 
 def _is_dir_safe(path: Path) -> bool:
@@ -417,7 +422,7 @@ def _load_impl(ruta: Path) -> AppSettings:
     if not ruta.exists() or not ruta.is_file() or _Validators._is_reparse_point(ruta):
         return DEFAULTS.copy()
     data = _read_and_parse_json(ruta.resolve())
-    return _coerce_and_verify(validate(data)) if data else DEFAULTS.copy()
+    return _coerce_and_verify(validate(data)) if data is not None else DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """

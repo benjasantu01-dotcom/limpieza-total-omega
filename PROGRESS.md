@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **205** (40.7% de aceptación)
-- Rechazadas por tests: 21
+- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-13 | 142 | 13 | 33 | 11 | 125 |
-| 2026-10-14 | 63 | 8 | 16 | 11 | 82 |
+| 2026-10-13 | 142 | 13 | 33 | 11 | 121 |
+| 2026-10-14 | 64 | 9 | 16 | 11 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **50**
 - seguridad defensiva: **36**
 - rendimiento: **35**
-- robustez ante casos límite: **33**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
@@ -41,11 +41,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **12**
 - `organizer.py`: **11**
 - `branding.py`: **11**
+- `settings.py`: **10**
 - `quarantine.py`: **10**
-- `settings.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-14T07:42:38` **settings.py** (robustez ante casos límite): Se ha añadido un robusto manejo de excepciones y validación de estado en `_read_and_parse_json` para asegurar que el sistema no falle ante archivos JSON corruptos, vacíos o bloqueados por otros procesos, evitando así que una configuración dañada impida el inicio de la aplicación.
 - `2026-10-14T07:31:12` **memory.py** (robustez ante casos límite): Se ha añadido un robusto manejo de errores en `top_memory_processes` para evitar fallos por condiciones de carrera (procesos terminados justo antes de ser consultados) y se ha mejorado la tolerancia a fallos en la lectura de archivos del sistema (`/proc/meminfo`) mediante una lectura de texto más segura.
 - `2026-10-14T07:22:41` **main.py** (robustez ante casos límite): Se implementó un mecanismo de pre-validación de rutas en la carga de la configuración para prevenir excepciones durante el acceso a directorios protegidos o inexistentes, y se añadió un manejo de errores robusto en la inicialización de componentes mediante la verificación de la existencia de widgets (`winfo_exists`) antes de manipularlos.
 - `2026-10-14T07:21:46` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de puntaje frente a fallas en la `SystemMetrics` inicial, asegurando que `compute_score` siempre retorne un resultado válido incluso si `metrics` es `None` o contiene datos malformados, mediante un manejo de excepciones más granular y una validación defensiva en la instancia.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-14T06:30:44` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo descripciones explícitas del "porqué" de las decisiones de diseño (como la limpieza de caracteres de control y el manejo de rutas UNC) para facilitar futuras auditorías y mantenimiento, cumpliendo con el enfoque de legibilidad.
 - `2026-10-14T06:30:17` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con bloques de parámetros y retornos en las funciones críticas de validación y persistencia para clarificar el flujo de seguridad y datos, mejorando la mantenibilidad sin alterar la lógica de ejecución.
 - `2026-10-14T06:21:36` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica del módulo mediante la adición de docstrings detallados en las funciones de heurística y la estandarización de las firmas de funciones para clarificar su propósito, manteniendo la integridad del comportamiento existente.
-- `2026-10-14T06:21:24` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la actualización de los docstrings en los predicados de seguridad y funciones de validación, clarificando el propósito técnico y el flujo de los chequeos de integridad, sin modificar la lógica existente.
