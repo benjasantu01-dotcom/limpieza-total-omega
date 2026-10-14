@@ -157,17 +157,14 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     Detecta puntos de reparse (junctions) y rutas fuera del root esperado.
     """
     try:
-        # Check for Reparse Points (Junctions/Symlinks de sistema)
         if entry.is_dir(follow_symlinks=False):
             try:
                 st = entry.stat(follow_symlinks=False)
-                # 0x0400 es FILE_ATTRIBUTE_REPARSE_POINT en Windows
                 if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x0400):
                     return True
             except (OSError, PermissionError):
                 return True
 
-        # Validar consistencia de ruta
         entry_path = Path(entry.path)
         try:
             if not entry_path.resolve().is_relative_to(root_path.resolve()):
@@ -314,7 +311,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Pre-check de symlink y seguridad
                         if entry.is_symlink():
                             continue
                             
@@ -325,7 +321,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if skip_protected and is_protected_path(entry_path):
                             continue
                         
-                        # Obtener stat de forma segura
                         st = entry.stat(follow_symlinks=False)
                         
                         if entry.is_dir():
@@ -334,7 +329,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode)
                                 stack.append(entry_path)
                         elif entry.is_file():
-                            yield entry_path, int(st.st_size)
+                            size = getattr(st, 'st_size', 0)
+                            if isinstance(size, int) and size >= 0:
+                                yield entry_path, size
                             
                     except (OSError, PermissionError, FileNotFoundError):
                         continue

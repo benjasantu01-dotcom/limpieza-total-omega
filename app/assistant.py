@@ -92,9 +92,7 @@ _CONTEXT_SCHEMA: Final = (
 def _is_safe_key(key: str) -> bool:
     """Valida que una clave de diccionario o atributo no sea privada, interna o un método."""
     if not isinstance(key, str): return False
-    # Evita acceso a atributos mágicos, internos o protegidos
     if key.startswith("__") or key.startswith("_"): return False
-    # Bloqueo estricto para impedir acceso a métodos de la clase vía reflectividad
     forbidden = {"__dict__", "__class__", "__init__", "__setattr__", "__getattribute__", "ingest", "get_metric", "_apply_updates", "_apply_field"}
     return key not in forbidden
 
@@ -494,10 +492,13 @@ def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
     try:
         if isinstance(source, dict):
             return source.get(key)
-        val = getattr(source, key, None)
-        if callable(val) or isinstance(val, (type,)):
-            return None
-        return val
+        # Verificamos específicamente el atributo antes de intentar acceder
+        if hasattr(source, key):
+            val = getattr(source, key, None)
+            if callable(val) or isinstance(val, (type,)):
+                return None
+            return val
+        return None
     except (AttributeError, ValueError, TypeError):
         return None
 
