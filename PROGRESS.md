@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Mejoras aceptadas: **211** (41.9% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 52
-- Sin cambios (nada sustancial que mejorar): 21
+- Rechazadas por guardia de seguridad: 51
+- Sin cambios (nada sustancial que mejorar): 24
 - Sin respuesta de la IA (error o límite): 198
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-12 | 55 | 4 | 15 | 8 | 48 |
+| 2026-10-12 | 52 | 4 | 14 | 8 | 48 |
 | 2026-10-13 | 154 | 16 | 37 | 13 | 130 |
-| 2026-10-14 | 4 | 0 | 0 | 0 | 20 |
+| 2026-10-14 | 5 | 0 | 0 | 3 | 20 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **46**
+- manejo de errores y validación de entradas: **47**
 - seguridad defensiva: **45**
-- legibilidad y documentación: **43**
 - robustez ante casos límite: **43**
+- legibilidad y documentación: **40**
 - rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
@@ -36,17 +36,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **18**
 - `diskreport.py`: **18**
 - `duplicates.py`: **18**
-- `scanner.py`: **17**
-- `safety.py`: **16**
-- `startup.py`: **13**
+- `scanner.py`: **16**
+- `safety.py`: **15**
 - `branding.py`: **13**
 - `settings.py`: **12**
+- `startup.py`: **12**
 - `quarantine.py`: **11**
 - `organizer.py`: **11**
-- `main.py`: **10**
+- `main.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-14T01:05:14` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en `on_save_settings` y `on_reset_settings` añadiendo chequeos de existencia de widgets (`winfo_exists`) antes de intentar manipularlos, evitando así `tk.TclError` y `AttributeError` ante cierres inesperados de la aplicación o destrucción prematura de componentes, cumpliendo con el enfoque de validación de entradas.
 - `2026-10-14T00:55:03` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones `hash_file` y `partial_hash` añadiendo un manejo de excepciones más granular y defensivo, asegurando que cualquier fallo inesperado durante la lectura de archivos (especialmente ante E/S parcial o problemas de permisos súbitos) no propague errores hacia el recolector.
 - `2026-10-14T00:54:53` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez en `walk_files` y `summarize` capturando excepciones específicas y validando estados intermedios para evitar que el escaneo colapse ante errores inesperados de I/O, siguiendo estrictamente el enfoque de manejo de errores.
 - `2026-10-14T00:54:27` **browser.py** (manejo de errores y validación de entradas): Reforcé la validación de entrada en las funciones públicas `directory_size` y `detect_profiles` para garantizar que los tipos de datos sean correctos y evitar procesar rutas nulas o inválidas que podrían derivar en errores en tiempo de ejecución.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-13T13:48:25` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva de `browser.py` implementando una validación estricta de rutas mediante `pathlib.Path.is_relative_to` (o su equivalente mediante comparación de `parts`), asegurando que no se pueda realizar un *path traversal* fuera del sandbox (`LOCALAPPDATA`) incluso si el sistema operativo resolviera enlaces o accesos inesperados.
 - `2026-10-13T13:47:52` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `save_logo_svg` añadiendo una comprobación explícita mediante `is_protected_path` sobre la ruta resuelta, asegurando que no se pueda escribir en directorios bloqueados incluso si la validación de `is_safe_to_modify` fuera puenteada por una configuración inusual, manteniendo la consistencia con las reglas de seguridad defensiva.
 - `2026-10-13T13:47:12` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al validar que `_get_source_value` no permita el acceso a atributos que comiencen con guión bajo (atributos privados/protegidos) ni a métodos, bloqueando vectores de introspección de objetos fuente externos antes de que lleguen a `SystemContext`.
-- `2026-10-13T13:38:26` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes del sistema de archivos agregando un chequeo preventivo de `OSError` al realizar operaciones de lectura y metadatos en `_is_file_secure_to_read` y `load`, evitando que fallos transitorios en el acceso al disco bloqueen la inicialización de la app.

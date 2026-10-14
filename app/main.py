@@ -2011,7 +2011,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                     assistant.PRIVACY_NOTICE + "\n\n¿Lo activamos?",
                 ):
                     if hasattr(self, 'setting_vars') and "asistente_activado" in self.setting_vars:
-                        self.setting_vars["asistente_activado"].set(False)
+                        # Chequeo de existencia antes de manipular el valor del switch
+                        try:
+                            self.setting_vars["asistente_activado"].set(False)
+                        except (tk.TclError, RuntimeError):
+                            pass
                     return
 
             def task() -> None:
