@@ -95,7 +95,7 @@ def _is_safe_key(key: str) -> bool:
     # Evita acceso a atributos mágicos, internos o protegidos
     if key.startswith("__") or key.startswith("_"): return False
     # Bloqueo estricto para impedir acceso a métodos de la clase vía reflectividad
-    forbidden = {"__dict__", "__class__", "__init__", "__setattr__", "__getattribute__", "ingest", "get_metric"}
+    forbidden = {"__dict__", "__class__", "__init__", "__setattr__", "__getattribute__", "ingest", "get_metric", "_apply_updates", "_apply_field"}
     return key not in forbidden
 
 def _check_metric_integrity(val: Any) -> bool:
@@ -435,8 +435,9 @@ class SystemContext:
             if _is_safe_key(k):
                 setattr(self, k, v)
         self.analyzed = True
-        for attr in ["metrics_snapshot", "active_problems", "_hash_tuple"]:
-            self.__dict__.pop(attr, None)
+        self.__dict__.pop("metrics_snapshot", None)
+        self.__dict__.pop("active_problems", None)
+        self.__dict__.pop("_hash_tuple", None)
 
     def ingest(self, source: Any) -> bool:
         """Normaliza e importa datos externos al contexto de manera transaccional."""
@@ -494,7 +495,7 @@ def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
         if isinstance(source, dict):
             return source.get(key)
         val = getattr(source, key, None)
-        if (isinstance(key, str) and key.startswith("_")) or callable(val) or isinstance(val, (type,)):
+        if callable(val) or isinstance(val, (type,)):
             return None
         return val
     except (AttributeError, ValueError, TypeError):

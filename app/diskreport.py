@@ -310,6 +310,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Pre-check de symlink y seguridad
+                        if entry.is_symlink():
+                            continue
+                            
                         if skip_protected and _is_excluded_path(entry, root_path):
                             continue
                         
@@ -317,22 +321,17 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if skip_protected and is_protected_path(entry_path):
                             continue
                         
-                        if entry.is_dir(follow_symlinks=False):
-                            try:
-                                st = entry.stat(follow_symlinks=False)
-                                inode = (st.st_dev, st.st_ino)
-                                if inode not in visited_inodes:
-                                    visited_inodes.add(inode)
-                                    stack.append(entry_path)
-                            except (OSError, PermissionError):
-                                continue
-                        elif entry.is_file(follow_symlinks=False):
-                            try:
-                                f_stat = entry.stat(follow_symlinks=False)
-                                if f_stat:
-                                    yield entry_path, int(f_stat.st_size)
-                            except (OSError, PermissionError, TypeError, FileNotFoundError):
-                                continue
+                        # Obtener stat de forma segura
+                        st = entry.stat(follow_symlinks=False)
+                        
+                        if entry.is_dir():
+                            inode = (st.st_dev, st.st_ino)
+                            if inode not in visited_inodes:
+                                visited_inodes.add(inode)
+                                stack.append(entry_path)
+                        elif entry.is_file():
+                            yield entry_path, int(st.st_size)
+                            
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
         except (PermissionError, OSError, FileNotFoundError): 
