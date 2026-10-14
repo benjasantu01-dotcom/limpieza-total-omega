@@ -168,7 +168,6 @@ _DUP_SCORER = create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)
 _STARTUP_SCORER = create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inverse=True)
 
 # Pipeline de procesamiento central: define la lógica para computar cada métrica y sus reglas de alerta.
-# La estructura permite que el motor de puntuación escale añadiendo nuevos objetos PipelineEntry.
 _PIPELINE: Final[Tuple[PipelineEntry, ...]] = (
     PipelineEntry(
         "seguridad", 30, 

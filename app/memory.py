@@ -31,7 +31,7 @@ import time
 from pathlib import Path
 from functools import lru_cache
 from dataclasses import dataclass, field
-from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, Final, Set, NewType, Any
+from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, Final, Set, NewType, Any, NamedTuple
 from safety import is_protected_path, filter_safe_paths
 
 if TYPE_CHECKING:
@@ -49,18 +49,21 @@ BYTES_IN_MB: Final[int] = 1024 * 1024
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 MAX_VALID_PROCESS_MEM: Final[int] = 128 * 1024 * BYTES_IN_MB 
 
-# Máscaras de acceso Win32:
+# Máscaras de acceso Win32 para interactuar con el subsistema de procesos:
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x0400
+TRIM_ACCESS_MASK: Final[int] = 0x00020000 | PROCESS_SET_QUOTA
+
 FILE_ATTRIBUTE_REPARSE_POINT: Final[int] = 0x0400
 DRIVE_FIXED: Final[int] = 3
 INVALID_HANDLE_VALUE: Final[int] = -1
 
-# TRIM_ACCESS_MASK requiere acceso de escritura/modificación para EmptyWorkingSet.
-TRIM_ACCESS_MASK: Final[int] = 0x00020000 | PROCESS_SET_QUOTA
-
 SYSTEM_CRITICAL_PIDS: Final[Set[int]] = {0, 4}
 ERROR_ACCESS_DENIED: Final[int] = 5
+
+class CacheEntry(NamedTuple):
+    timestamp: float
+    data: List[ProcessMemory]
 
 __all__ = [
     "MemorySnapshot",
@@ -181,6 +184,7 @@ def _safe_int_conversion(value: Optional[str], multiplier: int = 1) -> BytesValu
 _is_windows: bool = os.name == "nt"
 _linux_mem_path: Path = Path("/proc/meminfo")
 _EMPTY_SNAPSHOT: MemorySnapshot = MemorySnapshot(BytesValue(0), BytesValue(0))
+_CACHE_TOP_PROC: CacheEntry = CacheEntry(0.0, [])
 
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
@@ -291,14 +295,13 @@ def _query_working_set_bytes(pid: int, kernel32: ctypes.WinDLL, psapi: ctypes.Wi
         kernel32.CloseHandle(process_handle)
     return None
 
-_CACHE_TOP_PROC: Dict[str, Any] = {"time": 0.0, "data": []}
-
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Lista los procesos más pesados enumerando la tabla de procesos del sistema."""
+    global _CACHE_TOP_PROC
     if not _is_windows: return []
     now = time.time()
     
-    if (now - _CACHE_TOP_PROC["time"]) > 60:
+    if (now - _CACHE_TOP_PROC.timestamp) > 60:
         kernel32 = getattr(ctypes.windll, "kernel32", None)
         psapi = getattr(ctypes.windll, "psapi", None)
         if not kernel32 or not psapi or not hasattr(psapi, "EnumProcesses"): return []
@@ -313,7 +316,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
                 found_procs = []
                 count = min(1024, cb_needed.value // 4)
                 
-                candidates = []
+                candidates: List[Tuple[int, BytesValue]] = []
                 for i in range(count):
                     pid = pids[i]
                     if pid > 4 and not _is_system_process(pid) and _is_process_executable_safe(pid):
@@ -325,12 +328,11 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
                 for pid, ws in candidates[:limit]:
                     found_procs.append(ProcessMemory(f"PID {pid}", pid, ws))
                 
-                _CACHE_TOP_PROC["data"] = found_procs
-                _CACHE_TOP_PROC["time"] = now
+                _CACHE_TOP_PROC = CacheEntry(now, found_procs)
         except (ctypes.ArgumentError, OSError, TypeError):
             pass
             
-    return _CACHE_TOP_PROC["data"]
+    return _CACHE_TOP_PROC.data
 
 @lru_cache(maxsize=8)
 def pressure_level(snapshot: MemorySnapshot) -> str:
