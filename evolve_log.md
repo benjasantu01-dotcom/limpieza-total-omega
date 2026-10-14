@@ -1281,3 +1281,10 @@ FAILED evolve/tests/test_modules.py::test_diagnose_lists_top_processes - Asserti
 - `2026-10-14T12:38:32` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-14T12:38:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T12:38:32` Corrida terminada. Total usado hoy: 300.
+- `2026-10-14T12:46:40` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-14T12:47:50` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una verificación de "punto de reparse" en el árbol de directorios que impide que la aplicación siga o manipule recursivamente directorios que son enlaces NTFS (junctions o symlinks), evitando que la recursión de `organizer.py` o `scanner.py` escape accidentalmente del sandbox configurado hacia otras partes del sistema de archivos.
+- `2026-10-14T12:48:16` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: Scanner._is_inside_base_root
+- `2026-10-14T12:48:50` ➖ Sin cambios en settings.py (enfoque: seguridad defensiva). Motivo: Se ha restringido el acceso a la escritura de archivos de configuración mediante una validación estricta de permisos de usuario (`st_uid`), asegurando que solo el propietario del proceso actual pueda manipular el archivo, mitigando riesgos de escalada de privilegios o manipulación por otros usuarios en sistemas multiusuario.
+- `2026-10-14T12:49:05` ✅ Mejora aceptada en startup.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `startup.py` añadiendo la validación mediante `is_safe_to_modify` a la resolución de rutas en `_resolve_and_cache_path`, garantizando que solo se procesen rutas que no violen las políticas de seguridad del sistema antes de realizar cualquier operación de acceso a disco.
+- `2026-10-14T12:49:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-14T12:49:05` Corrida terminada. Total usado hoy: 304.

@@ -153,7 +153,7 @@ class StartupEntry:
     def _validate_file_access(self, p: Path) -> bool:
         """Comprueba si la ruta resuelta es un archivo accesible y no protegido por `safety.py`."""
         try:
-            if is_protected_path(p) or p.is_symlink():
+            if is_protected_path(p) or p.is_symlink() or not is_safe_to_modify(p):
                 return False
             return p.stat().is_file()
         except (OSError, PermissionError, FileNotFoundError, AttributeError):

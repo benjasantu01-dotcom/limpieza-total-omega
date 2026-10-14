@@ -796,6 +796,11 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         p_path = normalize(parent)
         if is_drive_root(c_path) or is_protected_path(str(c_path)): return False
         
+        # Validación extra: impedir seguir Junctions/Reparse Points en el árbol
+        for part in c_path.parts:
+             if _is_system_directory_junction(str(c_path.anchor) + os.sep.join(c_path.parts[:c_path.parts.index(part)+1])):
+                 return False
+
         return c_path.is_relative_to(p_path) if allow_equal else (c_path.is_relative_to(p_path) and c_path != p_path)
     except (UnsafePathError, TypeError, OSError, RuntimeError, ValueError): return False
 
