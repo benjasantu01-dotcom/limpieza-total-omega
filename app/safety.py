@@ -298,7 +298,7 @@ def is_running_as_admin() -> bool:
 
 def _is_virtual_drive(path_str: str) -> bool:
     """Detecta volúmenes mapeados vía 'subst' que podrían enmascarar rutas."""
-    if os.name != 'nt' or not isinstance(path_str, str) or not os.path.isabs(path_str): return False
+    if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
     drive = os.path.splitdrive(path_str)[0]
     if not drive: return False
     try:
@@ -771,14 +771,15 @@ def is_protected_path(path: PathLike) -> bool:
     """Filtra rutas que pertenecen a directorios críticos del SO."""
     if not isinstance(path, (str, Path)) or not path: return True
     try:
-        p = Path(path)
-        if p.is_symlink() or _is_system_directory_junction(str(p)): return True
+        # Se normaliza internamente usando _normalize_resolved para aprovechar el caché
+        p_resolved = _normalize_resolved(str(path))
         
-        if PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in p.parts):
-            p_resolved = _normalize_resolved(str(p))
+        if p_resolved.is_symlink() or _is_system_directory_junction(str(p_resolved)): return True
+        
+        if PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in p_resolved.parts):
             if not _is_kernel_managed(str(p_resolved)):
                 if not any(p_resolved.is_relative_to(root) for root in _SYSTEM_ROOT_PATHS):
-                    attrs = _get_file_attrs(str(p))
+                    attrs = _get_file_attrs(str(p_resolved))
                     if not (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN)):
                         return p_resolved == Path(p_resolved.anchor)
         return True

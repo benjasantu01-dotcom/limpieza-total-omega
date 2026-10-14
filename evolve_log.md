@@ -1207,3 +1207,38 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-14T02:27:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
 - `2026-10-14T02:27:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T02:27:06` Corrida terminada. Total usado hoy: 60.
+- `2026-10-14T02:35:18` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-10-14T02:36:14` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el rendimiento del módulo mediante la implementación de un caché de resultados de `is_protected_path` basada en la ruta normalizada y el uso de un conjunto (`set`) para la validación de extensiones sensibles, evitando recálculos innecesarios y búsquedas lineales en operaciones frecuentes.
+- `2026-10-14T02:36:39` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_relevant_extension
+- `2026-10-14T02:37:09` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
+- `2026-10-14T02:37:20` Tests FALLARON:
+```
+========
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:358: SyntaxWarning: invalid escape sequence '\)'
+    """Detecta acceso a dispositivos hardware directamente (formato \\.\)."""
+
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:763: SyntaxWarning: invalid escape sequence '\)'
+    """Identifica si la ruta corresponde a una raíz de unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed, 8 warnings in 1.58s
+
+```
+- `2026-10-14T02:37:20` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimizé la resolución de rutas en `StartupEntry` introduciendo un filtro de pre-validación basado en el tamaño máximo de la ruta (260 caracteres) y una comprobación temprana de existencia en la caché antes de realizar llamadas costosas al sistema de archivos mediante `Path.resolve()`.
+- `2026-10-14T02:37:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-14T02:37:20` Corrida terminada. Total usado hoy: 64.
