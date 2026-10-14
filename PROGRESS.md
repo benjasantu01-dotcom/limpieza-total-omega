@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
-- Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 45
-- Sin cambios (nada sustancial que mejorar): 24
+- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Rechazadas por tests: 21
+- Rechazadas por guardia de seguridad: 44
+- Sin cambios (nada sustancial que mejorar): 25
 - Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-13 | 122 | 11 | 28 | 11 | 96 |
-| 2026-10-14 | 78 | 9 | 17 | 13 | 119 |
+| 2026-10-13 | 120 | 11 | 26 | 11 | 96 |
+| 2026-10-14 | 79 | 10 | 18 | 14 | 119 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **47**
-- manejo de errores y validación de entradas: **43**
+- manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **41**
-- rendimiento: **35**
 - robustez ante casos límite: **34**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **19**
 - `memory.py`: **19**
-- `assistant.py`: **17**
 - `duplicates.py`: **17**
 - `healthscore.py`: **17**
 - `diskreport.py`: **17**
+- `assistant.py`: **16**
 - `scanner.py`: **15**
 - `startup.py`: **13**
 - `main.py`: **13**
-- `branding.py`: **11**
+- `organizer.py`: **11**
 - `quarantine.py`: **11**
 - `safety.py`: **11**
-- `organizer.py`: **10**
+- `branding.py`: **10**
 - `settings.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-14T10:04:29` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez del manejo de errores en `stage_for_review` y `delete_reviewed` al encapsular correctamente las validaciones, evitando que excepciones en la resolución de rutas interrumpan el flujo y asegurando que las llamadas a `ensure_safe_to_modify` se realicen solo sobre objetos validados.
 - `2026-10-14T09:54:09` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de hash (`hash_file` y `partial_hash`) capturando `OSError` e `IOError` explícitamente durante la lectura de archivos, garantizando que un fallo en la apertura o lectura de un solo archivo no detenga el análisis completo de los grupos de duplicados.
 - `2026-10-14T09:45:39` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_process_file_node` ante errores de acceso capturando explícitamente excepciones de sistema de archivos y validando la presencia de atributos necesarios en el objeto `stat` antes de operar, evitando posibles `AttributeError` en entornos con permisos restringidos.
 - `2026-10-14T09:44:56` **assistant.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `_call_gemini` y `_build_payload` reemplazando los silenciamientos genéricos por capturas específicas de excepciones, asegurando que cualquier fallo en la serialización o conexión no deje al asistente en un estado inconsistente y mejore la depurabilidad.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-14T07:52:44` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante la validación explícita de puntos de reparse en cada nivel del recorrido, asegurando que la función `_is_junction_default` y el atributo de reparse sean consultados preventivamente para evitar el escape del sandbox.
 - `2026-10-14T07:52:17` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `save_logo_svg` encapsulando la creación del archivo mediante `ensure_safe_to_modify` antes de cualquier operación de escritura, garantizando que el sistema de protección bloquee intentos de escritura en rutas no permitidas antes de realizar la manipulación del disco.
 - `2026-10-14T07:51:44` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al inyectar validaciones de `is_protected_path` en las rutas de red construidas dinámicamente y al mejorar la sanitización de los payloads mediante una verificación de `_ensure_safe_text` más estricta antes de cualquier operación de red o procesamiento.
-- `2026-10-14T07:42:38` **settings.py** (robustez ante casos límite): Se ha añadido un robusto manejo de excepciones y validación de estado en `_read_and_parse_json` para asegurar que el sistema no falle ante archivos JSON corruptos, vacíos o bloqueados por otros procesos, evitando así que una configuración dañada impida el inicio de la aplicación.

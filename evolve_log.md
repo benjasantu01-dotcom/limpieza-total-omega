@@ -978,3 +978,21 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-14T09:55:27` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Se ha mejorado la robustez de las validaciones de entrada en `on_save_settings` y los métodos de recolección de ajustes, garantizando que si los widgets de entrada han sido destruidos o contienen datos malintencionados (inyecciones de control), la aplicación no intente acceder a ellos, evitando errores de `TclError` y mejorando la consistencia del estado persistido.
 - `2026-10-14T09:55:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T09:55:27` Corrida terminada. Total usado hoy: 236.
+- `2026-10-14T10:03:29` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-10-14T10:03:59` ➖ Sin cambios en memory.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `top_memory_processes` añadiendo una validación explícita para la estructura `PROCESS_MEMORY_COUNTERS` antes de su uso y envolviendo la llamada de `psapi.EnumProcesses` en un bloque que captura errores específicos, evitando que una falla en la enumeración de procesos (común en entornos con permisos restringidos) propague excepciones al hilo principal.
+- `2026-10-14T10:04:29` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez del manejo de errores en `stage_for_review` y `delete_reviewed` al encapsular correctamente las validaciones, evitando que excepciones en la resolución de rutas interrumpan el flujo y asegurando que las llamadas a `ensure_safe_to_modify` se realicen solo sobre objetos validados.
+- `2026-10-14T10:05:11` Tests FALLARON:
+```
+a: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+8 failed, 291 passed, 4 warnings in 2.19s
+
+```
+- `2026-10-14T10:05:11` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se mejoró la robustez de `load_manifest` al añadir un manejo explícito de errores durante el parseo de datos y una validación de tipo más estricta sobre el contenido del archivo JSON, evitando que un archivo de manifiesto corrupto o mal formado detenga la app.
+- `2026-10-14T10:05:16` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 114): unterminated string literal (detected at line 114)
+- `2026-10-14T10:05:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-14T10:05:16` Corrida terminada. Total usado hoy: 240.

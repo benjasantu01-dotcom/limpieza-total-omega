@@ -307,6 +307,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             dest_base.mkdir(parents=True, exist_ok=True)
         dest_res = dest_base.resolve(strict=False)
         
+        # Validar seguridad antes de interactuar
         if not is_safe_to_modify(dest_res) or is_protected_path(dest_res) or _has_forbidden_chars(dest_res): return None
         ensure_safe_to_modify(dest_res)
     except (OSError, RuntimeError, PermissionError):
@@ -318,7 +319,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             if not _is_safe_for_disk_op(junk_file, dest_res): continue
             target_path = _can_move_file(junk_file, dest_res)
             if target_path and target_path != junk_file.path:
-                src_abs = junk_file.path.resolve()
+                src_abs = junk_file.path.resolve(strict=True)
                 ensure_safe_to_modify(src_abs)
                 shutil.move(str(src_abs), str(target_path))
         except (OSError, shutil.Error, PermissionError) as e:
@@ -348,11 +349,12 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         for item in dest.iterdir():
             try:
                 if not item.is_file(): continue
-                if not is_safe_to_modify(item) or is_protected_path(item): continue
-                if dest.resolve(strict=True) != item.resolve(strict=True).parent: continue
+                item_res = item.resolve(strict=True)
+                if not is_safe_to_modify(item_res) or is_protected_path(item_res): continue
+                if dest.resolve(strict=True) != item_res.parent: continue
                 
-                ensure_safe_to_modify(item)
-                item.unlink()
+                ensure_safe_to_modify(item_res)
+                item_res.unlink()
                 count += 1
             except (OSError, PermissionError, FileNotFoundError) as e:
                 logger.error(f"Error borrando {item}: {e}")
