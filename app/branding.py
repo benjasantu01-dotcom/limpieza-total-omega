@@ -36,6 +36,15 @@ SeverityStyle: TypeAlias = Tuple[ColorHex, str]
 RGBTuple: TypeAlias = Tuple[int, int, int]
 CoordinateSequence: TypeAlias = Tuple[float, ...]
 
+class UIConfiguration(NamedTuple):
+    """Contenedor inmutable de parámetros globales de identidad visual."""
+    font_family: str = "Segoe UI"
+    header_size: int = 23
+    body_size: int = 12
+    bold_weight: str = "bold"
+
+UI_CONFIG: Final[UIConfiguration] = UIConfiguration()
+
 class Point(NamedTuple):
     """Representación semántica de un par de coordenadas 2D."""
     x: float
@@ -126,12 +135,6 @@ APP_SHORT_NAME: Final[str] = "Omega"
 APP_TAGLINE: Final[str] = "Limpieza y seguridad, en un solo lugar"
 APP_VERSION: Final[str] = "2.1.0"
 
-# Estilos tipográficos base
-UI_FONT_FAMILY: Final[str] = "Segoe UI"
-UI_FONT_BOLD: Final[str] = "bold"
-UI_FONT_HEADER_SIZE: Final[int] = 23
-UI_FONT_BODY_SIZE: Final[int] = 12
-
 # Paleta Maestra: Colores HEX definidos como constantes para centralización
 C_BACKGROUND: Final[ColorHex] = "#0a0e17"
 C_SURFACE: Final[ColorHex] = "#141b2d"
@@ -167,7 +170,7 @@ PALETTE: Final[Mapping[str, ColorHex]] = MappingProxyType({
 
 FONT_SIZES: Final[Mapping[str, int]] = MappingProxyType({
     "display": 46, "title": 26, "subtitle": 13, "heading": 16,
-    "body": UI_FONT_BODY_SIZE, "mono": 11, "caption": 10,
+    "body": UI_CONFIG.body_size, "mono": 11, "caption": 10,
 })
 
 SEVERITY_STYLES: Final[Mapping[SeverityType, SeverityStyle]] = MappingProxyType({
@@ -207,7 +210,7 @@ def color(name: Optional[str]) -> ColorHex:
 
 def font_size(name: Optional[str]) -> int:
     """Obtiene el tamaño de fuente configurado; fallback a cuerpo estándar."""
-    return FONT_SIZES.get(name, UI_FONT_BODY_SIZE) if name else UI_FONT_BODY_SIZE
+    return FONT_SIZES.get(name, UI_CONFIG.body_size) if name else UI_CONFIG.body_size
 
 def icon(section: Optional[str]) -> str:
     """Retorna el glifo Unicode asociado a una sección."""
@@ -373,7 +376,7 @@ def _get_scaled_poly(scale: float, canvas_x: float, canvas_y: float) -> Coordina
 def logo_svg(size: int = 128) -> str:
     """Genera el contenido XML para el logo en formato SVG, parametrizado y validado."""
     s = max(16, min(1024, int(size)))
-    return _SVG_TEMPLATE.format(s=s, stops=_SVG_GRADIENT_STOPS, glow=C_GLOW, bg=C_SURFACE, font=UI_FONT_FAMILY)
+    return _SVG_TEMPLATE.format(s=s, stops=_SVG_GRADIENT_STOPS, glow=C_GLOW, bg=C_SURFACE, font=UI_CONFIG.font_family)
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optional[Path]:
     """Guarda el archivo SVG del logo en la ruta especificada mediante validación de seguridad."""
@@ -451,7 +454,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
         if canvas is None or not math.isfinite(scale) or scale <= 0 or not math.isfinite(x) or not math.isfinite(y): return
         
         line_width = max(2, int(8.0 * scale))
-        text_size = max(8, int(UI_FONT_HEADER_SIZE * scale))
+        text_size = max(8, int(UI_CONFIG.header_size * scale))
         
         canvas.create_line(x + 41 * scale, y + 75 * scale, 
                            x + 75 * scale, y + 41 * scale, 
@@ -463,7 +466,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
                               fill=C_BACKGROUND, outline="")
                               
         canvas.create_text(x + 64 * scale, y + 96 * scale, text="\u03a9", 
-                           fill=C_BACKGROUND, font=(UI_FONT_FAMILY, text_size, UI_FONT_BOLD))
+                           fill=C_BACKGROUND, font=(UI_CONFIG.font_family, text_size, UI_CONFIG.bold_weight))
     except (TypeError, ValueError, AttributeError): pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:

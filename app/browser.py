@@ -166,7 +166,10 @@ def _is_within_sandbox(target: Path, base: Path) -> bool:
         return False
 
 def base_directories() -> List[Path]:
-    """Retorna las rutas base de AppData local, filtrando según políticas de seguridad."""
+    """
+    Retorna las rutas base de AppData local, filtrando según políticas de seguridad.
+    Returns: List[Path] con la ruta del perfil de usuario si es segura.
+    """
     local_env = os.environ.get("LOCALAPPDATA")
     if not isinstance(local_env, str) or not local_env or _is_unc_path(local_env):
         return []
@@ -201,7 +204,11 @@ def _is_path_safe(path_str: str, ctx: ScanContext) -> bool:
     return ctx.safety_cache[path_str]
 
 def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
-    """Filtra entradas del sistema de archivos según seguridad y confinamiento."""
+    """
+    Filtra entradas del sistema de archivos según seguridad y confinamiento.
+    Args: entry: os.DirEntry a evaluar, ctx: contexto de escaneo.
+    Returns: True si el archivo debe ser ignorado, False en caso contrario.
+    """
     if _is_excluded_file(entry.name):
         return True
     
@@ -235,7 +242,11 @@ def _process_file_node(entry: os.DirEntry, ctx: ScanContext) -> int:
         return 0
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
-    """Recorrido de directorio recursivo, evitando ciclos y profundidad excesiva."""
+    """
+    Recorrido recursivo seguro para medir tamaño de carpetas.
+    Args: root_path: ruta a escanear, ctx: contexto, depth: nivel actual.
+    Returns: ScanResult con bytes encontrados y éxito de la operación.
+    """
     if depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN or not isinstance(root_path, str):
         return ScanResult(0, True)
     
@@ -332,7 +343,11 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     return Path()
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
-    """Detecta perfiles de navegador y mide el tamaño de sus carpetas de caché."""
+    """
+    Detecta perfiles de navegador y mide el tamaño de sus carpetas de caché.
+    Args: bases: rutas base opcionales, cache_paths: diccionario con rutas relativas.
+    Returns: List[BrowserCache] con los hallazgos.
+    """
     if bases is not None and not isinstance(bases, (list, tuple)): return []
     raw_bases = list(bases) if bases is not None else base_directories()
     if not raw_bases: return []
