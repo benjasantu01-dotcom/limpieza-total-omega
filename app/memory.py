@@ -28,6 +28,7 @@ import subprocess
 import math
 import ctypes
 import time
+import heapq
 from pathlib import Path
 from functools import lru_cache
 from dataclasses import dataclass, field
@@ -313,22 +314,18 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         
         try:
             if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
-                found_procs = []
                 count = min(1024, cb_needed.value // 4)
                 
-                candidates: List[Tuple[int, BytesValue]] = []
+                # Heapq es O(N log K), más eficiente que sorted() O(N log N) para K << N
+                candidates = []
                 for i in range(count):
                     pid = pids[i]
                     if pid > 4 and not _is_system_process(pid) and _is_process_executable_safe(pid):
                         ws = _query_working_set_bytes(pid, kernel32, psapi, pmc)
                         if ws is not None:
-                            candidates.append((pid, ws))
+                            candidates.append(ProcessMemory(f"PID {pid}", pid, ws))
                 
-                candidates.sort(key=lambda x: x[1], reverse=True)
-                for pid, ws in candidates[:limit]:
-                    found_procs.append(ProcessMemory(f"PID {pid}", pid, ws))
-                
-                _CACHE_TOP_PROC = CacheEntry(now, found_procs)
+                _CACHE_TOP_PROC = CacheEntry(now, heapq.nlargest(limit, candidates))
         except (ctypes.ArgumentError, OSError, TypeError):
             pass
             

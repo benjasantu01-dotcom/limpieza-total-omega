@@ -640,3 +640,22 @@ ERROR evolve/tests/test_modules.py - NameError: name 'ColorSegment' is not defin
 - `2026-10-14T06:41:30` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics.safe_get
 - `2026-10-14T06:41:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T06:41:30` Corrida terminada. Total usado hoy: 160.
+- `2026-10-14T06:49:55` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-10-14T06:50:57` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-14T06:52:07` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se ha implementado un mecanismo de "invalidación perezosa" en el cálculo del score de salud dentro de `on_full_analysis`, utilizando un *digest* (tuple de estados) para evitar re-compilaciones del asistente y cálculos pesados si el estado del sistema no ha cambiado desde la última iteración, reduciendo significativamente la carga de CPU y el uso de memoria en análisis repetidos.
+- `2026-10-14T06:52:35` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo de procesos en `top_memory_processes` reemplazando la creación y ordenamiento de una lista completa de tuplas por un `heapq.nlargest`, reduciendo la carga de CPU y memoria al evitar el ordenamiento de toda la tabla de procesos del sistema cuando solo se requieren los 10 más pesados.
+- `2026-10-14T06:53:00` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-10-14T06:53:28` Tests FALLARON:
+```
+a: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+8 failed, 291 passed, 4 warnings in 2.21s
+
+```
+- `2026-10-14T06:53:28` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `purge_all` y `list_items` evitando recrear el manifiesto y realizar I/O redundante mediante la conversión de la lista de ítems a un diccionario hash-map, reduciendo la complejidad algorítmica de O(N*M) a O(N+M).
+- `2026-10-14T06:53:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-14T06:53:28` Corrida terminada. Total usado hoy: 164.

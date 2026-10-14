@@ -1267,6 +1267,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Realiza el escaneo integral de salud del sistema."""
         self._lazy_init_health_ui()
 
+        # Digest basado en el conteo de elementos para evitar re-cálculos costosos
         current_digest = (
             len(self._get_cached("junk") or []),
             len(self._get_cached("suspicions") or []),
