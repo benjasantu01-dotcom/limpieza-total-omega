@@ -380,16 +380,19 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
     if not safe_keys:
         return []
         
-    # El uso de 'Select-Object * -ExcludeProperty PS*' elimina propiedades dinámicas que rompen el CSV
-    ps_args = [
-        "powershell", "-NoProfile", "-NonInteractive", "-Command",
-        "Get-ItemProperty -LiteralPath " + ",".join([f"'{k}'" for k in safe_keys]) + 
-        " -ErrorAction SilentlyContinue | Select-Object * -ExcludeProperty PS* | ConvertTo-Csv -NoTypeInformation"
-    ]
+    # Usar scriptblock para iterar y procesar claves individualmente evita inyección de rutas en la concatenación
+    ps_script = """
+    $keys = @('""" + "','".join(safe_keys) + """')
+    $results = foreach ($k in $keys) {
+        Get-ItemProperty -LiteralPath $k -ErrorAction SilentlyContinue | Select-Object * -ExcludeProperty PS*
+    }
+    $results | ConvertTo-Csv -NoTypeInformation
+    """
     
     try:
         process: subprocess.CompletedProcess = subprocess.run(
-            ps_args, capture_output=True, text=True, timeout=30, check=False
+            ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_script],
+            capture_output=True, text=True, timeout=30, check=False
         )
         if process.returncode == 0 and process.stdout:
             clean_output: str = "".join(c for c in process.stdout if ord(c) >= 32 or c in "\r\n")

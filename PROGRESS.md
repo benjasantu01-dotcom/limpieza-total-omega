@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **215** (42.7% de aceptación)
+- Mejoras aceptadas: **217** (43.1% de aceptación)
 - Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 195
+- Sin respuesta de la IA (error o límite): 193
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-13 | 142 | 13 | 33 | 11 | 109 |
-| 2026-10-14 | 73 | 9 | 17 | 11 | 86 |
+| 2026-10-13 | 142 | 13 | 33 | 11 | 105 |
+| 2026-10-14 | 75 | 9 | 17 | 11 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - legibilidad y documentación: **50**
-- seguridad defensiva: **45**
+- seguridad defensiva: **47**
 - rendimiento: **35**
 - robustez ante casos límite: **34**
 
@@ -37,15 +37,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **17**
 - `duplicates.py`: **17**
 - `main.py`: **15**
-- `startup.py`: **13**
+- `startup.py`: **14**
 - `organizer.py`: **12**
 - `safety.py`: **12**
 - `branding.py`: **12**
+- `settings.py`: **11**
 - `quarantine.py`: **11**
-- `settings.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-14T08:23:06` **startup.py** (seguridad defensiva): Se fortalece la validación de seguridad en `entries_from_registry` pasando a usar la bandera `-LiteralPath` individualmente y eliminando la concatenación dinámica mediante comas, lo que evita riesgos de inyección de rutas al llamar a PowerShell y asegura que solo se procesen claves pre-aprobadas y sanitizadas.
+- `2026-10-14T08:22:37` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `perform_atomic_write` añadiendo una comprobación explícita mediante `is_safe_to_modify` para el archivo temporal y el backup antes de cualquier operación de reemplazo, garantizando que ninguna ruta fuera del alcance permitido sea manipulada durante el proceso atómico.
 - `2026-10-14T08:12:36` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_isolation_request` añadiendo una comprobación explícita para evitar que se ponga en cuarentena un archivo que ya reside en el directorio de cuarentena, previniendo así posibles bucles de manipulación o inconsistencias en el manifiesto.
 - `2026-10-14T08:11:56` **organizer.py** (seguridad defensiva): Se reforzó la seguridad en `_is_safe_for_disk_op` añadiendo una verificación explícita para asegurar que el archivo de origen no esté residiendo dentro de una ruta de sistema (bloqueada por `is_protected_path`) antes de realizar cualquier movimiento, mitigando riesgos de manipulación accidental de archivos críticos aunque tengan extensión de basura.
 - `2026-10-14T08:03:37` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_process_executable_safe` al reemplazar `.resolve()` (que puede disparar accesos a disco bloqueantes o seguir enlaces de forma inesperada) por una validación de ruta estática más estricta mediante `is_protected_path` directamente sobre la ruta recuperada de la API de Windows, asegurando que el proceso evaluado no resida en directorios protegidos o rutas UNC.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-14T07:31:12` **memory.py** (robustez ante casos límite): Se ha añadido un robusto manejo de errores en `top_memory_processes` para evitar fallos por condiciones de carrera (procesos terminados justo antes de ser consultados) y se ha mejorado la tolerancia a fallos en la lectura de archivos del sistema (`/proc/meminfo`) mediante una lectura de texto más segura.
 - `2026-10-14T07:22:41` **main.py** (robustez ante casos límite): Se implementó un mecanismo de pre-validación de rutas en la carga de la configuración para prevenir excepciones durante el acceso a directorios protegidos o inexistentes, y se añadió un manejo de errores robusto en la inicialización de componentes mediante la verificación de la existencia de widgets (`winfo_exists`) antes de manipularlos.
 - `2026-10-14T07:21:46` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del cálculo de puntaje frente a fallas en la `SystemMetrics` inicial, asegurando que `compute_score` siempre retorne un resultado válido incluso si `metrics` es `None` o contiene datos malformados, mediante un manejo de excepciones más granular y una validación defensiva en la instancia.
-- `2026-10-14T07:12:13` **browser.py** (robustez ante casos límite): Se mejora la robustez de `_sum_directory_recursive` mediante la implementación de una validación de `st_ino` (inodo) que previene el conteo doble en sistemas de archivos con enlaces duros o puntos de reparse inusuales, garantizando mediciones de tamaño más precisas y seguras ante estructuras de directorios circulares o redundantes.
-- `2026-10-14T07:12:02` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas `None` o mal formadas en `save_logo_svg` y se reemplazó el uso de `path.parent.mkdir` por una operación encapsulada que previene errores de concurrencia y permisos en entornos con directorios de sistema, asegurando que la app no aborte ante condiciones inesperadas del sistema de archivos.
