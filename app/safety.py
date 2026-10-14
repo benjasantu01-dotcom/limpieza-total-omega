@@ -777,6 +777,7 @@ def is_protected_path(path: PathLike) -> bool:
         
         if p_resolved.is_symlink() or _is_system_directory_junction(str(p_resolved)): return True
         
+        # Validación rápida por conjunto pre-calculado de partes
         if PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in p_resolved.parts):
             if not _is_kernel_managed(str(p_resolved)):
                 if not any(p_resolved.is_relative_to(root) for root in _SYSTEM_ROOT_PATHS):

@@ -1014,6 +1014,8 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         item_map = {i.stored_name: i for i in items}
         purged_ids: Set[str] = set()
         
+        # Iterar una sola vez sobre los archivos existentes en el directorio
+        # utilizando el mapa en memoria para evitar consultas duplicadas al manifiesto
         for f in quarantine_root.iterdir():
             if f.name == MANIFEST_NAME or f.name not in item_map:
                 continue

@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 27
 - Sin respuesta de la IA (error o límite): 215
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-13 | 102 | 8 | 22 | 10 | 94 |
-| 2026-10-14 | 96 | 13 | 21 | 17 | 121 |
+| 2026-10-13 | 98 | 8 | 22 | 10 | 94 |
+| 2026-10-14 | 99 | 13 | 22 | 17 | 121 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **48**
-- seguridad defensiva: **47**
-- rendimiento: **27**
+- seguridad defensiva: **43**
+- rendimiento: **30**
 - robustez ante casos límite: **24**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **19**
 - `memory.py`: **19**
-- `diskreport.py`: **17**
+- `browser.py`: **18**
 - `duplicates.py`: **17**
 - `healthscore.py`: **16**
-- `assistant.py`: **15**
-- `scanner.py`: **15**
+- `diskreport.py`: **16**
+- `scanner.py`: **16**
 - `startup.py`: **14**
+- `assistant.py`: **14**
 - `main.py`: **13**
-- `safety.py`: **12**
+- `safety.py`: **13**
 - `settings.py`: **11**
 - `organizer.py`: **11**
-- `branding.py`: **10**
-- `quarantine.py`: **9**
+- `quarantine.py`: **10**
+- `branding.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-14T11:26:57` **scanner.py** (rendimiento): Se implementó un mecanismo de caché local (`self.path_stat_cache`) en el escáner para evitar llamadas redundantes a `stat` y `is_locked_by_os` sobre la misma ruta durante una iteración, mejorando el rendimiento en directorios con alta densidad de archivos.
+- `2026-10-14T11:26:44` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` eliminando llamadas costosas a `os.path.isabs` y evitando re-resoluciones de ruta mediante el uso de `lru_cache` para validar los componentes contra el conjunto de rutas del sistema pre-calculado, reduciendo significativamente la sobrecarga de I/O en escaneos masivos.
+- `2026-10-14T11:25:35` **quarantine.py** (rendimiento): Se implementó un mecanismo de caché en `purge_all` para evitar la sobrecarga de consultas iterativas al sistema de archivos y al manifiesto, optimizando el rendimiento de las purgas masivas al reducir las operaciones de I/O innecesarias.
 - `2026-10-14T11:17:10` **organizer.py** (rendimiento): Optimicé el rendimiento de `_process_directory` reemplazando la verificación repetitiva de `is_protected_path` (que puede ser costosa al involucrar validaciones de ruta/sistema) por una caché de resultados en el conjunto `visited`, evitando escaneos redundantes en subárboles ya validados y reduciendo llamadas a disco innecesarias durante la recursión.
 - `2026-10-14T11:16:52` **memory.py** (rendimiento): Se implementó un filtrado preventivo en `top_memory_processes` utilizando `heapq.nlargest` para evitar el re-procesamiento de listas completas y se optimizó el uso de la memoria caché mediante una estructura que evita llamadas costosas a `EnumProcesses` salvo cada 60 segundos.
 - `2026-10-14T10:55:50` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los docstrings de los métodos de `StartupEntry` y funciones auxiliares, clarificando las precondiciones de seguridad y el comportamiento de las cachés para facilitar el mantenimiento futuro.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-14T10:34:32` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings detallados que explican el "porqué" de las estrategias de I/O y añadí type hints coherentes en las funciones internas para facilitar el mantenimiento a largo plazo.
 - `2026-10-14T10:25:33` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y la mantenibilidad del módulo documentando `_collect_summary_data` y las clases de acumulación mediante type hints explícitos y docstrings, clarificando el propósito de la lógica de recolección de métricas.
 - `2026-10-14T10:25:24` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos con parámetros y retornos (`Args`/`Returns`) en las funciones críticas para clarificar el flujo de procesamiento y las garantías de seguridad aplicadas.
-- `2026-10-14T10:24:58` **branding.py** (legibilidad y documentación): Se introdujo una estructura de datos `UIConfiguration` como clase de configuración centralizada en lugar de múltiples diccionarios sueltos, mejorando la legibilidad, facilitando la validación de tipos y encapsulando las constantes de estilo para evitar la dispersión de parámetros.
-- `2026-10-14T10:15:36` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita de `reader.fieldnames` para evitar errores de `IndexError` al procesar CSVs malformados o vacíos, y reforcé la lógica de limpieza de caracteres en la entrada de datos.
-- `2026-10-14T10:15:23` **settings.py** (manejo de errores y validación de entradas): Refactoricé `_read_and_parse_json` y `save` para capturar explícitamente excepciones de `json` y de sistema durante la serialización/deserialización, asegurando que cualquier fallo en la estructura no bloquee la app y retorne el estado de fábrica de forma segura.

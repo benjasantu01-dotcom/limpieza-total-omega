@@ -19,7 +19,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime
 from functools import lru_cache
-from typing import List, Optional, Union, Final, Callable, TypeAlias, NamedTuple, Sequence, Tuple, Protocol
+from typing import List, Optional, Union, Final, Callable, TypeAlias, NamedTuple, Sequence, Tuple, Protocol, Dict
 from safety import is_protected_path
 
 # Configuración de logger para el módulo
@@ -210,6 +210,7 @@ class Scanner:
         self.results: ScanResult = []
         self.seen: set[str] = set()
         self.safe_cache: set[str] = set()
+        self.path_stat_cache: Dict[str, bool] = {}
         try:
             self.base_root_str: str = str(base_root.resolve()).lower()
         except (OSError, RuntimeError):
@@ -292,8 +293,16 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta toda la suite de heurísticas sobre un archivo validado."""
-        if not path or not _is_readable(path) or _is_locked_by_os(path):
+        path_str = str(path)
+        if path_str not in self.path_stat_cache:
+            if not _is_readable(path) or _is_locked_by_os(path):
+                self.path_stat_cache[path_str] = False
+                return
+            self.path_stat_cache[path_str] = True
+
+        if not self.path_stat_cache[path_str]:
             return
+
         for check_fn in ALL_CHECKS:
             try:
                 finding: Optional[Suspicion] = check_fn(path, entry, self.now_ts)
