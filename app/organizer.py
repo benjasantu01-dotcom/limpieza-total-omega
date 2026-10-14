@@ -1,11 +1,14 @@
 """
 organizer.py
-Este módulo implementa la lógica de detección y gestión de archivos temporales.
 
-Su objetivo es identificar candidatos a limpieza y moverlos a un entorno de 
-revisión aislado (_Para_Revisar). Toda operación crítica se apoya en 
-`safety.py` para garantizar que no se manipulen rutas de sistema o archivos 
-bloqueados por procesos críticos del SO.
+Este módulo implementa la lógica de detección, validación y gestión de archivos 
+temporales (junk files) detectados en el sistema.
+
+Su responsabilidad es identificar archivos candidatos a limpieza basados en 
+extensiones y antigüedad, moviéndolos a un entorno de revisión (`_Para_Revisar`) 
+antes de cualquier borrado, garantizando siempre la integridad mediante el 
+módulo `safety.py`. Toda operación de E/S está protegida contra race conditions 
+y violaciones de rutas de sistema.
 """
 
 from __future__ import annotations
@@ -66,7 +69,7 @@ SYSTEM_FOLDER_BLOCKLIST: Final[frozenset[str]] = frozenset({
 })
 
 def list_available_drives() -> List[str]:
-    """Retorna una lista de letras de unidad disponibles en formato 'C:\\'."""
+    """Retorna una lista de letras de unidad disponibles en el sistema (solo Windows)."""
     if os.name != "nt":
         return []
     return [f"{letter}:\\" for letter in string.ascii_uppercase if os.path.exists(f"{letter}:\\")]
@@ -75,8 +78,9 @@ def list_available_drives() -> List[str]:
 class JunkFile:
     """
     Representa un archivo candidato a limpieza.
-    Almacena metadatos (inode/device) para detectar 'race conditions',
-    verificando si la identidad del archivo cambió entre el escaneo y la manipulación.
+    
+    Captura metadatos de bajo nivel (inode/device ID) para validar que el archivo 
+    no ha sido reemplazado o movido físicamente entre el escaneo y la manipulación.
     """
     path: Path
     size_bytes: int
@@ -85,7 +89,7 @@ class JunkFile:
     _dev: Optional[int] = None
 
     def __post_init__(self) -> None:
-        """Captura metadatos de bajo nivel para validación de identidad post-instanciación."""
+        """Captura metadatos de identidad del archivo para asegurar la inmutabilidad de la instancia."""
         try:
             stat_result = self.path.stat()
             if self._ino is None:
@@ -97,35 +101,35 @@ class JunkFile:
 
     @property
     def size_mb(self) -> float:
-        """Calcula el tamaño del archivo en Megabytes con dos decimales."""
+        """Retorna el tamaño del archivo convertido a Megabytes, redondeado a dos decimales."""
         return round(self.size_bytes / (1024 * 1024), 2)
 
     @property
     def is_junk_extension(self) -> bool:
-        """Verifica si el archivo posee una extensión marcada como basura."""
+        """Determina si la extensión del archivo está presente en el conjunto de extensiones basura."""
         return self.path.suffix.lower() in JUNK_EXTENSIONS
 
 def is_valid_junk_extension(filename: str) -> bool:
-    """Valida si el nombre de archivo corresponde a una extensión de tipo basura."""
+    """Verifica si un nombre de archivo dado posee una extensión considerada basura."""
     if not filename: return False
     return Path(filename).suffix.lower() in JUNK_EXTENSIONS
 
 def _get_win_attributes(entry: os.DirEntry) -> int:
-    """Obtiene el bitmask de atributos de Windows usando una llamada eficiente al sistema."""
+    """Obtiene una máscara de bits de atributos de archivo de Windows."""
     try:
         return entry.stat(follow_symlinks=False).st_file_attributes
     except (OSError, AttributeError, ValueError):
         return 0
 
 def _is_junction(entry: os.DirEntry) -> bool:
-    """Determina si una entrada es un reparse point (junction) para evitar bucles de recursión."""
+    """Identifica si una entrada es un reparse point/junction, evitando bucles en recursión."""
     try:
         return entry.is_symlink() or bool(_get_win_attributes(entry) & WIN_ATTR_JUNCTION)
     except (OSError, AttributeError):
         return True
 
 def _is_unc_path(path: Path) -> bool:
-    """Detecta rutas de red UNC, que requieren protocolos de acceso distintos a rutas locales."""
+    """Detecta si una ruta es UNC (red), la cual requiere protocolos de acceso restringidos."""
     if not isinstance(path, Path): return True
     try:
         p_str = str(path.absolute())
@@ -134,7 +138,7 @@ def _is_unc_path(path: Path) -> bool:
         return True
 
 def _generate_unique_target(target: Path) -> Path:
-    """Añade un sufijo numérico para evitar colisiones en la carpeta de cuarentena."""
+    """Genera una ruta única ante colisiones de nombres añadiendo un contador numérico."""
     if not isinstance(target, Path): return target
     base_target = target
     counter = 1
@@ -144,13 +148,12 @@ def _generate_unique_target(target: Path) -> Path:
     return target
 
 def _is_allowed_directory(name: str) -> bool:
-    """Filtra directorios basándose en una blocklist predefinida de rutas críticas."""
+    """Valida si el nombre del directorio no figura en la lista negra de sistemas críticos."""
     if not name: return False
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _try_open_win_file(path: Path) -> bool:
-    """Intenta abrir un handle exclusivo de Windows para testear si un archivo está bloqueado."""
-    # GENERIC_READ = 0x80000000, FILE_SHARE_READ = 0x00000001, OPEN_EXISTING = 3
+    """Intenta obtener acceso de lectura exclusivo a un archivo bajo Windows para detectar bloqueos."""
     handle = ctypes.windll.kernel32.CreateFileW(
         str(path), 0x80000000, 0x00000001, None, 3, 0x00000080, None
     )
@@ -160,7 +163,7 @@ def _try_open_win_file(path: Path) -> bool:
     return True
 
 def _is_file_locked(path: Path) -> bool:
-    """Determina si un archivo está bloqueado por otro proceso mediante técnicas específicas del SO."""
+    """Determina si un archivo está actualmente en uso por el sistema o procesos externos."""
     if not path or not isinstance(path, Path) or not path.is_file(): return True
     if os.name == 'nt':
         try:
@@ -173,7 +176,7 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
-    """Verifica si la ruta de destino es una subcarpeta de la de origen para prevenir ciclos."""
+    """Previene ciclos detectando si el destino es un ancestro o el mismo que el origen."""
     try:
         src_resolved = src.resolve(strict=False)
         dest_resolved = dest.resolve(strict=False)
@@ -183,25 +186,27 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
         return True
 
 def _has_forbidden_chars(path: Path) -> bool:
-    """Valida que la ruta no contenga caracteres ilegales en el sistema de archivos NTFS."""
+    """Detecta caracteres no permitidos en rutas NTFS, previniendo inyecciones de ruta."""
     if not path: return True
     path_str = str(path).lower()
     return any(c in path_str for c in ["<", ">", "|", "\0"])
 
 def _validate_path_security(src: Path, dest: Path) -> bool:
-    """Realiza una auditoría básica de integridad antes de realizar operaciones de E/S."""
+    """Ejecuta una auditoría integral de seguridad previa a operaciones de E/S."""
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     if len(str(src)) > MAX_PATH_LENGTH or len(str(dest)) > MAX_PATH_LENGTH: return False
     return not (is_protected_path(src) or is_protected_path(dest))
 
 def _is_system_hidden(entry: os.DirEntry) -> bool:
-    """Verifica si el archivo/directorio tiene atributos de sistema u oculto."""
+    """Verifica si la entrada tiene atributos de 'oculto' o 'sistema' definidos en Windows."""
     return bool(_get_win_attributes(entry) & WIN_ATTR_MASK)
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
-    Realiza una triple validación: existencia física, consistencia de identidad (inode) 
-    y disponibilidad de recursos. Retorna False si cualquier chequeo de seguridad falla.
+    Valida la viabilidad y seguridad de realizar una operación de disco sobre un JunkFile.
+    
+    Combina validación de existencia, integridad de inodo, protección contra rutas 
+    críticas, permisos de escritura y comprobación de espacio en disco.
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     try:
@@ -209,17 +214,14 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         
-        # 1. Validación de integridad básica y protección de archivos críticos
         if src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         if src_real.is_symlink() or (os.name == 'nt' and bool(src_real.stat().st_file_attributes & WIN_ATTR_JUNCTION)): return False
-        if is_protected_path(src_real): return False # Asegurar explícitamente origen
+        if is_protected_path(src_real): return False
         
-        # 2. Verificación de identidad (Race conditions)
         stat_result = src_real.stat()
         if (junk_file._ino is not None and stat_result.st_ino != junk_file._ino) or \
            (junk_file._dev is not None and stat_result.st_dev != junk_file._dev): return False
         
-        # 3. Validación de permisos y uso de disco
         if not src_real.is_file() or is_protected_path(dest_real): return False
         if not is_safe_to_modify(src_real) or not _validate_path_security(src_real, dest_real): return False
         
@@ -233,7 +235,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         return False
 
 def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> bool:
-    """Determina si un directorio es candidato seguro para analizar mediante caché de protección."""
+    """Decide si es seguro entrar en un directorio basado en caché de protección."""
     if not _is_allowed_directory(entry.name) or _is_junction(entry): return False
     if _is_system_hidden(entry): return False
     if entry.path in protected_cache: return False
@@ -246,13 +248,13 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> boo
     return True
 
 def _is_candidate_junk(stats: os.stat_result, entry: os.DirEntry, now_ts: float) -> bool:
-    """Filtra archivos por tamaño, antigüedad y atributos de sistema visibles."""
+    """Filtra archivos por tamaño, antigüedad y atributos de visibilidad."""
     return (0 <= stats.st_size < MAX_FILE_SIZE_BYTES and 
             stats.st_mtime <= now_ts + 3600 and
             not _is_system_hidden(entry))
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
-    """Escaneo recursivo con límite de profundidad para evitar ciclos y desbordamiento de pila."""
+    """Escaneo recursivo de directorios con control de profundidad y caché para evitar redundancias."""
     if depth > MAX_SCAN_DEPTH: return
     try:
         resolved_dir = current_dir.resolve(strict=False)
@@ -278,7 +280,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
         pass
 
 def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[JunkFile]:
-    """Inicia el escaneo de archivos temporales en los directorios definidos."""
+    """Inicia el escaneo recursivo de archivos temporales en las ubicaciones especificadas."""
     found: List[JunkFile] = []
     protected_cache: set[str] = set()
     visited: set[Path] = set()
@@ -294,12 +296,16 @@ def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[Ju
     return found
 
 def sort_junk(files: Sequence[JunkFile], by: SortField = "size", ascending: bool = True) -> List[JunkFile]:
-    """Ordena el listado de archivos basándose en la configuración de registro."""
+    """Ordena una lista de archivos basura según el criterio especificado (size o date)."""
     config = SORT_REGISTRY.get(by.lower(), SORT_REGISTRY["size"])
     return sorted(files, key=config.key_func, reverse=not bool(ascending))
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """Mueve archivos detectados hacia una carpeta aislada tras validar la seguridad de la ruta."""
+    """
+    Mueve archivos detectados a un directorio de cuarentena para su posterior revisión.
+    
+    Verifica la seguridad de la ruta destino antes de efectuar cualquier movimiento.
+    """
     if not isinstance(files, (list, tuple)) or not review_dir: return None
     try:
         dest_base = Path(review_dir).expanduser()
@@ -307,7 +313,6 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
             dest_base.mkdir(parents=True, exist_ok=True)
         dest_res = dest_base.resolve(strict=False)
         
-        # Validar seguridad antes de interactuar
         if not is_safe_to_modify(dest_res) or is_protected_path(dest_res) or _has_forbidden_chars(dest_res): return None
         ensure_safe_to_modify(dest_res)
     except (OSError, RuntimeError, PermissionError):
@@ -328,7 +333,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
     return dest_res
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
-    """Genera una ruta de destino única y segura para el movimiento de archivos."""
+    """Genera una ruta de destino segura, evitando colisiones de nombres."""
     if not junk_file or not junk_file.path or not dest_base: return None
     try:
         safe_name = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
@@ -337,7 +342,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         return None
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Ejecuta el borrado permanente tras una validación rigurosa de seguridad del directorio."""
+    """Borra permanentemente los archivos validados presentes en el directorio de revisión."""
     if not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser().resolve(strict=False)
