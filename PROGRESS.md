@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 24
 - Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 28
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-13 | 77 | 7 | 19 | 9 | 60 |
-| 2026-10-14 | 117 | 17 | 25 | 19 | 154 |
+| 2026-10-13 | 73 | 7 | 19 | 9 | 60 |
+| 2026-10-14 | 119 | 17 | 25 | 19 | 156 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **49**
+- legibilidad y documentación: **45**
 - seguridad defensiva: **45**
-- manejo de errores y validación de entradas: **38**
+- manejo de errores y validación de entradas: **40**
 - robustez ante casos límite: **32**
 - rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **18**
-- `memory.py`: **18**
 - `browser.py`: **18**
-- `healthscore.py`: **16**
+- `duplicates.py`: **17**
+- `memory.py`: **17**
 - `scanner.py`: **16**
+- `assistant.py`: **16**
 - `diskreport.py`: **16**
-- `assistant.py`: **15**
+- `healthscore.py`: **15**
 - `safety.py`: **14**
 - `startup.py`: **13**
-- `main.py`: **12**
 - `organizer.py`: **12**
+- `main.py`: **11**
 - `quarantine.py`: **9**
 - `settings.py`: **9**
-- `branding.py`: **8**
+- `branding.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-14T14:12:07` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `draw_gradient_bar` mediante la validación explícita de `canvas_x` y `canvas_y`, la sanitización de `destination` en `save_logo_svg` y la captura granular de excepciones, asegurando que valores `None` o numéricos inválidos no provoquen fallos en tiempo de ejecución.
+- `2026-10-14T14:11:35` **assistant.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `ingest` y `_apply_field` del `SystemContext` para evitar fallos silenciosos al procesar datos externos, asegurando que las actualizaciones de estado sean atómicas y robustas ante valores malformados.
 - `2026-10-14T12:49:05` **startup.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `startup.py` añadiendo la validación mediante `is_safe_to_modify` a la resolución de rutas en `_resolve_and_cache_path`, garantizando que solo se procesen rutas que no violen las políticas de seguridad del sistema antes de realizar cualquier operación de acceso a disco.
 - `2026-10-14T12:47:50` **safety.py** (seguridad defensiva): Se ha añadido una verificación de "punto de reparse" en el árbol de directorios que impide que la aplicación siga o manipule recursivamente directorios que son enlaces NTFS (junctions o symlinks), evitando que la recursión de `organizer.py` o `scanner.py` escape accidentalmente del sandbox configurado hacia otras partes del sistema de archivos.
 - `2026-10-14T12:38:28` **quarantine.py** (seguridad defensiva): Mejoré la seguridad en la restauración de archivos validando explícitamente que la ruta original reconstruida (`destination`) no sea un enlace simbólico, evitando así riesgos de seguridad por desbordamiento del directorio de destino (ZipSlip/Path Traversal) durante el proceso de restauración.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-14T12:07:34` **scanner.py** (robustez ante casos límite): Mejora la robustez del escaneo frente a nombres de archivo con caracteres Unicode o no normalizados mediante el uso de `Path.name` en lugar de manipulación directa de strings en los chequeos, y añade una validación de `Path.exists()` preventiva dentro de `_is_safe_entry` para evitar excepciones por condiciones de carrera en sistemas de archivos dinámicos.
 - `2026-10-14T12:07:07` **safety.py** (robustez ante casos límite): Se añadió una validación específica para detectar rutas que intentan acceder a la raíz del sistema de archivos (`C:\`, `D:\`) mediante el chequeo de `Path.parts` y `anchor`, mejorando la robustez ante intentos de manipular la raíz de unidades de disco, lo cual es crítico para evitar operaciones destructivas no deseadas.
 - `2026-10-14T11:57:21` **memory.py** (robustez ante casos límite): Se ha añadido un robusto manejo de errores en `top_memory_processes` para evitar excepciones silenciosas ante procesos que desaparecen o deniegan acceso durante la enumeración, asegurando que la lista de candidatos sea siempre íntegra.
-- `2026-10-14T11:47:07` **healthscore.py** (robustez ante casos límite): Se ha robustecido el motor de validación de `SystemMetrics` mediante la implementación de `math.isnan` explícito y una verificación de estado previo en `validate()`, asegurando que el motor de scoring no procese métricas corruptas incluso si los valores de entrada son inesperadamente inconsistentes o nulos tras la inicialización.
-- `2026-10-14T11:46:50` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `OSError` al realizar el `stat()` en `group_by_size` y `_collect_candidates` para evitar que el proceso completo se detenga ante archivos con permisos restringidos o bloqueos temporales por el sistema operativo.

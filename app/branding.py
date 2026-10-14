@@ -381,7 +381,7 @@ def logo_svg(size: int = 128) -> str:
 def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optional[Path]:
     """Guarda el archivo SVG del logo en la ruta especificada mediante validación de seguridad."""
     try:
-        if not destination: return None
+        if not destination or not str(destination).strip(): return None
         target = Path(destination).resolve()
         
         # Validación de seguridad: el sistema de seguridad debe aprobar la escritura en la ruta

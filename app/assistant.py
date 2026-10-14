@@ -420,7 +420,7 @@ class SystemContext:
             if math.isfinite(float_val) and _is_metric_within_bounds(float_val, spec):
                 return spec.type_hint(float_val)
         except (ValueError, TypeError, OverflowError):
-            pass
+            return None
         return None
 
     def _clean_grade(self, val: Any) -> str:
@@ -456,10 +456,10 @@ class SystemContext:
         updates: dict[str, Any] = {}
         for key, spec in _VALIDATORS.items():
             value = self._apply_field(source, key, spec)
-            if value is not None and value != _get_safe_attr(self, key):
+            if value is not None:
                 updates[key] = value
         grade_val = self._clean_grade(_get_source_value(source, "grade"))
-        if grade_val and grade_val != self.grade:
+        if grade_val:
             updates["grade"] = grade_val
         if updates:
             self._apply_updates(updates)
