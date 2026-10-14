@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 27
 - Sin respuesta de la IA (error o límite): 221
 
@@ -16,36 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-13 | 69 | 6 | 17 | 8 | 60 |
-| 2026-10-14 | 121 | 18 | 25 | 19 | 161 |
+| 2026-10-13 | 67 | 6 | 17 | 8 | 58 |
+| 2026-10-14 | 122 | 18 | 26 | 19 | 163 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **45**
-- manejo de errores y validación de entradas: **42**
+- manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **41**
 - robustez ante casos límite: **32**
-- rendimiento: **30**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **18**
-- `duplicates.py`: **17**
 - `memory.py`: **17**
+- `browser.py`: **17**
 - `diskreport.py`: **17**
 - `healthscore.py`: **16**
 - `assistant.py`: **16**
+- `duplicates.py`: **16**
 - `scanner.py`: **15**
 - `safety.py`: **13**
 - `startup.py`: **13**
 - `main.py`: **11**
 - `organizer.py`: **11**
-- `settings.py`: **9**
+- `settings.py`: **10**
 - `branding.py`: **9**
 - `quarantine.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-14T14:41:06` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `validate` envolviendo el acceso a los validadores en un bloque `try-except` más específico y asegurando que las claves inesperadas en el JSON no interrumpan el proceso, garantizando que el esquema de configuración siempre mantenga la integridad.
 - `2026-10-14T14:20:42` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del motor de puntuación validando que las métricas recibidas no contengan valores `None` o `NaN` antes de ser procesadas en el pipeline, evitando excepciones inesperadas que antes se silenciaban de forma genérica.
 - `2026-10-14T14:19:31` **diskreport.py** (manejo de errores y validación de entradas): Reforcé la robustez de `walk_files` y `summarize` capturando excepciones específicas en la lectura de atributos de archivo y envolviendo la iteración completa del escáner en un bloque que garantiza que el sistema no se detenga ante archivos bloqueados o inaccesibles, mejorando la fiabilidad del reporte.
 - `2026-10-14T14:12:07` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `draw_gradient_bar` mediante la validación explícita de `canvas_x` y `canvas_y`, la sanitización de `destination` en `save_logo_svg` y la captura granular de excepciones, asegurando que valores `None` o numéricos inválidos no provoquen fallos en tiempo de ejecución.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-14T12:26:49` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `_is_excluded_path` añadiendo una comprobación explícita para evitar seguir puntos de reparse (reparse points) o junctions de Windows, previniendo recursiones infinitas o saltos fuera del volumen analizado.
 - `2026-10-14T12:18:11` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_valid_cache_path` y `_resolve_browser_path` para garantizar que no solo se valide la existencia de las rutas, sino que se verifique explícitamente su naturaleza como subdirectorios del sandbox mediante `is_safe_to_modify` antes de cualquier procesamiento, eliminando la posibilidad de procesar rutas externas que pudieran haber eludido chequeos previos.
 - `2026-10-14T12:17:24` **assistant.py** (seguridad defensiva): Se endureció la seguridad de `_is_safe_key` y `_get_source_value` para prevenir ataques de inyección mediante la manipulación de objetos fuente, impidiendo explícitamente el acceso a atributos ocultos o dunder methods que podrían haber sido omitidos en la validación original, asegurando que solo los campos definidos en `_VALIDATORS` sean procesados.
-- `2026-10-14T12:07:34` **scanner.py** (robustez ante casos límite): Mejora la robustez del escaneo frente a nombres de archivo con caracteres Unicode o no normalizados mediante el uso de `Path.name` en lugar de manipulación directa de strings en los chequeos, y añade una validación de `Path.exists()` preventiva dentro de `_is_safe_entry` para evitar excepciones por condiciones de carrera en sistemas de archivos dinámicos.
