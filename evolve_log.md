@@ -427,3 +427,4 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-10-14T14:50:35` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T14:50:35` Corrida terminada. Total usado hoy: 350.
 - `2026-10-14T14:59:22` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-10-14T15:09:36` Presupuesto diario agotado (350 usados). Corte hasta mañana.
