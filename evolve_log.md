@@ -1199,3 +1199,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-14T11:58:13` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `quarantine_file` ante casos de fallo en el sistema de archivos durante la persistencia, añadiendo una verificación de existencia y consistencia post-escritura más estricta antes de confirmar el registro en el manifiesto, evitando así estados inconsistentes si el I/O falla silenciosamente.
 - `2026-10-14T11:58:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T11:58:13` Corrida terminada. Total usado hoy: 284.
+- `2026-10-14T12:05:55` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-10-14T12:06:16` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-14T12:07:07` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se añadió una validación específica para detectar rutas que intentan acceder a la raíz del sistema de archivos (`C:\`, `D:\`) mediante el chequeo de `Path.parts` y `anchor`, mejorando la robustez ante intentos de manipular la raíz de unidades de disco, lo cual es crítico para evitar operaciones destructivas no deseadas.
+- `2026-10-14T12:07:34` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Mejora la robustez del escaneo frente a nombres de archivo con caracteres Unicode o no normalizados mediante el uso de `Path.name` en lugar de manipulación directa de strings en los chequeos, y añade una validación de `Path.exists()` preventiva dentro de `_is_safe_entry` para evitar excepciones por condiciones de carrera en sistemas de archivos dinámicos.
+- `2026-10-14T12:07:49` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: robustez ante casos límite).
+- `2026-10-14T12:07:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-14T12:07:50` Corrida terminada. Total usado hoy: 288.

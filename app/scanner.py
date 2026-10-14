@@ -245,6 +245,10 @@ class Scanner:
             return True
         
         try:
+            # Validación preventiva de existencia para evitar excepciones en FS dinámicos
+            if not Path(path_str).exists():
+                return False
+            
             if _cached_is_protected(path_str) or not _is_valid_path_structure(path_str) or self._has_invalid_name(entry.name):
                 return False
                 

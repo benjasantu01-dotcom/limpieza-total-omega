@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 28
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-13 | 90 | 8 | 21 | 10 | 91 |
-| 2026-10-14 | 105 | 15 | 22 | 18 | 124 |
+| 2026-10-13 | 90 | 8 | 21 | 10 | 87 |
+| 2026-10-14 | 107 | 15 | 23 | 18 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **48**
 - seguridad defensiva: **35**
+- robustez ante casos límite: **32**
 - rendimiento: **30**
-- robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **19**
 - `memory.py`: **19**
 - `diskreport.py`: **17**
+- `scanner.py`: **17**
 - `duplicates.py`: **17**
 - `healthscore.py`: **16**
-- `scanner.py`: **16**
 - `assistant.py`: **15**
 - `startup.py`: **13**
+- `safety.py`: **13**
 - `main.py`: **12**
-- `safety.py`: **12**
 - `organizer.py`: **11**
 - `settings.py`: **10**
 - `quarantine.py`: **9**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-14T12:07:34` **scanner.py** (robustez ante casos límite): Mejora la robustez del escaneo frente a nombres de archivo con caracteres Unicode o no normalizados mediante el uso de `Path.name` en lugar de manipulación directa de strings en los chequeos, y añade una validación de `Path.exists()` preventiva dentro de `_is_safe_entry` para evitar excepciones por condiciones de carrera en sistemas de archivos dinámicos.
+- `2026-10-14T12:07:07` **safety.py** (robustez ante casos límite): Se añadió una validación específica para detectar rutas que intentan acceder a la raíz del sistema de archivos (`C:\`, `D:\`) mediante el chequeo de `Path.parts` y `anchor`, mejorando la robustez ante intentos de manipular la raíz de unidades de disco, lo cual es crítico para evitar operaciones destructivas no deseadas.
 - `2026-10-14T11:57:21` **memory.py** (robustez ante casos límite): Se ha añadido un robusto manejo de errores en `top_memory_processes` para evitar excepciones silenciosas ante procesos que desaparecen o deniegan acceso durante la enumeración, asegurando que la lista de candidatos sea siempre íntegra.
 - `2026-10-14T11:47:07` **healthscore.py** (robustez ante casos límite): Se ha robustecido el motor de validación de `SystemMetrics` mediante la implementación de `math.isnan` explícito y una verificación de estado previo en `validate()`, asegurando que el motor de scoring no procese métricas corruptas incluso si los valores de entrada son inesperadamente inconsistentes o nulos tras la inicialización.
 - `2026-10-14T11:46:50` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `OSError` al realizar el `stat()` en `group_by_size` y `_collect_candidates` para evitar que el proceso completo se detenga ante archivos con permisos restringidos o bloqueos temporales por el sistema operativo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-14T11:16:52` **memory.py** (rendimiento): Se implementó un filtrado preventivo en `top_memory_processes` utilizando `heapq.nlargest` para evitar el re-procesamiento de listas completas y se optimizó el uso de la memoria caché mediante una estructura que evita llamadas costosas a `EnumProcesses` salvo cada 60 segundos.
 - `2026-10-14T10:55:50` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los docstrings de los métodos de `StartupEntry` y funciones auxiliares, clarificando las precondiciones de seguridad y el comportamiento de las cachés para facilitar el mantenimiento futuro.
 - `2026-10-14T10:55:22` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `_SettingsManager`, clarificando el propósito de la escritura atómica, y se han aplicado type hints faltantes en parámetros críticos para mejorar la robustez y autodocumentación del código.
-- `2026-10-14T10:54:52` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más específicos en las firmas de funciones clave y se unificó la nomenclatura de los parámetros de tipo en todo el módulo para mejorar la legibilidad y la consistencia del código, facilitando el mantenimiento futuro.
-- `2026-10-14T10:44:41` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings de nivel de módulo y función, estandarizando la terminología y clarificando las precondiciones de seguridad críticas para el mantenimiento del proyecto.

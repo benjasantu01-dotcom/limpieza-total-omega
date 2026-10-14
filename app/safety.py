@@ -842,6 +842,9 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
             raise UnsafePathError("Ruta inconsistente con el sistema.", SafetyValidationErrorCode.GENERIC)
         if not target_path.parts or (len(target_path.parts) == 1 and target_path.parts[0] == os.sep):
              raise UnsafePathError("Ruta raíz no permitida.", SafetyValidationErrorCode.ROOT_ACCESS)
+        # Chequeo explícito de raíz
+        if len(target_path.parts) == 1 and target_path == Path(target_path.anchor):
+             raise UnsafePathError("Operación sobre raíz de unidad prohibida.", SafetyValidationErrorCode.ROOT_ACCESS)
         if len(target_path.parts) > MAX_DIRECTORY_DEPTH:
              raise UnsafePathError("Profundidad de directorio excesiva.", SafetyValidationErrorCode.PATH_TOO_DEEP)
     except (AttributeError, TypeError, ValueError):
