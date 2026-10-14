@@ -666,3 +666,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-14T07:01:56` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult
 - `2026-10-14T07:01:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T07:01:56` Corrida terminada. Total usado hoy: 168.
+- `2026-10-14T07:10:20` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-10-14T07:10:48` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-10-14T07:11:26` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `SystemContext` ante valores numéricos extremos o corrompidos durante la ingesta, asegurando que los tipos y rangos se validen estrictamente sin arriesgar la estabilidad del bucle ni lanzar excepciones fuera de control.
+- `2026-10-14T07:12:02` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra rutas `None` o mal formadas en `save_logo_svg` y se reemplazó el uso de `path.parent.mkdir` por una operación encapsulada que previene errores de concurrencia y permisos en entornos con directorios de sistema, asegurando que la app no aborte ante condiciones inesperadas del sistema de archivos.
+- `2026-10-14T07:12:13` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_sum_directory_recursive` mediante la implementación de una validación de `st_ino` (inodo) que previene el conteo doble en sistemas de archivos con enlaces duros o puntos de reparse inusuales, garantizando mediciones de tamaño más precisas y seguras ante estructuras de directorios circulares o redundantes.
+- `2026-10-14T07:12:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-14T07:12:13` Corrida terminada. Total usado hoy: 172.

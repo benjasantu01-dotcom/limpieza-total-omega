@@ -376,38 +376,25 @@ def logo_svg(size: int = 128) -> str:
     return _SVG_TEMPLATE.format(s=s, stops=_SVG_GRADIENT_STOPS, glow=C_GLOW, bg=C_SURFACE, font=UI_FONT_FAMILY)
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optional[Path]:
-    """
-    Guarda el archivo SVG del logo en la ruta especificada mediante validación de seguridad.
-
-    Args:
-        destination: Ruta de destino (str o Path).
-        size: Dimensiones del logo en píxeles.
-
-    Returns:
-        Path del archivo guardado si la operación es exitosa, None en caso contrario.
-    """
+    """Guarda el archivo SVG del logo en la ruta especificada mediante validación de seguridad."""
     try:
-        if destination is None:
-            return None
-            
+        if not destination: return None
         target = Path(destination).resolve()
-            
+        
         # Validación de seguridad: el sistema de seguridad debe aprobar la escritura en la ruta
-        # Incluye chequeo explícito de protección de sistema sobre la ruta resuelta
-        if not is_safe_to_modify(target) or is_protected_path(target) or not is_safe_to_modify(target.parent):
+        if not is_safe_to_modify(target) or is_protected_path(target):
             return None
         
-        # Prevenir sobreescritura accidental o modificaciones inseguras
-        if target.exists() and (target.is_dir() or target.is_symlink() or not is_safe_to_modify(target)):
-            return None
+        # Validar carpeta padre antes de crear, con enfoque defensivo ante errores de sistema
+        parent = target.parent
+        if not parent.exists():
+            if not is_safe_to_modify(parent): return None
+            parent.mkdir(parents=True, exist_ok=True)
             
-        # Operación atómica de escritura
-        target.parent.mkdir(parents=True, exist_ok=True)
         validated_size = max(16, min(1024, int(size)))
         target.write_text(logo_svg(validated_size), encoding="utf-8")
-        
-        return target if target.is_file() else None
-        
+        return target if target.exists() else None
+            
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError, AttributeError, IOError):
         return None
 

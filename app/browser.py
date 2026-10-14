@@ -225,7 +225,7 @@ def _process_file_node(entry: os.DirEntry, ctx: ScanContext) -> int:
     try:
         st = entry.stat(follow_symlinks=False)
         if not hasattr(st, 'st_dev') or not hasattr(st, 'st_ino'):
-            return 0
+            return st.st_size if hasattr(st, 'st_size') else 0
         file_id = (st.st_dev, st.st_ino)
         if file_id in ctx.visited_files:
             return 0
@@ -239,9 +239,15 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
     if depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN or not isinstance(root_path, str):
         return ScanResult(0, True)
     
-    path_norm = os.path.normcase(root_path)
-    if path_norm in ctx.visited_dirs:
-        return ScanResult(0, True)
+    try:
+        root_stat = os.stat(root_path)
+        if hasattr(root_stat, 'st_dev') and hasattr(root_stat, 'st_ino'):
+            node_id = (root_stat.st_dev, root_stat.st_ino)
+            if node_id in ctx.visited_dirs:
+                return ScanResult(0, True)
+            ctx.visited_dirs.add(node_id) # Usamos set de tuplas para evitar ciclos reales
+    except OSError:
+        pass
 
     total_bytes: int = 0
     try:
@@ -256,7 +262,6 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
                 else:
                     total_bytes += _process_file_node(entry, ctx)
         
-        ctx.visited_dirs.add(path_norm)
         return ScanResult(total_bytes, True)
     except (OSError, PermissionError):
         return ScanResult(total_bytes, False)

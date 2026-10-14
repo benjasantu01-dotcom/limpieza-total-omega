@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Mejoras aceptadas: **205** (40.7% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 51
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 205
+- Rechazadas por guardia de seguridad: 50
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-13 | 148 | 14 | 36 | 11 | 127 |
-| 2026-10-14 | 58 | 7 | 15 | 10 | 78 |
+| 2026-10-13 | 145 | 14 | 35 | 11 | 127 |
+| 2026-10-14 | 60 | 7 | 15 | 11 | 79 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - legibilidad y documentación: **50**
-- seguridad defensiva: **42**
+- seguridad defensiva: **39**
 - rendimiento: **35**
-- robustez ante casos límite: **28**
+- robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **20**
-- `browser.py`: **18**
+- `browser.py`: **19**
+- `memory.py`: **19**
 - `diskreport.py`: **18**
 - `healthscore.py`: **17**
 - `scanner.py`: **17**
 - `duplicates.py`: **17**
 - `assistant.py`: **16**
-- `main.py`: **14**
 - `startup.py`: **14**
 - `safety.py`: **13**
-- `organizer.py`: **12**
+- `main.py`: **13**
+- `organizer.py`: **11**
+- `branding.py`: **11**
 - `settings.py`: **10**
-- `branding.py`: **10**
 - `quarantine.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-14T07:12:13` **browser.py** (robustez ante casos límite): Se mejora la robustez de `_sum_directory_recursive` mediante la implementación de una validación de `st_ino` (inodo) que previene el conteo doble en sistemas de archivos con enlaces duros o puntos de reparse inusuales, garantizando mediciones de tamaño más precisas y seguras ante estructuras de directorios circulares o redundantes.
+- `2026-10-14T07:12:02` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas `None` o mal formadas en `save_logo_svg` y se reemplazó el uso de `path.parent.mkdir` por una operación encapsulada que previene errores de concurrencia y permisos en entornos con directorios de sistema, asegurando que la app no aborte ante condiciones inesperadas del sistema de archivos.
 - `2026-10-14T07:01:44` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner implementando una caché LFU/LRU a nivel de `is_protected_path` en las comprobaciones críticas dentro del loop de `process_entry`, reduciendo drásticamente las llamadas redundantes al sistema de archivos al validar rutas ya procesadas.
 - `2026-10-14T06:52:35` **memory.py** (rendimiento): Optimicé el rendimiento del escaneo de procesos en `top_memory_processes` reemplazando la creación y ordenamiento de una lista completa de tuplas por un `heapq.nlargest`, reduciendo la carga de CPU y memoria al evitar el ordenamiento de toda la tabla de procesos del sistema cuando solo se requieren los 10 más pesados.
 - `2026-10-14T06:52:07` **main.py** (rendimiento): Se ha implementado un mecanismo de "invalidación perezosa" en el cálculo del score de salud dentro de `on_full_analysis`, utilizando un *digest* (tuple de estados) para evitar re-compilaciones del asistente y cálculos pesados si el estado del sistema no ha cambiado desde la última iteración, reduciendo significativamente la carga de CPU y el uso de memoria en análisis repetidos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-14T06:11:41` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la refactorización de `_is_file_locked`, separando la lógica de bajo nivel (Windows API) de la validación general, y añadiendo docstrings técnicos claros que explican las decisiones de seguridad tomadas en funciones críticas como `_is_safe_for_disk_op`.
 - `2026-10-14T06:11:27` **memory.py** (legibilidad y documentación): Mejoré la legibilidad del código mediante la adición de Type Hints en parámetros y retornos que faltaban, la formalización de la estructura de datos `_CACHE_TOP_PROC` usando un `NamedTuple` para evitar acceso por claves de cadena ambiguas, y la clarificación de docstrings complejos para explicar el propósito de las constantes de bajo nivel.
 - `2026-10-14T06:10:57` **main.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna mediante la incorporación de docstrings descriptivos en los métodos de `main.py`, clarificando el propósito, las dependencias de estado (UI, async) y las garantías de seguridad de cada componente, facilitando así el mantenimiento preventivo ante el crecimiento del código.
-- `2026-10-14T06:09:45` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad del pipeline de procesamiento mediante la adición de Type Hints explícitos en las lambdas del _PIPELINE y docstrings detallados en funciones críticas, clarificando la intención y los contratos de datos en las transformaciones del motor de scoring.
-- `2026-10-14T06:01:09` **duplicates.py** (legibilidad y documentación): Se introdujeron docstrings estructurados y type hints detallados en las funciones de procesamiento de duplicados para aclarar la intención técnica de cada etapa del pipeline de hash, facilitando la auditoría de seguridad del proceso de I/O.
