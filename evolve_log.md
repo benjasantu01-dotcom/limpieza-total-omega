@@ -750,3 +750,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-14T08:03:37` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_process_executable_safe` al reemplazar `.resolve()` (que puede disparar accesos a disco bloqueantes o seguir enlaces de forma inesperada) por una validación de ruta estática más estricta mediante `is_protected_path` directamente sobre la ruta recuperada de la API de Windows, asegurando que el proceso evaluado no resida en directorios protegidos o rutas UNC.
 - `2026-10-14T08:03:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T08:03:37` Corrida terminada. Total usado hoy: 192.
+- `2026-10-14T08:11:27` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-10-14T08:11:56` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó la seguridad en `_is_safe_for_disk_op` añadiendo una verificación explícita para asegurar que el archivo de origen no esté residiendo dentro de una ruta de sistema (bloqueada por `is_protected_path`) antes de realizar cualquier movimiento, mitigando riesgos de manipulación accidental de archivos críticos aunque tengan extensión de basura.
+- `2026-10-14T08:12:36` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_validate_isolation_request` añadiendo una comprobación explícita para evitar que se ponga en cuarentena un archivo que ya reside en el directorio de cuarentena, previniendo así posibles bucles de manipulación o inconsistencias en el manifiesto.
+- `2026-10-14T08:12:37` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-14T08:13:03` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-14T08:13:38` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-10-14T08:13:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-14T08:13:38` Corrida terminada. Total usado hoy: 196.

@@ -494,6 +494,8 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
         raise UnsafePathError(f"Ruta origen inaccesible: {e}")
     if len(str(dest_dir)) > 240:
         raise UnsafePathError("Ruta de cuarentena demasiado larga.")
+    if is_within_directory(resolved_source, dest_dir.resolve()):
+        raise UnsafePathError("Archivo origen ya reside dentro del sandbox de cuarentena.")
     _ensure_disk_space(dest_dir, resolved_source.stat().st_size)
     _check_isolation_safety(resolved_source, dest_dir)
 
