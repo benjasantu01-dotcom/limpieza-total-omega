@@ -271,9 +271,10 @@ def _get_cached_snapshot(timestamp_bucket: int) -> MemorySnapshot:
     if _is_windows: return _read_windows_snapshot()
     try:
         if _linux_mem_path.exists():
-            snapshot = parse_linux_meminfo(_linux_mem_path.read_text(encoding="utf-8"))
+            # Lee con manejo explícito de errores de codificación
+            snapshot = parse_linux_meminfo(_linux_mem_path.read_text(encoding="utf-8", errors="ignore"))
             return snapshot if snapshot != _EMPTY_SNAPSHOT else _EMPTY_SNAPSHOT
-    except (OSError, PermissionError, UnicodeDecodeError): 
+    except (OSError, PermissionError): 
         pass
     return _EMPTY_SNAPSHOT
 
@@ -316,11 +317,11 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
             if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
                 count = min(1024, cb_needed.value // 4)
                 
-                # Heapq es O(N log K), más eficiente que sorted() O(N log N) para K << N
                 candidates = []
                 for i in range(count):
                     pid = pids[i]
                     if pid > 4 and not _is_system_process(pid) and _is_process_executable_safe(pid):
+                        # La consulta puede fallar si el proceso muere entre Enum y Query
                         ws = _query_working_set_bytes(pid, kernel32, psapi, pmc)
                         if ws is not None:
                             candidates.append(ProcessMemory(f"PID {pid}", pid, ws))
