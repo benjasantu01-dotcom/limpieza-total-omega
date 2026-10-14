@@ -7,45 +7,48 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **201** (39.9% de aceptación)
-- Rechazadas por tests: 19
+- Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-13 | 110 | 9 | 24 | 10 | 95 |
-| 2026-10-14 | 91 | 10 | 20 | 15 | 120 |
+| 2026-10-13 | 107 | 9 | 24 | 10 | 94 |
+| 2026-10-14 | 94 | 11 | 20 | 15 | 120 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **49**
+- legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **48**
 - seguridad defensiva: **47**
-- robustez ante casos límite: **32**
+- robustez ante casos límite: **29**
 - rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **19**
 - `browser.py`: **19**
-- `diskreport.py`: **18**
-- `healthscore.py`: **17**
+- `diskreport.py`: **17**
 - `duplicates.py`: **17**
-- `scanner.py`: **15**
+- `scanner.py`: **16**
+- `healthscore.py`: **16**
 - `assistant.py`: **15**
-- `main.py`: **14**
-- `startup.py`: **13**
+- `startup.py`: **14**
+- `main.py`: **13**
+- `settings.py`: **12**
 - `safety.py`: **12**
 - `organizer.py`: **11**
-- `settings.py`: **11**
 - `quarantine.py`: **10**
 - `branding.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-14T10:55:50` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los docstrings de los métodos de `StartupEntry` y funciones auxiliares, clarificando las precondiciones de seguridad y el comportamiento de las cachés para facilitar el mantenimiento futuro.
+- `2026-10-14T10:55:22` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `_SettingsManager`, clarificando el propósito de la escritura atómica, y se han aplicado type hints faltantes en parámetros críticos para mejorar la robustez y autodocumentación del código.
+- `2026-10-14T10:54:52` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más específicos en las firmas de funciones clave y se unificó la nomenclatura de los parámetros de tipo en todo el módulo para mejorar la legibilidad y la consistencia del código, facilitando el mantenimiento futuro.
 - `2026-10-14T10:44:41` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings de nivel de módulo y función, estandarizando la terminología y clarificando las precondiciones de seguridad críticas para el mantenimiento del proyecto.
 - `2026-10-14T10:36:16` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `memory.py` mediante la adición de docstrings estructurados con detalles técnicos, la corrección de type hints en `_is_process_executable_safe` y la clarificación de las responsabilidades en las funciones de manejo de memoria (`trim_working_set`), siguiendo el enfoque de documentación técnica exigido.
 - `2026-10-14T10:36:03` **main.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del archivo `main.py` mediante la refactorización de la lógica de construcción de las pestañas (`_tab_factory`), reemplazando la estructura de diccionario `constructors` por un método explícito basado en `getattr` y manejo de errores centralizado, reduciendo la redundancia y mejorando la claridad de la arquitectura basada en carga perezosa.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-14T10:15:23` **settings.py** (manejo de errores y validación de entradas): Refactoricé `_read_and_parse_json` y `save` para capturar explícitamente excepciones de `json` y de sistema durante la serialización/deserialización, asegurando que cualquier fallo en la estructura no bloquee la app y retorne el estado de fábrica de forma segura.
 - `2026-10-14T10:14:54` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas agregando validaciones de entrada (`None`/vacío) y capturas de excepciones específicas, asegurando que un fallo en un archivo individual no detenga la ejecución completa del escáner.
 - `2026-10-14T10:14:28` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_path_stat_robust` ante fallos de permisos capturando explícitamente `OSError` con el código de error `ERROR_ACCESS_DENIED`, asegurando que la excepción sea procesada como un error de acceso y no como una falla genérica de I/O, mejorando la fiabilidad en entornos de permisos restringidos.
-- `2026-10-14T10:04:29` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez del manejo de errores en `stage_for_review` y `delete_reviewed` al encapsular correctamente las validaciones, evitando que excepciones en la resolución de rutas interrumpan el flujo y asegurando que las llamadas a `ensure_safe_to_modify` se realicen solo sobre objetos validados.
-- `2026-10-14T09:54:09` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de hash (`hash_file` y `partial_hash`) capturando `OSError` e `IOError` explícitamente durante la lectura de archivos, garantizando que un fallo en la apertura o lectura de un solo archivo no detenga el análisis completo de los grupos de duplicados.
-- `2026-10-14T09:45:39` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_process_file_node` ante errores de acceso capturando explícitamente excepciones de sistema de archivos y validando la presencia de atributos necesarios en el objeto `stat` antes de operar, evitando posibles `AttributeError` en entornos con permisos restringidos.

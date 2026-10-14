@@ -162,8 +162,9 @@ class _SettingsManager:
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
-        Escribe el contenido serializado de forma atómica usando archivos temporales 
-        y bloqueo de sistema (flock) para evitar corrupción por concurrencia.
+        Realiza una escritura segura en el disco utilizando un archivo temporal intermedio,
+        bloqueo de archivo (flock) para evitar condiciones de carrera, y reemplazo atómico 
+        mediante 'os.replace' para garantizar la integridad de la configuración.
         """
         temp_path: Path = config_path.with_suffix(".tmp")
         bak_path: Path = config_path.with_suffix(".bak")

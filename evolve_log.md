@@ -1024,3 +1024,22 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-14T10:46:09` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: legibilidad y documentación).
 - `2026-10-14T10:46:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T10:46:09` Corrida terminada. Total usado hoy: 256.
+- `2026-10-14T10:54:23` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-10-14T10:54:52` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujeron type hints más específicos en las firmas de funciones clave y se unificó la nomenclatura de los parámetros de tipo en todo el módulo para mejorar la legibilidad y la consistencia del código, facilitando el mantenimiento futuro.
+- `2026-10-14T10:55:22` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `_SettingsManager`, clarificando el propósito de la escritura atómica, y se han aplicado type hints faltantes en parámetros críticos para mejorar la robustez y autodocumentación del código.
+- `2026-10-14T10:55:50` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la estandarización de los docstrings de los métodos de `StartupEntry` y funciones auxiliares, clarificando las precondiciones de seguridad y el comportamiento de las cachés para facilitar el mantenimiento futuro.
+- `2026-10-14T10:55:59` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-14T10:56:39` Tests FALLARON:
+```
+ basura, 900 MB en duplicados.'
+ +  where 'Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 MB en duplicados.' = Answer(text='Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 M...lo más urgente que debería arreglar?', '¿Por qué mi PC está lenta?', '¿Es seguro borrar lo que encontró la limpieza?']).text
+FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_explains_they_are_signals - AssertionError: assert 'señales' in 'con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de ram, 2400 mb de basura, 900 mb en duplicados.'
+ +  where 'con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de ram, 2400 mb de basura, 900 mb en duplicados.' = <built-in method lower of str object at 0x7ff693505d10>()
+ +    where <built-in method lower of str object at 0x7ff693505d10> = 'Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 MB en duplicados.'.lower
+ +      where 'Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 MB en duplicados.' = Answer(text='Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 M...lo más urgente que debería arreglar?', '¿Por qué mi PC está lenta?', '¿Es seguro borrar lo que encontró la limpieza?']).text
+2 failed, 297 passed, 4 warnings in 1.67s
+
+```
+- `2026-10-14T10:56:39` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se optimizó el proceso de consulta local eliminando el uso de `finditer` y el análisis de tokens mediante regex, reemplazándolo por una búsqueda directa y eficiente en un diccionario, evitando así la sobrecarga de compilación y ejecución de expresiones regulares por cada pregunta del usuario.
+- `2026-10-14T10:56:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-14T10:56:39` Corrida terminada. Total usado hoy: 260.
