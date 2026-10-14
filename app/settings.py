@@ -361,6 +361,7 @@ def _is_file_secure_to_read(st: os.stat_result, file_obj: Any) -> bool:
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
         if st.st_mode & (stat.S_ISUID | stat.S_ISGID) or st.st_nlink != 1: return False
+        # Verificación estricta de propiedad
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         return True
     except (OSError, PermissionError, AttributeError, ValueError): return False

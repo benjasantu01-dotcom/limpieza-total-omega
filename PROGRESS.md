@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Mejoras aceptadas: **217** (43.1% de aceptación)
 - Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 189
+- Sin respuesta de la IA (error o límite): 188
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-12 | 31 | 2 | 8 | 3 | 18 |
+| 2026-10-12 | 31 | 2 | 8 | 3 | 14 |
 | 2026-10-13 | 154 | 16 | 37 | 13 | 130 |
-| 2026-10-14 | 31 | 4 | 8 | 8 | 41 |
+| 2026-10-14 | 32 | 4 | 8 | 8 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - legibilidad y documentación: **49**
-- seguridad defensiva: **43**
+- seguridad defensiva: **44**
 - robustez ante casos límite: **37**
 - rendimiento: **36**
 
@@ -41,12 +41,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `startup.py`: **14**
 - `branding.py`: **13**
 - `organizer.py`: **12**
+- `settings.py`: **11**
 - `quarantine.py`: **11**
 - `main.py`: **11**
-- `settings.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-14T03:57:25` **settings.py** (seguridad defensiva): Se introdujo una validación estricta de "propietario" mediante `st_uid` en `_is_file_secure_to_read` para prevenir ataques de escalada de privilegios o lectura de archivos inyectados por otros usuarios, alineándose con el enfoque de seguridad defensiva.
 - `2026-10-14T03:38:32` **memory.py** (seguridad defensiva): Se mejoró la seguridad en `top_memory_processes` delegando la validación del ejecutable al momento de la recolección inicial (`candidates`), evitando que procesos con rutas restringidas consuman ciclos de CPU innecesarios y garantizando que el filtrado de seguridad ocurra antes de cualquier almacenamiento en caché.
 - `2026-10-14T03:28:39` **duplicates.py** (seguridad defensiva): Se ha robustecido la detección de duplicados implementando `os.scandir` con un manejo más estricto de excepciones y una validación de rutas mediante `is_safe_to_modify` antes de cualquier operación de I/O, evitando el seguimiento de enlaces simbólicos o puntos de reanálisis fuera de control.
 - `2026-10-14T03:28:22` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` verificando explícitamente la presencia de puntos de reparse (reparse points) mediante el chequeo de atributos del sistema (0x0400) para evitar recursión infinita en junctions o mount points, delegando además la resolución de rutas solo tras confirmar que la entrada es accesible.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-14T02:16:22` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `is_safe_to_modify` dentro del bucle interno, reduciendo drásticamente las llamadas al sistema de archivos durante el escaneo.
 - `2026-10-14T02:06:24` **assistant.py** (rendimiento): Optimicé el rendimiento de `_TOKEN_REGEX` y el acceso a `_TOKEN_KEYS` pre-compilando el regex de tokens y optimizando la lógica de búsqueda en `local_answer` para evitar el uso redundante de `split` y `findall` en cada consulta.
 - `2026-10-14T02:05:25` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings más precisos en `StartupEntry` y las funciones auxiliares de escaneo, aclarando las responsabilidades de cada método y el flujo de los datos para facilitar el mantenimiento.
-- `2026-10-14T01:56:00` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de Type Hints en la firma de `_is_readable` y `_is_locked_by_os`, y se han clarificado las intenciones del código mediante la sustitución de retornos booleanos implícitos por un estilo más explícito, facilitando la comprensión de los mecanismos de seguridad ante el resto del equipo.
