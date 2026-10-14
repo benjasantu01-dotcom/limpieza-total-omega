@@ -392,9 +392,9 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
                 except (OSError, IOError): pass
             
             if not content or len(content) > MAX_SETTINGS_SIZE: return None
-            data = json.loads(content)
-            return data if _is_dict(data) else None
-    except (OSError, PermissionError, ValueError, AttributeError, RuntimeError, json.JSONDecodeError): return None
+            return json.loads(content)
+    except (OSError, PermissionError, AttributeError, RuntimeError, json.JSONDecodeError, ValueError): 
+        return None
 
 def _is_dir_safe(path: Path) -> bool:
     """Verifica seguridad básica del directorio padre antes de operaciones de escritura."""
@@ -447,9 +447,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     """Persistencia atómica delegada al gestor de estados."""
     if not _is_dict(values): return None
     config_path = settings_path(custom_base)
-    cleaned_settings = _coerce_and_verify(validate(values))
-    parent = config_path.parent
     try:
+        cleaned_settings = _coerce_and_verify(validate(values))
+        parent = config_path.parent
         if not is_safe_to_modify(str(config_path)): return None
         if not parent.exists() or not _is_dir_safe(parent) or _Validators._is_reparse_point(parent) or is_protected_path(str(parent.resolve())): return None
         if shutil.disk_usage(parent).free < MAX_SETTINGS_SIZE * 2 or not os.access(parent, os.W_OK): return None

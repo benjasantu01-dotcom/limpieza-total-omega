@@ -158,8 +158,9 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
     Heurística: Detecta archivos con extensiones dobles engañosas.
     Busca patrones donde una extensión común (ej: .pdf) es seguida por una ejecutable (.exe).
     """
+    if not path or not path.name: return None
     try:
-        if path.name and DOUBLE_EXTENSION_RE.search(path.name):
+        if DOUBLE_EXTENSION_RE.search(path.name):
             return Suspicion(path, "Doble extensión detectada como técnica de enmascaramiento", "warning")
     except (UnicodeDecodeError, AttributeError, TypeError):
         pass
@@ -170,8 +171,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     Heurística: Identifica ejecutables creados recientemente en carpetas volátiles (Downloads, Temp).
     La ventana de tiempo se define en SCAN_LIMITS.recent_hours.
     """
+    if not path or not path.parent: return None
     try:
-        if not path.parent.name: return None
         if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
             return None
         if entry and (stats := _safe_stat(entry)):
@@ -187,8 +188,9 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     Heurística: Detecta binarios con nombres de procesos críticos del sistema (ej: svchost.exe)
     cuando se encuentran fuera del directorio System32, lo cual es una técnica común de persistencia.
     """
+    if not path or not path.name: return None
     try:
-        if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
+        if path.name.lower() in SYSTEM_LOOKALIKES:
             if SYSTEM32_LOWER not in str(path).lower():
                 return Suspicion(path, "Nombre de proceso de sistema detectado fuera de directorio protegido", "warning")
     except (OSError, AttributeError, TypeError, UnicodeDecodeError):
@@ -200,6 +202,7 @@ def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: fl
     Heurística: Detecta ejecutables con tamaño 0.
     Estos archivos suelen utilizarse como marcadores de posición o indicadores de compromiso fallidos.
     """
+    if not path: return None
     try:
         if _get_file_size(path) == 0:
             return Suspicion(path, "Ejecutable vacío detectado", "warning")
@@ -226,7 +229,7 @@ class Scanner:
         self.safe_cache: set[str] = set()
         try:
             self.base_root_str: str = str(base_root.resolve()).lower()
-        except OSError:
+        except (OSError, RuntimeError):
             self.base_root_str = str(base_root).lower()
         self.now_ts: float = datetime.now().timestamp()
 
@@ -241,6 +244,7 @@ class Scanner:
 
     def _has_invalid_name(self, name: str) -> bool:
         """Valida que el nombre de archivo no sea un alias reservado por Windows (ej: NUL, CON)."""
+        if not name: return True
         return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
@@ -307,7 +311,7 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta toda la suite de heurísticas sobre un archivo validado."""
-        if not _is_readable(path) or _is_locked_by_os(path):
+        if not path or not _is_readable(path) or _is_locked_by_os(path):
             return
         for check_fn in ALL_CHECKS:
             try:
@@ -322,7 +326,8 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     Escaneo heurístico individual para un archivo específico tras validar
     permisos y estructura de seguridad.
     """
-    if not isinstance(path, Path) or _cached_is_protected(str(path)): return []
+    if not isinstance(path, Path) or not path.exists() or _cached_is_protected(str(path)): 
+        return []
     if not _is_readable(path) or _is_locked_by_os(path): 
         return []
     
@@ -332,7 +337,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
             res = check_fn(path, entry, now_ts)
             if res is not None: findings.append(res)
         except (OSError, PermissionError, AttributeError, ValueError, TypeError) as e:
-            logger.debug(f"Heurística individual fallida en {path}: {e}")
+            logger.debug(f"Heurística individual {check_fn.__name__} fallida en {path}: {e}")
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:

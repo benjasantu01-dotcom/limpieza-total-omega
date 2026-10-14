@@ -130,7 +130,7 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae la ruta absoluta desde una cadena entrecomillada, aplicando validaciones de seguridad.
+        Extracts the absolute path from a quoted string, applying security validations.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
@@ -340,7 +340,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
         f: io.StringIO = io.StringIO(csv_text.strip())
         reader: csv.DictReader = csv.DictReader(f)
         
-        if not reader or reader.fieldnames is None or len(reader.fieldnames) < 2:
+        if not reader or not reader.fieldnames or len(reader.fieldnames) < 2:
             return []
         
         header_name: str = reader.fieldnames[0]
