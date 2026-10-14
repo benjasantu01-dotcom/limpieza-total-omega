@@ -103,6 +103,9 @@ def _is_file_locked(path: Path) -> bool:
     """Verifica si un archivo está en uso intentando abrirlo en modo exclusivo."""
     if not isinstance(path, Path) or not is_safe_to_modify(path):
         return True
+    # Verificación proactiva de acceso antes de intentar abrir
+    if not os.access(path, os.R_OK):
+        return True
     try:
         with open(path, "rb") as f:
             return False

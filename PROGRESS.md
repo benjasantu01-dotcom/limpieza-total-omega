@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **212** (42.1% de aceptación)
+- Mejoras aceptadas: **211** (41.9% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 54
+- Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 194
+- Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-12 | 33 | 2 | 10 | 3 | 38 |
+| 2026-10-12 | 31 | 2 | 9 | 3 | 37 |
 | 2026-10-13 | 154 | 16 | 37 | 13 | 130 |
-| 2026-10-14 | 25 | 2 | 7 | 8 | 26 |
+| 2026-10-14 | 26 | 2 | 7 | 8 | 29 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - legibilidad y documentación: **49**
-- seguridad defensiva: **40**
+- seguridad defensiva: **38**
+- robustez ante casos límite: **37**
 - rendimiento: **36**
-- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **19**
 - `assistant.py`: **18**
 - `diskreport.py`: **18**
+- `duplicates.py`: **18**
 - `scanner.py`: **18**
 - `browser.py`: **18**
-- `duplicates.py`: **17**
 - `healthscore.py`: **17**
-- `safety.py`: **16**
+- `safety.py`: **15**
 - `startup.py`: **14**
 - `branding.py`: **12**
 - `organizer.py`: **12**
-- `settings.py`: **11**
 - `quarantine.py`: **11**
 - `main.py`: **11**
+- `settings.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-14T02:56:25` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_locked` para que no dependa únicamente de capturar excepciones, implementando una verificación proactiva mediante `os.access` con `os.R_OK` para descartar archivos sin permisos de lectura antes de intentar abrirlos, evitando así el ruido de excepciones recurrentes en directorios con restricciones.
 - `2026-10-14T02:47:28` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` implementando un chequeo de `is_symlink` y la validación de `os.stat` antes de procesar, evitando que el escáner se bloquee o se desvíe ante enlaces simbólicos dañados, rutas con permisos restringidos inesperados o entradas que desaparecen durante la iteración (condición de carrera común).
 - `2026-10-14T02:46:10` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_get_source_value` y `_apply_field` para prevenir condiciones de carrera o fallos por atributos maliciosos/inesperados, añadiendo chequeos de `callable` y tipo más estrictos, y asegurando que las inyecciones no logren modificar el `SystemContext` mediante un manejo más defensivo de las actualizaciones en `ingest`.
 - `2026-10-14T02:36:14` **safety.py** (rendimiento): Se optimizó el rendimiento del módulo mediante la implementación de un caché de resultados de `is_protected_path` basada en la ruta normalizada y el uso de un conjunto (`set`) para la validación de extensiones sensibles, evitando recálculos innecesarios y búsquedas lineales en operaciones frecuentes.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-14T01:45:32` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en funciones críticas y la estandarización de type hints para clarificar el flujo de datos, facilitando el mantenimiento y la auditoría del módulo sin alterar la lógica de ejecución.
 - `2026-10-14T01:45:06` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y robustez del código mediante la adición de Type Hints en estructuras críticas, la clarificación de las restricciones de seguridad en las funciones de bajo nivel y la estandarización de las docstrings para explicar el "porqué" de las validaciones de seguridad.
 - `2026-10-14T01:35:34` **healthscore.py** (legibilidad y documentación): Documenté con docstrings detallados la lógica de normalización y la estructura del pipeline, clarificando el propósito del `_PIPELINE` y los métodos críticos para mejorar la mantenibilidad del motor.
-- `2026-10-14T01:35:00` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings detallados en las clases `ExtStats` y `GlobalStats`, clarificando su responsabilidad, y se ha introducido la anotación `@property` en `FolderMetrics` para mantener la coherencia con el resto de las estructuras de datos de la API.
