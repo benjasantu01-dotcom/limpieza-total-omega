@@ -253,7 +253,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         proc = _extract_process_info(line)
         if proc:
             processes.append(proc)
-    return sorted(processes, key=lambda p: p.working_set, reverse=True)[:limit]
+    return heapq.nlargest(limit, processes)
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Interroga la API nativa GlobalMemoryStatusEx para obtener el estado físico."""

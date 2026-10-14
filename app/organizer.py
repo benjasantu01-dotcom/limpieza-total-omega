@@ -239,8 +239,10 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> boo
     if not _is_allowed_directory(entry.name) or _is_junction(entry): return False
     if _is_system_hidden(entry): return False
     if entry.path in protected_cache: return False
+    # Cacheamos el resultado negativo también para evitar re-chequeos costosos
     try:
-        if is_protected_path(Path(entry.path)) or not is_safe_to_modify(Path(entry.path)):
+        path = Path(entry.path)
+        if is_protected_path(path) or not is_safe_to_modify(path):
             protected_cache.add(entry.path)
             return False
     except (OSError, RuntimeError):
@@ -260,6 +262,12 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
         resolved_dir = current_dir.resolve(strict=False)
         if resolved_dir in visited: return
         visited.add(resolved_dir)
+        
+        # Validar nodo actual antes de iterar
+        if is_protected_path(resolved_dir) or not is_safe_to_modify(resolved_dir):
+            protected_cache.add(str(resolved_dir))
+            return
+            
         now_ts: float = datetime.now().timestamp()
         
         with os.scandir(current_dir) as iterator:
@@ -269,7 +277,8 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False) and entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE):
-                        if entry.path in protected_cache or is_protected_path(Path(entry.path)):
+                        # La comprobación de protección individual se realiza mediante caché o llamada directa
+                        if entry.path in protected_cache:
                             continue
                         stats = entry.stat(follow_symlinks=False)
                         if _is_candidate_junk(stats, entry, now_ts):

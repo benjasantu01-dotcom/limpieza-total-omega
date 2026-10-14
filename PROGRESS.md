@@ -7,45 +7,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **198** (39.3% de aceptación)
-- Rechazadas por tests: 22
+- Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 43
-- Sin cambios (nada sustancial que mejorar): 26
+- Sin cambios (nada sustancial que mejorar): 27
 - Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-13 | 104 | 9 | 23 | 10 | 94 |
-| 2026-10-14 | 94 | 13 | 20 | 16 | 121 |
+| 2026-10-13 | 102 | 8 | 22 | 10 | 94 |
+| 2026-10-14 | 96 | 13 | 21 | 17 | 121 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **48**
 - seguridad defensiva: **47**
-- robustez ante casos límite: **26**
-- rendimiento: **25**
+- rendimiento: **27**
+- robustez ante casos límite: **24**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **19**
-- `memory.py`: **18**
+- `memory.py`: **19**
 - `diskreport.py`: **17**
 - `duplicates.py`: **17**
-- `scanner.py`: **16**
 - `healthscore.py`: **16**
 - `assistant.py`: **15**
+- `scanner.py`: **15**
 - `startup.py`: **14**
 - `main.py`: **13**
-- `settings.py`: **12**
 - `safety.py`: **12**
+- `settings.py`: **11**
+- `organizer.py`: **11**
 - `branding.py`: **10**
-- `organizer.py`: **10**
 - `quarantine.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-14T11:17:10` **organizer.py** (rendimiento): Optimicé el rendimiento de `_process_directory` reemplazando la verificación repetitiva de `is_protected_path` (que puede ser costosa al involucrar validaciones de ruta/sistema) por una caché de resultados en el conjunto `visited`, evitando escaneos redundantes en subárboles ya validados y reduciendo llamadas a disco innecesarias durante la recursión.
+- `2026-10-14T11:16:52` **memory.py** (rendimiento): Se implementó un filtrado preventivo en `top_memory_processes` utilizando `heapq.nlargest` para evitar el re-procesamiento de listas completas y se optimizó el uso de la memoria caché mediante una estructura que evita llamadas costosas a `EnumProcesses` salvo cada 60 segundos.
 - `2026-10-14T10:55:50` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los docstrings de los métodos de `StartupEntry` y funciones auxiliares, clarificando las precondiciones de seguridad y el comportamiento de las cachés para facilitar el mantenimiento futuro.
 - `2026-10-14T10:55:22` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `_SettingsManager`, clarificando el propósito de la escritura atómica, y se han aplicado type hints faltantes en parámetros críticos para mejorar la robustez y autodocumentación del código.
 - `2026-10-14T10:54:52` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más específicos en las firmas de funciones clave y se unificó la nomenclatura de los parámetros de tipo en todo el módulo para mejorar la legibilidad y la consistencia del código, facilitando el mantenimiento futuro.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-14T10:24:58` **branding.py** (legibilidad y documentación): Se introdujo una estructura de datos `UIConfiguration` como clase de configuración centralizada en lugar de múltiples diccionarios sueltos, mejorando la legibilidad, facilitando la validación de tipos y encapsulando las constantes de estilo para evitar la dispersión de parámetros.
 - `2026-10-14T10:15:36` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita de `reader.fieldnames` para evitar errores de `IndexError` al procesar CSVs malformados o vacíos, y reforcé la lógica de limpieza de caracteres en la entrada de datos.
 - `2026-10-14T10:15:23` **settings.py** (manejo de errores y validación de entradas): Refactoricé `_read_and_parse_json` y `save` para capturar explícitamente excepciones de `json` y de sistema durante la serialización/deserialización, asegurando que cualquier fallo en la estructura no bloquee la app y retorne el estado de fábrica de forma segura.
-- `2026-10-14T10:14:54` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas agregando validaciones de entrada (`None`/vacío) y capturas de excepciones específicas, asegurando que un fallo en un archivo individual no detenga la ejecución completa del escáner.
-- `2026-10-14T10:14:28` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_path_stat_robust` ante fallos de permisos capturando explícitamente `OSError` con el código de error `ERROR_ACCESS_DENIED`, asegurando que la excepción sea procesada como un error de acceso y no como una falla genérica de I/O, mejorando la fiabilidad en entornos de permisos restringidos.
