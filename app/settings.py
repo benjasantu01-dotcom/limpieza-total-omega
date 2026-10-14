@@ -164,6 +164,9 @@ class _SettingsManager:
         """
         Escribe el contenido serializado de forma atómica usando archivos temporales 
         y bloqueo de sistema (flock) para evitar corrupción por concurrencia.
+        
+        Returns:
+            bool: True si la escritura fue exitosa y verificada.
         """
         temp_path: Path = config_path.with_suffix(".tmp")
         bak_path: Path = config_path.with_suffix(".bak")
@@ -344,7 +347,14 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
-    """Valida y limpia una estructura de datos externa contra el esquema oficial."""
+    """
+    Valida y limpia una estructura de datos externa contra el esquema oficial.
+    
+    Args:
+        raw_values: Objeto crudo (usualmente cargado del JSON).
+    Returns:
+        AppSettings: Diccionario de configuración validado.
+    """
     if not _is_dict(raw_values): return DEFAULTS.copy()
     config = DEFAULTS.copy()
     validators = _build_validator_map()
@@ -358,13 +368,16 @@ def validate(raw_values: Any) -> AppSettings:
     return config 
 
 def _is_file_secure_to_read(st: os.stat_result, file_obj: Any) -> bool:
-    """Verifica seguridad del archivo de configuración antes de lectura."""
+    """
+    Verifica permisos y metadatos de seguridad del archivo de configuración.
+    
+    Checks: Tamaño límite, inodos únicos, permisos restrictivos (no escritura grupal/otros).
+    """
     try:
         if file_obj.closed or not stat.S_ISREG(st.st_mode): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
         if st.st_mode & (stat.S_ISUID | stat.S_ISGID) or st.st_nlink != 1: return False
-        # Verificación estricta de propiedad
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         return True
     except (OSError, PermissionError, AttributeError, ValueError): return False
@@ -407,7 +420,12 @@ def _load_impl(ruta: Path) -> AppSettings:
     return _coerce_and_verify(validate(data)) if data else DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Carga los ajustes desde el disco, utilizando caché por mtime."""
+    """
+    Carga los ajustes desde el disco, utilizando caché por timestamp (mtime).
+    
+    Returns:
+        AppSettings: Configuración cargada o valores por defecto si falla.
+    """
     primary_path = settings_path(custom_base)
     backup_path = primary_path.with_suffix(".bak")
     for path in [primary_path, backup_path]:
@@ -437,13 +455,19 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     return final
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
-    """Persistencia atómica delegada al gestor de estados."""
+    """
+    Persistencia atómica delegada al gestor de estados.
+    
+    Args:
+        values: Diccionario con configuraciones a persistir.
+    Returns:
+        Path o None: La ruta del archivo guardado o None si la operación fue abortada.
+    """
     if not _is_dict(values): return None
     config_path = settings_path(custom_base)
     cleaned_settings = _coerce_and_verify(validate(values))
     parent = config_path.parent
     try:
-        # Chequeo de seguridad explícito previo a cualquier operación de escritura
         if not is_safe_to_modify(str(config_path)): return None
         if not parent.exists() or not _is_dir_safe(parent) or _Validators._is_reparse_point(parent) or is_protected_path(str(parent.resolve())): return None
         if shutil.disk_usage(parent).free < MAX_SETTINGS_SIZE * 2 or not os.access(parent, os.W_OK): return None

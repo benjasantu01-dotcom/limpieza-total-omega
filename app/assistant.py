@@ -638,10 +638,11 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     if not q_sanitized:
         return Answer("Entrada no válida.")
     
-    # Búsqueda optimizada: solo busca tokens conocidos en la consulta
-    for word in _TOKEN_REGEX.findall(q_sanitized.lower()):
-        if word in _TOKEN_KEYS:
-            return _TOKENS_MAP[word](context, question)
+    # Búsqueda optimizada: iteración directa sin crear listas intermedias
+    for match in _TOKEN_REGEX.finditer(q_sanitized.lower()):
+        token = match.group()
+        if token in _TOKEN_KEYS:
+            return _TOKENS_MAP[token](context, question)
             
     cuerpo = _format_problem_message(context.active_problems, context.score if context.score is not None else "N/A")
     ans = Answer(_validate_response_length(cuerpo), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)

@@ -111,6 +111,7 @@ class StartupEntry:
 
     def _is_path_suspicious(self, path_string: str) -> bool:
         """Detecta caracteres de control o rutas de red (UNC) no admitidas en este contexto de análisis."""
+        # Se bloquea UNC porque el escaneo local de red es impredecible y propenso a timeouts
         return any(c in path_string for c in SUSPICIOUS_CHARS) or path_string.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
@@ -122,6 +123,7 @@ class StartupEntry:
 
     def _sanitize_command(self, raw_command: str) -> str:
         """Limpia caracteres de control (ASCII < 32) de la línea de comando cruda."""
+        # Necesario para eliminar ruido de caracteres invisibles del registro de Windows
         if not isinstance(raw_command, str):
             return ""
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
@@ -307,6 +309,7 @@ def _is_registry_entry_safe(name: str, cmd: str, seen: Set[str]) -> bool:
     """Verifica si una entrada del registro es segura, única y no corresponde a scripts de sistema."""
     if not name.strip() or not cmd.strip() or cmd.startswith(r"\\") or cmd in seen:
         return False
+    # Evitar scripts de PowerShell que podrían ser maliciosos o de mantenimiento del sistema
     if name.upper().startswith("PS"):
         return False
     
@@ -377,6 +380,7 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
     if not safe_keys:
         return []
         
+    # El uso de 'Select-Object * -ExcludeProperty PS*' elimina propiedades dinámicas que rompen el CSV
     ps_args = [
         "powershell", "-NoProfile", "-NonInteractive", "-Command",
         "Get-ItemProperty -LiteralPath " + ",".join([f"'{k}'" for k in safe_keys]) + 

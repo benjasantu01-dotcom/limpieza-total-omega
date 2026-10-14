@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Mejoras aceptadas: **207** (41.1% de aceptación)
 - Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-12 | 2 | 0 | 0 | 0 | 0 |
-| 2026-10-13 | 154 | 16 | 37 | 13 | 130 |
-| 2026-10-14 | 50 | 6 | 11 | 9 | 76 |
+| 2026-10-13 | 154 | 16 | 37 | 12 | 129 |
+| 2026-10-14 | 53 | 6 | 11 | 10 | 76 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
-- legibilidad y documentación: **48**
+- legibilidad y documentación: **50**
 - seguridad defensiva: **44**
-- robustez ante casos límite: **34**
-- rendimiento: **29**
+- robustez ante casos límite: **32**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **19**
-- `duplicates.py`: **18**
-- `healthscore.py`: **18**
 - `diskreport.py`: **18**
 - `scanner.py`: **17**
+- `assistant.py`: **17**
 - `browser.py`: **17**
-- `assistant.py`: **16**
+- `healthscore.py`: **17**
+- `duplicates.py`: **17**
+- `startup.py`: **15**
 - `safety.py`: **14**
-- `startup.py`: **14**
 - `main.py`: **13**
 - `organizer.py`: **12**
-- `settings.py`: **10**
+- `settings.py`: **11**
 - `branding.py`: **10**
 - `quarantine.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-14T06:31:28` **assistant.py** (rendimiento): Optimicé el método `local_answer` para evitar la creación innecesaria de listas de palabras mediante `split()` o iteradores pesados, utilizando en su lugar un bucle directo sobre el resultado de `_TOKEN_REGEX.finditer`, lo que reduce la carga de memoria en cada consulta del usuario.
+- `2026-10-14T06:30:44` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo descripciones explícitas del "porqué" de las decisiones de diseño (como la limpieza de caracteres de control y el manejo de rutas UNC) para facilitar futuras auditorías y mantenimiento, cumpliendo con el enfoque de legibilidad.
+- `2026-10-14T06:30:17` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con bloques de parámetros y retornos en las funciones críticas de validación y persistencia para clarificar el flujo de seguridad y datos, mejorando la mantenibilidad sin alterar la lógica de ejecución.
 - `2026-10-14T06:21:36` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica del módulo mediante la adición de docstrings detallados en las funciones de heurística y la estandarización de las firmas de funciones para clarificar su propósito, manteniendo la integridad del comportamiento existente.
 - `2026-10-14T06:21:24` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la actualización de los docstrings en los predicados de seguridad y funciones de validación, clarificando el propósito técnico y el flujo de los chequeos de integridad, sin modificar la lógica existente.
 - `2026-10-14T06:11:41` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la refactorización de `_is_file_locked`, separando la lógica de bajo nivel (Windows API) de la validación general, y añadiendo docstrings técnicos claros que explican las decisiones de seguridad tomadas en funciones críticas como `_is_safe_for_disk_op`.
@@ -59,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-14T05:50:22` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_registry_csv` ante entradas de registro malformadas o inesperadas, evitando errores silenciosos al validar la existencia de campos obligatorios en el CSV antes de intentar procesar las filas, siguiendo el enfoque de manejo de errores y validación de entradas.
 - `2026-10-14T05:49:57` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save` y `_read_and_parse_json` reemplazando llamadas a `os.replace` y otras operaciones críticas por chequeos explícitos de seguridad con `is_safe_to_modify` y manejando excepciones de archivo ocupado de forma más específica para evitar silenciamientos de errores fatales.
 - `2026-10-14T05:49:16` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones `_is_readable` y `_is_locked_by_os` incorporando validaciones de entrada (`isinstance`) y manejadores de excepciones más específicos para evitar caídas inesperadas al procesar rutas mal formadas o inaccesibles, asegurando que el scanner no se interrumpa ante metadatos corruptos del sistema de archivos.
-- `2026-10-14T05:30:46` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `_extract_process_info` y `top_memory_processes` añadiendo validaciones preventivas de tipos y estados, evitando errores de ejecución ante entradas mal formadas o condiciones inesperadas de la API de Windows.
-- `2026-10-14T05:30:32` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_purge_quarantine` y `on_restore_quarantine` mediante la validación explícita del estado de la cuarentena antes de ejecutar operaciones de disco, evitando errores por discrepancias entre la UI y el estado real del sistema de archivos.
-- `2026-10-14T05:29:22` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del motor de puntuación añadiendo una validación defensiva en `_evaluate_rules` para asegurar que el `normalized_ratio` sea siempre un float finito antes de procesar reglas, y se mejoró la resiliencia del pipeline ante posibles valores `None` o corruptos en `SystemMetrics`.
