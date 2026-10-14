@@ -5,37 +5,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **188** (37.5% de aceptación)
 - Rechazadas por tests: 24
 - Rechazadas por guardia de seguridad: 43
-- Sin cambios (nada sustancial que mejorar): 27
+- Sin cambios (nada sustancial que mejorar): 26
 - Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-13 | 67 | 6 | 17 | 8 | 58 |
-| 2026-10-14 | 122 | 18 | 26 | 19 | 163 |
+| 2026-10-13 | 65 | 6 | 17 | 7 | 57 |
+| 2026-10-14 | 123 | 18 | 26 | 19 | 164 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **45**
 - manejo de errores y validación de entradas: **43**
-- legibilidad y documentación: **41**
+- legibilidad y documentación: **42**
 - robustez ante casos límite: **32**
-- rendimiento: **28**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **17**
+- `assistant.py`: **17**
 - `browser.py`: **17**
 - `diskreport.py`: **17**
-- `healthscore.py`: **16**
-- `assistant.py`: **16**
 - `duplicates.py`: **16**
+- `memory.py`: **16**
 - `scanner.py`: **15**
+- `healthscore.py`: **15**
 - `safety.py`: **13**
 - `startup.py`: **13**
 - `main.py`: **11**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-14T14:50:35` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `SystemContext._apply_field` para simplificar su lógica de validación, extrayendo la conversión a `float` y la verificación de límites a una función auxiliar (`_is_valid_numeric_update`), eliminando así el anidamiento innecesario y reduciendo la complejidad ciclomática sin cambiar el comportamiento.
 - `2026-10-14T14:41:06` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `validate` envolviendo el acceso a los validadores en un bloque `try-except` más específico y asegurando que las claves inesperadas en el JSON no interrumpan el proceso, garantizando que el esquema de configuración siempre mantenga la integridad.
 - `2026-10-14T14:20:42` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del motor de puntuación validando que las métricas recibidas no contengan valores `None` o `NaN` antes de ser procesadas en el pipeline, evitando excepciones inesperadas que antes se silenciaban de forma genérica.
 - `2026-10-14T14:19:31` **diskreport.py** (manejo de errores y validación de entradas): Reforcé la robustez de `walk_files` y `summarize` capturando excepciones específicas en la lectura de atributos de archivo y envolviendo la iteración completa del escáner en un bloque que garantiza que el sistema no se detenga ante archivos bloqueados o inaccesibles, mejorando la fiabilidad del reporte.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-14T12:27:29` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en la detección de archivos duplicados implementando un chequeo explícito de "puntos de reanálisis" (`reparse points`) y enlaces simbólicos directamente en `os.scandir` para impedir que la recursión escape del contexto definido, y añadiendo una validación adicional contra la lista de rutas protegidas antes de realizar cualquier operación de hashing.
 - `2026-10-14T12:26:49` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `_is_excluded_path` añadiendo una comprobación explícita para evitar seguir puntos de reparse (reparse points) o junctions de Windows, previniendo recursiones infinitas o saltos fuera del volumen analizado.
 - `2026-10-14T12:18:11` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_valid_cache_path` y `_resolve_browser_path` para garantizar que no solo se valide la existencia de las rutas, sino que se verifique explícitamente su naturaleza como subdirectorios del sandbox mediante `is_safe_to_modify` antes de cualquier procesamiento, eliminando la posibilidad de procesar rutas externas que pudieran haber eludido chequeos previos.
-- `2026-10-14T12:17:24` **assistant.py** (seguridad defensiva): Se endureció la seguridad de `_is_safe_key` y `_get_source_value` para prevenir ataques de inyección mediante la manipulación de objetos fuente, impidiendo explícitamente el acceso a atributos ocultos o dunder methods que podrían haber sido omitidos en la validación original, asegurando que solo los campos definidos en `_VALIDATORS` sean procesados.

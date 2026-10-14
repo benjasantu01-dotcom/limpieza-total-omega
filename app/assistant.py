@@ -101,6 +101,16 @@ def _check_metric_integrity(val: Any) -> bool:
     """Verifica que un valor numérico sea seguro, finito y coherente para el asistente."""
     return isinstance(val, (int, float)) and not isinstance(val, bool) and math.isfinite(val) and not math.isnan(val)
 
+def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
+    """Helper para validar si un valor puede convertirse en una métrica numérica segura."""
+    try:
+        f = float(val)
+        if math.isfinite(f) and spec.is_valid_type(f) and _is_metric_within_bounds(f, spec):
+            return f
+    except (ValueError, TypeError, OverflowError):
+        pass
+    return None
+
 def _get_safe_attr(obj: Any, name: str, default: Any = None) -> Any:
     """Acceso defensivo a atributos validando tipo y seguridad."""
     if not _is_safe_key(name): return default
@@ -413,15 +423,10 @@ class SystemContext:
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
         """Valida, convierte y verifica límites de un campo individual."""
         val = _get_source_value(source, key)
-        if val is None or not spec.is_valid_type(val):
+        if val is None:
             return None
-        try:
-            float_val = float(val)
-            if math.isfinite(float_val) and _is_metric_within_bounds(float_val, spec):
-                return spec.type_hint(float_val)
-        except (ValueError, TypeError, OverflowError):
-            return None
-        return None
+        valid_val = _is_valid_numeric_update(val, spec)
+        return spec.type_hint(valid_val) if valid_val is not None else None
 
     def _clean_grade(self, val: Any) -> str:
         """Limpia el string de calificación eliminando caracteres de control no seguros."""

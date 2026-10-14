@@ -417,3 +417,12 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-10-14T14:41:06` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la función `validate` envolviendo el acceso a los validadores en un bloque `try-except` más específico y asegurando que las claves inesperadas en el JSON no interrumpan el proceso, garantizando que el esquema de configuración siempre mantenga la integridad.
 - `2026-10-14T14:41:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T14:41:06` Corrida terminada. Total usado hoy: 348.
+- `2026-10-14T14:49:10` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-14T14:49:14` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-14T14:49:17` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-14T14:49:23` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-14T14:49:36` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-14T14:50:35` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `SystemContext._apply_field` para simplificar su lógica de validación, extrayendo la conversión a `float` y la verificación de límites a una función auxiliar (`_is_valid_numeric_update`), eliminando así el anidamiento innecesario y reduciendo la complejidad ciclomática sin cambiar el comportamiento.
+- `2026-10-14T14:50:35` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-10-14T14:50:35` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-14T14:50:35` Corrida terminada. Total usado hoy: 350.
