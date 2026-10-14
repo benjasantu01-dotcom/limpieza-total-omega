@@ -361,7 +361,10 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def _is_process_executable_safe(pid: int) -> bool:
-    """Valida la integridad de la ruta del ejecutable del proceso antes de actuar."""
+    """
+    Valida la integridad de la ruta del ejecutable para prevenir ataques de
+    suplantación o saltos de directorios protegidos.
+    """
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     psapi = getattr(ctypes.windll, "psapi", None)
     if not kernel32 or not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return False
@@ -372,16 +375,16 @@ def _is_process_executable_safe(pid: int) -> bool:
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0 and buf.value:
             path_str = str(buf.value).strip()
-            # Bloqueo estricto: rutas UNC o sospechosas no son seguras
+            # Bloqueo estricto: rutas UNC (red) son inseguras por naturaleza
             if not path_str or path_str.startswith("\\\\"):
                 return False
             
             p = Path(path_str)
-            # Detección de puntos de reparse (Junctions/Symlinks) para evitar saltos inesperados
+            # Prevenir seguimiento de enlaces simbólicos que escapan del contexto permitido
             if p.is_symlink():
                 return False
                 
-            # Validar integridad contra lista de protegidas y normalizar
+            # Validar integridad contra lista protegida y normalizar para evitar path traversal
             normalized = str(p.resolve())
             return not is_protected_path(normalized) and len(filter_safe_paths([normalized])) > 0
     except (ctypes.ArgumentError, OSError, ValueError, RuntimeError):

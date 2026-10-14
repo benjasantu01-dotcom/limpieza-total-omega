@@ -303,7 +303,10 @@ def sort_junk(files: Sequence[JunkFile], by: SortField = "size", ascending: bool
     return sorted(files, key=config.key_func, reverse=not bool(ascending))
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """Mueve archivos detectados hacia una carpeta aislada, validando permisos en cada paso."""
+    """
+    Mueve archivos detectados hacia una carpeta aislada, realizando validaciones de 
+    seguridad mediante `ensure_safe_to_modify` antes de cada movimiento.
+    """
     if not isinstance(files, (list, tuple)) or not review_dir: return None
     try:
         dest_base = Path(review_dir).expanduser()
@@ -340,7 +343,10 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         return None
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Borrado permanente de archivos tras rigurosa validación de seguridad de la ruta."""
+    """
+    Borrado permanente de archivos tras una rigurosa validación de seguridad de la ruta.
+    Asegura que solo se eliminen archivos dentro del directorio de revisión designado.
+    """
     if not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser().resolve(strict=False)
