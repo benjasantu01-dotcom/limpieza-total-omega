@@ -63,6 +63,7 @@ SYSTEM_CRITICAL_PIDS: Final[Set[int]] = {0, 4}
 ERROR_ACCESS_DENIED: Final[int] = 5
 
 class CacheEntry(NamedTuple):
+    """Contenedor temporal para resultados de consultas costosas al sistema."""
     timestamp: float
     data: List[ProcessMemory]
 
@@ -126,15 +127,18 @@ class MemorySnapshot:
 
     @property
     def used(self) -> BytesValue:
+        """Calcula el uso neto restando el disponible del total."""
         return BytesValue(max(0, self.total - self.available))
 
     @property
     def used_percent(self) -> float:
+        """Retorna el porcentaje de memoria RAM en uso."""
         if self.total <= 0: return 0.0
         return round((float(self.used) / float(self.total)) * 100, 1)
 
     @property
     def available_percent(self) -> float:
+        """Retorna el porcentaje de memoria RAM disponible."""
         if self.total <= 0: return 0.0
         return round((float(self.available) / float(self.total)) * 100, 1)
 
@@ -148,9 +152,11 @@ class ProcessMemory:
 
     @property
     def working_set_mb(self) -> MegabytesValue:
+        """Convierte el working set de bytes a megabytes para lectura humana."""
         return MegabytesValue(round(self.working_set / BYTES_IN_MB, 1))
 
     def __lt__(self, other: ProcessMemory) -> bool:
+        """Ordenamiento descendente basado en el tamaño de memoria ocupada."""
         return self.working_set < other.working_set
 
 def format_bytes(num: Optional[int | float]) -> str:
@@ -271,7 +277,6 @@ def _get_cached_snapshot(timestamp_bucket: int) -> MemorySnapshot:
     if _is_windows: return _read_windows_snapshot()
     try:
         if _linux_mem_path.exists():
-            # Lee con manejo explícito de errores de codificación
             snapshot = parse_linux_meminfo(_linux_mem_path.read_text(encoding="utf-8", errors="ignore"))
             return snapshot if snapshot != _EMPTY_SNAPSHOT else _EMPTY_SNAPSHOT
     except (OSError, PermissionError): 
@@ -321,7 +326,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
                 for i in range(count):
                     pid = pids[i]
                     if pid > 4 and not _is_system_process(pid) and _is_process_executable_safe(pid):
-                        # La consulta puede fallar si el proceso muere entre Enum y Query
                         ws = _query_working_set_bytes(pid, kernel32, psapi, pmc)
                         if ws is not None:
                             candidates.append(ProcessMemory(f"PID {pid}", pid, ws))
@@ -377,8 +381,8 @@ def _is_process_executable_safe(pid: int) -> bool:
     if handle is None or handle == INVALID_HANDLE_VALUE: return False
     try:
         buf = ctypes.create_unicode_buffer(1024)
-        if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0 and buf.value:
-            path_str = str(buf.value).strip()
+        if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
+            path_str: str = str(buf.value).strip()
             # Bloquea rutas UNC o vacías
             if not path_str or path_str.startswith("\\\\"):
                 return False
@@ -403,7 +407,8 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Ejecuta EmptyWorkingSet sobre un proceso bajo estrictas normas de seguridad.
-    Nota: Requiere privilegios elevados y debe usarse únicamente ante sospecha de fugas.
+    Esta función es una herramienta de diagnóstico avanzado: no libera RAM 
+    de forma beneficiosa para el rendimiento general.
     """
     if not _is_windows: return False, "Solo soportado en Windows."
     

@@ -74,8 +74,8 @@ class RecommendationRule(NamedTuple):
     Attributes:
         area: Identificador de la métrica analizada (ej: 'disco').
         threshold: Límite inferior de salud para activar la sugerencia.
-        message_factory: Callable que recibe las métricas completas y retorna un string.
-        check: Predicado (SystemMetrics, NormalizedRatio) -> bool que evalúa si activar alerta.
+        message_factory: Función que genera un mensaje contextual a partir de las métricas.
+        check: Predicado (métricas, ratio) -> bool que decide si la regla debe dispararse.
     """
     area: MetricKey
     threshold: float
@@ -84,8 +84,13 @@ class RecommendationRule(NamedTuple):
 
 class PipelineEntry(NamedTuple):
     """
-    Configuración completa de una unidad de análisis dentro del motor de salud.
-    Incluye el peso relativo, el normalizador (scorer) y las reglas de diagnóstico.
+    Configuración de una unidad de análisis del motor de salud.
+    
+    Attributes:
+        area: Nombre de la categoría de análisis.
+        weight: Peso porcentual (0-100) en el puntaje total.
+        scorer: Función normalizadora para convertir la métrica a un ratio [0, 1].
+        rules: Colección de reglas de diagnóstico asociadas a esta área.
     """
     area: MetricKey
     weight: int
@@ -115,14 +120,7 @@ _LIMIT_RAM_PERCENT: Final[float] = 35.0      # Porcentaje de RAM libre base cons
 _LIMIT_DISK_PERCENT: Final[float] = 25.0     # Porcentaje de espacio libre base considerado "saludable"
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
-    """
-    Recorta un valor numérico para que se encuentre dentro de un rango inclusivo.
-    
-    Args:
-        value: Valor numérico a evaluar.
-        min_val: Límite inferior permitido.
-        max_val: Límite superior permitido.
-    """
+    """Recorta un valor numérico para que se encuentre dentro de un rango inclusivo."""
     if not math.isfinite(value): return min_val
     return max(min_val, min(max_val, value))
 
@@ -132,8 +130,7 @@ def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float]
     
     Args:
         limit: Valor umbral para el cálculo.
-        inverse: Si True, un valor mayor al límite reduce el ratio (ej: basura acumulada).
-                 Si False, un valor mayor al límite aumenta el ratio (ej: espacio libre).
+        inverse: Si True, un valor mayor al límite reduce el ratio.
     """
     def scorer(val: float) -> NormalizedRatio:
         if not math.isfinite(val) or limit <= 0.0: return 0.0
@@ -205,38 +202,38 @@ _PIPELINE: Final[Tuple[PipelineEntry, ...]] = (
 _verify_pipeline_integrity(WEIGHTS, _PIPELINE)
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
-    """Normaliza la cantidad de archivos temporales contra el límite de volumen tolerado."""
+    """Calcula el score normalizado de archivos basura."""
     return _JUNK_SCORER(float(junk_mb) if isinstance(junk_mb, (int, float)) else 0.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio: 
-    """Calcula salud: Penaliza según hallazgos sospechosos y advertencias (modelo de deducción)."""
+    """Calcula salud: Penaliza según hallazgos sospechosos y advertencias."""
     s_count = max(0, int(suspicious_count))
     w_count = max(0, int(warnings))
     penalization = (s_count * 0.05) + (w_count * 0.25)
     return _clamp(1.0 - penalization)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
-    """Normaliza el porcentaje de RAM disponible frente al umbral de criticidad definido."""
+    """Calcula el score normalizado de memoria disponible."""
     val = float(available_percent) if isinstance(available_percent, (int, float)) else 0.0
     if _LIMIT_RAM_PERCENT <= 0 or not math.isfinite(val): return 0.0
     return _clamp(val / _LIMIT_RAM_PERCENT)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
-    """Normaliza el porcentaje de espacio libre en disco frente al límite operativo deseado."""
+    """Calcula el score normalizado de espacio en disco."""
     val = float(free_percent) if isinstance(free_percent, (int, float)) else 0.0
     if _LIMIT_DISK_PERCENT <= 0 or not math.isfinite(val): return 0.0
     return _clamp(val / _LIMIT_DISK_PERCENT)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 
-    """Normaliza el volumen de duplicados frente a la capacidad de recuperación total."""
+    """Calcula el score normalizado de duplicados."""
     return _DUP_SCORER(float(duplicate_mb) if isinstance(duplicate_mb, (int, float)) else 0.0)
 
 def score_startup(startup_count: int | float) -> NormalizedRatio: 
-    """Normaliza el número de entradas de inicio frente al umbral máximo de rendimiento."""
+    """Calcula el score normalizado de programas en inicio."""
     return _STARTUP_SCORER(float(startup_count) if isinstance(startup_count, (int, float)) else 0.0)
 
 def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) -> float:
-    """Helper para sanitizar métricas numéricas entrantes y evitar valores fuera de rango."""
+    """Sanitiza métricas numéricas entrantes evitando valores fuera de rango o NaN."""
     try:
         if value is None or isinstance(value, bool):
             return default
@@ -269,11 +266,11 @@ class SystemMetrics:
         self.validate()
 
     def safe_get(self, field_name: str, default: Any = 0) -> Any:
-        """Acceso defensivo a los campos del contenedor."""
+        """Acceso seguro mediante getattr."""
         return getattr(self, field_name, default)
 
     def validate(self) -> None:
-        """Asegura rangos aceptables para todas las métricas, evitando inyección de datos fuera de escala."""
+        """Asegura rangos aceptables para todas las métricas mediante validación numérica."""
         try:
             self.junk_mb = _validate_numeric(self.junk_mb, 0.0, 0.0, 1048576.0)
             self.duplicate_mb = _validate_numeric(self.duplicate_mb, 0.0, 0.0, 1048576.0)
@@ -284,18 +281,17 @@ class SystemMetrics:
             self.memory_available_percent = _validate_numeric(self.memory_available_percent, 100.0, 0.0, 100.0)
             self.disk_free_percent = _validate_numeric(self.disk_free_percent, 100.0, 0.0, 100.0)
         except Exception:
-            # En caso de fallo crítico en validación, resetear a valores seguros predeterminados
             for field_name in self._FIELDS_TO_VALIDATE:
                 setattr(self, field_name, 0.0 if "percent" not in field_name else 100.0)
 
     @property
     def is_finite(self) -> bool:
-        """Verifica que ninguna métrica numérica sea infinita o NaN."""
+        """Verifica que todas las métricas numéricas sean valores finitos."""
         return all(math.isfinite(float(getattr(self, f))) for f in self._FIELDS_TO_VALIDATE)
 
 @dataclass
 class HealthResult:
-    """Resultado final consolidado: puntaje, nota, desglose y recomendaciones."""
+    """Resultado consolidado del análisis de salud."""
     score: int
     grade: str
     breakdown: Dict[MetricKey, int] = field(default_factory=dict)
@@ -306,13 +302,12 @@ class HealthResult:
         return 80 <= self.score <= 100
 
 def grade_for_score(score: float | int) -> str: 
-    """Wrapper de conveniencia para invocar el selector de grados según puntaje."""
+    """Wrapper para obtener la categoría de nota según el puntaje."""
     return Grade.from_score(score)
 
 def _sanitize_msg(msg: str | Any) -> str:
-    """Limpia el mensaje usando una whitelist estricta y limitación de longitud."""
+    """Limpia cadenas de texto eliminando caracteres prohibidos y control."""
     if not isinstance(msg, str): return ""
-    # Eliminar caracteres de control y prohibidos antes de filtrar contra whitelist
     clean = "".join(c for c in msg if c not in _FORBIDDEN_CHARS)
     sanitized = "".join(c for c in clean if c in _ALLOWED_CHARS)
     lower_msg = sanitized.lower()
@@ -321,7 +316,7 @@ def _sanitize_msg(msg: str | Any) -> str:
     return sanitized.strip()[:_MAX_MSG_LEN]
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio, findings: List[str]) -> None:
-    """Ejecuta las reglas de diagnóstico para una métrica y agrega hallazgos si es necesario."""
+    """Ejecuta reglas de diagnóstico y registra advertencias halladas."""
     if not math.isfinite(normalized_ratio):
         return
     for rule in rules:
@@ -330,11 +325,11 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
                 clean_msg = _sanitize_msg(rule.message_factory(metrics))
                 if clean_msg: findings.append(clean_msg)
         except Exception as e:
-            logging.warning(f"Salteando regla de diagnóstico en {rule.area} por error: {e}")
+            logging.warning(f"Error evaluando regla en {rule.area}: {e}")
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
-    Calcula el puntaje global recorriendo el pipeline de métricas.
+    Computa el puntaje global recorriendo el pipeline de normalizadores y reglas.
     """
     if not isinstance(metrics, SystemMetrics):
         m = SystemMetrics()
@@ -354,14 +349,13 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             area_ratio = _clamp(entry.scorer(m))
             _evaluate_rules(m, entry.rules, area_ratio, recommendations)
             
-            # Cálculo de puntaje discreto para la métrica actual
             points = area_ratio * float(entry.weight)
             val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
             
             metric_breakdown[entry.area] = val_int
             total_points += float(val_int)
         except Exception as e:
-            logging.error(f"Error procesando pipeline para {entry.area}: {e}")
+            logging.error(f"Error procesando pipeline {entry.area}: {e}")
             metric_breakdown[entry.area] = 0
             
     if m.quarantined_count > 0:
@@ -376,7 +370,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     )
 
 def _render_bar(points: int, max_val: int) -> str:
-    """Genera una barra de progreso visual en formato ASCII para la interfaz."""
+    """Crea una representación visual de barra para reportes."""
     try:
         p = max(0, min(int(points), int(max_val)))
         if max_val <= 0: return ".........."
@@ -385,18 +379,16 @@ def _render_bar(points: int, max_val: int) -> str:
         return ".........."
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """Genera una lista de líneas legible para el informe de estado final del sistema."""
+    """Genera una lista de líneas legible para el informe de salud."""
     if not isinstance(result, HealthResult): 
         return ["Error: Informe de salud no disponible."]
     
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
-    # Iteración sobre WEIGHTS para asegurar consistencia visual, con fallback para keys del breakdown
     for area in WEIGHTS:
         p = result.breakdown.get(area, 0)
         maximo = WEIGHTS.get(area, 1)
         lines.append(f"  {area.capitalize():<12} {p:>2}/{maximo:<2} [{_render_bar(p, maximo)}]")
     
-    # Se filtra preventivamente cada recomendación al volcar el informe
     lines.extend(("", "Recomendaciones:", *(f"  - {s}" for s in (_sanitize_msg(r) for r in result.recommendations) if s)))
     return lines

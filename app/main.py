@@ -509,22 +509,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if self._initialized_tabs.get(name):
             return
             
-        constructors = {
-            "Salud": self._build_tab_salud,
-            "Limpieza": self._build_tab_limpieza,
-            "Seguridad": self._build_tab_seguridad,
-            "Cuarentena": self._build_tab_cuarentena,
-            "Memoria": self._build_tab_memoria,
-            "Disco": self._build_tab_disco,
-            "Duplicados": self._build_tab_duplicados,
-            "Navegadores": self._build_tab_navegadores,
-            "Inicio": self._build_tab_inicio,
-            "Informe": self._build_tab_informe,
-            "Asistente": self._build_tab_asistente,
-            "Ajustes": self._build_tab_ajustes,
-        }
+        method_name = f"_build_tab_{name.lower()}"
+        constructor = getattr(self, method_name, None)
         
-        constructor = constructors.get(name)
         if constructor and self.winfo_exists():
             try:
                 constructor()
