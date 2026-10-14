@@ -1182,3 +1182,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-14T02:07:05` ➖ Sin cambios en browser.py (enfoque: rendimiento). Motivo: Se optimizó la recursión de `_sum_directory_recursive` implementando una memoización de los resultados de tamaño de carpetas ya visitadas mediante la normalización de rutas, evitando el re-escaneo redundante de subdirectorios en estructuras de datos compartidas.
 - `2026-10-14T02:07:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T02:07:05` Corrida terminada. Total usado hoy: 52.
+- `2026-10-14T02:14:51` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-10-14T02:15:36` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-10-14T02:16:22` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `is_safe_to_modify` dentro del bucle interno, reduciendo drásticamente las llamadas al sistema de archivos durante el escaneo.
+- `2026-10-14T02:16:51` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-10-14T02:17:37` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Optimicé el ciclo de renderizado del panel de salud implementando una validación de estado previo mediante un digest, evitando así llamadas costosas y redibujos innecesarios de elementos visuales (guage y barras) cuando los datos no han cambiado.
+- `2026-10-14T02:17:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-14T02:17:37` Corrida terminada. Total usado hoy: 56.
