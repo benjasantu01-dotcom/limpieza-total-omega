@@ -1043,3 +1043,80 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-10-14T10:56:39` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se optimizó el proceso de consulta local eliminando el uso de `finditer` y el análisis de tokens mediante regex, reemplazándolo por una búsqueda directa y eficiente en un diccionario, evitando así la sobrecarga de compilación y ejecución de expresiones regulares por cada pregunta del usuario.
 - `2026-10-14T10:56:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T10:56:39` Corrida terminada. Total usado hoy: 260.
+- `2026-10-14T11:04:34` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-10-14T11:05:10` Tests FALLARON:
+```
+== FAILURES ===================================
+__________________ test_gradient_starts_and_ends_on_its_stops __________________
+
+    def test_gradient_starts_and_ends_on_its_stops():
+        colores = branding.gradient_colors(50)
+        assert colores[0].lower() == branding.GRADIENT_STOPS[0].lower()
+>       assert colores[-1].lower() == branding.GRADIENT_STOPS[-1].lower()
+E       AssertionError: assert '#fe2d78' == '#ff2d78'
+E         
+E         - #ff2d78
+E         ?   ^
+E         + #fe2d78
+E         ?   ^
+
+evolve/tests/test_modules.py:215: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:358: SyntaxWarning: invalid escape sequence '\)'
+    """Comprueba si la ruta accede directamente a dispositivos (namespace \\.\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_starts_and_ends_on_its_stops - AssertionError: assert '#fe2d78' == '#ff2d78'
+  
+  - #ff2d78
+  ?   ^
+  + #fe2d78
+  ?   ^
+1 failed, 298 passed, 4 warnings in 0.98s
+
+```
+- `2026-10-14T11:05:10` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `branding.py` mediante la refactorización de `gradient_colors`, reemplazando el cálculo recursivo de ratios en el loop por una lógica de interpolación lineal simplificada y pre-calculada, además de limitar la sobrecarga del `lru_cache` mediante el uso de tuplas inmutables nativas, evitando re-procesos innecesarios en la generación de gradientes segmentados.
+- `2026-10-14T11:05:37` Tests FALLARON:
+```
+test-2/test_detect_profiles_never_rep0/Perfil/Cookies'),
+E         +         size_bytes=7,
+E         +     ),
+E         + ]
+
+evolve/tests/test_modules.py:755: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:358: SyntaxWarning: invalid escape sequence '\)'
+    """Comprueba si la ruta accede directamente a dispositivos (namespace \\.\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_data_folders - AssertionError: assert [BrowserCache...size_bytes=7)] == []
+  
+  Left contains one more item: BrowserCache(browser='Chrome', path=PosixPath('/tmp/pytest-of-runner/pytest-2/test_detect_profiles_never_rep0/Perfil/Cookies'), size_bytes=7)
+  
+  Full diff:
+  - []
+  + [
+  +     BrowserCache(
+  +         browser='Chrome',
+  +         path=PosixPath('/tmp/pytest-of-runner/pytest-2/test_detect_profiles_never_rep0/Perfil/Cookies'),
+  +         size_bytes=7,
+  +     ),
+  + ]
+1 failed, 298 passed, 4 warnings in 0.96s
+
+```
+- `2026-10-14T11:05:37` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento del escaneo de directorios eliminando llamadas redundantes a `Path.resolve()` y `Path.exists()` dentro del bucle de `_sum_directory_recursive`, centralizando la validación en un `ScanContext` que ya gestiona la normalización de rutas.
+- `2026-10-14T11:06:01` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-10-14T11:06:10` ➖ Sin cambios en duplicates.py (enfoque: rendimiento). Motivo: Optimizé la recolección de candidatos en `_collect_candidates` evitando llamadas redundantes a `Path.stat()` y `Path.is_file()` mediante el uso del objeto `os.DirEntry` ya obtenido, reduciendo drásticamente las syscalls innecesarias durante el escaneo del disco.
+- `2026-10-14T11:06:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-14T11:06:10` Corrida terminada. Total usado hoy: 264.
