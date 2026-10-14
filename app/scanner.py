@@ -79,6 +79,8 @@ SYSTEM32_LOWER: Final[str] = "system32"
 
 def _is_locked_by_os(path: Path) -> bool:
     """Intenta abrir un handle exclusivo para detectar si el archivo está siendo usado por otro proceso."""
+    if not isinstance(path, Path):
+        return True
     try:
         handle = ctypes.windll.kernel32.CreateFileW(
             str(path), 0x80000000, 0, None, 3, 0x00000080, None
@@ -86,7 +88,7 @@ def _is_locked_by_os(path: Path) -> bool:
         if handle == -1: return True
         ctypes.windll.kernel32.CloseHandle(handle)
         return False
-    except Exception:
+    except (OSError, AttributeError, TypeError):
         return True
 
 def _is_readable(path: Path) -> bool:
@@ -156,6 +158,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Identifica ejecutables creados recientemente en carpetas volátiles comunes del usuario."""
     try:
+        if not path.parent.name: return None
         if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
             return None
         if entry and (stats := _safe_stat(entry)):
@@ -292,7 +295,7 @@ class Scanner:
                 finding: Optional[Suspicion] = check_fn(path, entry, self.now_ts)
                 if finding is not None:
                     self.results.append(finding)
-            except (OSError, PermissionError, AttributeError, ValueError) as e:
+            except (OSError, PermissionError, AttributeError, ValueError, TypeError) as e:
                 logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
@@ -309,7 +312,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
         try:
             res = check_fn(path, entry, now_ts)
             if res is not None: findings.append(res)
-        except (OSError, PermissionError, AttributeError, ValueError) as e:
+        except (OSError, PermissionError, AttributeError, ValueError, TypeError) as e:
             logger.debug(f"Heurística individual fallida en {path}: {e}")
     return findings
 

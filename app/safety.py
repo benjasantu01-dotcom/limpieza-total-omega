@@ -676,8 +676,7 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
         except (PermissionError, FileNotFoundError):
             raise UnsafePathError(f"Acceso denegado o archivo inexistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
         except OSError as e:
-            win_err = getattr(e, 'winerror', None)
-            if win_err in (ERROR_SHARING_VIOLATION, 1920) or e.errno == 13:
+            if getattr(e, 'winerror', None) in (ERROR_SHARING_VIOLATION, 1920) or e.errno == 13:
                  if attempt < max_retries - 1:
                      time.sleep(0.05 * (2 ** attempt))
                      continue
@@ -773,7 +772,6 @@ def is_protected_path(path: PathLike) -> bool:
     if not isinstance(path, (str, Path)) or not path: return True
     try:
         p = Path(path)
-        # Prevención de seguir junctions hacia fuera
         if p.is_symlink() or _is_system_directory_junction(str(p)): return True
         
         if PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in p.parts):
@@ -796,7 +794,7 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         if is_drive_root(c_path) or is_protected_path(str(c_path)): return False
         
         return c_path.is_relative_to(p_path) if allow_equal else (c_path.is_relative_to(p_path) and c_path != p_path)
-    except (UnsafePathError, TypeError, OSError, RuntimeError, ValueError, ValueError): return False
+    except (UnsafePathError, TypeError, OSError, RuntimeError, ValueError): return False
 
 @lru_cache(maxsize=2048)
 def is_sensitive_file(path: PathLike) -> bool:
@@ -966,11 +964,14 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     Función principal de seguridad: Valida exhaustivamente si una ruta puede modificarse.
     Lanza UnsafePathError en caso de riesgo detectado.
     """
+    if path is None:
+        raise UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC)
+        
     if not isinstance(path, (str, Path, os.PathLike)):
         raise UnsafePathError(f"Tipo de ruta no soportado: {type(path).__name__}", SafetyValidationErrorCode.GENERIC)
     try:
         path_str = str(path)
-        if not path_str:
+        if not path_str.strip():
             raise UnsafePathError("Ruta vacía no permitida.", SafetyValidationErrorCode.GENERIC)
             
         if os.name == 'nt' and os.path.exists(path_str) and _is_file_locked_by_other_process(path_str):

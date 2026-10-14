@@ -527,7 +527,14 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         if not isinstance(data, list):
             return []
             
-        items = [i for d in data if (i := QuarantineItem.from_dict(d))]
+        # Validación robusta de tipos: solo aceptamos ítems correctamente instanciables
+        items = []
+        for d in data:
+            if isinstance(d, dict):
+                item = QuarantineItem.from_dict(d)
+                if item:
+                    items.append(item)
+                    
         _MANIFEST_CACHE[base_dir] = (items, current_mtime)
         return items
     except (OSError, json.JSONDecodeError, ValueError):
