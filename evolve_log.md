@@ -1175,3 +1175,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-14T01:56:12` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
 - `2026-10-14T01:56:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T01:56:12` Corrida terminada. Total usado hoy: 48.
+- `2026-10-14T02:04:43` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-10-14T02:05:25` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica mediante docstrings más precisos en `StartupEntry` y las funciones auxiliares de escaneo, aclarando las responsabilidades de cada método y el flujo de los datos para facilitar el mantenimiento.
+- `2026-10-14T02:06:24` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_TOKEN_REGEX` y el acceso a `_TOKEN_KEYS` pre-compilando el regex de tokens y optimizando la lógica de búsqueda en `local_answer` para evitar el uso redundante de `split` y `findall` en cada consulta.
+- `2026-10-14T02:06:56` ➖ Sin cambios en branding.py (enfoque: rendimiento). Motivo: Optimicé el cálculo de `get_gradient_segments` mediante la eliminación de una llamada intermedia redundante, permitiendo que la caché `lru_cache` trabaje directamente sobre el resultado de `gradient_colors`, evitando así re-procesar las secuencias de colores en cada frame.
+- `2026-10-14T02:07:05` ➖ Sin cambios en browser.py (enfoque: rendimiento). Motivo: Se optimizó la recursión de `_sum_directory_recursive` implementando una memoización de los resultados de tamaño de carpetas ya visitadas mediante la normalización de rutas, evitando el re-escaneo redundante de subdirectorios en estructuras de datos compartidas.
+- `2026-10-14T02:07:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-14T02:07:05` Corrida terminada. Total usado hoy: 52.
