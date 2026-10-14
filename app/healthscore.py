@@ -238,7 +238,7 @@ def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) ->
         if value is None or isinstance(value, bool):
             return default
         val = float(value)
-        if not math.isfinite(val) or val < min_v or val > max_v:
+        if math.isnan(val) or not math.isfinite(val) or val < min_v or val > max_v:
             return default
         return val
     except (ValueError, TypeError):
@@ -287,7 +287,7 @@ class SystemMetrics:
     @property
     def is_finite(self) -> bool:
         """Verifica que todas las métricas numéricas sean valores finitos."""
-        return all(math.isfinite(float(getattr(self, f))) for f in self._FIELDS_TO_VALIDATE)
+        return all(math.isfinite(float(getattr(self, f))) and not math.isnan(float(getattr(self, f))) for f in self._FIELDS_TO_VALIDATE)
 
 @dataclass
 class HealthResult:

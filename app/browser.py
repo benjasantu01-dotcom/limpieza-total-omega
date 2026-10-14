@@ -261,7 +261,7 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
             if node_id in ctx.visited_dirs:
                 return ScanResult(0, True)
             ctx.visited_dirs.add(node_id)
-    except OSError:
+    except (OSError, PermissionError):
         return ScanResult(0, False)
 
     total_bytes: int = 0
@@ -279,6 +279,7 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
         
         return ScanResult(total_bytes, True)
     except (OSError, PermissionError):
+        # Retornamos el progreso acumulado hasta el fallo en lugar de abortar
         return ScanResult(total_bytes, False)
 
 @safe_path_operation(0)
