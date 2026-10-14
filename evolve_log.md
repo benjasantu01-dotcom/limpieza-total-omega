@@ -659,3 +659,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-14T06:53:28` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `purge_all` y `list_items` evitando recrear el manifiesto y realizar I/O redundante mediante la conversión de la lista de ítems a un diccionario hash-map, reduciendo la complejidad algorítmica de O(N*M) a O(N+M).
 - `2026-10-14T06:53:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T06:53:28` Corrida terminada. Total usado hoy: 164.
+- `2026-10-14T07:00:07` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-10-14T07:00:27` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-10-14T07:01:16` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-10-14T07:01:44` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escáner implementando una caché LFU/LRU a nivel de `is_protected_path` en las comprobaciones críticas dentro del loop de `process_entry`, reduciendo drásticamente las llamadas redundantes al sistema de archivos al validar rutas ya procesadas.
+- `2026-10-14T07:01:56` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-14T07:01:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-14T07:01:56` Corrida terminada. Total usado hoy: 168.

@@ -77,6 +77,11 @@ TARGETED_DOWNLOAD_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp
 
 SYSTEM32_LOWER: Final[str] = "system32"
 
+@lru_cache(maxsize=4096)
+def _cached_is_protected(path_str: str) -> bool:
+    """Caché para la validación de rutas protegidas para evitar syscalls repetitivas."""
+    return is_protected_path(Path(path_str))
+
 def _is_locked_by_os(path: Path) -> bool:
     """Intenta abrir un handle exclusivo para detectar si el archivo está siendo usado por otro proceso."""
     if not isinstance(path, Path):
@@ -254,7 +259,7 @@ class Scanner:
             return True
         
         try:
-            if is_protected_path(Path(path_str)) or not _is_valid_path_structure(path_str) or self._has_invalid_name(entry.name):
+            if _cached_is_protected(path_str) or not _is_valid_path_structure(path_str) or self._has_invalid_name(entry.name):
                 return False
                 
             if entry.is_symlink() or self._is_reparse_point(entry):
@@ -317,7 +322,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     Escaneo heurístico individual para un archivo específico tras validar
     permisos y estructura de seguridad.
     """
-    if not isinstance(path, Path) or is_protected_path(path): return []
+    if not isinstance(path, Path) or _cached_is_protected(str(path)): return []
     if not _is_readable(path) or _is_locked_by_os(path): 
         return []
     
@@ -340,7 +345,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         path_str: str = str(directory).strip()
         if not path_str or not _is_valid_path_structure(path_str): return []
         base_path: Path = Path(path_str).resolve(strict=True)
-        if not base_path.is_dir() or base_path.is_symlink() or not os.access(base_path, os.R_OK) or is_protected_path(base_path):
+        if not base_path.is_dir() or base_path.is_symlink() or not os.access(base_path, os.R_OK) or _cached_is_protected(str(base_path)):
             return []
         scanner: Scanner = Scanner(base_root=base_path)
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError) as e:
