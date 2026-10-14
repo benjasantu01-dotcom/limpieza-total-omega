@@ -551,3 +551,28 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-14T05:30:46` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `_extract_process_info` y `top_memory_processes` añadiendo validaciones preventivas de tipos y estados, evitando errores de ejecución ante entradas mal formadas o condiciones inesperadas de la API de Windows.
 - `2026-10-14T05:30:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T05:30:46` Corrida terminada. Total usado hoy: 132.
+- `2026-10-14T05:38:35` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-10-14T05:39:13` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-14T05:39:52` Tests FALLARON:
+```
+de unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - NameError: name 'MANIFEST_NAME' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - NameError: name 'MANIFEST_NAME' is not defined
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - NameError: name 'MANIFEST_NAME' is not defined
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - NameError: name 'MANIFEST_NAME' is not defined
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - NameError: name 'MANIFEST_NAME' is not defined
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - NameError: name 'MANIFEST_NAME' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - NameError: name 'MANIFEST_NAME' is not defined
+FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app - AttributeError: module 'quarantine' has no attribute 'MANIFEST_NAME'. Did you mean: '_MANIFEST_CACHE'?
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - NameError: name 'MANIFEST_NAME' is not defined
+9 failed, 290 passed, 8 warnings in 1.87s
+
+```
+- `2026-10-14T05:39:52` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `quarantine_file` añadiendo una validación temprana de existencia y accesibilidad para el directorio de cuarentena antes de realizar operaciones de I/O, evitando el encadenamiento de excepciones genéricas al intentar acceder a rutas inexistentes o sin permisos.
+- `2026-10-14T05:40:11` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 112): unterminated string literal (detected at line 112)
+- `2026-10-14T05:40:39` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-14T05:40:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-14T05:40:39` Corrida terminada. Total usado hoy: 136.
