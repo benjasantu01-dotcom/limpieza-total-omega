@@ -271,6 +271,12 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Asegura rangos aceptables para todas las métricas mediante validación numérica."""
+        # Se verifica cada campo explícitamente para asegurar robustez
+        for field_name in self._FIELDS_TO_VALIDATE:
+            val = getattr(self, field_name)
+            if val is None or (isinstance(val, float) and math.isnan(val)):
+                setattr(self, field_name, 0.0 if "percent" not in field_name else 100.0)
+        
         try:
             self.junk_mb = _validate_numeric(self.junk_mb, 0.0, 0.0, 1048576.0)
             self.duplicate_mb = _validate_numeric(self.duplicate_mb, 0.0, 0.0, 1048576.0)

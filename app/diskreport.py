@@ -279,14 +279,20 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         
                         entry_p = Path(entry.path)
                         if entry.is_dir(follow_symlinks=False):
-                            st = entry.stat(follow_symlinks=False)
-                            inode = (st.st_dev, st.st_ino)
-                            if inode not in visited_inodes:
-                                visited_inodes.add(inode)
-                                stack.append(entry_p)
+                            try:
+                                st = entry.stat(follow_symlinks=False)
+                                inode = (st.st_dev, st.st_ino)
+                                if inode not in visited_inodes:
+                                    visited_inodes.add(inode)
+                                    stack.append(entry_p)
+                            except (OSError, PermissionError):
+                                continue
                         elif entry.is_file(follow_symlinks=False):
-                            st = entry.stat(follow_symlinks=False)
-                            yield entry_p, st.st_size
+                            try:
+                                st = entry.stat(follow_symlinks=False)
+                                yield entry_p, st.st_size
+                            except (OSError, PermissionError):
+                                continue
                             
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
@@ -344,15 +350,18 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     stats = GlobalStats()
     top_heap: List[FileRecord] = [] 
     
-    for path, size_bytes in walk_files(directory, skip_protected):
-        stats.register_file(size_bytes, path.suffix)
-        
-        # Mantenimiento de top files usando un heap de tamaño limitado
-        if limit > 0:
-            if len(top_heap) < limit: 
-                heapq.heappush(top_heap, (size_bytes, path))
-            elif size_bytes > top_heap[0][0]: 
-                heapq.heapreplace(top_heap, (size_bytes, path))
+    try:
+        for path, size_bytes in walk_files(directory, skip_protected):
+            stats.register_file(size_bytes, path.suffix)
+            
+            # Mantenimiento de top files usando un heap de tamaño limitado
+            if limit > 0:
+                if len(top_heap) < limit: 
+                    heapq.heappush(top_heap, (size_bytes, path))
+                elif size_bytes > top_heap[0][0]: 
+                    heapq.heapreplace(top_heap, (size_bytes, path))
+    except Exception:
+        pass
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 

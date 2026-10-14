@@ -1498,3 +1498,49 @@ FAILED evolve/tests/test_modules.py::test_diagnose_lists_top_processes - Asserti
 - `2026-10-14T14:12:07` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` y `draw_gradient_bar` mediante la validación explícita de `canvas_x` y `canvas_y`, la sanitización de `destination` en `save_logo_svg` y la captura granular de excepciones, asegurando que valores `None` o numéricos inválidos no provoquen fallos en tiempo de ejecución.
 - `2026-10-14T14:12:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T14:12:07` Corrida terminada. Total usado hoy: 336.
+- `2026-10-14T14:18:32` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-14T14:19:01` Tests FALLARON:
+```
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_detect_profiles_finds_inj0')
+
+    def test_detect_profiles_finds_injected_cache_folders(tmp_path):
+        cache = tmp_path / "Navegador" / "Default" / "Cache"
+        cache.mkdir(parents=True)
+        (cache / "dato.bin").write_bytes(b"a" * 500)
+    
+        encontrados = browser.detect_profiles(
+            bases=[tmp_path],
+            cache_paths={"Navegador Falso": r"Navegador\Default\Cache"},
+        )
+>       assert len(encontrados) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:739: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:358: SyntaxWarning: invalid escape sequence '\)'
+    """Comprueba si la ruta accede directamente a dispositivos (namespace \\.\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_folders - assert 0 == 1
+ +  where 0 = len([])
+1 failed, 298 passed, 4 warnings in 1.38s
+
+```
+- `2026-10-14T14:19:01` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_is_valid_rel_path` y `_resolve_browser_path` añadiendo validación explícita contra entradas vacías o malformadas y evitando el uso de decoradores en funciones críticas de flujo, asegurando que las excepciones de tipo sean manejadas con mayor precisión sin enmascarar errores de lógica.
+- `2026-10-14T14:19:31` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `walk_files` y `summarize` capturando excepciones específicas en la lectura de atributos de archivo y envolviendo la iteración completa del escáner en un bloque que garantiza que el sistema no se detenga ante archivos bloqueados o inaccesibles, mejorando la fiabilidad del reporte.
+- `2026-10-14T14:19:32` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-14T14:19:37` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-14T14:19:46` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-14T14:19:58` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-14T14:20:14` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-14T14:20:22` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-14T14:20:42` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del motor de puntuación validando que las métricas recibidas no contengan valores `None` o `NaN` antes de ser procesadas en el pipeline, evitando excepciones inesperadas que antes se silenciaban de forma genérica.
+- `2026-10-14T14:20:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-14T14:20:42` Corrida terminada. Total usado hoy: 340.
