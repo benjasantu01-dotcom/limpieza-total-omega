@@ -312,21 +312,20 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
             if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
                 found_procs = []
                 count = min(1024, cb_needed.value // 4)
-                # Recolectar candidatos primero para reducir llamadas de seguridad costosas
+                
+                # Recolectar candidatos y filtrar por seguridad inmediatamente
                 candidates = []
                 for i in range(count):
                     pid = pids[i]
-                    if pid > 4 and not _is_system_process(pid):
+                    if pid > 4 and not _is_system_process(pid) and _is_process_executable_safe(pid):
                         ws = _query_working_set_bytes(pid, kernel32, psapi, pmc)
                         if ws:
                             candidates.append((pid, ws))
                 
-                # Filtrar solo los más pesados por seguridad
+                # Ordenar candidatos y limitar resultados
                 candidates.sort(key=lambda x: x[1], reverse=True)
-                for pid, ws in candidates[:limit * 2]:
-                    if _is_process_executable_safe(pid):
-                        found_procs.append(ProcessMemory(f"PID {pid}", pid, ws))
-                        if len(found_procs) >= limit: break
+                for pid, ws in candidates[:limit]:
+                    found_procs.append(ProcessMemory(f"PID {pid}", pid, ws))
                 
                 _CACHE_TOP_PROC["data"] = found_procs
                 _CACHE_TOP_PROC["time"] = now

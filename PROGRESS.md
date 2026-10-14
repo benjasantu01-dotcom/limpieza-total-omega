@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **215** (42.7% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 192
+- Sin respuesta de la IA (error o límite): 191
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-12 | 31 | 2 | 8 | 3 | 26 |
+| 2026-10-12 | 31 | 2 | 8 | 3 | 22 |
 | 2026-10-13 | 154 | 16 | 37 | 13 | 130 |
-| 2026-10-14 | 30 | 3 | 7 | 8 | 36 |
+| 2026-10-14 | 31 | 3 | 7 | 8 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - legibilidad y documentación: **49**
-- seguridad defensiva: **42**
+- seguridad defensiva: **43**
 - robustez ante casos límite: **37**
 - rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
+- `memory.py`: **20**
 - `diskreport.py`: **19**
 - `duplicates.py`: **19**
-- `memory.py`: **19**
 - `browser.py`: **19**
 - `assistant.py`: **18**
 - `scanner.py`: **18**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-14T03:38:32` **memory.py** (seguridad defensiva): Se mejoró la seguridad en `top_memory_processes` delegando la validación del ejecutable al momento de la recolección inicial (`candidates`), evitando que procesos con rutas restringidas consuman ciclos de CPU innecesarios y garantizando que el filtrado de seguridad ocurra antes de cualquier almacenamiento en caché.
 - `2026-10-14T03:28:39` **duplicates.py** (seguridad defensiva): Se ha robustecido la detección de duplicados implementando `os.scandir` con un manejo más estricto de excepciones y una validación de rutas mediante `is_safe_to_modify` antes de cualquier operación de I/O, evitando el seguimiento de enlaces simbólicos o puntos de reanálisis fuera de control.
 - `2026-10-14T03:28:22` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` verificando explícitamente la presencia de puntos de reparse (reparse points) mediante el chequeo de atributos del sistema (0x0400) para evitar recursión infinita en junctions o mount points, delegando además la resolución de rutas solo tras confirmar que la entrada es accesible.
 - `2026-10-14T03:27:57` **browser.py** (seguridad defensiva): Se endureció la seguridad defensiva de la función `_is_valid_cache_path` añadiendo una validación explícita de caracteres peligrosos y longitud de ruta, asegurando que cualquier ruta de caché candidata cumpla con los mismos criterios de saneamiento aplicados al resto del escaneo.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-14T02:06:24` **assistant.py** (rendimiento): Optimicé el rendimiento de `_TOKEN_REGEX` y el acceso a `_TOKEN_KEYS` pre-compilando el regex de tokens y optimizando la lógica de búsqueda en `local_answer` para evitar el uso redundante de `split` y `findall` en cada consulta.
 - `2026-10-14T02:05:25` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings más precisos en `StartupEntry` y las funciones auxiliares de escaneo, aclarando las responsabilidades de cada método y el flujo de los datos para facilitar el mantenimiento.
 - `2026-10-14T01:56:00` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de Type Hints en la firma de `_is_readable` y `_is_locked_by_os`, y se han clarificado las intenciones del código mediante la sustitución de retornos booleanos implícitos por un estilo más explícito, facilitando la comprensión de los mecanismos de seguridad ante el resto del equipo.
-- `2026-10-14T01:55:31` **safety.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo `safety.py` mediante la refactorización de `describe_protection` para utilizar una estructura de diccionario de diagnósticos (mapping) en lugar de una cadena larga de bloques `if`, facilitando la lectura del porqué una ruta es considerada protegida.

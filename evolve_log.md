@@ -1343,3 +1343,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-14T03:28:39` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha robustecido la detección de duplicados implementando `os.scandir` con un manejo más estricto de excepciones y una validación de rutas mediante `is_safe_to_modify` antes de cualquier operación de I/O, evitando el seguimiento de enlaces simbólicos o puntos de reanálisis fuera de control.
 - `2026-10-14T03:28:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-14T03:28:39` Corrida terminada. Total usado hoy: 84.
+- `2026-10-14T03:36:25` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-10-14T03:36:47` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-14T03:37:23` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
+- `2026-10-14T03:37:24` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-14T03:37:29` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-14T03:37:36` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-14T03:37:49` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-14T03:38:32` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se mejoró la seguridad en `top_memory_processes` delegando la validación del ejecutable al momento de la recolección inicial (`candidates`), evitando que procesos con rutas restringidas consuman ciclos de CPU innecesarios y garantizando que el filtrado de seguridad ocurra antes de cualquier almacenamiento en caché.
+- `2026-10-14T03:38:43` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-10-14T03:38:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-14T03:38:43` Corrida terminada. Total usado hoy: 88.
