@@ -167,7 +167,8 @@ _JUNK_SCORER = create_linear_scorer(_LIMIT_JUNK_MB, inverse=True)
 _DUP_SCORER = create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)
 _STARTUP_SCORER = create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inverse=True)
 
-# Pipeline de procesamiento central: define cómo se computa cada métrica y sus reglas de alerta
+# Pipeline de procesamiento central: define la lógica para computar cada métrica y sus reglas de alerta.
+# La estructura permite que el motor de puntuación escale añadiendo nuevos objetos PipelineEntry.
 _PIPELINE: Final[Tuple[PipelineEntry, ...]] = (
     PipelineEntry(
         "seguridad", 30, 
@@ -324,7 +325,15 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             logging.warning(f"Salteando regla de diagnóstico en {rule.area} por error: {e}")
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Calcula el puntaje global recorriendo el pipeline de métricas."""
+    """
+    Calcula el puntaje global recorriendo el pipeline de métricas.
+    
+    Este método centraliza el flujo:
+    1. Valida métricas de entrada.
+    2. Itera el _PIPELINE calculando el ratio por área y recolectando recomendaciones.
+    3. Pondera cada ratio según su peso relativo.
+    4. Retorna el resultado consolidado.
+    """
     m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
     try:
         m.validate()
@@ -339,7 +348,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     metric_breakdown: Dict[MetricKey, int] = {}
     total_points = 0.0
     
-    # Procesamiento del pipeline de métricas
     for entry in _PIPELINE:
         try:
             area_ratio = _clamp(entry.scorer(m))

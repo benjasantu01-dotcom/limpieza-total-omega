@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **212** (42.1% de aceptación)
+- Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 53
+- Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 23
 - Sin respuesta de la IA (error o límite): 196
 
@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-12 | 49 | 4 | 14 | 6 | 45 |
+| 2026-10-12 | 47 | 4 | 13 | 6 | 44 |
 | 2026-10-13 | 154 | 16 | 37 | 13 | 130 |
-| 2026-10-14 | 9 | 0 | 2 | 4 | 21 |
+| 2026-10-14 | 12 | 0 | 2 | 4 | 22 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **45**
 - robustez ante casos límite: **43**
-- legibilidad y documentación: **40**
-- rendimiento: **33**
+- legibilidad y documentación: **43**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **19**
+- `healthscore.py`: **19**
 - `memory.py`: **19**
-- `diskreport.py`: **18**
 - `duplicates.py`: **18**
-- `healthscore.py`: **18**
+- `browser.py`: **18**
 - `assistant.py`: **17**
 - `scanner.py`: **17**
-- `browser.py`: **17**
-- `safety.py`: **16**
+- `safety.py`: **15**
 - `branding.py`: **13**
 - `startup.py`: **13**
-- `quarantine.py`: **12**
 - `settings.py`: **12**
 - `organizer.py`: **11**
+- `quarantine.py`: **11**
 - `main.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-14T01:35:34` **healthscore.py** (legibilidad y documentación): Documenté con docstrings detallados la lógica de normalización y la estructura del pipeline, clarificando el propósito del `_PIPELINE` y los métodos críticos para mejorar la mantenibilidad del motor.
+- `2026-10-14T01:35:00` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings detallados en las clases `ExtStats` y `GlobalStats`, clarificando su responsabilidad, y se ha introducido la anotación `@property` en `FolderMetrics` para mantener la coherencia con el resto de las estructuras de datos de la API.
+- `2026-10-14T01:34:34` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de docstrings técnicos en las funciones críticas de escaneo, clarificando la lógica de confinamiento y los criterios de seguridad utilizados durante la recursión.
 - `2026-10-14T01:24:51` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez del parseo del registro integrando un manejo de excepciones más granular y defensivo al ejecutar el comando de PowerShell, asegurando que ante cualquier error de ejecución o timeout, la app no quede en estado inconsistente y los recursos se liberen correctamente.
 - `2026-10-14T01:15:39` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas de archivo implementando un manejo de excepciones más granular y defensivo, asegurando que `_is_locked_by_os` valide los argumentos de tipo antes de llamar a `ctypes` y refinando la limpieza de recursos en las operaciones con `Path` para prevenir fallos silenciosos por rutas malformadas.
 - `2026-10-14T01:15:29` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` ante entradas no conformes, añadiendo validaciones de tipo `None` y de integridad de `Path` antes de invocar operaciones de sistema, y refinando el manejo de errores en `_get_path_stat_robust` para asegurar que las excepciones capturadas sean específicas y no enmascaren fallos inesperados.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-13T14:18:34` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva al invocar `subprocess.run` en `entries_from_registry`, reemplazando la construcción manual de la cadena de comandos mediante el uso de una lista de argumentos (`args`), lo cual neutraliza el riesgo de inyección de comandos en el shell de PowerShell al ejecutar las claves del registro.
 - `2026-10-13T14:17:19` **scanner.py** (seguridad defensiva): Se ha restringido el acceso a metadatos mediante la adición de `_is_locked_by_os` en `scanner.py`, permitiendo identificar archivos bloqueados por otros procesos antes de intentar cualquier lectura pesada, mejorando la robustez defensiva y evitando excepciones innecesarias durante el escaneo.
 - `2026-10-13T14:09:00` **safety.py** (seguridad defensiva): Se ha añadido una validación preventiva contra puntos de reparse (junctions) y enlaces simbólicos dentro de `_is_protected_path` para asegurar que no se sigan accesos fuera del árbol esperado, reforzando la seguridad defensiva contra el escape de directorios mediante manipulaciones del sistema de archivos.
-- `2026-10-13T13:58:55` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_process_executable_safe` añadiendo una comprobación explícita de puntos de reparse (junctions) mediante `Path.is_symlink()`, evitando que la app siga enlaces inesperados al validar procesos, cumpliendo así con las prioridades de `safety.py`.
-- `2026-10-13T13:57:24` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_evaluate_rules` y `summarize` implementando una técnica de "fail-closed" explícita al procesar mensajes: ahora se utiliza una copia defensiva del mensaje original antes de intentar su saneado, garantizando que ante cualquier falla en la lógica de sanitización, el flujo devuelva una cadena vacía en lugar de procesar datos potencialmente inseguros o malformados.
-- `2026-10-13T13:56:54` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `duplicates.py` mediante una verificación estricta de puntos de reparse (junctions y symlinks) en `_collect_candidates`, asegurando que no se sigan enlaces fuera de la jerarquía prevista, manteniendo la coherencia con `is_safe_to_modify`.

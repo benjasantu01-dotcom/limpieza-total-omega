@@ -64,7 +64,7 @@ def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
 
 
 class ExtStats:
-    """Acumulador de métricas para una extensión de archivo específica."""
+    """Acumulador para métricas agregadas de archivos por extensión."""
     __slots__ = ('total_bytes', 'count')
     
     def __init__(self) -> None:
@@ -72,7 +72,7 @@ class ExtStats:
         self.count: int = 0
 
     def add(self, size: int) -> None:
-        """Incrementa el peso total y el contador de archivos para esta extensión."""
+        """Suma el tamaño de un archivo encontrado a los totales de la extensión."""
         if not isinstance(size, int) or size < 0:
             return
         self.total_bytes += size
@@ -80,14 +80,14 @@ class ExtStats:
 
 
 class GlobalStats:
-    """Agregador global de métricas durante el escaneo de un árbol de directorios."""
+    """Clase principal de agregación que rastrea totales globales y por extensión."""
     def __init__(self) -> None:
         self.total_bytes: int = 0
         self.total_files: int = 0
         self.ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
 
     def register_file(self, size: int, suffix: str) -> None:
-        """Registra un archivo encontrado actualizando totales y stats por extensión."""
+        """Actualiza el contador global de peso/archivos y delega a ExtStats."""
         if not isinstance(size, int) or size < 0:
             return
         self.total_bytes += size
@@ -97,11 +97,16 @@ class GlobalStats:
 
 
 class FolderMetrics:
-    """Acumulador temporal para agrupar el peso por subcarpeta de primer nivel."""
+    """Acumulador temporal para el peso total y conteo de archivos en directorios."""
     __slots__ = ('size', 'file_count')
     def __init__(self) -> None:
         self.size: int = 0
         self.file_count: int = 0
+
+    @property
+    def size_mb(self) -> float:
+        """Retorna tamaño en MB."""
+        return _bytes_to_mb(self.size)
 
 
 class SummaryData(NamedTuple):

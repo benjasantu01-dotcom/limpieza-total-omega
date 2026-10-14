@@ -64,7 +64,7 @@ class ScanContext:
 
 def safe_path_operation(default: Any) -> Callable:
     """
-    Decorador que envuelve funciones de E/S.
+    Decorador que envuelve funciones de E/S capturando errores de acceso al sistema de archivos.
     """
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
@@ -109,7 +109,7 @@ BROWSER_CACHE_PATHS: BrowserMap = {
 }
 
 def _is_valid_rel_path(p: str) -> bool:
-    """Valida que una ruta relativa no contenga secuencias de escape."""
+    """Valida que una ruta relativa no contenga secuencias de escape o caracteres peligrosos."""
     if not p or not isinstance(p, str): return False
     if any(ord(c) < 32 for c in p): return False
     if os.path.isabs(p) or p.startswith(('\\', '/')): return False
@@ -155,7 +155,7 @@ def _is_unc_path(path_str: Optional[str]) -> TypeGuard[str]:
     return isinstance(path_str, str) and (path_str.startswith(r"\\") or path_str.startswith("//"))
 
 def _is_within_sandbox(target: Path, base: Path) -> bool:
-    """Verifica mediante comparación de partes que la ruta no escape al sandbox."""
+    """Verifica que la ruta real del objetivo sea un subdirectorio o el mismo base."""
     try:
         return base in target.resolve().parents or target.resolve() == base.resolve()
     except (OSError, RuntimeError):
@@ -186,6 +186,7 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
     return attrs != 0xFFFFFFFF and bool(attrs & SYSTEM_HIDDEN_FLAGS)
 
 def _is_path_safe(path_str: str, ctx: ScanContext) -> bool:
+    """Consulta caché interna para validar seguridad de ruta, evitando repetir cálculos costosos."""
     if not isinstance(path_str, str): return False
     if path_str not in ctx.safety_cache:
         p = Path(path_str)
@@ -193,6 +194,7 @@ def _is_path_safe(path_str: str, ctx: ScanContext) -> bool:
     return ctx.safety_cache[path_str]
 
 def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
+    """Determina si un nodo del sistema de archivos debe ser ignorado basándose en políticas de seguridad."""
     if _is_excluded_file(entry.name):
         return True
     
@@ -212,6 +214,7 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     return False
 
 def _process_file_node(entry: os.DirEntry, ctx: ScanContext) -> int:
+    """Calcula el tamaño de archivo asegurando que no se sigan alias o nodos redundantes."""
     try:
         if not _is_path_safe(entry.path, ctx):
             return 0
@@ -227,6 +230,7 @@ def _process_file_node(entry: os.DirEntry, ctx: ScanContext) -> int:
         return 0
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
+    """Recorrido de directorio seguro con límites de profundidad y detección de ciclos mediante memoria."""
     if depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN or not isinstance(root_path, str):
         return ScanResult(0, True)
     
