@@ -319,7 +319,8 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         if not target.parent.exists(): target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(size), encoding="utf-8")
         return target
-    except (Exception, OSError): return None
+    except (OSError, PermissionError, Exception):
+        return None
 
 def logo_ascii() -> str: return "\n   ___  __  __ ___ ___   _\n  / _ \\|  \\/  | __/ __| /_\\\n | (_) | |\\/| | _|| (_ // _ \\\n  \\___/|_|  |_|___\\___/_/ \\_\\\n      Limpieza Total Omega\n"
 

@@ -152,7 +152,6 @@ def _is_excluded_path(entry: os.DirEntry, root_str: str) -> bool:
     Determina si una entrada de sistema debe excluirse del análisis.
     """
     try:
-        if not entry.path: return True
         name = entry.name
         if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
             return True
@@ -162,10 +161,7 @@ def _is_excluded_path(entry: os.DirEntry, root_str: str) -> bool:
         if entry.is_symlink():
             return True
         
-        # Acceso preventivo para verificar permisos
-        if not os.access(entry.path, os.R_OK):
-            return True
-
+        # Uso de path.startswith con normalización básica
         if not entry.path.startswith(root_str):
             return True
         

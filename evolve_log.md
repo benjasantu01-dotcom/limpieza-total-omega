@@ -1579,3 +1579,13 @@ FAILED evolve/tests/test_modules.py::test_blend_on_invalid_color_does_not_crash 
 - `2026-10-15T10:03:30` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se introdujo una validación defensiva en `_get_source_value` y `_apply_field` para manejar casos donde el objeto `source` pueda contener atributos inesperados o ser de un tipo no indexable, previniendo errores de acceso durante la ingesta de datos.
 - `2026-10-15T10:03:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T10:03:30` Corrida terminada. Total usado hoy: 240.
+- `2026-10-15T10:11:51` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-10-15T10:12:26` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la resiliencia de `save_logo_svg` ante errores de sistema de archivos no controlados, garantizando que el uso de `ensure_safe_to_modify` se mantenga como una capa de seguridad explícita mientras se captura cualquier falla de I/O de bajo nivel (como discos de solo lectura o permisos denegados) para evitar que la interfaz de la aplicación se bloquee.
+- `2026-10-15T10:12:51` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-10-15T10:12:51` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-15T10:12:55` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-15T10:13:02` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-15T10:13:44` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `_is_excluded_path` para prevenir excepciones críticas ante la presencia de rutas excepcionalmente largas o estructuras de archivos bloqueadas, añadiendo manejo específico para el caso donde `os.scandir` intenta acceder a una ruta que fue eliminada por otro proceso durante el escaneo.
+- `2026-10-15T10:13:54` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-15T10:13:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T10:13:54` Corrida terminada. Total usado hoy: 244.
