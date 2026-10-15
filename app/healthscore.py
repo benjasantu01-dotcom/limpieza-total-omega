@@ -205,13 +205,13 @@ def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
 def score_memory(available_percent: float | int) -> NormalizedRatio: 
     """Calcula el score normalizado de memoria disponible."""
     val = float(available_percent) if isinstance(available_percent, (int, float)) else 0.0
-    if _LIMIT_RAM_PERCENT <= 0 or not math.isfinite(val): return 0.0
+    if _LIMIT_RAM_PERCENT <= 0.0 or not math.isfinite(val): return 0.0
     return _clamp(val / _LIMIT_RAM_PERCENT)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio: 
     """Calcula el score normalizado de espacio en disco."""
     val = float(free_percent) if isinstance(free_percent, (int, float)) else 0.0
-    if _LIMIT_DISK_PERCENT <= 0 or not math.isfinite(val): return 0.0
+    if _LIMIT_DISK_PERCENT <= 0.0 or not math.isfinite(val): return 0.0
     return _clamp(val / _LIMIT_DISK_PERCENT)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio: 

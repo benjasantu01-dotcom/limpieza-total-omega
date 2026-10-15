@@ -100,12 +100,16 @@ def _is_file_locked(path: Path) -> bool:
     """Intenta validar si el archivo es accesible para lectura exclusiva."""
     if not is_safe_to_modify(path):
         return True
-    if not os.access(path, os.R_OK):
-        return True
     try:
-        with open(path, "rb") as _:
+        if not os.access(path, os.R_OK):
+            return True
+        # Intentar abrir en modo lectura exclusiva
+        with open(path, "rb") as f:
             return False
-    except (OSError, IOError):
+    except (OSError, IOError) as e:
+        # Detectar si el error es por uso compartido (bloqueo real)
+        if isinstance(e, OSError) and e.winerror in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED):
+            return True
         return True
 
 
