@@ -423,7 +423,7 @@ class SystemContext:
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
         """Valida, convierte y verifica límites de un campo individual."""
         val = _get_source_value(source, key)
-        if val is None:
+        if val is None or not isinstance(val, (int, float, str)):
             return None
         valid_val = _is_valid_numeric_update(val, spec)
         return spec.type_hint(valid_val) if valid_val is not None else None

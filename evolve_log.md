@@ -560,3 +560,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-15T01:03:46` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult, _ValidatorEntry
 - `2026-10-15T01:03:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T01:03:46` Corrida terminada. Total usado hoy: 28.
+- `2026-10-15T01:11:41` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-10-15T01:12:37` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimizé `entries_from_registry` para evitar la sobrecarga de múltiples ejecuciones de PowerShell y reducir la latencia al usar una consulta unificada de alto rendimiento, además de simplificar la lógica de filtrado inicial.
+- `2026-10-15T01:13:16` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `ingest` ante entradas mal formadas añadiendo validaciones de tipo explícitas para las métricas, evitando que valores inesperados (como `None` o tipos incompatibles inyectados a través de `source`) provoquen fallos en cascada en las operaciones de redondeo o comparación.
+- `2026-10-15T01:13:48` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se mejora la robustez de `save_logo_svg` y las funciones de dibujo agregando validaciones de entrada (`size` fuera de rango, tipos de datos) y evitando posibles errores de división por cero o argumentos inválidos en las operaciones de canvas.
+- `2026-10-15T01:14:08` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez frente a errores de sistema de archivos al añadir verificaciones de tipo y existencia antes de resolver rutas, previniendo el uso de rutas inexistentes en el contexto de escaneo y manejando de forma más estricta los fallos en la resolución de `Path`.
+- `2026-10-15T01:14:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T01:14:08` Corrida terminada. Total usado hoy: 32.

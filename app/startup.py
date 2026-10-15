@@ -386,32 +386,27 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
 
 
 def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEntries:
-    """Extrae programas de inicio desde el registro de Windows invocando PowerShell."""
+    """Extrae programas de inicio desde el registro de Windows invocando PowerShell una sola vez."""
     if os.name != "nt":
         return []
     
-    allowed_set = set(REGISTRY_RUN_KEYS)
-    safe_keys: List[str] = [k for k in keys if k in allowed_set]
-            
-    if not safe_keys:
-        return []
-        
-    ps_script = """
-    $keys = @('""" + "','".join(safe_keys) + """')
-    $results = foreach ($k in $keys) {
-        Get-ItemProperty -LiteralPath $k -ErrorAction SilentlyContinue | Select-Object * -ExcludeProperty PS*
-    }
-    $results | ConvertTo-Csv -NoTypeInformation
+    # Unificamos las llaves en un solo bloque de ejecución para reducir overhead de subprocesos
+    keys_string = "','".join(keys)
+    ps_script = f"""
+    $ErrorActionPreference = 'SilentlyContinue'
+    $keys = @('{keys_string}')
+    foreach ($k in $keys) {{
+        Get-ItemProperty -LiteralPath $k | Select-Object * -ExcludeProperty PS*
+    }} | ConvertTo-Csv -NoTypeInformation
     """
     
     try:
         process: subprocess.CompletedProcess = subprocess.run(
             ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_script],
-            capture_output=True, text=True, timeout=30, check=False
+            capture_output=True, text=True, timeout=10, check=False
         )
         if process.returncode == 0 and process.stdout:
-            clean_output: str = "".join(c for c in process.stdout if ord(c) >= 32 or c in "\r\n")
-            return parse_registry_csv(clean_output)
+            return parse_registry_csv(process.stdout)
     except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError):
         return []
     return []

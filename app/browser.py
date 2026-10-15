@@ -162,6 +162,7 @@ def _is_unc_path(path_str: Optional[str]) -> TypeGuard[str]:
 def _is_within_sandbox(target: Path, base: Path) -> bool:
     """Valida la pertenencia jerárquica de una ruta dentro de la carpeta base del perfil."""
     try:
+        if not target.exists(): return False
         return base in target.resolve().parents or target.resolve() == base.resolve()
     except (OSError, RuntimeError):
         return False
@@ -201,6 +202,7 @@ def _is_path_safe(path_str: str, ctx: ScanContext) -> bool:
     if not isinstance(path_str, str): return False
     if path_str not in ctx.safety_cache:
         p = Path(path_str)
+        if not p.exists(): return False
         ctx.safety_cache[path_str] = is_safe_to_modify(p) and not is_protected_path(p)
     return ctx.safety_cache[path_str]
 
@@ -216,6 +218,8 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     if _is_unc_path(path_str) or len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS):
         return True
     
+    # Verificamos si existe antes de validar el sandbox para evitar errores de resolución
+    if not os.path.exists(path_str): return True
     if not _is_within_sandbox(Path(path_str), Path(ctx.sandbox_base_norm)):
         return True
     
@@ -252,8 +256,7 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
     if depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN or not isinstance(root_path, str):
         return ScanResult(0, True)
     
-    # Pre-chequeo defensivo contra reparse points antes de entrar a la carpeta
-    if ctx.is_junction(root_path) or _is_system_hidden(root_path, ctx.kernel32):
+    if not os.path.exists(root_path) or ctx.is_junction(root_path) or _is_system_hidden(root_path, ctx.kernel32):
         return ScanResult(0, True)
 
     try:
@@ -281,7 +284,6 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
         
         return ScanResult(total_bytes, True)
     except (OSError, PermissionError):
-        # Retornamos el progreso acumulado hasta el fallo en lugar de abortar
         return ScanResult(total_bytes, False)
 
 @safe_path_operation(0)
@@ -305,7 +307,7 @@ def directory_size(path: Optional[OSPath]) -> int:
 def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
     """Valida que una ruta candidata exista y cumpla con las restricciones de seguridad."""
     if not isinstance(candidate, Path) or not isinstance(base_abs_str, str): return False
-    if not candidate.is_dir() or not os.access(candidate, os.R_OK): return False
+    if not candidate.exists() or not candidate.is_dir() or not os.access(candidate, os.R_OK): return False
     
     path_str = str(candidate)
     if len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS):
@@ -318,7 +320,6 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
         
     if not _is_within_sandbox(real, Path(base_abs_str)):
         return False
-    # Verificación estricta mediante las reglas globales de seguridad
     if not is_safe_to_modify(real) or is_protected_path(real):
         return False
     return not (real.is_symlink() or _IS_JUNCTION_FN(str(real)) or _is_excluded_file(real.name))
@@ -340,7 +341,6 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     except (OSError, RuntimeError):
         return Path()
         
-    # Validamos pertenencia al sandbox y seguridad de la ruta resultante antes de retornar
     if _is_within_sandbox(target_res, real_base) and \
        is_safe_to_modify(target_res) and not is_protected_path(target_res) and \
        not (target_res.is_symlink() or _IS_JUNCTION_FN(str(target_res))):
@@ -359,7 +359,6 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     found: List[BrowserCache] = []
     
-    # Reutilizamos el contexto para deduplicación entre navegadores y caché de seguridad
     ctx = ScanContext("", _get_kernel32(), _IS_JUNCTION_FN, set(), set(), {})
     
     for base in raw_bases:

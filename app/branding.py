@@ -309,7 +309,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         if not target.parent.exists(): target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(size), encoding="utf-8")
         return target
-    except Exception: return None
+    except (Exception, OSError): return None
 
 def logo_ascii() -> str: return "\n   ___  __  __ ___ ___   _\n  / _ \\|  \\/  | __/ __| /_\\\n | (_) | |\\/| | _|| (_ // _ \\\n  \\___/|_|  |_|___\\___/_/ \\_\\\n      Limpieza Total Omega\n"
 
@@ -329,6 +329,7 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[Tuple[float, float, float]
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
     try:
+        if scale <= 0: return
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
         by = y + STRIPE_BASE_Y_OFFSET * scale
         cx = x + 64 * scale
@@ -358,14 +359,16 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
     try:
-        for s in get_gradient_segments(max(1, width), stops):
-            canvas.create_line(canvas_x + s.start_index, canvas_y, canvas_x + s.end_index, canvas_y, fill=s.hex_color, width=height)
+        segments = get_gradient_segments(max(1, width), stops)
+        for s in segments:
+            canvas.create_line(canvas_x + s.start_index, canvas_y, canvas_x + s.end_index, canvas_y, fill=s.hex_color, width=max(1, height))
     except Exception: pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
     try:
         val = max(0.0, min(100.0, float(percent or 0.0)))
-        d, t = max(20, min(2048, size)), max(2, thickness)
+        d = max(20, min(2048, int(size)))
+        t = max(2, int(thickness))
         pad = t / 2.0
         bb = (canvas_x + pad, canvas_y + pad, canvas_x + d - pad, canvas_y + d - pad)
         canvas.create_arc(*bb, start=0, extent=359.9, style="arc", outline=track or C_SURFACE_ALT, width=t)
