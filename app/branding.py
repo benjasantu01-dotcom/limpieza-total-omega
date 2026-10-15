@@ -241,6 +241,7 @@ def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588
 
 @lru_cache(maxsize=512)
 def _hex_to_rgb(value: str) -> RGBTuple:
+    """Convierte un color hexadecimal en formato '#RRGGBB' a una tupla RGB."""
     try:
         val = int(value[1:], 16)
         return ((val >> 16) & 0xFF, (val >> 8) & 0xFF, val & 0xFF)
@@ -248,10 +249,12 @@ def _hex_to_rgb(value: str) -> RGBTuple:
 
 @lru_cache(maxsize=512)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
+    """Convierte una tupla RGB a un color hexadecimal en formato '#RRGGBB'."""
     return "#{:02x}{:02x}{:02x}".format(*[max(0, min(255, int(c))) for c in rgb])
 
 @lru_cache(maxsize=256)
 def blend(start: str, end: str, ratio: float) -> ColorHex:
+    """Interpola linealmente entre dos colores según un ratio [0.0, 1.0]."""
     try:
         r1, g1, b1 = _hex_to_rgb(start)
         r2, g2, b2 = _hex_to_rgb(end)

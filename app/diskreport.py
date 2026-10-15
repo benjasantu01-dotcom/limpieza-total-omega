@@ -114,6 +114,7 @@ class SummaryData(NamedTuple):
 
 
 def _bytes_to_mb(size_bytes: int | float | None) -> float:
+    """Convierte bytes a MB con redondeo a dos decimales y manejo de errores."""
     if not isinstance(size_bytes, (int, float)) or size_bytes < 0:
         return 0.0
     try:
@@ -123,12 +124,14 @@ def _bytes_to_mb(size_bytes: int | float | None) -> float:
 
 
 def _validate_limit(limit: Any) -> int:
+    """Asegura que el límite de resultados sea un entero no negativo."""
     if isinstance(limit, int) and not isinstance(limit, bool):
         return max(0, limit)
     return 0
 
 
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
+    """Valida y resuelve una ruta raíz, confirmando existencia y permisos de lectura."""
     if not directory:
         return None
     try:
@@ -145,6 +148,12 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 
 def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
+    """
+    Determina si una entrada de sistema debe excluirse del análisis.
+    
+    Aplica filtros de seguridad: caracteres especiales (RTL), puntos de reparse, 
+    permisos de acceso, y validación contra rutas protegidas o fuera de la raíz.
+    """
     try:
         name = entry.name
         if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
@@ -172,6 +181,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         return True
             
 def _get_local_windows_drives() -> List[str]:
+    """Lista las unidades lógicas disponibles en Windows, evitando bloqueos de sistema."""
     import string
     drives: List[str] = []
     try:
@@ -235,6 +245,7 @@ class DriveUsage:
 
 
 def format_size(num: Union[int, float, None]) -> str:
+    """Formatea bytes a una cadena legible con su unidad correspondiente."""
     if not isinstance(num, (int, float)) or num < 0:
         return "0 B"
     value = float(num)
@@ -247,6 +258,7 @@ def format_size(num: Union[int, float, None]) -> str:
 
 
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
+    """Obtiene el estado de uso de una unidad de montaje específica."""
     if mount is None:
         return None
     try:
@@ -260,11 +272,13 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
 
 
 def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]:
+    """Retorna una lista de uso de disco para todas las unidades detectadas."""
     targets = mounts if mounts is not None else (_get_local_windows_drives() if os.name == "nt" else ["/"])
     return [d for m in targets if (d := drive_usage(m)) is not None]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
+    """Generador que recorre recursivamente el sistema de archivos, ignorando rutas protegidas."""
     root_path = _validate_root(directory)
     if root_path is None: return
     
@@ -351,35 +365,29 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Recorre el sistema de archivos, agrega métricas globales y mantiene un top N de archivos por tamaño.
-
-    Args:
-        directory: Directorio raíz desde el cual comenzar el escaneo.
-        skip_protected: Si es True, omite directorios restringidos según safety.py.
-        limit: Cantidad máxima de archivos más pesados a trackear.
-
-    Returns:
-        SummaryData conteniendo los totales y la lista de archivos más grandes.
+    Ejecuta el escaneo del directorio y agrupa estadísticas de uso mediante un min-heap.
+    
+    Utiliza `walk_files` para procesar archivos y mantiene un Top N de los archivos
+    más grandes encontrados utilizando una estructura de datos de montículo (heap).
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = [] 
     
-    try:
-        for path, size_bytes in walk_files(directory, skip_protected):
-            stats.register_file(size_bytes, path.suffix)
-            
-            if limit > 0:
-                if len(top_heap) < limit: 
-                    heapq.heappush(top_heap, (size_bytes, path))
-                elif size_bytes > top_heap[0][0]: 
-                    heapq.heapreplace(top_heap, (size_bytes, path))
-    except (OSError, PermissionError, RuntimeError):
-        pass
+    for path, size_bytes in walk_files(directory, skip_protected):
+        stats.register_file(size_bytes, path.suffix)
+        
+        # Si el límite es mayor a 0, mantenemos un heap de tamaño 'limit' con los más grandes
+        if limit > 0:
+            if len(top_heap) < limit: 
+                heapq.heappush(top_heap, (size_bytes, path))
+            elif size_bytes > top_heap[0][0]: 
+                heapq.heapreplace(top_heap, (size_bytes, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
+    """Genera un informe textual resumen del análisis de disco realizado."""
     root = _validate_root(directory)
     if root is None: 
         return ["Error: La ruta seleccionada no es válida o no tiene permisos de lectura."]

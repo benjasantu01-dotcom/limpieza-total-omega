@@ -251,7 +251,14 @@ def _process_file_node(entry: os.DirEntry, ctx: ScanContext) -> int:
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
     """
     Ejecuta un escaneo recursivo limitado por profundidad y seguridad.
-    Si una subcarpeta no es accesible, retorna el peso de los archivos ya procesados.
+
+    Parámetros:
+        root_path: Ruta del directorio a escanear.
+        ctx: Contexto de escaneo con estados compartidos.
+        depth: Profundidad actual de recursión.
+
+    Retorno:
+        ScanResult con la suma de bytes encontrados y éxito de la operación.
     """
     if depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN or not isinstance(root_path, str):
         return ScanResult(0, True)
@@ -288,7 +295,15 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
 
 @safe_path_operation(0)
 def directory_size(path: Optional[OSPath]) -> int:
-    """Calcula el tamaño total de una carpeta mediante un escaneo recursivo y seguro."""
+    """
+    Calcula el tamaño total de una carpeta mediante un escaneo recursivo y seguro.
+
+    Parámetros:
+        path: Ruta (string o Path) del directorio a medir.
+
+    Retorno:
+        Tamaño total en bytes, o 0 si la ruta es inválida o inaccesible.
+    """
     if not isinstance(path, (str, Path)) or not path: return 0
     path_obj: Path = Path(path)
     if not path_obj.exists() or not path_obj.is_dir(): return 0
