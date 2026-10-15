@@ -261,7 +261,6 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Asegura rangos aceptables para todas las métricas mediante validación numérica."""
-        # Se verifica cada campo explícitamente para asegurar robustez
         for field_name in self._FIELDS_TO_VALIDATE:
             val = getattr(self, field_name)
             if val is None or (isinstance(val, float) and math.isnan(val)):
@@ -350,15 +349,14 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             area_ratio = _clamp(entry.scorer(m))
             _evaluate_rules(m, entry.rules, area_ratio, recommendations)
             
-            # Cálculo defensivo: asegurar que el peso sea float y resultado sea numérico
             w_f = float(entry.weight)
             points = area_ratio * w_f
             val_int = int(round(_clamp(points, 0.0, w_f)))
             
             metric_breakdown[entry.area] = val_int
             total_points += float(val_int)
-        except (Exception, TypeError, ValueError) as e:
-            logging.error(f"Error procesando pipeline {entry.area}: {e}")
+        except (ValueError, TypeError, ZeroDivisionError) as e:
+            logging.error(f"Error técnico procesando métrica {entry.area}: {e}")
             metric_breakdown[entry.area] = 0
             
     if m.quarantined_count > 0:

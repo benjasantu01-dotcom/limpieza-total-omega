@@ -273,6 +273,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     
     while stack:
         current_dir = stack.pop()
+        if not current_dir or not current_dir.exists():
+            continue
             
         try:
             with os.scandir(current_dir) as iterator:
@@ -326,6 +328,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
+            if not root or path == root: continue
             rel = path.relative_to(root).parts
             if not rel: continue
             top_folder = root / rel[0]
@@ -370,8 +373,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
                     heapq.heappush(top_heap, (size_bytes, path))
                 elif size_bytes > top_heap[0][0]: 
                     heapq.heapreplace(top_heap, (size_bytes, path))
-    except (OSError, PermissionError, RuntimeError) as e:
-        # Registro silencioso o manejo específico del error de escaneo
+    except (OSError, PermissionError, RuntimeError):
         pass
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)

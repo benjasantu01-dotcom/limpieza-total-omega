@@ -889,3 +889,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-15T03:46:57` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-15T03:46:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T03:46:57` Corrida terminada. Total usado hoy: 92.
+- `2026-10-15T03:54:42` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-10-15T03:55:08` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `largest_folders` añadiendo chequeos explícitos de `None` y excepciones específicas para evitar que el iterador falle silenciosamente ante rutas mal formadas o problemas de permisos durante la expansión.
+- `2026-10-15T03:55:32` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `suggest_keeper` y `format_group` mediante la validación de tipos y estados, asegurando que las operaciones sobre `group.paths` no fallen ante estados inesperados o grupos vacíos.
+- `2026-10-15T03:56:15` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` al reemplazar el manejo genérico de excepciones por una captura específica durante la ejecución de los normalizadores (`scorer`), evitando que un error en un área aislada degrade silenciosamente el puntaje global sin registro.
+- `2026-10-15T03:57:16` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de los callbacks de los botones, integrando un chequeo explícito de la existencia del objeto y el estado de la aplicación mediante `@safe_ui_operation` y una comprobación interna, evitando cierres inesperados durante la ejecución de tareas asíncronas largas.
+- `2026-10-15T03:57:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T03:57:16` Corrida terminada. Total usado hoy: 96.

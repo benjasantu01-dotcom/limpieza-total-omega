@@ -303,17 +303,19 @@ def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """Sugiere el archivo original a conservar basándose en antigüedad y ruta."""
-    if not isinstance(group, DuplicateGroup) or not group.paths: return None
+    if not isinstance(group, DuplicateGroup) or not group.paths:
+        return None
     candidates: List[Tuple[Tuple[float, int], Path]] = []
     for p in group.paths:
-        if (score := _calculate_keeper_heuristic(p)) is not None:
+        score = _calculate_keeper_heuristic(p)
+        if score is not None:
             candidates.append((score, p))
     return min(candidates, key=lambda x: x[0])[1] if candidates else None
 
 
 def _get_path_label(path: Path, keeper: Optional[Path]) -> str:
     """Genera etiqueta descriptiva para la interfaz de usuario."""
-    return "[conservar]" if keeper and path == keeper else "[duplicado]"
+    return "[conservar]" if keeper is not None and path == keeper else "[duplicado]"
 
 
 def format_group(group: DuplicateGroup) -> List[str]:

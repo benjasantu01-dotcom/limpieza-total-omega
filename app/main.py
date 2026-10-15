@@ -453,8 +453,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         @safe_ui_operation
         def safe_cmd():
-            if self._closing: return
-            command()
+            if not self._closing:
+                command()
 
         button = ctk.CTkButton(
             parent, text=text, command=safe_cmd,
