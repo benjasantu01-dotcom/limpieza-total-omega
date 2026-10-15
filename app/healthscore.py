@@ -261,23 +261,26 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Asegura rangos aceptables para todas las métricas mediante validación numérica."""
-        for field_name in self._FIELDS_TO_VALIDATE:
-            val = getattr(self, field_name)
-            if val is None or (isinstance(val, float) and math.isnan(val)):
-                setattr(self, field_name, 0.0 if "percent" not in field_name else 100.0)
+        # Convertir a dict local para optimizar el acceso en el bucle de validación
+        data = self.__dict__
+        
+        # Validación inicial de tipos
+        for f in self._FIELDS_TO_VALIDATE:
+            if data.get(f) is None or (isinstance(data.get(f), float) and math.isnan(data.get(f))):
+                data[f] = 0.0 if "percent" not in f else 100.0
         
         try:
-            self.junk_mb = _validate_numeric(self.junk_mb, 0.0, 0.0, 1048576.0)
-            self.duplicate_mb = _validate_numeric(self.duplicate_mb, 0.0, 0.0, 1048576.0)
-            self.suspicious_count = int(_validate_numeric(self.suspicious_count, 0, 0, 5000))
-            self.suspicious_warnings = int(_validate_numeric(self.suspicious_warnings, 0, 0, 5000))
-            self.startup_count = int(_validate_numeric(self.startup_count, 0, 0, 1000))
-            self.quarantined_count = int(_validate_numeric(self.quarantined_count, 0, 0, 1000))
-            self.memory_available_percent = _validate_numeric(self.memory_available_percent, 100.0, 0.0, 100.0)
-            self.disk_free_percent = _validate_numeric(self.disk_free_percent, 100.0, 0.0, 100.0)
+            self.junk_mb = _validate_numeric(data["junk_mb"], 0.0, 0.0, 1048576.0)
+            self.duplicate_mb = _validate_numeric(data["duplicate_mb"], 0.0, 0.0, 1048576.0)
+            self.suspicious_count = int(_validate_numeric(data["suspicious_count"], 0, 0, 5000))
+            self.suspicious_warnings = int(_validate_numeric(data["suspicious_warnings"], 0, 0, 5000))
+            self.startup_count = int(_validate_numeric(data["startup_count"], 0, 0, 1000))
+            self.quarantined_count = int(_validate_numeric(data["quarantined_count"], 0, 0, 1000))
+            self.memory_available_percent = _validate_numeric(data["memory_available_percent"], 100.0, 0.0, 100.0)
+            self.disk_free_percent = _validate_numeric(data["disk_free_percent"], 100.0, 0.0, 100.0)
         except Exception:
-            for field_name in self._FIELDS_TO_VALIDATE:
-                setattr(self, field_name, 0.0 if "percent" not in field_name else 100.0)
+            for f in self._FIELDS_TO_VALIDATE:
+                setattr(self, f, 0.0 if "percent" not in f else 100.0)
 
     @property
     def is_finite(self) -> bool:

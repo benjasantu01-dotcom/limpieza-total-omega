@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Mejoras aceptadas: **186** (36.9% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 46
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 222
+- Rechazadas por guardia de seguridad: 45
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-13 | 13 | 1 | 2 | 1 | 13 |
+| 2026-10-13 | 10 | 1 | 1 | 1 | 13 |
 | 2026-10-14 | 123 | 18 | 26 | 19 | 164 |
-| 2026-10-15 | 51 | 8 | 18 | 2 | 45 |
+| 2026-10-15 | 53 | 8 | 18 | 3 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **40**
-- robustez ante casos límite: **29**
-- rendimiento: **26**
+- rendimiento: **28**
+- robustez ante casos límite: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **18**
+- `memory.py`: **18**
 - `browser.py`: **17**
 - `duplicates.py`: **17**
-- `memory.py`: **17**
 - `assistant.py`: **16**
-- `scanner.py`: **14**
-- `healthscore.py`: **13**
-- `safety.py`: **12**
-- `settings.py`: **12**
+- `healthscore.py`: **14**
+- `scanner.py`: **13**
 - `startup.py`: **12**
 - `main.py`: **12**
+- `safety.py`: **11**
+- `settings.py`: **11**
 - `branding.py`: **10**
 - `organizer.py`: **9**
 - `quarantine.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-15T05:18:26` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` pre-asignando el tamaño del buffer de PIDs para evitar redimensionamientos y reduciendo la cantidad de llamadas al sistema mediante una verificación temprana de seguridad (`is_protected_path`) antes de realizar la costosa operación de `OpenProcess` para obtener el ejecutable.
+- `2026-10-15T05:16:49` **healthscore.py** (rendimiento): Optimizé la validación de `SystemMetrics` utilizando un `dict` local para evitar el acceso repetitivo a atributos mediante `getattr` y `setattr` dentro de un bucle, reduciendo el overhead de reflexión en el camino crítico de cálculo de puntaje.
 - `2026-10-15T05:07:47` **duplicates.py** (rendimiento): Optimizé el pipeline de hashing eliminando llamadas redundantes a `_validate_and_resolve_path` y `_is_valid_candidate` dentro de los métodos `hash_file` y `partial_hash`, ya que los archivos procesados en el bucle principal ya han sido filtrados y validados exhaustivamente por `_collect_candidates`, evitando operaciones innecesarias de I/O y syscalls.
 - `2026-10-15T05:07:37` **diskreport.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo en `walk_files` y `largest_folders` evitando llamadas redundantes a `Path.resolve()` y `Path.relative_to()`, reutilizando las referencias de `os.DirEntry` y limitando el uso de `str()` en operaciones repetitivas dentro del bucle.
 - `2026-10-15T05:07:11` **browser.py** (rendimiento): Optimizé el rendimiento de `detect_profiles` eliminando la recreación innecesaria del `ScanContext` y reutilizando el contexto único para toda la operación, evitando así el re-cálculo de identificadores y redundancia en la caché de seguridad entre distintas rutas de navegador.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-15T04:18:43` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `StartupEntry._extract_quoted_path` al incluir validación de `None` y tipos, y un manejo de errores más específico para prevenir excepciones inesperadas durante el procesamiento de rutas, alineándome con el enfoque de validación defensiva.
 - `2026-10-15T04:18:28` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `_read_and_parse_json()` añadiendo validaciones proactivas frente a archivos de configuración bloqueados, inexistentes o con metadatos sospechosos, asegurando que la app siempre mantenga un estado válido.
 - `2026-10-15T04:17:44` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_readable` y `_get_file_size` mediante la validación explícita de `os.DirEntry` y el uso de `path.stat()` seguro, eliminando redundancias y posibles excepciones por tipos de datos inesperados.
-- `2026-10-15T04:05:36` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_linux_meminfo` mediante la validación explícita de tipos y la captura de errores al procesar el archivo `/proc/meminfo`, asegurando que valores inesperados no propaguen datos corruptos al resto del sistema.
-- `2026-10-15T03:57:16` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de los callbacks de los botones, integrando un chequeo explícito de la existencia del objeto y el estado de la aplicación mediante `@safe_ui_operation` y una comprobación interna, evitando cierres inesperados durante la ejecución de tareas asíncronas largas.
