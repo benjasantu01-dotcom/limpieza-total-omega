@@ -109,7 +109,7 @@ def _is_file_locked(path: Path) -> bool:
         with open(path, "rb") as f:
             return False
     except (OSError, IOError) as e:
-        if isinstance(e, OSError) and e.winerror in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED):
+        if hasattr(e, 'winerror') and e.winerror in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED):
             return True
         return True
 
@@ -142,14 +142,11 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Calcula el SHA256 completo de un archivo mediante lectura en bloques (streaming)."""
-    if chunk_size <= 0:
+    if chunk_size <= 0 or not _safe_path_check(path):
         return None
     try:
-        safe_path = path.resolve()
-        if not is_safe_to_modify(safe_path):
-            return None
         digest = hashlib.sha256()
-        with open(safe_path, "rb") as f:
+        with open(path, "rb") as f:
             while (chunk := f.read(chunk_size)):
                 digest.update(chunk)
         return digest.hexdigest()
@@ -159,13 +156,10 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula un hash SHA256 sobre el segmento inicial del archivo para optimización."""
-    if read_bytes <= 0:
+    if read_bytes <= 0 or not _safe_path_check(path):
         return None
     try:
-        safe_path = path.resolve()
-        if not is_safe_to_modify(safe_path):
-            return None
-        with open(safe_path, "rb") as f:
+        with open(path, "rb") as f:
             content = f.read(read_bytes)
             return hashlib.sha256(content).hexdigest() if content else None
     except (OSError, IOError, PermissionError):

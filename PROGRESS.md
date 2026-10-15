@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 29
-- Rechazadas por guardia de seguridad: 47
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 220
+- Rechazadas por guardia de seguridad: 46
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-14 | 77 | 12 | 16 | 11 | 88 |
-| 2026-10-15 | 112 | 17 | 31 | 8 | 132 |
+| 2026-10-14 | 75 | 12 | 15 | 10 | 88 |
+| 2026-10-15 | 114 | 17 | 31 | 8 | 134 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **44**
+- legibilidad y documentación: **42**
 - robustez ante casos límite: **42**
 - seguridad defensiva: **42**
+- manejo de errores y validación de entradas: **32**
 - rendimiento: **31**
-- manejo de errores y validación de entradas: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **18**
+- `memory.py`: **17**
 - `assistant.py`: **16**
 - `browser.py`: **16**
 - `diskreport.py`: **16**
 - `healthscore.py`: **16**
+- `duplicates.py`: **15**
 - `scanner.py`: **14**
 - `settings.py`: **14**
 - `main.py`: **14**
-- `duplicates.py`: **14**
+- `branding.py`: **12**
 - `quarantine.py`: **12**
-- `branding.py`: **11**
-- `organizer.py`: **10**
 - `safety.py`: **10**
+- `organizer.py`: **9**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-15T12:46:33` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `hash_file` y `partial_hash` al centralizar la validación de archivos, reemplazando chequeos condicionales redundantes por el uso consistente de `is_safe_to_modify` y capturando excepciones de forma específica para evitar interrupciones no controladas durante el procesamiento.
+- `2026-10-15T12:45:20` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save_logo_svg` incorporando una validación previa estricta de la ruta destino y capturando explícitamente excepciones de I/O, siguiendo el enfoque de manejo de errores y validación de entradas.
 - `2026-10-15T12:38:12` **assistant.py** (manejo de errores y validación de entradas): Mejoré `_extract_text_from_gemini_json` para manejar explícitamente posibles valores `None` en la cadena de acceso al JSON, reforzando la robustez ante respuestas mal formadas o truncadas de la API.
 - `2026-10-15T11:14:31` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez de `_safe_stat` al añadir un chequeo explícito contra la lista de rutas protegidas mediante `is_protected_path`, garantizando que la obtención de metadatos nunca ocurra en archivos sensibles ni a través de enlaces simbólicos fuera de la raíz permitida, reforzando la seguridad defensiva sin alterar la funcionalidad.
 - `2026-10-15T11:05:21` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` reforzando las validaciones en `_safe_unlink` y `_write_temp_to_final` para asegurar que, bajo ninguna circunstancia, se pueda operar sobre archivos que contengan flujos de datos alternos (ADS), una técnica común de ocultamiento de malware en Windows.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-15T10:43:00` **settings.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar colisiones de concurrencia y corrupción al detectar que el archivo de configuración es un enlace simbólico o un punto de reparse antes de abrirlo, fortaleciendo el `_read_and_parse_json` ante condiciones de carrera en el sistema de archivos.
 - `2026-10-15T10:34:35` **scanner.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas que contienen caracteres de control Unicode no visibles (incluyendo el espacio de no separación y otros caracteres de control) que podrían ser usados para ofuscar nombres de archivos, evitando errores de resolución y riesgos de seguridad en el escaneo.
 - `2026-10-15T10:34:11` **safety.py** (robustez ante casos límite): Se ha añadido una validación de redundancia de rutas para evitar ataques de denegación de servicio o errores por recursión circular, detectando si un componente de la ruta es un punto de reparse que apunta a un padre de sí mismo antes de proceder con cualquier operación de E/S.
-- `2026-10-15T10:33:02` **quarantine.py** (robustez ante casos límite): Se ha añadido un chequeo de concurrencia y disponibilidad en `_validate_isolation_request` para verificar que el directorio de cuarentena sea una ruta válida y no un archivo preexistente bloqueando el sandbox, mejorando la robustez ante estados inconsistentes del sistema de archivos.
-- `2026-10-15T10:24:26` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_safe_for_disk_op` y `delete_reviewed` añadiendo chequeos de integridad contra enlaces simbólicos y puntos de reparse durante la validación final, previniendo así operaciones no deseadas en rutas redirigidas.

@@ -652,3 +652,11 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-10-15T12:38:12` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré `_extract_text_from_gemini_json` para manejar explícitamente posibles valores `None` en la cadena de acceso al JSON, reforzando la robustez ante respuestas mal formadas o truncadas de la API.
 - `2026-10-15T12:38:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T12:38:12` Corrida terminada. Total usado hoy: 300.
+- `2026-10-15T12:44:43` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-15T12:45:20` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `save_logo_svg` incorporando una validación previa estricta de la ruta destino y capturando explícitamente excepciones de I/O, siguiendo el enfoque de manejo de errores y validación de entradas.
+- `2026-10-15T12:45:44` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-15T12:46:07` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-15T12:46:20` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-15T12:46:33` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `hash_file` y `partial_hash` al centralizar la validación de archivos, reemplazando chequeos condicionales redundantes por el uso consistente de `is_safe_to_modify` y capturando excepciones de forma específica para evitar interrupciones no controladas durante el procesamiento.
+- `2026-10-15T12:46:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T12:46:33` Corrida terminada. Total usado hoy: 304.

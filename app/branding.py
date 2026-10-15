@@ -312,15 +312,18 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optional[Path]:
     """Guarda el logo vectorial en la ruta especificada tras validar seguridad."""
+    if not destination:
+        return None
     try:
-        if not destination: return None
         target = Path(destination).resolve()
-        if is_protected_path(target): return None
+        if is_protected_path(target) or not is_safe_to_modify(target):
+            return None
         ensure_safe_to_modify(target)
-        if not target.parent.exists(): target.parent.mkdir(parents=True, exist_ok=True)
+        if not target.parent.exists():
+            target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(size), encoding="utf-8")
         return target
-    except (OSError, PermissionError, Exception):
+    except (OSError, PermissionError, IOError):
         return None
 
 def logo_ascii() -> str: return "\n   ___  __  __ ___ ___   _\n  / _ \\|  \\/  | __/ __| /_\\\n | (_) | |\\/| | _|| (_ // _ \\\n  \\___/|_|  |_|___\\___/_/ \\_\\\n      Limpieza Total Omega\n"
