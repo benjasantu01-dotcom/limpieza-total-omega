@@ -374,8 +374,11 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 def _is_process_executable_safe(pid: int) -> bool:
     """
-    Valida la integridad de la ruta del ejecutable para prevenir ataques de
-    suplantación o saltos de directorios protegidos.
+    Args:
+        pid: ID del proceso a verificar.
+
+    Returns:
+        True si la ruta del ejecutable no es crítica o restringida, False en otro caso.
     """
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     psapi = getattr(ctypes.windll, "psapi", None)
@@ -387,11 +390,8 @@ def _is_process_executable_safe(pid: int) -> bool:
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
             path_str: str = str(buf.value).strip()
-            # Bloquea rutas UNC o vacías
             if not path_str or path_str.startswith("\\\\"):
                 return False
-            
-            # Valida contra protección sin resolver enlaces (evita E/S bloqueante y escapes)
             return not is_protected_path(path_str)
     except (ctypes.ArgumentError, OSError, ValueError, RuntimeError):
         return False
@@ -400,7 +400,12 @@ def _is_process_executable_safe(pid: int) -> bool:
     return False
 
 def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
-    """Capa de seguridad: Verifica que el PID sea apto para recibir comandos de gestión de memoria."""
+    """
+    Verifica si un proceso puede ser sometido a una operación de trim.
+    
+    Returns:
+        Tupla con estado (bool) y mensaje de error opcional.
+    """
     if pid <= 0: return False, "PID inválido."
     if _is_system_process(pid): return False, "Proceso protegido."
     if not _is_process_executable_safe(pid): return False, "Ruta de proceso restringida."
@@ -409,8 +414,12 @@ def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Ejecuta EmptyWorkingSet sobre un proceso bajo estrictas normas de seguridad.
-    Esta función es una herramienta de diagnóstico avanzado: no libera RAM 
-    de forma beneficiosa para el rendimiento general.
+    
+    Args:
+        pid: El ID o representación de cadena del proceso a liberar.
+
+    Returns:
+        Tupla con el éxito de la operación y el mensaje de diagnóstico.
     """
     if not _is_windows: return False, "Solo soportado en Windows."
     

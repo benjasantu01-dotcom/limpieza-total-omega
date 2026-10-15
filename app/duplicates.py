@@ -146,7 +146,7 @@ def _validate_and_resolve_path(path_input: PathLike) -> Optional[Path]:
 
 
 def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula el SHA256 completo de un archivo mediante streaming."""
+    """Calcula el SHA256 completo de un archivo mediante streaming (Chunking)."""
     if chunk_size <= 0:
         return None
     valid_path = _validate_and_resolve_path(path)
@@ -164,7 +164,7 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Calcula un hash de los primeros N bytes para validación rápida."""
+    """Calcula un hash SHA256 de los primeros N bytes para validación rápida."""
     if read_bytes <= 0:
         return None
     valid_path = _validate_and_resolve_path(path)
@@ -180,7 +180,7 @@ def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Option
 
 
 def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
-    """Paso 1: Agrupa rutas por su tamaño en bytes."""
+    """Paso 1: Agrupa rutas por su tamaño en bytes para descartar archivos únicos."""
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
         if not p: continue
@@ -196,7 +196,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
 
 
 def _resolve_and_verify_root(directory_path: PathLike) -> Optional[Path]:
-    """Valida si el directorio raíz es navegable de forma segura."""
+    """Valida si el directorio raíz es navegable de forma segura para el escaneo."""
     if not directory_path: return None
     try:
         root_obj = Path(directory_path).resolve()
@@ -208,7 +208,7 @@ def _resolve_and_verify_root(directory_path: PathLike) -> Optional[Path]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Realiza una búsqueda BFS por directorios para recolectar candidatos."""
+    """Realiza una búsqueda BFS por directorios para recolectar candidatos indexados por tamaño."""
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     queue: deque[Tuple[Path, int]] = deque()
     visited_dirs: set[Path] = set()
@@ -250,7 +250,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Agrupa rutas según la firma digital devuelta por una función hash dada."""
+    """Agrupa rutas según la firma digital devuelta por la función hash inyectada."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if (digest := hash_func(path)):
@@ -259,7 +259,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
-    """Pipeline: refina candidatos mediante hash parcial y confirma con completo."""
+    """Pipeline: refina candidatos mediante hash parcial seguido de confirmación con SHA256."""
     partial_groups = _group_paths_by_hash(paths, partial_hash)
     final_results: Dict[str, List[Path]] = {}
     for candidate_subset in partial_groups.values():
@@ -268,7 +268,7 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 
 
 def _decide_hash_strategy_and_process(size_bytes: int, file_paths: List[Path]) -> List[DuplicateGroup]:
-    """Selecciona la estrategia de hashing basada en el tamaño del archivo."""
+    """Selecciona la estrategia de hashing óptima según el tamaño de los archivos."""
     if not file_paths or size_bytes <= 0: return []
     if size_bytes <= PARTIAL_READ_BYTES:
         final_groups = _group_paths_by_hash(file_paths, hash_file)
@@ -278,7 +278,7 @@ def _decide_hash_strategy_and_process(size_bytes: int, file_paths: List[Path]) -
 
 
 def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
-    """Orquesta el pipeline de detección de duplicados en directorios dados."""
+    """Orquesta el pipeline completo de detección: recolección, filtrado y hashing."""
     size_map = _collect_candidates(directories, min_size, skip_protected)
     groups: List[DuplicateGroup] = []
     for size, paths in size_map.items():
@@ -288,12 +288,12 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
 
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
-    """Calcula el total de bytes recuperables en una lista de grupos."""
+    """Suma el total de bytes que se recuperarían tras procesar los grupos."""
     return sum(g.wasted_bytes for g in groups)
 
 
 def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
-    """Calcula métricas (mtime, len_ruta) para seleccionar el archivo original."""
+    """Calcula métricas de selección: (timestamp de modificación, longitud de ruta)."""
     try:
         stat = path.stat()
         return float(stat.st_mtime), len(str(path))
@@ -302,7 +302,7 @@ def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
-    """Sugiere el archivo original a conservar basándose en antigüedad y ruta."""
+    """Sugiere el archivo original (keeper) usando el criterio de mayor antigüedad."""
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
     candidates: List[Tuple[Tuple[float, int], Path]] = []
@@ -314,12 +314,12 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 
 def _get_path_label(path: Path, keeper: Optional[Path]) -> str:
-    """Genera etiqueta descriptiva para la interfaz de usuario."""
+    """Genera etiqueta visual para diferenciar el archivo original de las copias."""
     return "[conservar]" if keeper is not None and path == keeper else "[duplicado]"
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
-    """Formatea un grupo de duplicados en una representación legible."""
+    """Transforma un objeto DuplicateGroup en una lista de strings para informe visual."""
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return ["Error: Grupo inválido o vacío"]
     keeper = suggest_keeper(group)

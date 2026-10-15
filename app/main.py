@@ -500,6 +500,18 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             corner_radius=9,
         )
 
+    def _add_setting_switch(self, parent: ctk.CTkFrame, clave: str, texto: str, row: int, column: int) -> None:
+        """Helper para crear switches (booleanos) en el formulario de ajustes."""
+        variable = ctk.BooleanVar(value=bool(self.settings.get(clave)))
+        self.setting_vars[clave] = variable
+        ctk.CTkSwitch(
+            parent, text=texto, variable=variable,
+            progress_color=branding.color("accent"),
+            button_color=branding.color("text"),
+            text_color=branding.color("text"),
+            font=ctk.CTkFont(size=branding.font_size("body")),
+        ).grid(row=row, column=column, sticky="w", padx=(0, 24), pady=6)
+
     def _build_layout(self) -> None:
         """Ensambla los bloques estructurales: cabecera, pestañas y pie."""
         self._build_header()
@@ -875,28 +887,30 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._action(row, "Ver configuración", self.on_show_settings, secondary=True, column=1)
         self._action(row, "Restaurar de fábrica", self.on_reset_settings, danger=True, column=2)
 
-        grilla = ctk.CTkFrame(tab, fg_color="transparent")
-        grilla.pack(fill="x", padx=12, pady=(14, 0))
+        grid = ctk.CTkFrame(tab, fg_color="transparent")
+        grid.pack(fill="x", padx=12, pady=(14, 0))
 
-        self._add_setting_label(grilla, "Tema:", 0, 0)
+        # Configuración de temas y acento
+        self._add_setting_label(grid, "Tema:", 0, 0)
         self.setting_vars["tema"] = ctk.StringVar(value=self.settings.get("tema", "oscuro"))
-        self._menu(grilla, list(settings_mod.VALID_THEMES), self.setting_vars["tema"], width=150).grid(row=0, column=1, sticky="w")
+        self._menu(grid, list(settings_mod.VALID_THEMES), self.setting_vars["tema"], width=150).grid(row=0, column=1, sticky="w")
 
-        self._add_setting_label(grilla, "Acento:", 0, 2)
+        self._add_setting_label(grid, "Acento:", 0, 2)
         self.setting_vars["acento"] = ctk.StringVar(value=self.settings.get("acento", "menta"))
-        self._menu(grilla, list(settings_mod.VALID_ACCENTS), self.setting_vars["acento"], width=150).grid(row=0, column=3, sticky="w")
+        self._menu(grid, list(settings_mod.VALID_ACCENTS), self.setting_vars["acento"], width=150).grid(row=0, column=3, sticky="w")
 
-        self._add_setting_switch(grilla, "mostrar_barras", "Barras visuales", 1, 0)
-        self._add_setting_switch(grilla, "analisis_en_paralelo", "Análisis en paralelo", 1, 1)
-        self._add_setting_switch(grilla, "recordar_ultima_carpeta", "Recordar última carpeta", 1, 2)
+        # Configuración de switches globales
+        self._add_setting_switch(grid, "mostrar_barras", "Barras visuales", 1, 0)
+        self._add_setting_switch(grid, "analisis_en_paralelo", "Análisis en paralelo", 1, 1)
+        self._add_setting_switch(grid, "recordar_ultima_carpeta", "Recordar última carpeta", 1, 2)
 
-        self._add_setting_label(grilla, "Duplicados desde (KB):", 2, 0)
-        self.min_dup_entry = self._entry(grilla, "64", 100)
-        
-        self._add_setting_label(grilla, "Top de archivos:", 2, 2)
-        self.top_files_entry = self._entry(grilla, "15", 100)
-        
+        # Configuración de parámetros numéricos
+        self._add_setting_label(grid, "Duplicados desde (KB):", 2, 0)
+        self.min_dup_entry = self._entry(grid, "64", 100)
         self._update_entry_fields(self.min_dup_entry, "duplicados_tamano_minimo_kb", 64, row=2, col=1)
+
+        self._add_setting_label(grid, "Top de archivos:", 2, 2)
+        self.top_files_entry = self._entry(grid, "15", 100)
         self._update_entry_fields(self.top_files_entry, "top_archivos", 15, row=2, col=3)
 
         self._build_ia_settings(tab)
@@ -944,18 +958,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._create_styled_label(parent, text, "body", anchor="w").grid(
             row=row, column=column, sticky="w", padx=(0, 10), pady=6
         )
-
-    def _add_setting_switch(self, parent: ctk.CTkFrame, clave: str, texto: str, row: int, column: int) -> None:
-        """Helper para crear switches (booleanos) en el formulario de ajustes."""
-        variable = ctk.BooleanVar(value=bool(self.settings.get(clave)))
-        self.setting_vars[clave] = variable
-        ctk.CTkSwitch(
-            parent, text=texto, variable=variable,
-            progress_color=branding.color("accent"),
-            button_color=branding.color("text"),
-            text_color=branding.color("text"),
-            font=ctk.CTkFont(size=branding.font_size("body")),
-        ).grid(row=row, column=column, sticky="w", padx=(0, 24), pady=6)
 
     def _safe_get_entry_value(self, entry_widget: Any, default: Any, numeric: bool = False) -> Any:
         """Extrae de forma segura el valor ingresado en un widget, validando su estado."""
