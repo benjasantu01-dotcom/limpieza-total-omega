@@ -281,7 +281,11 @@ def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[Ju
     found: List[JunkFile] = []
     protected_cache: set[str] = set()
     visited: set[Path] = set()
-    scan_list: Sequence[str | Path] = directories if directories is not None else DEFAULT_SCAN_DIRS
+    scan_list = directories if directories is not None else DEFAULT_SCAN_DIRS
+    
+    if not isinstance(scan_list, (list, tuple)):
+        return []
+
     for d in scan_list:
         if d is None: continue
         try:
@@ -299,7 +303,8 @@ def sort_junk(files: Sequence[JunkFile], by: SortField = "size", ascending: bool
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """Mueve archivos detectados a un directorio de cuarentena para su posterior revisión."""
-    if not isinstance(files, (list, tuple)) or not review_dir: return None
+    if not isinstance(files, (list, tuple)) or not isinstance(review_dir, str) or not review_dir: 
+        return None
     try:
         dest_base = Path(review_dir).expanduser()
         if not dest_base.exists():
@@ -336,7 +341,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """Borra permanentemente los archivos validados presentes en el directorio de revisión."""
-    if not review_dir: return 0
+    if not isinstance(review_dir, str) or not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser().resolve(strict=False)
         if not dest.exists() or not dest.is_dir() or len(dest.parts) <= 2: return 0

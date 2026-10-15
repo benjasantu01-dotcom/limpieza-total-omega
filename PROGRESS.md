@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 29
 - Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-14 | 75 | 12 | 15 | 10 | 88 |
-| 2026-10-15 | 114 | 17 | 31 | 8 | 134 |
+| 2026-10-14 | 71 | 12 | 15 | 10 | 88 |
+| 2026-10-15 | 117 | 17 | 31 | 8 | 135 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **42**
 - robustez ante casos límite: **42**
 - seguridad defensiva: **42**
-- manejo de errores y validación de entradas: **32**
+- legibilidad y documentación: **38**
+- manejo de errores y validación de entradas: **35**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **17**
+- `healthscore.py`: **17**
 - `assistant.py`: **16**
 - `browser.py`: **16**
 - `diskreport.py`: **16**
-- `healthscore.py`: **16**
+- `main.py`: **15**
 - `duplicates.py`: **15**
-- `scanner.py`: **14**
-- `settings.py`: **14**
-- `main.py`: **14**
+- `scanner.py`: **13**
+- `settings.py`: **13**
 - `branding.py`: **12**
 - `quarantine.py`: **12**
-- `safety.py`: **10**
-- `organizer.py`: **9**
-- `startup.py`: **8**
+- `organizer.py`: **10**
+- `safety.py`: **9**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-15T12:57:15` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en la validación de parámetros de entrada en las funciones públicas `scan_for_junk`, `stage_for_review` y `delete_reviewed`, reemplazando chequeos implícitos por validaciones explícitas que previenen errores inesperados en tiempo de ejecución.
+- `2026-10-15T12:56:33` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_restore_quarantine` y `on_purge_quarantine` implementando una validación de estado pre-ejecución más estricta que evita condiciones de carrera, capturando específicamente errores de formato en el ID y asegurando la integridad de la UI antes de actualizar el log.
+- `2026-10-15T12:55:26` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `_render_bar` validando explícitamente el acceso a las claves del diccionario `breakdown` y asegurando que las divisiones por cero en el renderizado de barras no causen fallos, garantizando que el informe sea siempre generable aunque falten datos parciales.
 - `2026-10-15T12:46:33` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `hash_file` y `partial_hash` al centralizar la validación de archivos, reemplazando chequeos condicionales redundantes por el uso consistente de `is_safe_to_modify` y capturando excepciones de forma específica para evitar interrupciones no controladas durante el procesamiento.
 - `2026-10-15T12:45:20` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save_logo_svg` incorporando una validación previa estricta de la ruta destino y capturando explícitamente excepciones de I/O, siguiendo el enfoque de manejo de errores y validación de entradas.
 - `2026-10-15T12:38:12` **assistant.py** (manejo de errores y validación de entradas): Mejoré `_extract_text_from_gemini_json` para manejar explícitamente posibles valores `None` en la cadena de acceso al JSON, reforzando la robustez ante respuestas mal formadas o truncadas de la API.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-15T10:53:28` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` verificando que las rutas analizadas no sean puntos de reparse (junctions/reparse points), evitando así la entrada en bucles infinitos o el acceso a zonas fuera del alcance esperado del escaneo.
 - `2026-10-15T10:44:30` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` añadiendo una comprobación explícita mediante `is_protected_path` antes de proceder, garantizando que ninguna ruta de sistema sea el objetivo de escritura, además de asegurar que la validación de directorios sea consistente con la política de seguridad del proyecto.
 - `2026-10-15T10:44:11` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva al validar que `context_as_text` no filtre información sensible (como rutas de sistema o caracteres de control) en el contexto generado, garantizando que el serializado sea estrictamente numérico y seguro antes de llegar al motor remoto.
-- `2026-10-15T10:43:00` **settings.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar colisiones de concurrencia y corrupción al detectar que el archivo de configuración es un enlace simbólico o un punto de reparse antes de abrirlo, fortaleciendo el `_read_and_parse_json` ante condiciones de carrera en el sistema de archivos.
-- `2026-10-15T10:34:35` **scanner.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas que contienen caracteres de control Unicode no visibles (incluyendo el espacio de no separación y otros caracteres de control) que podrían ser usados para ofuscar nombres de archivos, evitando errores de resolución y riesgos de seguridad en el escaneo.
-- `2026-10-15T10:34:11` **safety.py** (robustez ante casos límite): Se ha añadido una validación de redundancia de rutas para evitar ataques de denegación de servicio o errores por recursión circular, detectando si un componente de la ruta es un punto de reparse que apunta a un padre de sí mismo antes de proceder con cualquier operación de E/S.

@@ -371,8 +371,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 def _render_bar(points: int, max_val: int) -> str:
     """Crea una representación visual de barra para reportes."""
     try:
-        p = max(0, min(int(points), int(max_val)))
         if max_val <= 0: return ".........."
+        p = max(0, min(int(points), int(max_val)))
         return "#" * p + "." * (max_val - p)
     except (TypeError, ValueError):
         return ".........."

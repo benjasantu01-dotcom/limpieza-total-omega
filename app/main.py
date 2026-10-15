@@ -1612,6 +1612,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showinfo("Falta el ID", "Pegá el ID del archivo que querés restaurar.")
             return
         
+        # Sanitizar ID para evitar inyección de caracteres o rutas
         clean_id = "".join(c for c in raw_id if c.isalnum() or c == "-")
         
         def task() -> None:
@@ -1651,6 +1652,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
+            # Re-verificar estado justo antes de la operación destructiva
             actual = quarantine.list_items()
             if not actual:
                 self._safe_run_ui_callback(lambda: self.log("La cuarentena ya estaba vacía.", "Cuarentena"))

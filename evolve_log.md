@@ -660,3 +660,11 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-10-15T12:46:33` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `hash_file` y `partial_hash` al centralizar la validación de archivos, reemplazando chequeos condicionales redundantes por el uso consistente de `is_safe_to_modify` y capturando excepciones de forma específica para evitar interrupciones no controladas durante el procesamiento.
 - `2026-10-15T12:46:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T12:46:33` Corrida terminada. Total usado hoy: 304.
+- `2026-10-15T12:54:55` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-15T12:55:26` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `summarize` y `_render_bar` validando explícitamente el acceso a las claves del diccionario `breakdown` y asegurando que las divisiones por cero en el renderizado de barras no causen fallos, garantizando que el informe sea siempre generable aunque falten datos parciales.
+- `2026-10-15T12:56:33` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `on_restore_quarantine` y `on_purge_quarantine` implementando una validación de estado pre-ejecución más estricta que evita condiciones de carrera, capturando específicamente errores de formato en el ID y asegurando la integridad de la UI antes de actualizar el log.
+- `2026-10-15T12:57:00` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-15T12:57:01` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-15T12:57:15` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez en la validación de parámetros de entrada en las funciones públicas `scan_for_junk`, `stage_for_review` y `delete_reviewed`, reemplazando chequeos implícitos por validaciones explícitas que previenen errores inesperados en tiempo de ejecución.
+- `2026-10-15T12:57:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T12:57:15` Corrida terminada. Total usado hoy: 308.
