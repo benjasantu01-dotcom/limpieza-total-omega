@@ -324,8 +324,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     Computa el puntaje global recorriendo el pipeline de normalizadores y reglas.
     """
     m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
-    m.validate()
     
+    # Validamos métricas solo si es necesario (SystemMetrics realiza validación en __post_init__)
     if not m.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Métricas inestables detectadas."])
         
@@ -378,9 +378,11 @@ def summarize(result: HealthResult | None) -> List[str]:
     
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
-    for area in WEIGHTS:
+    # Iterar directamente sobre las claves del pipeline para orden y eficiencia
+    for entry in _PIPELINE:
+        area = entry.area
         p = result.breakdown.get(area, 0)
-        maximo = WEIGHTS.get(area, 1)
+        maximo = entry.weight
         lines.append(f"  {area.capitalize():<12} {p:>2}/{maximo:<2} [{_render_bar(p, maximo)}]")
     
     lines.extend(("", "Recomendaciones:", *(f"  - {s}" for s in (_sanitize_msg(r) for r in result.recommendations) if s)))
