@@ -221,7 +221,7 @@ def grade_color(grade: Optional[str]) -> ColorHex: return GRADE_COLORS.get(grade
 
 @lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> ColorHex:
-    """Retorna el color asociado al puntaje dado según umbrales predefinidos."""
+    """Calcula el color representativo de un puntaje basado en umbrales definidos."""
     if score is None: return C_TEXT_MUTED
     try:
         valor = float(score)
@@ -233,7 +233,7 @@ def score_color(score: Union[float, int, None]) -> ColorHex:
 
 @lru_cache(maxsize=64)
 def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588", empty: str = "\u2591") -> str:
-    """Genera una representación textual de barra de progreso basada en porcentaje."""
+    """Genera una cadena representativa de barra de carga según un porcentaje dado."""
     try:
         valor = float(percent) if percent is not None else 0.0
         ancho = max(1, int(width))
@@ -256,7 +256,7 @@ def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
 
 @lru_cache(maxsize=256)
 def blend(start: str, end: str, ratio: float) -> ColorHex:
-    """Interpola linealmente entre dos colores según un ratio [0.0, 1.0]."""
+    """Realiza una interpolación lineal entre dos colores hexadecimales dado un factor [0.0, 1.0]."""
     try:
         r1, g1, b1 = _hex_to_rgb(start)
         r2, g2, b2 = _hex_to_rgb(end)
@@ -266,7 +266,7 @@ def blend(start: str, end: str, ratio: float) -> ColorHex:
 
 @lru_cache(maxsize=128)
 def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, ...]:
-    """Agrupa colores consecutivos idénticos para optimizar el dibujo de canvas."""
+    """Agrupa colores consecutivos idénticos para reducir la complejidad de dibujo en Canvas."""
     if not colors: return ()
     segments = []
     curr, start = colors[0], 0
@@ -279,7 +279,7 @@ def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, .
 
 @lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
-    """Genera una secuencia de colores interpolados para formar un gradiente."""
+    """Crea una secuencia de colores interpolados entre puntos de control definidos."""
     n = max(1, int(steps))
     n_stops = len(stops)
     rgb_stops = [_hex_to_rgb(s) for s in stops]
@@ -295,7 +295,7 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
 
 @lru_cache(maxsize=64)
 def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorSegment, ...]:
-    """Retorna segmentos de colores listos para ser dibujados en un Canvas."""
+    """Retorna segmentos calculados para un gradiente listos para ser dibujados."""
     return _get_grouped_segments(gradient_colors(steps, stops))
 
 SHIELD_BASE_COORDS: Final[CoordinateSequence] = (64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
@@ -306,12 +306,12 @@ def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
 
 @lru_cache(maxsize=8)
 def logo_svg(size: int = 128) -> str:
-    """Genera la representación SVG completa del logo corporativo."""
+    """Genera la representación SVG completa del logo corporativo parametrizada por tamaño."""
     s = max(16, min(1024, int(size)))
     return _SVG_TEMPLATE.format(s=s, stops=_SVG_GRADIENT_STOPS, glow=C_GLOW, bg=C_SURFACE, font=UI_CONFIG.font_family)
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optional[Path]:
-    """Guarda el logo vectorial en la ruta especificada tras validar seguridad."""
+    """Guarda el logo vectorial tras validar la seguridad de la ruta de destino."""
     if not destination:
         return None
     try:
@@ -364,7 +364,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     except Exception: pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Dibuja el escudo del logo de la aplicación en el widget Canvas proporcionado."""
+    """Dibuja el escudo vectorial de la marca en un widget Canvas determinado."""
     try:
         s = max(0.1, min(10.0, float(size) / 128.0))
         canvas.create_oval(canvas_x+(64-75)*s, canvas_y+(58-75)*s, canvas_x+(64+75)*s, canvas_y+(58+75)*s, fill=blend(C_SURFACE, C_GLOW, 0.15), outline="")
@@ -374,7 +374,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except Exception: pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una barra con gradiente en el canvas para elementos decorativos de UI."""
+    """Dibuja una línea decorativa con gradiente horizontal en el canvas."""
     try:
         segments = get_gradient_segments(max(1, width), stops)
         for s in segments:
@@ -382,7 +382,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except Exception: pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """Dibuja un anillo de progreso (gráfico circular) indicativo de estado."""
+    """Dibuja un indicador circular de progreso (anillo) para métricas de estado."""
     try:
         val = max(0.0, min(100.0, float(percent or 0.0)))
         d = max(20, min(2048, int(size)))

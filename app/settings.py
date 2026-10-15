@@ -387,7 +387,8 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
             fcntl.flock(f.fileno(), fcntl.LOCK_UN)
             
             if not content or len(content) > MAX_SETTINGS_SIZE: return None
-            return json.loads(content)
+            data = json.loads(content)
+            return data if _is_dict(data) else None
     except (OSError, IOError, PermissionError, AttributeError, RuntimeError, json.JSONDecodeError, ValueError): 
         return None
 

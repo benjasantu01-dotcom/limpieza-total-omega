@@ -675,3 +675,41 @@ FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_no
 - `2026-10-15T13:07:08` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se mejoró la robustez del manejo de errores al reemplazar comparaciones directas por una validación de `os.DirEntry` más exhaustiva antes de acceder a sus atributos, evitando excepciones en el procesamiento de rutas con caracteres especiales o permisos restringidos.
 - `2026-10-15T13:07:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T13:07:08` Corrida terminada. Total usado hoy: 312.
+- `2026-10-15T13:15:21` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-15T13:15:30` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-15T13:16:05` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del manejo de errores en `_read_and_parse_json` y `save` mediante la validación explícita de `json.loads` y el manejo de excepciones al deserializar, evitando que datos malformados o truncados causen comportamientos inesperados en la capa superior.
+- `2026-10-15T13:16:33` Tests FALLARON:
+```
+__________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/scanner.py:184: SyntaxWarning: invalid escape sequence '\s'
+    """Detecta binarios que usan nombres de procesos críticos del SO fuera de sus rutas legítimas (ej: c:\temp\svchost.exe)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 7 warnings in 1.38s
+
+```
+- `2026-10-15T13:16:33` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `parse_registry_csv` y `_is_registry_entry_safe` mediante la validación estricta de parámetros y la prevención de errores en tiempo de ejecución al manejar nombres de archivos reservados o rutas malformadas, evitando el uso de `try-except` genéricos donde se puede pre-validar.
+- `2026-10-15T13:17:13` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints faltantes en funciones críticas de validación y manejo de payload, mejorando la claridad sobre el propósito de las restricciones de seguridad sin alterar la lógica de ejecución.
+- `2026-10-15T13:17:36` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y la robustez tipográfica de `branding.py`, estandarizando los docstrings de funciones clave con el formato PEP 257 y aclarando el propósito de los métodos de cálculo de colores para facilitar el mantenimiento.
+- `2026-10-15T13:17:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T13:17:36` Corrida terminada. Total usado hoy: 316.

@@ -102,7 +102,7 @@ def _check_metric_integrity(val: Any) -> bool:
     return isinstance(val, (int, float)) and not isinstance(val, bool) and math.isfinite(val) and not math.isnan(val)
 
 def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
-    """Helper para validar si un valor puede convertirse en una métrica numérica segura."""
+    """Valida si un valor puede convertirse en una métrica numérica segura dentro de límites esperados."""
     try:
         f: float = float(val)
         if math.isfinite(f) and spec.is_valid_type(f) and _is_metric_within_bounds(f, spec):
@@ -315,7 +315,7 @@ def _validate_response_length(text: Any) -> str:
     return text[:_MAX_TEXT_LENGTH]
 
 def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
-    """Valida la estructura del JSON remoto para impedir ataques de desbordamiento."""
+    """Valida la estructura del JSON remoto para impedir ataques de desbordamiento (depth check)."""
     if depth > _MAX_NESTING_DEPTH: return False
     if val is None or isinstance(val, (int, float, bool, str)): return True
     if isinstance(val, (list, tuple, set)):
@@ -327,7 +327,7 @@ def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
     return False
 
 def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
-    """Detecta si una estructura de datos excede los límites de profundidad o complejidad."""
+    """Detecta si una estructura de datos excede los límites de profundidad o complejidad permitidos."""
     if depth > _MAX_NESTING_DEPTH: return True
     if val is None or isinstance(val, (int, float, bool, str)): return False
     if isinstance(val, (list, tuple, set)):
@@ -397,7 +397,7 @@ class SystemContext:
         return _ensure_safe_text(self.grade) if self.grade else True
 
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
-        """Valida, convierte y verifica límites de un campo individual."""
+        """Valida, convierte y verifica límites de un campo individual según su especificación."""
         val: Any = _get_source_value(source, key)
         if val is None or not isinstance(val, (int, float, str)):
             return None
@@ -412,7 +412,7 @@ class SystemContext:
         return clean if _ensure_safe_text(clean) else ""
 
     def _validate_ingestion_source(self, source: Any) -> bool:
-        """Realiza comprobaciones de seguridad sobre el objeto fuente."""
+        """Realiza comprobaciones de seguridad sobre el objeto fuente (estructura y profundidad)."""
         if source is None: return False
         if isinstance(source, dict):
             return not _is_input_too_deep_or_complex(source)
@@ -467,7 +467,7 @@ def _is_safe_path_input(text: str) -> bool:
     return bool(_REGEX_STRUCTURE_INJECTION.search(text) or _REGEX_PATH_TRAVERSAL.search(text) or _REGEX_SYSTEM_PATHS.search(text))
 
 def _contains_forbidden_patterns(text: str) -> bool:
-    """Verifica si el texto contiene patrones de seguridad prohibidos."""
+    """Verifica si el texto contiene patrones de seguridad prohibidos definidos en las expresiones regulares."""
     return any(pattern.search(text) for pattern in SECURITY_PATTERNS)
 
 def _ensure_safe_text(text: Any) -> bool:
@@ -707,7 +707,7 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     return None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
-    """Realiza una petición POST segura a la API de Google."""
+    """Realiza una petición POST segura a la API de Google verificando integridad de la URL."""
     if not isinstance(api_key, str) or not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model) or not context_text:
         return None
     payload: Optional[bytes] = _build_payload(question, context_text)
