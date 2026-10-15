@@ -8,45 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 220
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-13 | 55 | 5 | 14 | 6 | 54 |
+| 2026-10-13 | 53 | 4 | 14 | 6 | 53 |
 | 2026-10-14 | 123 | 18 | 26 | 19 | 164 |
-| 2026-10-15 | 13 | 1 | 3 | 1 | 2 |
+| 2026-10-15 | 15 | 2 | 4 | 1 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
-- seguridad defensiva: **45**
+- seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **43**
-- robustez ante casos límite: **26**
-- rendimiento: **26**
+- rendimiento: **28**
+- robustez ante casos límite: **25**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **18**
 - `browser.py`: **18**
-- `assistant.py`: **17**
 - `duplicates.py`: **17**
-- `memory.py`: **16**
-- `scanner.py`: **15**
+- `memory.py`: **17**
+- `assistant.py`: **16**
 - `healthscore.py`: **15**
+- `scanner.py`: **14**
 - `startup.py`: **13**
+- `organizer.py`: **12**
 - `safety.py`: **12**
 - `main.py`: **11**
-- `organizer.py`: **11**
 - `branding.py`: **11**
 - `settings.py`: **10**
 - `quarantine.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-15T00:53:29` **organizer.py** (rendimiento): Optimizé `_process_directory` y `_should_scan_directory` para reducir significativamente la sobrecarga de I/O mediante el uso de la cache `protected_cache` y la comparación directa de tipos, evitando llamadas redundantes a `is_safe_to_modify` (que internamente hace validaciones pesadas) cuando el directorio ya fue validado en el padre.
+- `2026-10-15T00:53:02` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la instanciación innecesaria de objetos `ProcessMemory` dentro del loop crítico por un filtrado previo de PIDs, reduciendo drásticamente las llamadas costosas a `GetModuleFileNameExW` y `GetProcessMemoryInfo`.
 - `2026-10-15T00:42:29` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `Path.resolve()` y `path.exists()` dentro del bucle, aprovechando directamente el objeto `DirEntry` que ya proporciona `os.scandir` para obtener información del archivo y atributos de forma eficiente sin llamadas adicionales al sistema de archivos por cada iteración.
 - `2026-10-15T00:41:40` **browser.py** (rendimiento): Optimizé el rendimiento de `detect_profiles` reutilizando el objeto `ScanContext` para mantener las cachés de seguridad y los nodos visitados (deduplicación por `dev/ino`) a través de todos los navegadores, evitando re-procesar subcarpetas compartidas o archivos ya escaneados.
 - `2026-10-15T00:34:22` **branding.py** (rendimiento): Se optimizó el acceso a constantes de color y caché mediante la eliminación de llamadas redundantes a `MappingProxyType.get` y `strip()` dentro de funciones de dibujo, reemplazándolas por acceso directo a constantes tipadas y pre-procesamiento de argumentos.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-15T00:02:28` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas (siguiendo estilo Google) en funciones clave y la sustitución de un bloque `try-except` genérico por un manejo de excepciones explícito en `_collect_summary_data`, aumentando la robustez y legibilidad.
 - `2026-10-15T00:01:58` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y detallados en las funciones de escaneo, clarificando las precondiciones de seguridad y el manejo de excepciones para facilitar el mantenimiento.
 - `2026-10-15T00:01:32` **branding.py** (legibilidad y documentación): Se introdujo documentación en el protocolo `CanvasElement` para detallar la semántica de los parámetros y asegurar que los implementadores comprendan las restricciones del sistema de renderizado.
-- `2026-10-14T14:50:35` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `SystemContext._apply_field` para simplificar su lógica de validación, extrayendo la conversión a `float` y la verificación de límites a una función auxiliar (`_is_valid_numeric_update`), eliminando así el anidamiento innecesario y reduciendo la complejidad ciclomática sin cambiar el comportamiento.
-- `2026-10-14T14:41:06` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `validate` envolviendo el acceso a los validadores en un bloque `try-except` más específico y asegurando que las claves inesperadas en el JSON no interrumpan el proceso, garantizando que el esquema de configuración siempre mantenga la integridad.

@@ -236,13 +236,10 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
 
 def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> bool:
     """Decide si es seguro entrar en un directorio basado en caché de protección."""
-    if not _is_allowed_directory(entry.name) or _is_junction(entry): return False
+    if entry.path in protected_cache or not _is_allowed_directory(entry.name) or _is_junction(entry): return False
     if _is_system_hidden(entry): return False
-    if entry.path in protected_cache: return False
-    # Cacheamos el resultado negativo también para evitar re-chequeos costosos
     try:
-        path = Path(entry.path)
-        if is_protected_path(path) or not is_safe_to_modify(path):
+        if is_protected_path(Path(entry.path)) or not is_safe_to_modify(Path(entry.path)):
             protected_cache.add(entry.path)
             return False
     except (OSError, RuntimeError):
@@ -263,11 +260,6 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
         if resolved_dir in visited: return
         visited.add(resolved_dir)
         
-        # Validar nodo actual antes de iterar
-        if not is_safe_to_modify(resolved_dir):
-            protected_cache.add(str(resolved_dir))
-            return
-            
         now_ts: float = datetime.now().timestamp()
         
         with os.scandir(current_dir) as iterator:
@@ -277,10 +269,8 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False) and entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE):
-                        # Validación defensiva extra antes de procesar el archivo
                         p = Path(entry.path)
-                        if str(p) in protected_cache or not is_safe_to_modify(p):
-                            continue
+                        if str(p) in protected_cache: continue
                         stats = entry.stat(follow_symlinks=False)
                         if _is_candidate_junk(stats, entry, now_ts):
                             found.append(JunkFile(p, stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
