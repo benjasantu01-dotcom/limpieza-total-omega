@@ -33,7 +33,7 @@ from pathlib import Path
 from functools import lru_cache
 from dataclasses import dataclass, field
 from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, Final, Set, NewType, Any, NamedTuple
-from safety import is_protected_path, filter_safe_paths
+from safety import is_protected_path
 
 if TYPE_CHECKING:
     from ctypes import wintypes
@@ -389,9 +389,7 @@ def _is_process_executable_safe(pid: int) -> bool:
                 return False
             
             # Valida contra protección sin resolver enlaces (evita E/S bloqueante y escapes)
-            if is_protected_path(path_str):
-                return False
-            return len(filter_safe_paths([path_str])) > 0
+            return not is_protected_path(path_str)
     except (ctypes.ArgumentError, OSError, ValueError, RuntimeError):
         return False
     finally:

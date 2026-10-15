@@ -628,3 +628,14 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-15T01:54:30` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `_is_excluded_path` añadiendo una comprobación explícita para evitar que `Path.resolve()` se ejecute sobre rutas con caracteres malformados que podrían desencadenar excepciones inesperadas, y se ha consolidado el uso de `os.stat` para validar el acceso real antes de realizar operaciones de comparación sobre la ruta.
 - `2026-10-15T01:54:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T01:54:30` Corrida terminada. Total usado hoy: 48.
+- `2026-10-15T02:02:36` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-10-15T02:03:05` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `is_system_or_hidden` y `is_junction` para utilizar una validación previa más robusta y consistente con las restricciones de la API de Windows, evitando consultas innecesarias en rutas que `safety.py` ya ha marcado como potencialmente problemáticas.
+- `2026-10-15T02:03:33` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: SystemMetrics.__post_init__, SystemMetrics.safe_get, SystemMetrics.validate
+- `2026-10-15T02:04:33` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-15T02:05:36` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-15T02:06:42` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-15T02:07:42` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): el archivo se encogió al 52% del original (posible pérdida de código)
+- `2026-10-15T02:08:42` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-15T02:09:00` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad en `_is_process_executable_safe` reemplazando la lógica de filtrado de listas por una validación booleana directa con `is_protected_path`, garantizando que ningún proceso que resida en rutas protegidas sea candidato para operaciones de gestión de memoria, cumpliendo estrictamente con las reglas de seguridad defensiva.
+- `2026-10-15T02:09:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T02:09:00` Corrida terminada. Total usado hoy: 52.

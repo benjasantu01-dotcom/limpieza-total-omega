@@ -52,8 +52,8 @@ ERROR_ACCESS_DENIED: int = 5
 
 def is_junction(path: Path) -> bool:
     """Verifica si la ruta es un punto de reanálisis (Junction/Symlink)."""
-    if not isinstance(path, Path) or not is_safe_to_modify(path) or not path.exists():
-        return False
+    if not is_safe_to_modify(path):
+        return True
     if path.is_symlink():
         return True
     try:
@@ -65,7 +65,7 @@ def is_junction(path: Path) -> bool:
 
 def is_system_or_hidden(path: Path) -> bool:
     """Verifica si un archivo posee atributos de sistema u oculto mediante Win32 API."""
-    if not isinstance(path, Path) or not is_safe_to_modify(path) or not path.exists():
+    if not is_safe_to_modify(path):
         return True
     try:
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
@@ -98,7 +98,7 @@ class DuplicateGroup:
 
 def _is_file_locked(path: Path) -> bool:
     """Intenta validar si el archivo es accesible para lectura exclusiva."""
-    if not isinstance(path, Path) or not is_safe_to_modify(path):
+    if not is_safe_to_modify(path):
         return True
     if not os.access(path, os.R_OK):
         return True
@@ -111,22 +111,19 @@ def _is_file_locked(path: Path) -> bool:
 
 def _safe_path_check(path: Path) -> bool:
     """Gatekeeper: valida que la ruta sea segura, no protegida y navegable."""
-    if not isinstance(path, Path):
-        return False
     try:
         if not path.exists():
             return False
         return (is_safe_to_modify(path) and 
                 not is_protected_path(path) and 
-                not is_junction(path) and 
-                not path.is_symlink())
+                not is_junction(path))
     except (OSError, RuntimeError, PermissionError, AttributeError):
         return False
 
 
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """Determina si un archivo es apto para ser analizado según políticas de seguridad."""
-    if not isinstance(path, Path) or st_size <= 0:
+    if st_size <= 0:
         return False
     if is_protected_path(path) or not _safe_path_check(path) or is_system_or_hidden(path):
         return False
