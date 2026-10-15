@@ -998,3 +998,33 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-10-15T05:28:57` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se ha optimizado el rendimiento del proceso de escaneo reemplazando las llamadas redundantes a `is_protected_path` por la consulta directa a la caché `_cached_is_protected` dentro de `process_entry`, evitando syscalls innecesarias durante la recursión.
 - `2026-10-15T05:28:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T05:28:57` Corrida terminada. Total usado hoy: 132.
+- `2026-10-15T05:36:36` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-10-15T05:37:19` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de la persistencia mediante la eliminación de una comprobación redundante de espacio en disco que realizaba una llamada `shutil.disk_usage` (lenta e intensiva) en cada operación `save`, reemplazándola con un manejo de errores más eficiente que permite que la operación falle de forma natural mediante `OSError` si el disco está lleno, lo cual es más rápido y sigue siendo seguro.
+- `2026-10-15T05:38:19` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-15T05:38:47` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._extract_quoted_path, StartupEntry._is_valid_executable, StartupEntry._sanitize_command
+- `2026-10-15T05:38:55` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-15T05:40:02` Tests FALLARON:
+```
+ror: assert 0.0 == 100.0
+E        +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+
+evolve/tests/test_assistant.py:234: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:358: SyntaxWarning: invalid escape sequence '\)'
+    """Comprueba si la ruta accede directamente a dispositivos (namespace \\.\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_one - AssertionError: assert 0.0 == 100.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+1 failed, 298 passed, 4 warnings in 1.58s
+
+```
+- `2026-10-15T05:40:02` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para manejar correctamente objetos de configuración (`settings.load`), garantizando que la profundidad y el tamaño de las colecciones se verifiquen antes de cualquier intento de serialización o procesamiento, evitando fallos ante configuraciones inesperadas.
+- `2026-10-15T05:40:23` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-10-15T05:40:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T05:40:23` Corrida terminada. Total usado hoy: 136.

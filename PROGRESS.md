@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
-- Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 46
-- Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 224
+- Mejoras aceptadas: **182** (36.1% de aceptación)
+- Rechazadas por tests: 28
+- Rechazadas por guardia de seguridad: 47
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-13 | 6 | 1 | 1 | 1 | 13 |
+| 2026-10-13 | 3 | 1 | 1 | 0 | 13 |
 | 2026-10-14 | 123 | 18 | 26 | 19 | 164 |
-| 2026-10-15 | 55 | 8 | 19 | 3 | 47 |
+| 2026-10-15 | 56 | 9 | 20 | 3 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
-- seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **40**
-- rendimiento: **30**
+- seguridad defensiva: **37**
+- rendimiento: **31**
 - robustez ante casos límite: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **18**
-- `duplicates.py`: **17**
 - `diskreport.py`: **17**
+- `memory.py`: **17**
 - `browser.py`: **16**
+- `duplicates.py`: **16**
 - `assistant.py`: **15**
-- `healthscore.py`: **14**
 - `scanner.py`: **14**
+- `healthscore.py`: **13**
 - `startup.py`: **12**
 - `main.py`: **12**
+- `settings.py`: **12**
 - `safety.py`: **11**
-- `settings.py`: **11**
 - `quarantine.py`: **9**
 - `organizer.py`: **9**
 - `branding.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-15T05:37:19` **settings.py** (rendimiento): Optimicé el rendimiento de la persistencia mediante la eliminación de una comprobación redundante de espacio en disco que realizaba una llamada `shutil.disk_usage` (lenta e intensiva) en cada operación `save`, reemplazándola con un manejo de errores más eficiente que permite que la operación falle de forma natural mediante `OSError` si el disco está lleno, lo cual es más rápido y sigue siendo seguro.
 - `2026-10-15T05:28:57` **scanner.py** (rendimiento): Se ha optimizado el rendimiento del proceso de escaneo reemplazando las llamadas redundantes a `is_protected_path` por la consulta directa a la caché `_cached_is_protected` dentro de `process_entry`, evitando syscalls innecesarias durante la recursión.
 - `2026-10-15T05:27:20` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto eliminando la reconstrucción innecesaria de objetos `QuarantineItem` cuando la caché es válida, reduciendo el consumo de CPU y memoria en operaciones frecuentes de listado.
 - `2026-10-15T05:18:26` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` pre-asignando el tamaño del buffer de PIDs para evitar redimensionamientos y reduciendo la cantidad de llamadas al sistema mediante una verificación temprana de seguridad (`is_protected_path`) antes de realizar la costosa operación de `OpenProcess` para obtener el ejecutable.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-15T04:27:05` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `_is_excluded_path` y `_collect_summary_data` mediante la adición de docstrings técnicos, tipado explícito y la simplificación de lógicas de control para hacer evidente la intención del código frente a posibles casos de borde en sistemas de archivos.
 - `2026-10-15T04:26:54` **browser.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con secciones de "Parámetros" y "Retorno" en las funciones críticas de escaneo recursivo para mejorar la legibilidad técnica, alineándose con el enfoque de documentación requerido sin alterar la funcionalidad.
 - `2026-10-15T04:26:27` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en las funciones de manipulación cromática (`blend`, `_hex_to_rgb`, `_rgb_to_hex`) para clarificar el manejo de espacios de color y se han añadido anotaciones de tipo más específicas en la lógica de gradientes para facilitar el mantenimiento.
-- `2026-10-15T04:18:43` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `StartupEntry._extract_quoted_path` al incluir validación de `None` y tipos, y un manejo de errores más específico para prevenir excepciones inesperadas durante el procesamiento de rutas, alineándome con el enfoque de validación defensiva.
