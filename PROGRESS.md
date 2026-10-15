@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
-- Rechazadas por tests: 29
-- Rechazadas por guardia de seguridad: 48
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 218
+- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Rechazadas por tests: 30
+- Rechazadas por guardia de seguridad: 49
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-14 | 63 | 11 | 11 | 8 | 83 |
-| 2026-10-15 | 129 | 18 | 37 | 9 | 135 |
+| 2026-10-14 | 60 | 11 | 11 | 8 | 82 |
+| 2026-10-15 | 130 | 19 | 38 | 10 | 135 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - seguridad defensiva: **42**
-- robustez ante casos límite: **40**
 - manejo de errores y validación de entradas: **38**
-- rendimiento: **25**
+- robustez ante casos límite: **37**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **17**
-- `memory.py`: **17**
 - `assistant.py`: **16**
 - `diskreport.py`: **16**
+- `healthscore.py`: **16**
+- `memory.py`: **16**
 - `duplicates.py`: **16**
 - `browser.py`: **15**
-- `main.py`: **14**
 - `settings.py`: **14**
 - `scanner.py`: **14**
-- `branding.py`: **12**
+- `branding.py`: **13**
+- `main.py`: **13**
 - `quarantine.py`: **12**
 - `organizer.py`: **11**
 - `safety.py`: **11**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-15T13:58:03` **branding.py** (rendimiento): Se optimizó el proceso de interpolación de colores en `gradient_colors` eliminando cálculos redundantes de punto flotante y operaciones de división dentro del bucle, sustituyéndolos por aritmética entera y pre-calculos de pasos, mejorando el rendimiento en tareas de renderizado frecuentes.
 - `2026-10-15T13:47:44` **scanner.py** (legibilidad y documentación): Se han añadido type hints más precisos (usando `Optional` y `TypeAlias`), se ha documentado la interfaz `SuspicionCheck` con mayor detalle sobre sus restricciones de pureza, y se ha clarificado la intención del método `process_entry` mediante un docstring más descriptivo, mejorando la legibilidad técnica del flujo principal de escaneo.
 - `2026-10-15T13:47:15` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo agregando type hints consistentes en funciones críticas y documentando con mayor precisión el propósito de los validadores y las constantes de error, facilitando futuras auditorías de seguridad.
 - `2026-10-15T13:37:16` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos detallados en funciones críticas de E/S, aclarando el propósito y las restricciones de seguridad que garantizan el cumplimiento de las reglas del proyecto.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-15T13:06:56` **safety.py** (manejo de errores y validación de entradas): Se introdujo una validación más granular en `_get_file_attrs` y `_get_path_stat_robust` para capturar específicamente `WindowsError` (a través de `OSError.winerror`) y mejorar la diferenciación entre archivos inexistentes y errores de acceso, evitando capturas genéricas que oculten fallos de lógica durante la validación.
 - `2026-10-15T12:57:15` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en la validación de parámetros de entrada en las funciones públicas `scan_for_junk`, `stage_for_review` y `delete_reviewed`, reemplazando chequeos implícitos por validaciones explícitas que previenen errores inesperados en tiempo de ejecución.
 - `2026-10-15T12:56:33` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_restore_quarantine` y `on_purge_quarantine` implementando una validación de estado pre-ejecución más estricta que evita condiciones de carrera, capturando específicamente errores de formato en el ID y asegurando la integridad de la UI antes de actualizar el log.
-- `2026-10-15T12:55:26` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `_render_bar` validando explícitamente el acceso a las claves del diccionario `breakdown` y asegurando que las divisiones por cero en el renderizado de barras no causen fallos, garantizando que el informe sea siempre generable aunque falten datos parciales.

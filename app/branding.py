@@ -279,18 +279,23 @@ def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, .
 
 @lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
-    """Crea una secuencia de colores interpolados entre puntos de control definidos."""
+    """Crea una secuencia de colores interpolados entre puntos de control definidos mediante aritmética entera optimizada."""
     n = max(1, int(steps))
     n_stops = len(stops)
+    if n_stops < 2: return (stops[0],) * n
     rgb_stops = [_hex_to_rgb(s) for s in stops]
     res = []
+    range_steps = n - 1 if n > 1 else 1
     for i in range(n):
-        ratio = i / (n - 1) if n > 1 else 0
-        pos = ratio * (n_stops - 1)
+        pos = (i * (n_stops - 1)) / range_steps
         idx = min(int(pos), n_stops - 2)
-        delta = pos - idx
+        delta = int((pos - idx) * 1024)
         s1, s2 = rgb_stops[idx], rgb_stops[idx + 1]
-        res.append(_rgb_to_hex((int(s1[0]+(s2[0]-s1[0])*delta), int(s1[1]+(s2[1]-s1[1])*delta), int(s1[2]+(s2[2]-s1[2])*delta))))
+        res.append(_rgb_to_hex((
+            s1[0] + ((s2[0] - s1[0]) * delta) // 1024,
+            s1[1] + ((s2[1] - s1[1]) * delta) // 1024,
+            s1[2] + ((s2[2] - s1[2]) * delta) // 1024
+        )))
     return tuple(res)
 
 @lru_cache(maxsize=64)
@@ -376,7 +381,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
     """Dibuja una línea decorativa con gradiente horizontal en el canvas."""
     try:
-        segments = get_gradient_segments(max(1, width), stops)
+        segments = get_gradient_segments(max(1, width))
         for s in segments:
             canvas.create_line(canvas_x + s.start_index, canvas_y, canvas_x + s.end_index, canvas_y, fill=s.hex_color, width=max(1, height))
     except Exception: pass

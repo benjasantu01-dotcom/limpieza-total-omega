@@ -740,3 +740,22 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-15T13:48:15` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult, _ValidatorEntry, _Validators._check_path_safety, _Validators._is_safe_path, _Validators._validate_enum_str
 - `2026-10-15T13:48:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T13:48:16` Corrida terminada. Total usado hoy: 328.
+- `2026-10-15T13:56:10` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-15T13:56:45` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-15T13:57:26` Tests FALLARON:
+```
+ basura, 900 MB en duplicados.'
+ +  where 'Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 MB en duplicados.' = Answer(text='Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 M...lo más urgente que debería arreglar?', '¿Por qué mi PC está lenta?', '¿Es seguro borrar lo que encontró la limpieza?']).text
+FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_explains_they_are_signals - AssertionError: assert 'señales' in 'con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de ram, 2400 mb de basura, 900 mb en duplicados.'
+ +  where 'con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de ram, 2400 mb de basura, 900 mb en duplicados.' = <built-in method lower of str object at 0x7f163511da50>()
+ +    where <built-in method lower of str object at 0x7f163511da50> = 'Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 MB en duplicados.'.lower
+ +      where 'Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 MB en duplicados.' = Answer(text='Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 M...lo más urgente que debería arreglar?', '¿Por qué mi PC está lenta?', '¿Es seguro borrar lo que encontró la limpieza?']).text
+2 failed, 297 passed, 7 warnings in 0.93s
+
+```
+- `2026-10-15T13:57:26` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Optimicé el método `local_answer` reemplazando la iteración lineal sobre `_TOKEN_KEYS` por una búsqueda directa en el diccionario, evitando el ciclo `for` y mejorando la eficiencia algorítmica al aprovechar la naturaleza $O(1)$ de los diccionarios.
+- `2026-10-15T13:57:28` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-15T13:58:03` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el proceso de interpolación de colores en `gradient_colors` eliminando cálculos redundantes de punto flotante y operaciones de división dentro del bucle, sustituyéndolos por aritmética entera y pre-calculos de pasos, mejorando el rendimiento en tareas de renderizado frecuentes.
+- `2026-10-15T13:58:13` ➖ Sin cambios en browser.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de caché (`memoization`) para las validaciones de `is_safe_to_modify` dentro de `ScanContext`, evitando realizar llamadas repetitivas de verificación de seguridad sobre el mismo directorio padre durante la recursión, lo cual reduce significativamente la carga de I/O en escaneos profundos.
+- `2026-10-15T13:58:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T13:58:13` Corrida terminada. Total usado hoy: 332.
