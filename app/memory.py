@@ -19,7 +19,7 @@ Así que este módulo hace lo que sí sirve:
 
 Diseño para que se pueda testear: las funciones que interpretan datos
 reciben el texto crudo por parámetro (`parse_*`, `_read_meminfo_text`), así
-la lógica se prueba en CI sobre Linux sin depender de Windows.
+ la lógica se prueba en CI sobre Linux sin depender de Windows.
 """
 
 from __future__ import annotations
@@ -59,6 +59,7 @@ FILE_ATTRIBUTE_REPARSE_POINT: Final[int] = 0x0400
 DRIVE_FIXED: Final[int] = 3
 INVALID_HANDLE_VALUE: Final[int] = -1
 
+# PIDs reservados por el kernel de Windows que no deben ser consultados.
 SYSTEM_CRITICAL_PIDS: Final[Set[int]] = {0, 4}
 ERROR_ACCESS_DENIED: Final[int] = 5
 
@@ -298,6 +299,7 @@ def _is_process_accessible(pid: int, access_mask: int) -> Optional[int]:
     """Abre un proceso verificando que no sea restringido y devolviendo su handle."""
     if _is_system_process(pid): return None
     kernel32 = getattr(ctypes.windll, "kernel32", None)
+    # OpenProcess devuelve un HANDLE (int) o null en caso de error.
     handle = kernel32.OpenProcess(access_mask, False, pid)
     if handle is None or handle == INVALID_HANDLE_VALUE: return None
     
@@ -390,9 +392,11 @@ def _is_process_executable_safe(pid: int, handle: int) -> bool:
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return False
     
     try:
+        # Longitud máxima de ruta en Windows (PATH_MAX) suele ser 260, usamos 1024 para seguridad.
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
             path_str: str = str(buf.value).strip()
+            # Bloqueo estricto para rutas UNC o protegidas por política de seguridad del proyecto.
             return bool(path_str) and not path_str.startswith("\\\\") and not is_protected_path(path_str)
     except (ctypes.ArgumentError, OSError, ValueError, RuntimeError):
         return False
