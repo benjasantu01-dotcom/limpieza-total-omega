@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
-- Rechazadas por tests: 26
+- Mejoras aceptadas: **183** (36.3% de aceptación)
+- Rechazadas por tests: 27
 - Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-13 | 25 | 3 | 8 | 3 | 19 |
+| 2026-10-13 | 22 | 3 | 7 | 3 | 19 |
 | 2026-10-14 | 123 | 18 | 26 | 19 | 164 |
-| 2026-10-15 | 37 | 5 | 12 | 2 | 40 |
+| 2026-10-15 | 38 | 6 | 13 | 2 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **44**
-- legibilidad y documentación: **42**
-- manejo de errores y validación de entradas: **36**
+- legibilidad y documentación: **41**
+- manejo de errores y validación de entradas: **37**
 - robustez ante casos límite: **34**
-- rendimiento: **29**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **18**
 - `browser.py`: **17**
+- `memory.py`: **17**
+- `assistant.py`: **17**
 - `diskreport.py`: **17**
 - `duplicates.py`: **16**
-- `memory.py`: **16**
 - `healthscore.py`: **14**
-- `startup.py`: **13**
 - `scanner.py`: **13**
+- `startup.py`: **12**
 - `safety.py`: **12**
-- `branding.py`: **11**
 - `settings.py`: **11**
 - `main.py`: **11**
+- `branding.py`: **10**
 - `organizer.py`: **9**
 - `quarantine.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-15T04:05:36` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_linux_meminfo` mediante la validación explícita de tipos y la captura de errores al procesar el archivo `/proc/meminfo`, asegurando que valores inesperados no propaguen datos corruptos al resto del sistema.
 - `2026-10-15T03:57:16` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de los callbacks de los botones, integrando un chequeo explícito de la existencia del objeto y el estado de la aplicación mediante `@safe_ui_operation` y una comprobación interna, evitando cierres inesperados durante la ejecución de tareas asíncronas largas.
 - `2026-10-15T03:56:15` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` al reemplazar el manejo genérico de excepciones por una captura específica durante la ejecución de los normalizadores (`scorer`), evitando que un error en un área aislada degrade silenciosamente el puntaje global sin registro.
 - `2026-10-15T03:55:32` **duplicates.py** (manejo de errores y validación de entradas): Mejora la robustez de `suggest_keeper` y `format_group` mediante la validación de tipos y estados, asegurando que las operaciones sobre `group.paths` no fallen ante estados inesperados o grupos vacíos.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-15T01:53:15` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de la ingestión de datos implementando un control estricto sobre el tamaño y la estructura del diccionario `updates` dentro de `_apply_updates`, previniendo potenciales ataques de agotamiento de memoria o inyección mediante diccionarios maliciosamente grandes o profundos durante el análisis.
 - `2026-10-15T01:44:15` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` ante condiciones de concurrencia y fallos de escritura parciales, asegurando que si `os.fsync` o el reemplazo fallan, el estado original del archivo de configuración permanezca inalterado o se detecte el error en lugar de dejar un archivo corrupto o truncado.
 - `2026-10-15T01:43:45` **scanner.py** (robustez ante casos límite): Se mejora `_is_safe_entry` y `_run_file_heuristics` para robustecer la app ante archivos inexistentes o bloqueados detectados durante la iteración, evitando accesos fallidos y el uso redundante de recursos mediante una validación más estricta antes del procesamiento heurístico.
-- `2026-10-15T01:43:03` **safety.py** (robustez ante casos límite): Se introdujo una validación de `Path Traversal` más estricta en `normalize` mediante el uso de `os.path.abspath` junto con `pathlib.Path.resolve()` para asegurar que la ruta esté plenamente canonizada antes de cualquier comparación de sandbox, mitigando la posibilidad de que rutas relativas maliciosas evadan los chequeos de `is_within_directory` al resolverse de forma ambigua.
