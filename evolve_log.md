@@ -1520,3 +1520,41 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-15T09:23:14` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
 - `2026-10-15T09:23:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T09:23:14` Corrida terminada. Total usado hoy: 224.
+- `2026-10-15T09:31:04` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-10-15T09:31:07` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-15T09:31:50` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` eliminando la recreación innecesaria de la lista de sugerencias y realizando un lookup directo sobre el conjunto `_TOKEN_KEYS` antes de iterar, reduciendo ciclos de CPU y memoria en el bucle principal de consultas.
+- `2026-10-15T09:32:20` Tests FALLARON:
+```
+ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = 'no-es-color'
+
+    @lru_cache(maxsize=512)
+    def _hex_to_rgb(value: str) -> RGBTuple:
+>       val = int(value.lstrip('#'), 16)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ValueError: invalid literal for int() with base 16: 'no-es-color'
+
+app/branding.py:244: ValueError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/scanner.py:183: SyntaxWarning: invalid escape sequence '\s'
+    """Detecta binarios que usan nombres de procesos críticos del SO fuera de sus rutas legítimas (ej: c:\temp\svchost.exe)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_blend_on_invalid_color_does_not_crash - ValueError: invalid literal for int() with base 16: 'no-es-color'
+1 failed, 298 passed, 7 warnings in 1.71s
+
+```
+- `2026-10-15T09:32:20` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Optimizé la generación de gradientes en `branding.py` reemplazando el cálculo manual repetitivo en `gradient_colors` por un acceso directo a una lista precomputada (`_RGB_STOPS`), reduciendo la sobrecarga de CPU y el uso de `lru_cache` para operaciones triviales en tiempo de ejecución.
+- `2026-10-15T09:32:46` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo recursivo de directorios implementando una caché de resultados de seguridad (`safety_cache`) dentro del contexto de escaneo, evitando llamadas redundantes a `is_safe_to_modify` y `is_protected_path` para carpetas visitadas repetidamente en estructuras profundas.
+- `2026-10-15T09:32:57` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `walk_files` y `_collect_summary_data` evitando el uso innecesario de `os.stat` adicional dentro del bucle principal mediante el aprovechamiento de los datos ya obtenidos en el `os.scandir` original, reduciendo así drásticamente las llamadas al sistema (syscalls).
+- `2026-10-15T09:32:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T09:32:57` Corrida terminada. Total usado hoy: 228.

@@ -298,8 +298,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode)
                                 stack.append(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
-                            st = entry.stat(follow_symlinks=False)
-                            yield Path(entry.path), st.st_size
+                            yield Path(entry.path), entry.stat(follow_symlinks=False).st_size
                     except (OSError, PermissionError):
                         continue
         except (PermissionError, OSError, FileNotFoundError): 
@@ -357,16 +356,13 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[FileRecord] = [] 
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        try:
-            stats.register_file(size_bytes, path.suffix)
-            
-            if limit > 0:
-                if len(top_heap) < limit: 
-                    heapq.heappush(top_heap, (size_bytes, path))
-                elif size_bytes > top_heap[0][0]: 
-                    heapq.heapreplace(top_heap, (size_bytes, path))
-        except (AttributeError, TypeError, ValueError):
-            continue
+        stats.register_file(size_bytes, path.suffix)
+        
+        if limit > 0:
+            if len(top_heap) < limit: 
+                heapq.heappush(top_heap, (size_bytes, path))
+            elif size_bytes > top_heap[0][0]: 
+                heapq.heapreplace(top_heap, (size_bytes, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 

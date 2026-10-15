@@ -631,15 +631,14 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     if not q_sanitized:
         return Answer("Entrada no válida.")
     
-    # Búsqueda optimizada: iteración directa sobre tokens usando el conjunto de claves O(1)
-    for match in _TOKEN_REGEX.finditer(q_sanitized.lower()):
-        token: str = match.group()
-        if token in _TOKEN_KEYS:
+    # Búsqueda optimizada: lookup directo sobre O(1) antes de iterar tokens
+    q_lower: str = q_sanitized.lower()
+    for token in _TOKEN_KEYS:
+        if token in q_lower:
             return _TOKENS_MAP[token](context, question)
             
     cuerpo: str = _format_problem_message(context.active_problems, context.score if context.score is not None else "N/A")
-    ans: Answer = Answer(_validate_response_length(cuerpo), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
-    return ans if ans.text else Answer("No pude procesar tu consulta correctamente.")
+    return Answer(_validate_response_length(cuerpo), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
 
 def available(base: str | Path | None = None) -> bool:
     """Determina si la consulta a IA está habilitada globalmente mediante settings."""
