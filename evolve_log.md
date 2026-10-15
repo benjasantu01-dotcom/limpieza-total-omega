@@ -1146,3 +1146,41 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-10-15T06:39:39` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-15T06:39:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T06:39:39` Corrida terminada. Total usado hoy: 160.
+- `2026-10-15T06:47:50` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-10-15T06:48:44` ➖ Sin cambios en safety.py (enfoque: seguridad defensiva). Motivo: Se ha añadido una validación estricta en `ensure_safe_to_modify` para detectar rutas que contienen puntos de reparse (reparse points) o enlaces simbólicos en niveles intermedios de la ruta, impidiendo ataques de "path traversal" mediante redirecciones de carpetas del sistema.
+- `2026-10-15T06:49:14` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-10-15T06:49:45` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: seguridad defensiva).
+- `2026-10-15T06:49:59` Tests FALLARON:
+```
+.................... [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________ test_read_only_modules_never_delete_or_move __________________
+
+    def test_read_only_modules_never_delete_or_move():
+        """Ningún módulo de solo lectura puede borrar ni mover archivos."""
+        destructivos = {"unlink", "rmdir", "rmtree", "move", "remove", "rename", "replace"}
+        for nombre in READ_ONLY_MODULES:
+            archivo = APP_DIR / nombre
+            if not archivo.exists():
+                continue
+            usados = calls_and_imports(parse(archivo)) & destructivos
+>           assert not usados, (
+                f"{nombre} debería ser de solo lectura pero llama a "
+                f"{', '.join(sorted(usados))}"
+            )
+E           AssertionError: startup.py debería ser de solo lectura pero llama a replace
+E           assert not {'replace'}
+
+evolve/tests/test_integrity.py:294: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: startup.py debería ser de solo lectura pero llama a replace
+assert not {'replace'}
+1 failed, 298 passed in 1.50s
+
+```
+- `2026-10-15T06:49:59` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó `_is_registry_entry_safe` para validar que la ruta del ejecutable no contenga caracteres inválidos para el sistema de archivos de Windows (caracteres no permitidos en nombres de archivos) y se añadió una validación explícita mediante `is_protected_path` al procesar los resultados del registro para prevenir la exposición de rutas de sistema, alineando el filtrado con la política de seguridad centralizada del proyecto.
+- `2026-10-15T06:49:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T06:49:59` Corrida terminada. Total usado hoy: 164.
