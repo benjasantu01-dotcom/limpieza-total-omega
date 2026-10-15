@@ -359,6 +359,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     found: List[BrowserCache] = []
     
+    # Reutilizamos el contexto para deduplicación entre navegadores y caché de seguridad
     ctx = ScanContext("", _get_kernel32(), _IS_JUNCTION_FN, set(), set(), {})
     
     for base in raw_bases:

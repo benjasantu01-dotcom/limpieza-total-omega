@@ -231,12 +231,11 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Filtrado de subdirectorios
-                        if entry.is_dir(follow_symlinks=False) and not entry.is_symlink():
-                            p_entry = Path(entry.path)
-                            if _safe_path_check(p_entry):
-                                queue.append((p_entry, depth + 1))
-                        # Filtrado de archivos
+                        if entry.is_dir(follow_symlinks=False):
+                            if not entry.is_symlink():
+                                p_entry = Path(entry.path)
+                                if _safe_path_check(p_entry):
+                                    queue.append((p_entry, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
                             p_entry = Path(entry.path)
                             if not skip_protected and is_protected_path(p_entry):

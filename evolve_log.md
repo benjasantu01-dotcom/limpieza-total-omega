@@ -528,3 +528,10 @@ ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not define
 - `2026-10-15T00:34:22` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el acceso a constantes de color y caché mediante la eliminación de llamadas redundantes a `MappingProxyType.get` y `strip()` dentro de funciones de dibujo, reemplazándolas por acceso directo a constantes tipadas y pre-procesamiento de argumentos.
 - `2026-10-15T00:34:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T00:34:22` Corrida terminada. Total usado hoy: 16.
+- `2026-10-15T00:41:10` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-10-15T00:41:40` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé el rendimiento de `detect_profiles` reutilizando el objeto `ScanContext` para mantener las cachés de seguridad y los nodos visitados (deduplicación por `dev/ino`) a través de todos los navegadores, evitando re-procesar subcarpetas compartidas o archivos ya escaneados.
+- `2026-10-15T00:42:03` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-10-15T00:42:29` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `Path.resolve()` y `path.exists()` dentro del bucle, aprovechando directamente el objeto `DirEntry` que ya proporciona `os.scandir` para obtener información del archivo y atributos de forma eficiente sin llamadas adicionales al sistema de archivos por cada iteración.
+- `2026-10-15T00:42:39` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics.safe_get
+- `2026-10-15T00:42:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T00:42:39` Corrida terminada. Total usado hoy: 20.
