@@ -553,3 +553,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-15T00:53:55` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `purge_all` y `list_items` eliminando llamadas redundantes a `load_manifest` (que involucra I/O y parsing JSON) mediante el uso de una caché eficiente y evitando la recreación de listas, además de mejorar la eficiencia de las validaciones en `purge_all` al centralizar el chequeo de existencia.
 - `2026-10-15T00:53:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T00:53:55` Corrida terminada. Total usado hoy: 24.
+- `2026-10-15T01:01:32` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-10-15T01:02:11` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-15T01:03:06` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-10-15T01:03:33` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_relevant_extension
+- `2026-10-15T01:03:46` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult, _ValidatorEntry
+- `2026-10-15T01:03:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T01:03:46` Corrida terminada. Total usado hoy: 28.
