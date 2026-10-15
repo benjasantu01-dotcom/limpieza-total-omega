@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
-- Rechazadas por tests: 28
-- Rechazadas por guardia de seguridad: 47
+- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Rechazadas por tests: 29
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-14 | 123 | 18 | 26 | 19 | 162 |
-| 2026-10-15 | 68 | 10 | 21 | 3 | 54 |
+| 2026-10-14 | 123 | 18 | 26 | 19 | 158 |
+| 2026-10-15 | 69 | 11 | 22 | 3 | 55 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **40**
-- seguridad defensiva: **38**
+- seguridad defensiva: **39**
 - robustez ante casos límite: **34**
 - rendimiento: **31**
 
@@ -32,7 +32,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **18**
 - `diskreport.py`: **18**
 - `duplicates.py`: **18**
-- `memory.py`: **17**
+- `memory.py`: **18**
 - `assistant.py`: **15**
 - `healthscore.py`: **15**
 - `main.py`: **14**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-15T06:38:25` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `memory.py` centralizando la validación de acceso a procesos en una nueva función `_is_process_accessible`, asegurando que `OpenProcess` utilice las máscaras mínimas requeridas según la operación (consulta vs. trim) y estandarizando la verificación de rutas protegidas para prevenir la inspección accidental de ejecutables críticos.
 - `2026-10-15T06:32:07` **main.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `main.py` mediante una validación explícita en `on_save_report`, asegurando que la ruta de destino no solo sea sanitizada sino que también verifique la integridad del directorio padre antes de realizar la operación de escritura, evitando posibles inyecciones de rutas fuera de los límites permitidos.
 - `2026-10-15T06:28:59` **healthscore.py** (seguridad defensiva): Reforcé la integridad del motor de salud implementando un método `__post_init__` defensivo y una validación explícita en `compute_score` para asegurar que las `SystemMetrics` no contengan valores maliciosos o fuera de rango antes de cualquier procesamiento, eliminando dependencias de mutación de estado externo durante la ejecución del pipeline.
 - `2026-10-15T06:28:31` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo de duplicados añadiendo una validación explícita mediante `is_safe_to_modify` en el momento de realizar el `hash_file` y `partial_hash`, garantizando que, aunque un archivo haya pasado los filtros iniciales, no se intente leer si su estado de seguridad cambió durante la ejecución del proceso.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-15T05:47:13` **browser.py** (robustez ante casos límite): Mejoré la robustez de `browser.py` ante casos límite mediante una validación estricta de rutas (precedencia de normalización) y una gestión más resiliente de los contextos de escaneo ante fallos en la resolución de rutas, evitando que errores de acceso en una subcarpeta aborten prematuramente el cálculo de caché.
 - `2026-10-15T05:37:19` **settings.py** (rendimiento): Optimicé el rendimiento de la persistencia mediante la eliminación de una comprobación redundante de espacio en disco que realizaba una llamada `shutil.disk_usage` (lenta e intensiva) en cada operación `save`, reemplazándola con un manejo de errores más eficiente que permite que la operación falle de forma natural mediante `OSError` si el disco está lleno, lo cual es más rápido y sigue siendo seguro.
 - `2026-10-15T05:28:57` **scanner.py** (rendimiento): Se ha optimizado el rendimiento del proceso de escaneo reemplazando las llamadas redundantes a `is_protected_path` por la consulta directa a la caché `_cached_is_protected` dentro de `process_entry`, evitando syscalls innecesarias durante la recursión.
-- `2026-10-15T05:27:20` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto eliminando la reconstrucción innecesaria de objetos `QuarantineItem` cuando la caché es válida, reduciendo el consumo de CPU y memoria en operaciones frecuentes de listado.

@@ -290,17 +290,26 @@ def read_snapshot() -> MemorySnapshot:
     """Devuelve un estado de memoria con una latencia de caché de 5 segundos."""
     return _get_cached_snapshot(int(time.time() / 5))
 
+def _is_process_accessible(pid: int, access_mask: int) -> Optional[int]:
+    """Abre un proceso verificando que no sea restringido y devolviendo su handle."""
+    if _is_system_process(pid): return None
+    kernel32 = getattr(ctypes.windll, "kernel32", None)
+    handle = kernel32.OpenProcess(access_mask, False, pid)
+    if handle is None or handle == INVALID_HANDLE_VALUE: return None
+    
+    if not _is_process_executable_safe(pid, handle):
+        kernel32.CloseHandle(handle)
+        return None
+    return handle
+
 def _query_working_set_bytes(pid: int, kernel32: ctypes.WinDLL, psapi: ctypes.WinDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
     """Consulta contadores de memoria mediante API externa con validación de handle."""
-    process_handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
-    if process_handle is None or process_handle == INVALID_HANDLE_VALUE:
-        return None
+    process_handle = _is_process_accessible(pid, PROCESS_QUERY_LIMITED_INFORMATION)
+    if not process_handle: return None
     try:
         if psapi.GetProcessMemoryInfo(process_handle, ctypes.byref(pmc), pmc.cb):
             val = pmc.WorkingSetSize
             return BytesValue(val) if 0 < val < MAX_VALID_PROCESS_MEM else None
-    except (ctypes.ArgumentError, OSError, AttributeError):
-        return None
     finally:
         kernel32.CloseHandle(process_handle)
     return None
@@ -325,16 +334,13 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         try:
             if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
                 count = min(max_pids, cb_needed.value // ctypes.sizeof(ctypes.c_uint32))
-                
                 candidates = []
                 for i in range(count):
                     pid = pids[i]
-                    if pid > 4 and not _is_system_process(pid):
-                        # Validación de seguridad ligera antes de abrir el proceso
-                        if _is_process_executable_safe(pid):
-                            ws = _query_working_set_bytes(pid, kernel32, psapi, pmc)
-                            if ws is not None:
-                                candidates.append(ProcessMemory(f"PID {pid}", pid, ws))
+                    if pid > 4:
+                        ws = _query_working_set_bytes(pid, kernel32, psapi, pmc)
+                        if ws is not None:
+                            candidates.append(ProcessMemory(f"PID {pid}", pid, ws))
                 
                 _CACHE_TOP_PROC = CacheEntry(now, heapq.nlargest(limit, candidates))
         except (ctypes.ArgumentError, OSError, TypeError):
@@ -374,55 +380,22 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
         
     return report
 
-def _is_process_executable_safe(pid: int) -> bool:
-    """
-    Args:
-        pid: ID del proceso a verificar.
-
-    Returns:
-        True si la ruta del ejecutable no es crítica o restringida, False en otro caso.
-    """
-    kernel32 = getattr(ctypes.windll, "kernel32", None)
+def _is_process_executable_safe(pid: int, handle: int) -> bool:
+    """Verifica si la ruta del ejecutable del PID es segura para manipular."""
     psapi = getattr(ctypes.windll, "psapi", None)
-    if not kernel32 or not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return False
+    if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return False
     
-    handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
-    if handle is None or handle == INVALID_HANDLE_VALUE: return False
     try:
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
             path_str: str = str(buf.value).strip()
-            if not path_str or path_str.startswith("\\\\"):
-                return False
-            return not is_protected_path(path_str)
+            return bool(path_str) and not path_str.startswith("\\\\") and not is_protected_path(path_str)
     except (ctypes.ArgumentError, OSError, ValueError, RuntimeError):
         return False
-    finally:
-        kernel32.CloseHandle(handle)
     return False
 
-def _is_safe_to_trim(pid: int) -> Tuple[bool, Optional[str]]:
-    """
-    Verifica si un proceso puede ser sometido a una operación de trim.
-    
-    Returns:
-        Tupla con estado (bool) y mensaje de error opcional.
-    """
-    if pid <= 0: return False, "PID inválido."
-    if _is_system_process(pid): return False, "Proceso protegido."
-    if not _is_process_executable_safe(pid): return False, "Ruta de proceso restringida."
-    return True, None
-
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """
-    Ejecuta EmptyWorkingSet sobre un proceso bajo estrictas normas de seguridad.
-    
-    Args:
-        pid: El ID o representación de cadena del proceso a liberar.
-
-    Returns:
-        Tupla con el éxito de la operación y el mensaje de diagnóstico.
-    """
+    """Ejecuta EmptyWorkingSet sobre un proceso bajo estrictas normas de seguridad."""
     if not _is_windows: return False, "Solo soportado en Windows."
     
     try:
@@ -430,17 +403,14 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError):
         return False, "PID no numérico."
     
-    is_safe, error_msg = _is_safe_to_trim(target_pid)
-    if not is_safe: return False, error_msg or "Verificación de seguridad fallida."
-    
     psapi = getattr(ctypes.windll, "psapi", None)
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not psapi or not kernel32 or not hasattr(psapi, "EmptyWorkingSet"):
         return False, "API no disponible."
     
-    proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
-    if proc_handle is None or proc_handle == INVALID_HANDLE_VALUE:
-        return False, "No se pudo acceder al proceso (requiere privilegios elevados)."
+    proc_handle = _is_process_accessible(target_pid, TRIM_ACCESS_MASK)
+    if not proc_handle:
+        return False, "Proceso protegido o acceso denegado (requiere privilegios elevados)."
         
     try:
         if psapi.EmptyWorkingSet(proc_handle) == 0:

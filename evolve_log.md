@@ -1097,3 +1097,52 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-15T06:32:07` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `main.py` mediante una validación explícita en `on_save_report`, asegurando que la ruta de destino no solo sea sanitizada sino que también verifique la integridad del directorio padre antes de realizar la operación de escritura, evitando posibles inyecciones de rutas fuera de los límites permitidos.
 - `2026-10-15T06:32:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T06:32:07` Corrida terminada. Total usado hoy: 156.
+- `2026-10-15T06:37:42` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-10-15T06:38:25` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad del módulo `memory.py` centralizando la validación de acceso a procesos en una nueva función `_is_process_accessible`, asegurando que `OpenProcess` utilice las máscaras mínimas requeridas según la operación (consulta vs. trim) y estandarizando la verificación de rutas protegidas para prevenir la inspección accidental de ejecutables críticos.
+- `2026-10-15T06:38:51` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-10-15T06:39:34` Tests FALLARON:
+```
+rantine_dir(base)
+        except (OSError, UnsafePathError):
+            return []
+    
+        m_path = _manifest_path(base_dir)
+        if not m_path.exists():
+            _MANIFEST_CACHE[base_dir] = ([], 0.0)
+            return []
+    
+        try:
+            current_mtime = m_path.stat().st_mtime
+        except OSError:
+            return []
+    
+        if not force_reload and base_dir in _MANIFEST_CACHE:
+            cached_items, cached_mtime = _MANIFEST_CACHE[base_dir]
+            if cached_mtime == current_mtime:
+                return cached_items
+    
+        try:
+            with open(m_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+    
+            if not isinstance(data, list):
+                return []
+    
+            items = [item for d in data if isinstance(d, dict) and (item := QuarantineItem.from_dict(d))]
+    
+            _MANIFEST_CACHE[base_dir] = (items, current_mtime)
+            return items
+>       except (OSError, json.jsonDecodeError, ValueError):
+                         ^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'json' has no attribute 'jsonDecodeError'. Did you mean: 'JSONDecodeError'?
+
+app/quarantine.py:543: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app - AttributeError: module 'json' has no attribute 'jsonDecodeError'. Did you mean: 'JSONDecodeError'?
+1 failed, 298 passed in 1.56s
+
+```
+- `2026-10-15T06:39:34` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se añadió una validación estricta del tamaño del archivo durante la operación de copia en `_perform_secure_copy` para detectar truncamientos imprevistos de I/O, fortaleciendo la integridad de la cuarentena antes de confirmar el borrado del original.
+- `2026-10-15T06:39:39` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-15T06:39:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T06:39:39` Corrida terminada. Total usado hoy: 160.
