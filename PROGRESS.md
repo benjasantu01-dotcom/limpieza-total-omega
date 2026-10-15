@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Mejoras aceptadas: **186** (36.9% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-13 | 19 | 2 | 3 | 2 | 16 |
+| 2026-10-13 | 15 | 2 | 3 | 2 | 16 |
 | 2026-10-14 | 123 | 18 | 26 | 19 | 164 |
-| 2026-10-15 | 47 | 7 | 14 | 2 | 42 |
+| 2026-10-15 | 48 | 7 | 15 | 2 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **47**
+- legibilidad y documentación: **48**
 - seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **40**
-- robustez ante casos límite: **34**
-- rendimiento: **24**
+- robustez ante casos límite: **31**
+- rendimiento: **23**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **18**
-- `assistant.py`: **17**
-- `browser.py`: **17**
 - `memory.py`: **17**
+- `assistant.py`: **16**
+- `browser.py`: **16**
 - `duplicates.py`: **16**
 - `healthscore.py`: **14**
 - `scanner.py`: **14**
-- `startup.py`: **13**
 - `safety.py`: **12**
 - `settings.py`: **12**
+- `startup.py`: **12**
 - `main.py`: **12**
-- `branding.py`: **11**
+- `branding.py`: **10**
 - `organizer.py`: **9**
-- `quarantine.py`: **7**
+- `quarantine.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-15T04:47:09` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la adición de docstrings técnicos detallados en funciones clave y la sustitución de `finally` vacíos por una gestión de recursos más explícita y robusta.
 - `2026-10-15T04:40:16` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando docstrings descriptivos con parámetros y retornos (`Args`/`Returns`) en funciones críticas y se han aplicado type hints faltantes para aumentar la legibilidad y mantenibilidad, manteniendo la integridad funcional.
 - `2026-10-15T04:40:00` **main.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `main.py` mediante la refactorización de `_build_tab_ajustes` hacia un método de construcción más compacto y la normalización de la nomenclatura de los helpers, evitando la duplicidad de lógica en la creación de componentes de configuración.
 - `2026-10-15T04:36:18` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones de alto nivel y la estandarización de type hints en estructuras de datos complejas, facilitando el mantenimiento para futuros desarrolladores.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-15T03:56:15` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` al reemplazar el manejo genérico de excepciones por una captura específica durante la ejecución de los normalizadores (`scorer`), evitando que un error en un área aislada degrade silenciosamente el puntaje global sin registro.
 - `2026-10-15T03:55:32` **duplicates.py** (manejo de errores y validación de entradas): Mejora la robustez de `suggest_keeper` y `format_group` mediante la validación de tipos y estados, asegurando que las operaciones sobre `group.paths` no fallen ante estados inesperados o grupos vacíos.
 - `2026-10-15T03:55:08` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo chequeos explícitos de `None` y excepciones específicas para evitar que el iterador falle silenciosamente ante rutas mal formadas o problemas de permisos durante la expansión.
-- `2026-10-15T03:46:13` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_source_value` para manejar estructuras de datos arbitrarias de forma defensiva, evitando errores de tipo y posibles bloqueos mediante chequeos explícitos de `isinstance` y una gestión de profundidad más estricta.

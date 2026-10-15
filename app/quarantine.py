@@ -98,7 +98,10 @@ def _verify_source_fs_permissions(path: Path) -> None:
             pass
 
 def _is_filesystem_read_only(path: Path) -> bool:
-    """Intenta crear un archivo temporal en la ruta dada para detectar volúmenes de solo lectura."""
+    """
+    Intenta crear un archivo temporal en la ruta dada.
+    Retorna True si la operación falla, indicando un volumen de solo lectura o falta de permisos.
+    """
     try:
         with tempfile.NamedTemporaryFile(dir=path, delete=True) as tf:
             return False
@@ -108,7 +111,7 @@ def _is_filesystem_read_only(path: Path) -> bool:
 def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
     """
     Ejecuta una función de I/O con estrategia de reintentos exponenciales.
-    Útil para mitigar bloqueos breves del sistema operativo o antivirus.
+    Ayuda a mitigar fallos transitorios causados por bloqueos de AV o indexadores de Windows.
     """
     max_retries = 3
     for i in range(max_retries):
@@ -130,7 +133,10 @@ def _win_has_system_attributes(path: Path) -> bool:
         return True
 
 def _is_file_exclusive(path: Path) -> bool:
-    """Verifica si el archivo puede abrirse exclusivamente, detectando bloqueos activos por otros procesos."""
+    """
+    Verifica mediante exclusividad de apertura si un archivo está siendo bloqueado.
+    En Windows usa CreateFile con modos de acceso nulos para testear locks; en POSIX usa flock.
+    """
     if os.name == 'nt':
         k32 = ctypes.windll.kernel32
         handle = k32.CreateFileW(str(path), 0x80000000, 0, None, 3, 0x00000080, None)
@@ -249,7 +255,7 @@ class QuarantineItem:
 
 
 def _get_sha256(path: Path) -> str:
-    """Calcula el hash SHA256 de un archivo de forma segura, respetando banderas de no seguimiento de enlaces."""
+    """Calcula el hash SHA256 de un archivo byte a byte utilizando un buffer local."""
     if not path.exists() or not path.is_file():
         return ""
     
@@ -257,18 +263,15 @@ def _get_sha256(path: Path) -> str:
     if hasattr(os, 'O_NOFOLLOW'):
         flags |= os.O_NOFOLLOW
         
+    sha256_hash = hashlib.sha256()
+    fd = os.open(str(path), flags)
     try:
-        sha256_hash = hashlib.sha256()
-        fd = os.open(str(path), flags)
-        try:
-            with os.fdopen(fd, "rb") as handle:
-                while True:
-                    chunk = handle.read(CHUNK_SIZE)
-                    if not chunk:
-                        break
-                    sha256_hash.update(chunk)
-        finally:
-            pass
+        with os.fdopen(fd, "rb") as handle:
+            while True:
+                chunk = handle.read(CHUNK_SIZE)
+                if not chunk:
+                    break
+                sha256_hash.update(chunk)
     except (OSError, PermissionError, IOError):
         return ""
     return sha256_hash.hexdigest()
@@ -291,7 +294,7 @@ def _is_file_in_use_by_system(path: Path) -> bool:
     return not _is_file_exclusive(path)
 
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0) -> bool:
-    """Elimina de forma segura un archivo validando metadatos y uso actual antes de la operación."""
+    """Elimina de forma segura un archivo validando metadatos y ausencia de bloqueos antes de la operación."""
     if is_protected_path(path):
         return False
         
@@ -322,7 +325,7 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
         return False
 
 def _check_path_syntax_integrity(path: Path) -> None:
-    """Valida que la ruta no exceda límites de seguridad ni contenga estructuras prohibidas como ADS."""
+    """Valida que la ruta no exceda límites de seguridad ni contenga estructuras prohibidas."""
     path_str = str(path)
     if len(path_str) > 260:
         raise UnsafePathError("Ruta de sistema demasiado larga.")
@@ -350,7 +353,7 @@ def _sanitize_filename(filename: str) -> str:
     return "".join(c for c in filename if c.isalnum() or c in "._-")
 
 def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
-    """Crea un nombre de archivo único y seguro para su almacenamiento dentro del sandbox."""
+    """Genera un nombre único y seguro para el archivo en el sandbox, evitando colisiones."""
     if not item_id:
         raise ValueError("ID de ítem requerido para generar nombre seguro.")
     
@@ -370,7 +373,7 @@ def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
     return candidate
 
 def _ensure_path_ownership(path: Path) -> None:
-    """Verifica que el usuario actual posea permisos de propiedad sobre el directorio (sistemas Unix)."""
+    """Verifica que el usuario actual posea permisos de propiedad sobre el directorio (POSIX)."""
     if hasattr(os, 'getuid'):
         try:
             if path.stat().st_uid != os.getuid():
@@ -645,10 +648,7 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
     if hasattr(os, 'O_NOFOLLOW'):
         flags |= os.O_NOFOLLOW
         
-    try:
-        source_fd = os.open(str(source), flags)
-    except OSError as e:
-        raise OSError(f"No se pudo abrir el origen de forma segura: {e}")
+    source_fd = os.open(str(source), flags)
     try:
         with os.fdopen(source_fd, "rb") as source_handle:
             stat_src = os.fstat(source_handle.fileno())
@@ -936,14 +936,12 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         destination = Path(quarantine_item.original_path).resolve()
         _check_path_syntax_integrity(destination)
         
-        # Validaciones de seguridad post-resolución
         if destination.is_symlink():
             raise UnsafePathError("Restauración denegada: el destino es un enlace simbólico.")
             
         if is_protected_path(destination):
             raise UnsafePathError("Restauración denegada: destino protegido.")
         
-        # Prevenir sobrescritura accidental
         if destination.exists():
             raise FileExistsError(f"El destino ya existe: {destination}")
         
@@ -1025,8 +1023,6 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         item_map = {i.stored_name: i for i in items}
         purged_ids: Set[str] = set()
         
-        # Iterar una sola vez sobre los archivos existentes en el directorio
-        # utilizando el mapa en memoria para evitar consultas duplicadas al manifiesto
         for f in quarantine_root.iterdir():
             if f.name == MANIFEST_NAME or f.name not in item_map:
                 continue
