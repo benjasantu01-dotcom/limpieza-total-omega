@@ -30,7 +30,7 @@ import fcntl
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
-from typing import List, Union, Dict, Any, TypeAlias, Set, Tuple, Optional, Callable
+from typing import List, Union, Dict, Any, TypeAlias, Set, Tuple, Optional, Callable, TypeVar
 
 from safety import (
     UnsafePathError,
@@ -44,6 +44,7 @@ from safety import (
 PathLike: TypeAlias = Union[str, Path]
 ManifestData: TypeAlias = List[Dict[str, Any]]
 Inode: TypeAlias = int
+T = TypeVar("T")
 
 __all__: Tuple[str, ...] = (
     "QuarantineItem",
@@ -64,7 +65,6 @@ __all__: Tuple[str, ...] = (
 DEFAULT_QUARANTINE_DIR: str = "~/LimpiezaTotalOmega/_Cuarentena"
 MANIFEST_NAME: str = "manifest.json"
 CHUNK_SIZE: int = 131072  # 128KB para procesamiento de I/O
-# Cache: {base_dir: (items, mtime)}
 _MANIFEST_CACHE: Dict[Path, Tuple[List[QuarantineItem], float]] = {}
 
 WINDOWS_RESERVED_NAMES: Set[str] = {
@@ -105,8 +105,11 @@ def _is_filesystem_read_only(path: Path) -> bool:
     except (OSError, PermissionError):
         return True
 
-def _check_io_error_context(func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
-    """Ejecuta una función de I/O con estrategia de reintentos exponenciales para manejar bloqueos temporales."""
+def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
+    """
+    Ejecuta una función de I/O con estrategia de reintentos exponenciales.
+    Útil para mitigar bloqueos breves del sistema operativo o antivirus.
+    """
     max_retries = 3
     for i in range(max_retries):
         try:
@@ -115,6 +118,7 @@ def _check_io_error_context(func: Callable[..., Any], *args: Any, **kwargs: Any)
             if i == max_retries - 1:
                 raise e
             time.sleep(0.1 * (2 ** i))
+    raise RuntimeError("Fallo inesperado en reintentos de I/O.")
 
 def _win_has_system_attributes(path: Path) -> bool:
     """Consulta la API de Windows para verificar si un archivo posee atributos de sistema o está oculto."""

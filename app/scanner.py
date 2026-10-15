@@ -58,7 +58,7 @@ class SuspicionCheck(Protocol):
     def __call__(self, path: Path, entry: Optional[os.DirEntry], now_ts: float) -> Optional[Suspicion]: ...
 
 ScanResult: TypeAlias = List[Suspicion]
-# Tupla que almacena la ruta absoluta como str y la profundidad actual como int
+# Tupla: (ruta absoluta del directorio, profundidad actual)
 DirectoryStack: TypeAlias = List[Tuple[str, int]]
 
 # Expresiones regulares para validación de nombres y riesgos
@@ -87,7 +87,7 @@ def _is_locked_by_os(path: Path) -> bool:
     if not isinstance(path, Path):
         return True
     try:
-        # 0x80000000 = GENERIC_READ; 0x00000080 = FILE_ATTRIBUTE_NORMAL
+        # 0x80000000: GENERIC_READ, 0x00000080: FILE_ATTRIBUTE_NORMAL
         handle = ctypes.windll.kernel32.CreateFileW(
             str(path), 0x80000000, 0, None, 3, 0x00000080, None
         )
@@ -196,12 +196,12 @@ def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: fl
         logger.debug(f"Error verificando tamaño en {path}: {e}")
     return None
 
-ALL_CHECKS: Final[Sequence[SuspicionCheck]] = [
+ALL_CHECKS: Final[Sequence[SuspicionCheck]] = (
     check_double_extension,
     check_system_lookalike,
     check_recent_executable_in_downloads,
     check_empty_file
-]
+)
 
 class Scanner:
     """Controlador encargado de gestionar el escaneo recursivo y persistir resultados."""
@@ -245,7 +245,6 @@ class Scanner:
             return True
         
         try:
-            # Validación preventiva de existencia para evitar excepciones en FS dinámicos
             if not Path(path_str).exists():
                 return False
             

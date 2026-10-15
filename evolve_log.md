@@ -493,3 +493,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-10-15T00:12:57` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: legibilidad y documentación).
 - `2026-10-15T00:12:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T00:12:57` Corrida terminada. Total usado hoy: 8.
+- `2026-10-15T00:20:51` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-10-15T00:21:41` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la adición de Type Hints en funciones que carecían de ellos, la corrección de una inconsistencia en la firma de `_check_io_error_context` (que no siempre garantizaba el tipo de retorno) y la documentación de comportamientos críticos mediante docstrings específicos.
+- `2026-10-15T00:22:08` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-10-15T00:22:45` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): el archivo se encogió al 36% del original (posible pérdida de código)
+- `2026-10-15T00:23:03` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos (especialmente en `DirectoryStack`), se documentaron las constantes complejas y se refactorizó la lógica de los chequeos heurísticos para mejorar la legibilidad y la mantenibilidad del código sin alterar su comportamiento funcional.
+- `2026-10-15T00:23:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T00:23:03` Corrida terminada. Total usado hoy: 12.
