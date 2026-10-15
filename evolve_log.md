@@ -777,3 +777,11 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-10-15T14:19:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 98): unterminated string literal (detected at line 98)
 - `2026-10-15T14:19:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T14:19:00` Corrida terminada. Total usado hoy: 340.
+- `2026-10-15T14:26:44` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-15T14:26:46` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-15T14:27:37` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado `_get_file_attrs` y otras consultas de atributos mediante el uso de `lru_cache` con un tamaño adecuado, además de reducir el acceso redundante al sistema de archivos mediante el uso de `Path.parts` ya calculado, evitando llamadas innecesarias a `Path.resolve()` en bucles de validación.
+- `2026-10-15T14:28:03` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._handle_directory, Scanner._is_inside_base_root, Scanner._is_relevant_extension, Scanner._is_reparse_point
+- `2026-10-15T14:28:34` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-15T14:28:48` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo del registro evitando el procesamiento redundante de columnas en el CSV mediante un `DictReader` selectivo y un filtrado anticipado en PowerShell, reduciendo drásticamente la carga de memoria al manejar grandes volúmenes de claves.
+- `2026-10-15T14:28:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T14:28:48` Corrida terminada. Total usado hoy: 344.

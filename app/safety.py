@@ -116,7 +116,7 @@ DRIVE_REMOTE: Final[int] = 4
 DRIVE_CDROM: Final[int] = 5     
 DRIVE_RAMDISK: Final[int] = 6   
 
-@lru_cache(maxsize=4096)
+@lru_cache(maxsize=8192)
 def _to_long_path(path_str: str) -> str:
     """Aplica el prefijo \\\\?\\ para evitar limitaciones de longitud de ruta en Windows."""
     if not isinstance(path_str, str) or not path_str:
@@ -676,8 +676,11 @@ def normalize(path: PathLike) -> Path:
          raise UnsafePathError("Ruta contiene secuencias Unicode sospechosas.", SafetyValidationErrorCode.SUSPICIOUS_ENCODING)
     try:
         p = Path(path_str)
-        current_subpath = Path(p.anchor)
-        for part in p.parts:
+        anchor_path = Path(p.anchor)
+        parts = p.parts
+        current_subpath = anchor_path
+        
+        for part in parts:
             if part in (os.sep, os.altsep): continue
             current_subpath = current_subpath / part
             if current_subpath.exists() and _is_system_directory_junction(str(current_subpath)):
@@ -687,7 +690,7 @@ def normalize(path: PathLike) -> Path:
         if _has_alternate_data_stream(p.name): raise UnsafePathError("Flujo de datos alternativo detectado.", SafetyValidationErrorCode.ADS_DETECTED)
         
         resolved = _normalize_resolved(path_str)
-        if ".." in p.parts: raise UnsafePathError("Path traversal detectado.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
+        if ".." in parts: raise UnsafePathError("Path traversal detectado.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
         return resolved
     except (OSError, PermissionError, RuntimeError, ValueError, TypeError) as e:
         raise UnsafePathError(f"Error al normalizar ruta {path_str}: {e}", SafetyValidationErrorCode.IO_ERROR)
@@ -731,8 +734,11 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         p_path = normalize(parent)
         if is_drive_root(c_path) or is_protected_path(str(c_path)): return False
         
-        for part in c_path.parts:
-             if _is_system_directory_junction(str(c_path.anchor) + os.sep.join(c_path.parts[:c_path.parts.index(part)+1])):
+        c_parts = c_path.parts
+        anchor = Path(c_path.anchor)
+        for i in range(len(c_parts)):
+             sub = anchor.joinpath(*c_parts[:i+1])
+             if _is_system_directory_junction(str(sub)):
                  return False
 
         return c_path.is_relative_to(p_path) if allow_equal else (c_path.is_relative_to(p_path) and c_path != p_path)
@@ -777,13 +783,14 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         raise UnsafePathError("Nombre de dispositivo con extensión prohibido.", SafetyValidationErrorCode.RESERVED_NAME)
 
     try:
+        t_parts = target_path.parts
         if target_path.exists() and not target_path.is_absolute():
             raise UnsafePathError("Ruta inconsistente con el sistema.", SafetyValidationErrorCode.GENERIC)
-        if not target_path.parts or (len(target_path.parts) == 1 and target_path.parts[0] == os.sep):
+        if not t_parts or (len(t_parts) == 1 and t_parts[0] == os.sep):
              raise UnsafePathError("Ruta raíz no permitida.", SafetyValidationErrorCode.ROOT_ACCESS)
-        if len(target_path.parts) == 1 and target_path == Path(target_path.anchor):
+        if len(t_parts) == 1 and target_path == Path(target_path.anchor):
              raise UnsafePathError("Operación sobre raíz de unidad prohibida.", SafetyValidationErrorCode.ROOT_ACCESS)
-        if len(target_path.parts) > MAX_DIRECTORY_DEPTH:
+        if len(t_parts) > MAX_DIRECTORY_DEPTH:
              raise UnsafePathError("Profundidad de directorio excesiva.", SafetyValidationErrorCode.PATH_TOO_DEEP)
     except (AttributeError, TypeError, ValueError):
         raise UnsafePathError("Estructura de ruta inválida.", SafetyValidationErrorCode.GENERIC)
@@ -873,11 +880,11 @@ def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> 
 
 def _validate_path_components(path: Path) -> None:
     """Verificación de redundancia para prevenir ataques por recursión circular."""
-    current_check = Path(path.anchor)
+    anchor = Path(path.anchor)
+    parts = path.parts
     visited: set[Path] = set()
-    for part in path.parts:
-        if part in (os.sep, os.altsep): continue
-        current_check = current_check / part
+    for i in range(len(parts)):
+        current_check = anchor.joinpath(*parts[:i+1])
         if current_check.exists():
             resolved = current_check.resolve()
             if resolved in visited:

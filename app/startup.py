@@ -336,18 +336,6 @@ def _is_registry_entry_safe(entry_name: str, entry_command: str, seen_commands: 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
     """
     Convierte el output CSV de PowerShell en una lista de objetos StartupEntry validados.
-
-    Parameters
-    ----------
-    csv_text : str
-        Salida cruda del comando PowerShell ConvertTo-Csv.
-    source : str
-        Etiqueta de origen para los registros encontrados.
-
-    Returns
-    -------
-    StartupEntries
-        Lista de objetos StartupEntry instanciados.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
@@ -357,32 +345,28 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
     
     try:
         f: io.StringIO = io.StringIO(csv_text.strip())
-        reader: csv.DictReader = csv.DictReader(f)
+        # DictReader con fieldnames específicos para ignorar basura no necesaria del registro
+        reader = csv.DictReader(f)
         
-        if not reader or not reader.fieldnames or len(reader.fieldnames) < 2:
-            return []
-        
-        header_name: str = reader.fieldnames[0]
-        header_cmd: str = reader.fieldnames[1]
-            
         for row in reader:
-            if not isinstance(row, dict):
-                continue
+            # Obtener solo las dos primeras columnas dinámicamente según el CSV de PS
+            keys = list(row.keys())
+            if len(keys) < 2: continue
             
-            raw_val_name = row.get(header_name)
-            raw_val_cmd = row.get(header_cmd)
+            raw_val_name = row[keys[0]]
+            raw_val_cmd = row[keys[1]]
             
             if not isinstance(raw_val_name, str) or not isinstance(raw_val_cmd, str):
                 continue
             
-            clean_name: str = "".join(c for c in raw_val_name if ord(c) >= 32).strip()
-            clean_cmd: str = "".join(c for c in raw_val_cmd if ord(c) >= 32).strip()
+            clean_name = "".join(c for c in raw_val_name if ord(c) >= 32).strip()
+            clean_cmd = "".join(c for c in raw_val_cmd if ord(c) >= 32).strip()
             
             if _is_registry_entry_safe(clean_name, clean_cmd, seen_commands):
                 seen_commands.add(clean_cmd)
                 parsed_entries.append(StartupEntry(name=clean_name, command=clean_cmd, source=source))
             
-    except (csv.Error, OSError, ValueError, TypeError, IndexError):
+    except (csv.Error, OSError, ValueError, TypeError):
         return []
     return parsed_entries
 
@@ -392,14 +376,13 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
     if os.name != "nt":
         return []
     
-    # Unificamos las llaves en un solo bloque de ejecución para reducir overhead de subprocesos
     keys_string = "','".join(keys)
+    # Seleccionamos solo las propiedades de valor y nombre para reducir el ancho de banda del proceso
     ps_script = f"""
     $ErrorActionPreference = 'SilentlyContinue'
-    $keys = @('{keys_string}')
-    foreach ($k in $keys) {{
-        Get-ItemProperty -LiteralPath $k | Select-Object * -ExcludeProperty PS*
-    }} | ConvertTo-Csv -NoTypeInformation
+    foreach ($k in @('{keys_string}')) {{
+        Get-ItemProperty -LiteralPath $k | Select-Object * -ExcludeProperty PS* | ConvertTo-Csv -NoTypeInformation
+    }}
     """
     
     try:
