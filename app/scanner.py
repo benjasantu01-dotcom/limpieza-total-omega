@@ -52,8 +52,9 @@ class SuspicionCheck(Protocol):
     """
     Interfaz para funciones de análisis heurístico.
     
-    Todas las implementaciones deben ser funciones puras, operando solo sobre
-    el estado proporcionado mediante parámetros.
+    Toda implementación debe ser una función pura que no realice operaciones 
+    de entrada/salida no autorizadas y opere exclusivamente sobre los 
+    parámetros proporcionados (path, entry, now_ts).
     """
     def __call__(self, path: Path, entry: Optional[os.DirEntry], now_ts: float) -> Optional[Suspicion]: ...
 
@@ -250,12 +251,10 @@ class Scanner:
             return True
         
         try:
-            # Validación de existencia necesaria ante cambios dinámicos del FS
             p = Path(path_str)
             if not p.exists():
                 return False
             
-            # Usamos la caché protegida centralizada
             if _cached_is_protected(path_str) or not _is_valid_path_structure(path_str) or self._has_invalid_name(entry.name):
                 return False
                 
@@ -288,7 +287,11 @@ class Scanner:
         return _is_target_extension(name)
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        """Gestiona la ramificación del escaneo entre directorios y archivos."""
+        """
+        Gestiona la ramificación del escaneo entre directorios y archivos.
+        Valida la seguridad de la entrada y, si es directorio, lo encola; si es archivo,
+        ejecuta la suite de heurísticas solo si su extensión es relevante.
+        """
         if entry is None or not hasattr(entry, 'path') or not entry.path:
             return
             
@@ -297,7 +300,6 @@ class Scanner:
                 if self._is_safe_entry(entry):
                     self._handle_directory(entry, directory_stack, current_depth)
             elif entry.is_file(follow_symlinks=False):
-                # Optimizamos: solo validamos seguridad si la extensión es relevante
                 if self._is_relevant_extension(entry.name) and self._is_safe_entry(entry):
                     self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError) as e:
@@ -306,7 +308,6 @@ class Scanner:
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta toda la suite de heurísticas sobre un archivo validado."""
         path_str = str(path)
-        # Validación de lectura y bloqueo antes de iterar heurísticas
         if path_str not in self.path_stat_cache:
             if not _is_readable(path) or _is_locked_by_os(path):
                 self.path_stat_cache[path_str] = False
