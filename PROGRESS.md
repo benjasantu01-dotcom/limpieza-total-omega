@@ -16,17 +16,17 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-13 | 2 | 0 | 0 | 0 | 12 |
+| 2026-10-13 | 0 | 0 | 0 | 0 | 10 |
 | 2026-10-14 | 123 | 18 | 26 | 19 | 164 |
-| 2026-10-15 | 60 | 9 | 20 | 3 | 48 |
+| 2026-10-15 | 62 | 9 | 20 | 3 | 50 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **40**
-- seguridad defensiva: **36**
+- seguridad defensiva: **34**
+- robustez ante casos límite: **32**
 - rendimiento: **31**
-- robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,18 +35,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **17**
 - `memory.py`: **17**
 - `assistant.py`: **15**
-- `scanner.py`: **14**
 - `healthscore.py`: **14**
-- `startup.py`: **12**
-- `main.py`: **12**
+- `main.py`: **13**
+- `scanner.py`: **13**
 - `settings.py`: **12**
+- `startup.py`: **11**
+- `quarantine.py`: **10**
 - `safety.py`: **10**
-- `quarantine.py`: **9**
 - `organizer.py`: **9**
 - `branding.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-15T06:01:03` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine_dir` añadiendo una comprobación de existencia y permisos antes de intentar crear el directorio, y se ha fortalecido la integridad en `save_manifest` mediante el uso de `os.replace` (operación atómica) con un `fsync` explícito sobre el directorio padre para asegurar la persistencia de metadatos en sistemas de archivos sensibles a cierres abruptos.
+- `2026-10-15T05:59:21` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante errores inesperados en el hilo de la UI, agregando una capa de protección en `_safe_run_ui_callback` para validar explícitamente que la instancia de la aplicación siga viva antes de agendar operaciones, evitando que errores de `TclError` propaguen excepciones al ciclo principal tras cerrar la app.
 - `2026-10-15T05:49:06` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `score_disk` y `score_memory` para manejar explícitamente el caso de umbrales configurados en cero o negativos, evitando divisiones por cero y retornos inconsistentes, alineándose con la robustez ante valores de configuración inesperados.
 - `2026-10-15T05:48:51` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_locked` para manejar escenarios de permisos denegados o archivos en uso de forma más explícita mediante un bloque `try-except` más específico y la verificación del descriptor de archivo, evitando fallos silenciosos durante el escaneo de duplicados.
 - `2026-10-15T05:47:45` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` y `_is_excluded_path` añadiendo validaciones contra rutas inexistentes, errores de acceso a atributos de archivo y verificando explícitamente que los archivos sean accesibles antes de intentar procesarlos, evitando así que el escaneo se detenga ante archivos bloqueados o inconsistentes.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-15T05:07:37` **diskreport.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo en `walk_files` y `largest_folders` evitando llamadas redundantes a `Path.resolve()` y `Path.relative_to()`, reutilizando las referencias de `os.DirEntry` y limitando el uso de `str()` en operaciones repetitivas dentro del bucle.
 - `2026-10-15T05:07:11` **browser.py** (rendimiento): Optimizé el rendimiento de `detect_profiles` eliminando la recreación innecesaria del `ScanContext` y reutilizando el contexto único para toda la operación, evitando así el re-cálculo de identificadores y redundancia en la caché de seguridad entre distintas rutas de navegador.
 - `2026-10-15T04:47:09` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la adición de docstrings técnicos detallados en funciones clave y la sustitución de `finally` vacíos por una gestión de recursos más explícita y robusta.
-- `2026-10-15T04:40:16` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando docstrings descriptivos con parámetros y retornos (`Args`/`Returns`) en funciones críticas y se han aplicado type hints faltantes para aumentar la legibilidad y mantenibilidad, manteniendo la integridad funcional.
-- `2026-10-15T04:40:00` **main.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `main.py` mediante la refactorización de `_build_tab_ajustes` hacia un método de construcción más compacto y la normalización de la nomenclatura de los helpers, evitando la duplicidad de lógica en la creación de componentes de configuración.

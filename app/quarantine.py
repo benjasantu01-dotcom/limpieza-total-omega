@@ -402,14 +402,14 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         if path.is_symlink():
              raise UnsafePathError("Ruta de cuarentena no puede ser un enlace simbólico.")
         
-        if not is_safe_to_modify(path):
-            raise UnsafePathError("Ruta de cuarentena marcada como insegura.")
-            
-        if not path.exists():
+        if path.exists():
+            if not is_safe_to_modify(path):
+                raise UnsafePathError("Ruta de cuarentena marcada como insegura.")
+            if not os.access(path, os.W_OK | os.R_OK):
+                raise PermissionError("Permisos insuficientes en directorio.")
+        else:
             _check_io_error_context(path.mkdir, parents=True, exist_ok=True)
             
-        if not os.access(path, os.W_OK | os.R_OK):
-            raise PermissionError("Permisos insuficientes en directorio.")
         _ensure_path_ownership(path)
         return path
     except (OSError, RuntimeError, UnsafePathError, PermissionError) as e:
@@ -557,14 +557,6 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         encoded_content = json.dumps(serializable_items, indent=2, ensure_ascii=False).encode('utf-8')
     except (TypeError, ValueError) as e:
         raise RuntimeError(f"Error al serializar metadatos de cuarentena: {e}")
-
-    if target_path.exists():
-        if not target_path.is_file():
-            raise PermissionError(f"Error: {target_path} no es un archivo.")
-        if not os.access(target_path, os.W_OK):
-            raise PermissionError(f"Error: Manifiesto {target_path} protegido contra escritura.")
-        if _win_has_system_attributes(target_path):
-            raise PermissionError(f"Error: Manifiesto {target_path} bloqueado por atributos de sistema.")
 
     temp_name = None
     try:

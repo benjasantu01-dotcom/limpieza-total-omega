@@ -304,7 +304,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @safe_ui_operation
     def _safe_run_ui_callback(self, callback: AsyncCallback) -> None:
         """Encapsula llamadas a `after_idle` asegurando que ocurran en el hilo principal de forma segura."""
-        self.after_idle(callback)
+        if not self._closing and self.winfo_exists():
+            self.after_idle(callback)
 
     def _validate_environment(self) -> None:
         """
