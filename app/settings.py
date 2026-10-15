@@ -177,6 +177,12 @@ class _SettingsManager:
                 fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
                 f.write(serialized)
                 f.flush()
+                
+                # Verificar integridad del archivo temporal recién escrito
+                st = os.fstat(f.fileno())
+                if hasattr(os, 'getuid') and st.st_uid != os.getuid():
+                    return False
+                
                 os.fsync(f.fileno())
                 f.close()
                 f = None
