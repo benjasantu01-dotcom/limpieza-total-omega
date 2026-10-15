@@ -357,13 +357,16 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[FileRecord] = [] 
     
     for path, size_bytes in walk_files(directory, skip_protected):
-        stats.register_file(size_bytes, path.suffix)
-        
-        if limit > 0:
-            if len(top_heap) < limit: 
-                heapq.heappush(top_heap, (size_bytes, path))
-            elif size_bytes > top_heap[0][0]: 
-                heapq.heapreplace(top_heap, (size_bytes, path))
+        try:
+            stats.register_file(size_bytes, path.suffix)
+            
+            if limit > 0:
+                if len(top_heap) < limit: 
+                    heapq.heappush(top_heap, (size_bytes, path))
+                elif size_bytes > top_heap[0][0]: 
+                    heapq.heapreplace(top_heap, (size_bytes, path))
+        except (AttributeError, TypeError, ValueError):
+            continue
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
@@ -376,8 +379,8 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     
     try:
         data = _collect_summary_data(root, skip_protected, limit=20)
-    except Exception as e:
-        return [f"Error: Falló el escaneo del directorio raíz: {str(e)}"]
+    except Exception:
+        return ["Error: Falló el escaneo del directorio raíz."]
         
     if data.total_files == 0: 
         return ["Aviso: No se encontraron archivos accesibles en la ruta seleccionada."]

@@ -323,7 +323,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
     Computa el puntaje global recorriendo el pipeline de normalizadores y reglas.
     """
-    # Garantizar instancia válida antes de procesar
     m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
     m.validate()
     
@@ -336,7 +335,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for entry in _PIPELINE:
         try:
-            area_ratio = _clamp(entry.scorer(m))
+            # Captura y validación explícita del ratio obtenido
+            raw_ratio = entry.scorer(m)
+            area_ratio = _clamp(raw_ratio) if isinstance(raw_ratio, (int, float)) else 0.0
+            
             _evaluate_rules(m, entry.rules, area_ratio, recommendations)
             
             w_f = float(entry.weight)
