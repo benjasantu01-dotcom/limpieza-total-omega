@@ -1495,3 +1495,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-15T08:52:25` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la legibilidad del código crítico de escaneo mediante la adición de Type Hints en parámetros complejos y la documentación del propósito (docstrings) en las funciones que gestionan el recorrido recursivo del sistema de archivos, facilitando auditorías de seguridad futuras.
 - `2026-10-15T08:52:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T08:52:25` Corrida terminada. Total usado hoy: 212.
+- `2026-10-15T09:00:26` Arrancando corrida. Quedan hoy ~88 peticiones objetivo.
+- `2026-10-15T09:00:29` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-15T09:00:32` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-15T09:00:39` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-15T09:00:51` Gemini sigue devolviendo 500 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-15T09:01:32` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante docstrings detallados en funciones clave, se han clarificado las intenciones de los métodos de filtrado y se ha reforzado la legibilidad de la lógica de negocio mediante type hints explícitos, garantizando que el mantenimiento futuro sea más seguro y evidente.
+- `2026-10-15T09:01:58` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: SystemMetrics.safe_get
+- `2026-10-15T09:02:06` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-15T09:03:07` ✅ Mejora aceptada en main.py (enfoque: legibilidad y documentación). He mejorado la legibilidad y mantenibilidad del archivo `main.py` documentando las dependencias de configuración en los métodos de construcción de la UI, agregando Type Hints explícitos para callbacks complejos y unificando la lógica de validación de entradas de usuario, siguiendo las normas de documentación interna.
+- `2026-10-15T09:03:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T09:03:07` Corrida terminada. Total usado hoy: 216.

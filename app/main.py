@@ -620,7 +620,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.activity.pack_forget()
 
     def _build_tab_salud(self) -> None:
-        """Constructor de interfaz: pestaña de Salud global."""
+        """Constructor: pestaña de Salud global."""
         tab = self.tabview.tab(branding.tab_label("Salud"))
 
         row = self._button_row(tab)

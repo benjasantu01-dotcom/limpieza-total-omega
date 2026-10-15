@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
-- Rechazadas por tests: 32
-- Rechazadas por guardia de seguridad: 44
+- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Rechazadas por tests: 31
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 232
+- Sin respuesta de la IA (error o límite): 233
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-14 | 101 | 18 | 21 | 12 | 140 |
-| 2026-10-15 | 79 | 14 | 23 | 4 | 92 |
+| 2026-10-14 | 100 | 17 | 19 | 12 | 140 |
+| 2026-10-15 | 81 | 14 | 24 | 4 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **42**
+- legibilidad y documentación: **44**
 - seguridad defensiva: **39**
 - manejo de errores y validación de entradas: **38**
 - robustez ante casos límite: **34**
-- rendimiento: **27**
+- rendimiento: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **17**
+- `duplicates.py`: **17**
 - `browser.py`: **17**
 - `memory.py`: **17**
-- `duplicates.py`: **16**
 - `healthscore.py`: **15**
+- `main.py`: **15**
 - `assistant.py`: **14**
 - `settings.py`: **14**
-- `main.py`: **14**
 - `scanner.py`: **11**
 - `branding.py`: **10**
-- `safety.py`: **9**
 - `startup.py`: **9**
 - `quarantine.py`: **9**
 - `organizer.py`: **8**
+- `safety.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-15T09:03:07` **main.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo `main.py` documentando las dependencias de configuración en los métodos de construcción de la UI, agregando Type Hints explícitos para callbacks complejos y unificando la lógica de validación de entradas de usuario, siguiendo las normas de documentación interna.
+- `2026-10-15T09:01:32` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave, se han clarificado las intenciones de los métodos de filtrado y se ha reforzado la legibilidad de la lógica de negocio mediante type hints explícitos, garantizando que el mantenimiento futuro sea más seguro y evidente.
 - `2026-10-15T08:52:25` **browser.py** (legibilidad y documentación): Mejoré la legibilidad del código crítico de escaneo mediante la adición de Type Hints en parámetros complejos y la documentación del propósito (docstrings) en las funciones que gestionan el recorrido recursivo del sistema de archivos, facilitando auditorías de seguridad futuras.
 - `2026-10-15T08:52:16` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las funciones de manipulación de color y gradientes añadiendo docstrings descriptivos, validación de tipos más explícita y mejorando la consistencia en el manejo de errores mediante el uso del estilo de nombres de variables más claro.
 - `2026-10-15T08:51:43` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos en los decoradores y funciones de validación, además de clarificar la intención de los umbrales de seguridad mediante comentarios alineados con las reglas de negocio del proyecto.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-15T06:38:25` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `memory.py` centralizando la validación de acceso a procesos en una nueva función `_is_process_accessible`, asegurando que `OpenProcess` utilice las máscaras mínimas requeridas según la operación (consulta vs. trim) y estandarizando la verificación de rutas protegidas para prevenir la inspección accidental de ejecutables críticos.
 - `2026-10-15T06:32:07` **main.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `main.py` mediante una validación explícita en `on_save_report`, asegurando que la ruta de destino no solo sea sanitizada sino que también verifique la integridad del directorio padre antes de realizar la operación de escritura, evitando posibles inyecciones de rutas fuera de los límites permitidos.
 - `2026-10-15T06:28:59` **healthscore.py** (seguridad defensiva): Reforcé la integridad del motor de salud implementando un método `__post_init__` defensivo y una validación explícita en `compute_score` para asegurar que las `SystemMetrics` no contengan valores maliciosos o fuera de rango antes de cualquier procesamiento, eliminando dependencias de mutación de estado externo durante la ejecución del pipeline.
-- `2026-10-15T06:28:31` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo de duplicados añadiendo una validación explícita mediante `is_safe_to_modify` en el momento de realizar el `hash_file` y `partial_hash`, garantizando que, aunque un archivo haya pasado los filtros iniciales, no se intente leer si su estado de seguridad cambió durante la ejecución del proceso.
-- `2026-10-15T06:19:53` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante una validación estricta de rutas absolutas para prevenir el "path traversal" accidental durante la recursión, asegurando que cada nodo explorado resida físicamente dentro de la jerarquía de la carpeta de caché validada originalmente.
