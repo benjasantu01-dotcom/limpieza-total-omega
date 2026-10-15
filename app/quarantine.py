@@ -309,6 +309,10 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
     """
     if is_protected_path(path):
         return False
+    
+    # Prevenir ADS (Alternate Data Streams) en Windows
+    if ":" in path.name:
+        return False
         
     if not path.exists() or not path.is_file() or path.is_symlink():
         return False

@@ -395,12 +395,12 @@ def _is_process_executable_safe(pid: int, handle: int) -> bool:
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return False
     
     try:
-        # Longitud máxima de ruta en Windows (PATH_MAX) suele ser 260, usamos 1024 para seguridad.
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
-            path_str: str = str(buf.value).strip()
-            # Bloqueo estricto para rutas UNC o protegidas por política de seguridad del proyecto.
-            return bool(path_str) and not path_str.startswith("\\\\") and not is_protected_path(path_str)
+            path_str: str = buf.value
+            # Validación estricta: debe ser una ruta absoluta y no protegida.
+            if not path_str or path_str.startswith("\\\\"): return False
+            return not is_protected_path(path_str)
     except (ctypes.ArgumentError, OSError, ValueError, RuntimeError):
         return False
     return False
