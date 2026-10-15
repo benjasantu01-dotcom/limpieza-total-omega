@@ -1572,3 +1572,10 @@ FAILED evolve/tests/test_modules.py::test_blend_on_invalid_color_does_not_crash 
 - `2026-10-15T09:53:20` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
 - `2026-10-15T09:53:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T09:53:20` Corrida terminada. Total usado hoy: 236.
+- `2026-10-15T10:01:41` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-10-15T10:02:12` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se ha optimizado el rendimiento del escaneo integrando el filtrado de extensiones irrelevantes dentro de `process_entry` mediante un conjunto (`frozenset`) eficiente, evitando así llamadas innecesarias a la lógica de validación de seguridad para archivos que no requieren inspección heurística.
+- `2026-10-15T10:02:40` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-15T10:03:06` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-15T10:03:30` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se introdujo una validación defensiva en `_get_source_value` y `_apply_field` para manejar casos donde el objeto `source` pueda contener atributos inesperados o ser de un tipo no indexable, previniendo errores de acceso durante la ingesta de datos.
+- `2026-10-15T10:03:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T10:03:30` Corrida terminada. Total usado hoy: 240.

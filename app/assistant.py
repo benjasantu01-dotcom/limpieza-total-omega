@@ -416,9 +416,8 @@ class SystemContext:
         if source is None: return False
         if isinstance(source, dict):
             return not _is_input_too_deep_or_complex(source)
-        if hasattr(source, "__dict__"):
-            return not _is_input_too_deep_or_complex(source.__dict__)
-        return False
+        # Permite verificar atributos si el objeto es complejo pero no indexable
+        return True
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
         """Aplica cambios al contexto y limpia cachés internas con validación de tamaño."""

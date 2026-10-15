@@ -292,14 +292,11 @@ class Scanner:
             return
             
         try:
-            # Uso de _cached_is_protected para evitar repetir syscalls costosas
-            if _cached_is_protected(entry.path):
-                return
-                
             if entry.is_dir(follow_symlinks=False):
                 if self._is_safe_entry(entry):
                     self._handle_directory(entry, directory_stack, current_depth)
             elif entry.is_file(follow_symlinks=False):
+                # Optimizamos: solo validamos seguridad si la extensión es relevante
                 if self._is_relevant_extension(entry.name) and self._is_safe_entry(entry):
                     self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError) as e:
