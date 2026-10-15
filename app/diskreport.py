@@ -158,10 +158,10 @@ def _is_excluded_path(entry: os.DirEntry, root_str: str) -> bool:
         if any(char in name for char in ('<', '>', ':', '"', '|', '?', '*')):
             return True
         
-        if entry.is_symlink():
+        # Validar puntos de reparse (junctions) para evitar recursión externa
+        if entry.is_symlink() or (os.name == 'nt' and entry.is_dir() and entry.stat().st_file_attributes & 0x400):
             return True
         
-        # Uso de path.startswith con normalización básica
         if not entry.path.startswith(root_str):
             return True
         

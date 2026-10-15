@@ -300,7 +300,9 @@ def _sanitize_msg(msg: str | Any) -> str:
     lower_msg = sanitized.lower()
     if any(b in lower_msg for b in _BLOCKED_TERMS):
         return ""
-    return sanitized.strip()[:_MAX_MSG_LEN]
+    # Corte final estricto
+    result = sanitized.strip()
+    return result[:_MAX_MSG_LEN]
 
 def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:
     """Envoltorio seguro para ejecutar factories de reglas sin exponer errores."""
@@ -389,5 +391,7 @@ def summarize(result: HealthResult | None) -> List[str]:
         maximo = entry.weight
         lines.append(f"  {area.capitalize():<12} {p:>2}/{maximo:<2} [{_render_bar(p, maximo)}]")
     
-    lines.extend(("", "Recomendaciones:", *(f"  - {s}" for s in (_sanitize_msg(r) for r in result.recommendations) if s)))
+    # Sanitize individual items to ensure structural integrity of the report
+    recs = [s for s in (_sanitize_msg(r) for r in result.recommendations) if s]
+    lines.extend(("", "Recomendaciones:", *(f"  - {s}" for s in recs)))
     return lines

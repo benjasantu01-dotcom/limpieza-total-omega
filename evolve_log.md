@@ -1643,3 +1643,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-15T10:44:30` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `save_logo_svg` añadiendo una comprobación explícita mediante `is_protected_path` antes de proceder, garantizando que ninguna ruta de sistema sea el objetivo de escritura, además de asegurar que la validación de directorios sea consistente con la política de seguridad del proyecto.
 - `2026-10-15T10:44:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T10:44:30` Corrida terminada. Total usado hoy: 256.
+- `2026-10-15T10:52:36` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-10-15T10:53:02` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-10-15T10:53:28` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_excluded_path` verificando que las rutas analizadas no sean puntos de reparse (junctions/reparse points), evitando así la entrada en bucles infinitos o el acceso a zonas fuera del alcance esperado del escaneo.
+- `2026-10-15T10:53:53` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la validación estricta de rutas absolutas y el uso de `resolve()` antes de cualquier operación de I/O en `hash_file` y `partial_hash` para evitar ataques de manipulación de rutas o acceso a archivos fuera del alcance esperado.
+- `2026-10-15T10:54:07` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó `_sanitize_msg` para incluir una validación de longitud explícita sobre el string resultante antes de retornar, evitando potenciales condiciones de carrera o inyecciones de mensajes sobredimensionados, y se introdujo un chequeo de seguridad en `summarize` para prevenir la propagación de datos no validados en el informe final.
+- `2026-10-15T10:54:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T10:54:07` Corrida terminada. Total usado hoy: 260.
