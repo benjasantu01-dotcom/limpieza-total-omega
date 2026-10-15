@@ -1057,3 +1057,34 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-15T06:10:14` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se mejoró `perform_atomic_write` añadiendo un manejo de excepciones más robusto durante la manipulación de archivos y verificando explícitamente el espacio disponible antes de la escritura, mitigando errores críticos ante discos llenos o situaciones de I/O parcial.
 - `2026-10-15T06:10:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T06:10:14` Corrida terminada. Total usado hoy: 148.
+- `2026-10-15T06:17:19` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-10-15T06:17:46` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.08s
+
+```
+- `2026-10-15T06:17:46` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry._extract_quoted_path` y `_resolve_and_cache_path` añadiendo validaciones explícitas contra caracteres de control y rutas con formato inválido, además de proteger el acceso a disco mediante `is_safe_to_modify` para evitar excepciones imprevistas en rutas con permisos restringidos o malformadas.
+- `2026-10-15T06:18:25` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: seguridad defensiva).
+- `2026-10-15T06:19:37` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-10-15T06:19:53` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante una validación estricta de rutas absolutas para prevenir el "path traversal" accidental durante la recursión, asegurando que cada nodo explorado resida físicamente dentro de la jerarquía de la carpeta de caché validada originalmente.
+- `2026-10-15T06:19:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T06:19:53` Corrida terminada. Total usado hoy: 152.

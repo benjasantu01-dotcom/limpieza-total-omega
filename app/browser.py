@@ -212,6 +212,10 @@ def _process_file_node(entry: os.DirEntry, ctx: ScanContext) -> int:
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
     if depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN: return ScanResult(0, True)
     
+    # Validación defensiva de sandbox por nodo
+    if not _is_within_sandbox(Path(root_path), Path(ctx.sandbox_base_norm)):
+        return ScanResult(0, False)
+
     try:
         root_stat = os.stat(root_path)
         node_id = (root_stat.st_dev, root_stat.st_ino)
