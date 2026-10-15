@@ -167,6 +167,14 @@ class _SettingsManager:
         """
         temp_path: Path = config_path.with_suffix(".tmp")
         
+        # Validar espacio antes de intentar escribir (si es posible)
+        try:
+            statvfs = os.statvfs(config_path.parent)
+            if statvfs.f_frsize * statvfs.f_bavail < len(serialized) * 2:
+                return False
+        except (AttributeError, OSError):
+            pass
+        
         for attempt in range(4):
             f = None
             try:
@@ -176,12 +184,6 @@ class _SettingsManager:
                 fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
                 f.write(serialized)
                 f.flush()
-                
-                # Verificar integridad del archivo temporal recién escrito
-                st = os.fstat(f.fileno())
-                if hasattr(os, 'getuid') and st.st_uid != os.getuid():
-                    return False
-                
                 os.fsync(f.fileno())
                 f.close()
                 f = None

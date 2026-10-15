@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 46
+- Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-13 | 0 | 0 | 0 | 0 | 10 |
+| 2026-10-13 | 0 | 0 | 0 | 0 | 6 |
 | 2026-10-14 | 123 | 18 | 26 | 19 | 164 |
-| 2026-10-15 | 62 | 9 | 20 | 3 | 50 |
+| 2026-10-15 | 64 | 9 | 21 | 3 | 51 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **40**
+- robustez ante casos límite: **34**
 - seguridad defensiva: **34**
-- robustez ante casos límite: **32**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
@@ -38,15 +38,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **14**
 - `main.py`: **13**
 - `scanner.py`: **13**
-- `settings.py`: **12**
+- `settings.py`: **13**
+- `safety.py`: **11**
 - `startup.py`: **11**
 - `quarantine.py`: **10**
-- `safety.py`: **10**
 - `organizer.py`: **9**
 - `branding.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-15T06:10:14` **settings.py** (robustez ante casos límite): Se mejoró `perform_atomic_write` añadiendo un manejo de excepciones más robusto durante la manipulación de archivos y verificando explícitamente el espacio disponible antes de la escritura, mitigando errores críticos ante discos llenos o situaciones de I/O parcial.
+- `2026-10-15T06:08:34` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes mediante la implementación de una validación de `os.stat` más resiliente al manejar errores de `OSError` con códigos específicos, y la inclusión de `errno` (como `ETIMEDOUT` o `EBUSY`) para detectar bloqueos transitorios en sistemas de archivos, evitando que la aplicación aborte prematuramente cuando el acceso es simplemente momentáneo.
 - `2026-10-15T06:01:03` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine_dir` añadiendo una comprobación de existencia y permisos antes de intentar crear el directorio, y se ha fortalecido la integridad en `save_manifest` mediante el uso de `os.replace` (operación atómica) con un `fsync` explícito sobre el directorio padre para asegurar la persistencia de metadatos en sistemas de archivos sensibles a cierres abruptos.
 - `2026-10-15T05:59:21` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante errores inesperados en el hilo de la UI, agregando una capa de protección en `_safe_run_ui_callback` para validar explícitamente que la instancia de la aplicación siga viva antes de agendar operaciones, evitando que errores de `TclError` propaguen excepciones al ciclo principal tras cerrar la app.
 - `2026-10-15T05:49:06` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `score_disk` y `score_memory` para manejar explícitamente el caso de umbrales configurados en cero o negativos, evitando divisiones por cero y retornos inconsistentes, alineándose con la robustez ante valores de configuración inesperados.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-15T05:16:49` **healthscore.py** (rendimiento): Optimizé la validación de `SystemMetrics` utilizando un `dict` local para evitar el acceso repetitivo a atributos mediante `getattr` y `setattr` dentro de un bucle, reduciendo el overhead de reflexión en el camino crítico de cálculo de puntaje.
 - `2026-10-15T05:07:47` **duplicates.py** (rendimiento): Optimizé el pipeline de hashing eliminando llamadas redundantes a `_validate_and_resolve_path` y `_is_valid_candidate` dentro de los métodos `hash_file` y `partial_hash`, ya que los archivos procesados en el bucle principal ya han sido filtrados y validados exhaustivamente por `_collect_candidates`, evitando operaciones innecesarias de I/O y syscalls.
 - `2026-10-15T05:07:37` **diskreport.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo en `walk_files` y `largest_folders` evitando llamadas redundantes a `Path.resolve()` y `Path.relative_to()`, reutilizando las referencias de `os.DirEntry` y limitando el uso de `str()` en operaciones repetitivas dentro del bucle.
-- `2026-10-15T05:07:11` **browser.py** (rendimiento): Optimizé el rendimiento de `detect_profiles` eliminando la recreación innecesaria del `ScanContext` y reutilizando el contexto único para toda la operación, evitando así el re-cálculo de identificadores y redundancia en la caché de seguridad entre distintas rutas de navegador.
-- `2026-10-15T04:47:09` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la adición de docstrings técnicos detallados en funciones clave y la sustitución de `finally` vacíos por una gestión de recursos más explícita y robusta.

@@ -1047,3 +1047,13 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-15T06:01:03` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `quarantine_dir` añadiendo una comprobación de existencia y permisos antes de intentar crear el directorio, y se ha fortalecido la integridad en `save_manifest` mediante el uso de `os.replace` (operación atómica) con un `fsync` explícito sobre el directorio padre para asegurar la persistencia de metadatos en sistemas de archivos sensibles a cierres abruptos.
 - `2026-10-15T06:01:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T06:01:03` Corrida terminada. Total usado hoy: 144.
+- `2026-10-15T06:07:09` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-10-15T06:07:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-15T06:08:34` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante estados inconsistentes mediante la implementación de una validación de `os.stat` más resiliente al manejar errores de `OSError` con códigos específicos, y la inclusión de `errno` (como `ETIMEDOUT` o `EBUSY`) para detectar bloqueos transitorios en sistemas de archivos, evitando que la aplicación aborte prematuramente cuando el acceso es simplemente momentáneo.
+- `2026-10-15T06:08:40` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-15T06:08:44` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-15T06:08:51` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-15T06:09:38` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-15T06:10:14` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se mejoró `perform_atomic_write` añadiendo un manejo de excepciones más robusto durante la manipulación de archivos y verificando explícitamente el espacio disponible antes de la escritura, mitigando errores críticos ante discos llenos o situaciones de I/O parcial.
+- `2026-10-15T06:10:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T06:10:14` Corrida terminada. Total usado hoy: 148.
