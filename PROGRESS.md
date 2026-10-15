@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
-- Rechazadas por tests: 31
+- Mejoras aceptadas: **180** (35.7% de aceptación)
+- Rechazadas por tests: 32
 - Rechazadas por guardia de seguridad: 44
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 233
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-14 | 103 | 18 | 21 | 13 | 141 |
-| 2026-10-15 | 76 | 13 | 23 | 4 | 92 |
+| 2026-10-14 | 101 | 18 | 21 | 12 | 140 |
+| 2026-10-15 | 79 | 14 | 23 | 4 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **42**
 - seguridad defensiva: **39**
-- legibilidad y documentación: **39**
 - manejo de errores y validación de entradas: **38**
 - robustez ante casos límite: **34**
-- rendimiento: **29**
+- rendimiento: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **18**
 - `diskreport.py`: **17**
+- `browser.py`: **17**
+- `memory.py`: **17**
 - `duplicates.py`: **16**
-- `browser.py`: **16**
 - `healthscore.py`: **15**
+- `assistant.py`: **14**
 - `settings.py`: **14**
 - `main.py`: **14**
-- `assistant.py`: **13**
 - `scanner.py`: **11**
-- `organizer.py`: **9**
+- `branding.py`: **10**
 - `safety.py`: **9**
-- `branding.py`: **9**
 - `startup.py`: **9**
 - `quarantine.py`: **9**
+- `organizer.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-15T08:52:25` **browser.py** (legibilidad y documentación): Mejoré la legibilidad del código crítico de escaneo mediante la adición de Type Hints en parámetros complejos y la documentación del propósito (docstrings) en las funciones que gestionan el recorrido recursivo del sistema de archivos, facilitando auditorías de seguridad futuras.
+- `2026-10-15T08:52:16` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de las funciones de manipulación de color y gradientes añadiendo docstrings descriptivos, validación de tipos más explícita y mejorando la consistencia en el manejo de errores mediante el uso del estilo de nombres de variables más claro.
+- `2026-10-15T08:51:43` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos en los decoradores y funciones de validación, además de clarificar la intención de los umbrales de seguridad mediante comentarios alineados con las reglas de negocio del proyecto.
 - `2026-10-15T08:42:23` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` al centralizar el control de errores mediante un `try-except` más específico y asegurando que, ante cualquier fallo durante la lectura o decodificación del JSON (incluyendo archivos truncados o corruptos), la función retorne explícitamente `None` en lugar de propagar excepciones, garantizando así la estabilidad de `load()`.
 - `2026-10-15T08:33:47` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine.py` mediante la implementación de validaciones de entrada más granulares en `_validate_input_path` y `_check_path_syntax_integrity`, incluyendo una comprobación explícita de `None` para evitar fallos de ejecución ante parámetros inesperados, siguiendo estrictamente el enfoque de manejo de errores y validación de entradas.
 - `2026-10-15T08:32:46` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones en `stage_for_review` y `delete_reviewed`, reemplazando capturas de excepciones genéricas por chequeos específicos y añadiendo validaciones de integridad de rutas para evitar que operaciones de E/S fallen ante estados inesperados del sistema de archivos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-15T06:28:59` **healthscore.py** (seguridad defensiva): Reforcé la integridad del motor de salud implementando un método `__post_init__` defensivo y una validación explícita en `compute_score` para asegurar que las `SystemMetrics` no contengan valores maliciosos o fuera de rango antes de cualquier procesamiento, eliminando dependencias de mutación de estado externo durante la ejecución del pipeline.
 - `2026-10-15T06:28:31` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo de duplicados añadiendo una validación explícita mediante `is_safe_to_modify` en el momento de realizar el `hash_file` y `partial_hash`, garantizando que, aunque un archivo haya pasado los filtros iniciales, no se intente leer si su estado de seguridad cambió durante la ejecución del proceso.
 - `2026-10-15T06:19:53` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante una validación estricta de rutas absolutas para prevenir el "path traversal" accidental durante la recursión, asegurando que cada nodo explorado resida físicamente dentro de la jerarquía de la carpeta de caché validada originalmente.
-- `2026-10-15T06:10:14` **settings.py** (robustez ante casos límite): Se mejoró `perform_atomic_write` añadiendo un manejo de excepciones más robusto durante la manipulación de archivos y verificando explícitamente el espacio disponible antes de la escritura, mitigando errores críticos ante discos llenos o situaciones de I/O parcial.
-- `2026-10-15T06:08:34` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes mediante la implementación de una validación de `os.stat` más resiliente al manejar errores de `OSError` con códigos específicos, y la inclusión de `errno` (como `ETIMEDOUT` o `EBUSY`) para detectar bloqueos transitorios en sistemas de archivos, evitando que la aplicación aborte prematuramente cuando el acceso es simplemente momentáneo.
-- `2026-10-15T06:01:03` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine_dir` añadiendo una comprobación de existencia y permisos antes de intentar crear el directorio, y se ha fortalecido la integridad en `save_manifest` mediante el uso de `os.replace` (operación atómica) con un `fsync` explícito sobre el directorio padre para asegurar la persistencia de metadatos en sistemas de archivos sensibles a cierres abruptos.

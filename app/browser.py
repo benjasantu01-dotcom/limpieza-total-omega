@@ -201,6 +201,7 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     return False
 
 def _process_file_node(entry: os.DirEntry, ctx: ScanContext) -> int:
+    """Extrae el tamaño de un archivo individual evitando procesar duplicados por inodo."""
     try:
         st = entry.stat(follow_symlinks=False)
         file_id = (st.st_dev, st.st_ino)
@@ -210,6 +211,10 @@ def _process_file_node(entry: os.DirEntry, ctx: ScanContext) -> int:
     except (OSError, PermissionError): return 0
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
+    """
+    Recorre el sistema de archivos de forma recursiva aplicando las reglas de seguridad
+    de 'ctx'. Retorna el acumulado de bytes encontrados y éxito de operación.
+    """
     if depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN: return ScanResult(0, True)
     
     # Validación defensiva de sandbox por nodo

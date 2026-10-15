@@ -1462,3 +1462,36 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-15T08:42:23` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_read_and_parse_json` al centralizar el control de errores mediante un `try-except` más específico y asegurando que, ante cualquier fallo durante la lectura o decodificación del JSON (incluyendo archivos truncados o corruptos), la función retorne explícitamente `None` en lugar de propagar excepciones, garantizando así la estabilidad de `load()`.
 - `2026-10-15T08:42:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T08:42:23` Corrida terminada. Total usado hoy: 208.
+- `2026-10-15T08:50:11` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-10-15T08:50:14` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-15T08:50:46` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.82s
+
+```
+- `2026-10-15T08:50:46` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry._extract_quoted_path` y `_resolve_and_cache_path` mediante la validación explícita de `Path` antes de operar y la captura de errores específicos durante la resolución de rutas, evitando que una ruta mal formada o con caracteres inválidos provoque una excepción no controlada.
+- `2026-10-15T08:51:01` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-15T08:51:43` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos en los decoradores y funciones de validación, además de clarificar la intención de los umbrales de seguridad mediante comentarios alineados con las reglas de negocio del proyecto.
+- `2026-10-15T08:52:16` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de las funciones de manipulación de color y gradientes añadiendo docstrings descriptivos, validación de tipos más explícita y mejorando la consistencia en el manejo de errores mediante el uso del estilo de nombres de variables más claro.
+- `2026-10-15T08:52:25` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la legibilidad del código crítico de escaneo mediante la adición de Type Hints en parámetros complejos y la documentación del propósito (docstrings) en las funciones que gestionan el recorrido recursivo del sistema de archivos, facilitando auditorías de seguridad futuras.
+- `2026-10-15T08:52:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T08:52:25` Corrida terminada. Total usado hoy: 212.
