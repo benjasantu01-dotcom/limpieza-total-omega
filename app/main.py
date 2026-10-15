@@ -1927,6 +1927,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 # Sanitizar ruta y validar permisos antes de escribir
                 clean_dest = self._sanitize_path(destino)
                 ruta_destino = Path(clean_dest).resolve(strict=False)
+                # Validar escritura en el directorio contenedor antes de proceder
                 self._ensure_path_writable_and_clean(ruta_destino.parent)
                 
                 ruta = reporting.save_report(self.report_data, str(ruta_destino), as_markdown=as_markdown)

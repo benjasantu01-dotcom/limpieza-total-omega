@@ -261,31 +261,20 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Asegura rangos aceptables para todas las métricas mediante validación numérica."""
-        # Convertir a dict local para optimizar el acceso en el bucle de validación
-        data = self.__dict__
-        
-        # Validación inicial de tipos
-        for f in self._FIELDS_TO_VALIDATE:
-            if data.get(f) is None or (isinstance(data.get(f), float) and math.isnan(data.get(f))):
-                data[f] = 0.0 if "percent" not in f else 100.0
-        
-        try:
-            self.junk_mb = _validate_numeric(data["junk_mb"], 0.0, 0.0, 1048576.0)
-            self.duplicate_mb = _validate_numeric(data["duplicate_mb"], 0.0, 0.0, 1048576.0)
-            self.suspicious_count = int(_validate_numeric(data["suspicious_count"], 0, 0, 5000))
-            self.suspicious_warnings = int(_validate_numeric(data["suspicious_warnings"], 0, 0, 5000))
-            self.startup_count = int(_validate_numeric(data["startup_count"], 0, 0, 1000))
-            self.quarantined_count = int(_validate_numeric(data["quarantined_count"], 0, 0, 1000))
-            self.memory_available_percent = _validate_numeric(data["memory_available_percent"], 100.0, 0.0, 100.0)
-            self.disk_free_percent = _validate_numeric(data["disk_free_percent"], 100.0, 0.0, 100.0)
-        except Exception:
-            for f in self._FIELDS_TO_VALIDATE:
-                setattr(self, f, 0.0 if "percent" not in f else 100.0)
+        # Validación de tipos y rango defensiva
+        self.junk_mb = _validate_numeric(self.junk_mb, 0.0, 0.0, 1048576.0)
+        self.duplicate_mb = _validate_numeric(self.duplicate_mb, 0.0, 0.0, 1048576.0)
+        self.suspicious_count = int(_validate_numeric(self.suspicious_count, 0, 0, 5000))
+        self.suspicious_warnings = int(_validate_numeric(self.suspicious_warnings, 0, 0, 5000))
+        self.startup_count = int(_validate_numeric(self.startup_count, 0, 0, 1000))
+        self.quarantined_count = int(_validate_numeric(self.quarantined_count, 0, 0, 1000))
+        self.memory_available_percent = _validate_numeric(self.memory_available_percent, 100.0, 0.0, 100.0)
+        self.disk_free_percent = _validate_numeric(self.disk_free_percent, 100.0, 0.0, 100.0)
 
     @property
     def is_finite(self) -> bool:
         """Verifica que todas las métricas numéricas sean valores finitos."""
-        return all(math.isfinite(float(getattr(self, f))) and not math.isnan(float(getattr(self, f))) for f in self._FIELDS_TO_VALIDATE)
+        return all(math.isfinite(float(getattr(self, f))) for f in self._FIELDS_TO_VALIDATE)
 
 @dataclass
 class HealthResult:
@@ -334,11 +323,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
     Computa el puntaje global recorriendo el pipeline de normalizadores y reglas.
     """
-    if not isinstance(metrics, SystemMetrics):
-        m = SystemMetrics()
-    else:
-        m = metrics
-        m.validate()
+    # Garantizar instancia válida antes de procesar
+    m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
+    m.validate()
     
     if not m.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Métricas inestables detectadas."])

@@ -1088,3 +1088,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-15T06:19:53` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante una validación estricta de rutas absolutas para prevenir el "path traversal" accidental durante la recursión, asegurando que cada nodo explorado resida físicamente dentro de la jerarquía de la carpeta de caché validada originalmente.
 - `2026-10-15T06:19:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T06:19:53` Corrida terminada. Total usado hoy: 152.
+- `2026-10-15T06:27:28` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-10-15T06:28:00` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-10-15T06:28:31` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez del escaneo de duplicados añadiendo una validación explícita mediante `is_safe_to_modify` en el momento de realizar el `hash_file` y `partial_hash`, garantizando que, aunque un archivo haya pasado los filtros iniciales, no se intente leer si su estado de seguridad cambió durante la ejecución del proceso.
+- `2026-10-15T06:28:59` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Reforcé la integridad del motor de salud implementando un método `__post_init__` defensivo y una validación explícita en `compute_score` para asegurar que las `SystemMetrics` no contengan valores maliciosos o fuera de rango antes de cualquier procesamiento, eliminando dependencias de mutación de estado externo durante la ejecución del pipeline.
+- `2026-10-15T06:29:59` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-15T06:31:02` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-15T06:32:07` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `main.py` mediante una validación explícita en `on_save_report`, asegurando que la ruta de destino no solo sea sanitizada sino que también verifique la integridad del directorio padre antes de realizar la operación de escritura, evitando posibles inyecciones de rutas fuera de los límites permitidos.
+- `2026-10-15T06:32:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T06:32:07` Corrida terminada. Total usado hoy: 156.
