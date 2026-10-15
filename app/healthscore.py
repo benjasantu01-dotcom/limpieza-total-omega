@@ -253,6 +253,11 @@ class SystemMetrics:
     )
 
     def __post_init__(self) -> None:
+        """Asegura consistencia de tipos y rangos tras la instanciación."""
+        for field_name in self._FIELDS_TO_VALIDATE:
+            val = getattr(self, field_name)
+            if not isinstance(val, (int, float)):
+                setattr(self, field_name, 0.0)
         self.validate()
 
     def safe_get(self, field_name: str, default: Any = 0) -> Any:
@@ -304,7 +309,8 @@ def _sanitize_msg(msg: str | Any) -> str:
 def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:
     """Envoltorio seguro para ejecutar factories de reglas sin exponer errores."""
     try:
-        return _sanitize_msg(rule.message_factory(metrics))
+        res = rule.message_factory(metrics)
+        return _sanitize_msg(res) if isinstance(res, str) else ""
     except Exception:
         return ""
 

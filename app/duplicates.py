@@ -104,7 +104,7 @@ def _is_file_locked(path: Path) -> bool:
     if not is_safe_to_modify(path):
         return True
     try:
-        if not os.access(path, os.R_OK):
+        if not path.exists() or not os.access(path, os.R_OK):
             return True
         with open(path, "rb") as f:
             return False
@@ -129,7 +129,7 @@ def _safe_path_check(path: Path) -> bool:
 
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """Filtra archivos inválidos, bloqueados, ocultos o de sistema antes del análisis."""
-    if st_size <= 0:
+    if st_size <= 0 or not path.exists():
         return False
     if is_protected_path(path) or not _safe_path_check(path) or is_system_or_hidden(path):
         return False
@@ -140,7 +140,7 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Calcula el SHA256 completo de un archivo mediante lectura en bloques (streaming)."""
-    if chunk_size <= 0 or not _safe_path_check(path):
+    if chunk_size <= 0 or not _safe_path_check(path) or not path.exists():
         return None
     try:
         digest = hashlib.sha256()
@@ -154,7 +154,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula un hash SHA256 sobre el segmento inicial del archivo para optimización."""
-    if read_bytes <= 0 or not _safe_path_check(path):
+    if read_bytes <= 0 or not _safe_path_check(path) or not path.exists():
         return None
     try:
         with open(path, "rb") as f:
@@ -171,7 +171,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
         if not p: continue
         try:
             path_obj = Path(p).resolve()
-            if path_obj.is_file():
+            if path_obj.exists() and path_obj.is_file():
                 st_size = path_obj.stat().st_size
                 if _is_valid_candidate(path_obj, st_size):
                     groups[st_size].append(path_obj)
@@ -185,7 +185,7 @@ def _resolve_and_verify_root(directory_path: PathLike) -> Optional[Path]:
     if not directory_path: return None
     try:
         root_obj = Path(directory_path).resolve()
-        if root_obj.is_dir() and _safe_path_check(root_obj):
+        if root_obj.exists() and root_obj.is_dir() and _safe_path_check(root_obj):
             return root_obj
     except (OSError, ValueError, RuntimeError, TypeError):
         return None
@@ -236,7 +236,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Aplica una función de hashing (parcial o total) para agrupar candidatos colisionados."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if (digest := hash_func(path)):
+        if path.exists() and (digest := hash_func(path)):
             groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
@@ -284,6 +284,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     """Calcula métricas de selección: (timestamp de modificación, longitud de ruta)."""
     try:
+        if not path.exists(): return None
         stat = path.stat()
         return float(stat.st_mtime), len(str(path))
     except (OSError, AttributeError):

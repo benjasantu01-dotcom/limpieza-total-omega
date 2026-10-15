@@ -795,3 +795,10 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-10-15T14:39:14` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la resiliencia ante errores de `os.scandir` y `os.stat` en el generador `walk_files` para manejar correctamente el acceso a archivos con permisos restringidos o bloqueados por el sistema, asegurando que la iteración no se interrumpa ante fallos individuales.
 - `2026-10-15T14:39:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T14:39:14` Corrida terminada. Total usado hoy: 348.
+- `2026-10-15T14:47:08` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-15T14:47:36` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante errores de acceso a disco en `_collect_candidates` y `_process_large_file_subset` añadiendo validaciones de existencia antes de procesar rutas, evitando excepciones cuando archivos desaparecen entre el listado (scandir) y el cálculo de hash.
+- `2026-10-15T14:47:37` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-15T14:48:09` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemMetrics` ante casos límite asegurando que la validación de `post_init` cubra la integridad de los tipos de datos entrantes y protegí `_evaluate_rules` contra reglas mal formadas que devuelvan tipos inesperados.
+- `2026-10-15T14:48:09` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-10-15T14:48:09` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T14:48:09` Corrida terminada. Total usado hoy: 350.
