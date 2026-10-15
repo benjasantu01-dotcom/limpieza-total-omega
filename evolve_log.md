@@ -958,3 +958,22 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-15T04:48:24` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: legibilidad y documentación).
 - `2026-10-15T04:48:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T04:48:24` Corrida terminada. Total usado hoy: 116.
+- `2026-10-15T04:55:54` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-10-15T04:56:41` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: Scanner._is_inside_base_root, Scanner._is_relevant_extension, Scanner._is_reparse_point
+- `2026-10-15T04:57:29` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-15T04:57:53` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-15T04:57:54` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-15T04:58:23` Tests FALLARON:
+```
+ basura, 900 MB en duplicados.'
+ +  where 'Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 MB en duplicados.' = Answer(text='Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 M...lo más urgente que debería arreglar?', '¿Por qué mi PC está lenta?', '¿Es seguro borrar lo que encontró la limpieza?']).text
+FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_explains_they_are_signals - AssertionError: assert 'señales' in 'con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de ram, 2400 mb de basura, 900 mb en duplicados.'
+ +  where 'con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de ram, 2400 mb de basura, 900 mb en duplicados.' = <built-in method lower of str object at 0x7fac1ff5d6e0>()
+ +    where <built-in method lower of str object at 0x7fac1ff5d6e0> = 'Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 MB en duplicados.'.lower
+ +      where 'Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 MB en duplicados.' = Answer(text='Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura, 900 M...lo más urgente que debería arreglar?', '¿Por qué mi PC está lenta?', '¿Es seguro borrar lo que encontró la limpieza?']).text
+2 failed, 297 passed, 4 warnings in 1.64s
+
+```
+- `2026-10-15T04:58:23` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Optimizé `local_answer` para evitar el parseo de tokens mediante `finditer` en cada consulta, reemplazándolo por una comprobación directa de pertenencia que mejora el rendimiento y simplifica la lógica de búsqueda.
+- `2026-10-15T04:58:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T04:58:23` Corrida terminada. Total usado hoy: 120.
