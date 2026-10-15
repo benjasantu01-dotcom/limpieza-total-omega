@@ -399,10 +399,10 @@ class SystemContext:
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
         """Valida, convierte y verifica límites de un campo individual según su especificación."""
         val: Any = _get_source_value(source, key)
-        if val is None or not isinstance(val, (int, float, str)):
-            return None
+        if val is None: return None
         valid_val: Optional[float] = _is_valid_numeric_update(val, spec)
-        return spec.type_hint(valid_val) if valid_val is not None else None
+        if valid_val is None: return None
+        return spec.type_hint(valid_val)
 
     def _clean_grade(self, val: Any) -> str:
         """Limpia el string de calificación eliminando caracteres de control no seguros."""
@@ -416,7 +416,6 @@ class SystemContext:
         if source is None: return False
         if isinstance(source, dict):
             return not _is_input_too_deep_or_complex(source)
-        # Permite verificar atributos si el objeto es complejo pero no indexable
         return True
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
@@ -427,9 +426,8 @@ class SystemContext:
             if _is_safe_key(k):
                 setattr(self, k, v)
         self.analyzed = True
-        self.__dict__.pop("metrics_snapshot", None)
-        self.__dict__.pop("active_problems", None)
-        self.__dict__.pop("_hash_tuple", None)
+        for attr in ("metrics_snapshot", "active_problems", "_hash_tuple"):
+            self.__dict__.pop(attr, None)
 
     def ingest(self, source: Any) -> bool:
         """Normaliza e importa datos externos al contexto de manera transaccional."""
@@ -486,7 +484,6 @@ def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
     try:
         if isinstance(source, dict):
             return source.get(key)
-        # Acceso defensivo a objetos que podrían no tener el atributo
         if hasattr(source, key):
             val: Any = getattr(source, key)
             return val if not callable(val) else None

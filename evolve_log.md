@@ -785,3 +785,13 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-10-15T14:28:48` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo del registro evitando el procesamiento redundante de columnas en el CSV mediante un `DictReader` selectivo y un filtrado anticipado en PowerShell, reduciendo drásticamente la carga de memoria al manejar grandes volúmenes de claves.
 - `2026-10-15T14:28:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T14:28:48` Corrida terminada. Total usado hoy: 344.
+- `2026-10-15T14:36:57` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-15T14:37:00` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-15T14:37:47` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `SystemContext.ingest` y `_apply_field` para manejar casos límite donde el origen de datos (ej. un archivo de configuración corrompido o un diccionario mal formado) podría contener tipos de datos inesperados, asegurando que el estado del sistema no se corrompa con valores `None` o mal tipados.
+- `2026-10-15T14:38:19` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación proactiva de parámetros de entrada, evitando que valores extremos o rutas inválidas provoquen errores de cálculo o desbordamientos durante el renderizado.
+- `2026-10-15T14:38:44` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-10-15T14:38:45` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-15T14:38:57` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-15T14:39:14` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la resiliencia ante errores de `os.scandir` y `os.stat` en el generador `walk_files` para manejar correctamente el acceso a archivos con permisos restringidos o bloqueados por el sistema, asegurando que la iteración no se interrumpa ante fallos individuales.
+- `2026-10-15T14:39:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T14:39:14` Corrida terminada. Total usado hoy: 348.
