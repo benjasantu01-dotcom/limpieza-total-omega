@@ -344,8 +344,15 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Recorre el sistema de archivos de forma iterativa y agrega estadísticas.
-    Utiliza una cola de prioridad (heap) para mantener eficientemente el top N de archivos.
+    Recorre el sistema de archivos, agrega métricas globales y mantiene un top N de archivos por tamaño.
+
+    Args:
+        directory: Directorio raíz desde el cual comenzar el escaneo.
+        skip_protected: Si es True, omite directorios restringidos según safety.py.
+        limit: Cantidad máxima de archivos más pesados a trackear.
+
+    Returns:
+        SummaryData conteniendo los totales y la lista de archivos más grandes.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = [] 
@@ -354,13 +361,13 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
         for path, size_bytes in walk_files(directory, skip_protected):
             stats.register_file(size_bytes, path.suffix)
             
-            # Mantenimiento de top files usando un heap de tamaño limitado
             if limit > 0:
                 if len(top_heap) < limit: 
                     heapq.heappush(top_heap, (size_bytes, path))
                 elif size_bytes > top_heap[0][0]: 
                     heapq.heapreplace(top_heap, (size_bytes, path))
-    except Exception:
+    except (OSError, PermissionError, RuntimeError) as e:
+        # Registro silencioso o manejo específico del error de escaneo
         pass
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
