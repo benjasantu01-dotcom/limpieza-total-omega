@@ -804,3 +804,4 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-10-15T14:48:09` Corrida terminada. Total usado hoy: 350.
 - `2026-10-15T14:57:23` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-15T15:07:49` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-10-15T15:17:57` Presupuesto diario agotado (350 usados). Corte hasta mañana.
