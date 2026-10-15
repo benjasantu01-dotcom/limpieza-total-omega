@@ -147,12 +147,9 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
 
 
-def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
+def _is_excluded_path(entry: os.DirEntry, root_str: str) -> bool:
     """
     Determina si una entrada de sistema debe excluirse del análisis.
-    
-    Aplica filtros de seguridad: caracteres especiales (RTL), puntos de reparse, 
-    permisos de acceso, y validación contra rutas protegidas o fuera de la raíz.
     """
     try:
         name = entry.name
@@ -161,19 +158,16 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         if any(char in name for char in ('<', '>', ':', '"', '|', '?', '*')):
             return True
         
-        # Verificar si es un punto de reparse (junctions, enlaces simbólicos a carpetas)
         if entry.is_symlink() or (os.name == 'nt' and entry.is_dir() and entry.stat().st_file_attributes & 0x400):
             return True
         
-        # Validar acceso previo a resolución de ruta
         if not os.access(entry.path, os.R_OK):
             return True
 
-        entry_path = Path(entry.path).resolve()
-        if not str(entry_path).startswith(str(root_path)):
+        if not entry.path.startswith(root_str):
             return True
         
-        if is_protected_path(entry_path):
+        if is_protected_path(Path(entry.path)):
             return True
             
         return False
@@ -281,40 +275,30 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """Generador que recorre recursivamente el sistema de archivos, ignorando rutas protegidas."""
     root_path = _validate_root(directory)
     if root_path is None: return
+    root_str = str(root_path)
     
     visited_inodes: set[Inode] = set()
     stack: List[Path] = [root_path]
     
     while stack:
         current_dir = stack.pop()
-        if not current_dir or not current_dir.exists():
-            continue
-            
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if skip_protected and _is_excluded_path(entry, root_path):
+                        if skip_protected and _is_excluded_path(entry, root_str):
                             continue
                         
-                        entry_p = Path(entry.path)
                         if entry.is_dir(follow_symlinks=False):
-                            try:
-                                st = entry.stat(follow_symlinks=False)
-                                inode = (st.st_dev, st.st_ino)
-                                if inode not in visited_inodes:
-                                    visited_inodes.add(inode)
-                                    stack.append(entry_p)
-                            except (OSError, PermissionError):
-                                continue
+                            st = entry.stat(follow_symlinks=False)
+                            inode = (st.st_dev, st.st_ino)
+                            if inode not in visited_inodes:
+                                visited_inodes.add(inode)
+                                stack.append(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
-                            try:
-                                st = entry.stat(follow_symlinks=False)
-                                yield entry_p, st.st_size
-                            except (OSError, PermissionError):
-                                continue
-                            
-                    except (OSError, PermissionError, FileNotFoundError):
+                            st = entry.stat(follow_symlinks=False)
+                            yield Path(entry.path), st.st_size
+                    except (OSError, PermissionError):
                         continue
         except (PermissionError, OSError, FileNotFoundError): 
             continue
@@ -339,13 +323,13 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     root = _validate_root(directory)
     if root is None: return []
     stats: Dict[str, FolderMetrics] = defaultdict(FolderMetrics)
+    root_parts = root.parts
     
     for path, size in walk_files(root, skip_protected):
         try:
-            if not root or path == root: continue
-            rel = path.relative_to(root).parts
-            if not rel: continue
-            top_folder = root / rel[0]
+            parts = path.parts
+            if len(parts) <= len(root_parts): continue
+            top_folder = root / parts[len(root_parts)]
             curr = stats[str(top_folder)]
             curr.size += size
             curr.file_count += 1
@@ -366,9 +350,6 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
     Ejecuta el escaneo del directorio y agrupa estadísticas de uso mediante un min-heap.
-    
-    Utiliza `walk_files` para procesar archivos y mantiene un Top N de los archivos
-    más grandes encontrados utilizando una estructura de datos de montículo (heap).
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = [] 
@@ -376,7 +357,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     for path, size_bytes in walk_files(directory, skip_protected):
         stats.register_file(size_bytes, path.suffix)
         
-        # Si el límite es mayor a 0, mantenemos un heap de tamaño 'limit' con los más grandes
         if limit > 0:
             if len(top_heap) < limit: 
                 heapq.heappush(top_heap, (size_bytes, path))

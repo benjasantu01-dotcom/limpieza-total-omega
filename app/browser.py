@@ -218,7 +218,6 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     if _is_unc_path(path_str) or len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS):
         return True
     
-    # Verificamos si existe antes de validar el sandbox para evitar errores de resolución
     if not os.path.exists(path_str): return True
     if not _is_within_sandbox(Path(path_str), Path(ctx.sandbox_base_norm)):
         return True
@@ -297,12 +296,6 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
 def directory_size(path: Optional[OSPath]) -> int:
     """
     Calcula el tamaño total de una carpeta mediante un escaneo recursivo y seguro.
-
-    Parámetros:
-        path: Ruta (string o Path) del directorio a medir.
-
-    Retorno:
-        Tamaño total en bytes, o 0 si la ruta es inválida o inaccesible.
     """
     if not isinstance(path, (str, Path)) or not path: return 0
     path_obj: Path = Path(path)
@@ -374,6 +367,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     found: List[BrowserCache] = []
     
+    # Reutilizamos el contexto para mantener el estado de visited_dirs/files y safety_cache entre navegadores
     ctx = ScanContext("", _get_kernel32(), _IS_JUNCTION_FN, set(), set(), {})
     
     for base in raw_bases:
@@ -385,6 +379,8 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             for browser_name, rel_str in browser_map.items():
                 candidate = _resolve_browser_path(real_base, rel_str)
                 if candidate != Path() and _is_valid_cache_path(candidate, ctx.sandbox_base_norm):
+                    # Limpiamos solo visited_files para no cruzar información entre árboles distintos
+                    ctx.visited_files.clear()
                     scan_res = _sum_directory_recursive(str(candidate), ctx, 0)
                     if scan_res.bytes_found > 0:
                         found.append(BrowserCache(str(browser_name), candidate, scan_res.bytes_found))

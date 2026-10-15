@@ -977,3 +977,10 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-10-15T04:58:23` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Optimizé `local_answer` para evitar el parseo de tokens mediante `finditer` en cada consulta, reemplazándolo por una comprobación directa de pertenencia que mejora el rendimiento y simplifica la lógica de búsqueda.
 - `2026-10-15T04:58:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T04:58:23` Corrida terminada. Total usado hoy: 120.
+- `2026-10-15T05:06:04` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-10-15T05:06:43` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-10-15T05:07:11` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé el rendimiento de `detect_profiles` eliminando la recreación innecesaria del `ScanContext` y reutilizando el contexto único para toda la operación, evitando así el re-cálculo de identificadores y redundancia en la caché de seguridad entre distintas rutas de navegador.
+- `2026-10-15T05:07:37` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo recursivo en `walk_files` y `largest_folders` evitando llamadas redundantes a `Path.resolve()` y `Path.relative_to()`, reutilizando las referencias de `os.DirEntry` y limitando el uso de `str()` en operaciones repetitivas dentro del bucle.
+- `2026-10-15T05:07:47` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el pipeline de hashing eliminando llamadas redundantes a `_validate_and_resolve_path` y `_is_valid_candidate` dentro de los métodos `hash_file` y `partial_hash`, ya que los archivos procesados en el bucle principal ya han sido filtrados y validados exhaustivamente por `_collect_candidates`, evitando operaciones innecesarias de I/O y syscalls.
+- `2026-10-15T05:07:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T05:07:47` Corrida terminada. Total usado hoy: 124.

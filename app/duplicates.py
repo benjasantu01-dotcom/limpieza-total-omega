@@ -132,30 +132,13 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
     return True
 
 
-def _validate_and_resolve_path(path_input: PathLike) -> Optional[Path]:
-    """Normaliza y valida que la entrada sea un archivo candidato válido."""
-    if not path_input:
-        return None
-    try:
-        path_obj: Path = Path(path_input).resolve()
-        if path_obj.is_file() and _is_valid_candidate(path_obj, path_obj.stat().st_size):
-            return path_obj
-    except (OSError, RuntimeError, ValueError):
-        return None
-    return None
-
-
-def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
+def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Calcula el SHA256 completo de un archivo mediante streaming (Chunking)."""
     if chunk_size <= 0:
         return None
-    valid_path = _validate_and_resolve_path(path)
-    if not valid_path:
-        return None
-            
     try:
         digest = hashlib.sha256()
-        with open(valid_path, "rb") as f:
+        with open(path, "rb") as f:
             while (chunk := f.read(chunk_size)):
                 digest.update(chunk)
         return digest.hexdigest()
@@ -163,16 +146,12 @@ def hash_file(path: PathLike, chunk_size: int = 1024 * 1024) -> Optional[str]:
         return None
 
 
-def partial_hash(path: PathLike, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
+def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula un hash SHA256 de los primeros N bytes para validación rápida."""
     if read_bytes <= 0:
         return None
-    valid_path = _validate_and_resolve_path(path)
-    if not valid_path:
-        return None
-
     try:
-        with open(valid_path, "rb") as f:
+        with open(path, "rb") as f:
             content = f.read(read_bytes)
             return hashlib.sha256(content).hexdigest() if content else None
     except (OSError, IOError, PermissionError):
