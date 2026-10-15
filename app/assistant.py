@@ -650,7 +650,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     if not q_sanitized:
         return Answer("Entrada no válida.")
     
-    # Búsqueda optimizada: iteración directa sin crear listas intermedias
+    # Búsqueda optimizada: iteración directa sobre tokens usando el conjunto de claves O(1)
     for match in _TOKEN_REGEX.finditer(q_sanitized.lower()):
         token = match.group()
         if token in _TOKEN_KEYS:

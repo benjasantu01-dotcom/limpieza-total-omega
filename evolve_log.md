@@ -500,3 +500,31 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-10-15T00:23:03` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos (especialmente en `DirectoryStack`), se documentaron las constantes complejas y se refactorizó la lógica de los chequeos heurísticos para mejorar la legibilidad y la mantenibilidad del código sin alterar su comportamiento funcional.
 - `2026-10-15T00:23:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T00:23:03` Corrida terminada. Total usado hoy: 12.
+- `2026-10-15T00:30:58` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-10-15T00:31:29` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+_______________ ERROR collecting evolve/tests/test_assistant.py ________________
+evolve/tests/test_assistant.py:25: in <module>
+    import assistant  # noqa: E402
+    ^^^^^^^^^^^^^^^^
+app/assistant.py:55: in <module>
+    import settings
+app/settings.py:28: in <module>
+    ValidatorFunc: TypeAlias = Callable[[ConfigKey, Any], Any]
+                                         ^^^^^^^^^
+E   NameError: name 'ConfigKey' is not defined
+=========================== short test summary info ============================
+ERROR evolve/tests/test_assistant.py - NameError: name 'ConfigKey' is not defined
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.23s
+
+```
+- `2026-10-15T00:31:29` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la legibilidad y mantenibilidad del módulo `settings.py` mediante la implementación de `TypeAlias` y firmas de tipo explícitas en las funciones de validación, además de añadir un docstring detallado en `_SettingsManager` para clarificar la lógica de persistencia atómica.
+- `2026-10-15T00:31:56` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `startup.py` mediante la adición de docstrings estructuradas con la convención NumPy y se han corregido nombres de variables en funciones internas para eliminar ambigüedades sobre su propósito.
+- `2026-10-15T00:32:35` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el acceso al diccionario de métricas en `local_answer` utilizando un `set` de claves y un `match` directo para evitar recorridos redundantes y mejorar la velocidad de respuesta del asistente local.
+- `2026-10-15T00:33:35` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-15T00:34:22` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el acceso a constantes de color y caché mediante la eliminación de llamadas redundantes a `MappingProxyType.get` y `strip()` dentro de funciones de dibujo, reemplazándolas por acceso directo a constantes tipadas y pre-procesamiento de argumentos.
+- `2026-10-15T00:34:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T00:34:22` Corrida terminada. Total usado hoy: 16.

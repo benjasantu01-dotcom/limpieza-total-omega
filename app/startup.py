@@ -232,7 +232,14 @@ class StartupEntry:
 
 
 def startup_folders() -> List[Path]:
-    """Retorna las rutas del sistema y del usuario configuradas para programas de inicio."""
+    """
+    Retorna las rutas del sistema y del usuario configuradas para programas de inicio.
+
+    Returns
+    -------
+    List[Path]
+        Lista de rutas de carpetas de inicio que existen y son seguras.
+    """
     if os.name != "nt":
         return []
     candidates: List[Path] = []
@@ -301,16 +308,16 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> StartupEnt
     return found_entries
 
 
-def _is_registry_entry_safe(name: str, cmd: str, seen: Set[str]) -> bool:
+def _is_registry_entry_safe(entry_name: str, entry_command: str, seen_commands: Set[str]) -> bool:
     """Valida que una entrada del registro sea única, no sea una rutina de sistema y sea sintácticamente válida."""
-    if not name.strip() or not cmd.strip() or cmd.startswith(r"\\") or cmd in seen:
+    if not entry_name.strip() or not entry_command.strip() or entry_command.startswith(r"\\") or entry_command in seen_commands:
         return False
     # Evitar scripts de PowerShell que podrían ser maliciosos o de mantenimiento del sistema
-    if name.upper().startswith("PS"):
+    if entry_name.upper().startswith("PS"):
         return False
     
     try:
-        clean_path = cmd.strip('"')
+        clean_path = entry_command.strip('"')
         if not clean_path or "\\" not in clean_path and "/" not in clean_path:
             return False
         if any(c in clean_path for c in SUSPICIOUS_CHARS):
@@ -325,7 +332,21 @@ def _is_registry_entry_safe(name: str, cmd: str, seen: Set[str]) -> bool:
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
-    """Convierte el output CSV de PowerShell en una lista de objetos StartupEntry validados."""
+    """
+    Convierte el output CSV de PowerShell en una lista de objetos StartupEntry validados.
+
+    Parameters
+    ----------
+    csv_text : str
+        Salida cruda del comando PowerShell ConvertTo-Csv.
+    source : str
+        Etiqueta de origen para los registros encontrados.
+
+    Returns
+    -------
+    StartupEntries
+        Lista de objetos StartupEntry instanciados.
+    """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
         
