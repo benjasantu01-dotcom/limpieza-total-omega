@@ -759,3 +759,12 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-10-15T13:58:13` ➖ Sin cambios en browser.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de caché (`memoization`) para las validaciones de `is_safe_to_modify` dentro de `ScanContext`, evitando realizar llamadas repetitivas de verificación de seguridad sobre el mismo directorio padre durante la recursión, lo cual reduce significativamente la carga de I/O en escaneos profundos.
 - `2026-10-15T13:58:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T13:58:13` Corrida terminada. Total usado hoy: 332.
+- `2026-10-15T14:06:21` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-15T14:06:51` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `walk_files` reemplazando la creación repetitiva de objetos `Path` y el uso de `str()` en el bucle principal por el uso directo de las cadenas de `os.DirEntry` y una caché de resolución para evitar llamadas innecesarias al sistema de archivos.
+- `2026-10-15T14:07:17` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se optimizó el proceso de recolección de archivos utilizando `os.scandir` de forma más eficiente al consolidar las comprobaciones de seguridad (`is_safe_to_modify` y `is_protected_path`) antes de realizar operaciones de E/S innecesarias, reduciendo el número de llamadas al sistema en el bucle principal.
+- `2026-10-15T14:07:17` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-15T14:07:49` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el bucle de procesamiento en `compute_score` y la generación de resúmenes en `summarize` reemplazando iteraciones por búsquedas directas y evitando el uso repetido de `getattr` o cálculos redundantes, mejorando la eficiencia y legibilidad.
+- `2026-10-15T14:07:50` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-15T14:08:48` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de caché con invalidación selectiva para los resultados del escaneo de duplicados (`dups`), evitando re-escaneos costosos durante la misma sesión cuando el usuario navega entre pestañas o consulta el asistente, mejorando significativamente la respuesta de la UI.
+- `2026-10-15T14:08:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T14:08:48` Corrida terminada. Total usado hoy: 336.

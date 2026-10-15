@@ -120,8 +120,6 @@ def _safe_path_check(path: Path) -> bool:
     sistema y no sea una estructura compleja (junction) que cause bucles.
     """
     try:
-        if not path.exists():
-            return False
         return (is_safe_to_modify(path) and 
                 not is_protected_path(path) and 
                 not is_junction(path))
@@ -215,13 +213,11 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        p_entry = Path(entry.path)
                         if entry.is_dir(follow_symlinks=False):
-                            if not entry.is_symlink():
-                                p_entry = Path(entry.path)
-                                if _safe_path_check(p_entry):
-                                    queue.append((p_entry, depth + 1))
+                            if not entry.is_symlink() and _safe_path_check(p_entry):
+                                queue.append((p_entry, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
-                            p_entry = Path(entry.path)
                             if not skip_protected and is_protected_path(p_entry):
                                 continue
                             st = entry.stat()

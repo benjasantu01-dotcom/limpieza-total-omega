@@ -261,7 +261,6 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Asegura rangos aceptables para todas las métricas mediante validación numérica."""
-        # Validación de tipos y rango defensiva
         self.junk_mb = _validate_numeric(self.junk_mb, 0.0, 0.0, 1048576.0)
         self.duplicate_mb = _validate_numeric(self.duplicate_mb, 0.0, 0.0, 1048576.0)
         self.suspicious_count = int(_validate_numeric(self.suspicious_count, 0, 0, 5000))
@@ -300,9 +299,7 @@ def _sanitize_msg(msg: str | Any) -> str:
     lower_msg = sanitized.lower()
     if any(b in lower_msg for b in _BLOCKED_TERMS):
         return ""
-    # Corte final estricto
-    result = sanitized.strip()
-    return result[:_MAX_MSG_LEN]
+    return sanitized.strip()[:_MAX_MSG_LEN]
 
 def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:
     """Envoltorio seguro para ejecutar factories de reglas sin exponer errores."""
@@ -322,16 +319,9 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
                 findings.append(clean_msg)
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """
-    Computa el puntaje global recorriendo el pipeline de normalizadores y reglas.
-    """
-    # Fallback defensivo ante métricas nulas o corrompidas estructuralmente
-    if not isinstance(metrics, SystemMetrics):
-        m = SystemMetrics()
-    else:
-        m = metrics
+    """Computa el puntaje global recorriendo el pipeline de normalizadores y reglas."""
+    m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
     
-    # Validamos métricas solo si es necesario (SystemMetrics realiza validación en __post_init__)
     if not m.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Métricas inestables detectadas."])
         
@@ -341,19 +331,15 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for entry in _PIPELINE:
         try:
-            # Captura y validación explícita del ratio obtenido
-            raw_ratio = entry.scorer(m)
-            area_ratio = _clamp(raw_ratio) if isinstance(raw_ratio, (int, float)) else 0.0
-            
+            area_ratio = _clamp(entry.scorer(m))
             _evaluate_rules(m, entry.rules, area_ratio, recommendations)
             
-            w_f = float(entry.weight)
-            points = area_ratio * w_f
-            val_int = int(round(_clamp(points, 0.0, w_f)))
+            points = area_ratio * entry.weight
+            val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
             
             metric_breakdown[entry.area] = val_int
-            total_points += float(val_int)
-        except (ValueError, TypeError, ZeroDivisionError) as e:
+            total_points += val_int
+        except Exception as e:
             logging.error(f"Error técnico procesando métrica {entry.area}: {e}")
             metric_breakdown[entry.area] = 0
             
@@ -370,12 +356,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 
 def _render_bar(points: int, max_val: int) -> str:
     """Crea una representación visual de barra para reportes."""
-    try:
-        if max_val <= 0: return ".........."
-        p = max(0, min(int(points), int(max_val)))
-        return "#" * p + "." * (max_val - p)
-    except (TypeError, ValueError):
-        return ".........."
+    p = max(0, min(points, max_val))
+    return "#" * p + "." * (max_val - p)
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera una lista de líneas legible para el informe de salud."""
@@ -384,14 +366,11 @@ def summarize(result: HealthResult | None) -> List[str]:
     
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
-    # Iterar directamente sobre las claves del pipeline para orden y eficiencia
+    # Iteración ordenada sobre _PIPELINE para mantener consistencia y eficiencia
     for entry in _PIPELINE:
-        area = entry.area
-        p = result.breakdown.get(area, 0)
-        maximo = entry.weight
-        lines.append(f"  {area.capitalize():<12} {p:>2}/{maximo:<2} [{_render_bar(p, maximo)}]")
+        p = result.breakdown.get(entry.area, 0)
+        lines.append(f"  {entry.area.capitalize():<12} {p:>2}/{entry.weight:<2} [{_render_bar(p, entry.weight)}]")
     
-    # Sanitize individual items to ensure structural integrity of the report
     recs = [s for s in (_sanitize_msg(r) for r in result.recommendations) if s]
     lines.extend(("", "Recomendaciones:", *(f"  - {s}" for s in recs)))
     return lines

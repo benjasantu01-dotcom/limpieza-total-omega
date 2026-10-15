@@ -157,7 +157,6 @@ def _is_excluded_path(entry: os.DirEntry, root_str: str) -> bool:
         if any(char in name for char in ('<', '>', ':', '"', '|', '?', '*')):
             return True
         
-        # Validar puntos de reparse (junctions) para evitar recursión externa
         if entry.is_symlink() or (os.name == 'nt' and entry.is_dir() and entry.stat().st_file_attributes & 0x400):
             return True
         
@@ -275,7 +274,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     root_str = str(root_path)
     
     visited_inodes: set[Inode] = set()
-    stack: List[Path] = [root_path]
+    stack: List[str] = [str(root_path)]
     
     while stack:
         current_dir = stack.pop()
@@ -291,7 +290,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(Path(entry.path))
+                                stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
                             yield Path(entry.path), entry.stat(follow_symlinks=False).st_size
                     except (OSError, PermissionError):
