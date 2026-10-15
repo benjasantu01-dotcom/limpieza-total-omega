@@ -87,6 +87,7 @@ from scanner import scan_directory, run_windows_defender_quick_scan
 AsyncCallback: TypeAlias = Callable[[], Any]
 LogEntry: TypeAlias = Tuple[str, str]
 HealthMetricConfig: TypeAlias = Tuple[str, str]
+UIBarComponent: TypeAlias = Tuple[ctk.CTkProgressBar, ctk.CTkLabel]
 
 # Configuración centralizada de las pestañas de la aplicación
 TABS: Tuple[str, ...] = (
@@ -264,7 +265,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         
         self.outputs: Dict[str, ctk.CTkTextbox] = {}
         self.cards: Dict[str, ctk.CTkLabel] = {}
-        self.area_bars: Dict[str, Tuple[ctk.CTkProgressBar, ctk.CTkLabel]] = {}
+        self.area_bars: Dict[str, UIBarComponent] = {}
         self._debounces: Dict[str, str] = {}
 
     def _setup_application(self) -> None:

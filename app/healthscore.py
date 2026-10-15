@@ -165,38 +165,28 @@ _JUNK_SCORER = create_linear_scorer(_LIMIT_JUNK_MB, inverse=True)
 _DUP_SCORER = create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)
 _STARTUP_SCORER = create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inverse=True)
 
+# Funciones de factory para reglas del pipeline (mejoran legibilidad y testabilidad)
+def _msg_seguridad(m: SystemMetrics) -> str: return f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad."
+def _msg_disco(m: SystemMetrics) -> str: return f"Queda {m.disk_free_percent:.1f}% de disco libre."
+def _msg_memoria(m: SystemMetrics) -> str: return "Memoria disponible baja: cerrá procesos innecesarios."
+def _msg_basura(m: SystemMetrics) -> str: return f"Hay {m.junk_mb:.0f} MB de archivos temporales."
+def _msg_duplicados(m: SystemMetrics) -> str: return f"Podrías recuperar {m.duplicate_mb:.0f} MB eliminando duplicados."
+def _msg_arranque(m: SystemMetrics) -> str: return f"{m.startup_count} programas arrancan con Windows."
+
 # Pipeline de procesamiento central: define la lógica para computar cada métrica y sus reglas de alerta.
 _PIPELINE: Final[Tuple[PipelineEntry, ...]] = (
-    PipelineEntry(
-        "seguridad", 30, 
-        lambda m: score_security(m.suspicious_count, m.suspicious_warnings), 
-        (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, lambda m: f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad.", lambda m, r: r < WARN_THRESHOLD_HIGH),)
-    ),
-    PipelineEntry(
-        "disco", 20, 
-        lambda m: score_disk(m.disk_free_percent), 
-        (RecommendationRule("disco", WARN_THRESHOLD_LOW, lambda m: f"Queda {m.disk_free_percent:.1f}% de disco libre.", lambda m, r: r < WARN_THRESHOLD_LOW),)
-    ),
-    PipelineEntry(
-        "memoria", 18, 
-        lambda m: score_memory(m.memory_available_percent), 
-        (RecommendationRule("memoria", WARN_THRESHOLD_LOW, lambda m: "Memoria disponible baja: cerrá procesos innecesarios.", lambda m, r: r < WARN_THRESHOLD_LOW),)
-    ),
-    PipelineEntry(
-        "basura", 14, 
-        lambda m: score_junk(m.junk_mb), 
-        (RecommendationRule("basura", WARN_THRESHOLD_MED, lambda m: f"Hay {m.junk_mb:.0f} MB de archivos temporales.", lambda m, r: r < WARN_THRESHOLD_MED),)
-    ),
-    PipelineEntry(
-        "duplicados", 10, 
-        lambda m: score_duplicates(m.duplicate_mb), 
-        (RecommendationRule("duplicados", WARN_THRESHOLD_MED, lambda m: f"Podrías recuperar {m.duplicate_mb:.0f} MB eliminando duplicados.", lambda m, r: r < WARN_THRESHOLD_MED),)
-    ),
-    PipelineEntry(
-        "arranque", 8, 
-        lambda m: score_startup(m.startup_count), 
-        (RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),)
-    ),
+    PipelineEntry("seguridad", 30, lambda m: score_security(m.suspicious_count, m.suspicious_warnings), 
+                  (RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, _msg_seguridad, lambda m, r: r < WARN_THRESHOLD_HIGH),)),
+    PipelineEntry("disco", 20, lambda m: score_disk(m.disk_free_percent), 
+                  (RecommendationRule("disco", WARN_THRESHOLD_LOW, _msg_disco, lambda m, r: r < WARN_THRESHOLD_LOW),)),
+    PipelineEntry("memoria", 18, lambda m: score_memory(m.memory_available_percent), 
+                  (RecommendationRule("memoria", WARN_THRESHOLD_LOW, _msg_memoria, lambda m, r: r < WARN_THRESHOLD_LOW),)),
+    PipelineEntry("basura", 14, lambda m: score_junk(m.junk_mb), 
+                  (RecommendationRule("basura", WARN_THRESHOLD_MED, _msg_basura, lambda m, r: r < WARN_THRESHOLD_MED),)),
+    PipelineEntry("duplicados", 10, lambda m: score_duplicates(m.duplicate_mb), 
+                  (RecommendationRule("duplicados", WARN_THRESHOLD_MED, _msg_duplicados, lambda m, r: r < WARN_THRESHOLD_MED),)),
+    PipelineEntry("arranque", 8, lambda m: score_startup(m.startup_count), 
+                  (RecommendationRule("arranque", WARN_THRESHOLD_LOW, _msg_arranque, lambda m, r: r < WARN_THRESHOLD_LOW),)),
 )
 
 _verify_pipeline_integrity(WEIGHTS, _PIPELINE)

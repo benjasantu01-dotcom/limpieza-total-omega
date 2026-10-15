@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **190** (37.7% de aceptación)
 - Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 42
-- Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 221
+- Rechazadas por guardia de seguridad: 41
+- Sin cambios (nada sustancial que mejorar): 27
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-13 | 64 | 6 | 16 | 7 | 57 |
+| 2026-10-13 | 61 | 6 | 15 | 7 | 57 |
 | 2026-10-14 | 123 | 18 | 26 | 19 | 164 |
-| 2026-10-15 | 4 | 0 | 0 | 0 | 0 |
+| 2026-10-15 | 6 | 0 | 0 | 1 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **46**
+- legibilidad y documentación: **48**
 - seguridad defensiva: **45**
 - manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **32**
-- rendimiento: **25**
+- rendimiento: **22**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,12 +34,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **18**
 - `assistant.py`: **17**
 - `duplicates.py`: **17**
+- `healthscore.py`: **16**
 - `memory.py`: **16**
-- `scanner.py`: **15**
-- `healthscore.py`: **15**
-- `safety.py`: **13**
-- `startup.py`: **13**
-- `main.py`: **11**
+- `scanner.py`: **14**
+- `main.py`: **12**
+- `safety.py`: **12**
+- `startup.py`: **12**
 - `organizer.py`: **11**
 - `settings.py`: **10**
 - `branding.py`: **10**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-15T00:12:20` **main.py** (legibilidad y documentación): He mejorado la legibilidad del archivo `main.py` mediante la implementación de `TypeAlias` más específicos y la estandarización de docstrings que describen el propósito funcional de los métodos complejos, facilitando el mantenimiento y la comprensión de la lógica de negocio.
+- `2026-10-15T00:11:08` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo reemplazando las lambdas complejas en `_PIPELINE` por funciones nominales descriptivas, lo que facilita el debugging, permite añadir docstrings específicos a cada lógica de evaluación y mejora la claridad del flujo de trabajo sin alterar la funcionalidad.
 - `2026-10-15T00:02:38` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad mediante la adición de Type Hints detallados, normalización de docstrings siguiendo el estándar PEP 257 y la mejora de la claridad en la lógica de `_collect_candidates` para separar la responsabilidad de filtrado de la de navegación.
 - `2026-10-15T00:02:28` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas (siguiendo estilo Google) en funciones clave y la sustitución de un bloque `try-except` genérico por un manejo de excepciones explícito en `_collect_summary_data`, aumentando la robustez y legibilidad.
 - `2026-10-15T00:01:58` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y detallados en las funciones de escaneo, clarificando las precondiciones de seguridad y el manejo de excepciones para facilitar el mantenimiento.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-14T12:49:05` **startup.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `startup.py` añadiendo la validación mediante `is_safe_to_modify` a la resolución de rutas en `_resolve_and_cache_path`, garantizando que solo se procesen rutas que no violen las políticas de seguridad del sistema antes de realizar cualquier operación de acceso a disco.
 - `2026-10-14T12:47:50` **safety.py** (seguridad defensiva): Se ha añadido una verificación de "punto de reparse" en el árbol de directorios que impide que la aplicación siga o manipule recursivamente directorios que son enlaces NTFS (junctions o symlinks), evitando que la recursión de `organizer.py` o `scanner.py` escape accidentalmente del sandbox configurado hacia otras partes del sistema de archivos.
 - `2026-10-14T12:38:28` **quarantine.py** (seguridad defensiva): Mejoré la seguridad en la restauración de archivos validando explícitamente que la ruta original reconstruida (`destination`) no sea un enlace simbólico, evitando así riesgos de seguridad por desbordamiento del directorio de destino (ZipSlip/Path Traversal) durante el proceso de restauración.
-- `2026-10-14T12:37:40` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_process_directory` implementando una validación estricta de `entry.path` antes de la recursión, garantizando que ninguna ruta fuera de los límites permitidos pueda ser procesada o explorada, incluso si los filtros anteriores fallan.
-- `2026-10-14T12:28:51` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `main.py` encapsulando las operaciones que manipulan el sistema de archivos dentro de un nuevo decorador `@ensure_safety` aplicado a todos los métodos críticos (análisis, aislamiento, borrado, guardado), garantizando que cualquier intento de interactuar con rutas inseguras sea abortado inmediatamente por `safety.ensure_safe_to_modify` antes de ejecutar la lógica de negocio.
