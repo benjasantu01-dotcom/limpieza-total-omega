@@ -688,18 +688,17 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     """Extrae de manera segura el contenido textual de la respuesta JSON del motor remoto."""
     if not isinstance(data, dict) or not _is_safe_payload_structure(data): return None
     try:
-        candidates: Any = data.get("candidates")
-        if not isinstance(candidates, list) or not candidates or not isinstance(candidates[0], dict): 
-            return None
-        first: dict = candidates[0]
-        if first.get("finishReason") != "STOP": 
-            return None
-        content: Any = first.get("content")
+        candidates = data.get("candidates")
+        if not isinstance(candidates, list) or not candidates: return None
+        first = candidates[0]
+        if not isinstance(first, dict) or first.get("finishReason") != "STOP": return None
+        content = first.get("content")
         if not isinstance(content, dict): return None
-        parts: Any = content.get("parts")
-        if not isinstance(parts, list) or not parts or not isinstance(parts[0], dict): 
-            return None
-        text_val: Any = parts[0].get("text")
+        parts = content.get("parts")
+        if not isinstance(parts, list) or not parts: return None
+        first_part = parts[0]
+        if not isinstance(first_part, dict): return None
+        text_val = first_part.get("text")
         if isinstance(text_val, str):
             sanitized: str = _validate_response_length(text_val)
             return sanitized if _ensure_safe_text(sanitized) else None
