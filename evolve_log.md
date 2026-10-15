@@ -1597,3 +1597,12 @@ FAILED evolve/tests/test_modules.py::test_blend_on_invalid_color_does_not_crash 
 - `2026-10-15T10:24:26` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_safe_for_disk_op` y `delete_reviewed` añadiendo chequeos de integridad contra enlaces simbólicos y puntos de reparse durante la validación final, previniendo así operaciones no deseadas en rutas redirigidas.
 - `2026-10-15T10:24:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T10:24:26` Corrida terminada. Total usado hoy: 248.
+- `2026-10-15T10:32:11` Arrancando corrida. Quedan hoy ~52 peticiones objetivo.
+- `2026-10-15T10:33:02` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de concurrencia y disponibilidad en `_validate_isolation_request` para verificar que el directorio de cuarentena sea una ruta válida y no un archivo preexistente bloqueando el sandbox, mejorando la robustez ante estados inconsistentes del sistema de archivos.
+- `2026-10-15T10:33:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-15T10:34:11` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una validación de redundancia de rutas para evitar ataques de denegación de servicio o errores por recursión circular, detectando si un componente de la ruta es un punto de reparse que apunta a un padre de sí mismo antes de proceder con cualquier operación de E/S.
+- `2026-10-15T10:34:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-15T10:34:15` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-15T10:34:35` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra rutas que contienen caracteres de control Unicode no visibles (incluyendo el espacio de no separación y otros caracteres de control) que podrían ser usados para ofuscar nombres de archivos, evitando errores de resolución y riesgos de seguridad en el escaneo.
+- `2026-10-15T10:34:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T10:34:35` Corrida terminada. Total usado hoy: 252.

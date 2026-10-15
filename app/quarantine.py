@@ -418,6 +418,8 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
              raise UnsafePathError("Ruta de cuarentena no puede ser un enlace simbólico.")
         
         if path.exists():
+            if not path.is_dir():
+                 raise UnsafePathError("Ruta de cuarentena apunta a un archivo existente.")
             if not is_safe_to_modify(path):
                 raise UnsafePathError("Ruta de cuarentena marcada como insegura.")
             if not os.access(path, os.W_OK | os.R_OK):
@@ -506,6 +508,8 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     """Coordinador de validaciones previas al aislamiento."""
     if not dest_dir.is_dir():
         raise UnsafePathError("Destino de cuarentena debe ser un directorio.")
+    if dest_dir.is_file():
+        raise UnsafePathError("Destino bloqueado por archivo existente.")
     _check_path_syntax_integrity(source_path)
     _check_windows_file_attributes(source_path)
     if source_path.is_symlink():

@@ -63,7 +63,7 @@ DirectoryStack: TypeAlias = List[Tuple[str, int]]
 
 # Expresiones regulares para validación de nombres y riesgos
 DOUBLE_EXTENSION_RE: Final[re.Pattern] = re.compile(r"\.(pdf|jpg|png|docx|xlsx|txt)\.(exe|scr|bat|cmd|js|vbs)$", re.IGNORECASE)
-RTL_CHAR_RE: Final[re.Pattern] = re.compile(r"[\u200f\u202e\u202d]")
+RTL_CHAR_RE: Final[re.Pattern] = re.compile(r"[\u200f\u202e\u202d\u200b\u00a0\ufeff]")
 RESERVED_NAMES_RE: Final[re.Pattern] = re.compile(r"^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\..*)?$", re.IGNORECASE)
 INVALID_TRAILING_CHARS_RE: Final[re.Pattern] = re.compile(r"[\. ]$")
 UNC_PATH_RE: Final[re.Pattern] = re.compile(r"^\\\\[^\\\\]+\\")
@@ -138,7 +138,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
-    """Valida la integridad de una ruta contra límites de API (MAX_PATH) y caracteres maliciosos (RTL)."""
+    """Valida la integridad de una ruta contra límites de API (MAX_PATH) y caracteres maliciosos (RTL/Control)."""
     if not isinstance(path_str, str) or not path_str.strip():
         return False
     if len(path_str) > SCAN_LIMITS.max_path or "\0" in path_str:
@@ -150,7 +150,7 @@ def _is_valid_path_structure(path_str: Optional[str]) -> bool:
 def _is_target_extension(name: str) -> bool:
     """Determina si la extensión del archivo requiere inspección heurística por estar en la lista de riesgo."""
     try:
-        if not name: return False
+        if not name or RTL_CHAR_RE.search(name): return False
         return Path(name).suffix.lower() in SUSPICIOUS_ALL_EXTS
     except (ValueError, TypeError):
         return False
@@ -231,9 +231,9 @@ class Scanner:
             return False
 
     def _has_invalid_name(self, name: str) -> bool:
-        """Valida que el nombre de archivo no sea un alias reservado por Windows."""
+        """Valida que el nombre de archivo no sea un alias reservado por Windows o tenga caracteres ocultos."""
         if not name: return True
-        return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name))
+        return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Identifica si una entrada es un punto de reanálisis (Junction)."""

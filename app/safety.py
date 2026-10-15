@@ -189,6 +189,7 @@ class SafetyValidationErrorCode(IntEnum):
     SYSTEM_OWNER_PROTECTION = 32
     VIRTUAL_DRIVE_DETECTED = 33
     BIDI_SPOOFING = 34
+    CIRCULAR_REFERENCE = 35
 
 class UnsafePathError(Exception):
     """Excepción específica para cualquier violación de las políticas de seguridad."""
@@ -223,6 +224,7 @@ class ProtectionReason(Enum):
     VOLUME_RESTRICTED = auto()
     SYSTEM_OWNER = auto()
     VIRTUAL_DRIVE = auto()
+    CIRCULAR_REF = auto()
 
 class ValidationContext(Enum):
     STRUCTURAL = auto()
@@ -849,11 +851,18 @@ def _validate_ntfs_reparse_redirection(path: Path, base_dir: Optional[Path]) -> 
 
 def _validate_path_components(path: Path) -> None:
     current_check = Path(path.anchor)
+    # Verificación de redundancia para prevenir ataques por recursión circular de junctions
+    visited = set()
     for part in path.parts:
         if part in (os.sep, os.altsep): continue
         current_check = current_check / part
-        if current_check.exists() and _is_system_directory_junction(str(current_check)):
-            raise UnsafePathError(f"Punto de reparse detectado en el camino: {current_check}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
+        if current_check.exists():
+            resolved = current_check.resolve()
+            if resolved in visited:
+                raise UnsafePathError(f"Referencia circular detectada: {current_check}", SafetyValidationErrorCode.CIRCULAR_REFERENCE)
+            visited.add(resolved)
+            if _is_system_directory_junction(str(current_check)):
+                raise UnsafePathError(f"Punto de reparse detectado en el camino: {current_check}", SafetyValidationErrorCode.REPARSE_POINT_DETECTED)
 
 def _check_hard_link_security(path: Path, stat_res: os.stat_result) -> None:
     """Previene manipulación de archivos con múltiples enlaces duros."""
