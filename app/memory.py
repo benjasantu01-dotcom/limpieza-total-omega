@@ -331,7 +331,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         psapi = getattr(ctypes.windll, "psapi", None)
         if not kernel32 or not psapi or not hasattr(psapi, "EnumProcesses"): return []
         
-        max_pids = 1024
+        max_pids = 2048
         pids = (ctypes.c_uint32 * max_pids)()
         cb_needed = ctypes.c_uint32()
         pmc = PROCESS_MEMORY_COUNTERS()
@@ -342,11 +342,14 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
                 count = min(max_pids, cb_needed.value // ctypes.sizeof(ctypes.c_uint32))
                 candidates = []
                 for i in range(count):
-                    pid = pids[i]
-                    if pid > 4:
-                        ws = _query_working_set_bytes(pid, kernel32, psapi, pmc)
-                        if ws is not None:
-                            candidates.append(ProcessMemory(f"PID {pid}", pid, ws))
+                    try:
+                        pid = int(pids[i])
+                        if pid > 4:
+                            ws = _query_working_set_bytes(pid, kernel32, psapi, pmc)
+                            if ws is not None:
+                                candidates.append(ProcessMemory(f"PID {pid}", pid, ws))
+                    except (ValueError, TypeError):
+                        continue
                 
                 _CACHE_TOP_PROC = CacheEntry(now, heapq.nlargest(limit, candidates))
         except (ctypes.ArgumentError, OSError, TypeError):

@@ -346,7 +346,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         count = 0
         for item in dest.iterdir():
             try:
-                if not item.is_file(): continue
+                if not item.is_file() or item.is_symlink(): continue
                 item_res = item.resolve(strict=True)
                 # Verifica que el archivo a borrar siga estando contenido en el directorio de revisión
                 if dest.resolve(strict=True) != item_res.parent: continue

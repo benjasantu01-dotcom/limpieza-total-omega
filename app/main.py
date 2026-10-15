@@ -242,6 +242,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._init_component_registry()
         self._setup_application()
 
+    def _check_widget_integrity(self, widget: Any) -> bool:
+        """Verifica existencia de widget de forma genérica."""
+        return hasattr(widget, 'winfo_exists') and widget.winfo_exists()
+
     def _sanitize_path(self, path: Union[str, Path]) -> str:
         """Limpia caracteres no imprimibles de rutas para evitar inyecciones de control."""
         return "".join(c for c in str(path) if c.isprintable())
@@ -279,7 +283,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.protocol("WM_DELETE_WINDOW", self._on_closing)
         except Exception as e:
             logging.critical("Error fatal al inicializar la aplicación: %s", e)
-            if hasattr(self, 'winfo_exists') and self.winfo_exists():
+            if self._check_widget_integrity(self):
                 messagebox.showerror("Error de inicio", "La aplicación no pudo inicializarse.")
                 self.destroy()
             else:
@@ -304,7 +308,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @safe_ui_operation
     def _safe_run_ui_callback(self, callback: AsyncCallback) -> None:
         """Encapsula llamadas a `after_idle` asegurando que ocurran en el hilo principal de forma segura."""
-        if not self._closing and self.winfo_exists():
+        if not self._closing and self._check_widget_integrity(self):
             self.after_idle(callback)
 
     def _validate_environment(self) -> None:
@@ -395,7 +399,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _toggle_ui_availability(self, active: bool) -> None:
         """Modifica el estado de habilitación de todos los botones registrados durante tareas asíncronas."""
         for btn in self._active_buttons:
-            if btn.winfo_exists():
+            if self._check_widget_integrity(btn):
                 btn.configure(state="normal" if active else "disabled")
 
     @safe_ui_operation
@@ -530,7 +534,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         method_name = f"_build_tab_{name.lower()}"
         constructor = getattr(self, method_name, None)
         
-        if constructor and self.winfo_exists():
+        if constructor and self._check_widget_integrity(self):
             try:
                 constructor()
                 self._initialized_tabs[name] = True
@@ -598,7 +602,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         franja.pack(fill="x", padx=18, pady=(12, 6))
 
         def on_resize(event: tk.Event) -> None:
-            if self.winfo_exists():
+            if self._check_widget_integrity(self):
                 self._debounce_action("resize", 100, lambda: (franja.delete("all"), branding.draw_gradient_bar(franja, event.width, 3)))
 
         franja.bind("<Configure>", on_resize)
@@ -717,7 +721,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @safe_ui_operation
     def _render_gauge(self, score: int, grade: str) -> None:
         """Dibuja el gráfico circular del score en el Canvas."""
-        if not hasattr(self, 'gauge') or not self.gauge.winfo_exists():
+        if not self._check_widget_integrity(getattr(self, 'gauge', None)):
             return
         
         self.gauge.delete("all")
@@ -963,7 +967,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _safe_get_entry_value(self, entry_widget: Any, default: Any, numeric: bool = False) -> Any:
         """Extrae de forma segura el valor ingresado en un widget, validando su estado."""
         try:
-            if not hasattr(entry_widget, 'winfo_exists') or not entry_widget.winfo_exists():
+            if not self._check_widget_integrity(entry_widget):
                 return default
             raw = entry_widget.get().strip()
             if not raw:
@@ -1086,7 +1090,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             
         for tab, msgs in grouped.items():
             box = self._box(tab)
-            if box and box.winfo_exists():
+            if self._check_widget_integrity(box):
                 box.insert("end", "\n".join(msgs) + "\n")
                 box.see("end")
 
@@ -1094,13 +1098,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def clear(self, tab: str = "Limpieza") -> None:
         """Limpia el contenido del log de una pestaña específica."""
         box = self._box(tab)
-        if box and box.winfo_exists():
+        if self._check_widget_integrity(box):
             box.delete("1.0", "end")
 
     @safe_ui_operation
     def set_status(self, text: str) -> None:
         """Actualiza el texto en la barra de estado inferior."""
-        if hasattr(self, 'status') and self.status.winfo_exists():
+        if self._check_widget_integrity(getattr(self, 'status', None)):
             self.status.configure(text=text)
 
     @safe_ui_operation
@@ -1108,14 +1112,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Reemplaza todo el log de una pestaña por una lista nueva de cadenas."""
         self.clear(tab)
         box = self._box(tab)
-        if box and box.winfo_exists():
+        if self._check_widget_integrity(box):
             box.insert("1.0", "\n".join(lines))
             box.see("1.0")
         self.report_data[tab.lower()] = list(lines)
 
     def _set_ui_busy_state(self, busy: bool) -> None:
         """Gestiona la visibilidad y animación de la barra de progreso de actividad."""
-        is_mapped = hasattr(self, 'activity') and self.activity.winfo_exists() and self.activity.winfo_ismapped()
+        is_mapped = self._check_widget_integrity(getattr(self, 'activity', None)) and self.activity.winfo_ismapped()
         
         if busy:
             self._toggle_ui_availability(False)
@@ -1183,7 +1187,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def run_async(self, fn: AsyncCallback, target: Optional[str] = None) -> None:
         """Envía una tarea al pool de hilos tras realizar una última validación de seguridad."""
         with self._executor_lock:
-            if self._closing or self._executor is None or not self.winfo_exists(): return
+            if self._closing or self._executor is None or not self._check_widget_integrity(self): return
             
             if target and not self._is_safe_disk_operation(target):
                 self.log("Acción denegada: la ruta destino no es segura.", self._current_tab())
@@ -1196,7 +1200,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _current_tab(self) -> str:
         """Detecta la pestaña activa actualmente mediante el estado del tabview."""
         try:
-            if not hasattr(self, 'tabview') or not self.tabview.winfo_exists():
+            if not self._check_widget_integrity(getattr(self, 'tabview', None)):
                 return "Limpieza"
             etiqueta = self.tabview.get()
             if not isinstance(etiqueta, str): return "Limpieza"
@@ -1356,7 +1360,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         }
         try:
             for clave, label in self.cards.items():
-                if label is not None and label.winfo_exists():
+                if self._check_widget_integrity(label):
                     label.configure(text=valores.get(clave, "-"), text_color=colores.get(clave, branding.color("text")))
         except Exception:
             pass
@@ -1365,7 +1369,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _update_health_bars(self, resultado: healthscore.ScoreResult) -> None:
         """Actualiza todas las barras de progreso del área de salud."""
         for clave, (barra, label) in self.area_bars.items():
-            if barra.winfo_exists():
+            if self._check_widget_integrity(barra):
                 puntos = resultado.breakdown.get(clave, 0)
                 maximo = healthscore.WEIGHTS.get(clave, 1)
                 self._update_health_bar_ui(barra, label, puntos, maximo)
@@ -1374,7 +1378,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_target_choice_changed(self, choice: str) -> None:
         """Callback al cambiar la selección de carpeta en el menú de Limpieza."""
         def update_label(txt: str) -> None:
-            if hasattr(self, 'target_label') and self.target_label.winfo_exists():
+            if self._check_widget_integrity(getattr(self, 'target_label', None)):
                 self.target_label.configure(text=txt)
 
         def reset_selection():
@@ -1528,7 +1532,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_heuristic_scan(self) -> None:
         """Callback: Escaneo heurístico en Descargas."""
         downloads_path = Path.home() / "Downloads"
-        # Usamos exists() en vez de is_dir() sin validar para evitar errores en rutas inexistentes
         if not downloads_path.exists() or not downloads_path.is_dir():
             self.log("No se encontró la carpeta de Descargas.", "Seguridad")
             return
@@ -1941,7 +1944,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @validated_ui_operation
     def on_ask_assistant(self, question: Optional[str] = None) -> None:
         """Enruta la pregunta al asistente local o en línea."""
-        if not hasattr(self, 'question_entry') or not self.question_entry.winfo_exists():
+        if not self._check_widget_integrity(getattr(self, 'question_entry', None)):
             return
 
         texto = self._safe_get_entry_value(self.question_entry, (question or "").strip())
@@ -1991,14 +1994,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 continue
         
         try:
-            # Validar widgets antes de intentar leer valores
-            if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists():
+            if self._check_widget_integrity(getattr(self, 'min_dup_entry', None)):
                 valores["duplicados_tamano_minimo_kb"] = self._get_numeric_setting_from_widget(self.min_dup_entry, "duplicados_tamano_minimo_kb", 64)
                 
-            if hasattr(self, 'top_files_entry') and self.top_files_entry.winfo_exists():
+            if self._check_widget_integrity(getattr(self, 'top_files_entry', None)):
                 valores["top_archivos"] = self._get_numeric_setting_from_widget(self.top_files_entry, "top_archivos", 15)
                 
-            if hasattr(self, 'api_key_entry') and self.api_key_entry.winfo_exists():
+            if self._check_widget_integrity(getattr(self, 'api_key_entry', None)):
                 clave_raw = self._safe_get_entry_value(self.api_key_entry, "")
                 if clave_raw:
                     valores["asistente_clave_api"] = self._sanitize_path(clave_raw)[:128]
@@ -2043,8 +2045,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                         ))
                     self.set_status("Ajustes guardados.")
                 except Exception as e:
-                    self.log(f"Error al escribir ajustes: {e}", "Ajustes")
                     logging.error("Fallo persistencia ajustes: %s", e)
+                    self._safe_run_ui_callback(lambda: self.log(f"Error al escribir ajustes: {e}", "Ajustes"))
 
             self.run_async(task)
         except Exception as e:
@@ -2085,7 +2087,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                         (getattr(self, 'top_files_entry', None), "top_archivos", 15)
                     ]
                     for widget, key, default in widgets:
-                        if widget and hasattr(widget, 'winfo_exists') and widget.winfo_exists():
+                        if self._check_widget_integrity(widget):
                             widget.delete(0, "end")
                             widget.insert(0, str(settings_mod.DEFAULTS.get(key, default)))
                     self.log_lines(["Ajustes restaurados a los valores de fábrica.", ""] + settings_mod.describe(), "Ajustes")

@@ -323,7 +323,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
     Computa el puntaje global recorriendo el pipeline de normalizadores y reglas.
     """
-    m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
+    # Fallback defensivo ante métricas nulas o corrompidas estructuralmente
+    if not isinstance(metrics, SystemMetrics):
+        m = SystemMetrics()
+    else:
+        m = metrics
     
     # Validamos métricas solo si es necesario (SystemMetrics realiza validación en __post_init__)
     if not m.is_finite:

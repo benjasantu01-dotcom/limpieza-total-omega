@@ -1589,3 +1589,11 @@ FAILED evolve/tests/test_modules.py::test_blend_on_invalid_color_does_not_crash 
 - `2026-10-15T10:13:54` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-10-15T10:13:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T10:13:54` Corrida terminada. Total usado hoy: 244.
+- `2026-10-15T10:22:00` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-10-15T10:22:30` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `SystemMetrics` ante valores `None` o estados inconsistentes introduciendo una validación de coherencia interna en `compute_score`, asegurando que si `metrics` es un objeto mal construido, se degrade a un estado seguro en lugar de intentar procesar métricas inválidas.
+- `2026-10-15T10:23:38` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta de hilos y widgets (`_check_widget_integrity`) y se refactorizó `on_save_settings` para manejar correctamente la persistencia de archivos, asegurando que cualquier error durante la validación o escritura de `settings.json` sea capturado sin detener el flujo de trabajo de la aplicación ni dejarla en un estado inconsistente.
+- `2026-10-15T10:23:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-15T10:24:10` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra errores de tipo y estados inesperados en `top_memory_processes`, previniendo fallos al procesar buffers de PIDs incompletos o mal formados, asegurando que `EnumProcesses` no cause una excepción silenciosa que rompa el flujo de diagnóstico.
+- `2026-10-15T10:24:26` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_safe_for_disk_op` y `delete_reviewed` añadiendo chequeos de integridad contra enlaces simbólicos y puntos de reparse durante la validación final, previniendo así operaciones no deseadas en rutas redirigidas.
+- `2026-10-15T10:24:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T10:24:26` Corrida terminada. Total usado hoy: 248.
