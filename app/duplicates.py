@@ -246,8 +246,11 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
-    """Pipeline de refinamiento: reduce candidatos usando hash parcial y confirma con SHA256."""
-    partial_groups = _group_paths_by_hash(paths, partial_hash)
+    """
+    Pipeline de refinamiento: reduce candidatos mediante hash parcial de 64KB y 
+    confirma colisiones finales con hash SHA256 completo.
+    """
+    partial_groups: Dict[str, List[Path]] = _group_paths_by_hash(paths, partial_hash)
     final_results: Dict[str, List[Path]] = {}
     for candidate_subset in partial_groups.values():
         final_results.update(_group_paths_by_hash(candidate_subset, hash_file))
@@ -255,7 +258,10 @@ def _process_large_file_subset(paths: List[Path]) -> Dict[str, List[Path]]:
 
 
 def _decide_hash_strategy_and_process(size_bytes: int, file_paths: List[Path]) -> List[DuplicateGroup]:
-    """Selecciona entre hashing directo o procesado multietapa según el tamaño del archivo."""
+    """
+    Selecciona la estrategia de hashing: uso directo de hash completo si el archivo 
+    es pequeño (<= 64KB) o pipeline de refinamiento (parcial + completo) para grandes.
+    """
     if not file_paths or size_bytes <= 0: return []
     if size_bytes <= PARTIAL_READ_BYTES:
         final_groups = _group_paths_by_hash(file_paths, hash_file)

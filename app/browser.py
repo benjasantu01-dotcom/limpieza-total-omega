@@ -42,11 +42,11 @@ __all__ = [
 ]
 
 # Aliases para mejorar la legibilidad de las firmas de funciones
-JunctionChecker: TypeAlias = Callable[[str], bool]
-BrowserMap: TypeAlias = Dict[str, str]
-OSPath: TypeAlias = Union[str, Path]
-VisitedDirs: TypeAlias = Set[str]
-SafetyCache: TypeAlias = Dict[str, bool]
+JunctionChecker: TypeAlias = Callable[[str], bool]  # Valida si una ruta es un punto de reparse
+BrowserMap: TypeAlias = Dict[str, str]              # Mapeo de nombre de navegador a subruta
+OSPath: TypeAlias = Union[str, Path]                # Acepta tanto strings como objetos Path
+VisitedDirs: TypeAlias = Set[str]                   # Tracking para evitar bucles recursivos
+SafetyCache: TypeAlias = Dict[str, bool]            # Memoización de validaciones de seguridad
 
 PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|', '"'}
 
@@ -79,10 +79,12 @@ def safe_path_operation(default: Any) -> Callable:
     return decorator
 
 class ScanResult(NamedTuple):
+    """Resultado del escaneo recursivo: total en bytes y éxito de la operación."""
     bytes_found: int
     success: bool
 
 class FileAttributes(NamedTuple):
+    """Constantes de atributos de archivo para llamadas a API de Windows."""
     READONLY: int = 0x01
     HIDDEN: int = 0x02
     SYSTEM: int = 0x04
@@ -201,7 +203,6 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     return False
 
 def _process_file_node(entry: os.DirEntry, ctx: ScanContext) -> int:
-    """Extrae el tamaño de un archivo individual evitando procesar duplicados por inodo."""
     try:
         st = entry.stat(follow_symlinks=False)
         file_id = (st.st_dev, st.st_ino)
@@ -211,13 +212,9 @@ def _process_file_node(entry: os.DirEntry, ctx: ScanContext) -> int:
     except (OSError, PermissionError): return 0
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
-    """
-    Recorre el sistema de archivos de forma recursiva aplicando las reglas de seguridad
-    de 'ctx'. Retorna el acumulado de bytes encontrados y éxito de operación.
-    """
-    if depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN: return ScanResult(0, True)
+    if not ctx.sandbox_base_norm or depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN: 
+        return ScanResult(0, True)
     
-    # Validación defensiva de sandbox por nodo
     if not _is_within_sandbox(Path(root_path), Path(ctx.sandbox_base_norm)):
         return ScanResult(0, False)
 
@@ -280,8 +277,6 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
                 candidate = _resolve_browser_path(real_base, rel_str)
                 if candidate != Path() and _is_valid_cache_path(candidate, ctx.sandbox_base_norm):
                     ctx.visited_files.clear()
-                    # Reseteamos visited_dirs solo entre navegadores para evitar ciclos cross-browser
-                    # pero mantenemos seguridad cacheada globalmente para ganar performance
                     scan_res = _sum_directory_recursive(str(candidate), ctx, 0)
                     if scan_res.bytes_found > 0:
                         found.append(BrowserCache(str(browser_name), candidate, scan_res.bytes_found))

@@ -102,6 +102,7 @@ class FolderMetrics:
 
     @property
     def size_mb(self) -> float:
+        """Retorna el tamaño acumulado convertido a megabytes."""
         return _bytes_to_mb(self.size)
 
 
@@ -148,9 +149,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 
 def _is_excluded_path(entry: os.DirEntry, root_str: str) -> bool:
-    """
-    Determina si una entrada de sistema debe excluirse del análisis.
-    """
+    """Determina si una entrada de sistema debe excluirse del análisis."""
     try:
         name = entry.name
         if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
@@ -349,18 +348,18 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     Ejecuta el escaneo del directorio y agrupa estadísticas de uso mediante un min-heap.
     """
     stats = GlobalStats()
-    top_heap: List[FileRecord] = [] 
+    min_heap_for_top_files: List[FileRecord] = [] 
     
     for path, size_bytes in walk_files(directory, skip_protected):
         stats.register_file(size_bytes, path.suffix)
         
         if limit > 0:
-            if len(top_heap) < limit: 
-                heapq.heappush(top_heap, (size_bytes, path))
-            elif size_bytes > top_heap[0][0]: 
-                heapq.heapreplace(top_heap, (size_bytes, path))
+            if len(min_heap_for_top_files) < limit: 
+                heapq.heappush(min_heap_for_top_files, (size_bytes, path))
+            elif size_bytes > min_heap_for_top_files[0][0]: 
+                heapq.heapreplace(min_heap_for_top_files, (size_bytes, path))
                 
-    return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
+    return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, min_heap_for_top_files)
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
