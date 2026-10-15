@@ -313,19 +313,19 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         psapi = getattr(ctypes.windll, "psapi", None)
         if not kernel32 or not psapi or not hasattr(psapi, "EnumProcesses"): return []
         
-        pids = (ctypes.c_uint32 * 1024)()
+        max_pids = 1024
+        pids = (ctypes.c_uint32 * max_pids)()
         cb_needed = ctypes.c_uint32()
         pmc = PROCESS_MEMORY_COUNTERS()
         pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
         
         try:
             if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
-                count = min(1024, cb_needed.value // 4)
+                count = min(max_pids, cb_needed.value // ctypes.sizeof(ctypes.c_uint32))
                 
                 candidates = []
                 for i in range(count):
                     pid = pids[i]
-                    # Filtrado rápido previo antes de operaciones costosas de I/O de archivos
                     if pid > 4 and not _is_system_process(pid) and _is_process_executable_safe(pid):
                         ws = _query_working_set_bytes(pid, kernel32, psapi, pmc)
                         if ws is not None:
