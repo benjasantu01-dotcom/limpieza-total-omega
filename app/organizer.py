@@ -204,9 +204,6 @@ def _is_system_hidden(entry: os.DirEntry) -> bool:
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Valida la viabilidad y seguridad de realizar una operación de disco sobre un JunkFile.
-    
-    Combina validación de existencia, integridad de inodo, protección contra rutas 
-    críticas, permisos de escritura y comprobación de espacio en disco.
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     try:
@@ -301,11 +298,7 @@ def sort_junk(files: Sequence[JunkFile], by: SortField = "size", ascending: bool
     return sorted(files, key=config.key_func, reverse=not bool(ascending))
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """
-    Mueve archivos detectados a un directorio de cuarentena para su posterior revisión.
-    
-    Verifica la seguridad de la ruta destino antes de efectuar cualquier movimiento.
-    """
+    """Mueve archivos detectados a un directorio de cuarentena para su posterior revisión."""
     if not isinstance(files, (list, tuple)) or not review_dir: return None
     try:
         dest_base = Path(review_dir).expanduser()
@@ -315,7 +308,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         
         if not is_safe_to_modify(dest_res) or is_protected_path(dest_res) or _has_forbidden_chars(dest_res): return None
         ensure_safe_to_modify(dest_res)
-    except (OSError, RuntimeError, PermissionError):
+    except (OSError, ValueError, RuntimeError):
         return None
     
     for junk_file in files:
@@ -355,14 +348,14 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             try:
                 if not item.is_file(): continue
                 item_res = item.resolve(strict=True)
-                if not is_safe_to_modify(item_res) or is_protected_path(item_res): continue
+                # Verifica que el archivo a borrar siga estando contenido en el directorio de revisión
                 if dest.resolve(strict=True) != item_res.parent: continue
+                if not is_safe_to_modify(item_res) or is_protected_path(item_res): continue
                 
                 ensure_safe_to_modify(item_res)
                 item_res.unlink()
                 count += 1
-            except (OSError, PermissionError, FileNotFoundError) as e:
-                logger.error(f"Error borrando {item}: {e}")
+            except (OSError, PermissionError, FileNotFoundError):
                 continue
         return count
     except (OSError, PermissionError, RuntimeError):

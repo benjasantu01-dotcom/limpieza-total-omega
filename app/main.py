@@ -1377,15 +1377,18 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if hasattr(self, 'target_label') and self.target_label.winfo_exists():
                 self.target_label.configure(text=txt)
 
+        def reset_selection():
+            self.target_choice.set("Por defecto (Temp + Descargas)")
+            self.scan_target = None
+            update_label("")
+
         if choice == "Elegir carpeta...":
             folder = self._ask_folder()
             if folder:
                 self.scan_target = folder
                 update_label(folder)
             else:
-                self.target_choice.set("Por defecto (Temp + Descargas)")
-                self.scan_target = None
-                update_label("")
+                reset_selection()
         elif choice == "Por defecto (Temp + Descargas)":
             self.scan_target = None
             update_label("")
@@ -1395,9 +1398,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 update_label(f"Unidad: {choice}")
             else:
                 self.log(f"Error: La ruta seleccionada ({choice}) no es segura.", "Limpieza")
-                self.target_choice.set("Por defecto (Temp + Descargas)")
-                self.scan_target = None
-                update_label("")
+                reset_selection()
 
     @validated_ui_operation
     @ensure_safety

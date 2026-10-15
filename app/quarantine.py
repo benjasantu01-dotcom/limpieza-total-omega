@@ -326,6 +326,9 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
 
 def _check_path_syntax_integrity(path: Path) -> None:
     """Valida que la ruta no exceda límites de seguridad ni contenga estructuras prohibidas."""
+    if path is None:
+        raise UnsafePathError("Ruta nula recibida.")
+        
     path_str = str(path)
     if len(path_str) > 260:
         raise UnsafePathError("Ruta de sistema demasiado larga.")
@@ -817,16 +820,22 @@ def _verify_transaction_integrity(item: QuarantineItem, destination: Path) -> No
 
 def _validate_input_path(source: PathLike) -> Path:
     """Valida la existencia y accesibilidad de la ruta proporcionada por el usuario."""
-    if not source or not str(source).strip():
-        raise ValueError("Ruta de origen nula o vacía.")
+    if source is None:
+        raise ValueError("Ruta de origen nula.")
+    
     p_source = Path(str(source))
+    if not str(p_source).strip():
+        raise ValueError("Ruta de origen vacía.")
+        
     if len(str(p_source)) > 260:
         raise UnsafePathError("Ruta de entrada excede límites del sistema.")
+        
     if not p_source.is_absolute():
         try:
             p_source = p_source.resolve(strict=True)
         except (OSError, RuntimeError) as e:
             raise UnsafePathError(f"Ruta origen no válida: {e}")
+            
     if not p_source.exists():
         raise FileNotFoundError("Archivo origen no encontrado.")
     if not p_source.is_file():

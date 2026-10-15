@@ -248,14 +248,18 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     """Transforma una entrada CSV en una lista de ProcessMemory ordenada por uso de RAM."""
     if not isinstance(raw_csv_text, str) or not raw_csv_text: 
         return []
+    
     lines = raw_csv_text.splitlines()
     if len(lines) < 2:
         return []
-    processes = []
+    
+    processes: List[ProcessMemory] = []
+    # Saltamos la cabecera del CSV
     for line in lines[1:]:
         proc = _extract_process_info(line)
-        if proc:
+        if proc is not None:
             processes.append(proc)
+            
     return heapq.nlargest(limit, processes)
 
 def _read_windows_snapshot() -> MemorySnapshot:
