@@ -113,6 +113,7 @@ def _is_readable(path: Path) -> bool:
 def _get_file_attributes(entry: os.DirEntry) -> int:
     """Extrae atributos de archivo Win32; utilizado para detectar puntos de reanálisis."""
     try:
+        if entry is None: return 0
         stat_res = entry.stat(follow_symlinks=False)
         return int(getattr(stat_res, "st_file_attributes", 0))
     except (AttributeError, OSError, PermissionError):
@@ -129,7 +130,7 @@ def _get_file_size(path: Path) -> int:
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """Retorna metadatos solo si es un archivo estándar, excluyendo symlinks y reparse points."""
     try:
-        if not entry.is_file(follow_symlinks=False) or entry.is_symlink():
+        if entry is None or not entry.is_file(follow_symlinks=False) or entry.is_symlink():
             return None
         if is_protected_path(Path(entry.path)) or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask):
             return None
@@ -241,7 +242,7 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Evalúa si la entrada debe ser procesada según políticas de seguridad."""
-        if not isinstance(entry, os.DirEntry) or not entry.path:
+        if entry is None or not hasattr(entry, 'path') or not entry.path:
             return False
         
         path_str: str = entry.path
@@ -272,7 +273,7 @@ class Scanner:
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
         """Registra subdirectorios válidos en la pila si no se supera el límite de profundidad."""
-        if current_depth >= SCAN_LIMITS.max_depth or not entry.path:
+        if current_depth >= SCAN_LIMITS.max_depth or entry is None or not hasattr(entry, 'path') or not entry.path:
             return
         
         path_lower: str = entry.path.lower()
@@ -288,7 +289,7 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
         """Gestiona la ramificación del escaneo entre directorios y archivos."""
-        if not isinstance(entry, os.DirEntry) or not entry.path:
+        if entry is None or not hasattr(entry, 'path') or not entry.path:
             return
             
         try:

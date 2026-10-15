@@ -585,22 +585,22 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                 
                 data = WIN32_FILE_ATTRIBUTE_DATA()
                 if not ctypes.windll.kernel32.GetFileAttributesExW(_to_long_path(str(path)), 0, ctypes.byref(data)):
-                    raise UnsafePathError(f"Acceso denegado o archivo inexistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+                    err = ctypes.windll.kernel32.GetLastError()
+                    if err == ERROR_FILE_NOT_FOUND:
+                        raise UnsafePathError(f"Archivo inexistente: {path.name}", SafetyValidationErrorCode.IO_ERROR)
+                    raise UnsafePathError(f"Acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
             return path.stat()
         except (PermissionError, FileNotFoundError):
             raise UnsafePathError(f"Acceso denegado o archivo inexistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
         except OSError as e:
-            if e.errno in (errno.ETIMEDOUT, errno.EBUSY, errno.EAGAIN):
+            win_err = getattr(e, 'winerror', None)
+            if e.errno in (errno.ETIMEDOUT, errno.EBUSY, errno.EAGAIN) or win_err in (ERROR_SHARING_VIOLATION, 1920):
                 if attempt < max_retries - 1:
-                     time.sleep(0.1 * (2 ** attempt))
-                     continue
-            if getattr(e, 'winerror', None) == ERROR_ACCESS_DENIED:
-                raise UnsafePathError(f"Acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
-            if getattr(e, 'winerror', None) in (ERROR_SHARING_VIOLATION, 1920) or e.errno == 13:
-                 if attempt < max_retries - 1:
                      time.sleep(0.05 * (2 ** attempt))
                      continue
-                 raise UnsafePathError(f"Archivo bloqueado por otro proceso: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
+                raise UnsafePathError(f"Archivo bloqueado por otro proceso: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
+            if win_err == ERROR_ACCESS_DENIED or e.errno == errno.EACCES:
+                raise UnsafePathError(f"Acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
             raise UnsafePathError(f"Acceso fallido: {path.name}", SafetyValidationErrorCode.IO_ERROR)
     raise UnsafePathError(f"Error tras reintentos leyendo metadatos: {path.name}", SafetyValidationErrorCode.IO_ERROR)
 
