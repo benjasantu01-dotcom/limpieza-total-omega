@@ -251,6 +251,7 @@ class Scanner:
             if not p.exists():
                 return False
             
+            # Usamos la caché protegida centralizada
             if _cached_is_protected(path_str) or not _is_valid_path_structure(path_str) or self._has_invalid_name(entry.name):
                 return False
                 
@@ -288,6 +289,10 @@ class Scanner:
             return
             
         try:
+            # Uso de _cached_is_protected para evitar repetir syscalls costosas
+            if _cached_is_protected(entry.path):
+                return
+                
             if entry.is_dir(follow_symlinks=False):
                 if self._is_safe_entry(entry):
                     self._handle_directory(entry, directory_stack, current_depth)

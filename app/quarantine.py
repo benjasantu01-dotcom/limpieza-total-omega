@@ -536,12 +536,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         if not isinstance(data, list):
             return []
             
-        items = []
-        for d in data:
-            if isinstance(d, dict):
-                item = QuarantineItem.from_dict(d)
-                if item:
-                    items.append(item)
+        items = [item for d in data if isinstance(d, dict) and (item := QuarantineItem.from_dict(d))]
                     
         _MANIFEST_CACHE[base_dir] = (items, current_mtime)
         return items

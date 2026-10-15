@@ -991,3 +991,10 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-10-15T05:18:58` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-10-15T05:18:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T05:18:58` Corrida terminada. Total usado hoy: 128.
+- `2026-10-15T05:26:27` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-10-15T05:27:20` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé la carga del manifiesto eliminando la reconstrucción innecesaria de objetos `QuarantineItem` cuando la caché es válida, reduciendo el consumo de CPU y memoria en operaciones frecuentes de listado.
+- `2026-10-15T05:27:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-15T05:28:44` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-10-15T05:28:57` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se ha optimizado el rendimiento del proceso de escaneo reemplazando las llamadas redundantes a `is_protected_path` por la consulta directa a la caché `_cached_is_protected` dentro de `process_entry`, evitando syscalls innecesarias durante la recursión.
+- `2026-10-15T05:28:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T05:28:57` Corrida terminada. Total usado hoy: 132.
