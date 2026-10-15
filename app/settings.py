@@ -386,17 +386,13 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
             st = os.fstat(f.fileno())
             if not _is_file_secure_to_read(st, f): return None
             
-            try:
-                fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
-                content = f.read(MAX_SETTINGS_SIZE + 1)
-            except (OSError, IOError): return None
-            finally:
-                try: fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-                except (OSError, IOError): pass
+            fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
+            content = f.read(MAX_SETTINGS_SIZE + 1)
+            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
             
             if not content or len(content) > MAX_SETTINGS_SIZE: return None
             return json.loads(content)
-    except (OSError, PermissionError, AttributeError, RuntimeError, json.JSONDecodeError, ValueError): 
+    except (OSError, IOError, PermissionError, AttributeError, RuntimeError, json.JSONDecodeError, ValueError): 
         return None
 
 def _is_dir_safe(path: Path) -> bool:

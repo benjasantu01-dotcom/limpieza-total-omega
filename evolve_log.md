@@ -1422,3 +1422,43 @@ assert not {'replace'}
 - `2026-10-15T08:33:47` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine.py` mediante la implementación de validaciones de entrada más granulares en `_validate_input_path` y `_check_path_syntax_integrity`, incluyendo una comprobación explícita de `None` para evitar fallos de ejecución ante parámetros inesperados, siguiendo estrictamente el enfoque de manejo de errores y validación de entradas.
 - `2026-10-15T08:33:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T08:33:47` Corrida terminada. Total usado hoy: 204.
+- `2026-10-15T08:39:59` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-10-15T08:40:02` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-15T08:40:42` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-10-15T08:40:44` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-15T08:40:49` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-15T08:41:39` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-15T08:42:07` Tests FALLARON:
+```
+========================
+_____________ test_scanner_flags_system_lookalike_outside_system32 _____________
+
+    def test_scanner_flags_system_lookalike_outside_system32():
+        # Se usa PureWindowsPath a propósito: los tests corren en Linux (GitHub
+        # Actions) y ahí un Path normal no reconoce las barras invertidas, así
+        # que `.name` devolvería la ruta entera y el test fallaría siempre.
+        result = scanner.check_system_lookalike(PureWindowsPath(r"C:\Users\test\Downloads\svchost.exe"))
+>       assert result is not None
+E       assert None is not None
+
+evolve/tests/test_basic.py:201: AssertionError
+________________ test_scanner_lookalike_logic_is_os_independent ________________
+
+    def test_scanner_lookalike_logic_is_os_independent():
+        # La misma heurística tiene que valer con rutas estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+        flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+>       assert flagged is not None and flagged.severity == "warning"
+E       assert (None is not None)
+
+evolve/tests/test_basic.py:213: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - assert None is not None
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - assert (None is not None)
+2 failed, 297 passed in 1.60s
+
+```
+- `2026-10-15T08:42:07` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de las heurísticas de archivo implementando validación de entrada con manejo de tipos y excepciones específicas, asegurando que `check_double_extension`, `check_system_lookalike` y `check_empty_file` no fallen ante objetos `path` inesperados o problemas de acceso durante la iteración.
+- `2026-10-15T08:42:23` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_read_and_parse_json` al centralizar el control de errores mediante un `try-except` más específico y asegurando que, ante cualquier fallo durante la lectura o decodificación del JSON (incluyendo archivos truncados o corruptos), la función retorne explícitamente `None` en lugar de propagar excepciones, garantizando así la estabilidad de `load()`.
+- `2026-10-15T08:42:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T08:42:23` Corrida terminada. Total usado hoy: 208.

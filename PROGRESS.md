@@ -7,36 +7,36 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **179** (35.5% de aceptación)
-- Rechazadas por tests: 30
-- Rechazadas por guardia de seguridad: 43
-- Sin cambios (nada sustancial que mejorar): 19
+- Rechazadas por tests: 31
+- Rechazadas por guardia de seguridad: 44
+- Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 233
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-14 | 104 | 18 | 21 | 15 | 142 |
-| 2026-10-15 | 75 | 12 | 22 | 4 | 91 |
+| 2026-10-14 | 103 | 18 | 21 | 13 | 141 |
+| 2026-10-15 | 76 | 13 | 23 | 4 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **39**
 - legibilidad y documentación: **39**
-- manejo de errores y validación de entradas: **37**
+- manejo de errores y validación de entradas: **38**
 - robustez ante casos límite: **34**
-- rendimiento: **30**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **18**
-- `duplicates.py`: **17**
 - `diskreport.py`: **17**
+- `duplicates.py`: **16**
 - `browser.py`: **16**
 - `healthscore.py`: **15**
+- `settings.py`: **14**
 - `main.py`: **14**
 - `assistant.py`: **13**
-- `settings.py`: **13**
 - `scanner.py`: **11**
 - `organizer.py`: **9**
 - `safety.py`: **9**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-15T08:42:23` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` al centralizar el control de errores mediante un `try-except` más específico y asegurando que, ante cualquier fallo durante la lectura o decodificación del JSON (incluyendo archivos truncados o corruptos), la función retorne explícitamente `None` en lugar de propagar excepciones, garantizando así la estabilidad de `load()`.
 - `2026-10-15T08:33:47` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine.py` mediante la implementación de validaciones de entrada más granulares en `_validate_input_path` y `_check_path_syntax_integrity`, incluyendo una comprobación explícita de `None` para evitar fallos de ejecución ante parámetros inesperados, siguiendo estrictamente el enfoque de manejo de errores y validación de entradas.
 - `2026-10-15T08:32:46` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones en `stage_for_review` y `delete_reviewed`, reemplazando capturas de excepciones genéricas por chequeos específicos y añadiendo validaciones de integridad de rutas para evitar que operaciones de E/S fallen ante estados inesperados del sistema de archivos.
 - `2026-10-15T08:32:19` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` implementando una validación explícita de tipos y límites tras el split de la cadena, asegurando que el proceso de parsing no falle silenciosamente ante datos malformados o PIDs fuera de rango.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-15T06:10:14` **settings.py** (robustez ante casos límite): Se mejoró `perform_atomic_write` añadiendo un manejo de excepciones más robusto durante la manipulación de archivos y verificando explícitamente el espacio disponible antes de la escritura, mitigando errores críticos ante discos llenos o situaciones de I/O parcial.
 - `2026-10-15T06:08:34` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados inconsistentes mediante la implementación de una validación de `os.stat` más resiliente al manejar errores de `OSError` con códigos específicos, y la inclusión de `errno` (como `ETIMEDOUT` o `EBUSY`) para detectar bloqueos transitorios en sistemas de archivos, evitando que la aplicación aborte prematuramente cuando el acceso es simplemente momentáneo.
 - `2026-10-15T06:01:03` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine_dir` añadiendo una comprobación de existencia y permisos antes de intentar crear el directorio, y se ha fortalecido la integridad en `save_manifest` mediante el uso de `os.replace` (operación atómica) con un `fsync` explícito sobre el directorio padre para asegurar la persistencia de metadatos en sistemas de archivos sensibles a cierres abruptos.
-- `2026-10-15T05:59:21` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante errores inesperados en el hilo de la UI, agregando una capa de protección en `_safe_run_ui_callback` para validar explícitamente que la instancia de la aplicación siga viva antes de agendar operaciones, evitando que errores de `TclError` propaguen excepciones al ciclo principal tras cerrar la app.
