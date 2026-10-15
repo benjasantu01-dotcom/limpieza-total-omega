@@ -744,6 +744,7 @@ def normalize(path: PathLike) -> Path:
          raise UnsafePathError("Ruta contiene secuencias Unicode sospechosas.", SafetyValidationErrorCode.SUSPICIOUS_ENCODING)
     try:
         p = Path(path_str)
+        # Recorrido recursivo para validar junctions en el path completo
         current_subpath = Path(p.anchor)
         for part in p.parts:
             if part in (os.sep, os.altsep): continue
@@ -1003,6 +1004,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             except (TypeError, ValueError):
                 raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC)
         
+        # Validaciones de integridad de ruta
         _validate_path_components(p)
         _validate_preconditions(p, base_dir)
         

@@ -639,3 +639,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-15T02:09:00` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad en `_is_process_executable_safe` reemplazando la lógica de filtrado de listas por una validación booleana directa con `is_protected_path`, garantizando que ningún proceso que resida en rutas protegidas sea candidato para operaciones de gestión de memoria, cumpliendo estrictamente con las reglas de seguridad defensiva.
 - `2026-10-15T02:09:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T02:09:00` Corrida terminada. Total usado hoy: 52.
+- `2026-10-15T02:12:50` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-10-15T02:13:22` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-10-15T02:14:07` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad de `restore_item` añadiendo una validación explícita para evitar colisiones mediante `os.path.exists()` antes de la restauración y asegurando que el destino final sea una ruta absoluta normalizada, además de incorporar `_check_path_syntax_integrity` para prevenir inyecciones de rutas maliciosas durante la operación de escritura.
+- `2026-10-15T02:14:30` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-15T02:15:10` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha implementado una mejora en la robustez de `ensure_safe_to_modify` para detectar la presencia de "Puntos de Reparse" (junctions/symlinks) en los componentes intermedios de la ruta de forma recursiva antes de intentar cualquier operación, previniendo el escalamiento de privilegios o la manipulación involuntaria de rutas redirigidas.
+- `2026-10-15T02:15:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T02:15:10` Corrida terminada. Total usado hoy: 56.

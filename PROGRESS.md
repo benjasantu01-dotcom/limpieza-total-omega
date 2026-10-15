@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Mejoras aceptadas: **200** (39.7% de aceptación)
 - Rechazadas por tests: 26
-- Rechazadas por guardia de seguridad: 49
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-13 | 46 | 4 | 12 | 5 | 35 |
+| 2026-10-13 | 46 | 4 | 12 | 5 | 31 |
 | 2026-10-14 | 123 | 18 | 26 | 19 | 164 |
-| 2026-10-15 | 29 | 4 | 11 | 2 | 6 |
+| 2026-10-15 | 31 | 4 | 12 | 2 | 7 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **41**
+- seguridad defensiva: **43**
 - robustez ante casos límite: **34**
 - rendimiento: **29**
 
@@ -37,16 +37,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **17**
 - `healthscore.py`: **15**
 - `scanner.py`: **15**
+- `safety.py`: **14**
 - `startup.py`: **14**
-- `safety.py`: **13**
 - `branding.py`: **12**
 - `main.py`: **11**
 - `organizer.py`: **11**
 - `settings.py`: **11**
-- `quarantine.py`: **6**
+- `quarantine.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-15T02:15:10` **safety.py** (seguridad defensiva): Se ha implementado una mejora en la robustez de `ensure_safe_to_modify` para detectar la presencia de "Puntos de Reparse" (junctions/symlinks) en los componentes intermedios de la ruta de forma recursiva antes de intentar cualquier operación, previniendo el escalamiento de privilegios o la manipulación involuntaria de rutas redirigidas.
+- `2026-10-15T02:14:07` **quarantine.py** (seguridad defensiva): Mejoré la seguridad de `restore_item` añadiendo una validación explícita para evitar colisiones mediante `os.path.exists()` antes de la restauración y asegurando que el destino final sea una ruta absoluta normalizada, además de incorporar `_check_path_syntax_integrity` para prevenir inyecciones de rutas maliciosas durante la operación de escritura.
 - `2026-10-15T02:09:00` **memory.py** (seguridad defensiva): Se reforzó la seguridad en `_is_process_executable_safe` reemplazando la lógica de filtrado de listas por una validación booleana directa con `is_protected_path`, garantizando que ningún proceso que resida en rutas protegidas sea candidato para operaciones de gestión de memoria, cumpliendo estrictamente con las reglas de seguridad defensiva.
 - `2026-10-15T02:03:05` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `is_system_or_hidden` y `is_junction` para utilizar una validación previa más robusta y consistente con las restricciones de la API de Windows, evitando consultas innecesarias en rutas que `safety.py` ya ha marcado como potencialmente problemáticas.
 - `2026-10-15T01:54:30` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_is_excluded_path` añadiendo una comprobación explícita para evitar que `Path.resolve()` se ejecute sobre rutas con caracteres malformados que podrían desencadenar excepciones inesperadas, y se ha consolidado el uso de `os.stat` para validar el acceso real antes de realizar operaciones de comparación sobre la ruta.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-15T01:14:08` **browser.py** (robustez ante casos límite): Se reforzó la robustez frente a errores de sistema de archivos al añadir verificaciones de tipo y existencia antes de resolver rutas, previniendo el uso de rutas inexistentes en el contexto de escaneo y manejando de forma más estricta los fallos en la resolución de `Path`.
 - `2026-10-15T01:13:48` **branding.py** (robustez ante casos límite): Se mejora la robustez de `save_logo_svg` y las funciones de dibujo agregando validaciones de entrada (`size` fuera de rango, tipos de datos) y evitando posibles errores de división por cero o argumentos inválidos en las operaciones de canvas.
 - `2026-10-15T01:13:16` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `ingest` ante entradas mal formadas añadiendo validaciones de tipo explícitas para las métricas, evitando que valores inesperados (como `None` o tipos incompatibles inyectados a través de `source`) provoquen fallos en cascada en las operaciones de redondeo o comparación.
-- `2026-10-15T01:12:37` **startup.py** (rendimiento): Optimizé `entries_from_registry` para evitar la sobrecarga de múltiples ejecuciones de PowerShell y reducir la latencia al usar una consulta unificada de alto rendimiento, además de simplificar la lógica de filtrado inicial.
-- `2026-10-15T00:53:29` **organizer.py** (rendimiento): Optimizé `_process_directory` y `_should_scan_directory` para reducir significativamente la sobrecarga de I/O mediante el uso de la cache `protected_cache` y la comparación directa de tipos, evitando llamadas redundantes a `is_safe_to_modify` (que internamente hace validaciones pesadas) cuando el directorio ya fue validado en el padre.

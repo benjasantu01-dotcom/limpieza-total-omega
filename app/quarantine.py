@@ -936,14 +936,16 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         destination = Path(quarantine_item.original_path).resolve()
         _check_path_syntax_integrity(destination)
         
-        # Nueva validación de seguridad contra enlaces simbólicos en el destino
+        # Validaciones de seguridad post-resolución
         if destination.is_symlink():
             raise UnsafePathError("Restauración denegada: el destino es un enlace simbólico.")
             
         if is_protected_path(destination):
             raise UnsafePathError("Restauración denegada: destino protegido.")
+        
+        # Prevenir sobrescritura accidental
         if destination.exists():
-            raise FileExistsError("El destino ya existe.")
+            raise FileExistsError(f"El destino ya existe: {destination}")
         
         _check_device_consistency(stored_file, destination.parent.resolve())
         parent = destination.parent
