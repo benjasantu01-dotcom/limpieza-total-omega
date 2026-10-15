@@ -511,8 +511,11 @@ def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
     try:
         if isinstance(source, dict):
             return source.get(key)
-        # Limitamos el acceso a atributos públicos que no sean métodos
-        return _get_safe_attr(source, key)
+        # Acceso defensivo a objetos que podrían no tener el atributo
+        if hasattr(source, key):
+            val = getattr(source, key)
+            return val if not callable(val) else None
+        return None
     except (AttributeError, ValueError, TypeError):
         return None
 

@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Mejoras aceptadas: **183** (36.3% de aceptación)
 - Rechazadas por tests: 26
-- Rechazadas por guardia de seguridad: 48
+- Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 220
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-13 | 30 | 3 | 10 | 4 | 19 |
+| 2026-10-13 | 27 | 3 | 9 | 4 | 19 |
 | 2026-10-14 | 123 | 18 | 26 | 19 | 164 |
-| 2026-10-15 | 32 | 5 | 12 | 2 | 37 |
+| 2026-10-15 | 33 | 5 | 12 | 2 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **47**
+- legibilidad y documentación: **44**
 - seguridad defensiva: **44**
 - robustez ante casos límite: **34**
-- manejo de errores y validación de entradas: **31**
+- manejo de errores y validación de entradas: **32**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **17**
-- `assistant.py`: **17**
+- `assistant.py`: **18**
 - `browser.py`: **17**
+- `memory.py`: **16**
 - `diskreport.py`: **16**
 - `duplicates.py`: **15**
-- `healthscore.py`: **14**
 - `scanner.py`: **14**
 - `safety.py`: **13**
 - `startup.py`: **13**
+- `healthscore.py`: **13**
 - `branding.py`: **11**
 - `settings.py`: **11**
-- `organizer.py`: **10**
 - `main.py`: **10**
+- `organizer.py`: **9**
 - `quarantine.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-15T03:46:13` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_source_value` para manejar estructuras de datos arbitrarias de forma defensiva, evitando errores de tipo y posibles bloqueos mediante chequeos explícitos de `isinstance` y una gestión de profundidad más estricta.
 - `2026-10-15T02:24:13` **settings.py** (seguridad defensiva): Reforcé la integridad del proceso `perform_atomic_write` al agregar una validación de propiedad (UID) y permisos (`stat`) al archivo temporal antes de reemplazarlo, asegurando que no se cree ni sobrescriba un archivo en una ruta maliciosa o con permisos inseguros durante la ventana de escritura.
 - `2026-10-15T02:15:10` **safety.py** (seguridad defensiva): Se ha implementado una mejora en la robustez de `ensure_safe_to_modify` para detectar la presencia de "Puntos de Reparse" (junctions/symlinks) en los componentes intermedios de la ruta de forma recursiva antes de intentar cualquier operación, previniendo el escalamiento de privilegios o la manipulación involuntaria de rutas redirigidas.
 - `2026-10-15T02:14:07` **quarantine.py** (seguridad defensiva): Mejoré la seguridad de `restore_item` añadiendo una validación explícita para evitar colisiones mediante `os.path.exists()` antes de la restauración y asegurando que el destino final sea una ruta absoluta normalizada, además de incorporar `_check_path_syntax_integrity` para prevenir inyecciones de rutas maliciosas durante la operación de escritura.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-15T01:25:49` **main.py** (robustez ante casos límite): Mejoré la resiliencia del sistema ante rutas inexistentes o inaccesibles mediante la implementación de `pathlib.Path.resolve(strict=False)` en la validación crítica de inicio y en la creación de objetos `Path`, evitando `FileNotFoundError` durante el escaneo de directorios que pueden ser eliminados o bloqueados por el SO en tiempo de ejecución.
 - `2026-10-15T01:23:53` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor de cómputo ante condiciones de carrera o datos corruptos detectados en `SystemMetrics` mediante la adición de un chequeo de tipos estricto y valores por defecto defensivos durante la iteración del pipeline, evitando que errores en un solo `scorer` comprometan el puntaje global.
 - `2026-10-15T01:14:08` **browser.py** (robustez ante casos límite): Se reforzó la robustez frente a errores de sistema de archivos al añadir verificaciones de tipo y existencia antes de resolver rutas, previniendo el uso de rutas inexistentes en el contexto de escaneo y manejando de forma más estricta los fallos en la resolución de `Path`.
-- `2026-10-15T01:13:48` **branding.py** (robustez ante casos límite): Se mejora la robustez de `save_logo_svg` y las funciones de dibujo agregando validaciones de entrada (`size` fuera de rango, tipos de datos) y evitando posibles errores de división por cero o argumentos inválidos en las operaciones de canvas.
