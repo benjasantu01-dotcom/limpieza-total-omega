@@ -245,7 +245,9 @@ class Scanner:
             return True
         
         try:
-            if not Path(path_str).exists():
+            # Validación de existencia necesaria ante cambios dinámicos del FS
+            p = Path(path_str)
+            if not p.exists():
                 return False
             
             if _cached_is_protected(path_str) or not _is_valid_path_structure(path_str) or self._has_invalid_name(entry.name):
@@ -254,7 +256,7 @@ class Scanner:
             if entry.is_symlink() or self._is_reparse_point(entry):
                 return False
                 
-            real_path: Path = Path(path_str).resolve()
+            real_path: Path = p.resolve()
             if len(str(real_path)) > SCAN_LIMITS.max_path or not str(real_path).lower().startswith(self.base_root_str):
                 return False
                 
@@ -297,6 +299,7 @@ class Scanner:
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta toda la suite de heurísticas sobre un archivo validado."""
         path_str = str(path)
+        # Validación de lectura y bloqueo antes de iterar heurísticas
         if path_str not in self.path_stat_cache:
             if not _is_readable(path) or _is_locked_by_os(path):
                 self.path_stat_cache[path_str] = False

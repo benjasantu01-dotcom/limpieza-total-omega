@@ -614,3 +614,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-15T01:34:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-15T01:34:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T01:34:38` Corrida terminada. Total usado hoy: 40.
+- `2026-10-15T01:42:13` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-10-15T01:43:03` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo una validación de `Path Traversal` más estricta en `normalize` mediante el uso de `os.path.abspath` junto con `pathlib.Path.resolve()` para asegurar que la ruta esté plenamente canonizada antes de cualquier comparación de sandbox, mitigando la posibilidad de que rutas relativas maliciosas evadan los chequeos de `is_within_directory` al resolverse de forma ambigua.
+- `2026-10-15T01:43:45` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se mejora `_is_safe_entry` y `_run_file_heuristics` para robustecer la app ante archivos inexistentes o bloqueados detectados durante la iteración, evitando accesos fallidos y el uso redundante de recursos mediante una validación más estricta antes del procesamiento heurístico.
+- `2026-10-15T01:44:15` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save()` ante condiciones de concurrencia y fallos de escritura parciales, asegurando que si `os.fsync` o el reemplazo fallan, el estado original del archivo de configuración permanezca inalterado o se detecte el error en lugar de dejar un archivo corrupto o truncado.
+- `2026-10-15T01:44:27` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-15T01:44:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T01:44:27` Corrida terminada. Total usado hoy: 44.

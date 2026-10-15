@@ -723,7 +723,11 @@ def _validate_access_permissions(path: Path) -> None:
 @lru_cache(maxsize=4096)
 def _normalize_resolved(path_str: str) -> Path:
     """Resuelve la ruta absoluta y canoniza la ruta (evita re-evaluaciones)."""
-    return Path(path_str).resolve()
+    # Se utiliza os.path.abspath para una resolución robusta antes de canonizar con resolve()
+    try:
+        return Path(os.path.abspath(path_str)).resolve(strict=False)
+    except (OSError, RuntimeError):
+        return Path(path_str).absolute()
 
 @lru_cache(maxsize=4096)
 def normalize(path: PathLike) -> Path:

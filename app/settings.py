@@ -167,29 +167,23 @@ class _SettingsManager:
         mediante 'os.replace' para garantizar la integridad de la configuración.
         """
         temp_path: Path = config_path.with_suffix(".tmp")
-        bak_path: Path = config_path.with_suffix(".bak")
         
         for attempt in range(4):
             f = None
             try:
-                if not is_safe_to_modify(str(temp_path)) or not is_safe_to_modify(str(bak_path)):
+                if not is_safe_to_modify(str(temp_path)):
                     return False
                 f = open(temp_path, "w", encoding="utf-8")
                 fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
                 f.write(serialized)
                 f.flush()
                 os.fsync(f.fileno())
-                
-                st = os.fstat(f.fileno())
-                if not _is_file_secure_to_read(st, f):
-                    raise PermissionError("Archivo temporal inseguro")
                 f.close()
                 f = None
                 
                 if config_path.exists():
-                    if not is_safe_to_modify(str(config_path)): raise PermissionError("Ruta no segura")
-                    if config_path.is_symlink(): raise PermissionError("Symlink detected")
-                    os.replace(config_path, bak_path)
+                    if not is_safe_to_modify(str(config_path)) or config_path.is_symlink():
+                        raise PermissionError("Ruta no segura o symlink")
                 
                 os.replace(temp_path, config_path)
                 self.clear()
@@ -418,19 +412,17 @@ def _load_impl(ruta: Path) -> AppSettings:
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga los ajustes desde el disco, utilizando caché por timestamp (mtime)."""
     primary_path = settings_path(custom_base)
-    backup_path = primary_path.with_suffix(".bak")
-    for path in [primary_path, backup_path]:
-        try:
-            if path.exists() and path.is_file():
-                st = path.stat()
-                mtime = st.st_mtime
-                cache_key = str(path)
-                cached = _MANAGER.settings_cache.get(cache_key)
-                if cached and cached[0] == mtime: return cached[1].copy()
-                settings = _load_impl(path)
-                _MANAGER.settings_cache[cache_key] = (mtime, settings)
-                return settings
-        except (OSError, PermissionError): continue
+    try:
+        if primary_path.exists() and primary_path.is_file():
+            st = primary_path.stat()
+            mtime = st.st_mtime
+            cache_key = str(primary_path)
+            cached = _MANAGER.settings_cache.get(cache_key)
+            if cached and cached[0] == mtime: return cached[1].copy()
+            settings = _load_impl(primary_path)
+            _MANAGER.settings_cache[cache_key] = (mtime, settings)
+            return settings
+    except (OSError, PermissionError): pass
     return DEFAULTS.copy()
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
