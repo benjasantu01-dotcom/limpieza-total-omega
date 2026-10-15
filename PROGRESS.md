@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Mejoras aceptadas: **202** (40.1% de aceptación)
 - Rechazadas por tests: 30
-- Rechazadas por guardia de seguridad: 48
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 207
+- Rechazadas por guardia de seguridad: 49
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-14 | 91 | 14 | 18 | 11 | 106 |
-| 2026-10-15 | 110 | 16 | 30 | 7 | 101 |
+| 2026-10-14 | 91 | 14 | 18 | 11 | 102 |
+| 2026-10-15 | 111 | 16 | 31 | 8 | 102 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
 - robustez ante casos límite: **42**
-- seguridad defensiva: **41**
+- seguridad defensiva: **42**
 - manejo de errores y validación de entradas: **38**
 - rendimiento: **31**
 
@@ -36,8 +36,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **16**
 - `duplicates.py`: **16**
 - `main.py`: **16**
+- `scanner.py`: **15**
 - `settings.py`: **15**
-- `scanner.py`: **14**
 - `quarantine.py`: **12**
 - `branding.py`: **11**
 - `organizer.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-15T11:14:31` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez de `_safe_stat` al añadir un chequeo explícito contra la lista de rutas protegidas mediante `is_protected_path`, garantizando que la obtención de metadatos nunca ocurra en archivos sensibles ni a través de enlaces simbólicos fuera de la raíz permitida, reforzando la seguridad defensiva sin alterar la funcionalidad.
 - `2026-10-15T11:05:21` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` reforzando las validaciones en `_safe_unlink` y `_write_temp_to_final` para asegurar que, bajo ninguna circunstancia, se pueda operar sobre archivos que contengan flujos de datos alternos (ADS), una técnica común de ocultamiento de malware en Windows.
 - `2026-10-15T11:04:52` **organizer.py** (seguridad defensiva): Mejoré la seguridad en `delete_reviewed` implementando una validación estricta del árbol de directorios mediante `pathlib.Path.is_relative_to` (o equivalente mediante comparación de `parents`) para garantizar que ningún archivo fuera del directorio de cuarentena pueda ser eliminado accidentalmente incluso si ocurriera una colisión o error de resolución.
 - `2026-10-15T11:04:25` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `memory.py` mediante una validación más robusta en `_is_process_executable_safe`, evitando que el uso de `str()` sobre un buffer de `ctypes` introduzca comportamientos impredecibles, y asegurando que las rutas de proceso detectadas pasen por una comprobación de seguridad completa antes de cualquier interacción, previniendo posibles ataques de inyección o acceso a rutas de sistema malformadas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-15T10:33:02` **quarantine.py** (robustez ante casos límite): Se ha añadido un chequeo de concurrencia y disponibilidad en `_validate_isolation_request` para verificar que el directorio de cuarentena sea una ruta válida y no un archivo preexistente bloqueando el sandbox, mejorando la robustez ante estados inconsistentes del sistema de archivos.
 - `2026-10-15T10:24:26` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_safe_for_disk_op` y `delete_reviewed` añadiendo chequeos de integridad contra enlaces simbólicos y puntos de reparse durante la validación final, previniendo así operaciones no deseadas en rutas redirigidas.
 - `2026-10-15T10:24:10` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de tipo y estados inesperados en `top_memory_processes`, previniendo fallos al procesar buffers de PIDs incompletos o mal formados, asegurando que `EnumProcesses` no cause una excepción silenciosa que rompa el flujo de diagnóstico.
-- `2026-10-15T10:23:38` **main.py** (robustez ante casos límite): Se introdujo una validación robusta de hilos y widgets (`_check_widget_integrity`) y se refactorizó `on_save_settings` para manejar correctamente la persistencia de archivos, asegurando que cualquier error durante la validación o escritura de `settings.json` sea capturado sin detener el flujo de trabajo de la aplicación ni dejarla en un estado inconsistente.

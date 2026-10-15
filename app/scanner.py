@@ -131,7 +131,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     try:
         if not entry.is_file(follow_symlinks=False) or entry.is_symlink():
             return None
-        if _get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask:
+        if is_protected_path(Path(entry.path)) or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask):
             return None
         return entry.stat(follow_symlinks=False)
     except (OSError, PermissionError, AttributeError):

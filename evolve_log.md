@@ -402,3 +402,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-15T11:05:21` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad del módulo `quarantine.py` reforzando las validaciones en `_safe_unlink` y `_write_temp_to_final` para asegurar que, bajo ninguna circunstancia, se pueda operar sobre archivos que contengan flujos de datos alternos (ADS), una técnica común de ocultamiento de malware en Windows.
 - `2026-10-15T11:05:21` Rotación — log: 1257 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T11:05:21` Corrida terminada. Total usado hoy: 264.
+- `2026-10-15T11:12:57` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-10-15T11:13:17` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-15T11:14:03` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-10-15T11:14:31` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_safe_stat` al añadir un chequeo explícito contra la lista de rutas protegidas mediante `is_protected_path`, garantizando que la obtención de metadatos nunca ocurra en archivos sensibles ni a través de enlaces simbólicos fuera de la raíz permitida, reforzando la seguridad defensiva sin alterar la funcionalidad.
+- `2026-10-15T11:14:46` ➖ Sin cambios en settings.py (enfoque: seguridad defensiva). Motivo: Reforcé la integridad del proceso de escritura atómica asegurando que el descriptor de archivo (`f.fileno()`) se cierre explícitamente antes de intentar renombrar el archivo, previniendo posibles bloqueos de exclusividad en sistemas operativos sensibles y mejorando la robustez de `perform_atomic_write` ante errores de E/S.
+- `2026-10-15T11:14:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T11:14:46` Corrida terminada. Total usado hoy: 268.
