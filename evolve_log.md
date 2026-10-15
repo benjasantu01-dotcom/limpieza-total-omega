@@ -621,3 +621,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-15T01:44:27` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
 - `2026-10-15T01:44:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T01:44:27` Corrida terminada. Total usado hoy: 44.
+- `2026-10-15T01:52:23` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-10-15T01:53:15` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad de la ingestión de datos implementando un control estricto sobre el tamaño y la estructura del diccionario `updates` dentro de `_apply_updates`, previniendo potenciales ataques de agotamiento de memoria o inyección mediante diccionarios maliciosamente grandes o profundos durante el análisis.
+- `2026-10-15T01:53:46` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-10-15T01:54:19` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-10-15T01:54:30` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `_is_excluded_path` añadiendo una comprobación explícita para evitar que `Path.resolve()` se ejecute sobre rutas con caracteres malformados que podrían desencadenar excepciones inesperadas, y se ha consolidado el uso de `os.stat` para validar el acceso real antes de realizar operaciones de comparación sobre la ruta.
+- `2026-10-15T01:54:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T01:54:30` Corrida terminada. Total usado hoy: 48.

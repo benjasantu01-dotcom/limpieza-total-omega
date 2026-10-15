@@ -445,7 +445,9 @@ class SystemContext:
         return False
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
-        """Aplica cambios al contexto y limpia cachés internas."""
+        """Aplica cambios al contexto y limpia cachés internas con validación de tamaño."""
+        if len(updates) > _MAX_COLLECTION_SIZE:
+            return
         for k, v in updates.items():
             if _is_safe_key(k):
                 setattr(self, k, v)

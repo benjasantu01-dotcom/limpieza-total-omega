@@ -156,15 +156,19 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         if entry.is_symlink() or (os.name == 'nt' and entry.is_dir() and entry.stat().st_file_attributes & 0x400):
             return True
         
+        # Validar acceso previo a resolución de ruta
+        if not os.access(entry.path, os.R_OK):
+            return True
+
         entry_path = Path(entry.path).resolve()
         if not str(entry_path).startswith(str(root_path)):
             return True
         
-        if is_protected_path(entry_path) or not os.access(entry.path, os.R_OK):
+        if is_protected_path(entry_path):
             return True
             
         return False
-    except (OSError, PermissionError, AttributeError, TypeError):
+    except (OSError, PermissionError, AttributeError, TypeError, RuntimeError):
         return True
             
 def _get_local_windows_drives() -> List[str]:
