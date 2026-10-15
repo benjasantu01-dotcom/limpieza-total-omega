@@ -1606,3 +1606,40 @@ FAILED evolve/tests/test_modules.py::test_blend_on_invalid_color_does_not_crash 
 - `2026-10-15T10:34:35` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra rutas que contienen caracteres de control Unicode no visibles (incluyendo el espacio de no separación y otros caracteres de control) que podrían ser usados para ofuscar nombres de archivos, evitando errores de resolución y riesgos de seguridad en el escaneo.
 - `2026-10-15T10:34:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T10:34:35` Corrida terminada. Total usado hoy: 252.
+- `2026-10-15T10:42:24` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-10-15T10:43:00` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para evitar colisiones de concurrencia y corrupción al detectar que el archivo de configuración es un enlace simbólico o un punto de reparse antes de abrirlo, fortaleciendo el `_read_and_parse_json` ante condiciones de carrera en el sistema de archivos.
+- `2026-10-15T10:43:29` Tests FALLARON:
+```
+sertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/scanner.py:183: SyntaxWarning: invalid escape sequence '\s'
+    """Detecta binarios que usan nombres de procesos críticos del SO fuera de sus rutas legítimas (ej: c:\temp\svchost.exe)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed, 7 warnings in 1.48s
+
+```
+- `2026-10-15T10:43:29` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la resiliencia ante rutas inexistentes y permisos denegados en `_resolve_and_cache_path` mediante la validación de `path.exists()` y un manejo de errores más específico, evitando que el escaneo se bloquee o cachee estados erróneos ante recursos inaccesibles.
+- `2026-10-15T10:43:30` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-15T10:44:11` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al validar que `context_as_text` no filtre información sensible (como rutas de sistema o caracteres de control) en el contexto generado, garantizando que el serializado sea estrictamente numérico y seguro antes de llegar al motor remoto.
+- `2026-10-15T10:44:30` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `save_logo_svg` añadiendo una comprobación explícita mediante `is_protected_path` antes de proceder, garantizando que ninguna ruta de sistema sea el objetivo de escritura, además de asegurar que la validación de directorios sea consistente con la política de seguridad del proyecto.
+- `2026-10-15T10:44:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T10:44:30` Corrida terminada. Total usado hoy: 256.

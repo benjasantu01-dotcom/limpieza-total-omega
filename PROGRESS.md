@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
-- Rechazadas por tests: 29
+- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Rechazadas por tests: 30
 - Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-14 | 91 | 14 | 18 | 11 | 118 |
-| 2026-10-15 | 101 | 15 | 30 | 6 | 100 |
+| 2026-10-14 | 91 | 14 | 18 | 11 | 114 |
+| 2026-10-15 | 104 | 16 | 30 | 6 | 100 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **49**
-- robustez ante casos límite: **41**
+- robustez ante casos límite: **42**
 - manejo de errores y validación de entradas: **38**
-- seguridad defensiva: **33**
+- seguridad defensiva: **35**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
@@ -33,19 +33,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **17**
 - `healthscore.py`: **17**
 - `browser.py`: **17**
+- `assistant.py`: **16**
 - `main.py`: **16**
-- `assistant.py`: **15**
 - `duplicates.py`: **15**
+- `settings.py`: **15**
 - `scanner.py`: **14**
-- `settings.py`: **14**
+- `branding.py`: **11**
 - `quarantine.py`: **11**
 - `safety.py`: **10**
-- `branding.py`: **10**
 - `startup.py`: **9**
 - `organizer.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-15T10:44:30` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` añadiendo una comprobación explícita mediante `is_protected_path` antes de proceder, garantizando que ninguna ruta de sistema sea el objetivo de escritura, además de asegurar que la validación de directorios sea consistente con la política de seguridad del proyecto.
+- `2026-10-15T10:44:11` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva al validar que `context_as_text` no filtre información sensible (como rutas de sistema o caracteres de control) en el contexto generado, garantizando que el serializado sea estrictamente numérico y seguro antes de llegar al motor remoto.
+- `2026-10-15T10:43:00` **settings.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar colisiones de concurrencia y corrupción al detectar que el archivo de configuración es un enlace simbólico o un punto de reparse antes de abrirlo, fortaleciendo el `_read_and_parse_json` ante condiciones de carrera en el sistema de archivos.
 - `2026-10-15T10:34:35` **scanner.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas que contienen caracteres de control Unicode no visibles (incluyendo el espacio de no separación y otros caracteres de control) que podrían ser usados para ofuscar nombres de archivos, evitando errores de resolución y riesgos de seguridad en el escaneo.
 - `2026-10-15T10:34:11` **safety.py** (robustez ante casos límite): Se ha añadido una validación de redundancia de rutas para evitar ataques de denegación de servicio o errores por recursión circular, detectando si un componente de la ruta es un punto de reparse que apunta a un padre de sí mismo antes de proceder con cualquier operación de E/S.
 - `2026-10-15T10:33:02` **quarantine.py** (robustez ante casos límite): Se ha añadido un chequeo de concurrencia y disponibilidad en `_validate_isolation_request` para verificar que el directorio de cuarentena sea una ruta válida y no un archivo preexistente bloqueando el sandbox, mejorando la robustez ante estados inconsistentes del sistema de archivos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-15T10:03:30` **assistant.py** (robustez ante casos límite): Se introdujo una validación defensiva en `_get_source_value` y `_apply_field` para manejar casos donde el objeto `source` pueda contener atributos inesperados o ser de un tipo no indexable, previniendo errores de acceso durante la ingesta de datos.
 - `2026-10-15T10:02:12` **scanner.py** (rendimiento): Se ha optimizado el rendimiento del escaneo integrando el filtrado de extensiones irrelevantes dentro de `process_entry` mediante un conjunto (`frozenset`) eficiente, evitando así llamadas innecesarias a la lógica de validación de seguridad para archivos que no requieren inspección heurística.
 - `2026-10-15T09:42:09` **healthscore.py** (rendimiento): Optimicé el cálculo del score reemplazando la validación redundante `m.validate()` (que ya ocurre en `__post_init__`) dentro del bucle `compute_score` y convirtiendo `_PIPELINE` a una estructura que evita búsquedas lineales, mejorando el rendimiento en sistemas con muchos disparos de reglas.
-- `2026-10-15T09:32:57` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_collect_summary_data` evitando el uso innecesario de `os.stat` adicional dentro del bucle principal mediante el aprovechamiento de los datos ya obtenidos en el `os.scandir` original, reduciendo así drásticamente las llamadas al sistema (syscalls).
-- `2026-10-15T09:32:46` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo de directorios implementando una caché de resultados de seguridad (`safety_cache`) dentro del contexto de escaneo, evitando llamadas redundantes a `is_safe_to_modify` y `is_protected_path` para carpetas visitadas repetidamente en estructuras profundas.
-- `2026-10-15T09:31:50` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` eliminando la recreación innecesaria de la lista de sugerencias y realizando un lookup directo sobre el conjunto `_TOKEN_KEYS` antes de iterar, reduciendo ciclos de CPU y memoria en el bucle principal de consultas.

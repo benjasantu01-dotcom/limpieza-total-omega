@@ -510,7 +510,9 @@ def context_as_text(context: SystemContext) -> str:
     for key, unit, precision in _CONTEXT_SCHEMA:
         val: float = snapshot.get(key, -1.0)
         if val >= 0:
-            res.append(f"{key}: {val:.{precision}f}{unit}")
+            line: str = f"{key}: {val:.{precision}f}{unit}"
+            if _ensure_safe_text(line):
+                res.append(line)
     return "\n".join(res)
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
