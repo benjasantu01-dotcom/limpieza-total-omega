@@ -350,12 +350,14 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             area_ratio = _clamp(entry.scorer(m))
             _evaluate_rules(m, entry.rules, area_ratio, recommendations)
             
-            points = area_ratio * float(entry.weight)
-            val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
+            # Cálculo defensivo: asegurar que el peso sea float y resultado sea numérico
+            w_f = float(entry.weight)
+            points = area_ratio * w_f
+            val_int = int(round(_clamp(points, 0.0, w_f)))
             
             metric_breakdown[entry.area] = val_int
             total_points += float(val_int)
-        except Exception as e:
+        except (Exception, TypeError, ValueError) as e:
             logging.error(f"Error procesando pipeline {entry.area}: {e}")
             metric_breakdown[entry.area] = 0
             

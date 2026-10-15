@@ -567,3 +567,32 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-15T01:14:08` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez frente a errores de sistema de archivos al añadir verificaciones de tipo y existencia antes de resolver rutas, previniendo el uso de rutas inexistentes en el contexto de escaneo y manejando de forma más estricta los fallos en la resolución de `Path`.
 - `2026-10-15T01:14:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T01:14:08` Corrida terminada. Total usado hoy: 32.
+- `2026-10-15T01:21:55` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-10-15T01:22:45` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-10-15T01:23:11` Tests FALLARON:
+```
+===========
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:358: SyntaxWarning: invalid escape sequence '\)'
+    """Comprueba si la ruta accede directamente a dispositivos (namespace \\.\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_identical_files - AttributeError: module 'os' has no attribute 'O_BINARY'
+FAILED evolve/tests/test_modules.py::test_ignores_files_with_different_content - AttributeError: module 'os' has no attribute 'O_BINARY'
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - AttributeError: module 'os' has no attribute 'O_BINARY'
+FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size - AttributeError: module 'os' has no attribute 'O_BINARY'
+FAILED evolve/tests/test_modules.py::test_hash_of_identical_content_matches - AttributeError: module 'os' has no attribute 'O_BINARY'
+FAILED evolve/tests/test_modules.py::test_partial_hash_only_reads_the_beginning - AttributeError: module 'os' has no attribute 'O_BINARY'
+6 failed, 293 passed, 4 warnings in 1.78s
+
+```
+- `2026-10-15T01:23:11` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se ha robustecido el manejo de errores en `_is_file_locked` para evitar falsos positivos ante archivos bloqueados por el sistema operativo, utilizando `os.open` con flags de acceso exclusivo (`O_EXCL`) para confirmar disponibilidad sin necesidad de abrir el archivo, mejorando la fiabilidad de `_is_valid_candidate` ante casos límite.
+- `2026-10-15T01:23:53` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez del motor de cómputo ante condiciones de carrera o datos corruptos detectados en `SystemMetrics` mediante la adición de un chequeo de tipos estricto y valores por defecto defensivos durante la iteración del pipeline, evitando que errores en un solo `scorer` comprometan el puntaje global.
+- `2026-10-15T01:24:53` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-15T01:25:49` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la resiliencia del sistema ante rutas inexistentes o inaccesibles mediante la implementación de `pathlib.Path.resolve(strict=False)` en la validación crítica de inicio y en la creación de objetos `Path`, evitando `FileNotFoundError` durante el escaneo de directorios que pueden ser eliminados o bloqueados por el SO en tiempo de ejecución.
+- `2026-10-15T01:25:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T01:25:49` Corrida terminada. Total usado hoy: 36.

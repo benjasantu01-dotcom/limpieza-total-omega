@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
-- Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 47
-- Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 218
+- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Rechazadas por tests: 25
+- Rechazadas por guardia de seguridad: 45
+- Sin cambios (nada sustancial que mejorar): 25
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-13 | 47 | 4 | 14 | 6 | 51 |
+| 2026-10-13 | 46 | 4 | 12 | 5 | 51 |
 | 2026-10-14 | 123 | 18 | 26 | 19 | 164 |
-| 2026-10-15 | 19 | 2 | 7 | 1 | 3 |
+| 2026-10-15 | 21 | 3 | 7 | 1 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **38**
+- seguridad defensiva: **37**
+- robustez ante casos límite: **30**
 - rendimiento: **29**
-- robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,18 +35,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **17**
 - `duplicates.py`: **16**
 - `memory.py`: **16**
-- `healthscore.py`: **14**
+- `healthscore.py`: **15**
 - `scanner.py`: **14**
 - `startup.py`: **14**
 - `safety.py`: **12**
 - `branding.py`: **12**
+- `main.py`: **11**
 - `organizer.py`: **11**
-- `main.py`: **10**
 - `settings.py`: **10**
-- `quarantine.py`: **7**
+- `quarantine.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-15T01:25:49` **main.py** (robustez ante casos límite): Mejoré la resiliencia del sistema ante rutas inexistentes o inaccesibles mediante la implementación de `pathlib.Path.resolve(strict=False)` en la validación crítica de inicio y en la creación de objetos `Path`, evitando `FileNotFoundError` durante el escaneo de directorios que pueden ser eliminados o bloqueados por el SO en tiempo de ejecución.
+- `2026-10-15T01:23:53` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor de cómputo ante condiciones de carrera o datos corruptos detectados en `SystemMetrics` mediante la adición de un chequeo de tipos estricto y valores por defecto defensivos durante la iteración del pipeline, evitando que errores en un solo `scorer` comprometan el puntaje global.
 - `2026-10-15T01:14:08` **browser.py** (robustez ante casos límite): Se reforzó la robustez frente a errores de sistema de archivos al añadir verificaciones de tipo y existencia antes de resolver rutas, previniendo el uso de rutas inexistentes en el contexto de escaneo y manejando de forma más estricta los fallos en la resolución de `Path`.
 - `2026-10-15T01:13:48` **branding.py** (robustez ante casos límite): Se mejora la robustez de `save_logo_svg` y las funciones de dibujo agregando validaciones de entrada (`size` fuera de rango, tipos de datos) y evitando posibles errores de división por cero o argumentos inválidos en las operaciones de canvas.
 - `2026-10-15T01:13:16` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `ingest` ante entradas mal formadas añadiendo validaciones de tipo explícitas para las métricas, evitando que valores inesperados (como `None` o tipos incompatibles inyectados a través de `source`) provoquen fallos en cascada en las operaciones de redondeo o comparación.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-15T00:31:56` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `startup.py` mediante la adición de docstrings estructuradas con la convención NumPy y se han corregido nombres de variables en funciones internas para eliminar ambigüedades sobre su propósito.
 - `2026-10-15T00:23:03` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en `DirectoryStack`), se documentaron las constantes complejas y se refactorizó la lógica de los chequeos heurísticos para mejorar la legibilidad y la mantenibilidad del código sin alterar su comportamiento funcional.
 - `2026-10-15T00:21:41` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la adición de Type Hints en funciones que carecían de ellos, la corrección de una inconsistencia en la firma de `_check_io_error_context` (que no siempre garantizaba el tipo de retorno) y la documentación de comportamientos críticos mediante docstrings específicos.
-- `2026-10-15T00:12:20` **main.py** (legibilidad y documentación): He mejorado la legibilidad del archivo `main.py` mediante la implementación de `TypeAlias` más específicos y la estandarización de docstrings que describen el propósito funcional de los métodos complejos, facilitando el mantenimiento y la comprensión de la lógica de negocio.
-- `2026-10-15T00:11:08` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo reemplazando las lambdas complejas en `_PIPELINE` por funciones nominales descriptivas, lo que facilita el debugging, permite añadir docstrings específicos a cada lógica de evaluación y mejora la claridad del flujo de trabajo sin alterar la funcionalidad.

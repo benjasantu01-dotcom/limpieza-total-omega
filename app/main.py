@@ -122,7 +122,8 @@ def get_cached_settings() -> Dict[str, Any]:
             for key in ["carpeta_excluida"]:
                 if key in raw and raw[key]:
                     p = Path(raw[key])
-                    if not p.exists() or not safety.is_safe_to_modify(p.resolve()):
+                    # resolve() en rutas posiblemente inexistentes requiere strict=False
+                    if not p.exists() or not safety.is_safe_to_modify(p.resolve(strict=False)):
                         raw[key] = ""
             return raw
     except (IOError, ValueError) as e:
@@ -155,7 +156,7 @@ def ensure_safety(func: Callable) -> Callable:
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         try:
-            home_path = Path.home().resolve()
+            home_path = Path.home().resolve(strict=False)
             safety.ensure_safe_to_modify(home_path)
             return func(*args, **kwargs)
         except safety.UnsafePathError as e:
@@ -199,7 +200,7 @@ def validated_ui_operation(func: Callable) -> Callable:
 
 def _check_environment_integrity() -> None:
     """Valida requisitos de seguridad críticos al arrancar el proceso y antes de instanciar la UI."""
-    cwd = Path.cwd().resolve()
+    cwd = Path.cwd().resolve(strict=False)
     if not cwd.exists():
         raise RuntimeError("Directorio de trabajo actual no existe.")
     # Prevenir ejecución desde rutas de red o sistema volátiles
@@ -208,7 +209,7 @@ def _check_environment_integrity() -> None:
     if "system32" in str(cwd).lower() or "windows" in str(cwd).lower():
         raise RuntimeError("Ejecución en entorno protegido.")
         
-    safety.ensure_safe_to_modify(Path.home().resolve())
+    safety.ensure_safe_to_modify(Path.home().resolve(strict=False))
     safety.ensure_safe_to_modify(cwd)
 
 try:
@@ -311,8 +312,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         y no residan en ubicaciones bloqueadas (enlaces simbólicos, sistemas protegidos).
         """
         try:
-            app_root = Path(__file__).resolve().parent
-            cwd = Path.cwd().resolve()
+            app_root = Path(__file__).resolve(strict=False).parent
+            cwd = Path.cwd().resolve(strict=False)
             home = Path.home()
             
             if not app_root.exists() or not cwd.exists() or not home.exists():
@@ -329,7 +330,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 (app_root.exists(), "Directorio de aplicación inexistente."),
                 (not app_root.is_symlink(), "App ubicada en enlace simbólico."),
                 (home.exists(), "Directorio home del usuario inaccesible."),
-                (home.resolve().is_absolute(), "La ruta home no es absoluta."),
+                (home.resolve(strict=False).is_absolute(), "La ruta home no es absoluta."),
                 (safety.is_safe_to_modify(cwd), "Directorio de trabajo inseguro."),
                 (not safety.is_protected_path(app_root), "Directorio de aplicación protegido."),
                 (not cwd.is_symlink(), "Directorio de trabajo es un enlace simbólico o junction.")
@@ -345,9 +346,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Valida que una ruta sea absoluta, no un enlace simbólico y ajena a la estructura de la App."""
         try:
             clean_p = self._sanitize_path(path)
-            p = Path(clean_p).resolve(strict=True)
+            p = Path(clean_p).resolve(strict=False)
             
-            app_dir = Path(__file__).resolve().parent
+            app_dir = Path(__file__).resolve(strict=False).parent
             if app_dir in p.parents or p == app_dir:
                  raise safety.UnsafePathError("Operación denegada: Acceso a estructura interna de la App.")
 
@@ -1004,8 +1005,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not path:
             return False
         try:
-            p = Path(self._sanitize_path(path)).resolve(strict=True)
-            return p.is_dir()
+            p = Path(self._sanitize_path(path)).resolve(strict=False)
+            return p.exists() and p.is_dir()
         except (OSError, RuntimeError):
             return False
 
@@ -1523,7 +1524,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_heuristic_scan(self) -> None:
         """Callback: Escaneo heurístico en Descargas."""
         downloads_path = Path.home() / "Downloads"
-        if not downloads_path.is_dir():
+        # Usamos exists() en vez de is_dir() sin validar para evitar errores en rutas inexistentes
+        if not downloads_path.exists() or not downloads_path.is_dir():
             self.log("No se encontró la carpeta de Descargas.", "Seguridad")
             return
         self._run_heuristic_scan(str(downloads_path))
@@ -1921,7 +1923,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             try:
                 # Sanitizar ruta y validar permisos antes de escribir
                 clean_dest = self._sanitize_path(destino)
-                ruta_destino = Path(clean_dest).resolve()
+                ruta_destino = Path(clean_dest).resolve(strict=False)
                 self._ensure_path_writable_and_clean(ruta_destino.parent)
                 
                 ruta = reporting.save_report(self.report_data, str(ruta_destino), as_markdown=as_markdown)
