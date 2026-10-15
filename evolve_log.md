@@ -768,3 +768,12 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-10-15T14:08:48` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de caché con invalidación selectiva para los resultados del escaneo de duplicados (`dups`), evitando re-escaneos costosos durante la misma sesión cuando el usuario navega entre pestañas o consulta el asistente, mejorando significativamente la respuesta de la UI.
 - `2026-10-15T14:08:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T14:08:48` Corrida terminada. Total usado hoy: 336.
+- `2026-10-15T14:16:36` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-15T14:17:07` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé la función `top_memory_processes` pre-calculando el tamaño de los contadores y reutilizando el buffer de PIDs para reducir la carga en el recolector de basura y evitar asignaciones innecesarias durante iteraciones de alta frecuencia.
+- `2026-10-15T14:17:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-15T14:17:37` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-10-15T14:18:09` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-15T14:18:56` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé la carga del manifiesto evitando el parseo redundante de rutas y objetos en llamadas frecuentes mediante un filtrado de caché más eficiente y el uso de un diccionario de búsqueda para evitar iteraciones sobre listas completas en operaciones de purga y restauración.
+- `2026-10-15T14:19:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 98): unterminated string literal (detected at line 98)
+- `2026-10-15T14:19:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T14:19:00` Corrida terminada. Total usado hoy: 340.

@@ -340,14 +340,11 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
                 count = min(max_pids, cb_needed.value // ctypes.sizeof(ctypes.c_uint32))
                 candidates = []
                 for i in range(count):
-                    try:
-                        pid = int(pids[i])
-                        if pid > 4:
-                            ws = _query_working_set_bytes(pid, kernel32, psapi, pmc)
-                            if ws is not None:
-                                candidates.append(ProcessMemory(f"PID {pid}", pid, ws))
-                    except (ValueError, TypeError):
-                        continue
+                    pid = int(pids[i])
+                    if pid > 4:
+                        ws = _query_working_set_bytes(pid, kernel32, psapi, pmc)
+                        if ws is not None:
+                            candidates.append(ProcessMemory(f"PID {pid}", pid, ws))
                 
                 _CACHE_TOP_PROC = CacheEntry(now, heapq.nlargest(limit, candidates))
         except (ctypes.ArgumentError, OSError, TypeError):

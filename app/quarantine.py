@@ -941,8 +941,9 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     try:
         base_path = quarantine_dir(base)
         manifest = load_manifest(base)
+        manifest_map = {item.item_id: item for item in manifest}
             
-        quarantine_item = next((i for i in manifest if i.item_id == item_id), None)
+        quarantine_item = manifest_map.get(item_id)
         if not quarantine_item:
             raise KeyError(f"Ítem no encontrado: {item_id}")
         
@@ -1001,7 +1002,8 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
     base_path = quarantine_dir(base)
     
     items = load_manifest(base)
-    quarantine_item = next((i for i in items if i.item_id == item_id), None)
+    item_map = {item.item_id: item for item in items}
+    quarantine_item = item_map.get(item_id)
     if quarantine_item is None:
         return False
         
