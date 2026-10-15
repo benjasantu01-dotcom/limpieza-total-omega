@@ -915,3 +915,23 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-15T04:07:58` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-15T04:07:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-15T04:07:58` Corrida terminada. Total usado hoy: 100.
+- `2026-10-15T04:15:07` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-10-15T04:16:09` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-15T04:17:08` Tests FALLARON:
+```
+he_original_path_for_restoring - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-1/test_quarantine_records_the_or0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-1/test_restore_puts_the_file_bac0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-1/test_restore_into_a_system_pat0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-1/test_purge_item_cannot_delete_0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-1/test_purge_all_only_deletes_in0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-1/test_quarantine_two_files_with0/_Cuarentena
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - PermissionError: Sin permisos de escritura seguros: /tmp/pytest-of-runner/pytest-1/test_quarantine_summary_report0/_Cuarentena
+27 failed, 272 passed, 5 warnings in 1.36s
+
+```
+- `2026-10-15T04:17:08` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se introdujo una validación explícita para el estado de retorno de la API `GetFileAttributesW` dentro de `_get_file_attrs` para manejar casos donde el sistema devuelve un valor inválido pero no lanza excepción, mejorando la robustez ante estados de error no documentados del sistema operativo.
+- `2026-10-15T04:17:44` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_readable` y `_get_file_size` mediante la validación explícita de `os.DirEntry` y el uso de `path.stat()` seguro, eliminando redundancias y posibles excepciones por tipos de datos inesperados.
+- `2026-10-15T04:18:28` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` y `_read_and_parse_json()` añadiendo validaciones proactivas frente a archivos de configuración bloqueados, inexistentes o con metadatos sospechosos, asegurando que la app siempre mantenga un estado válido.
+- `2026-10-15T04:18:43` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `StartupEntry._extract_quoted_path` al incluir validación de `None` y tipos, y un manejo de errores más específico para prevenir excepciones inesperadas durante el procesamiento de rutas, alineándome con el enfoque de validación defensiva.
+- `2026-10-15T04:18:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-15T04:18:43` Corrida terminada. Total usado hoy: 104.

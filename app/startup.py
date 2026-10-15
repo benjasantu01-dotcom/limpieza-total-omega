@@ -101,16 +101,18 @@ class StartupEntry:
     def _is_reserved_device_name(self, path_str: str) -> bool:
         """Valida que la cadena de ruta no resuelva a un dispositivo de hardware reservado."""
         try:
-            if "\0" in path_str:
+            if not isinstance(path_str, str) or "\0" in path_str:
                 return True
             if path_str.upper().startswith(("\\\\.\\", "\\\\?\\")):
                 return True
             return Path(path_str).stem.upper() in RESERVED_DEVICE_NAMES
-        except (ValueError, TypeError):
+        except (ValueError, TypeError, AttributeError):
             return True
 
     def _is_path_suspicious(self, path_string: str) -> bool:
         """Verifica la ausencia de caracteres de control o rutas de red (UNC) no permitidas."""
+        if not isinstance(path_string, str):
+            return True
         return any(c in path_string for c in SUSPICIOUS_CHARS) or path_string.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
@@ -147,7 +149,7 @@ class StartupEntry:
             if not p.parts or is_protected_path(p):
                 return ""
             return str(p)
-        except (OSError, ValueError, RuntimeError, TypeError, PermissionError):
+        except (OSError, ValueError, RuntimeError, TypeError, PermissionError, AttributeError):
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:

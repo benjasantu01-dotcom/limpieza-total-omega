@@ -452,7 +452,11 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         parent = config_path.parent
         if not is_safe_to_modify(str(config_path)): return None
         if not parent.exists() or not _is_dir_safe(parent) or _Validators._is_reparse_point(parent) or is_protected_path(str(parent.resolve())): return None
-        if shutil.disk_usage(parent).free < MAX_SETTINGS_SIZE * 2 or not os.access(parent, os.W_OK): return None
+        # Validar espacio disponible antes de intentar serializar y escribir
+        try:
+            if shutil.disk_usage(parent).free < MAX_SETTINGS_SIZE * 2: return None
+        except OSError: return None
+        if not os.access(parent, os.W_OK): return None
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
         return config_path if _MANAGER.perform_atomic_write(config_path, serialized) else None

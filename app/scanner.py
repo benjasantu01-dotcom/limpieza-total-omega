@@ -117,6 +117,7 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 
 def _get_file_size(path: Path) -> int:
     """Retorna el tamaño en bytes del archivo. Devuelve -1 si el archivo es inaccesible."""
+    if not isinstance(path, Path): return -1
     try:
         return int(path.stat().st_size)
     except (OSError, PermissionError, FileNotFoundError, AttributeError, ValueError, TypeError):
