@@ -247,7 +247,7 @@ PROTECTED_DIR_NAMES: Final[set[str]] = {
 
 SENSITIVE_EXTENSIONS: Final[set[str]] = {
     ".sys", ".dll", ".exe", ".msi", ".drv", ".ocx", ".cpl", ".efi",
-    ".reg", ".pol", ".key", ".pem", ".pfx", ".p12", ".crt", ".cer",
+    ".reg", ".pol", ".key", ".pem", ".pfx", ".pfx", ".p12", ".crt", ".cer",
 }
 
 _SYSTEM_ROOT_PATHS: Final[set[Path]] = {
@@ -255,7 +255,7 @@ _SYSTEM_ROOT_PATHS: Final[set[Path]] = {
     if os.environ.get(v)
 }
 
-_SYSTEM_ROOT_PATHS_TUPLE: Final[tuple[str, ...]] = tuple(str(p).lower() for p in _SYSTEM_ROOT_PATHS)
+_SYSTEM_ROOT_STRS: Final[tuple[str, ...]] = tuple(str(p).lower() + os.sep for p in _SYSTEM_ROOT_PATHS)
 
 _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
     r'^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$', re.IGNORECASE
@@ -520,26 +520,26 @@ def _check_owner(p: Path, _, __) -> bool: return _is_file_owned_by_system(str(p)
 def _check_virtual(p: Path, _, __) -> bool: return _is_virtual_drive(str(p))
 
 _VALIDATORS: Final[list[_IntegrityCheck]] = [
-    _rule(ProtectionReason.SYMLINK, _check_symlink), # Verifica enlaces simbólicos
-    _rule(ProtectionReason.REPARSE_POINT, _check_reparse), # Verifica puntos de reparse
-    _rule(ProtectionReason.KERNEL_LOCKED, _check_kernel_locked), # Verifica archivos bloqueados por el kernel
-    _rule(ProtectionReason.READ_ONLY, _check_read_only), # Verifica atributos de solo lectura
-    _rule(ProtectionReason.VOLUME_READ_ONLY, _check_vol_read_only), # Verifica estados de solo lectura en volumen
-    _rule(ProtectionReason.REMOVABLE_DRIVE, _check_vol_removable), # Verifica si el volumen es extraíble
-    _rule(ProtectionReason.VOLUME_RESTRICTED, _check_vol_restricted), # Verifica cifrado o compresión de volumen
-    _rule(ProtectionReason.IN_USE, _check_in_use), # Verifica exclusividad de uso
-    _rule(ProtectionReason.SYSTEM_HIDDEN, _check_sys_hidden), # Verifica atributos de sistema u ocultos
-    _rule(ProtectionReason.OFFLINE, _check_offline), # Verifica si el archivo está en caché offline
-    _rule(ProtectionReason.ENCRYPTED_OR_COMPRESSED, _check_enc_comp), # Verifica cifrado o compresión de archivo
-    _rule(ProtectionReason.SPARSE_FILE, _check_sparse), # Verifica archivos dispersos (sparse)
-    _rule(ProtectionReason.HARD_LINK, _check_hard_link), # Verifica múltiples hard links
-    _rule(ProtectionReason.ADS, _check_ads), # Verifica flujos de datos alternativos (ADS)
-    _rule(ProtectionReason.EMPTY_FILE, _check_empty), # Verifica si el archivo es vacío
-    _rule(ProtectionReason.EXCESSIVE_SIZE, _check_size), # Verifica si el archivo excede el tamaño máximo
-    _rule(ProtectionReason.MOUNT_POINT, _check_mount), # Verifica si es un punto de montaje
-    _rule(ProtectionReason.INVALID_TYPE, _check_type), # Verifica si el tipo es inválido
-    _rule(ProtectionReason.SYSTEM_OWNER, _check_owner), # Verifica la propiedad del sistema
-    _rule(ProtectionReason.VIRTUAL_DRIVE, _check_virtual), # Verifica unidades virtuales
+    _rule(ProtectionReason.SYMLINK, _check_symlink),
+    _rule(ProtectionReason.REPARSE_POINT, _check_reparse),
+    _rule(ProtectionReason.KERNEL_LOCKED, _check_kernel_locked),
+    _rule(ProtectionReason.READ_ONLY, _check_read_only),
+    _rule(ProtectionReason.VOLUME_READ_ONLY, _check_vol_read_only),
+    _rule(ProtectionReason.REMOVABLE_DRIVE, _check_vol_removable),
+    _rule(ProtectionReason.VOLUME_RESTRICTED, _check_vol_restricted),
+    _rule(ProtectionReason.IN_USE, _check_in_use),
+    _rule(ProtectionReason.SYSTEM_HIDDEN, _check_sys_hidden),
+    _rule(ProtectionReason.OFFLINE, _check_offline),
+    _rule(ProtectionReason.ENCRYPTED_OR_COMPRESSED, _check_enc_comp),
+    _rule(ProtectionReason.SPARSE_FILE, _check_sparse),
+    _rule(ProtectionReason.HARD_LINK, _check_hard_link),
+    _rule(ProtectionReason.ADS, _check_ads),
+    _rule(ProtectionReason.EMPTY_FILE, _check_empty),
+    _rule(ProtectionReason.EXCESSIVE_SIZE, _check_size),
+    _rule(ProtectionReason.MOUNT_POINT, _check_mount),
+    _rule(ProtectionReason.INVALID_TYPE, _check_type),
+    _rule(ProtectionReason.SYSTEM_OWNER, _check_owner),
+    _rule(ProtectionReason.VIRTUAL_DRIVE, _check_virtual),
 ]
 
 _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
@@ -712,17 +712,22 @@ def is_protected_path(path: PathLike) -> bool:
     """Determina si la ruta forma parte de una zona protegida del sistema."""
     if not isinstance(path, (str, Path)) or not path: return True
     try:
-        p_resolved = _normalize_resolved(str(path))
+        path_str = str(path).lower()
+        p = Path(path)
         
-        if p_resolved.is_symlink() or _is_system_directory_junction(str(p_resolved)): return True
+        # Validación rápida por prefijo de sistema
+        if any(path_str.startswith(root) for root in _SYSTEM_ROOT_STRS): return True
         
-        if PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in p_resolved.parts):
-            if not _is_kernel_managed(str(p_resolved)):
-                if not any(p_resolved.is_relative_to(root) for root in _SYSTEM_ROOT_PATHS):
-                    attrs = _get_file_attrs(str(p_resolved))
-                    if not (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN)):
-                        return p_resolved == Path(p_resolved.anchor)
-        return True
+        # Validación rápida por componentes protegidos
+        parts = {p.lower() for p in p.parts}
+        if not PROTECTED_DIR_NAMES.isdisjoint(parts): return True
+        
+        if _is_kernel_managed(path_str): return True
+        
+        attrs = _get_file_attrs(str(p))
+        if attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN): return True
+        
+        return p == Path(p.anchor)
     except Exception: return True
 
 @lru_cache(maxsize=4096)
@@ -939,7 +944,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         
         p = normalize(path)
         
-        # Bloqueo preventivo de archivos de sistema conocidos (Kernel/Paging)
         if p.name.lower() in _KERNEL_BLOCKED_FILES:
             raise UnsafePathError(f"Modificación bloqueada de archivo crítico: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
 

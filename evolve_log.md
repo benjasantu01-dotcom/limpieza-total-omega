@@ -1311,3 +1311,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-16T03:55:29` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé `top_memory_processes` reemplazando la instanciación de una lista grande dentro del loop por un uso más eficiente de `heapq.nlargest` sobre un generador, reduciendo el consumo de memoria durante la recolección de métricas.
 - `2026-10-16T03:55:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T03:55:29` Corrida terminada. Total usado hoy: 92.
+- `2026-10-16T04:02:10` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-10-16T04:02:12` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T04:02:48` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo recursivo sustituyendo la conversión repetitiva de `str(p)` a `Path` y el uso de `endswith()` por una comprobación directa mediante `set` (o su `frozenset` preexistente) y `suffix`, reduciendo la carga de CPU en el bucle principal de recorrido de archivos.
+- `2026-10-16T04:03:30` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé la carga del manifiesto convirtiendo la lista `items` en un diccionario (`item_map`) dentro de `purge_all`, evitando así una complejidad algorítmica O(N^2) al buscar coincidencias entre los archivos del sistema y los ítems del manifiesto durante el vaciado.
+- `2026-10-16T04:03:50` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-10-16T04:04:25` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `is_protected_path` eliminando llamadas recursivas y redundantes a `Path.resolve()` y `is_relative_to()`, reemplazándolas por verificaciones de cadena (string prefix) y de estructura de partes, aprovechando que el cacheo ya está presente.
+- `2026-10-16T04:04:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T04:04:25` Corrida terminada. Total usado hoy: 96.
