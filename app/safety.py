@@ -938,6 +938,11 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             raise UnsafePathError("Caracteres inválidos detectados.", SafetyValidationErrorCode.INVALID_CHARS)
         
         p = normalize(path)
+        
+        # Bloqueo preventivo de archivos de sistema conocidos (Kernel/Paging)
+        if p.name.lower() in _KERNEL_BLOCKED_FILES:
+            raise UnsafePathError(f"Modificación bloqueada de archivo crítico: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
+
         base = None
         if base_dir:
             try:

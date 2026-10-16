@@ -863,3 +863,10 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-10-16T00:10:33` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha robustecido el proceso de purga (`purge_all`) para manejar eficazmente archivos huérfanos que no constan en el manifiesto, evitando que queden bloqueados o causen errores de sincronización, y mejorando la consistencia del directorio tras la operación mediante `fsync` a nivel de directorio.
 - `2026-10-16T00:10:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T00:10:33` Corrida terminada. Total usado hoy: 4.
+- `2026-10-16T00:18:12` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-10-16T00:18:32` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-16T00:19:23` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para archivos de paginación y volcado de memoria (kernel-managed) en la validación de seguridad de bajo nivel, asegurando que el motor bloquee preventivamente el acceso de modificación a estos archivos críticos incluso si los permisos de sistema de archivos parecen estar configurados de otra manera.
+- `2026-10-16T00:19:55` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-16T00:20:12` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante casos límite implementando un chequeo preventivo de `OSError` y `PermissionError` en el cálculo de `statvfs` dentro de `perform_atomic_write`, evitando que fallos en sistemas de archivos restringidos o de solo lectura bloqueen el proceso de escritura de ajustes.
+- `2026-10-16T00:20:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T00:20:12` Corrida terminada. Total usado hoy: 8.

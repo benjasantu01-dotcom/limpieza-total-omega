@@ -170,7 +170,7 @@ class _SettingsManager:
             statvfs = os.statvfs(config_path.parent)
             if statvfs.f_frsize * statvfs.f_bavail < len(serialized) * 2:
                 return False
-        except (AttributeError, OSError):
+        except (AttributeError, OSError, PermissionError):
             pass
         
         for attempt in range(4):
