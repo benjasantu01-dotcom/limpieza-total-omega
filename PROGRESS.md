@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 31
 - Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 110 | 14 | 29 | 9 | 102 |
-| 2026-10-16 | 90 | 17 | 20 | 8 | 105 |
+| 2026-10-15 | 109 | 14 | 29 | 9 | 99 |
+| 2026-10-16 | 90 | 17 | 20 | 8 | 109 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - robustez ante casos límite: **44**
-- manejo de errores y validación de entradas: **38**
 - seguridad defensiva: **38**
+- manejo de errores y validación de entradas: **37**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
@@ -34,10 +34,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **19**
 - `quarantine.py`: **18**
 - `healthscore.py`: **17**
-- `assistant.py`: **15**
 - `scanner.py`: **15**
 - `main.py`: **14**
 - `settings.py`: **14**
+- `assistant.py`: **14**
 - `browser.py`: **12**
 - `branding.py`: **11**
 - `safety.py`: **11**
