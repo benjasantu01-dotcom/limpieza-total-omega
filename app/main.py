@@ -15,7 +15,7 @@ Los análisis (memoria, disco, duplicados, navegadores, arranque) son de
 solo lectura: informan, no modifican. Lo sospechoso se aísla en cuarentena
 (reversible), no se elimina.
 
-CRITERIO DE DESEÑO
+CRITERIO DE DISEÑO
 ------------------
 Los estilos no se escriben acá: todo color, tamaño e ícono sale de
 `branding.py`. Así el bucle autónomo puede rediseñar la app entera sin tocar

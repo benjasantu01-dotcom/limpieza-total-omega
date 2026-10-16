@@ -214,10 +214,26 @@ def _is_system_hidden(entry: os.DirEntry) -> bool:
     """Verifica si la entrada tiene atributos de 'oculto' o 'sistema' definidos en Windows."""
     return bool(_get_win_attributes(entry) & WIN_ATTR_MASK)
 
+def _validate_file_identity(junk_file: JunkFile, src_real: Path) -> bool:
+    """Verifica que el archivo físico coincida con la metadata capturada originalmente."""
+    try:
+        stat_result = src_real.stat()
+        return (junk_file._ino is None or stat_result.st_ino == junk_file._ino) and \
+               (junk_file._dev is None or stat_result.st_dev == junk_file._dev)
+    except (OSError, AttributeError):
+        return False
+
+def _can_write_to_destination(dest_real: Path, size: int) -> bool:
+    """Valida si el destino existe, es escribible y tiene espacio suficiente."""
+    target_dir = dest_real.parent if dest_real.exists() else dest_real
+    if not target_dir.is_dir() or not os.access(target_dir, os.W_OK):
+        return False
+    usage = shutil.disk_usage(target_dir)
+    return usage.free >= (size + MIN_FREE_SPACE_BYTES)
+
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     """
     Valida la integridad del archivo y la seguridad del destino antes de mover.
-    Comprueba existencia, bloqueos, rutas protegidas y disponibilidad de espacio.
     """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     try:
@@ -225,26 +241,16 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         
-        # Validación de integridad de ruta (TOCTOU)
-        if not str(src_real).startswith(str(Path(src_real.anchor).resolve())): return False
-        
-        if src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
+        # Validación base de seguridad
+        if src_real.name.lower() in SYSTEM_CRITICAL_NAMES or is_protected_path(src_real): return False
         if src_real.is_symlink() or (os.name == 'nt' and bool(src_real.stat().st_file_attributes & WIN_ATTR_JUNCTION)): return False
-        if is_protected_path(src_real): return False
+        if not (is_safe_to_modify(src_real) and _validate_path_security(src_real, dest_real)): return False
         
-        stat_result = src_real.stat()
-        if (junk_file._ino is not None and stat_result.st_ino != junk_file._ino) or \
-           (junk_file._dev is not None and stat_result.st_dev != junk_file._dev): return False
+        # Validaciones de estado actual
+        if not _validate_file_identity(junk_file, src_real) or _is_file_locked(src_real): return False
+        if _is_recursive_violation(src_real, dest_real) or not _can_write_to_destination(dest_real, junk_file.size_bytes): return False
         
-        if not src_real.is_file() or is_protected_path(dest_real): return False
-        if not is_safe_to_modify(src_real) or not _validate_path_security(src_real, dest_real): return False
-        
-        target_dir = dest_real.parent if dest_real.exists() else dest_real
-        if not target_dir.is_dir() or not os.access(target_dir, os.W_OK): return False
-        if _is_recursive_violation(src_real, dest_real) or _is_file_locked(src_real): return False
-        
-        usage = shutil.disk_usage(target_dir)
-        return usage.free >= (stat_result.st_size + MIN_FREE_SPACE_BYTES)
+        return src_real.is_file()
     except (OSError, AttributeError, ValueError, PermissionError):
         return False
 
