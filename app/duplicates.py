@@ -124,7 +124,6 @@ def _safe_path_check(path: Path) -> bool:
     Lanza excepciones de sistema capturadas para evitar interrupción del bucle.
     """
     try:
-        # Validación extra: realpath previene seguimiento de enlaces fuera del árbol esperado
         if path != Path(os.path.realpath(path)):
             return False
         return (is_safe_to_modify(path) and 
@@ -204,6 +203,9 @@ def _resolve_and_verify_root(directory_path: PathLike) -> Optional[Path]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Recolección BFS de archivos. Utiliza (dev, ino) para identificar archivos únicos (hardlinks).
+    :param directories: Directorios a escanear.
+    :param min_size: Tamaño mínimo en bytes para considerar un archivo.
+    :param skip_protected: Flag para omitir rutas protegidas.
     """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     queue: deque[Tuple[Path, int]] = deque()

@@ -132,7 +132,17 @@ def _validate_limit(limit: Any) -> int:
 
 
 def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
-    """Valida y resuelve una ruta raíz, confirmando existencia y permisos de lectura."""
+    """
+    Valida, expande y resuelve una ruta raíz.
+    
+    Verifica:
+    1. Si la ruta existe.
+    2. Si es un directorio y no es un directorio protegido.
+    3. Si el proceso tiene permisos de lectura sobre la ruta.
+    
+    Returns:
+        Path resuelto si es válido, None en caso contrario.
+    """
     if not directory:
         return None
     try:
@@ -149,7 +159,13 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 
 def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
-    """Determina si una entrada de sistema debe excluirse del análisis."""
+    """
+    Filtra entradas de sistema, enlaces simbólicos o rutas peligrosas.
+    
+    Args:
+        entry: Objeto DirEntry de os.scandir.
+        root_path: Ruta raíz del análisis para evitar path traversal.
+    """
     try:
         if os.path.islink(entry.path):
             return True
@@ -277,7 +293,13 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador recursivo que recorre archivos bajo `directory`.
-    Evita ciclos de reparse points mediante `visited_inodes` y saltea rutas protegidas.
+    
+    Args:
+        directory: Ruta base de búsqueda.
+        skip_protected: Si es True, ignora directorios protegidos por el sistema.
+    
+    Yields:
+        Tuplas (path, size_bytes).
     """
     root_path = _validate_root(directory)
     if root_path is None: return

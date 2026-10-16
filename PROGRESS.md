@@ -8,32 +8,32 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 30
-- Rechazadas por guardia de seguridad: 44
-- Sin cambios (nada sustancial que mejorar): 16
+- Rechazadas por guardia de seguridad: 43
+- Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 90 | 11 | 23 | 8 | 92 |
-| 2026-10-16 | 97 | 19 | 21 | 8 | 135 |
+| 2026-10-15 | 88 | 11 | 22 | 8 | 91 |
+| 2026-10-16 | 99 | 19 | 21 | 9 | 136 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **44**
+- legibilidad y documentación: **40**
 - seguridad defensiva: **38**
-- legibilidad y documentación: **38**
 - manejo de errores y validación de entradas: **36**
-- rendimiento: **31**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **18**
-- `diskreport.py`: **18**
-- `quarantine.py`: **17**
-- `duplicates.py`: **16**
+- `diskreport.py`: **19**
+- `duplicates.py`: **17**
+- `memory.py`: **17**
 - `healthscore.py`: **16**
+- `quarantine.py`: **16**
 - `scanner.py`: **15**
 - `settings.py`: **14**
 - `assistant.py`: **14**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T12:03:11` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints en los retornos de funciones, se completó la documentación de los parámetros en los docstrings y se refinó la semántica de `_collect_candidates` mediante un diccionario de tipos explícito para mejorar la legibilidad y el mantenimiento.
+- `2026-10-16T12:02:57` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas (tipo Google) en funciones clave, clarificando los tipos de entrada y los comportamientos ante errores (edge cases), lo cual facilita el mantenimiento y la auditoría del código.
 - `2026-10-16T11:52:53` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_registry_entry_safe` y `parse_registry_csv` añadiendo validaciones explícitas de tipo y estructura, evitando errores de ejecución ante entradas de registro mal formadas o valores `None` inesperados que podrían interrumpir el análisis.
 - `2026-10-16T11:52:24` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save` y `update` capturando errores en `json.dumps` y en el manejo de archivos, además de endurecer la validación en `_read_and_parse_json` para manejar archivos JSON truncados o malformados mediante un bloque `try-except` más específico sobre la carga de datos.
 - `2026-10-16T11:51:44` **scanner.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `_get_file_attributes` y `_get_file_size` añadiendo validaciones de tipo y estructura más estrictas para evitar excepciones imprevistas durante el recorrido de disco, asegurando que las funciones no procesen argumentos inválidos (`None` o tipos incorrectos) antes de interactuar con el sistema operativo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T09:43:05` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` añadiendo una validación explícita mediante `pathlib.Path.is_relative_to` (o equivalente lógico manual, dada la versión) para asegurar que el archivo no ha sido movido fuera del alcance esperado tras la resolución de la ruta, previniendo ataques de tipo Time-of-Check to Time-of-Use (TOCTOU).
 - `2026-10-16T09:42:48` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `memory.py` al reemplazar la lógica manual de comparación de rutas en `_is_process_executable_safe` por una delegación más robusta y consistente con el resto del sistema, asegurando que la validación de rutas use el mecanismo centralizado `is_protected_path`.
 - `2026-10-16T09:31:07` **duplicates.py** (seguridad defensiva): Se ha robustecido la detección de rutas en `is_junction` y `_collect_candidates` mediante el uso de `os.path.realpath` y la validación explícita de puntos de reanálisis para evitar la recursión infinita o el seguimiento involuntario de enlaces simbólicos fuera de las zonas permitidas.
-- `2026-10-16T09:30:48` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` añadiendo una validación explícita mediante `pathlib` para asegurar que, tras resolver rutas, la entrada escaneada no intente escapar del directorio raíz mediante ataques de tipo "path traversal" (ej. `..`), previniendo fugas de contexto fuera del árbol de directorios permitido.
-- `2026-10-16T09:20:25` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de la función `ask` y `_call_gemini` integrando un chequeo explícito que impide el envío de datos si el contexto contiene una estructura insegura, evitando que errores de lógica en capas superiores se propaguen hacia la red.
