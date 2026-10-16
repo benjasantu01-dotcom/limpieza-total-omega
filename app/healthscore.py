@@ -190,6 +190,7 @@ _PIPELINE: Final[Tuple[PipelineEntry, ...]] = (
 )
 
 _verify_pipeline_integrity(WEIGHTS, _PIPELINE)
+_RULES_CACHE: Final[Dict[MetricKey, Tuple[RecommendationRule, ...]]] = {e.area: e.rules for e in _PIPELINE}
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
     """Calcula el score normalizado de archivos basura."""
@@ -353,8 +354,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         try:
             # Normalizar área específica
             area_ratio = _clamp(entry.scorer(m))
-            # Evaluar reglas de diagnóstico basadas en el ratio
-            _evaluate_rules(m, entry.rules, area_ratio, recommendations)
+            # Evaluar reglas de diagnóstico usando caché
+            _evaluate_rules(m, _RULES_CACHE.get(entry.area, entry.rules), area_ratio, recommendations)
             
             # Ponderar y registrar puntos
             points = area_ratio * entry.weight

@@ -608,7 +608,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def on_resize(event: tk.Event) -> None:
             if self._check_widget_integrity(self):
-                self._debounce_action("resize", 100, lambda: (franja.delete("all"), branding.draw_gradient_bar(franja, event.width, 3)))
+                self._debounce_action("resize", 200, lambda: (franja.delete("all"), branding.draw_gradient_bar(franja, event.width, 3)))
 
         franja.bind("<Configure>", on_resize)
 
