@@ -58,9 +58,10 @@ class SuspicionCheck(Protocol):
     """
     def __call__(self, path: Path, entry: Optional[os.DirEntry], now_ts: float) -> Optional[Suspicion]: ...
 
+# Alias de tipos para mejorar la legibilidad de la estructura de datos
 ScanResult: TypeAlias = List[Suspicion]
-# Tupla: (ruta absoluta del directorio, profundidad actual)
 DirectoryStack: TypeAlias = List[Tuple[str, int]]
+Timestamp: TypeAlias = float
 
 # Expresiones regulares para validación de nombres y riesgos
 DOUBLE_EXTENSION_RE: Final[re.Pattern] = re.compile(r"\.(pdf|jpg|png|docx|xlsx|txt)\.(exe|scr|bat|cmd|js|vbs)$", re.IGNORECASE)
@@ -159,8 +160,11 @@ def _is_target_extension(name: str) -> bool:
     except (ValueError, TypeError):
         return False
 
-def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta archivos con doble extensión (ej: archivo.pdf.exe) usada para engañar al usuario."""
+def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
+    """
+    Analiza si el nombre del archivo contiene una extensión doble sospechosa.
+    Ejemplo: 'reporte.pdf.exe'. Retorna una sospecha de nivel 'warning' si coincide con el patrón.
+    """
     if path is None or not path.name: return None
     try:
         if DOUBLE_EXTENSION_RE.search(path.name):
@@ -169,8 +173,11 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
         pass
     return None
 
-def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Identifica ejecutables nuevos en carpetas volátiles (Downloads, Temp) comunes para ataques de descarga involuntaria."""
+def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
+    """
+    Detecta ejecutables creados recientemente dentro de carpetas de descarga o temporales.
+    Utiliza el timestamp de modificación comparado con `now_ts` para determinar frescura.
+    """
     if path is None or path.parent is None: return None
     try:
         if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
@@ -183,8 +190,11 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         logger.debug(f"Error analizando fecha de archivo {path}: {e}")
     return None
 
-def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta binarios que usan nombres de procesos críticos del SO fuera de sus rutas legítimas (ej: c:\temp\svchost.exe)."""
+def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
+    """
+    Detecta binarios maliciosos que intentan suplantar procesos del sistema (ej. svchost.exe) 
+    ubicándose fuera del directorio System32.
+    """
     if path is None or not path.name: return None
     try:
         if path.name.lower() in SYSTEM_LOOKALIKES:
@@ -194,8 +204,11 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
         pass
     return None
 
-def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta archivos ejecutables de tamaño 0, a menudo relacionados con marcadores de posición maliciosos."""
+def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
+    """
+    Identifica archivos ejecutables con tamaño de 0 bytes, práctica a veces utilizada 
+    en exploits para crear marcadores o disparadores de ejecución.
+    """
     if path is None: return None
     try:
         if _get_file_size(path) == 0:
@@ -341,7 +354,7 @@ class Scanner:
             except (OSError, PermissionError, AttributeError, ValueError, TypeError) as e:
                 logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
 
-def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
+def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escaneo heurístico individual para un archivo específico, omitiendo rutas protegidas o bloqueadas."""
     if path is None or not isinstance(path, Path) or not path.exists() or _cached_is_protected(str(path)): 
         return []

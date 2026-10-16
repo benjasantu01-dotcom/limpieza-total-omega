@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
-- Rechazadas por tests: 30
-- Rechazadas por guardia de seguridad: 46
+- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Rechazadas por tests: 29
+- Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 125 | 17 | 34 | 10 | 134 |
-| 2026-10-16 | 68 | 13 | 12 | 6 | 85 |
+| 2026-10-15 | 123 | 16 | 34 | 10 | 133 |
+| 2026-10-16 | 69 | 13 | 13 | 6 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
-- robustez ante casos límite: **45**
-- legibilidad y documentación: **43**
+- legibilidad y documentación: **44**
+- robustez ante casos límite: **43**
 - manejo de errores y validación de entradas: **38**
 - seguridad defensiva: **37**
 - rendimiento: **30**
@@ -34,18 +34,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **18**
 - `healthscore.py`: **16**
 - `quarantine.py`: **16**
+- `scanner.py`: **15**
 - `main.py`: **14**
-- `scanner.py`: **14**
 - `settings.py`: **14**
 - `assistant.py`: **14**
 - `safety.py`: **13**
-- `browser.py`: **12**
-- `branding.py`: **11**
+- `browser.py`: **11**
+- `branding.py`: **10**
 - `organizer.py`: **9**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T07:58:51` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `scanner.py` mediante la implementación de `TypeAlias` explícitos y docstrings detallados en las funciones de heurística, clarificando el propósito, el contrato de los parámetros y el comportamiento ante errores para facilitar el mantenimiento y la extensibilidad del motor de escaneo.
 - `2026-10-16T07:48:54` **quarantine.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings estructurados (usando el formato Google Style) en todas las funciones y métodos de la clase `IsolationManager`, aclarando los argumentos, valores de retorno y excepciones, además de unificar criterios de nomenclatura interna.
 - `2026-10-16T07:48:24` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` mediante la adición de docstrings estructuradas (formato Google) en las funciones críticas de E/S, clarificando las precondiciones de seguridad y el manejo de excepciones para los desarrolladores.
 - `2026-10-16T07:47:56` **memory.py** (legibilidad y documentación): Se introdujeron type hints en funciones críticas, se documentaron parámetros complejos y se extrajo la lógica de ordenamiento de procesos pesados a una función dedicada para mejorar la legibilidad y mantenibilidad del módulo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T06:57:13` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_locked` para manejar de forma explícita errores de acceso sin depender de atributos dinámicos que podrían fallar, garantizando una validación más segura antes de intentar procesar archivos en el pipeline de hashing.
 - `2026-10-16T06:56:50` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas y validando estados intermedios para evitar que errores aislados en el sistema de archivos (como bloqueos de lectura o archivos bloqueados por el sistema) detengan el análisis completo o retornen resultados engañosos.
 - `2026-10-16T06:49:55` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemContext.ingest` y `_apply_field` capturando posibles desbordamientos durante la conversión de tipos y garantizando que los datos ingeridos sean siempre de los tipos esperados, evitando errores silenciosos en la propagación de métricas.
-- `2026-10-16T05:25:13` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo implementando una validación estricta de rutas mediante `pathlib` en `_is_safe_entry`, asegurando que `resolve()` no levante excepciones por rutas inexistentes durante la recursión y consolidando la verificación de puntos de reanálisis para prevenir el acceso accidental fuera del árbol definido.
