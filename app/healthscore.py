@@ -27,7 +27,7 @@ MetricKey: TypeAlias = str
 # Constantes de rendimiento para validación
 _ALLOWED_CHARS: Final[set[str]] = set(string.ascii_letters + string.digits + " .,:()-_%")
 _FORBIDDEN_CHARS: Final[set[str]] = {chr(i) for i in range(32) if chr(i) not in (" ", "\t")} # Bloquear caracteres de control
-_BLOCKED_TERMS: Final[frozenset[str]] = frozenset(["system32", "windows", "admin", "c:\\"])
+_BLOCKED_TERMS: Final[frozenset[str]] = frozenset(["system32", "windows", "admin", "c:\\", "system", "kernel"])
 _MAX_MSG_LEN: Final[int] = 128
 
 class Scorer(Protocol):
@@ -297,14 +297,18 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _sanitize_msg(msg: str | Any) -> str:
-    """Limpia cadenas de texto eliminando caracteres prohibidos y control."""
+    """Limpia cadenas de texto eliminando caracteres prohibidos y previniendo inyecciones."""
     if not isinstance(msg, str): return ""
-    clean = "".join(c for c in msg if c not in _FORBIDDEN_CHARS)
-    sanitized = "".join(c for c in clean if c in _ALLOWED_CHARS)
-    lower_msg = sanitized.lower()
+    # 1. Eliminar caracteres de control y forzar ASCII restringido
+    clean = "".join(c for c in msg if c not in _FORBIDDEN_CHARS and c in _ALLOWED_CHARS)
+    
+    # 2. Bloquear términos sensibles que no deben aparecer en logs o interfaz
+    lower_msg = clean.lower()
     if any(b in lower_msg for b in _BLOCKED_TERMS):
         return ""
-    return sanitized.strip()[:_MAX_MSG_LEN]
+        
+    # 3. Truncar y limpiar espacios
+    return clean.strip()[:_MAX_MSG_LEN]
 
 def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:
     """Envoltorio seguro para ejecutar factories de reglas sin exponer errores."""

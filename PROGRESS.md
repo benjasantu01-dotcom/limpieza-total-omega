@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 29
 - Rechazadas por guardia de seguridad: 51
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 208
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-14 | 48 | 9 | 9 | 8 | 68 |
+| 2026-10-14 | 48 | 9 | 9 | 8 | 64 |
 | 2026-10-15 | 142 | 19 | 41 | 11 | 137 |
-| 2026-10-16 | 7 | 1 | 1 | 0 | 3 |
+| 2026-10-16 | 9 | 1 | 1 | 1 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - robustez ante casos límite: **45**
 - manejo de errores y validación de entradas: **38**
-- seguridad defensiva: **34**
+- seguridad defensiva: **36**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **18**
+- `diskreport.py`: **18**
+- `healthscore.py`: **18**
 - `assistant.py`: **17**
-- `diskreport.py`: **17**
-- `healthscore.py`: **17**
 - `memory.py`: **16**
 - `browser.py`: **15**
 - `scanner.py`: **14**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T00:39:59` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sanitize_msg` implementando un bloqueo preventivo estricto contra inyecciones mediante caracteres de control y secuencias sospechosas, garantizando que el asistente nunca procese o muestre rutas de sistema o comandos, incluso si una regla llegara a generar un mensaje malformado.
+- `2026-10-16T00:38:59` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` implementando una validación estricta de puntos de reparse (reparse points) mediante `os.lstat` para prevenir seguimientos accidentales fuera del árbol raíz, cumpliendo con la prioridad de seguridad defensiva sin alterar la funcionalidad.
 - `2026-10-16T00:30:19` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante la implementación de una validación estricta de la ruta base, asegurando que `realpath` se utilice para la comparación de sandbox, lo que previene ataques de bypass mediante nombres cortos (8.3) o reparse points que apunten fuera del directorio permitido.
 - `2026-10-16T00:30:06` **branding.py** (seguridad defensiva): Mejoré la seguridad de la función `save_logo_svg` consolidando el chequeo de seguridad en una operación atómica de validación antes de realizar cualquier cambio en el sistema de archivos, asegurando que no se creen carpetas ni se escriban archivos si la ruta destino no cumple con las políticas de `safety.py`.
 - `2026-10-16T00:29:32` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva de `assistant.py` reforzando `_ensure_safe_text` y `_is_safe_path_input` para bloquear explícitamente caracteres de control y secuencias sospechosas de forma más agresiva, mitigando riesgos de inyección en las respuestas del asistente.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-15T14:38:19` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación proactiva de parámetros de entrada, evitando que valores extremos o rutas inválidas provoquen errores de cálculo o desbordamientos durante el renderizado.
 - `2026-10-15T14:37:47` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `SystemContext.ingest` y `_apply_field` para manejar casos límite donde el origen de datos (ej. un archivo de configuración corrompido o un diccionario mal formado) podría contener tipos de datos inesperados, asegurando que el estado del sistema no se corrompa con valores `None` o mal tipados.
 - `2026-10-15T14:28:48` **startup.py** (rendimiento): Se optimizó el rendimiento del escaneo del registro evitando el procesamiento redundante de columnas en el CSV mediante un `DictReader` selectivo y un filtrado anticipado en PowerShell, reduciendo drásticamente la carga de memoria al manejar grandes volúmenes de claves.
-- `2026-10-15T14:27:37` **safety.py** (rendimiento): Se ha optimizado `_get_file_attrs` y otras consultas de atributos mediante el uso de `lru_cache` con un tamaño adecuado, además de reducir el acceso redundante al sistema de archivos mediante el uso de `Path.parts` ya calculado, evitando llamadas innecesarias a `Path.resolve()` en bucles de validación.
-- `2026-10-15T14:18:56` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto evitando el parseo redundante de rutas y objetos en llamadas frecuentes mediante un filtrado de caché más eficiente y el uso de un diccionario de búsqueda para evitar iteraciones sobre listas completas en operaciones de purga y restauración.
