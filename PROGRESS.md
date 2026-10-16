@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 28
-- Rechazadas por guardia de seguridad: 45
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 20
 - Sin respuesta de la IA (error o límite): 223
 
@@ -16,36 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 78 | 9 | 20 | 8 | 85 |
-| 2026-10-16 | 110 | 19 | 25 | 12 | 138 |
+| 2026-10-15 | 76 | 9 | 20 | 8 | 83 |
+| 2026-10-16 | 111 | 19 | 26 | 12 | 140 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
-- seguridad defensiva: **38**
+- seguridad defensiva: **36**
 - manejo de errores y validación de entradas: **36**
 - robustez ante casos límite: **36**
-- rendimiento: **33**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
 - `memory.py`: **18**
-- `duplicates.py`: **17**
 - `quarantine.py`: **16**
+- `duplicates.py`: **16**
 - `healthscore.py`: **15**
 - `assistant.py`: **15**
 - `scanner.py`: **14**
 - `main.py`: **13**
 - `settings.py`: **13**
 - `organizer.py`: **12**
-- `safety.py`: **11**
-- `browser.py`: **10**
+- `safety.py`: **12**
 - `branding.py`: **10**
+- `browser.py`: **9**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T13:04:12` **safety.py** (rendimiento): Optimicé el rendimiento de las validaciones de seguridad mediante la implementación de `lru_cache` con `maxsize` ajustado en funciones clave que realizan consultas repetitivas al sistema operativo (`GetFileAttributesW` y `GetDriveTypeW`), reduciendo drásticamente las llamadas al kernel durante recorridos de directorios.
 - `2026-10-16T12:53:45` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` evitando llamadas repetitivas a `ctypes.windll` dentro del bucle de enumeración de procesos y pre-asignando el tamaño necesario para los buffers, reduciendo la sobrecarga de llamadas a la API de Windows.
 - `2026-10-16T12:53:16` **main.py** (rendimiento): Se implementó un mecanismo de invalidación de caché basado en marcas de tiempo (`ttl`) para el acceso a `Settings`, evitando lecturas de disco redundantes y optimizando el acceso a las preferencias en componentes de la UI que las consultan frecuentemente.
 - `2026-10-16T12:44:27` **duplicates.py** (rendimiento): Optimicé el rendimiento del proceso de hashing mediante la implementación de un mecanismo de caché (`lru_cache` manual) para el `partial_hash`, evitando múltiples lecturas de disco del mismo segmento inicial cuando existen colisiones de tamaño en múltiples directorios.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T12:03:11` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints en los retornos de funciones, se completó la documentación de los parámetros en los docstrings y se refinó la semántica de `_collect_candidates` mediante un diccionario de tipos explícito para mejorar la legibilidad y el mantenimiento.
 - `2026-10-16T12:02:57` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas (tipo Google) en funciones clave, clarificando los tipos de entrada y los comportamientos ante errores (edge cases), lo cual facilita el mantenimiento y la auditoría del código.
 - `2026-10-16T11:52:53` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_registry_entry_safe` y `parse_registry_csv` añadiendo validaciones explícitas de tipo y estructura, evitando errores de ejecución ante entradas de registro mal formadas o valores `None` inesperados que podrían interrumpir el análisis.
-- `2026-10-16T11:52:24` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save` y `update` capturando errores en `json.dumps` y en el manejo de archivos, además de endurecer la validación en `_read_and_parse_json` para manejar archivos JSON truncados o malformados mediante un bloque `try-except` más específico sobre la carga de datos.

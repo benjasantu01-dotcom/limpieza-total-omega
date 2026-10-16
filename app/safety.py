@@ -287,6 +287,7 @@ def is_running_as_admin() -> bool:
     except (AttributeError, OSError, ctypes.ArgumentError):
         return False
 
+@lru_cache(maxsize=128)
 def _is_virtual_drive(path_str: str) -> bool:
     """Detecta si la unidad es un remapeo de dispositivo virtual o unión de DOS."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
@@ -420,13 +421,17 @@ def _is_volume_busy_or_invalid(path_str: Optional[str]) -> bool:
     except Exception: return True
 
 @lru_cache(maxsize=128)
+def _get_drive_type(root: str) -> int:
+    """Obtiene el tipo de unidad (cached)."""
+    return ctypes.windll.kernel32.GetDriveTypeW(root)
+
+@lru_cache(maxsize=128)
 def _is_volume_removable_media(path_str: Optional[str]) -> bool:
     """Verifica si el volumen es extraíble (USB, SD, etc.)."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str or not os.path.isabs(path_str): return False
     try:
         root = os.path.splitdrive(path_str)[0] + "\\"
-        if not os.path.exists(root): return False
-        return ctypes.windll.kernel32.GetDriveTypeW(root) == DRIVE_REMOVABLE
+        return _get_drive_type(root) == DRIVE_REMOVABLE
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError): pass
     return False
 
@@ -478,10 +483,9 @@ def _validate_drive_restrictions(target_path: Path) -> None:
     if not anchor: return
     
     try:
-        kernel32 = ctypes.windll.kernel32
         if _is_volume_busy_or_invalid(str(target_path)):
              raise UnsafePathError("Volumen inaccesible.", SafetyValidationErrorCode.IO_ERROR)
-        drive_type = kernel32.GetDriveTypeW(anchor)
+        drive_type = _get_drive_type(anchor)
         if drive_type == DRIVE_NO_ROOT_DIR:
             raise UnsafePathError("Unidad inaccesible.", SafetyValidationErrorCode.IO_ERROR)
         if drive_type == DRIVE_REMOTE:
