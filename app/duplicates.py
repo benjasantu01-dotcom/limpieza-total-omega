@@ -49,6 +49,7 @@ MAX_RECURSION_DEPTH: int = 100
 ERROR_SHARING_VIOLATION: int = 32
 ERROR_ACCESS_DENIED: int = 5
 
+_partial_cache: Dict[Path, str] = {}
 
 def is_junction(path: Path) -> bool:
     """Verifica si la ruta es un punto de reanálisis (Junction/Symlink) usando Win32 API."""
@@ -159,7 +160,9 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Calcula hash SHA256 del segmento inicial. Retorna None si el archivo es menor a read_bytes."""
+    """Calcula hash SHA256 del segmento inicial, con caché para evitar relecturas innecesarias."""
+    if path in _partial_cache:
+        return _partial_cache[path]
     if read_bytes <= 0 or not path.is_file():
         return None
     try:
@@ -167,7 +170,9 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
             content = f.read(read_bytes)
             if not content:
                 return None
-            return hashlib.sha256(content).hexdigest()
+            res = hashlib.sha256(content).hexdigest()
+            _partial_cache[path] = res
+            return res
     except (OSError, IOError, PermissionError, ValueError):
         return None
 
@@ -276,6 +281,7 @@ def _decide_hash_strategy_and_process(size_bytes: int, file_paths: List[Path]) -
 
 def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
     """Orquesta el pipeline completo: recolección, filtrado y hashing jerárquico."""
+    _partial_cache.clear()
     size_map = _collect_candidates(directories, min_size, skip_protected)
     groups: List[DuplicateGroup] = []
     for size, paths in size_map.items():

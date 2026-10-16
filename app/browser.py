@@ -160,14 +160,9 @@ def _is_unc_path(path_str: Optional[str]) -> TypeGuard[str]:
     """Determina si la ruta es de red (UNC), las cuales son excluidas por seguridad."""
     return isinstance(path_str, str) and (path_str.startswith(r"\\") or path_str.startswith("//"))
 
-def _is_within_sandbox(target: str, base: str) -> bool:
+def _is_within_sandbox(target_norm: str, base_norm: str) -> bool:
     """Verificación de contención: asegura que una ruta resida bajo una base dada."""
-    try:
-        norm_target = os.path.normpath(target)
-        norm_base = os.path.normpath(base)
-        return norm_target.startswith(norm_base)
-    except (OSError, RuntimeError):
-        return False
+    return target_norm.startswith(base_norm)
 
 def base_directories() -> List[Path]:
     """Obtiene los directorios raíz donde reside la configuración de usuario (LOCALAPPDATA)."""
@@ -184,9 +179,9 @@ def base_directories() -> List[Path]:
             return []
     return []
 
-def _is_excluded_file(name: Optional[str]) -> TypeGuard[str]:
+def _is_excluded_file(name: str) -> bool:
     """Verifica si un nombre de archivo está en la lista de bloqueo permanente (NEVER_TOUCH)."""
-    return isinstance(name, str) and name.lower() in NEVER_TOUCH
+    return name.lower() in NEVER_TOUCH
 
 @safe_path_operation(False)
 def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
@@ -213,10 +208,10 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
     """Escaneo recursivo de directorios con límite de profundidad y tracking de inodos para evitar ciclos."""
-    if not ctx.sandbox_base_norm or depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN: 
+    if depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN: 
         return ScanResult(0, True)
     
-    if not _is_within_sandbox(root_path, ctx.sandbox_base_norm):
+    if not _is_within_sandbox(os.path.normpath(root_path), ctx.sandbox_base_norm):
         return ScanResult(0, False)
 
     total_bytes = 0
@@ -244,7 +239,7 @@ def directory_size(path: Optional[OSPath]) -> int:
     """Calcula el tamaño total de un directorio, aplicando los filtros de seguridad de ScanContext."""
     if not isinstance(path, (str, Path)) or not path: return 0
     path_obj = Path(path).resolve(strict=True)
-    ctx = ScanContext(str(path_obj), _get_kernel32(), _IS_JUNCTION_FN, set(), set(), {})
+    ctx = ScanContext(os.path.normpath(str(path_obj)), _get_kernel32(), _IS_JUNCTION_FN, set(), set(), {})
     return _sum_directory_recursive(str(path_obj), ctx, 0).bytes_found
 
 @safe_path_operation(False)
@@ -252,7 +247,7 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
     """Valida heurísticamente que la carpeta candidata sea un directorio de caché genuino dentro del sandbox."""
     if not candidate.exists() or not candidate.is_dir() or not os.access(candidate, os.R_OK): return False
     real = str(candidate.resolve(strict=True))
-    if not _is_within_sandbox(real, base_abs_str): return False
+    if not _is_within_sandbox(os.path.normpath(real), base_abs_str): return False
     if not is_safe_to_modify(Path(real)) or is_protected_path(Path(real)): return False
     return not (candidate.is_symlink() or _IS_JUNCTION_FN(real) or _is_excluded_file(candidate.name))
 
@@ -261,7 +256,7 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Combina y normaliza las rutas de los navegadores, verificando contención estricta al sandbox."""
     if not _is_valid_rel_path(rel_str): return Path()
     target = real_base.joinpath(*rel_str.split("\\"))
-    if target.exists() and target.is_dir() and _is_within_sandbox(str(target.resolve()), str(real_base)):
+    if target.exists() and target.is_dir() and _is_within_sandbox(os.path.normpath(str(target.resolve())), str(real_base)):
         return target
     return Path()
 
@@ -277,7 +272,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     for base in raw_bases:
         try:
             real_base = base.resolve(strict=True)
-            ctx.sandbox_base_norm = str(real_base)
+            ctx.sandbox_base_norm = os.path.normpath(str(real_base))
             for browser_name, rel_str in browser_map.items():
                 candidate = _resolve_browser_path(real_base, rel_str)
                 if candidate != Path() and _is_valid_cache_path(candidate, ctx.sandbox_base_norm):
