@@ -316,7 +316,16 @@ def sort_junk(files: Sequence[JunkFile], by: SortField = "size", ascending: bool
     return sorted(files, key=config.key_func, reverse=not bool(ascending))
 
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """Mueve archivos detectados a un directorio de cuarentena, aplicando filtros de seguridad estrictos."""
+    """
+    Mueve archivos candidatos a un directorio de cuarentena para revisión humana.
+
+    Args:
+        files: Secuencia de objetos JunkFile a procesar.
+        review_dir: Ruta destino donde se aislarán los archivos.
+
+    Returns:
+        La ruta del directorio de revisión si la operación fue exitosa, None en otro caso.
+    """
     if not isinstance(files, (list, tuple)) or not isinstance(review_dir, str) or not review_dir: 
         return None
     try:
@@ -354,7 +363,16 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         return None
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Borra permanentemente los archivos validados presentes en el directorio de revisión, validando cada ruta contra protecciones del sistema."""
+    """
+    Elimina permanentemente archivos validados del directorio de revisión.
+
+    Verifica que cada archivo sea hijo directo del directorio de cuarentena para 
+    evitar escapes de ruta y asegura que ninguna ruta crítica sea afectada 
+    mediante `ensure_safe_to_modify`.
+
+    Returns:
+        Número de archivos eliminados exitosamente.
+    """
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser().resolve(strict=False)

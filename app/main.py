@@ -692,21 +692,21 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         for row_idx, (clave, etiqueta) in enumerate(HEALTH_AREAS):
             self._build_single_health_bar(area_container, clave, etiqueta, row_idx)
 
-    def _build_single_health_bar(self, container: ctk.CTkFrame, clave: str, etiqueta: str, row_idx: int) -> None:
-        """Renderiza una barra individual de progreso de salud."""
-        self._create_styled_label(container, etiqueta, "body", anchor="w", width=150).grid(row=row_idx, column=0, sticky="w", pady=4)
+    def _build_single_health_bar(self, container: ctk.CTkFrame, key: str, label_text: str, row: int) -> None:
+        """Crea y registra una barra de progreso individual por área de salud."""
+        self._create_styled_label(container, label_text, "body", anchor="w", width=150).grid(row=row, column=0, sticky="w", pady=4)
         
-        barra = ctk.CTkProgressBar(
+        progress_bar = ctk.CTkProgressBar(
             container, height=9, corner_radius=5,
             fg_color=branding.color("surface_alt"),
             progress_color=branding.color("accent"),
         )
-        barra.grid(row=row_idx, column=1, sticky="ew", padx=10, pady=4)
-        barra.set(0)
+        progress_bar.grid(row=row, column=1, sticky="ew", padx=10, pady=4)
+        progress_bar.set(0)
         
-        valor_label = self._create_styled_label(container, "-", "caption", width=64, anchor="e")
-        valor_label.grid(row=row_idx, column=2, sticky="e", pady=4)
-        self.area_bars[clave] = (barra, valor_label)
+        score_label = self._create_styled_label(container, "-", "caption", width=64, anchor="e")
+        score_label.grid(row=row, column=2, sticky="e", pady=4)
+        self.area_bars[key] = (progress_bar, score_label)
 
     def _update_health_bar_ui(self, barra: ctk.CTkProgressBar, label: ctk.CTkLabel, puntos: float, maximo: int) -> None:
         """Actualiza el estado visual de una barra según el puntaje obtenido."""
@@ -1324,12 +1324,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         self._safe_run_ui_callback(lambda: self._apply_ui_update_safely(resultado, junk_mb, sospechosos, ram_libre, disco_libre))
 
-    def _apply_ui_update_safely(self, resultado: healthscore.ScoreResult, junk_mb: float, sospechosos: int, ram_libre: float, disco_libre: float) -> None:
+    def _apply_ui_update_safely(self, result: healthscore.ScoreResult, junk_mb: float, sospechosos: int, ram_libre: float, disco_libre: float) -> None:
         """Aplica cambios a la UI de Salud tras verificar integridad de widgets."""
         try:
-            self._draw_gauge(resultado.score, resultado.grade)
+            self._draw_gauge(result.score, result.grade)
             self._apply_card_updates(junk_mb, sospechosos, ram_libre, disco_libre)
-            self._update_health_bars(resultado)
+            self._update_health_bars(result)
         except (tk.TclError, RuntimeError, AttributeError):
             pass
 
