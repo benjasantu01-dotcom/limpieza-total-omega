@@ -225,6 +225,9 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         
+        # Validación de integridad de ruta (TOCTOU)
+        if not str(src_real).startswith(str(Path(src_real.anchor).resolve())): return False
+        
         if src_real.name.lower() in SYSTEM_CRITICAL_NAMES: return False
         if src_real.is_symlink() or (os.name == 'nt' and bool(src_real.stat().st_file_attributes & WIN_ATTR_JUNCTION)): return False
         if is_protected_path(src_real): return False

@@ -783,3 +783,33 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-16T09:31:07` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha robustecido la detección de rutas en `is_junction` y `_collect_candidates` mediante el uso de `os.path.realpath` y la validación explícita de puntos de reanálisis para evitar la recursión infinita o el seguimiento involuntario de enlaces simbólicos fuera de las zonas permitidas.
 - `2026-10-16T09:31:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T09:31:07` Corrida terminada. Total usado hoy: 224.
+- `2026-10-16T09:38:25` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-10-16T09:38:55` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+________________ ERROR collecting evolve/tests/test_modules.py _________________
+evolve/tests/test_modules.py:25: in <module>
+    import healthscore  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^
+app/healthscore.py:288: in <module>
+    class HealthResult:
+app/healthscore.py:293: in HealthResult
+    recommendations: List[str] = field(default_list=list)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: field() got an unexpected keyword argument 'default_list'
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py - TypeError: field() got an unexpected keyword argument 'default_list'
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.31s
+
+```
+- `2026-10-16T09:38:55` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se ha endurecido `_sanitize_msg` para que, ante cualquier intento de inyección de rutas (detectadas por la presencia de barras invertidas o caracteres prohibidos de sistema), el mensaje se descarte por completo en lugar de intentar limpiarlo, protegiendo la integridad de la salida del reporte.
+- `2026-10-16T09:39:55` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-16T09:40:59` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-16T09:42:19` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Se ha mejorado la robustez defensiva de `main.py` mediante la implementación de una validación de seguridad proactiva en el selector de carpetas manual (`on_target_choice_changed`) y un filtrado más estricto al cargar ajustes, asegurando que cualquier entrada del usuario sea validada contra el motor `safety.py` antes de ser utilizada para cualquier operación de disco o persistencia de configuración.
+- `2026-10-16T09:42:48` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `memory.py` al reemplazar la lógica manual de comparación de rutas en `_is_process_executable_safe` por una delegación más robusta y consistente con el resto del sistema, asegurando que la validación de rutas use el mecanismo centralizado `is_protected_path`.
+- `2026-10-16T09:42:49` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T09:43:05` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_safe_for_disk_op` añadiendo una validación explícita mediante `pathlib.Path.is_relative_to` (o equivalente lógico manual, dada la versión) para asegurar que el archivo no ha sido movido fuera del alcance esperado tras la resolución de la ruta, previniendo ataques de tipo Time-of-Check to Time-of-Use (TOCTOU).
+- `2026-10-16T09:43:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T09:43:05` Corrida terminada. Total usado hoy: 228.
