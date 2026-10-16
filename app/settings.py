@@ -257,6 +257,7 @@ class _Validators:
         """Valida que la cadena sea una ruta válida, sin caracteres peligrosos (null, UNC)."""
         if not path_str or len(path_str) > 2048 or any(c in path_str for c in ("\0", "^", "\033")): return False
         if path_str.startswith(("\\\\", "//")): return False
+        if is_protected_path(path_str): return False
         try:
             return _Validators._check_path_safety(Path(path_str))
         except (OSError, RuntimeError, PermissionError, AttributeError, ValueError):

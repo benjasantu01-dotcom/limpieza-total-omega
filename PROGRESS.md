@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Mejoras aceptadas: **200** (39.7% de aceptación)
 - Rechazadas por tests: 31
 - Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 110 | 14 | 29 | 9 | 110 |
-| 2026-10-16 | 89 | 17 | 20 | 8 | 98 |
+| 2026-10-15 | 110 | 14 | 29 | 9 | 106 |
+| 2026-10-16 | 90 | 17 | 20 | 8 | 101 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - robustez ante casos límite: **44**
 - manejo de errores y validación de entradas: **38**
-- seguridad defensiva: **37**
+- seguridad defensiva: **38**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
@@ -37,7 +37,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **15**
 - `scanner.py`: **15**
 - `main.py`: **14**
-- `settings.py`: **13**
+- `settings.py`: **14**
 - `browser.py`: **12**
 - `branding.py`: **11**
 - `safety.py`: **11**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T09:59:29` **settings.py** (seguridad defensiva): Se ha mejorado la robustez de las validaciones de ruta añadiendo un chequeo explícito de `is_protected_path` en `_is_safe_path` y reforzando `perform_atomic_write` para evitar escrituras en archivos que hayan mutado a symlinks durante la ejecución, asegurando que el estado del sistema de archivos sea consistente con las expectativas de seguridad.
 - `2026-10-16T09:51:28` **scanner.py** (seguridad defensiva): Se ha restringido el acceso a archivos de sistema durante el escaneo al integrar `is_protected_path` directamente en `_is_safe_entry`, garantizando que ninguna ruta protegida (según la lista global de `safety.py`) sea procesada ni encolada, cumpliendo estrictamente con el enfoque de seguridad defensiva.
 - `2026-10-16T09:49:20` **quarantine.py** (seguridad defensiva): Se ha mejorado la defensa contra el desbordamiento de rutas (Path Traversal) y la inyección de nombres maliciosos al implementar un filtrado estricto en la generación de nombres de archivos para la cuarentena, evitando el uso de nombres base que puedan colisionar con nombres reservados del sistema o contener caracteres de control, asegurando que el Sandbox solo contenga archivos bajo control.
 - `2026-10-16T09:43:05` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` añadiendo una validación explícita mediante `pathlib.Path.is_relative_to` (o equivalente lógico manual, dada la versión) para asegurar que el archivo no ha sido movido fuera del alcance esperado tras la resolución de la ruta, previniendo ataques de tipo Time-of-Check to Time-of-Use (TOCTOU).
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T08:50:18` **diskreport.py** (robustez ante casos límite): Se mejoró la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o inaccesibles durante la iteración, envolviendo la llamada al generador en un bloque `try-except` para evitar que una falla puntual en la lectura de atributos detenga el escaneo completo de un disco.
 - `2026-10-16T08:48:48` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` y las funciones de renderizado gráfico mediante el manejo explícito de valores de entrada extremos y rutas inexistentes, asegurando que `ensure_safe_to_modify` se utilice correctamente y evitando fallos ante escalados o dimensiones inválidas que podrían corromper la interfaz.
 - `2026-10-16T08:48:09` **assistant.py** (robustez ante casos límite): Mejoré `_get_source_value` para añadir una validación de tipo estricta sobre el `source`, evitando que el asistente intente acceder a atributos de objetos inyectados inesperados (como listas o tipos básicos) que podrían causar excepciones al ser tratados como contenedores de métricas.
-- `2026-10-16T08:30:05` **quarantine.py** (rendimiento): Optimicé `list_items` y `load_manifest` eliminando la recreación innecesaria de diccionarios y listas dentro de bucles, sustituyendo el acceso repetitivo al `manifest.json` por una lógica de pre-filtrado basada en `set` para búsquedas $O(1)$, lo cual mejora significativamente el rendimiento al manejar grandes cantidades de archivos en cuarentena.

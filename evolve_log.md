@@ -823,3 +823,20 @@ ERROR evolve/tests/test_modules.py - TypeError: field() got an unexpected keywor
 - `2026-10-16T09:51:28` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha restringido el acceso a archivos de sistema durante el escaneo al integrar `is_protected_path` directamente en `_is_safe_entry`, garantizando que ninguna ruta protegida (según la lista global de `safety.py`) sea procesada ni encolada, cumpliendo estrictamente con el enfoque de seguridad defensiva.
 - `2026-10-16T09:51:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T09:51:28` Corrida terminada. Total usado hoy: 232.
+- `2026-10-16T09:58:48` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-10-16T09:59:29` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las validaciones de ruta añadiendo un chequeo explícito de `is_protected_path` en `_is_safe_path` y reforzando `perform_atomic_write` para evitar escrituras en archivos que hayan mutado a symlinks durante la ejecución, asegurando que el estado del sistema de archivos sea consistente con las expectativas de seguridad.
+- `2026-10-16T09:59:57` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-10-16T09:59:57` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-16T09:59:57` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-16T10:00:17` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-16T10:00:17` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-16T10:00:48` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-16T10:00:48` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-16T10:01:03` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-16T10:01:03` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-16T10:01:23` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-16T10:01:23` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-16T10:01:53` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-16T10:01:53` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-16T10:01:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T10:01:53` Corrida terminada. Total usado hoy: 236.
