@@ -667,3 +667,13 @@ assert 'rectangle' in ['oval', 'polygon', 'line', 'polygon', 'text']
 - `2026-10-16T08:30:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
 - `2026-10-16T08:30:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T08:30:23` Corrida terminada. Total usado hoy: 200.
+- `2026-10-16T08:37:12` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-10-16T08:37:33` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): el archivo se encogió al 10% del original (posible pérdida de código)
+- `2026-10-16T08:37:35` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T08:38:04` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-10-16T08:38:04` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T08:38:33` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-16T08:38:35` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T08:39:22` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-16T08:39:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T08:39:22` Corrida terminada. Total usado hoy: 204.
