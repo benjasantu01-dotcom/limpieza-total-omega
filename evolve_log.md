@@ -1029,3 +1029,39 @@ ERROR evolve/tests/test_modules.py - TypeError: field() got an unexpected keywor
 - `2026-10-16T11:14:18` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-10-16T11:14:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T11:14:18` Corrida terminada. Total usado hoy: 264.
+- `2026-10-16T11:20:21` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-10-16T11:20:26` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T11:20:35` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-16T11:20:41` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-16T11:20:54` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-16T11:21:47` Tests FALLARON:
+```
+........................................................................ [ 24%]
+.............................F.......................................... [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________ test_unknown_color_falls_back_instead_of_crashing _______________
+
+    def test_unknown_color_falls_back_instead_of_crashing():
+>       assert branding.color("no-existe") == "#808080"
+E       AssertionError: assert '#94a3b8' == '#808080'
+E         
+E         - #808080
+E         + #94a3b8
+
+evolve/tests/test_modules.py:115: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_unknown_color_falls_back_instead_of_crashing - AssertionError: assert '#94a3b8' == '#808080'
+  
+  - #808080
+  + #94a3b8
+1 failed, 298 passed in 1.50s
+
+```
+- `2026-10-16T11:21:47` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de las funciones de acceso a datos (`color`, `font_size`, `icon`, `tab_label`) mediante la validación explícita de entradas, reemplazando métodos inseguros por una estrategia de "fallo seguro" con valores por defecto predecibles.
+- `2026-10-16T11:22:12` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-16T11:22:25` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `_collect_summary_data` envolviendo las llamadas de alto riesgo en bloques `try...except` específicos para evitar que errores inesperados de I/O detengan el escaneo completo de forma silenciosa, y agregué una validación de tipo en `summarize` para asegurar que las entradas del heap no causen errores de desempacado.
+- `2026-10-16T11:22:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T11:22:25` Corrida terminada. Total usado hoy: 268.

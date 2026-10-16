@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
-- Rechazadas por tests: 29
+- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Rechazadas por tests: 30
 - Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 97 | 12 | 27 | 9 | 95 |
-| 2026-10-16 | 90 | 17 | 20 | 8 | 129 |
+| 2026-10-15 | 94 | 12 | 27 | 9 | 94 |
+| 2026-10-16 | 91 | 18 | 20 | 8 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **44**
-- legibilidad y documentación: **41**
 - seguridad defensiva: **38**
+- legibilidad y documentación: **38**
 - rendimiento: **35**
-- manejo de errores y validación de entradas: **29**
+- manejo de errores y validación de entradas: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **18**
-- `quarantine.py`: **18**
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `duplicates.py`: **17**
+- `memory.py`: **17**
+- `quarantine.py`: **17**
 - `healthscore.py`: **16**
 - `scanner.py`: **14**
 - `assistant.py`: **14**
-- `main.py`: **13**
 - `settings.py`: **13**
+- `main.py`: **12**
 - `browser.py`: **11**
 - `safety.py`: **11**
 - `organizer.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T11:22:25` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `_collect_summary_data` envolviendo las llamadas de alto riesgo en bloques `try...except` específicos para evitar que errores inesperados de I/O detengan el escaneo completo de forma silenciosa, y agregué una validación de tipo en `summarize` para asegurar que las entradas del heap no causen errores de desempacado.
 - `2026-10-16T09:59:29` **settings.py** (seguridad defensiva): Se ha mejorado la robustez de las validaciones de ruta añadiendo un chequeo explícito de `is_protected_path` en `_is_safe_path` y reforzando `perform_atomic_write` para evitar escrituras en archivos que hayan mutado a symlinks durante la ejecución, asegurando que el estado del sistema de archivos sea consistente con las expectativas de seguridad.
 - `2026-10-16T09:51:28` **scanner.py** (seguridad defensiva): Se ha restringido el acceso a archivos de sistema durante el escaneo al integrar `is_protected_path` directamente en `_is_safe_entry`, garantizando que ninguna ruta protegida (según la lista global de `safety.py`) sea procesada ni encolada, cumpliendo estrictamente con el enfoque de seguridad defensiva.
 - `2026-10-16T09:49:20` **quarantine.py** (seguridad defensiva): Se ha mejorado la defensa contra el desbordamiento de rutas (Path Traversal) y la inyección de nombres maliciosos al implementar un filtrado estricto en la generación de nombres de archivos para la cuarentena, evitando el uso de nombres base que puedan colisionar con nombres reservados del sistema o contener caracteres de control, asegurando que el Sandbox solo contenga archivos bajo control.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T08:59:40` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor de cómputo ante entradas nulas, estructuras de datos corruptas o valores extremos dentro de `SystemMetrics` mediante la implementación de una validación más estricta en el método `__post_init__` y una garantía de integridad previa al procesamiento del pipeline en `compute_score`.
 - `2026-10-16T08:50:18` **diskreport.py** (robustez ante casos límite): Se mejoró la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o inaccesibles durante la iteración, envolviendo la llamada al generador en un bloque `try-except` para evitar que una falla puntual en la lectura de atributos detenga el escaneo completo de un disco.
 - `2026-10-16T08:48:48` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` y las funciones de renderizado gráfico mediante el manejo explícito de valores de entrada extremos y rutas inexistentes, asegurando que `ensure_safe_to_modify` se utilice correctamente y evitando fallos ante escalados o dimensiones inválidas que podrían corromper la interfaz.
-- `2026-10-16T08:48:09` **assistant.py** (robustez ante casos límite): Mejoré `_get_source_value` para añadir una validación de tipo estricta sobre el `source`, evitando que el asistente intente acceder a atributos de objetos inyectados inesperados (como listas o tipos básicos) que podrían causar excepciones al ser tratados como contenedores de métricas.
