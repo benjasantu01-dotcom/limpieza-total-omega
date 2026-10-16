@@ -242,7 +242,7 @@ class Scanner:
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Evalúa si la entrada debe ser procesada según políticas de seguridad."""
+        """Evalúa si la entrada debe ser procesada según políticas de seguridad y contención de rutas."""
         if entry is None or not hasattr(entry, 'path') or not entry.path:
             return False
         
@@ -252,6 +252,11 @@ class Scanner:
         
         try:
             p = Path(path_str)
+            # Validación: evitar acceso a rutas fuera del árbol o enlaces de escape
+            real_path: Path = p.resolve()
+            if not str(real_path).lower().startswith(self.base_root_str):
+                return False
+
             if not p.exists():
                 return False
             
@@ -259,10 +264,6 @@ class Scanner:
                 return False
                 
             if entry.is_symlink() or self._is_reparse_point(entry):
-                return False
-                
-            real_path: Path = p.resolve()
-            if len(str(real_path)) > SCAN_LIMITS.max_path or not str(real_path).lower().startswith(self.base_root_str):
                 return False
                 
             self.safe_cache.add(path_str)

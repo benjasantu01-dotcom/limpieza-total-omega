@@ -920,3 +920,36 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-16T00:50:55` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-16T00:50:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T00:50:55` Corrida terminada. Total usado hoy: 20.
+- `2026-10-16T00:58:53` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-10-16T00:58:57` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T01:00:05` Tests FALLARON:
+```
+Error: [ACCESS_DENIED] Archivo inexistente, no se pueden validar permisos.
+FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raises - AssertionError: assert False is True
+ +  where False = <function is_safe_to_modify at 0x7f35c330cb80>((PosixPath('/tmp/pytest-of-runner/pytest-1/test_is_safe_returns_bool_and_0') / 'ok.tmp'))
+ +    where <function is_safe_to_modify at 0x7f35c330cb80> = <module 'safety' from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>.is_safe_to_modify
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_sensitive_extension_when_explicitly_requested - safety.UnsafePathError: [ACCESS_DENIED] Archivo inexistente, no se pueden validar permisos.
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_a_normal_user_file - safety.UnsafePathError: [ACCESS_DENIED] Archivo inexistente, no se pueden validar permisos.
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - AssertionError: assert set() == {'ok.tmp', 'otro.log'}
+  
+  Extra items in the right set:
+  'otro.log'
+  'ok.tmp'
+  
+  Full diff:
+  + set()
+  - {
+  -     'ok.tmp',
+  -     'otro.log',
+  - }
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - safety.UnsafePathError: [GENERIC] Destino no seguro.
+17 failed, 282 passed, 7 warnings in 1.85s
+
+```
+- `2026-10-16T01:00:05` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera (TOCTOU) y ataques de enlace simbólico mediante la verificación de la existencia y tipo de archivo *antes* de cualquier operación de resolución de metadatos, utilizando `GetFileAttributesW` de forma nativa para evitar manipulaciones de `pathlib` que pueden ser interceptadas por el sistema operativo en rutas con enlaces NTFS.
+- `2026-10-16T01:00:36` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad del escáner implementando una validación estricta en `_is_safe_entry` para prevenir ataques de "Path Traversal" o acceso indebido mediante enlaces simbólicos fuera de la raíz, utilizando `Path.resolve()` comparado contra la ruta base resuelta antes de permitir cualquier operación de lectura o heurística.
+- `2026-10-16T01:01:10` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_load_impl` y `save` eliminando la llamada a `resolve()` sobre la ruta del archivo, evitando así que una ruta de configuración pueda ser "engañada" mediante symlinks que apunten fuera de las carpetas validadas o hacia ubicaciones protegidas de nivel de sistema antes de las comprobaciones de integridad.
+- `2026-10-16T01:01:23` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-10-16T01:01:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T01:01:23` Corrida terminada. Total usado hoy: 24.

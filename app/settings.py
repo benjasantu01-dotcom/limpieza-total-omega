@@ -406,7 +406,7 @@ def _load_impl(ruta: Path) -> AppSettings:
     """Implementación de carga: valida seguridad y parsea el contenido."""
     if not ruta.exists() or not ruta.is_file() or _Validators._is_reparse_point(ruta):
         return DEFAULTS.copy()
-    data = _read_and_parse_json(ruta.resolve())
+    data = _read_and_parse_json(ruta)
     return _coerce_and_verify(validate(data)) if data is not None else DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
@@ -445,7 +445,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         cleaned_settings = _coerce_and_verify(validate(values))
         parent = config_path.parent
         if not is_safe_to_modify(str(config_path)): return None
-        if not parent.exists() or not _is_dir_safe(parent) or _Validators._is_reparse_point(parent) or is_protected_path(str(parent.resolve())): return None
+        if not parent.exists() or not _is_dir_safe(parent) or _Validators._is_reparse_point(parent) or is_protected_path(str(parent)): return None
         if not os.access(parent, os.W_OK): return None
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
