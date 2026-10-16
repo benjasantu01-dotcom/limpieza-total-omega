@@ -339,7 +339,11 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     try:
         raw_base = Path(custom_base).resolve() if custom_base else SETTINGS_DIR.resolve()
         if _Validators._is_safe_path(str(raw_base)) and not _Validators._is_reparse_point(raw_base):
-            if not raw_base.exists(): raw_base.mkdir(parents=True, exist_ok=True)
+            if not raw_base.exists(): 
+                try:
+                    raw_base.mkdir(parents=True, exist_ok=True)
+                except (OSError, PermissionError):
+                    return SETTINGS_DIR / SETTINGS_FILE
             if raw_base.is_dir() and _is_dir_safe(raw_base):
                 full_path = raw_base / SETTINGS_FILE
                 _MANAGER.path_cache[cache_key] = full_path
@@ -387,9 +391,12 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
             st = os.fstat(f.fileno())
             if not _is_file_secure_to_read(st, f): return None
             
-            fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
-            content = f.read(MAX_SETTINGS_SIZE + 1)
-            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+            try:
+                fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
+                content = f.read(MAX_SETTINGS_SIZE + 1)
+                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+            except (OSError, IOError):
+                return None
             
             if not content or len(content) > MAX_SETTINGS_SIZE: return None
             data = json.loads(content)

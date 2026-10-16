@@ -738,3 +738,37 @@ FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_wher
 - `2026-10-16T09:10:49` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha añadido una validación temprana contra `os.path.lexists` en `ensure_safe_to_modify` para detectar rutas rotas o enlaces simbólicos huérfanos que `exists()` ignoraría, evitando que el sistema intente procesar rutas inexistentes o inconsistentes en estados de carrera (TOCTOU).
 - `2026-10-16T09:10:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T09:10:49` Corrida terminada. Total usado hoy: 216.
+- `2026-10-16T09:17:57` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-10-16T09:18:33` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-16T09:19:05` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la resiliencia en la inicialización del archivo `config.json` manejando explícitamente posibles excepciones de concurrencia y permisos durante la creación del directorio base y la verificación de seguridad, evitando que la app falle si el sistema operativo bloquea la escritura temporalmente o si el usuario carece de permisos de escritura en la ruta configurada.
+- `2026-10-16T09:19:07` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T09:19:11` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-16T09:19:18` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-16T09:19:59` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.65s
+
+```
+- `2026-10-16T09:19:59` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la resiliencia de la resolución de rutas mediante la integración del chequeo `is_safe_to_modify` en `_resolve_and_cache_path` y se añadió una validación defensiva en `_extract_quoted_path` para prevenir el procesamiento de rutas vacías o malformadas que antes podrían disparar excepciones innecesarias en entornos de disco restringido.
+- `2026-10-16T09:20:25` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad de la función `ask` y `_call_gemini` integrando un chequeo explícito que impide el envío de datos si el contexto contiene una estructura insegura, evitando que errores de lógica en capas superiores se propaguen hacia la red.
+- `2026-10-16T09:20:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T09:20:25` Corrida terminada. Total usado hoy: 220.

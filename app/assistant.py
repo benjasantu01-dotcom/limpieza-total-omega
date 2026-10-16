@@ -763,6 +763,9 @@ def ask(question: str, context: SystemContext | None = None,
         cfg: AssistantConfig = _parse_config(settings_data)
         if ctx.is_empty and cfg.allow_metrics:
             return respaldo
+        # Validación defensiva de estructura del contexto antes de envío externo
+        if not isinstance(ctx, SystemContext) or not ctx.is_valid_structure:
+            return respaldo
         texto_contexto: str = context_as_text(ctx) if cfg.allow_metrics else "El usuario no autorizó enviar métricas."
         remoto: Optional[str] = _call_gemini(question, texto_contexto, cfg.api_key, cfg.model)
         if not remoto:

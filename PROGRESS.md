@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
-- Rechazadas por tests: 29
+- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Rechazadas por tests: 30
 - Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 110 | 14 | 29 | 9 | 126 |
-| 2026-10-16 | 81 | 15 | 19 | 6 | 95 |
+| 2026-10-15 | 110 | 14 | 29 | 9 | 122 |
+| 2026-10-16 | 83 | 16 | 19 | 6 | 96 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
-- robustez ante casos límite: **43**
+- robustez ante casos límite: **44**
 - manejo de errores y validación de entradas: **38**
 - rendimiento: **35**
-- seguridad defensiva: **30**
+- seguridad defensiva: **31**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,10 +34,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **18**
 - `healthscore.py`: **17**
 - `quarantine.py`: **17**
-- `assistant.py`: **14**
+- `assistant.py`: **15**
 - `main.py`: **14**
 - `scanner.py`: **14**
-- `settings.py`: **12**
+- `settings.py`: **13**
 - `browser.py`: **12**
 - `branding.py`: **11**
 - `safety.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T09:20:25` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de la función `ask` y `_call_gemini` integrando un chequeo explícito que impide el envío de datos si el contexto contiene una estructura insegura, evitando que errores de lógica en capas superiores se propaguen hacia la red.
+- `2026-10-16T09:19:05` **settings.py** (robustez ante casos límite): Mejoré la resiliencia en la inicialización del archivo `config.json` manejando explícitamente posibles excepciones de concurrencia y permisos durante la creación del directorio base y la verificación de seguridad, evitando que la app falle si el sistema operativo bloquea la escritura temporalmente o si el usuario carece de permisos de escritura en la ruta configurada.
 - `2026-10-16T09:09:07` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite mediante la adición de un chequeo de espacio en disco previo al inicio de cualquier operación de aislamiento (`_ensure_disk_space`), evitando fallos en mitad de la transferencia (operación atómica), y se ha reforzado `_is_filesystem_read_only` para manejar escenarios de sistemas de archivos bloqueados o sin permisos antes de realizar cualquier escritura.
 - `2026-10-16T09:01:34` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_iter_process_memory` para manejar correctamente escenarios donde `EnumProcesses` falla parcialmente o devuelve listas incompletas, y se agregó una validación de `ctypes.c_uint32` en el buffer de PIDs para evitar errores de memoria ante valores inesperados del sistema.
 - `2026-10-16T08:59:40` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor de cómputo ante entradas nulas, estructuras de datos corruptas o valores extremos dentro de `SystemMetrics` mediante la implementación de una validación más estricta en el método `__post_init__` y una garantía de integridad previa al procesamiento del pipeline en `compute_score`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T08:09:03` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas costosas a `Path.resolve()` dentro del bucle principal, utilizando `os.path.join` y `os.path.normpath` para validar la contención del sandbox sin realizar I/O innecesario.
 - `2026-10-16T08:07:21` **startup.py** (legibilidad y documentación): Se han documentado las restricciones de seguridad, el propósito del caché y la lógica de resolución de rutas mediante docstrings detallados, mejorando la mantenibilidad del código sin alterar su comportamiento funcional.
 - `2026-10-16T07:58:51` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `scanner.py` mediante la implementación de `TypeAlias` explícitos y docstrings detallados en las funciones de heurística, clarificando el propósito, el contrato de los parámetros y el comportamiento ante errores para facilitar el mantenimiento y la extensibilidad del motor de escaneo.
-- `2026-10-16T07:48:54` **quarantine.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings estructurados (usando el formato Google Style) en todas las funciones y métodos de la clase `IsolationManager`, aclarando los argumentos, valores de retorno y excepciones, además de unificar criterios de nomenclatura interna.
-- `2026-10-16T07:48:24` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` mediante la adición de docstrings estructuradas (formato Google) en las funciones críticas de E/S, clarificando las precondiciones de seguridad y el manejo de excepciones para los desarrolladores.
