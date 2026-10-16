@@ -986,7 +986,7 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
             raise FileExistsError(f"El destino ya existe: {destination}")
         
         _check_device_consistency(stored_file, destination.parent.resolve())
-        parent = destination.parent
+        parent = destination.parent.resolve()
         if not is_safe_to_modify(parent):
             raise UnsafePathError("Directorio padre no seguro.")
         _ensure_disk_space(parent, quarantine_item.size_bytes)
@@ -1053,7 +1053,7 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem) -> bool:
 def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
     """Limpia todo el contenido de la cuarentena, incluyendo archivos huérfanos."""
     try:
-        quarantine_root = quarantine_dir(base)
+        quarantine_root = quarantine_dir(base).resolve()
         if _is_filesystem_read_only(quarantine_root):
             return 0
             

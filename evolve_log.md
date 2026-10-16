@@ -1180,3 +1180,14 @@ FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_wher
 - `2026-10-16T02:33:55` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-10-16T02:33:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T02:33:55` Corrida terminada. Total usado hoy: 60.
+- `2026-10-16T02:40:46` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-10-16T02:41:25` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T02:42:29` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-16T02:43:50` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). He mejorado la robustez ante errores de `main.py` mediante una validación más estricta en el método `_collect_settings`, asegurando que el acceso a variables de `ctk.StringVar` y widgets esté encapsulado en bloques `try/except` robustos para evitar que una configuración de entrada malformada (ej. un usuario borrando contenido de un `Entry` esperado como numérico) cause una excepción que interrumpa la persistencia de ajustes.
+- `2026-10-16T02:43:55` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T02:43:59` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-16T02:45:07` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `trim_working_set` y las consultas de procesos añadiendo validaciones explícitas de tipos y manejo de errores ante fallos inesperados de la API de Windows, asegurando que cualquier entrada malformada sea rechazada antes de interactuar con el sistema operativo.
+- `2026-10-16T02:45:34` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-16T02:46:03` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `purge_all` y `restore_item` al asegurar que las rutas se resuelvan antes de realizar validaciones, previniendo errores de comparación de rutas relativos/absolutos que podrían causar fallos en entornos de ejecución complejos.
+- `2026-10-16T02:46:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T02:46:03` Corrida terminada. Total usado hoy: 64.

@@ -1991,15 +1991,16 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         valores: AppSettings = dict(self.settings)  # type: ignore
         for clave, variable in self.setting_vars.items():
             try:
-                if hasattr(variable, 'get'):
-                    val = variable.get()
-                    if isinstance(val, str):
-                        val = self._sanitize_path(val)
-                    valores[clave] = val  # type: ignore
+                # Acceso robusto a variables tk.Variable o valores directos
+                val = variable.get() if hasattr(variable, 'get') else variable
+                if isinstance(val, str):
+                    val = self._sanitize_path(val)
+                valores[clave] = val  # type: ignore
             except (tk.TclError, Exception):
                 continue
         
         try:
+            # Validar widgets de entrada antes de extraer valores
             if self._check_widget_integrity(getattr(self, 'min_dup_entry', None)):
                 valores["duplicados_tamano_minimo_kb"] = self._get_numeric_setting_from_widget(self.min_dup_entry, "duplicados_tamano_minimo_kb", 64)
                 

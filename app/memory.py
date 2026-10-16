@@ -393,7 +393,6 @@ def _is_process_executable_safe(pid: int, handle: int) -> bool:
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
             path_str: str = buf.value
-            # Prevenir acceso a rutas UNC o protegidas para evitar comportamiento inseguro
             if not path_str or path_str.startswith("\\\\"): return False
             return not is_protected_path(path_str)
     except (ctypes.ArgumentError, OSError, ValueError, RuntimeError):
@@ -407,20 +406,23 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     try:
         target_pid = int(pid)
     except (ValueError, TypeError):
-        return False, "PID no numérico."
+        return False, "El PID debe ser un valor numérico."
+        
+    if _is_system_process(target_pid):
+        return False, "Operación no permitida en procesos del sistema."
     
     psapi = getattr(ctypes.windll, "psapi", None)
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not psapi or not kernel32 or not hasattr(psapi, "EmptyWorkingSet"):
-        return False, "API no disponible."
+        return False, "API del sistema no disponible."
     
     proc_handle = _is_process_accessible(target_pid, TRIM_ACCESS_MASK)
     if not proc_handle:
-        return False, "Proceso protegido o acceso denegado (requiere privilegios elevados)."
+        return False, "Proceso protegido o acceso denegado (requiere privilegios)."
         
     try:
         if psapi.EmptyWorkingSet(proc_handle) == 0:
-            return False, "El sistema operativo rechazó la operación."
+            return False, "El sistema operativo rechazó la operación de limpieza."
         return True, f"Working set liberado. {TRIM_WARNING}"
     except (ctypes.ArgumentError, OSError):
         return False, "Error inesperado al ejecutar llamada del sistema."

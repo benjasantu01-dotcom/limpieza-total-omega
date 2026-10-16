@@ -7,46 +7,49 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **188** (37.3% de aceptación)
-- Rechazadas por tests: 29
+- Rechazadas por tests: 28
 - Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-14 | 32 | 8 | 6 | 4 | 44 |
+| 2026-10-14 | 29 | 7 | 6 | 4 | 44 |
 | 2026-10-15 | 142 | 19 | 41 | 11 | 137 |
-| 2026-10-16 | 14 | 2 | 2 | 1 | 41 |
+| 2026-10-16 | 17 | 2 | 2 | 1 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **45**
 - seguridad defensiva: **40**
-- legibilidad y documentación: **39**
+- legibilidad y documentación: **36**
+- manejo de errores y validación de entradas: **34**
 - rendimiento: **33**
-- manejo de errores y validación de entradas: **31**
 
 ## Mejoras aceptadas por archivo
 
+- `memory.py`: **17**
 - `diskreport.py`: **17**
 - `duplicates.py`: **17**
 - `healthscore.py`: **17**
-- `memory.py`: **16**
 - `assistant.py`: **16**
-- `scanner.py`: **14**
-- `quarantine.py`: **14**
-- `settings.py`: **13**
+- `quarantine.py`: **15**
+- `scanner.py`: **13**
 - `browser.py`: **13**
+- `main.py`: **13**
 - `branding.py`: **13**
 - `safety.py`: **12**
-- `main.py`: **12**
+- `settings.py`: **12**
 - `organizer.py`: **8**
-- `startup.py`: **6**
+- `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T02:46:03` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `purge_all` y `restore_item` al asegurar que las rutas se resuelvan antes de realizar validaciones, previniendo errores de comparación de rutas relativos/absolutos que podrían causar fallos en entornos de ejecución complejos.
+- `2026-10-16T02:45:07` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `trim_working_set` y las consultas de procesos añadiendo validaciones explícitas de tipos y manejo de errores ante fallos inesperados de la API de Windows, asegurando que cualquier entrada malformada sea rechazada antes de interactuar con el sistema operativo.
+- `2026-10-16T02:43:50` **main.py** (manejo de errores y validación de entradas): He mejorado la robustez ante errores de `main.py` mediante una validación más estricta en el método `_collect_settings`, asegurando que el acceso a variables de `ctk.StringVar` y widgets esté encapsulado en bloques `try/except` robustos para evitar que una configuración de entrada malformada (ej. un usuario borrando contenido de un `Entry` esperado como numérico) cause una excepción que interrumpa la persistencia de ajustes.
 - `2026-10-16T02:32:27` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` implementando un manejo explícito de errores de lectura y asegurando la liberación inmediata del descriptor de archivo mediante el bloque `with`, previniendo bloqueos innecesarios en sistemas con alta latencia de E/S.
 - `2026-10-16T01:01:10` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_load_impl` y `save` eliminando la llamada a `resolve()` sobre la ruta del archivo, evitando así que una ruta de configuración pueda ser "engañada" mediante symlinks que apunten fuera de las carpetas validadas o hacia ubicaciones protegidas de nivel de sistema antes de las comprobaciones de integridad.
 - `2026-10-16T01:00:36` **scanner.py** (seguridad defensiva): Se reforzó la seguridad del escáner implementando una validación estricta en `_is_safe_entry` para prevenir ataques de "Path Traversal" o acceso indebido mediante enlaces simbólicos fuera de la raíz, utilizando `Path.resolve()` comparado contra la ruta base resuelta antes de permitir cualquier operación de lectura o heurística.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T00:29:32` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva de `assistant.py` reforzando `_ensure_safe_text` y `_is_safe_path_input` para bloquear explícitamente caracteres de control y secuencias sospechosas de forma más agresiva, mitigando riesgos de inyección en las respuestas del asistente.
 - `2026-10-16T00:20:12` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante casos límite implementando un chequeo preventivo de `OSError` y `PermissionError` en el cálculo de `statvfs` dentro de `perform_atomic_write`, evitando que fallos en sistemas de archivos restringidos o de solo lectura bloqueen el proceso de escritura de ajustes.
 - `2026-10-16T00:19:23` **safety.py** (robustez ante casos límite): Se introdujo una comprobación explícita para archivos de paginación y volcado de memoria (kernel-managed) en la validación de seguridad de bajo nivel, asegurando que el motor bloquee preventivamente el acceso de modificación a estos archivos críticos incluso si los permisos de sistema de archivos parecen estar configurados de otra manera.
-- `2026-10-16T00:10:33` **quarantine.py** (robustez ante casos límite): Se ha robustecido el proceso de purga (`purge_all`) para manejar eficazmente archivos huérfanos que no constan en el manifiesto, evitando que queden bloqueados o causen errores de sincronización, y mejorando la consistencia del directorio tras la operación mediante `fsync` a nivel de directorio.
-- `2026-10-16T00:09:08` **main.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la carga de configuración y el ciclo de vida de la aplicación, implementando una validación estricta y segura para `carpeta_excluida` que previene el uso de rutas inexistentes o mal formadas, garantizando que el estado interno se mantenga coherente incluso ante archivos de configuración corruptos o manipulados.
-- `2026-10-15T14:48:09` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante casos límite asegurando que la validación de `post_init` cubra la integridad de los tipos de datos entrantes y protegí `_evaluate_rules` contra reglas mal formadas que devuelvan tipos inesperados.
