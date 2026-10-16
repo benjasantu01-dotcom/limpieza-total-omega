@@ -169,8 +169,11 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
             return True
         
         if os.name == 'nt':
-            st = entry.stat(follow_symlinks=False)
-            if bool(st.st_file_attributes & 0x400):
+            try:
+                st = entry.stat(follow_symlinks=False)
+                if bool(st.st_file_attributes & 0x400):
+                    return True
+            except (OSError, PermissionError):
                 return True
         
         return False
@@ -298,7 +301,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 visited_inodes.add(inode)
                                 stack.append(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
-                            yield Path(entry.path), entry.stat(follow_symlinks=False).st_size
+                            st = entry.stat(follow_symlinks=False)
+                            yield Path(entry.path), st.st_size
                     except (OSError, PermissionError):
                         continue
         except (PermissionError, OSError, FileNotFoundError): 
