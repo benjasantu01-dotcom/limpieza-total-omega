@@ -241,7 +241,7 @@ class DriveUsage:
 
 
 def format_size(num: Union[int, float, None]) -> str:
-    """Formatea bytes a una cadena legible con su unidad correspondiente."""
+    """Formatea bytes a una cadena legible (ej: 1.5 MB) con su unidad correspondiente."""
     if not isinstance(num, (int, float)) or num < 0:
         return "0 B"
     value = float(num)
@@ -254,7 +254,7 @@ def format_size(num: Union[int, float, None]) -> str:
 
 
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
-    """Obtiene el estado de uso de una unidad de montaje específica."""
+    """Retorna un objeto `DriveUsage` con estadísticas de la unidad raíz indicada."""
     if mount is None:
         return None
     try:
@@ -268,15 +268,15 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
 
 
 def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]:
-    """Retorna una lista de uso de disco para todas las unidades detectadas."""
+    """Retorna una lista de `DriveUsage` para las unidades detectadas o especificadas."""
     targets = mounts if mounts is not None else (_get_local_windows_drives() if os.name == "nt" else ["/"])
     return [d for m in targets if (d := drive_usage(m)) is not None]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador recursivo de archivos. Utiliza un set de inodos visitados para evitar
-    ciclos de reparse points y saltea rutas protegidas para garantizar seguridad.
+    Generador recursivo que recorre archivos bajo `directory`.
+    Evita ciclos de reparse points mediante `visited_inodes` y saltea rutas protegidas.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
@@ -315,7 +315,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
-    """Encuentra los N archivos más grandes en el directorio base especificado."""
+    """Retorna una lista de los `limit` archivos más pesados encontrados en `directory`."""
     root = _validate_root(directory)
     if root is None: return []
     data = _collect_summary_data(root, skip_protected, limit=_validate_limit(limit))
@@ -323,7 +323,7 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
 
 
 def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
-    """Calcula el uso acumulado de disco, agrupado por la extensión de archivo."""
+    """Agrupa el espacio ocupado por extensión y retorna las `limit` extensiones principales."""
     root = _validate_root(directory)
     if root is None: return []
     data = _collect_summary_data(root, skip_protected, limit=0)
@@ -332,7 +332,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """Identifica las subcarpetas de primer nivel que ocupan más espacio."""
+    """Calcula el peso total de las subcarpetas inmediatas al directorio base."""
     root = _validate_root(directory)
     if root is None: return []
     stats: Dict[str, FolderMetrics] = defaultdict(FolderMetrics)
@@ -354,7 +354,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
 
 
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> SizeReport:
-    """Calcula el tamaño total y el conteo de archivos en la ruta dada."""
+    """Calcula el tamaño acumulado (bytes) y la cantidad de archivos accesibles."""
     root = _validate_root(directory)
     if root is None: return (0, 0)
     data = _collect_summary_data(root, skip_protected, limit=0)
@@ -363,9 +363,8 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Realiza un escaneo completo de archivos y consolida estadísticas. Utiliza
-    un min-heap de tamaño `limit` para obtener los archivos más pesados con
-    complejidad O(n log k), optimizando el uso de memoria para grandes estructuras.
+    Escanea archivos y consolida estadísticas totales y top-N. 
+    Usa un min-heap para mantener el ranking de archivos más grandes en memoria.
     """
     stats = GlobalStats()
     min_heap_for_top_files: List[FileRecord] = [] 
@@ -383,7 +382,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
-    """Genera un informe textual resumen del análisis de disco realizado."""
+    """Genera un informe resumen en formato texto plano para UI o exportación."""
     root = _validate_root(directory)
     if root is None: 
         return ["Error: La ruta seleccionada no es válida o no tiene permisos de lectura."]

@@ -253,7 +253,7 @@ class SystemMetrics:
     )
 
     def __post_init__(self) -> None:
-        """Asegura consistencia de tipos y rangos tras la instanciación."""
+        """Inicializa métricas asegurando tipos correctos tras la creación."""
         for field_name in self._FIELDS_TO_VALIDATE:
             val = getattr(self, field_name)
             if not isinstance(val, (int, float)):
@@ -261,7 +261,7 @@ class SystemMetrics:
         self.validate()
 
     def safe_get(self, field_name: str, default: Any = 0) -> Any:
-        """Acceso seguro mediante getattr."""
+        """Obtiene un valor de métrica de forma segura mediante introspección."""
         return getattr(self, field_name, default)
 
     def validate(self) -> None:
@@ -277,7 +277,7 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
-        """Verifica que todas las métricas numéricas sean valores finitos."""
+        """Valida que todos los campos críticos sean finitos (evita errores de cálculo)."""
         return all(math.isfinite(float(getattr(self, f))) for f in self._FIELDS_TO_VALIDATE)
 
 @dataclass
@@ -332,7 +332,14 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Computa el puntaje global recorriendo el pipeline de normalizadores y reglas."""
+    """
+    Computa el puntaje global mediante el pipeline.
+    
+    Proceso:
+    1. Valida la integridad de las métricas.
+    2. Itera sobre el pipeline para normalizar ratios y disparar reglas.
+    3. Agrega resultados de áreas individuales al total ponderado.
+    """
     m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
     
     if not m.is_finite:
@@ -344,9 +351,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for entry in _PIPELINE:
         try:
+            # Normalizar área específica
             area_ratio = _clamp(entry.scorer(m))
+            # Evaluar reglas de diagnóstico basadas en el ratio
             _evaluate_rules(m, entry.rules, area_ratio, recommendations)
             
+            # Ponderar y registrar puntos
             points = area_ratio * entry.weight
             val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
             
@@ -379,7 +389,7 @@ def summarize(result: HealthResult | None) -> List[str]:
     
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     
-    # Iteración única sobre el pipeline para construir las líneas del desglose
+    # Iteración sobre el pipeline para construir el desglose ordenado
     for entry in _PIPELINE:
         p = result.breakdown.get(entry.area, 0)
         lines.append(f"  {entry.area.capitalize():<12} {p:>2}/{entry.weight:<2} [{_render_bar(p, entry.weight)}]")
