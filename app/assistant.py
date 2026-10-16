@@ -650,11 +650,10 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     if not q_sanitized:
         return Answer("Entrada no válida.")
     
-    # Búsqueda optimizada: lookup directo sobre O(1) evitando bucles redundantes
-    q_lower: str = q_sanitized.lower()
-    match = next((token for token in _TOKEN_KEYS if token in q_lower), None)
-    if match:
-        return _TOKENS_MAP[match](context, question)
+    # Búsqueda optimizada: O(M) sobre palabras de la pregunta, donde M es longitud consulta, vs O(N_tokens)
+    for word in _TOKEN_REGEX.findall(q_sanitized.lower()):
+        if word in _TOKENS_MAP:
+            return _TOKENS_MAP[word](context, question)
             
     cuerpo: str = _format_problem_message(context.active_problems, context.score if context.score is not None else "N/A")
     return Answer(_validate_response_length(cuerpo), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)

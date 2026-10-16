@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Mejoras aceptadas: **186** (36.9% de aceptación)
 - Rechazadas por tests: 29
-- Rechazadas por guardia de seguridad: 45
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 225
+- Rechazadas por guardia de seguridad: 46
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 84 | 10 | 21 | 8 | 89 |
-| 2026-10-16 | 103 | 19 | 24 | 10 | 136 |
+| 2026-10-15 | 81 | 10 | 21 | 8 | 88 |
+| 2026-10-16 | 105 | 19 | 25 | 11 | 136 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **44**
-- robustez ante casos límite: **42**
+- legibilidad y documentación: **45**
+- robustez ante casos límite: **39**
 - seguridad defensiva: **38**
 - manejo de errores y validación de entradas: **36**
-- rendimiento: **27**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **18**
-- `duplicates.py`: **17**
 - `quarantine.py`: **17**
 - `memory.py`: **17**
-- `healthscore.py`: **16**
-- `assistant.py`: **14**
+- `duplicates.py`: **16**
+- `healthscore.py`: **15**
+- `assistant.py`: **15**
+- `settings.py`: **14**
 - `scanner.py`: **14**
-- `main.py`: **13**
-- `settings.py`: **13**
 - `safety.py`: **12**
+- `main.py`: **12**
 - `organizer.py`: **12**
 - `branding.py`: **10**
 - `browser.py`: **9**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T12:34:52` **assistant.py** (rendimiento): Optimicé el mecanismo de búsqueda de `local_answer` reemplazando la iteración secuencial `next(...)` sobre todo el diccionario por un acceso directo basado en la primera palabra clave detectada, reduciendo la complejidad temporal de O(N) a O(1) para el emparejamiento de intenciones.
+- `2026-10-16T12:32:48` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo mediante la adición de docstrings técnicos detallados en los métodos de validación y gestión de archivos, aclarando el propósito y las restricciones de seguridad de cada lógica, facilitando así el mantenimiento preventivo y la auditoría del código.
 - `2026-10-16T12:23:39` **safety.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de validación interna, clarificando el propósito y el comportamiento esperado ante errores, facilitando así el mantenimiento futuro sin alterar la lógica.
 - `2026-10-16T12:22:17` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos para documentar las asunciones críticas de seguridad y el manejo de excepciones en `_atomic_isolate_file`, mejorando la legibilidad técnica del proceso de aislamiento.
 - `2026-10-16T12:14:20` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `organizer.py` mediante la refactorización de `_is_safe_for_disk_op`, extrayendo la validación de integridad técnica y lógica de seguridad en sub-funciones con propósitos definidos (`_validate_file_identity` y `_can_write_to_destination`), facilitando la auditoría del código bajo las estrictas reglas de seguridad del proyecto.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T11:34:16` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `top_memory_processes` añadiendo validaciones de tipo y estructura al resultado de `EnumProcesses` para evitar excepciones en tiempo de ejecución, además de asegurar que el acceso a `psapi` se gestione con mayor cuidado ante errores inesperados del sistema.
 - `2026-10-16T11:31:45` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `compute_score` validando explícitamente los datos de entrada para evitar excepciones imprevistas si el sistema recibe métricas parcialmente corruptas o resultados de análisis nulos.
 - `2026-10-16T11:22:25` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `_collect_summary_data` envolviendo las llamadas de alto riesgo en bloques `try...except` específicos para evitar que errores inesperados de I/O detengan el escaneo completo de forma silenciosa, y agregué una validación de tipo en `summarize` para asegurar que las entradas del heap no causen errores de desempacado.
-- `2026-10-16T09:59:29` **settings.py** (seguridad defensiva): Se ha mejorado la robustez de las validaciones de ruta añadiendo un chequeo explícito de `is_protected_path` en `_is_safe_path` y reforzando `perform_atomic_write` para evitar escrituras en archivos que hayan mutado a symlinks durante la ejecución, asegurando que el estado del sistema de archivos sea consistente con las expectativas de seguridad.
-- `2026-10-16T09:51:28` **scanner.py** (seguridad defensiva): Se ha restringido el acceso a archivos de sistema durante el escaneo al integrar `is_protected_path` directamente en `_is_safe_entry`, garantizando que ninguna ruta protegida (según la lista global de `safety.py`) sea procesada ni encolada, cumpliendo estrictamente con el enfoque de seguridad defensiva.
