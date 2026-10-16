@@ -112,23 +112,29 @@ HEALTH_AREAS: Tuple[HealthMetricConfig, ...] = (
     ("inicio", "Programas de inicio"),
 )
 
-@lru_cache(maxsize=1)
+# Caché de settings con TTL de 60 segundos para evitar acceso constante a disco
+_SETTINGS_CACHE: Dict[str, Any] = {"data": None, "last_load": 0}
+
 def get_cached_settings() -> Dict[str, Any]:
-    """Carga inicial de configuración desde el archivo persistente validando rutas."""
+    """Carga de configuración desde archivo con caché temporal."""
+    now = time.time()
+    if _SETTINGS_CACHE["data"] and (now - _SETTINGS_CACHE["last_load"] < 60):
+        return _SETTINGS_CACHE["data"]
+
     try:
         raw = settings_mod.load()
         if isinstance(raw, dict):
-            # Validar integridad: si la ruta no existe o es insegura, limpiar la variable
             for key in ["carpeta_excluida"]:
                 if key in raw and raw[key]:
                     try:
                         p = Path(raw[key])
-                        # resolve() en rutas posiblemente inexistentes requiere strict=False
                         resolved = p.resolve(strict=False)
                         if not resolved.exists() or not safety.is_safe_to_modify(resolved):
                             raw[key] = ""
                     except Exception:
                         raw[key] = ""
+            _SETTINGS_CACHE["data"] = raw
+            _SETTINGS_CACHE["last_load"] = now
             return raw
     except (IOError, ValueError, Exception) as e:
         logging.error("Error al cargar settings: %s", e)
@@ -2046,6 +2052,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             def task() -> None:
                 try:
                     self.settings = settings_mod.update(propuestos)
+                    _SETTINGS_CACHE["data"] = self.settings
+                    _SETTINGS_CACHE["last_load"] = time.time()
+                    
                     ruta = settings_mod.settings_path()
                     if ruta:
                         self._ensure_path_writable_and_clean(Path(ruta).parent)
@@ -2084,6 +2093,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         def task() -> None:
             try:
                 self.settings = settings_mod.reset()
+                _SETTINGS_CACHE["data"] = self.settings
+                _SETTINGS_CACHE["last_load"] = time.time()
+                
                 for clave, variable in self.setting_vars.items():
                     if clave in settings_mod.DEFAULTS:
                         try:

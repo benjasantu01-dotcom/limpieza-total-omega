@@ -298,11 +298,9 @@ def read_snapshot() -> MemorySnapshot:
     """Retorna el estado de memoria actual con una latencia de caché de 5 segundos."""
     return _get_cached_snapshot(int(time.time() / 5))
 
-def _is_process_accessible(pid: int, access_mask: int) -> Optional[int]:
+def _is_process_accessible(pid: int, access_mask: int, kernel32: Any) -> Optional[int]:
     """Intenta obtener un Handle win32 verificando permisos y seguridad del ejecutable."""
     if _is_system_process(pid): return None
-    kernel32 = getattr(ctypes.windll, "kernel32", None)
-    if not kernel32: return None
     handle = kernel32.OpenProcess(access_mask, False, pid)
     if handle is None or handle == INVALID_HANDLE_VALUE: return None
     
@@ -311,9 +309,9 @@ def _is_process_accessible(pid: int, access_mask: int) -> Optional[int]:
         return None
     return handle
 
-def _query_working_set_bytes(pid: int, kernel32: ctypes.WinDLL, psapi: ctypes.WinDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
+def _query_working_set_bytes(pid: int, kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
     """Consulta los contadores de memoria de un PID mediante la API PSAPI."""
-    process_handle = _is_process_accessible(pid, PROCESS_QUERY_LIMITED_INFORMATION)
+    process_handle = _is_process_accessible(pid, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
     if not process_handle: return None
     try:
         if psapi.GetProcessMemoryInfo(process_handle, ctypes.byref(pmc), pmc.cb):
@@ -323,7 +321,7 @@ def _query_working_set_bytes(pid: int, kernel32: ctypes.WinDLL, psapi: ctypes.Wi
         kernel32.CloseHandle(process_handle)
     return None
 
-def _iter_process_memory(kernel32: ctypes.WinDLL, psapi: ctypes.WinDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
+def _iter_process_memory(kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
     """Generador que recorre procesos para evitar listas intermedias masivas."""
     max_pids = 2048
     pids = (ctypes.c_uint32 * max_pids)()
@@ -348,9 +346,9 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     now = time.time()
     
     if (now - _CACHE_TOP_PROC.timestamp) > 60:
-        kernel32 = getattr(ctypes.windll, "kernel32", None)
-        psapi = getattr(ctypes.windll, "psapi", None)
-        if not kernel32 or not psapi or not hasattr(psapi, "EnumProcesses"): return []
+        kernel32 = ctypes.windll.kernel32
+        psapi = ctypes.windll.psapi
+        if not hasattr(psapi, "EnumProcesses"): return []
         
         pmc = PROCESS_MEMORY_COUNTERS()
         pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
@@ -428,7 +426,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if not psapi or not kernel32 or not hasattr(psapi, "EmptyWorkingSet"):
         return False, "API del sistema no disponible."
     
-    proc_handle = _is_process_accessible(target_pid, TRIM_ACCESS_MASK)
+    proc_handle = _is_process_accessible(target_pid, TRIM_ACCESS_MASK, kernel32)
     if not proc_handle:
         return False, "Proceso protegido o acceso denegado (requiere privilegios)."
         

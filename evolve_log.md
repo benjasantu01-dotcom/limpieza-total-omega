@@ -1204,3 +1204,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-10-16T12:45:07` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-10-16T12:45:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T12:45:07` Corrida terminada. Total usado hoy: 300.
+- `2026-10-16T12:52:04` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-16T12:53:16` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un mecanismo de invalidación de caché basado en marcas de tiempo (`ttl`) para el acceso a `Settings`, evitando lecturas de disco redundantes y optimizando el acceso a las preferencias en componentes de la UI que las consultan frecuentemente.
+- `2026-10-16T12:53:45` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `top_memory_processes` evitando llamadas repetitivas a `ctypes.windll` dentro del bucle de enumeración de procesos y pre-asignando el tamaño necesario para los buffers, reduciendo la sobrecarga de llamadas a la API de Windows.
+- `2026-10-16T12:53:45` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T12:53:50` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-16T12:53:56` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-16T12:54:09` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-16T12:54:50` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `load_manifest` introduciendo un caché basado en el *timestamp* del archivo, evitando así re-parsear el JSON y reinstanciar objetos `QuarantineItem` cuando el manifiesto no ha cambiado en disco.
+- `2026-10-16T12:54:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T12:54:50` Corrida terminada. Total usado hoy: 304.

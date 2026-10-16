@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
-- Rechazadas por tests: 29
+- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Rechazadas por tests: 28
 - Rechazadas por guardia de seguridad: 45
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 224
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 79 | 10 | 20 | 8 | 87 |
-| 2026-10-16 | 108 | 19 | 25 | 11 | 137 |
+| 2026-10-15 | 78 | 9 | 20 | 8 | 85 |
+| 2026-10-16 | 110 | 19 | 25 | 12 | 138 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - seguridad defensiva: **38**
-- robustez ante casos límite: **37**
 - manejo de errores y validación de entradas: **36**
-- rendimiento: **31**
+- robustez ante casos límite: **36**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
+- `memory.py`: **18**
 - `duplicates.py`: **17**
-- `memory.py`: **17**
 - `quarantine.py`: **16**
 - `healthscore.py`: **15**
 - `assistant.py`: **15**
-- `settings.py`: **14**
 - `scanner.py`: **14**
-- `main.py`: **12**
+- `main.py`: **13**
+- `settings.py`: **13**
 - `organizer.py`: **12**
 - `safety.py`: **11**
 - `browser.py`: **10**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T12:53:45` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` evitando llamadas repetitivas a `ctypes.windll` dentro del bucle de enumeración de procesos y pre-asignando el tamaño necesario para los buffers, reduciendo la sobrecarga de llamadas a la API de Windows.
+- `2026-10-16T12:53:16` **main.py** (rendimiento): Se implementó un mecanismo de invalidación de caché basado en marcas de tiempo (`ttl`) para el acceso a `Settings`, evitando lecturas de disco redundantes y optimizando el acceso a las preferencias en componentes de la UI que las consultan frecuentemente.
 - `2026-10-16T12:44:27` **duplicates.py** (rendimiento): Optimicé el rendimiento del proceso de hashing mediante la implementación de un mecanismo de caché (`lru_cache` manual) para el `partial_hash`, evitando múltiples lecturas de disco del mismo segmento inicial cuando existen colisiones de tamaño en múltiples directorios.
 - `2026-10-16T12:43:42` **diskreport.py** (rendimiento): Optimicé `walk_files` y `largest_folders` para reducir la creación de objetos `Path` y las llamadas a `resolve()` dentro del bucle de escaneo, mejorando el rendimiento en directorios grandes al evitar la recreación constante de rutas y prefiriendo el uso de `os.path` para verificaciones iniciales.
 - `2026-10-16T12:42:50` **browser.py** (rendimiento): Optimizé el rendimiento de `_sum_directory_recursive` evitando llamadas costosas a `os.path.normpath` dentro de cada paso del loop mediante la pre-normalización en el contexto y usando una búsqueda directa en `set` para la validación de exclusiones, reduciendo la redundancia de validaciones en el recorrido.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T12:02:57` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas (tipo Google) en funciones clave, clarificando los tipos de entrada y los comportamientos ante errores (edge cases), lo cual facilita el mantenimiento y la auditoría del código.
 - `2026-10-16T11:52:53` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_registry_entry_safe` y `parse_registry_csv` añadiendo validaciones explícitas de tipo y estructura, evitando errores de ejecución ante entradas de registro mal formadas o valores `None` inesperados que podrían interrumpir el análisis.
 - `2026-10-16T11:52:24` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save` y `update` capturando errores en `json.dumps` y en el manejo de archivos, además de endurecer la validación en `_read_and_parse_json` para manejar archivos JSON truncados o malformados mediante un bloque `try-except` más específico sobre la carga de datos.
-- `2026-10-16T11:51:44` **scanner.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `_get_file_attributes` y `_get_file_size` añadiendo validaciones de tipo y estructura más estrictas para evitar excepciones imprevistas durante el recorrido de disco, asegurando que las funciones no procesen argumentos inválidos (`None` o tipos incorrectos) antes de interactuar con el sistema operativo.
-- `2026-10-16T11:41:27` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `stage_for_review` y `delete_reviewed` mediante una validación estricta de parámetros y el manejo preventivo de excepciones de `Path` que podrían surgir al intentar resolver rutas inexistentes o con permisos restringidos, evitando así fallos silenciosos.
