@@ -99,9 +99,13 @@ def _verify_source_fs_permissions(path: Path) -> None:
 
 def _is_filesystem_read_only(path: Path) -> bool:
     """Intenta determinar si el directorio tiene permisos de escritura mediante un archivo temporal."""
+    if not path.exists(): return True
     try:
-        with tempfile.NamedTemporaryFile(dir=path, delete=True) as tf:
-            return False
+        # Intentamos abrir el directorio para escritura, si falla, está bloqueado/read-only
+        test_file = path / f".test_{uuid.uuid4().hex}"
+        test_file.touch()
+        test_file.unlink()
+        return False
     except (OSError, PermissionError):
         return True
 
@@ -430,7 +434,7 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
                  raise UnsafePathError("Ruta de cuarentena apunta a un archivo existente.")
             if not is_safe_to_modify(path):
                 raise UnsafePathError("Ruta de cuarentena marcada como insegura.")
-            if not os.access(path, os.W_OK | os.R_OK):
+            if _is_filesystem_read_only(path):
                 raise PermissionError("Permisos insuficientes en directorio.")
         else:
             _check_io_error_context(path.mkdir, parents=True, exist_ok=True)
@@ -501,7 +505,7 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
         raise UnsafePathError("Aislamiento de enlaces simbólicos prohibido.")
     if resolved_source.stat().st_size == 0:
         raise UnsafePathError("Archivos vacíos prohibidos.")
-    if not os.access(dest_dir, os.W_OK):
+    if _is_filesystem_read_only(dest_dir):
         raise PermissionError("Directorio de cuarentena sin permisos de escritura.")
     
     _check_device_consistency(resolved_source, resolved_dest_dir)
@@ -615,12 +619,9 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
         raise ValueError("Tamaño requerido inválido.")
     if not dest_dir.exists():
         raise FileNotFoundError(f"Directorio inexistente: {dest_dir}")
-    if not is_safe_to_modify(dest_dir) or not os.access(dest_dir, os.W_OK):
+    if not is_safe_to_modify(dest_dir) or _is_filesystem_read_only(dest_dir):
         raise PermissionError(f"Sin permisos de escritura seguros: {dest_dir}")
     
-    if _is_filesystem_read_only(dest_dir):
-        raise OSError("Sistema de archivos del destino marcado como solo lectura.")
-        
     usage = shutil.disk_usage(dest_dir)
     margin = max(int(required_size * 0.05), 5 * 1024 * 1024)
     if usage.free < (required_size + margin):
@@ -901,9 +902,6 @@ def quarantine_file(
         raise IOError("Archivo origen bloqueado por el sistema: operación abortada.")
         
     dest_dir = quarantine_dir(base)
-    
-    if _is_filesystem_read_only(dest_dir):
-        raise OSError("El directorio de cuarentena no permite escritura.")
     
     if _is_within_quarantine_sandbox(source_path, dest_dir.resolve()):
         raise UnsafePathError("Archivo ya en el sandbox.")

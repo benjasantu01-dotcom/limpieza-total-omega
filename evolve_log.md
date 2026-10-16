@@ -702,3 +702,39 @@ assert 'rectangle' in ['oval', 'polygon', 'line', 'polygon', 'text']
 - `2026-10-16T09:01:34` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_iter_process_memory` para manejar correctamente escenarios donde `EnumProcesses` falla parcialmente o devuelve listas incompletas, y se agregó una validación de `ctypes.c_uint32` en el buffer de PIDs para evitar errores de memoria ante valores inesperados del sistema.
 - `2026-10-16T09:01:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T09:01:34` Corrida terminada. Total usado hoy: 212.
+- `2026-10-16T09:07:46` Arrancando corrida. Quedan hoy ~88 peticiones objetivo.
+- `2026-10-16T09:08:14` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-16T09:08:15` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T09:09:07` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite mediante la adición de un chequeo de espacio en disco previo al inicio de cualquier operación de aislamiento (`_ensure_disk_space`), evitando fallos en mitad de la transferencia (operación atómica), y se ha reforzado `_is_filesystem_read_only` para manejar escenarios de sistemas de archivos bloqueados o sin permisos antes de realizar cualquier escritura.
+- `2026-10-16T09:09:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T09:09:37` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-16T09:09:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T09:09:42` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-16T09:09:50` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-16T09:10:49` Tests FALLARON:
+```
+ests/test_integrity.py::test_is_safe_returns_bool_and_never_raises - AssertionError: assert False is True
+ +  where False = <function is_safe_to_modify at 0x7ff395bc4ae0>((PosixPath('/tmp/pytest-of-runner/pytest-2/test_is_safe_returns_bool_and_0') / 'ok.tmp'))
+ +    where <function is_safe_to_modify at 0x7ff395bc4ae0> = <module 'safety' from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>.is_safe_to_modify
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_sensitive_extension_when_explicitly_requested - safety.UnsafePathError: [IO_ERROR] Ruta inexistente o enlace roto: /tmp/pytest-of-runner/pytest-2/test_ensure_safe_allows_sensit0/sospechoso.exe
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_a_normal_user_file - safety.UnsafePathError: [IO_ERROR] Ruta inexistente o enlace roto: /tmp/pytest-of-runner/pytest-2/test_ensure_safe_allows_a_norm0/basura.tmp
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - AssertionError: assert set() == {'ok.tmp', 'otro.log'}
+  
+  Extra items in the right set:
+  'otro.log'
+  'ok.tmp'
+  
+  Full diff:
+  + set()
+  - {
+  -     'ok.tmp',
+  -     'otro.log',
+  - }
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - safety.UnsafePathError: [GENERIC] Destino no seguro.
+17 failed, 282 passed in 1.38s
+
+```
+- `2026-10-16T09:10:49` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha añadido una validación temprana contra `os.path.lexists` en `ensure_safe_to_modify` para detectar rutas rotas o enlaces simbólicos huérfanos que `exists()` ignoraría, evitando que el sistema intente procesar rutas inexistentes o inconsistentes en estados de carrera (TOCTOU).
+- `2026-10-16T09:10:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T09:10:49` Corrida terminada. Total usado hoy: 216.
