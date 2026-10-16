@@ -1319,3 +1319,68 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-16T04:04:25` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `is_protected_path` eliminando llamadas recursivas y redundantes a `Path.resolve()` y `is_relative_to()`, reemplazándolas por verificaciones de cadena (string prefix) y de estructura de partes, aprovechando que el cacheo ya está presente.
 - `2026-10-16T04:04:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T04:04:25` Corrida terminada. Total usado hoy: 96.
+- `2026-10-16T04:12:22` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-10-16T04:12:51` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_inside_base_root
+- `2026-10-16T04:13:21` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+_______________ ERROR collecting evolve/tests/test_assistant.py ________________
+evolve/tests/test_assistant.py:25: in <module>
+    import assistant  # noqa: E402
+    ^^^^^^^^^^^^^^^^
+app/assistant.py:55: in <module>
+    import settings
+app/settings.py:212: in <module>
+    _MANAGER = _SettingsManager()
+               ^^^^^^^^^^^^^^^^^^
+app/settings.py:158: in __init__
+    self._validator_map: MappingProxyType[ConfigKey, _ValidatorEntry] = self._build_map()
+                                                                        ^^^^^^^^^^^^^^^^^
+app/settings.py:161: in _build_map
+    return MappingProxyType({k: _ValidatorEntry(_determine_validator(k)) for k in ConfigKey})
+                                                ^^^^^^^^^^^^^^^^^^^^
+E   NameError: name '_determine_validator' is not defined
+=========================== short test summary info ============================
+ERROR evolve/tests/test_assistant.py - NameError: name '_determine_validator' is not defined
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.21s
+
+```
+- `2026-10-16T04:13:21` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento del proceso de validación centralizando el cálculo de los validadores en un mapeo precomputado (Singleton de `MappingProxyType`) dentro de `_SettingsManager`, evitando re-instanciar o re-mapear validadores en cada llamada a `validate` o `update`.
+- `2026-10-16T04:13:55` Tests FALLARON:
+```
+__________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/scanner.py:185: SyntaxWarning: invalid escape sequence '\s'
+    """Detecta binarios que usan nombres de procesos críticos del SO fuera de sus rutas legítimas (ej: c:\temp\svchost.exe)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 7 warnings in 1.02s
+
+```
+- `2026-10-16T04:13:55` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimizé la resolución de rutas en `StartupEntry` introduciendo un filtro de exclusión de extensiones antes de realizar la costosa llamada a `Path.resolve()` y `is_protected_path`, evitando así consultas innecesarias al sistema de archivos para archivos que claramente no son ejecutables.
+- `2026-10-16T04:13:56` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T04:14:01` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-16T04:14:33` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se fortalece la robustez del módulo `assistant.py` ante casos límite mediante la validación estricta de la estructura del contexto durante la ingestión y la lectura, garantizando que valores numéricos inesperados (`inf`, `NaN`) o tipos de datos corruptos en el `SystemContext` no rompan la lógica de consulta ni provoquen errores de cálculo.
+- `2026-10-16T04:14:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T04:14:33` Corrida terminada. Total usado hoy: 100.

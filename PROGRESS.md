@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
-- Rechazadas por tests: 26
-- Rechazadas por guardia de seguridad: 51
+- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Rechazadas por tests: 28
+- Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 219
 
@@ -16,37 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-14 | 14 | 2 | 3 | 1 | 38 |
+| 2026-10-14 | 10 | 2 | 3 | 1 | 38 |
 | 2026-10-15 | 142 | 19 | 41 | 11 | 137 |
-| 2026-10-16 | 38 | 5 | 7 | 2 | 44 |
+| 2026-10-16 | 39 | 7 | 8 | 2 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
-- seguridad defensiva: **38**
+- robustez ante casos límite: **38**
 - manejo de errores y validación de entradas: **37**
 - rendimiento: **37**
-- robustez ante casos límite: **37**
+- seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
-- `duplicates.py`: **18**
-- `healthscore.py`: **17**
+- `diskreport.py`: **17**
+- `duplicates.py`: **17**
 - `memory.py`: **17**
+- `assistant.py`: **16**
+- `healthscore.py`: **16**
 - `quarantine.py`: **15**
-- `assistant.py`: **15**
 - `branding.py`: **14**
 - `settings.py`: **14**
-- `main.py`: **13**
 - `browser.py`: **13**
 - `scanner.py`: **13**
 - `safety.py`: **12**
+- `main.py`: **12**
 - `organizer.py`: **9**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T04:14:33` **assistant.py** (robustez ante casos límite): Se fortalece la robustez del módulo `assistant.py` ante casos límite mediante la validación estricta de la estructura del contexto durante la ingestión y la lectura, garantizando que valores numéricos inesperados (`inf`, `NaN`) o tipos de datos corruptos en el `SystemContext` no rompan la lógica de consulta ni provoquen errores de cálculo.
 - `2026-10-16T04:04:25` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` eliminando llamadas recursivas y redundantes a `Path.resolve()` y `is_relative_to()`, reemplazándolas por verificaciones de cadena (string prefix) y de estructura de partes, aprovechando que el cacheo ya está presente.
 - `2026-10-16T04:03:30` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto convirtiendo la lista `items` en un diccionario (`item_map`) dentro de `purge_all`, evitando así una complejidad algorítmica O(N^2) al buscar coincidencias entre los archivos del sistema y los ítems del manifiesto durante el vaciado.
 - `2026-10-16T04:02:48` **organizer.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo sustituyendo la conversión repetitiva de `str(p)` a `Path` y el uso de `endswith()` por una comprobación directa mediante `set` (o su `frozenset` preexistente) y `suffix`, reduciendo la carga de CPU en el bucle principal de recorrido de archivos.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T03:33:22` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación de los validadores (`_VALIDATORS`) y sus helpers asociados mediante docstrings explícitos que aclaran el propósito de cada verificación, facilitando el mantenimiento y auditoría del módulo de seguridad sin alterar la lógica.
 - `2026-10-16T03:22:28` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento mediante la adición de Type Hints detallados, la estructuración de la configuración de escaneo como un dataclass para facilitar la escalabilidad y la documentación de las funciones de bajo nivel que interactúan con el kernel.
 - `2026-10-16T03:22:01` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings técnicos detallados en las funciones de bajo nivel y la estandarización de los tipos de retorno, aclarando la intención detrás de las interacciones con la API nativa de Windows.
-- `2026-10-16T03:12:10` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de escaneo y procesamiento, detallando las responsabilidades de cada etapa del pipeline para clarificar cómo el flujo garantiza la seguridad y eficiencia.
