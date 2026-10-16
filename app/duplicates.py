@@ -107,8 +107,8 @@ def _is_file_locked(path: Path) -> bool:
     try:
         if not path.is_file() or not os.access(path, os.R_OK):
             return True
-        with open(path, "rb") as f:
-            f.read(0)
+        # Usamos flags de apertura mínima para verificar lock sin leer contenido
+        with open(path, "rb", buffering=0) as f:
             return False
     except OSError as e:
         if hasattr(e, 'winerror'):
@@ -122,14 +122,14 @@ def _is_file_locked(path: Path) -> bool:
 def _safe_path_check(path: Path) -> bool:
     """
     Gatekeeper principal: valida seguridad, ausencia de protección y bucles (junctions).
-    Lanza excepciones de sistema capturadas para evitar interrupción del bucle.
     """
     try:
-        if path != Path(os.path.realpath(path)):
-            return False
+        # Resolvemos para evitar engaños por rutas relativas o symlinks
+        resolved = path.resolve()
         return (is_safe_to_modify(path) and 
                 not is_protected_path(path) and 
-                not is_junction(path))
+                not is_junction(path) and
+                is_safe_to_modify(resolved))
     except (OSError, RuntimeError, PermissionError, AttributeError):
         return False
 

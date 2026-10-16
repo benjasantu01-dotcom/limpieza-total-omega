@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 26
 - Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 226
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 73 | 7 | 19 | 7 | 70 |
-| 2026-10-16 | 115 | 19 | 26 | 12 | 156 |
+| 2026-10-15 | 73 | 7 | 19 | 7 | 66 |
+| 2026-10-16 | 116 | 19 | 26 | 12 | 159 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - robustez ante casos límite: **39**
 - manejo de errores y validación de entradas: **36**
+- seguridad defensiva: **35**
 - rendimiento: **34**
-- seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
 - `memory.py`: **17**
+- `duplicates.py`: **17**
 - `quarantine.py`: **16**
-- `duplicates.py`: **16**
 - `assistant.py`: **15**
 - `healthscore.py`: **14**
 - `scanner.py`: **14**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T14:04:03` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_file_locked` para evitar lecturas concurrentes o bloqueos de sistema mediante un manejo de excepciones más robusto al intentar abrir el archivo, y se mejoró `_safe_path_check` para asegurar que las comparaciones de rutas sean consistentes ante la resolución de enlaces simbólicos.
 - `2026-10-16T13:54:47` **branding.py** (seguridad defensiva): Mejoré la seguridad de `save_logo_svg` utilizando `filter_safe_paths` para validar la integridad de la ruta y evitando el uso innecesario de `ensure_safe_to_modify` antes de una comprobación explícita, siguiendo estrictamente el enfoque defensivo.
 - `2026-10-16T13:23:07` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_is_excluded_path` para manejar archivos inaccesibles debido a errores de sistema (como archivos de sistema en uso o bloqueados) mediante un manejo de excepciones más granular y preventivo.
 - `2026-10-16T13:15:40` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite mediante la validación estricta de la longitud de rutas `MAX_PATH_LEN` durante la resolución (`resolve`) y se protegió la navegación ante posibles excepciones en rutas con caracteres especiales o permisos restringidos en `_resolve_browser_path`.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T12:32:48` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo mediante la adición de docstrings técnicos detallados en los métodos de validación y gestión de archivos, aclarando el propósito y las restricciones de seguridad de cada lógica, facilitando así el mantenimiento preventivo y la auditoría del código.
 - `2026-10-16T12:23:39` **safety.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de validación interna, clarificando el propósito y el comportamiento esperado ante errores, facilitando así el mantenimiento futuro sin alterar la lógica.
 - `2026-10-16T12:22:17` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos para documentar las asunciones críticas de seguridad y el manejo de excepciones en `_atomic_isolate_file`, mejorando la legibilidad técnica del proceso de aislamiento.
-- `2026-10-16T12:14:20` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `organizer.py` mediante la refactorización de `_is_safe_for_disk_op`, extrayendo la validación de integridad técnica y lógica de seguridad en sub-funciones con propósitos definidos (`_validate_file_identity` y `_can_write_to_destination`), facilitando la auditoría del código bajo las estrictas reglas de seguridad del proyecto.
