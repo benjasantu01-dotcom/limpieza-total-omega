@@ -1080,3 +1080,50 @@ FAILED evolve/tests/test_modules.py::test_unknown_color_falls_back_instead_of_cr
 - `2026-10-16T11:34:16` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `top_memory_processes` añadiendo validaciones de tipo y estructura al resultado de `EnumProcesses` para evitar excepciones en tiempo de ejecución, además de asegurar que el acceso a `psapi` se gestione con mayor cuidado ante errores inesperados del sistema.
 - `2026-10-16T11:34:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T11:34:16` Corrida terminada. Total usado hoy: 272.
+- `2026-10-16T11:40:43` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-10-16T11:40:49` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T11:40:53` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-16T11:41:27` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `stage_for_review` y `delete_reviewed` mediante una validación estricta de parámetros y el manejo preventivo de excepciones de `Path` que podrían surgir al intentar resolver rutas inexistentes o con permisos restringidos, evitando así fallos silenciosos.
+- `2026-10-16T11:42:07` Tests FALLARON:
+```
+ = quarantine.quarantine_file(origen, reason="prueba", base=cuarentena)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_safety.py:182: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+source = PosixPath('/tmp/pytest-of-runner/pytest-2/test_quarantine_moves_the_file0/sospechoso.exe')
+reason = 'prueba'
+base = PosixPath('/tmp/pytest-of-runner/pytest-2/test_quarantine_moves_the_file0/_Cuarentena')
+
+    def quarantine_file(
+        source: PathLike,
+        reason: str = "Marcado como sospechoso",
+        base: PathLike = DEFAULT_QUARANTINE_DIR,
+    ) -> QuarantineItem:
+        """Aísla un archivo sospechoso de manera atómica."""
+        if not source:
+            raise ValueError("Ruta de origen nula o vacía.")
+    
+        p_source = Path(str(source)).resolve()
+        if not p_source.exists() or not p_source.is_file():
+            raise FileNotFoundError("Archivo origen no encontrado o inválido.")
+    
+        if not is_safe_to_modify(p_source):
+>           raise UnsafePathError("No se permite aislar esta ruta.")
+E           safety.UnsafePathError: [GENERIC] No se permite aislar esta ruta.
+
+app/quarantine.py:844: UnsafePathError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - safety.UnsafePathError: [GENERIC] No se permite aislar esta ruta.
+1 failed, 298 passed in 0.92s
+
+```
+- `2026-10-16T11:42:07` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de las validaciones de entrada en `quarantine_file` y `restore_item` añadiendo chequeos de tipo `is_safe_to_modify` antes de operar, evitando el uso de excepciones para control de flujo y centralizando la validación de rutas mediante una nueva función helper `_validate_target_path`.
+- `2026-10-16T11:42:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-10-16T11:42:41` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T11:42:45` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-16T11:42:51` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-16T11:43:04` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-16T11:43:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T11:43:04` Corrida terminada. Total usado hoy: 276.

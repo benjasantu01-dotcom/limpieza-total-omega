@@ -321,13 +321,6 @@ def sort_junk(files: Sequence[JunkFile], by: SortField = "size", ascending: bool
 def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """
     Mueve archivos candidatos a un directorio de cuarentena para revisión humana.
-
-    Args:
-        files: Secuencia de objetos JunkFile a procesar.
-        review_dir: Ruta destino donde se aislarán los archivos.
-
-    Returns:
-        La ruta del directorio de revisión si la operación fue exitosa, None en otro caso.
     """
     if not isinstance(files, (list, tuple)) or not isinstance(review_dir, str) or not review_dir: 
         return None
@@ -339,22 +332,22 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         
         if not is_safe_to_modify(dest_res) or is_protected_path(dest_res) or _has_forbidden_chars(dest_res): return None
         ensure_safe_to_modify(dest_res)
+        
+        for junk_file in files:
+            if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): continue
+            try:
+                if not _is_safe_for_disk_op(junk_file, dest_res): continue
+                target_path = _can_move_file(junk_file, dest_res)
+                if target_path and target_path != junk_file.path:
+                    src_abs = junk_file.path.resolve(strict=True)
+                    ensure_safe_to_modify(src_abs)
+                    shutil.move(str(src_abs), str(target_path))
+            except (OSError, shutil.Error, PermissionError) as e:
+                logger.error(f"Error moviendo {junk_file.path}: {e}")
+                continue
+        return dest_res
     except (OSError, ValueError, RuntimeError):
         return None
-    
-    for junk_file in files:
-        if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): continue
-        try:
-            if not _is_safe_for_disk_op(junk_file, dest_res): continue
-            target_path = _can_move_file(junk_file, dest_res)
-            if target_path and target_path != junk_file.path:
-                src_abs = junk_file.path.resolve(strict=True)
-                ensure_safe_to_modify(src_abs)
-                shutil.move(str(src_abs), str(target_path))
-        except (OSError, shutil.Error, PermissionError) as e:
-            logger.error(f"Error moviendo {junk_file.path}: {e}")
-            continue
-    return dest_res
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """Genera una ruta de destino segura, evitando colisiones de nombres mediante timestamps."""
@@ -368,28 +361,22 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina permanentemente archivos validados del directorio de revisión.
-
-    Verifica que cada archivo sea hijo directo del directorio de cuarentena para 
-    evitar escapes de ruta y asegura que ninguna ruta crítica sea afectada 
-    mediante `ensure_safe_to_modify`.
-
-    Returns:
-        Número de archivos eliminados exitosamente.
     """
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:
-        dest = Path(review_dir).expanduser().resolve(strict=False)
-        if not dest.exists() or not dest.is_dir() or len(dest.parts) <= 2: return 0
-        if not is_safe_to_modify(dest) or is_protected_path(dest): return 0
-        ensure_safe_to_modify(dest)
+        dest = Path(review_dir).expanduser()
+        if not dest.exists() or not dest.is_dir(): return 0
+        dest_res = dest.resolve(strict=False)
+        
+        if len(dest_res.parts) <= 2 or not is_safe_to_modify(dest_res) or is_protected_path(dest_res): return 0
+        ensure_safe_to_modify(dest_res)
         
         count = 0
-        dest_res = dest.resolve(strict=True)
-        for item in dest.iterdir():
+        for item in dest_res.iterdir():
             try:
                 if not item.is_file() or item.is_symlink(): continue
                 item_res = item.resolve(strict=True)
-                # Verifica que el archivo a borrar sea hijo directo del directorio de revisión para evitar escapes
+                # Verifica que sea hijo directo del directorio de cuarentena
                 if dest_res != item_res.parent: continue
                 if not is_safe_to_modify(item_res) or is_protected_path(item_res): continue
                 

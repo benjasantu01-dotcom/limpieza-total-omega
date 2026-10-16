@@ -16,16 +16,16 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 94 | 12 | 24 | 9 | 93 |
-| 2026-10-16 | 93 | 18 | 20 | 8 | 133 |
+| 2026-10-15 | 93 | 11 | 23 | 9 | 92 |
+| 2026-10-16 | 94 | 19 | 21 | 8 | 134 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **44**
 - seguridad defensiva: **38**
 - legibilidad y documentación: **38**
-- rendimiento: **35**
-- manejo de errores y validación de entradas: **32**
+- rendimiento: **34**
+- manejo de errores y validación de entradas: **33**
 
 ## Mejoras aceptadas por archivo
 
@@ -38,14 +38,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **14**
 - `settings.py`: **13**
 - `main.py`: **12**
-- `browser.py`: **11**
 - `safety.py`: **11**
-- `organizer.py`: **10**
+- `organizer.py`: **11**
+- `browser.py`: **10**
 - `branding.py`: **10**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T11:41:27` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `stage_for_review` y `delete_reviewed` mediante una validación estricta de parámetros y el manejo preventivo de excepciones de `Path` que podrían surgir al intentar resolver rutas inexistentes o con permisos restringidos, evitando así fallos silenciosos.
 - `2026-10-16T11:34:16` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `top_memory_processes` añadiendo validaciones de tipo y estructura al resultado de `EnumProcesses` para evitar excepciones en tiempo de ejecución, además de asegurar que el acceso a `psapi` se gestione con mayor cuidado ante errores inesperados del sistema.
 - `2026-10-16T11:31:45` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `compute_score` validando explícitamente los datos de entrada para evitar excepciones imprevistas si el sistema recibe métricas parcialmente corruptas o resultados de análisis nulos.
 - `2026-10-16T11:22:25` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `_collect_summary_data` envolviendo las llamadas de alto riesgo en bloques `try...except` específicos para evitar que errores inesperados de I/O detengan el escaneo completo de forma silenciosa, y agregué una validación de tipo en `summarize` para asegurar que las entradas del heap no causen errores de desempacado.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T09:19:05` **settings.py** (robustez ante casos límite): Mejoré la resiliencia en la inicialización del archivo `config.json` manejando explícitamente posibles excepciones de concurrencia y permisos durante la creación del directorio base y la verificación de seguridad, evitando que la app falle si el sistema operativo bloquea la escritura temporalmente o si el usuario carece de permisos de escritura en la ruta configurada.
 - `2026-10-16T09:09:07` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite mediante la adición de un chequeo de espacio en disco previo al inicio de cualquier operación de aislamiento (`_ensure_disk_space`), evitando fallos en mitad de la transferencia (operación atómica), y se ha reforzado `_is_filesystem_read_only` para manejar escenarios de sistemas de archivos bloqueados o sin permisos antes de realizar cualquier escritura.
 - `2026-10-16T09:01:34` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_iter_process_memory` para manejar correctamente escenarios donde `EnumProcesses` falla parcialmente o devuelve listas incompletas, y se agregó una validación de `ctypes.c_uint32` en el buffer de PIDs para evitar errores de memoria ante valores inesperados del sistema.
-- `2026-10-16T08:59:40` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor de cómputo ante entradas nulas, estructuras de datos corruptas o valores extremos dentro de `SystemMetrics` mediante la implementación de una validación más estricta en el método `__post_init__` y una garantía de integridad previa al procesamiento del pipeline en `compute_score`.
