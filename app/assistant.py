@@ -101,11 +101,16 @@ def _check_metric_integrity(val: Any) -> bool:
     """Verifica que un valor numérico sea seguro, finito y coherente para el asistente."""
     return isinstance(val, (int, float)) and not isinstance(val, bool) and math.isfinite(val) and not math.isnan(val)
 
+def _is_safe_numeric_context(val: Any) -> bool:
+    """Verifica límites de seguridad para evitar desbordamientos en cálculos de contexto."""
+    if not _check_metric_integrity(val): return False
+    return -1e12 < float(val) < 1e12
+
 def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
     """Valida si un valor puede convertirse en una métrica numérica segura dentro de límites esperados."""
     try:
         f: float = float(val)
-        if math.isfinite(f) and spec.is_valid_type(f) and _is_metric_within_bounds(f, spec):
+        if _is_safe_numeric_context(f) and spec.is_valid_type(f) and _is_metric_within_bounds(f, spec):
             return f
     except (ValueError, TypeError, OverflowError):
         pass
@@ -302,7 +307,7 @@ _VALIDATORS: Final[dict[str, MetricSpec]] = {
 def _safe_float(val: Any, default: float = 0.0) -> float:
     """Convierte cualquier valor a float asegurando que el resultado sea finito, real y no negativo."""
     try:
-        if not _check_metric_integrity(val):
+        if not _is_safe_numeric_context(val):
             return default
         f: float = float(val)
         return f if f >= 0 else default
@@ -365,7 +370,7 @@ class SystemContext:
         snapshot = {}
         for k in _VALIDATORS.keys():
             val = _get_safe_attr(self, k, -1.0)
-            if _check_metric_integrity(val):
+            if _is_safe_numeric_context(val):
                 snapshot[k] = float(val)
         return snapshot
 
@@ -386,7 +391,7 @@ class SystemContext:
     def get_metric(self, key: str, default: float) -> float:
         """Retorna una métrica numérica validada o el valor por defecto si falla."""
         val: Any = _get_safe_attr(self, key)
-        return float(val) if _check_metric_integrity(val) else default
+        return float(val) if _is_safe_numeric_context(val) else default
 
     @property
     def is_empty(self) -> bool:

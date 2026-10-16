@@ -347,16 +347,12 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
     
     try:
         f: io.StringIO = io.StringIO(csv_text.strip())
-        # DictReader con fieldnames específicos para ignorar basura no necesaria del registro
         reader = csv.DictReader(f)
         
         for row in reader:
-            # Validar que la fila tenga contenido antes de procesar
-            if not row: continue
+            if not row or len(row) < 2: continue
             
             keys = list(row.keys())
-            if len(keys) < 2: continue
-            
             raw_val_name = row[keys[0]]
             raw_val_cmd = row[keys[1]]
             
@@ -365,6 +361,9 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             
             clean_name = "".join(c for c in raw_val_name if ord(c) >= 32).strip()
             clean_cmd = "".join(c for c in raw_val_cmd if ord(c) >= 32).strip()
+            
+            if not clean_cmd or not clean_name:
+                continue
             
             if _is_registry_entry_safe(clean_name, clean_cmd, seen_commands):
                 seen_commands.add(clean_cmd)

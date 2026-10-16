@@ -377,9 +377,9 @@ def _is_file_secure_to_read(st: os.stat_result, file_obj: Any) -> bool:
 
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     """Lee y parsea el JSON con bloqueo de archivo (flock) para evitar lecturas parciales concurrentes."""
-    if not file_path.exists(): return None
     try:
-        if _Validators._is_reparse_point(file_path) or file_path.is_symlink(): return None
+        if not file_path.exists() or file_path.is_symlink(): return None
+        if _Validators._is_reparse_point(file_path): return None
         if not is_safe_to_modify(str(file_path)): return None
         if not _is_dir_safe(file_path.parent): return None
         

@@ -1434,3 +1434,12 @@ FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_o
 - `2026-10-16T04:45:47` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en `_is_safe_entry` y `process_entry` al agregar una validación de `os.DirEntry.is_symlink` explícita antes de cualquier operación de resolución, previniendo errores en rutas con enlaces simbólicos rotos o permisos restringidos que causaban excepciones no atrapadas.
 - `2026-10-16T04:45:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T04:45:47` Corrida terminada. Total usado hoy: 112.
+- `2026-10-16T04:53:04` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-10-16T04:53:46` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para evitar condiciones de carrera (Race Conditions) y posibles errores de E/S al verificar la existencia y tipos de los archivos de configuración durante la carga inicial mediante `try-except` robusto y validaciones de tipo de archivo.
+- `2026-10-16T04:53:51` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T04:53:58` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-16T04:54:40` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se reforzó la robustez en `parse_registry_csv` añadiendo un filtro explícito contra rutas vacías o inválidas tras el parseo del CSV, garantizando que el `StartupEntry` siempre reciba datos procesables y evitando la propagación de errores de sintaxis del registro hacia el resto de la aplicación.
+- `2026-10-16T04:55:19` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva de `assistant.py` mediante la implementación de `_is_safe_numeric_context` para prevenir que valores de entrada maliciosos o desbordados sean inyectados en el `SystemContext` antes de que se procesen, cerrando una brecha en la integridad de las métricas.
+- `2026-10-16T04:55:36` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-10-16T04:55:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T04:55:36` Corrida terminada. Total usado hoy: 116.
