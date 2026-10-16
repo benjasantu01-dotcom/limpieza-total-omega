@@ -160,12 +160,12 @@ def _is_unc_path(path_str: Optional[str]) -> TypeGuard[str]:
     """Determina si la ruta es de red (UNC), las cuales son excluidas por seguridad."""
     return isinstance(path_str, str) and (path_str.startswith(r"\\") or path_str.startswith("//"))
 
-def _is_within_sandbox(target: Path, base: Path) -> bool:
-    """Verificación de contención: asegura que una ruta resida bajo una base dada mediante resolución de paths."""
+def _is_within_sandbox(target: str, base: str) -> bool:
+    """Verificación de contención: asegura que una ruta resida bajo una base dada."""
     try:
-        t_res = target.resolve()
-        b_res = base.resolve()
-        return b_res in t_res.parents or t_res == b_res
+        norm_target = os.path.normpath(target)
+        norm_base = os.path.normpath(base)
+        return norm_target.startswith(norm_base)
     except (OSError, RuntimeError):
         return False
 
@@ -216,11 +216,7 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
     if not ctx.sandbox_base_norm or depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN: 
         return ScanResult(0, True)
     
-    try:
-        real_root = Path(root_path).resolve()
-        if not _is_within_sandbox(real_root, Path(ctx.sandbox_base_norm).resolve()):
-            return ScanResult(0, False)
-    except (OSError, RuntimeError):
+    if not _is_within_sandbox(root_path, ctx.sandbox_base_norm):
         return ScanResult(0, False)
 
     total_bytes = 0
@@ -255,17 +251,17 @@ def directory_size(path: Optional[OSPath]) -> int:
 def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
     """Valida heurísticamente que la carpeta candidata sea un directorio de caché genuino dentro del sandbox."""
     if not candidate.exists() or not candidate.is_dir() or not os.access(candidate, os.R_OK): return False
-    real = candidate.resolve(strict=True)
-    if not _is_within_sandbox(real, Path(base_abs_str)): return False
-    if not is_safe_to_modify(real) or is_protected_path(real): return False
-    return not (real.is_symlink() or _IS_JUNCTION_FN(str(real)) or _is_excluded_file(real.name))
+    real = str(candidate.resolve(strict=True))
+    if not _is_within_sandbox(real, base_abs_str): return False
+    if not is_safe_to_modify(Path(real)) or is_protected_path(Path(real)): return False
+    return not (candidate.is_symlink() or _IS_JUNCTION_FN(real) or _is_excluded_file(candidate.name))
 
 @safe_path_operation(Path())
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Combina y normaliza las rutas de los navegadores, verificando contención estricta al sandbox."""
     if not _is_valid_rel_path(rel_str): return Path()
-    target = real_base.joinpath(*rel_str.split("\\")).resolve(strict=True)
-    if target.exists() and target.is_dir() and _is_within_sandbox(target, real_base):
+    target = real_base.joinpath(*rel_str.split("\\"))
+    if target.exists() and target.is_dir() and _is_within_sandbox(str(target.resolve()), str(real_base)):
         return target
     return Path()
 

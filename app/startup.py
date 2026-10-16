@@ -62,6 +62,8 @@ SUSPICIOUS_CHARS: str = '<>|?*\0&;%^$'
 RESERVED_DEVICE_NAMES: Set[str] = {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1", "COM2", "COM3", "COM4", "LPT2", "LPT3"}
 
 # Caché global para persistir resultados de resolución de rutas en la misma ejecución.
+# _EXISTS_CACHE: Mapea rutas (str) a existencia (bool).
+# _COMMAND_CACHE: Mapea líneas de comando crudas (str) a la ruta resuelta (str).
 _EXISTS_CACHE: Dict[str, bool] = {}
 _COMMAND_CACHE: Dict[str, str] = {}
 _FULL_SCAN_CACHE: Optional[StartupEntries] = None
@@ -129,7 +131,10 @@ class StartupEntry:
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
-        """Extrae y valida una ruta absoluta desde una cadena entrecomillada."""
+        """
+        Extrae una ruta absoluta desde una cadena entrecomillada.
+        Valida que la ruta no contenga secuencias de escape ('..') y esté protegida por `safety.py`.
+        """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
         
@@ -162,7 +167,10 @@ class StartupEntry:
             return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
-        """Normaliza, resuelve rutas simbólicas y cachea el estado de existencia del archivo."""
+        """
+        Normaliza una ruta, resuelve enlaces simbólicos y cachea el estado resultante.
+        Implementa `strict=False` para evitar excepciones al encontrar rutas inexistentes.
+        """
         if not path_string or not isinstance(path_string, str) or not self.is_valid:
             return ""
         
@@ -195,7 +203,10 @@ class StartupEntry:
             return ""
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Analiza la línea de comando para aislar el ejecutable principal y resolver su ruta absoluta."""
+        """
+        Analiza la línea de comandos completa para aislar el ejecutable.
+        Utiliza _COMMAND_CACHE para evitar re-procesar líneas de comando idénticas.
+        """
         if not command_line or not isinstance(command_line, str):
             return ""
         
@@ -236,11 +247,7 @@ class StartupEntry:
 def startup_folders() -> List[Path]:
     """
     Retorna las rutas del sistema y del usuario configuradas para programas de inicio.
-
-    Returns
-    -------
-    List[Path]
-        Lista de rutas de carpetas de inicio que existen y son seguras.
+    Filtra symlinks y rutas protegidas antes de retornar la lista.
     """
     if os.name != "nt":
         return []
@@ -338,6 +345,7 @@ def _is_registry_entry_safe(entry_name: str, entry_command: str, seen_commands: 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
     """
     Convierte el output CSV de PowerShell en una lista de objetos StartupEntry validados.
+    Usa DictReader para interpretar las columnas dinámicas del objeto de PowerShell.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
@@ -375,12 +383,14 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
 
 
 def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEntries:
-    """Extrae programas de inicio desde el registro de Windows invocando PowerShell una sola vez."""
+    """
+    Extrae programas de inicio desde el registro de Windows invocando PowerShell.
+    Se excluyen propiedades internas (PS*) para optimizar el payload del CSV.
+    """
     if os.name != "nt":
         return []
     
     keys_string = "','".join(keys)
-    # Seleccionamos solo las propiedades de valor y nombre para reducir el ancho de banda del proceso
     ps_script = f"""
     $ErrorActionPreference = 'SilentlyContinue'
     foreach ($k in @('{keys_string}')) {{
@@ -401,7 +411,7 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
 
 
 def list_startup_entries() -> StartupEntries:
-    """Retorna la lista consolidada de programas de inicio, implementando caché para rendimiento."""
+    """Retorna la lista consolidada de programas de inicio, implementando caché de escaneo global."""
     global _FULL_SCAN_CACHE
     if _FULL_SCAN_CACHE is not None:
         return _FULL_SCAN_CACHE

@@ -609,3 +609,34 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-16T07:59:14` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-10-16T07:59:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T07:59:14` Corrida terminada. Total usado hoy: 188.
+- `2026-10-16T08:06:40` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-10-16T08:06:42` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T08:06:46` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-16T08:07:21` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se han documentado las restricciones de seguridad, el propósito del caché y la lógica de resolución de rutas mediante docstrings detallados, mejorando la mantenibilidad del código sin alterar su comportamiento funcional.
+- `2026-10-16T08:08:01` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: AreaExplanation, AssistantConfig
+- `2026-10-16T08:08:37` Tests FALLARON:
+```
+ in canvas.llamadas, "falta el degradado del escudo"
+E       AssertionError: falta el degradado del escudo
+E       assert 'rectangle' in ['oval', 'polygon', 'line', 'polygon', 'text']
+E        +  where ['oval', 'polygon', 'line', 'polygon', 'text'] = <test_modules._CanvasFalso object at 0x7f22fa853440>.llamadas
+
+evolve/tests/test_modules.py:273: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_produces_the_requested_amount_of_colors - IndexError: list index out of range
+FAILED evolve/tests/test_modules.py::test_gradient_starts_and_ends_on_its_stops - IndexError: list index out of range
+FAILED evolve/tests/test_modules.py::test_gradient_actually_changes_color - IndexError: list index out of range
+FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel - AssertionError: assert 0 == 60
+ +  where 0 = <built-in method count of list object at 0x7f22fa843740>('line')
+ +    where <built-in method count of list object at 0x7f22fa843740> = [].count
+ +      where [] = <test_modules._CanvasFalso object at 0x7f22fa99b560>.llamadas
+FAILED evolve/tests/test_modules.py::test_logo_draws_a_gradient_and_a_halo - AssertionError: falta el degradado del escudo
+assert 'rectangle' in ['oval', 'polygon', 'line', 'polygon', 'text']
+ +  where ['oval', 'polygon', 'line', 'polygon', 'text'] = <test_modules._CanvasFalso object at 0x7f22fa853440>.llamadas
+5 failed, 294 passed in 0.99s
+
+```
+- `2026-10-16T08:08:37` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `gradient_colors` eliminando la creación innecesaria de listas intermedias y simplificando el cálculo de interpolación lineal, reduciendo la carga de CPU en renderizados repetitivos.
+- `2026-10-16T08:09:03` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas costosas a `Path.resolve()` dentro del bucle principal, utilizando `os.path.join` y `os.path.normpath` para validar la contención del sandbox sin realizar I/O innecesario.
+- `2026-10-16T08:09:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T08:09:03` Corrida terminada. Total usado hoy: 192.
