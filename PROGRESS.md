@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 29
 - Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 118 | 15 | 33 | 9 | 133 |
-| 2026-10-16 | 74 | 14 | 14 | 6 | 88 |
+| 2026-10-15 | 116 | 15 | 32 | 9 | 132 |
+| 2026-10-16 | 75 | 14 | 15 | 6 | 90 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
-- robustez ante casos límite: **38**
 - manejo de errores y validación de entradas: **38**
-- seguridad defensiva: **37**
-- rendimiento: **34**
+- robustez ante casos límite: **37**
+- seguridad defensiva: **36**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
 - `duplicates.py`: **19**
 - `memory.py`: **18**
-- `quarantine.py`: **16**
+- `quarantine.py`: **17**
 - `healthscore.py`: **16**
-- `settings.py`: **14**
-- `assistant.py`: **14**
 - `main.py`: **14**
 - `scanner.py`: **14**
+- `settings.py`: **13**
+- `assistant.py`: **13**
 - `safety.py`: **12**
 - `browser.py`: **12**
 - `branding.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T08:30:05` **quarantine.py** (rendimiento): Optimicé `list_items` y `load_manifest` eliminando la recreación innecesaria de diccionarios y listas dentro de bucles, sustituyendo el acceso repetitivo al `manifest.json` por una lógica de pre-filtrado basada en `set` para búsquedas $O(1)$, lo cual mejora significativamente el rendimiento al manejar grandes cantidades de archivos en cuarentena.
 - `2026-10-16T08:21:01` **main.py** (rendimiento): Optimicé el redibujado de la interfaz principal implementando un `debounce` más eficiente para el evento de redimensionado, evitando que el cálculo de `branding.draw_gradient_bar` se dispare múltiples veces en milisegundos y bloquee el hilo principal.
 - `2026-10-16T08:19:01` **healthscore.py** (rendimiento): Se optimizó el acceso a las reglas de diagnóstico dentro del pipeline mediante el uso de una caché de diccionario (`_RULES_CACHE`) para evitar la recreación o reevaluación innecesaria de objetos en cada corrida, mejorando la eficiencia al procesar métricas recurrentes.
 - `2026-10-16T08:18:34` **duplicates.py** (rendimiento): Optimizé la recolección de archivos introduciendo un chequeo de `st_size` previo en `_collect_candidates` para evitar realizar llamadas a `stat` adicionales o instanciar objetos `Path` innecesarios dentro de los bucles de escaneo profundo, mejorando el rendimiento en discos con alta densidad de archivos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T07:37:29` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en las funciones de procesamiento, la documentación explícita de las excepciones en los métodos de filtrado y la clarificación de las responsabilidades de los métodos de hashing mediante docstrings mejorados.
 - `2026-10-16T07:37:01` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` incluyendo docstrings detallados que explican el propósito, los parámetros y el comportamiento ante errores de las funciones públicas, garantizando que el código sea mantenible y fácil de auditar según los estándares del proyecto.
 - `2026-10-16T07:36:34` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones clave y enriqueciendo los docstrings para explicar explícitamente el flujo de validación de seguridad y los casos límite (como los puntos de reparse), facilitando así la auditoría del código conforme al enfoque de legibilidad.
-- `2026-10-16T07:18:20` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_get_path_stat_robust` y `_get_security_descriptor` mediante el manejo explícito de excepciones de bajo nivel en las llamadas a `ctypes`, evitando fallos silenciosos y capturando errores de acceso específicos en lugar de excepciones genéricas.

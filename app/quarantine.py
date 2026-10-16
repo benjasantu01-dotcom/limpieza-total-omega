@@ -937,7 +937,8 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna una lista ordenada de los ítems en cuarentena."""
     try:
         items = load_manifest(base)
-        return sorted(items, key=lambda x: x.quarantined_at, reverse=True)
+        items.sort(key=lambda x: x.quarantined_at, reverse=True)
+        return items
     except (OSError, UnsafePathError, PermissionError):
         return []
 
@@ -949,9 +950,8 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
     try:
         base_path = quarantine_dir(base)
         manifest = load_manifest(base)
-        manifest_map = {item.item_id: item for item in manifest}
-            
-        quarantine_item = manifest_map.get(item_id)
+        
+        quarantine_item = next((i for i in manifest if i.item_id == item_id), None)
         if not quarantine_item:
             raise KeyError(f"Ítem no encontrado: {item_id}")
         
@@ -1010,8 +1010,7 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
     base_path = quarantine_dir(base)
     
     items = load_manifest(base)
-    item_map = {item.item_id: item for item in items}
-    quarantine_item = item_map.get(item_id)
+    quarantine_item = next((i for i in items if i.item_id == item_id), None)
     if quarantine_item is None:
         return False
         
@@ -1050,7 +1049,8 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             
         items = load_manifest(base)
         item_map = {i.stored_name: i for i in items}
-        purged_ids: Set[str] = set()
+        purged_ids: Set[str] = {i.item_id for i in items}
+        found_in_fs: Set[str] = set()
         
         for f in quarantine_root.iterdir():
             if f.name == MANIFEST_NAME:
@@ -1058,20 +1058,20 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             
             if f.name in item_map:
                 if _is_item_purgable(f, item_map[f.name]):
-                    purged_ids.add(item_map[f.name].item_id)
+                    found_in_fs.add(item_map[f.name].item_id)
             else:
                 if is_safe_to_modify(f) and _safe_unlink(f):
                     continue
         
-        if purged_ids:
-            new_items = [i for i in items if i.item_id not in purged_ids]
-            save_manifest(new_items, base)
+        remaining = [i for i in items if i.item_id not in found_in_fs]
+        if len(remaining) != len(items):
+            save_manifest(remaining, base)
         
         dir_fd = os.open(str(quarantine_root), os.O_RDONLY)
         try: os.fsync(dir_fd)
         finally: os.close(dir_fd)
             
-        return len(purged_ids)
+        return len(found_in_fs)
     except (OSError, PermissionError, UnsafePathError):
         return 0
 
