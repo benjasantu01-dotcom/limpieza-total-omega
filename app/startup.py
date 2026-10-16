@@ -297,6 +297,8 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> StartupEnt
     
     for folder in scan_folders:
         try:
+            if not folder.exists():
+                continue
             with os.scandir(folder) as it:
                 for entry in it:
                     if entry.path in processed_paths:
@@ -349,7 +351,9 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
         reader = csv.DictReader(f)
         
         for row in reader:
-            # Obtener solo las dos primeras columnas dinámicamente según el CSV de PS
+            # Validar que la fila tenga contenido antes de procesar
+            if not row: continue
+            
             keys = list(row.keys())
             if len(keys) < 2: continue
             
