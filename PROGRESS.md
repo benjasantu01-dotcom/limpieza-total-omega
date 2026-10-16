@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Mejoras aceptadas: **186** (36.9% de aceptación)
 - Rechazadas por tests: 28
 - Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 76 | 9 | 20 | 8 | 83 |
-| 2026-10-16 | 111 | 19 | 26 | 12 | 140 |
+| 2026-10-15 | 73 | 9 | 20 | 8 | 82 |
+| 2026-10-16 | 113 | 19 | 26 | 12 | 142 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
-- seguridad defensiva: **36**
+- robustez ante casos límite: **38**
 - manejo de errores y validación de entradas: **36**
-- robustez ante casos límite: **36**
 - rendimiento: **34**
+- seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
-- `memory.py`: **18**
+- `memory.py`: **17**
 - `quarantine.py`: **16**
 - `duplicates.py`: **16**
-- `healthscore.py`: **15**
 - `assistant.py`: **15**
+- `healthscore.py`: **14**
 - `scanner.py`: **14**
-- `main.py`: **13**
 - `settings.py`: **13**
+- `main.py`: **12**
 - `organizer.py`: **12**
 - `safety.py`: **12**
-- `branding.py`: **10**
-- `browser.py`: **9**
+- `branding.py`: **11**
+- `browser.py`: **10**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T13:15:40` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite mediante la validación estricta de la longitud de rutas `MAX_PATH_LEN` durante la resolución (`resolve`) y se protegió la navegación ante posibles excepciones en rutas con caracteres especiales o permisos restringidos en `_resolve_browser_path`.
+- `2026-10-16T13:14:48` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez en `draw_ring` y `draw_logo` mediante la validación estricta de las entradas numéricas y la eliminación de posibles condiciones de carrera o desbordamiento al procesar parámetros geométricos, asegurando que valores `None` o fuera de rango no propaguen errores a la interfaz.
 - `2026-10-16T13:04:12` **safety.py** (rendimiento): Optimicé el rendimiento de las validaciones de seguridad mediante la implementación de `lru_cache` con `maxsize` ajustado en funciones clave que realizan consultas repetitivas al sistema operativo (`GetFileAttributesW` y `GetDriveTypeW`), reduciendo drásticamente las llamadas al kernel durante recorridos de directorios.
 - `2026-10-16T12:53:45` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` evitando llamadas repetitivas a `ctypes.windll` dentro del bucle de enumeración de procesos y pre-asignando el tamaño necesario para los buffers, reduciendo la sobrecarga de llamadas a la API de Windows.
 - `2026-10-16T12:53:16` **main.py** (rendimiento): Se implementó un mecanismo de invalidación de caché basado en marcas de tiempo (`ttl`) para el acceso a `Settings`, evitando lecturas de disco redundantes y optimizando el acceso a las preferencias en componentes de la UI que las consultan frecuentemente.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T12:14:20` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `organizer.py` mediante la refactorización de `_is_safe_for_disk_op`, extrayendo la validación de integridad técnica y lógica de seguridad en sub-funciones con propósitos definidos (`_validate_file_identity` y `_can_write_to_destination`), facilitando la auditoría del código bajo las estrictas reglas de seguridad del proyecto.
 - `2026-10-16T12:13:07` **main.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad de `main.py` mediante la refactorización de los constructores de pestañas a través de una fábrica de métodos, permitiendo una estructura más clara y facilitando la navegación por el código sin alterar la lógica de carga perezosa.
 - `2026-10-16T12:03:11` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints en los retornos de funciones, se completó la documentación de los parámetros en los docstrings y se refinó la semántica de `_collect_candidates` mediante un diccionario de tipos explícito para mejorar la legibilidad y el mantenimiento.
-- `2026-10-16T12:02:57` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas (tipo Google) en funciones clave, clarificando los tipos de entrada y los comportamientos ante errores (edge cases), lo cual facilita el mantenimiento y la auditoría del código.
-- `2026-10-16T11:52:53` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_registry_entry_safe` y `parse_registry_csv` añadiendo validaciones explícitas de tipo y estructura, evitando errores de ejecución ante entradas de registro mal formadas o valores `None` inesperados que podrían interrumpir el análisis.

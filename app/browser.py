@@ -256,8 +256,11 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Combina y normaliza las rutas de los navegadores, verificando contención estricta al sandbox."""
     if not _is_valid_rel_path(rel_str): return Path()
     target = real_base.joinpath(*rel_str.split("\\"))
-    if target.exists() and target.is_dir() and _is_within_sandbox(os.path.normpath(str(target.resolve())), str(real_base)):
-        return target
+    if not target.exists() or not target.is_dir(): return Path()
+    target_real = target.resolve(strict=True)
+    if len(str(target_real)) >= MAX_PATH_LEN: return Path()
+    if _is_within_sandbox(os.path.normpath(str(target_real)), str(real_base)):
+        return target_real
     return Path()
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:

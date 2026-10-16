@@ -321,11 +321,9 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         return None
     try:
         target = Path(destination).resolve()
-        # Verificación no destructiva antes de intentar la escritura
         if not is_safe_to_modify(target) or is_protected_path(target):
             return None
         
-        # Validar permisos y realizar operación segura
         ensure_safe_to_modify(target)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(size), encoding="utf-8")
@@ -373,7 +371,9 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """Dibuja el escudo vectorial de la marca en un widget Canvas determinado."""
     try:
-        s = max(0.1, min(10.0, float(size) / 128.0))
+        val_size = float(size)
+        if not math.isfinite(val_size): return
+        s = max(0.1, min(10.0, val_size / 128.0))
         canvas.create_oval(canvas_x+(64-75)*s, canvas_y+(58-75)*s, canvas_x+(64+75)*s, canvas_y+(58+75)*s, fill=blend(C_SURFACE, C_GLOW, 0.15), outline="")
         canvas.create_polygon(*_get_scaled_poly(s, canvas_x, canvas_y), fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, canvas_x, canvas_y, s)
@@ -393,7 +393,9 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
     """Dibuja un indicador circular de progreso para representar métricas de estado."""
     try:
-        val = max(0.0, min(100.0, float(percent or 0.0)))
+        if percent is None: return
+        val = max(0.0, min(100.0, float(percent)))
+        if not math.isfinite(val): return
         d = max(20, min(2048, int(size)))
         t = max(2, int(thickness))
         pad = t / 2.0
