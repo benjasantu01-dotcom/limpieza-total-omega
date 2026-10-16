@@ -400,9 +400,12 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
                 return None
             
             if not content or len(content) > MAX_SETTINGS_SIZE: return None
-            data = json.loads(content)
-            return data if _is_dict(data) else None
-    except (OSError, IOError, PermissionError, AttributeError, RuntimeError, json.JSONDecodeError, ValueError): 
+            try:
+                data = json.loads(content)
+                return data if _is_dict(data) else None
+            except (json.JSONDecodeError, ValueError):
+                return None
+    except (OSError, IOError, PermissionError, AttributeError, RuntimeError): 
         return None
 
 def _is_dir_safe(path: Path) -> bool:
@@ -460,10 +463,13 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if not is_safe_to_modify(str(config_path)): return None
         if not parent.exists() or not _is_dir_safe(parent) or _Validators._is_reparse_point(parent) or is_protected_path(str(parent)): return None
         if not os.access(parent, os.W_OK): return None
-        serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
+        try:
+            serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
+        except (TypeError, ValueError):
+            return None
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
         return config_path if _MANAGER.perform_atomic_write(config_path, serialized) else None
-    except (TypeError, ValueError, OSError, PermissionError, AttributeError):
+    except (OSError, PermissionError, AttributeError):
         return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
@@ -474,10 +480,13 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     validators = _build_validator_map()
     for k, v in changes.items():
         if (key_enum := _KEY_TO_ENUM.get(k)):
-            val = validators[key_enum].func(key_enum, v)
-            if val is not None and val != current.get(k):
-                current[k] = val
-                modified = True
+            try:
+                val = validators[key_enum].func(key_enum, v)
+                if val is not None and val != current.get(k):
+                    current[k] = val
+                    modified = True
+            except Exception:
+                continue
     if modified: save(current, custom_base)
     return current
 

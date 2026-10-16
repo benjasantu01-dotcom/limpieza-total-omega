@@ -114,8 +114,9 @@ def _is_readable(path: Path) -> bool:
 
 def _get_file_attributes(entry: os.DirEntry) -> int:
     """Extrae atributos de archivo Win32; utilizado para detectar puntos de reanálisis."""
+    if not isinstance(entry, os.DirEntry):
+        return 0
     try:
-        if entry is None: return 0
         stat_res = entry.stat(follow_symlinks=False)
         return int(getattr(stat_res, "st_file_attributes", 0))
     except (AttributeError, OSError, PermissionError):
@@ -123,9 +124,11 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 
 def _get_file_size(path: Path) -> int:
     """Retorna el tamaño en bytes del archivo. Devuelve -1 si el archivo es inaccesible."""
-    if not isinstance(path, Path): return -1
+    if not isinstance(path, Path): 
+        return -1
     try:
-        return int(path.stat().st_size)
+        stat_result = path.stat()
+        return int(stat_result.st_size)
     except (OSError, PermissionError, FileNotFoundError, AttributeError, ValueError, TypeError):
         return -1
 

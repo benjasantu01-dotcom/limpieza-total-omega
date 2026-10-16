@@ -1127,3 +1127,14 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-10-16T11:43:04` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-10-16T11:43:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T11:43:04` Corrida terminada. Total usado hoy: 276.
+- `2026-10-16T11:50:53` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-10-16T11:51:44` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se mejora el manejo de errores en `_get_file_attributes` y `_get_file_size` añadiendo validaciones de tipo y estructura más estrictas para evitar excepciones imprevistas durante el recorrido de disco, asegurando que las funciones no procesen argumentos inválidos (`None` o tipos incorrectos) antes de interactuar con el sistema operativo.
+- `2026-10-16T11:51:45` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T11:52:24` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save` y `update` capturando errores en `json.dumps` y en el manejo de archivos, además de endurecer la validación en `_read_and_parse_json` para manejar archivos JSON truncados o malformados mediante un bloque `try-except` más específico sobre la carga de datos.
+- `2026-10-16T11:52:53` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_registry_entry_safe` y `parse_registry_csv` añadiendo validaciones explícitas de tipo y estructura, evitando errores de ejecución ante entradas de registro mal formadas o valores `None` inesperados que podrían interrumpir el análisis.
+- `2026-10-16T11:52:53` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T11:52:57` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-16T11:53:04` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-16T11:53:19` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-16T11:53:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T11:53:19` Corrida terminada. Total usado hoy: 280.

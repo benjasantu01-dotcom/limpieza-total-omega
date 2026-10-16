@@ -9,43 +9,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 30
 - Rechazadas por guardia de seguridad: 44
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 226
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 93 | 11 | 23 | 9 | 92 |
-| 2026-10-16 | 94 | 19 | 21 | 8 | 134 |
+| 2026-10-15 | 90 | 11 | 23 | 8 | 92 |
+| 2026-10-16 | 97 | 19 | 21 | 8 | 135 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **44**
 - seguridad defensiva: **38**
 - legibilidad y documentación: **38**
-- rendimiento: **34**
-- manejo de errores y validación de entradas: **33**
+- manejo de errores y validación de entradas: **36**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
 - `memory.py`: **18**
-- `duplicates.py`: **17**
-- `healthscore.py`: **17**
+- `diskreport.py`: **18**
 - `quarantine.py`: **17**
-- `scanner.py`: **14**
+- `duplicates.py`: **16**
+- `healthscore.py`: **16**
+- `scanner.py`: **15**
+- `settings.py`: **14**
 - `assistant.py`: **14**
-- `settings.py`: **13**
 - `main.py`: **12**
 - `safety.py`: **11**
 - `organizer.py`: **11**
 - `browser.py`: **10**
 - `branding.py`: **10**
-- `startup.py`: **4**
+- `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T11:52:53` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_registry_entry_safe` y `parse_registry_csv` añadiendo validaciones explícitas de tipo y estructura, evitando errores de ejecución ante entradas de registro mal formadas o valores `None` inesperados que podrían interrumpir el análisis.
+- `2026-10-16T11:52:24` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save` y `update` capturando errores en `json.dumps` y en el manejo de archivos, además de endurecer la validación en `_read_and_parse_json` para manejar archivos JSON truncados o malformados mediante un bloque `try-except` más específico sobre la carga de datos.
+- `2026-10-16T11:51:44` **scanner.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `_get_file_attributes` y `_get_file_size` añadiendo validaciones de tipo y estructura más estrictas para evitar excepciones imprevistas durante el recorrido de disco, asegurando que las funciones no procesen argumentos inválidos (`None` o tipos incorrectos) antes de interactuar con el sistema operativo.
 - `2026-10-16T11:41:27` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `stage_for_review` y `delete_reviewed` mediante una validación estricta de parámetros y el manejo preventivo de excepciones de `Path` que podrían surgir al intentar resolver rutas inexistentes o con permisos restringidos, evitando así fallos silenciosos.
 - `2026-10-16T11:34:16` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `top_memory_processes` añadiendo validaciones de tipo y estructura al resultado de `EnumProcesses` para evitar excepciones en tiempo de ejecución, además de asegurar que el acceso a `psapi` se gestione con mayor cuidado ante errores inesperados del sistema.
 - `2026-10-16T11:31:45` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `compute_score` validando explícitamente los datos de entrada para evitar excepciones imprevistas si el sistema recibe métricas parcialmente corruptas o resultados de análisis nulos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T09:31:07` **duplicates.py** (seguridad defensiva): Se ha robustecido la detección de rutas en `is_junction` y `_collect_candidates` mediante el uso de `os.path.realpath` y la validación explícita de puntos de reanálisis para evitar la recursión infinita o el seguimiento involuntario de enlaces simbólicos fuera de las zonas permitidas.
 - `2026-10-16T09:30:48` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` añadiendo una validación explícita mediante `pathlib` para asegurar que, tras resolver rutas, la entrada escaneada no intente escapar del directorio raíz mediante ataques de tipo "path traversal" (ej. `..`), previniendo fugas de contexto fuera del árbol de directorios permitido.
 - `2026-10-16T09:20:25` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de la función `ask` y `_call_gemini` integrando un chequeo explícito que impide el envío de datos si el contexto contiene una estructura insegura, evitando que errores de lógica en capas superiores se propaguen hacia la red.
-- `2026-10-16T09:19:05` **settings.py** (robustez ante casos límite): Mejoré la resiliencia en la inicialización del archivo `config.json` manejando explícitamente posibles excepciones de concurrencia y permisos durante la creación del directorio base y la verificación de seguridad, evitando que la app falle si el sistema operativo bloquea la escritura temporalmente o si el usuario carece de permisos de escritura en la ruta configurada.
-- `2026-10-16T09:09:07` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite mediante la adición de un chequeo de espacio en disco previo al inicio de cualquier operación de aislamiento (`_ensure_disk_space`), evitando fallos en mitad de la transferencia (operación atómica), y se ha reforzado `_is_filesystem_read_only` para manejar escenarios de sistemas de archivos bloqueados o sin permisos antes de realizar cualquier escritura.
-- `2026-10-16T09:01:34` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_iter_process_memory` para manejar correctamente escenarios donde `EnumProcesses` falla parcialmente o devuelve listas incompletas, y se agregó una validación de `ctypes.c_uint32` en el buffer de PIDs para evitar errores de memoria ante valores inesperados del sistema.
