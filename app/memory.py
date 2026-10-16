@@ -298,6 +298,7 @@ def _is_process_accessible(pid: int, access_mask: int) -> Optional[int]:
     """Intenta obtener un Handle win32 verificando permisos y seguridad del ejecutable."""
     if _is_system_process(pid): return None
     kernel32 = getattr(ctypes.windll, "kernel32", None)
+    if not kernel32: return None
     handle = kernel32.OpenProcess(access_mask, False, pid)
     if handle is None or handle == INVALID_HANDLE_VALUE: return None
     
@@ -428,10 +429,12 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Proceso protegido o acceso denegado (requiere privilegios)."
         
     try:
+        # psapi.EmptyWorkingSet retorna distinto de cero si tiene éxito
         if psapi.EmptyWorkingSet(proc_handle) == 0:
             return False, "El sistema operativo rechazó la operación de limpieza."
         return True, f"Working set liberado. {TRIM_WARNING}"
     except (ctypes.ArgumentError, OSError):
         return False, "Error inesperado al ejecutar llamada del sistema."
     finally:
-        kernel32.CloseHandle(proc_handle)
+        if proc_handle and proc_handle != INVALID_HANDLE_VALUE:
+            kernel32.CloseHandle(proc_handle)

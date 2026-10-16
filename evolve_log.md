@@ -526,3 +526,13 @@ assert ['arc'] == []
 - `2026-10-16T06:57:13` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_locked` para manejar de forma explícita errores de acceso sin depender de atributos dinámicos que podrían fallar, garantizando una validación más segura antes de intentar procesar archivos en el pipeline de hashing.
 - `2026-10-16T06:57:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T06:57:13` Corrida terminada. Total usado hoy: 164.
+- `2026-10-16T07:05:31` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-10-16T07:06:00` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-16T07:06:00` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T07:07:15` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `on_target_choice_changed` para prevenir errores de validación y asegurar que el estado de la UI (la etiqueta de la ruta) siempre esté sincronizado con la lógica de negocio, evitando así accesos a rutas potencialmente inválidas tras la selección del usuario.
+- `2026-10-16T07:07:46` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `trim_working_set` y `_is_process_executable_safe` mediante la validación explícita de `handle` y `psapi.EmptyWorkingSet`, evitando posibles cierres de handles inválidos y mejorando el manejo de errores en llamadas críticas de `ctypes`.
+- `2026-10-16T07:07:49` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T07:07:53` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-16T07:08:20` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-16T07:08:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T07:08:20` Corrida terminada. Total usado hoy: 168.
