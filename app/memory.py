@@ -32,7 +32,7 @@ import heapq
 from pathlib import Path
 from functools import lru_cache
 from dataclasses import dataclass, field
-from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, Final, Set, NewType, Any, NamedTuple
+from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, Final, Set, NewType, Any, NamedTuple, Iterator
 from safety import is_protected_path
 
 if TYPE_CHECKING:
@@ -318,6 +318,20 @@ def _query_working_set_bytes(pid: int, kernel32: ctypes.WinDLL, psapi: ctypes.Wi
         kernel32.CloseHandle(process_handle)
     return None
 
+def _iter_process_memory(kernel32: ctypes.WinDLL, psapi: ctypes.WinDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
+    """Generador que recorre procesos para evitar listas intermedias masivas."""
+    max_pids = 2048
+    pids = (ctypes.c_uint32 * max_pids)()
+    cb_needed = ctypes.c_uint32()
+    if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
+        count = min(max_pids, cb_needed.value // ctypes.sizeof(ctypes.c_uint32))
+        for i in range(count):
+            pid = int(pids[i])
+            if pid > 4:
+                ws = _query_working_set_bytes(pid, kernel32, psapi, pmc)
+                if ws is not None:
+                    yield ProcessMemory(f"PID {pid}", pid, ws)
+
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Enumera procesos activos y retorna los N más pesados usando una caché de 60 segundos."""
     global _CACHE_TOP_PROC
@@ -329,24 +343,14 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         psapi = getattr(ctypes.windll, "psapi", None)
         if not kernel32 or not psapi or not hasattr(psapi, "EnumProcesses"): return []
         
-        max_pids = 2048
-        pids = (ctypes.c_uint32 * max_pids)()
-        cb_needed = ctypes.c_uint32()
         pmc = PROCESS_MEMORY_COUNTERS()
         pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
         
         try:
-            if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
-                count = min(max_pids, cb_needed.value // ctypes.sizeof(ctypes.c_uint32))
-                candidates = []
-                for i in range(count):
-                    pid = int(pids[i])
-                    if pid > 4:
-                        ws = _query_working_set_bytes(pid, kernel32, psapi, pmc)
-                        if ws is not None:
-                            candidates.append(ProcessMemory(f"PID {pid}", pid, ws))
-                
-                _CACHE_TOP_PROC = CacheEntry(now, heapq.nlargest(limit, candidates))
+            _CACHE_TOP_PROC = CacheEntry(
+                now, 
+                heapq.nlargest(limit, _iter_process_memory(kernel32, psapi, pmc))
+            )
         except (ctypes.ArgumentError, OSError, TypeError):
             pass
             

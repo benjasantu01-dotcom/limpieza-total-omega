@@ -140,7 +140,7 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Calcula el SHA256 completo de un archivo mediante lectura en bloques (streaming)."""
-    if chunk_size <= 0 or not _safe_path_check(path) or not path.is_file():
+    if chunk_size <= 0 or not path.is_file():
         return None
     try:
         digest = hashlib.sha256()
@@ -154,7 +154,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula un hash SHA256 sobre el segmento inicial del archivo para optimización."""
-    if read_bytes <= 0 or not _safe_path_check(path) or not path.is_file():
+    if read_bytes <= 0 or not path.is_file():
         return None
     try:
         with open(path, "rb") as f:

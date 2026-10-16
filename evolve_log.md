@@ -1300,3 +1300,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-16T03:43:57` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `_is_excluded_path` para reducir llamadas redundantes al sistema de archivos moviendo la verificación de `is_protected_path` al inicio, evitando que se ejecute la lógica costosa de `entry.stat` o validaciones de caracteres en rutas que ya sabemos que debemos omitir.
 - `2026-10-16T03:43:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T03:43:57` Corrida terminada. Total usado hoy: 88.
+- `2026-10-16T03:52:00` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-10-16T03:52:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T03:52:16` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-16T03:52:23` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-16T03:53:00` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento del proceso de hashing evitando llamadas innecesarias a `is_safe_to_modify` dentro de los métodos de hash, dado que la validación ya ocurre en `_is_valid_candidate` durante la recolección, reduciendo el overhead de I/O en grandes volúmenes de archivos.
+- `2026-10-16T03:53:30` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el método `summarize` y el pipeline para evitar iteraciones redundantes y búsquedas en diccionario, pre-calculando el desglose en una estructura más eficiente y cacheable.
+- `2026-10-16T03:54:39` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards
+- `2026-10-16T03:54:40` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T03:55:29` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé `top_memory_processes` reemplazando la instanciación de una lista grande dentro del loop por un uso más eficiente de `heapq.nlargest` sobre un generador, reduciendo el consumo de memoria durante la recolección de métricas.
+- `2026-10-16T03:55:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T03:55:29` Corrida terminada. Total usado hoy: 92.
