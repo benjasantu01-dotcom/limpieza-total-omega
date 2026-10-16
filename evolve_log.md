@@ -1398,3 +1398,39 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-16T04:35:30` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-10-16T04:35:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T04:35:30` Corrida terminada. Total usado hoy: 108.
+- `2026-10-16T04:42:51` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-10-16T04:43:54` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `quarantine.py` ante fallos transitorios durante la inicialización del directorio, añadiendo una verificación explícita de `Path.exists()` y `Path.is_dir()` post-creación para evitar condiciones de carrera (TOCTOU) donde otro proceso podría crear un archivo con el nombre del directorio de cuarentena justo después de nuestra validación previa.
+- `2026-10-16T04:44:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-16T04:45:10` Tests FALLARON:
+```
+pture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_ensure_raises_instead_of_returning_false - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raises - AssertionError: assert True is False
+ +  where True = <function is_safe_to_modify at 0x7f211f9b8a40>(((PosixPath('/tmp/pytest-of-runner/pytest-2/test_is_safe_returns_bool_and_0') / 'Windows') / 'x.txt'))
+ +    where <function is_safe_to_modify at 0x7f211f9b8a40> = <module 'safety' from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>.is_safe_to_modify
+FAILED evolve/tests/test_safety.py::test_ensure_safe_blocks_system_paths - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_ensure_safe_blocks_sensitive_extensions_by_default - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_sensitive_extension_when_explicitly_requested - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - AssertionError: assert {'app.tmp', '...', 'otro.log'} == {'ok.tmp', 'otro.log'}
+  
+  Extra items in the left set:
+  'malo.tmp'
+  'app.tmp'
+  'instalador.exe'
+  
+  Full diff:
+    {
+  +     'app.tmp',
+  +     'instalador.exe',
+  +     'malo.tmp',
+        'ok.tmp',
+        'otro.log',
+    }
+6 failed, 293 passed, 7 warnings in 0.98s
+
+```
+- `2026-10-16T04:45:10` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha añadido `_is_path_in_use_by_system_process` utilizando una comprobación heurística de handles mediante `ctypes` (a través de `QueryFullProcessImageName` o similar no siendo viable sin dependencias, se opta por validar si la ruta reside en directorios de procesos activos del sistema) y se ha mejorado la robustez ante archivos inexistentes durante la validación de `ensure_safe_to_modify` para evitar `UnsafePathError` innecesarios en flujos de lectura de listas de archivos dinámicos.
+- `2026-10-16T04:45:47` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en `_is_safe_entry` y `process_entry` al agregar una validación de `os.DirEntry.is_symlink` explícita antes de cualquier operación de resolución, previniendo errores en rutas con enlaces simbólicos rotos o permisos restringidos que causaban excepciones no atrapadas.
+- `2026-10-16T04:45:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T04:45:47` Corrida terminada. Total usado hoy: 112.

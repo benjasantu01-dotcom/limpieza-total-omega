@@ -131,7 +131,9 @@ def _get_file_size(path: Path) -> int:
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """Retorna metadatos solo si es un archivo estándar, excluyendo symlinks y reparse points."""
     try:
-        if entry is None or not entry.is_file(follow_symlinks=False) or entry.is_symlink():
+        if entry is None or entry.is_symlink():
+            return None
+        if not entry.is_file(follow_symlinks=False):
             return None
         if is_protected_path(Path(entry.path)) or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask):
             return None
@@ -249,6 +251,13 @@ class Scanner:
         if entry is None or not hasattr(entry, 'path') or not entry.path:
             return False
         
+        # Validación de enlaces antes de resolver para evitar errores en accesos
+        try:
+            if entry.is_symlink():
+                return False
+        except OSError:
+            return False
+        
         path_str: str = entry.path
         if path_str in self.safe_cache:
             return True
@@ -266,7 +275,7 @@ class Scanner:
             if _cached_is_protected(path_str) or not _is_valid_path_structure(path_str) or self._has_invalid_name(entry.name):
                 return False
                 
-            if entry.is_symlink() or self._is_reparse_point(entry):
+            if self._is_reparse_point(entry):
                 return False
                 
             self.safe_cache.add(path_str)
@@ -300,10 +309,13 @@ class Scanner:
             return
             
         try:
-            if entry.is_dir(follow_symlinks=False):
+            is_dir = entry.is_dir(follow_symlinks=False)
+            is_file = entry.is_file(follow_symlinks=False)
+            
+            if is_dir:
                 if self._is_safe_entry(entry):
                     self._handle_directory(entry, directory_stack, current_depth)
-            elif entry.is_file(follow_symlinks=False):
+            elif is_file:
                 if self._is_relevant_extension(entry.name) and self._is_safe_entry(entry):
                     self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError) as e:

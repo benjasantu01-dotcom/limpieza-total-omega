@@ -447,6 +447,9 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
                 raise PermissionError("Permisos insuficientes en directorio.")
         else:
             _check_io_error_context(path.mkdir, parents=True, exist_ok=True)
+            # Verificación post-creación contra condiciones de carrera
+            if not path.exists() or not path.is_dir():
+                raise OSError("Fallo al asegurar directorio de cuarentena: el destino no es un directorio válido.")
             
         _ensure_path_ownership(path)
         return path

@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
-- Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 50
+- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Rechazadas por tests: 28
+- Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-14 | 6 | 1 | 1 | 0 | 38 |
+| 2026-10-14 | 6 | 1 | 1 | 0 | 34 |
 | 2026-10-15 | 142 | 19 | 41 | 11 | 137 |
-| 2026-10-16 | 43 | 7 | 8 | 2 | 48 |
+| 2026-10-16 | 45 | 8 | 9 | 2 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
-- robustez ante casos límite: **42**
+- robustez ante casos límite: **44**
 - manejo de errores y validación de entradas: **37**
 - rendimiento: **37**
 - seguridad defensiva: **30**
@@ -35,18 +35,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **17**
 - `memory.py`: **17**
 - `assistant.py`: **16**
+- `quarantine.py`: **15**
 - `branding.py`: **14**
 - `settings.py`: **14**
-- `quarantine.py`: **14**
+- `scanner.py`: **14**
 - `browser.py`: **13**
 - `main.py`: **13**
-- `scanner.py`: **13**
 - `safety.py`: **11**
 - `organizer.py`: **8**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T04:45:47` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en `_is_safe_entry` y `process_entry` al agregar una validación de `os.DirEntry.is_symlink` explícita antes de cualquier operación de resolución, previniendo errores en rutas con enlaces simbólicos rotos o permisos restringidos que causaban excepciones no atrapadas.
+- `2026-10-16T04:43:54` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine.py` ante fallos transitorios durante la inicialización del directorio, añadiendo una verificación explícita de `Path.exists()` y `Path.is_dir()` post-creación para evitar condiciones de carrera (TOCTOU) donde otro proceso podría crear un archivo con el nombre del directorio de cuarentena justo después de nuestra validación previa.
 - `2026-10-16T04:34:38` **main.py** (robustez ante casos límite): Se introdujo una validación robusta de hilos en `on_closing` y una protección de estado en `_worker_thread_logic` para evitar que las tareas asíncronas intenten interactuar con widgets o colas de eventos después de que la ventana principal ha iniciado su proceso de destrucción, mitigando excepciones de `TclError` y condiciones de carrera al cerrar la app.
 - `2026-10-16T04:33:29` **healthscore.py** (robustez ante casos límite): Se ha robustecido el motor frente a casos límite en el `pipeline` mediante la adición de validaciones `try-except` integrales y un chequeo de tipos estricto para las funciones normalizadoras, previniendo que una sola métrica malformada contamine o rompa el cálculo del score global.
 - `2026-10-16T04:24:11` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de redundancia en `_collect_candidates` para verificar que la ruta actual no haya sido eliminada o bloqueada durante la iteración del `scandir`, mejorando la robustez ante la concurrencia externa que suele afectar a los recorridos de disco.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T03:53:00` **duplicates.py** (rendimiento): Optimicé el rendimiento del proceso de hashing evitando llamadas innecesarias a `is_safe_to_modify` dentro de los métodos de hash, dado que la validación ya ocurre en `_is_valid_candidate` durante la recolección, reduciendo el overhead de I/O en grandes volúmenes de archivos.
 - `2026-10-16T03:43:57` **diskreport.py** (rendimiento): Optimizé la función `_is_excluded_path` para reducir llamadas redundantes al sistema de archivos moviendo la verificación de `is_protected_path` al inicio, evitando que se ejecute la lógica costosa de `entry.stat` o validaciones de caracteres en rutas que ya sabemos que debemos omitir.
 - `2026-10-16T03:43:47` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo de archivos mediante la implementación de `os.scandir` de forma que aprovecha los atributos de archivo ya recuperados por el sistema operativo, reduciendo drásticamente las llamadas a `stat()` (que suelen ser costosas en E/S) al centralizar la lógica de tamaño en una única llamada durante la iteración.
-- `2026-10-16T03:42:34` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la iteración secuencial sobre los tokens de consulta por una búsqueda directa mediante `next()` sobre una expresión generadora, evitando el bucle `for` redundante y mejorando la eficiencia en la resolución de consultas.
-- `2026-10-16T03:34:33` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo docstrings técnicos en las funciones de validación compleja y normalizando el estilo de los comentarios, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
