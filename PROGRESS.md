@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
-- Rechazadas por tests: 28
+- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Rechazadas por tests: 29
 - Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-14 | 6 | 1 | 1 | 0 | 30 |
+| 2026-10-14 | 6 | 1 | 1 | 0 | 26 |
 | 2026-10-15 | 142 | 19 | 41 | 11 | 137 |
-| 2026-10-16 | 48 | 8 | 9 | 2 | 49 |
+| 2026-10-16 | 49 | 9 | 9 | 2 | 51 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,11 +26,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **37**
 - rendimiento: **37**
-- seguridad defensiva: **31**
+- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `duplicates.py`: **18**
 - `assistant.py`: **17**
 - `healthscore.py`: **17**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T05:04:16` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` implementando un chequeo estricto para evitar el seguimiento de enlaces simbólicos mediante `os.path.islink` y verificando explícitamente que la ruta real del archivo esté contenida bajo la raíz de escaneo, previniendo posibles ataques de *path traversal* o escape de directorio en entornos con enlaces simbólicos complejos.
 - `2026-10-16T04:55:19` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva de `assistant.py` mediante la implementación de `_is_safe_numeric_context` para prevenir que valores de entrada maliciosos o desbordados sean inyectados en el `SystemContext` antes de que se procesen, cerrando una brecha en la integridad de las métricas.
 - `2026-10-16T04:54:40` **startup.py** (robustez ante casos límite): Se reforzó la robustez en `parse_registry_csv` añadiendo un filtro explícito contra rutas vacías o inválidas tras el parseo del CSV, garantizando que el `StartupEntry` siempre reciba datos procesables y evitando la propagación de errores de sintaxis del registro hacia el resto de la aplicación.
 - `2026-10-16T04:53:46` **settings.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar condiciones de carrera (Race Conditions) y posibles errores de E/S al verificar la existencia y tipos de los archivos de configuración durante la carga inicial mediante `try-except` robusto y validaciones de tipo de archivo.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T04:03:30` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto convirtiendo la lista `items` en un diccionario (`item_map`) dentro de `purge_all`, evitando así una complejidad algorítmica O(N^2) al buscar coincidencias entre los archivos del sistema y los ítems del manifiesto durante el vaciado.
 - `2026-10-16T04:02:48` **organizer.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo sustituyendo la conversión repetitiva de `str(p)` a `Path` y el uso de `endswith()` por una comprobación directa mediante `set` (o su `frozenset` preexistente) y `suffix`, reduciendo la carga de CPU en el bucle principal de recorrido de archivos.
 - `2026-10-16T03:55:29` **memory.py** (rendimiento): Optimizé `top_memory_processes` reemplazando la instanciación de una lista grande dentro del loop por un uso más eficiente de `heapq.nlargest` sobre un generador, reduciendo el consumo de memoria durante la recolección de métricas.
-- `2026-10-16T03:53:30` **healthscore.py** (rendimiento): Optimicé el método `summarize` y el pipeline para evitar iteraciones redundantes y búsquedas en diccionario, pre-calculando el desglose en una estructura más eficiente y cacheable.

@@ -148,11 +148,18 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
 
 
-def _is_excluded_path(entry: os.DirEntry, root_str: str) -> bool:
+def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     """Determina si una entrada de sistema debe excluirse del análisis."""
     try:
-        # Primero verificamos seguridad básica que no requiere acceso a disco
-        if not entry.path.startswith(root_str) or is_protected_path(Path(entry.path)):
+        # Validación de seguridad: no seguir enlaces y verificar containment
+        if os.path.islink(entry.path):
+            return True
+            
+        entry_path = Path(entry.path).resolve()
+        if not str(entry_path).startswith(str(root_path)):
+            return True
+            
+        if is_protected_path(entry_path):
             return True
 
         name = entry.name
@@ -161,10 +168,11 @@ def _is_excluded_path(entry: os.DirEntry, root_str: str) -> bool:
         if any(char in name for char in ('<', '>', ':', '"', '|', '?', '*')):
             return True
         
-        # Validación de junctions y enlaces (requiere acceso a disco)
-        st = entry.stat(follow_symlinks=False)
-        if entry.is_symlink() or (os.name == 'nt' and bool(st.st_file_attributes & 0x400)):
-            return True
+        # Validación específica de atributos NTFS
+        if os.name == 'nt':
+            st = entry.stat(follow_symlinks=False)
+            if bool(st.st_file_attributes & 0x400):
+                return True
         
         return False
     except (OSError, PermissionError, AttributeError, TypeError, RuntimeError):
@@ -274,7 +282,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """
     root_path = _validate_root(directory)
     if root_path is None: return
-    root_str = str(root_path)
     
     visited_inodes: set[Inode] = set()
     stack: List[str] = [str(root_path)]
@@ -285,10 +292,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if skip_protected and _is_excluded_path(entry, root_str):
+                        if skip_protected and _is_excluded_path(entry, root_path):
                             continue
                         
-                        # Validación previa de estado para evitar llamadas fallidas recurrentes
                         if entry.is_dir(follow_symlinks=False):
                             try:
                                 st = entry.stat(follow_symlinks=False)

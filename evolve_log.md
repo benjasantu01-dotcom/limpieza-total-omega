@@ -1443,3 +1443,35 @@ FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_o
 - `2026-10-16T04:55:36` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
 - `2026-10-16T04:55:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T04:55:36` Corrida terminada. Total usado hoy: 116.
+- `2026-10-16T05:03:12` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-10-16T05:03:41` Tests FALLARON:
+```
+hes) if caches else 0
+               ^^^^^^^^^^^^^
+E   AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+
+app/browser.py:298: AttributeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/scanner.py:187: SyntaxWarning: invalid escape sequence '\s'
+    """Detecta binarios que usan nombres de procesos críticos del SO fuera de sus rutas legítimas (ej: c:\temp\svchost.exe)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_total_cache_bytes_sums_detected_caches - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - AttributeError: 'BrowserCache' object has no attribute 'bytes_found'
+2 failed, 297 passed, 7 warnings in 1.41s
+
+```
+- `2026-10-16T05:03:41` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_is_valid_cache_path` y `_resolve_browser_path` añadiendo validaciones estrictas mediante `is_safe_to_modify` y verificaciones de contención antes de cualquier operación, asegurando que ninguna ruta resuelta acceda a zonas protegidas o puntos de reparse, incluso ante errores de resolución de rutas.
+- `2026-10-16T05:04:16` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_excluded_path` implementando un chequeo estricto para evitar el seguimiento de enlaces simbólicos mediante `os.path.islink` y verificando explícitamente que la ruta real del archivo esté contenida bajo la raíz de escaneo, previniendo posibles ataques de *path traversal* o escape de directorio en entornos con enlaces simbólicos complejos.
+- `2026-10-16T05:04:39` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-10-16T05:04:54` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
+- `2026-10-16T05:04:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T05:04:54` Corrida terminada. Total usado hoy: 120.
