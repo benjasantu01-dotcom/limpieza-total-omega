@@ -136,7 +136,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
             return None
         if not entry.is_file(follow_symlinks=False):
             return None
-        if is_protected_path(Path(entry.path)) or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask):
+        if _cached_is_protected(entry.path) or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask):
             return None
         return entry.stat(follow_symlinks=False)
     except (OSError, PermissionError, AttributeError):
@@ -274,8 +274,12 @@ class Scanner:
                 return False
             if self._is_reparse_point(entry):
                 return False
+            
+            # 2. Validación de protección contra rutas del sistema
+            if _cached_is_protected(path_str):
+                return False
 
-            # 2. Validación de jerarquía mediante resolución absoluta segura
+            # 3. Validación de jerarquía mediante resolución absoluta segura
             p = Path(path_str)
             if not p.exists():
                 return False
@@ -284,8 +288,8 @@ class Scanner:
             if not str(real_path).lower().startswith(self.base_root_str):
                 return False
 
-            # 3. Validación de integridad de nombre y protección de sistema
-            if _cached_is_protected(path_str) or not _is_valid_path_structure(path_str) or self._has_invalid_name(entry.name):
+            # 4. Validación de integridad de nombre
+            if not _is_valid_path_structure(path_str) or self._has_invalid_name(entry.name):
                 return False
                 
             self.safe_cache.add(path_str)

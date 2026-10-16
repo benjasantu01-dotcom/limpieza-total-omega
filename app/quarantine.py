@@ -101,7 +101,6 @@ def _is_filesystem_read_only(path: Path) -> bool:
     """Intenta determinar si el directorio tiene permisos de escritura mediante un archivo temporal."""
     if not path.exists(): return True
     try:
-        # Intentamos abrir el directorio para escritura, si falla, está bloqueado/read-only
         test_file = path / f".test_{uuid.uuid4().hex}"
         test_file.touch()
         test_file.unlink()
@@ -154,16 +153,6 @@ def _is_file_exclusive(path: Path) -> bool:
 class QuarantineItem:
     """
     Datos estructurados de un archivo en cuarentena.
-    
-    Attributes:
-        item_id: Identificador único del registro.
-        original_path: Ubicación original antes del aislamiento.
-        stored_name: Nombre del archivo dentro del sandbox.
-        size_bytes: Tamaño en bytes.
-        reason: Motivo del aislamiento.
-        quarantined_at: Fecha y hora en formato ISO.
-        sha256: Hash de integridad.
-        file_inode: Identificador de inodo del archivo original.
     """
     item_id: str
     original_path: str
@@ -175,7 +164,6 @@ class QuarantineItem:
     file_inode: Inode = 0
 
     def __post_init__(self) -> None:
-        """Valida la integridad de los tipos tras la inicialización del dataclass."""
         try:
             self.size_bytes = int(self.size_bytes)
         except (ValueError, TypeError):
@@ -189,16 +177,13 @@ class QuarantineItem:
 
     @property
     def size_mb(self) -> float:
-        """Tamaño convertido a megabytes."""
         return round(self.size_bytes / (1024 * 1024), 2)
 
     def to_dict(self) -> Dict[str, Any]:
-        """Convierte la instancia a un diccionario serializable."""
         return asdict(self)
 
     @classmethod
     def from_dict(cls, data: Any) -> Optional[QuarantineItem]:
-        """Crea una instancia desde un diccionario, validando campos necesarios."""
         if not isinstance(data, dict):
             return None
         
@@ -225,7 +210,6 @@ class QuarantineItem:
             return None
 
     def _validate_integrity(self, stored_path: Path) -> bool:
-        """Comprueba que el archivo en sandbox no sea un enlace y coincida con el inodo/tamaño."""
         if not stored_path.exists(): return False
         try:
             _check_path_for_junctions(stored_path)
@@ -251,7 +235,6 @@ class QuarantineItem:
             return False
 
     def verify_integrity(self, stored_path: Path) -> bool:
-        """Verifica la integridad total del archivo mediante su hash SHA256."""
         if not self._validate_integrity(stored_path):
             return False
         try:
@@ -377,7 +360,9 @@ def _check_path_syntax_integrity(path: Path) -> None:
 
 def _sanitize_filename(filename: str) -> str:
     """Limpia caracteres peligrosos o no alfanuméricos de un nombre de archivo."""
-    return "".join(c for c in filename if c.isalnum() or c in "._-")
+    sanitized = "".join(c for c in filename if c.isalnum() or c in "._-")
+    # Asegurar que el nombre no empiece con un punto para evitar archivos ocultos
+    return sanitized.lstrip(".")
 
 def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
     """Genera un nombre de archivo seguro para el sandbox de cuarentena."""
@@ -385,18 +370,24 @@ def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
         raise ValueError("ID de ítem requerido para generar nombre seguro.")
     
     sanitized = _sanitize_filename(original_path.name)
-    if not sanitized or sanitized in (".", ".."):
+    if not sanitized:
         sanitized = "unknown_file"
+    
     parts = sanitized.split('.')
     name_base = parts[0] if parts[0] else "q_file"
     
+    # Prevenir que un nombre base de sistema sea el nombre resultante
     if name_base.upper() in WINDOWS_RESERVED_NAMES:
         name_base = f"q_{name_base}"
         
-    name_base = "".join(c for c in name_base if c.isprintable() and c not in '<>:"/\\|?*')
     extension = f".{parts[-1]}" if len(parts) > 1 else ""
-    
+    # Truncar nombre a 128 chars para seguridad de sistema
     candidate = f"{item_id}__{name_base[:64]}{extension}".replace(":", "_")[:128]
+    
+    # Validar final contra nombres reservados (e.g., "CON.txt")
+    if candidate.split('.')[0].upper() in WINDOWS_RESERVED_NAMES:
+        candidate = f"safe_{candidate}"
+        
     return candidate
 
 def _ensure_path_ownership(path: Path) -> None:
@@ -731,11 +722,6 @@ class IsolationManager:
     def validate_atomicity(source: Path, original_stat: os.stat_result, dest: Path) -> None:
         """
         Verifica que el archivo no haya cambiado (TOCTOU) durante el proceso.
-        
-        Args:
-            source: Ruta al archivo fuente.
-            original_stat: Estado estático capturado antes de iniciar.
-            dest: Ruta destino propuesta.
         """
         if not source.exists():
             raise FileNotFoundError("Archivo origen eliminado antes del aislamiento.")
