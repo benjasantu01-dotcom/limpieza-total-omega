@@ -500,6 +500,8 @@ def _ensure_safe_text(text: Any) -> bool:
 def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
     """Acceso seguro a atributos evitando recursión, inyecciones de clase y acceso a métodos."""
     if depth > _MAX_NESTING_DEPTH or not _is_safe_key(key): return None
+    # Solo permitir acceso a tipos que son contenedores válidos (dicts u objetos)
+    if not isinstance(source, dict) and not hasattr(source, "__dict__"): return None
     try:
         if isinstance(source, dict):
             return source.get(key)

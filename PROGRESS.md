@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Mejoras aceptadas: **190** (37.7% de aceptación)
 - Rechazadas por tests: 29
-- Rechazadas por guardia de seguridad: 49
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 222
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 114 | 15 | 31 | 9 | 131 |
-| 2026-10-16 | 75 | 14 | 18 | 6 | 91 |
+| 2026-10-15 | 112 | 15 | 30 | 9 | 130 |
+| 2026-10-16 | 78 | 14 | 18 | 6 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
+- robustez ante casos límite: **40**
 - manejo de errores y validación de entradas: **38**
-- robustez ante casos límite: **37**
 - rendimiento: **35**
-- seguridad defensiva: **34**
+- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **18**
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `duplicates.py`: **18**
-- `quarantine.py`: **17**
+- `memory.py`: **17**
 - `healthscore.py`: **16**
+- `quarantine.py`: **16**
+- `assistant.py`: **14**
 - `main.py`: **14**
 - `scanner.py`: **14**
 - `settings.py`: **13**
-- `assistant.py`: **13**
 - `safety.py`: **12**
 - `browser.py`: **12**
-- `branding.py`: **10**
+- `branding.py`: **11**
 - `organizer.py`: **9**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T08:50:18` **diskreport.py** (robustez ante casos límite): Se mejoró la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o inaccesibles durante la iteración, envolviendo la llamada al generador en un bloque `try-except` para evitar que una falla puntual en la lectura de atributos detenga el escaneo completo de un disco.
+- `2026-10-16T08:48:48` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` y las funciones de renderizado gráfico mediante el manejo explícito de valores de entrada extremos y rutas inexistentes, asegurando que `ensure_safe_to_modify` se utilice correctamente y evitando fallos ante escalados o dimensiones inválidas que podrían corromper la interfaz.
+- `2026-10-16T08:48:09` **assistant.py** (robustez ante casos límite): Mejoré `_get_source_value` para añadir una validación de tipo estricta sobre el `source`, evitando que el asistente intente acceder a atributos de objetos inyectados inesperados (como listas o tipos básicos) que podrían causar excepciones al ser tratados como contenedores de métricas.
 - `2026-10-16T08:30:05` **quarantine.py** (rendimiento): Optimicé `list_items` y `load_manifest` eliminando la recreación innecesaria de diccionarios y listas dentro de bucles, sustituyendo el acceso repetitivo al `manifest.json` por una lógica de pre-filtrado basada en `set` para búsquedas $O(1)$, lo cual mejora significativamente el rendimiento al manejar grandes cantidades de archivos en cuarentena.
 - `2026-10-16T08:21:01` **main.py** (rendimiento): Optimicé el redibujado de la interfaz principal implementando un `debounce` más eficiente para el evento de redimensionado, evitando que el cálculo de `branding.draw_gradient_bar` se dispare múltiples veces en milisegundos y bloquee el hilo principal.
 - `2026-10-16T08:19:01` **healthscore.py** (rendimiento): Se optimizó el acceso a las reglas de diagnóstico dentro del pipeline mediante el uso de una caché de diccionario (`_RULES_CACHE`) para evitar la recreación o reevaluación innecesaria de objetos en cada corrida, mejorando la eficiencia al procesar métricas recurrentes.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T07:47:56` **memory.py** (legibilidad y documentación): Se introdujeron type hints en funciones críticas, se documentaron parámetros complejos y se extrajo la lógica de ordenamiento de procesos pesados a una función dedicada para mejorar la legibilidad y mantenibilidad del módulo.
 - `2026-10-16T07:47:29` **main.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad de `main.py` mediante la refactorización de `_build_single_health_bar` y `_apply_ui_update_safely`, añadiendo type hints más precisos, extrayendo lógica de cálculo a variables descriptivas y corrigiendo inconsistencias en la nomenclatura de los componentes de UI para clarificar la intención del código.
 - `2026-10-16T07:37:43` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos en los métodos de `SystemMetrics` y la clarificación del flujo de datos en `compute_score`, asegurando que cada paso de la validación y el cálculo esté claramente documentado.
-- `2026-10-16T07:37:29` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en las funciones de procesamiento, la documentación explícita de las excepciones en los métodos de filtrado y la clarificación de las responsabilidades de los métodos de hashing mediante docstrings mejorados.
-- `2026-10-16T07:37:01` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` incluyendo docstrings detallados que explican el propósito, los parámetros y el comportamiento ante errores de las funciones públicas, garantizando que el código sea mantenible y fácil de auditar según los estándares del proyecto.
-- `2026-10-16T07:36:34` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones clave y enriqueciendo los docstrings para explicar explícitamente el flujo de validación de seguridad y los casos límite (como los puntos de reparse), facilitando así la auditoría del código conforme al enfoque de legibilidad.

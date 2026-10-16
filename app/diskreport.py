@@ -369,14 +369,17 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     stats = GlobalStats()
     min_heap_for_top_files: List[FileRecord] = [] 
     
-    for path, size_bytes in walk_files(directory, skip_protected):
-        stats.register_file(size_bytes, path.suffix)
-        
-        if limit > 0:
-            if len(min_heap_for_top_files) < limit: 
-                heapq.heappush(min_heap_for_top_files, (size_bytes, path))
-            elif size_bytes > min_heap_for_top_files[0][0]: 
-                heapq.heapreplace(min_heap_for_top_files, (size_bytes, path))
+    try:
+        for path, size_bytes in walk_files(directory, skip_protected):
+            stats.register_file(size_bytes, path.suffix)
+            
+            if limit > 0:
+                if len(min_heap_for_top_files) < limit: 
+                    heapq.heappush(min_heap_for_top_files, (size_bytes, path))
+                elif size_bytes > min_heap_for_top_files[0][0]: 
+                    heapq.heapreplace(min_heap_for_top_files, (size_bytes, path))
+    except (OSError, PermissionError, Exception):
+        pass
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, min_heap_for_top_files)
 

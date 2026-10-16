@@ -321,14 +321,16 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         return None
     try:
         target = Path(destination).resolve()
-        if is_protected_path(target) or not is_safe_to_modify(target):
+        # Verificación no destructiva antes de intentar la escritura
+        if not is_safe_to_modify(target) or is_protected_path(target):
             return None
         
+        # Validar permisos y realizar operación segura
         ensure_safe_to_modify(target)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(size), encoding="utf-8")
         return target
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError, IOError, ValueError):
         return None
 
 def logo_ascii() -> str: return "\n   ___  __  __ ___ ___   _\n  / _ \\|  \\/  | __/ __| /_\\\n | (_) | |\\/| | _|| (_ // _ \\\n  \\___/|_|  |_|___\\___/_/ \\_\\\n      Limpieza Total Omega\n"
