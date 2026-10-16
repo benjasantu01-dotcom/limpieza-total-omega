@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **187** (37.1% de aceptación)
+- Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 26
 - Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 227
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 73 | 7 | 19 | 7 | 74 |
-| 2026-10-16 | 114 | 19 | 26 | 12 | 153 |
+| 2026-10-15 | 73 | 7 | 19 | 7 | 70 |
+| 2026-10-16 | 115 | 19 | 26 | 12 | 156 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - robustez ante casos límite: **39**
 - manejo de errores y validación de entradas: **36**
 - rendimiento: **34**
-- seguridad defensiva: **33**
+- seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
 
@@ -39,13 +39,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **13**
 - `main.py`: **12**
 - `organizer.py`: **12**
+- `branding.py`: **12**
 - `safety.py`: **12**
-- `branding.py`: **11**
 - `browser.py`: **10**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T13:54:47` **branding.py** (seguridad defensiva): Mejoré la seguridad de `save_logo_svg` utilizando `filter_safe_paths` para validar la integridad de la ruta y evitando el uso innecesario de `ensure_safe_to_modify` antes de una comprobación explícita, siguiendo estrictamente el enfoque defensivo.
 - `2026-10-16T13:23:07` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_is_excluded_path` para manejar archivos inaccesibles debido a errores de sistema (como archivos de sistema en uso o bloqueados) mediante un manejo de excepciones más granular y preventivo.
 - `2026-10-16T13:15:40` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite mediante la validación estricta de la longitud de rutas `MAX_PATH_LEN` durante la resolución (`resolve`) y se protegió la navegación ante posibles excepciones en rutas con caracteres especiales o permisos restringidos en `_resolve_browser_path`.
 - `2026-10-16T13:14:48` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez en `draw_ring` y `draw_logo` mediante la validación estricta de las entradas numéricas y la eliminación de posibles condiciones de carrera o desbordamiento al procesar parámetros geométricos, asegurando que valores `None` o fuera de rango no propaguen errores a la interfaz.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T12:23:39` **safety.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de validación interna, clarificando el propósito y el comportamiento esperado ante errores, facilitando así el mantenimiento futuro sin alterar la lógica.
 - `2026-10-16T12:22:17` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos para documentar las asunciones críticas de seguridad y el manejo de excepciones en `_atomic_isolate_file`, mejorando la legibilidad técnica del proceso de aislamiento.
 - `2026-10-16T12:14:20` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `organizer.py` mediante la refactorización de `_is_safe_for_disk_op`, extrayendo la validación de integridad técnica y lógica de seguridad en sub-funciones con propósitos definidos (`_validate_file_identity` y `_can_write_to_destination`), facilitando la auditoría del código bajo las estrictas reglas de seguridad del proyecto.
-- `2026-10-16T12:13:07` **main.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad de `main.py` mediante la refactorización de los constructores de pestañas a través de una fábrica de métodos, permitiendo una estructura más clara y facilitando la navegación por el código sin alterar la lógica de carga perezosa.

@@ -316,12 +316,12 @@ def logo_svg(size: int = 128) -> str:
     return _SVG_TEMPLATE.format(s=s, stops=_SVG_GRADIENT_STOPS, glow=C_GLOW, bg=C_SURFACE, font=UI_CONFIG.font_family)
 
 def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optional[Path]:
-    """Valida la seguridad de escritura antes de exportar el logo a una ruta del sistema."""
+    """Valida la seguridad de escritura mediante filtro antes de exportar el logo."""
     if not destination:
         return None
     try:
         target = Path(destination).resolve()
-        if not is_safe_to_modify(target) or is_protected_path(target):
+        if not filter_safe_paths([target]):
             return None
         
         ensure_safe_to_modify(target)
