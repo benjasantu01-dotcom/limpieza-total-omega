@@ -195,7 +195,10 @@ def _resolve_and_verify_root(directory_path: PathLike) -> Optional[Path]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Recolección BFS de archivos candidatos, evitando recursión infinita y ciclos."""
+    """
+    Recolección BFS de archivos. Mantiene un set de inodos (dev, ino) para evitar
+    contar el mismo archivo físico bajo diferentes rutas (hardlinks).
+    """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     queue: deque[Tuple[Path, int]] = deque()
     visited_dirs: set[Path] = set()

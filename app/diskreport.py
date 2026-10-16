@@ -270,7 +270,10 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """Generador que recorre recursivamente el sistema de archivos, ignorando rutas protegidas."""
+    """
+    Generador recursivo de archivos. Utiliza un set de inodos visitados para evitar
+    ciclos de reparse points y saltea rutas protegidas para garantizar seguridad.
+    """
     root_path = _validate_root(directory)
     if root_path is None: return
     root_str = str(root_path)
@@ -308,6 +311,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
+    """Encuentra los N archivos más grandes en el directorio base especificado."""
     root = _validate_root(directory)
     if root is None: return []
     data = _collect_summary_data(root, skip_protected, limit=_validate_limit(limit))
@@ -315,6 +319,7 @@ def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, ski
 
 
 def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
+    """Calcula el uso acumulado de disco, agrupado por la extensión de archivo."""
     root = _validate_root(directory)
     if root is None: return []
     data = _collect_summary_data(root, skip_protected, limit=0)
@@ -323,6 +328,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
+    """Identifica las subcarpetas de primer nivel que ocupan más espacio."""
     root = _validate_root(directory)
     if root is None: return []
     stats: Dict[str, FolderMetrics] = defaultdict(FolderMetrics)
@@ -344,6 +350,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
 
 
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> SizeReport:
+    """Calcula el tamaño total y el conteo de archivos en la ruta dada."""
     root = _validate_root(directory)
     if root is None: return (0, 0)
     data = _collect_summary_data(root, skip_protected, limit=0)
@@ -352,7 +359,9 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Ejecuta el escaneo del directorio y agrupa estadísticas de uso mediante un min-heap.
+    Realiza un escaneo completo de archivos y consolida estadísticas. Utiliza
+    un min-heap de tamaño `limit` para obtener los archivos más pesados con
+    complejidad O(n log k), optimizando el uso de memoria para grandes estructuras.
     """
     stats = GlobalStats()
     min_heap_for_top_files: List[FileRecord] = [] 
