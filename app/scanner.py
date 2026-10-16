@@ -251,31 +251,28 @@ class Scanner:
         if entry is None or not hasattr(entry, 'path') or not entry.path:
             return False
         
-        # Validación de enlaces antes de resolver para evitar errores en accesos
-        try:
-            if entry.is_symlink():
-                return False
-        except OSError:
-            return False
-        
         path_str: str = entry.path
         if path_str in self.safe_cache:
             return True
         
         try:
+            # 1. Validación de enlaces y reparse points
+            if entry.is_symlink():
+                return False
+            if self._is_reparse_point(entry):
+                return False
+
+            # 2. Validación de jerarquía mediante resolución absoluta segura
             p = Path(path_str)
-            # Validación: evitar acceso a rutas fuera del árbol o enlaces de escape
+            if not p.exists():
+                return False
+            
             real_path: Path = p.resolve()
             if not str(real_path).lower().startswith(self.base_root_str):
                 return False
 
-            if not p.exists():
-                return False
-            
+            # 3. Validación de integridad de nombre y protección de sistema
             if _cached_is_protected(path_str) or not _is_valid_path_structure(path_str) or self._has_invalid_name(entry.name):
-                return False
-                
-            if self._is_reparse_point(entry):
                 return False
                 
             self.safe_cache.add(path_str)
@@ -309,14 +306,13 @@ class Scanner:
             return
             
         try:
-            is_dir = entry.is_dir(follow_symlinks=False)
-            is_file = entry.is_file(follow_symlinks=False)
-            
-            if is_dir:
-                if self._is_safe_entry(entry):
-                    self._handle_directory(entry, directory_stack, current_depth)
-            elif is_file:
-                if self._is_relevant_extension(entry.name) and self._is_safe_entry(entry):
+            if not self._is_safe_entry(entry):
+                return
+
+            if entry.is_dir(follow_symlinks=False):
+                self._handle_directory(entry, directory_stack, current_depth)
+            elif entry.is_file(follow_symlinks=False):
+                if self._is_relevant_extension(entry.name):
                     self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError) as e:
             logger.debug(f"Error de acceso en entrada {entry.path}: {e}")

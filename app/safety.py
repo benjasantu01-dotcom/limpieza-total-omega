@@ -732,21 +732,30 @@ def is_protected_path(path: PathLike) -> bool:
 
 @lru_cache(maxsize=4096)
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
-    """Verifica si una ruta es subdirectorio de otra, evitando escapes."""
+    """Verifica si una ruta es subdirectorio de otra, evitando escapes mediante reparse points."""
     if child is None or parent is None: return False
     try:
         c_path = normalize(child)
         p_path = normalize(parent)
         if is_drive_root(c_path) or is_protected_path(str(c_path)): return False
         
-        c_parts = c_path.parts
-        anchor = Path(c_path.anchor)
-        for i in range(len(c_parts)):
-             sub = anchor.joinpath(*c_parts[:i+1])
-             if _is_system_directory_junction(str(sub)):
-                 return False
+        def _get_final_path(p: Path) -> Path:
+            if os.name != 'nt': return p.resolve()
+            kernel32 = ctypes.windll.kernel32
+            handle = kernel32.CreateFileW(_to_long_path(str(p)), 0, 0, None, 3, 0x02000000, None)
+            if handle == -1: return p.resolve()
+            try:
+                buf = ctypes.create_unicode_buffer(1024)
+                if kernel32.GetFinalPathNameByHandleW(handle, buf, 1024, 0) > 0:
+                    return Path(buf.value)
+            finally:
+                kernel32.CloseHandle(handle)
+            return p.resolve()
 
-        return c_path.is_relative_to(p_path) if allow_equal else (c_path.is_relative_to(p_path) and c_path != p_path)
+        final_c = _get_final_path(c_path)
+        final_p = _get_final_path(p_path)
+        
+        return final_c.is_relative_to(final_p) if allow_equal else (final_c.is_relative_to(final_p) and final_c != final_p)
     except (UnsafePathError, TypeError, OSError, RuntimeError, ValueError): return False
 
 @lru_cache(maxsize=2048)
