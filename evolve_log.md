@@ -572,3 +572,12 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-16T07:18:39` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez del módulo `scanner.py` mediante la validación proactiva de tipos y valores nulos en los parámetros de entrada de las heurísticas, evitando errores de ejecución (`AttributeError` o `TypeError`) al procesar rutas malformadas.
 - `2026-10-16T07:18:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T07:18:39` Corrida terminada. Total usado hoy: 172.
+- `2026-10-16T07:25:54` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-10-16T07:26:26` ➖ Sin cambios en settings.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `_read_and_parse_json` al capturar el error `json.JSONDecodeError` y asegurar que cualquier entrada corrupta o malformada resulte en un `None` limpio, permitiendo que la app mantenga su comportamiento de revertir a valores de fábrica en lugar de propagar excepciones hacia el usuario.
+- `2026-10-16T07:26:53` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-16T07:26:54` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T07:26:59` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-16T07:27:43` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: AreaExplanation
+- `2026-10-16T07:28:23` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-10-16T07:28:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T07:28:23` Corrida terminada. Total usado hoy: 176.
