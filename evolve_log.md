@@ -479,3 +479,50 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-16T06:49:55` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `SystemContext.ingest` y `_apply_field` capturando posibles desbordamientos durante la conversión de tipos y garantizando que los datos ingeridos sean siempre de los tipos esperados, evitando errores silenciosos en la propagación de métricas.
 - `2026-10-16T06:49:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T06:49:55` Corrida terminada. Total usado hoy: 160.
+- `2026-10-16T06:55:17` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-10-16T06:55:51` Tests FALLARON:
+```
+   
+E         Left contains one more item: 'arc'
+E         
+E         Full diff:
+E         - []
+E         + [
+E         +     'arc',
+E         + ]
+
+evolve/tests/test_modules.py:258: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/scanner.py:187: SyntaxWarning: invalid escape sequence '\s'
+    """Detecta binarios que usan nombres de procesos críticos del SO fuera de sus rutas legítimas (ej: c:\temp\svchost.exe)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missing_canvas - AssertionError: un porcentaje inválido no debe dibujar nada
+assert ['arc'] == []
+  
+  Left contains one more item: 'arc'
+  
+  Full diff:
+  - []
+  + [
+  +     'arc',
+  + ]
+1 failed, 298 passed, 7 warnings in 1.24s
+
+```
+- `2026-10-16T06:55:51` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `save_logo_svg` y `draw_ring` validando explícitamente las entradas críticas antes de operar, reemplazando el manejo genérico de excepciones por chequeos defensivos para evitar comportamientos inesperados ante valores nulos o fuera de rango.
+- `2026-10-16T06:56:25` ➖ Sin cambios en browser.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré el manejo de errores en `detect_profiles` y `_resolve_browser_path` para evitar que fallos aislados en una ruta detengan el escaneo completo, sustituyendo validaciones rígidas que lanzaban excepciones `OSError` o `RuntimeError` por flujos de control seguros que retornan valores por defecto (Path vacío o lista vacía).
+- `2026-10-16T06:56:50` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas y validando estados intermedios para evitar que errores aislados en el sistema de archivos (como bloqueos de lectura o archivos bloqueados por el sistema) detengan el análisis completo o retornen resultados engañosos.
+- `2026-10-16T06:56:52` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T06:56:56` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-16T06:57:13` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_locked` para manejar de forma explícita errores de acceso sin depender de atributos dinámicos que podrían fallar, garantizando una validación más segura antes de intentar procesar archivos en el pipeline de hashing.
+- `2026-10-16T06:57:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T06:57:13` Corrida terminada. Total usado hoy: 164.

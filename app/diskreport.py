@@ -151,7 +151,6 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     """Determina si una entrada de sistema debe excluirse del análisis."""
     try:
-        # Validación de seguridad: no seguir enlaces y verificar containment
         if os.path.islink(entry.path):
             return True
             
@@ -168,7 +167,6 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         if any(char in name for char in ('<', '>', ':', '"', '|', '?', '*')):
             return True
         
-        # Validación específica de atributos NTFS
         if os.name == 'nt':
             st = entry.stat(follow_symlinks=False)
             if bool(st.st_file_attributes & 0x400):
@@ -187,7 +185,7 @@ def _get_local_windows_drives() -> List[str]:
             drive = f"{letter}:\\"
             if os.path.exists(drive) and not is_protected_path(Path(drive)):
                 drives.append(drive)
-    except Exception:
+    except (OSError, PermissionError):
         pass
     return drives
 
@@ -392,8 +390,8 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     
     try:
         data = _collect_summary_data(root, skip_protected, limit=20)
-    except Exception:
-        return ["Error: Falló el escaneo del directorio raíz."]
+    except (OSError, PermissionError, Exception):
+        return ["Error: Falló el escaneo del directorio raíz por falta de permisos o error de sistema."]
         
     if data.total_files == 0: 
         return ["Aviso: No se encontraron archivos accesibles en la ruta seleccionada."]

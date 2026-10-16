@@ -104,13 +104,18 @@ def _is_file_locked(path: Path) -> bool:
     if not is_safe_to_modify(path):
         return True
     try:
-        if not path.exists() or not os.access(path, os.R_OK):
+        if not path.is_file() or not os.access(path, os.R_OK):
             return True
         with open(path, "rb") as f:
+            f.read(0)
             return False
-    except (OSError, IOError) as e:
-        if hasattr(e, 'winerror') and e.winerror in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED):
-            return True
+    except OSError as e:
+        # Verificación específica de errores de sistema operativo Windows
+        if hasattr(e, 'winerror'):
+            if e.winerror in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED):
+                return True
+        return True
+    except (IOError, PermissionError):
         return True
 
 
@@ -218,7 +223,6 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Verificación extra de robustez ante cambios en el FS durante iteración
                         if not entry.path: continue
                         p_entry = Path(entry.path)
                         
