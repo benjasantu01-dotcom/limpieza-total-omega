@@ -856,3 +856,10 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-10-15T23:37:21` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-15T23:47:35` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-15T23:57:49` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-10-16T00:08:01` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-10-16T00:09:08` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la carga de configuración y el ciclo de vida de la aplicación, implementando una validación estricta y segura para `carpeta_excluida` que previene el uso de rutas inexistentes o mal formadas, garantizando que el estado interno se mantenga coherente incluso ante archivos de configuración corruptos o manipulados.
+- `2026-10-16T00:09:38` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-16T00:10:07` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-16T00:10:33` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha robustecido el proceso de purga (`purge_all`) para manejar eficazmente archivos huérfanos que no constan en el manifiesto, evitando que queden bloqueados o causen errores de sincronización, y mejorando la consistencia del directorio tras la operación mediante `fsync` a nivel de directorio.
+- `2026-10-16T00:10:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T00:10:33` Corrida terminada. Total usado hoy: 4.

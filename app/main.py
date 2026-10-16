@@ -121,12 +121,16 @@ def get_cached_settings() -> Dict[str, Any]:
             # Validar integridad: si la ruta no existe o es insegura, limpiar la variable
             for key in ["carpeta_excluida"]:
                 if key in raw and raw[key]:
-                    p = Path(raw[key])
-                    # resolve() en rutas posiblemente inexistentes requiere strict=False
-                    if not p.exists() or not safety.is_safe_to_modify(p.resolve(strict=False)):
+                    try:
+                        p = Path(raw[key])
+                        # resolve() en rutas posiblemente inexistentes requiere strict=False
+                        resolved = p.resolve(strict=False)
+                        if not resolved.exists() or not safety.is_safe_to_modify(resolved):
+                            raw[key] = ""
+                    except Exception:
                         raw[key] = ""
             return raw
-    except (IOError, ValueError) as e:
+    except (IOError, ValueError, Exception) as e:
         logging.error("Error al cargar settings: %s", e)
     return settings_mod.reset()
 

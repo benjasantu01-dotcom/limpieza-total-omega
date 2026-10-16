@@ -1034,29 +1034,37 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem) -> bool:
 
 
 def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
-    """Limpia todo el contenido de la cuarentena."""
+    """Limpia todo el contenido de la cuarentena, incluyendo archivos huérfanos."""
     try:
         quarantine_root = quarantine_dir(base)
         if _is_filesystem_read_only(quarantine_root):
             return 0
             
         items = load_manifest(base)
-        if not items:
-            return 0
-        
         item_map = {i.stored_name: i for i in items}
         purged_ids: Set[str] = set()
         
         for f in quarantine_root.iterdir():
-            if f.name == MANIFEST_NAME or f.name not in item_map:
+            if f.name == MANIFEST_NAME:
                 continue
             
-            if _is_item_purgable(f, item_map[f.name]):
-                purged_ids.add(item_map[f.name].item_id)
+            # Si el archivo está en el manifiesto, lo verificamos
+            if f.name in item_map:
+                if _is_item_purgable(f, item_map[f.name]):
+                    purged_ids.add(item_map[f.name].item_id)
+            else:
+                # Archivo huérfano: si está dentro del sandbox y es seguro, lo eliminamos
+                if _safe_unlink(f):
+                    continue
         
         if purged_ids:
             new_items = [i for i in items if i.item_id not in purged_ids]
             save_manifest(new_items, base)
+        
+        # Sincronización final del directorio
+        dir_fd = os.open(str(quarantine_root), os.O_RDONLY)
+        try: os.fsync(dir_fd)
+        finally: os.close(dir_fd)
             
         return len(purged_ids)
     except (OSError, PermissionError, UnsafePathError):
