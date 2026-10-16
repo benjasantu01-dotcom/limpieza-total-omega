@@ -215,7 +215,12 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
     if not ctx.sandbox_base_norm or depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN: 
         return ScanResult(0, True)
     
-    if not _is_within_sandbox(Path(root_path), Path(ctx.sandbox_base_norm)):
+    # Validar realpath para prevenir escapes mediante symlinks/junctions
+    try:
+        real_root = Path(root_path).resolve()
+        if not _is_within_sandbox(real_root, Path(ctx.sandbox_base_norm).resolve()):
+            return ScanResult(0, False)
+    except (OSError, RuntimeError):
         return ScanResult(0, False)
 
     try:

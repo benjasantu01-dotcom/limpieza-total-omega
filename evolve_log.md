@@ -870,3 +870,39 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-10-16T00:20:12` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante casos límite implementando un chequeo preventivo de `OSError` y `PermissionError` en el cálculo de `statvfs` dentro de `perform_atomic_write`, evitando que fallos en sistemas de archivos restringidos o de solo lectura bloqueen el proceso de escritura de ajustes.
 - `2026-10-16T00:20:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T00:20:12` Corrida terminada. Total usado hoy: 8.
+- `2026-10-16T00:28:18` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-10-16T00:28:49` Tests FALLARON:
+```
+sertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/scanner.py:185: SyntaxWarning: invalid escape sequence '\s'
+    """Detecta binarios que usan nombres de procesos críticos del SO fuera de sus rutas legítimas (ej: c:\temp\svchost.exe)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed, 7 warnings in 1.41s
+
+```
+- `2026-10-16T00:28:49` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry._extract_quoted_path` y `_resolve_and_cache_path` añadiendo validaciones explícitas contra rutas vacías, mal formadas o relativas que antes podían causar errores inesperados o intentos fallidos de resolución en disco, aumentando la resiliencia ante datos de entrada corruptos o truncados del registro.
+- `2026-10-16T00:29:32` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva de `assistant.py` reforzando `_ensure_safe_text` y `_is_safe_path_input` para bloquear explícitamente caracteres de control y secuencias sospechosas de forma más agresiva, mitigando riesgos de inyección en las respuestas del asistente.
+- `2026-10-16T00:30:06` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad de la función `save_logo_svg` consolidando el chequeo de seguridad en una operación atómica de validación antes de realizar cualquier cambio en el sistema de archivos, asegurando que no se creen carpetas ni se escriban archivos si la ruta destino no cumple con las políticas de `safety.py`.
+- `2026-10-16T00:30:19` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante la implementación de una validación estricta de la ruta base, asegurando que `realpath` se utilice para la comparación de sandbox, lo que previene ataques de bypass mediante nombres cortos (8.3) o reparse points que apunten fuera del directorio permitido.
+- `2026-10-16T00:30:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T00:30:19` Corrida terminada. Total usado hoy: 12.
