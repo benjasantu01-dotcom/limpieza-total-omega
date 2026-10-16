@@ -355,7 +355,7 @@ def validate(raw_values: Any) -> AppSettings:
                 validated_val = validators[key_enum].func(key_enum, raw_val)
                 if validated_val is not None: 
                     config[key_enum.value] = validated_val
-            except Exception:
+            except (ValueError, TypeError, AttributeError, KeyError):
                 continue
     return config 
 

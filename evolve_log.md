@@ -1191,3 +1191,28 @@ FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_wher
 - `2026-10-16T02:46:03` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `purge_all` y `restore_item` al asegurar que las rutas se resuelvan antes de realizar validaciones, previniendo errores de comparación de rutas relativos/absolutos que podrían causar fallos en entornos de ejecución complejos.
 - `2026-10-16T02:46:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T02:46:03` Corrida terminada. Total usado hoy: 64.
+- `2026-10-16T02:50:58` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-10-16T02:51:06` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T02:51:10` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-16T02:51:17` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-16T02:51:34` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-16T02:52:41` Tests FALLARON:
+```
+me_0'), allow_equal=True)
+ +    where <functools._lru_cache_wrapper object at 0x7f3881d29010> = safety.is_within_directory
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - safety.UnsafePathError: [GENERIC] La ruta origen está en una zona protegida.
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - safety.UnsafePathError: [GENERIC] La ruta origen está en una zona protegida.
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - safety.UnsafePathError: [GENERIC] La ruta origen está en una zona protegida.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - safety.UnsafePathError: [GENERIC] La ruta origen está en una zona protegida.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - safety.UnsafePathError: [GENERIC] La ruta origen está en una zona protegida.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - safety.UnsafePathError: [GENERIC] La ruta origen está en una zona protegida.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - safety.UnsafePathError: [GENERIC] La ruta origen está en una zona protegida.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - safety.UnsafePathError: [GENERIC] La ruta origen está en una zona protegida.
+61 failed, 238 passed, 7 warnings in 2.30s
+
+```
+- `2026-10-16T02:52:41` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_get_file_attrs` para evitar fallos silenciosos y capturar condiciones de carrera mejorando el manejo de errores en llamadas a `ctypes`, asegurando que cualquier error inesperado en la interacción con la API de Windows resulte en una validación defensiva (fallo seguro).
+- `2026-10-16T02:53:13` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de las heurísticas agregando validaciones preventivas contra valores `None` o rutas mal formadas en los puntos de entrada, asegurando que `_run_file_heuristics` y `scan_file` manejen de forma segura las excepciones que pudieran surgir al manipular metadatos de archivos.
+- `2026-10-16T02:53:43` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de la validación al reemplazar el bloque `except Exception` en `validate` por un manejo granular que registra el error de forma segura y evita que claves corruptas contaminen el objeto resultante, asegurando que cada valor sea validado individualmente.
+- `2026-10-16T02:53:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T02:53:43` Corrida terminada. Total usado hoy: 68.

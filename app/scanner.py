@@ -159,7 +159,7 @@ def _is_target_extension(name: str) -> bool:
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta archivos con doble extensión (ej: archivo.pdf.exe) usada para engañar al usuario."""
-    if not path or not path.name: return None
+    if path is None or not path.name: return None
     try:
         if DOUBLE_EXTENSION_RE.search(path.name):
             return Suspicion(path, "Doble extensión detectada como técnica de enmascaramiento", "warning")
@@ -169,7 +169,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Identifica ejecutables nuevos en carpetas volátiles (Downloads, Temp) comunes para ataques de descarga involuntaria."""
-    if not path or not path.parent: return None
+    if path is None or path.parent is None: return None
     try:
         if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
             return None
@@ -183,7 +183,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta binarios que usan nombres de procesos críticos del SO fuera de sus rutas legítimas (ej: c:\temp\svchost.exe)."""
-    if not path or not path.name: return None
+    if path is None or not path.name: return None
     try:
         if path.name.lower() in SYSTEM_LOOKALIKES:
             if SYSTEM32_LOWER not in str(path).lower():
@@ -194,7 +194,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta archivos ejecutables de tamaño 0, a menudo relacionados con marcadores de posición maliciosos."""
-    if not path: return None
+    if path is None: return None
     try:
         if _get_file_size(path) == 0:
             return Suspicion(path, "Ejecutable vacío detectado", "warning")
@@ -308,6 +308,7 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta toda la suite de heurísticas sobre un archivo validado."""
+        if path is None: return
         path_str = str(path)
         if path_str not in self.path_stat_cache:
             if not _is_readable(path) or _is_locked_by_os(path):
@@ -328,7 +329,7 @@ class Scanner:
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escaneo heurístico individual para un archivo específico."""
-    if not isinstance(path, Path) or not path.exists() or _cached_is_protected(str(path)): 
+    if path is None or not isinstance(path, Path) or not path.exists() or _cached_is_protected(str(path)): 
         return []
     if not _is_readable(path) or _is_locked_by_os(path): 
         return []
