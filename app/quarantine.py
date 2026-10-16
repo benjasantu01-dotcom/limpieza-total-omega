@@ -305,7 +305,7 @@ def _is_file_in_use_by_system(path: Path) -> bool:
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0) -> bool:
     """
     Eliminación segura: valida permisos, hash, inodo y ausencia de bloqueos 
-    antes de invocar unlink del sistema.
+    antes de invocar unlink del sistema con protección contra enlaces simbólicos.
     """
     if is_protected_path(path):
         return False
@@ -314,17 +314,34 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
     if ":" in path.name:
         return False
         
-    if not path.exists() or not path.is_file() or path.is_symlink():
-        return False
-    
     try:
-        st = path.stat()
-        if st.st_nlink > 1 or (expected_inode != 0 and st.st_ino != expected_inode):
-            return False
-        if hasattr(os, 'getuid') and st.st_uid != os.getuid():
-            return False
-        if expected_hash and _get_sha256(path) != expected_hash:
-            return False
+        # Abrir archivo con O_NOFOLLOW para asegurar que no es un symlink
+        flags = os.O_RDONLY
+        if hasattr(os, 'O_NOFOLLOW'):
+            flags |= os.O_NOFOLLOW
+        
+        fd = os.open(path, flags)
+        try:
+            st = os.fstat(fd)
+            # Validar integridad antes de borrar
+            if st.st_nlink > 1 or (expected_inode != 0 and st.st_ino != expected_inode):
+                return False
+            if hasattr(os, 'getuid') and st.st_uid != os.getuid():
+                return False
+            
+            # Verificar hash del descriptor abierto
+            if expected_hash:
+                hasher = hashlib.sha256()
+                with os.fdopen(fd, "rb", closefd=False) as handle:
+                    while True:
+                        chunk = handle.read(CHUNK_SIZE)
+                        if not chunk: break
+                        hasher.update(chunk)
+                if hasher.hexdigest() != expected_hash:
+                    return False
+        finally:
+            os.close(fd)
+            
         if _is_file_in_use_by_system(path):
             return False
             

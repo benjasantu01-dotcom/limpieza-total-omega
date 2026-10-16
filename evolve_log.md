@@ -913,3 +913,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-16T00:40:46` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Se ha mejorado `_validate_disk_access` para incluir una validación explícita de `Path.is_symlink()` en todas las rutas analizadas, reforzando la seguridad defensiva contra ataques de enlace simbólico (symlink traversal) antes de realizar cualquier operación de disco o escaneo.
 - `2026-10-16T00:40:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T00:40:46` Corrida terminada. Total usado hoy: 16.
+- `2026-10-16T00:48:41` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-10-16T00:49:18` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad del módulo `memory.py` mediante una validación explícita en `_is_process_executable_safe` que impide el acceso a rutas UNC, previniendo posibles ataques de inyección o accesos no autorizados a recursos compartidos durante el escaneo de memoria.
+- `2026-10-16T00:49:52` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-10-16T00:50:51` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad en `_safe_unlink` y `purge_all` para prevenir ataques de TOCTOU (Time-of-check to time-of-use) mediante el uso de `os.open` con flags restrictivos (`O_NOFOLLOW`) y validación explícita del estado del archivo antes de la eliminación, cerrando brechas donde un atacante podría intentar sustituir un archivo en cuarentena por un enlace simbólico a una ruta del sistema antes de que `unlink` sea invocado.
+- `2026-10-16T00:50:55` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-16T00:50:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T00:50:55` Corrida terminada. Total usado hoy: 20.
