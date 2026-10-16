@@ -218,7 +218,10 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Verificación extra de robustez ante cambios en el FS durante iteración
+                        if not entry.path: continue
                         p_entry = Path(entry.path)
+                        
                         if entry.is_dir(follow_symlinks=False):
                             if not entry.is_symlink() and _safe_path_check(p_entry):
                                 queue.append((p_entry, depth + 1))

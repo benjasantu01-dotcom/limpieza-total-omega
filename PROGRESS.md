@@ -7,46 +7,48 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **191** (37.9% de aceptación)
-- Rechazadas por tests: 28
-- Rechazadas por guardia de seguridad: 52
+- Rechazadas por tests: 27
+- Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-14 | 10 | 2 | 3 | 1 | 38 |
+| 2026-10-14 | 8 | 1 | 2 | 1 | 38 |
 | 2026-10-15 | 142 | 19 | 41 | 11 | 137 |
-| 2026-10-16 | 39 | 7 | 8 | 2 | 44 |
+| 2026-10-16 | 41 | 7 | 8 | 2 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **40**
 - manejo de errores y validación de entradas: **37**
 - rendimiento: **37**
-- seguridad defensiva: **34**
+- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **17**
-- `duplicates.py`: **17**
+- `diskreport.py`: **18**
+- `duplicates.py`: **18**
 - `memory.py`: **17**
 - `assistant.py`: **16**
 - `healthscore.py`: **16**
-- `quarantine.py`: **15**
 - `branding.py`: **14**
 - `settings.py`: **14**
+- `quarantine.py`: **14**
 - `browser.py`: **13**
 - `scanner.py`: **13**
 - `safety.py`: **12**
 - `main.py`: **12**
-- `organizer.py`: **9**
+- `organizer.py`: **8**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T04:24:11` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de redundancia en `_collect_candidates` para verificar que la ruta actual no haya sido eliminada o bloqueada durante la iteración del `scandir`, mejorando la robustez ante la concurrencia externa que suele afectar a los recorridos de disco.
+- `2026-10-16T04:23:57` **diskreport.py** (robustez ante casos límite): Reforcé la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo una validación más estricta sobre el descriptor de archivo (`os.DirEntry`) antes de intentar realizar operaciones de lectura, reduciendo el ruido de excepciones en el bucle principal.
 - `2026-10-16T04:14:33` **assistant.py** (robustez ante casos límite): Se fortalece la robustez del módulo `assistant.py` ante casos límite mediante la validación estricta de la estructura del contexto durante la ingestión y la lectura, garantizando que valores numéricos inesperados (`inf`, `NaN`) o tipos de datos corruptos en el `SystemContext` no rompan la lógica de consulta ni provoquen errores de cálculo.
 - `2026-10-16T04:04:25` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` eliminando llamadas recursivas y redundantes a `Path.resolve()` y `is_relative_to()`, reemplazándolas por verificaciones de cadena (string prefix) y de estructura de partes, aprovechando que el cacheo ya está presente.
 - `2026-10-16T04:03:30` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto convirtiendo la lista `items` en un diccionario (`item_map`) dentro de `purge_all`, evitando así una complejidad algorítmica O(N^2) al buscar coincidencias entre los archivos del sistema y los ítems del manifiesto durante el vaciado.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T03:34:33` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo docstrings técnicos en las funciones de validación compleja y normalizando el estilo de los comentarios, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
 - `2026-10-16T03:33:52` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados a los métodos de `Scanner` y funciones auxiliares, clarificando el propósito, el "porqué" de las validaciones de seguridad y los tipos de retorno, además de estandarizar la nomenclatura de los parámetros de tipo para alinearlos con el enfoque de documentación técnica exigido.
 - `2026-10-16T03:33:22` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación de los validadores (`_VALIDATORS`) y sus helpers asociados mediante docstrings explícitos que aclaran el propósito de cada verificación, facilitando el mantenimiento y auditoría del módulo de seguridad sin alterar la lógica.
-- `2026-10-16T03:22:28` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento mediante la adición de Type Hints detallados, la estructuración de la configuración de escaneo como un dataclass para facilitar la escalabilidad y la documentación de las funciones de bajo nivel que interactúan con el kernel.
-- `2026-10-16T03:22:01` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings técnicos detallados en las funciones de bajo nivel y la estandarización de los tipos de retorno, aclarando la intención detrás de las interacciones con la API nativa de Windows.

@@ -288,6 +288,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if skip_protected and _is_excluded_path(entry, root_str):
                             continue
                         
+                        # Validación previa de estado para evitar llamadas fallidas recurrentes
                         if entry.is_dir(follow_symlinks=False):
                             try:
                                 st = entry.stat(follow_symlinks=False)
@@ -295,12 +296,13 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
                                     stack.append(entry.path)
-                            except OSError:
+                            except (OSError, PermissionError):
                                 continue
                         elif entry.is_file(follow_symlinks=False):
                             try:
-                                yield Path(entry.path), entry.stat(follow_symlinks=False).st_size
-                            except OSError:
+                                st = entry.stat(follow_symlinks=False)
+                                yield Path(entry.path), st.st_size
+                            except (OSError, PermissionError):
                                 continue
                     except (OSError, PermissionError):
                         continue

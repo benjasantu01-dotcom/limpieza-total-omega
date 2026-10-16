@@ -1384,3 +1384,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-16T04:14:33` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se fortalece la robustez del módulo `assistant.py` ante casos límite mediante la validación estricta de la estructura del contexto durante la ingestión y la lectura, garantizando que valores numéricos inesperados (`inf`, `NaN`) o tipos de datos corruptos en el `SystemContext` no rompan la lógica de consulta ni provoquen errores de cálculo.
 - `2026-10-16T04:14:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T04:14:33` Corrida terminada. Total usado hoy: 100.
+- `2026-10-16T04:22:32` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-10-16T04:23:02` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-10-16T04:23:32` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-10-16T04:23:57` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Reforcé la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo una validación más estricta sobre el descriptor de archivo (`os.DirEntry`) antes de intentar realizar operaciones de lectura, reduciendo el ruido de excepciones en el bucle principal.
+- `2026-10-16T04:24:11` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de redundancia en `_collect_candidates` para verificar que la ruta actual no haya sido eliminada o bloqueada durante la iteración del `scandir`, mejorando la robustez ante la concurrencia externa que suele afectar a los recorridos de disco.
+- `2026-10-16T04:24:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T04:24:11` Corrida terminada. Total usado hoy: 104.
