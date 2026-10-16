@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 30
 - Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 140 | 19 | 41 | 11 | 137 |
-| 2026-10-16 | 54 | 11 | 10 | 3 | 78 |
+| 2026-10-15 | 136 | 19 | 41 | 11 | 137 |
+| 2026-10-16 | 55 | 11 | 10 | 3 | 81 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **46**
-- legibilidad y documentación: **42**
+- legibilidad y documentación: **38**
 - rendimiento: **37**
 - seguridad defensiva: **37**
-- manejo de errores y validación de entradas: **32**
+- manejo de errores y validación de entradas: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
-- `duplicates.py`: **18**
 - `memory.py`: **18**
-- `healthscore.py`: **16**
+- `duplicates.py`: **17**
+- `diskreport.py`: **17**
+- `assistant.py`: **16**
 - `quarantine.py`: **15**
 - `scanner.py`: **15**
-- `assistant.py`: **15**
-- `main.py`: **14**
+- `healthscore.py`: **15**
 - `settings.py`: **14**
+- `main.py`: **13**
 - `branding.py`: **12**
 - `browser.py`: **12**
 - `safety.py`: **12**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T06:49:55` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemContext.ingest` y `_apply_field` capturando posibles desbordamientos durante la conversión de tipos y garantizando que los datos ingeridos sean siempre de los tipos esperados, evitando errores silenciosos en la propagación de métricas.
 - `2026-10-16T05:25:13` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo implementando una validación estricta de rutas mediante `pathlib` en `_is_safe_entry`, asegurando que `resolve()` no levante excepciones por rutas inexistentes durante la recursión y consolidando la verificación de puntos de reanálisis para prevenir el acceso accidental fuera del árbol definido.
 - `2026-10-16T05:24:44` **safety.py** (seguridad defensiva): Se añadió una validación de `reparse points` mediante `GetFinalPathNameByHandleW` en la función `is_within_directory` para prevenir el escape del directorio base mediante enlaces simbólicos o junctions que apunten a ubicaciones fuera del alcance permitido.
 - `2026-10-16T05:15:38` **organizer.py** (seguridad defensiva): Se ha reforzado la seguridad en `delete_reviewed` implementando una validación de alcance mediante `is_relative_to` (o comparación de padres resueltos) y bloqueando explícitamente el borrado de archivos que no residan bajo la carpeta de revisión definida, mitigando riesgos de inyección de rutas (`path traversal`).
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T04:34:38` **main.py** (robustez ante casos límite): Se introdujo una validación robusta de hilos en `on_closing` y una protección de estado en `_worker_thread_logic` para evitar que las tareas asíncronas intenten interactuar con widgets o colas de eventos después de que la ventana principal ha iniciado su proceso de destrucción, mitigando excepciones de `TclError` y condiciones de carrera al cerrar la app.
 - `2026-10-16T04:33:29` **healthscore.py** (robustez ante casos límite): Se ha robustecido el motor frente a casos límite en el `pipeline` mediante la adición de validaciones `try-except` integrales y un chequeo de tipos estricto para las funciones normalizadoras, previniendo que una sola métrica malformada contamine o rompa el cálculo del score global.
 - `2026-10-16T04:24:11` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de redundancia en `_collect_candidates` para verificar que la ruta actual no haya sido eliminada o bloqueada durante la iteración del `scandir`, mejorando la robustez ante la concurrencia externa que suele afectar a los recorridos de disco.
-- `2026-10-16T04:23:57` **diskreport.py** (robustez ante casos límite): Reforcé la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo una validación más estricta sobre el descriptor de archivo (`os.DirEntry`) antes de intentar realizar operaciones de lectura, reduciendo el ruido de excepciones en el bucle principal.

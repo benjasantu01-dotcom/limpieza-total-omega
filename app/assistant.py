@@ -410,9 +410,13 @@ class SystemContext:
         """Valida, convierte y verifica límites de un campo individual según su especificación."""
         val: Any = _get_source_value(source, key)
         if val is None: return None
-        valid_val: Optional[float] = _is_valid_numeric_update(val, spec)
-        if valid_val is None: return None
-        return spec.type_hint(valid_val)
+        try:
+            valid_val: Optional[float] = _is_valid_numeric_update(val, spec)
+            if valid_val is None: return None
+            # Asegura la integridad del tipo antes de retornar
+            return spec.type_hint(valid_val)
+        except (ValueError, TypeError):
+            return None
 
     def _clean_grade(self, val: Any) -> str:
         """Limpia el string de calificación eliminando caracteres de control no seguros."""
@@ -452,8 +456,11 @@ class SystemContext:
         if grade_val:
             updates["grade"] = grade_val
         if updates:
-            self._apply_updates(updates)
-            return True
+            try:
+                self._apply_updates(updates)
+                return True
+            except Exception:
+                return False
         return False
 
 @dataclass
