@@ -151,23 +151,21 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 def _is_excluded_path(entry: os.DirEntry, root_str: str) -> bool:
     """Determina si una entrada de sistema debe excluirse del análisis."""
     try:
+        # Primero verificamos seguridad básica que no requiere acceso a disco
+        if not entry.path.startswith(root_str) or is_protected_path(Path(entry.path)):
+            return True
+
         name = entry.name
         if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
             return True
         if any(char in name for char in ('<', '>', ':', '"', '|', '?', '*')):
             return True
         
-        # Validación de seguridad: detectar junctions y reparse points
+        # Validación de junctions y enlaces (requiere acceso a disco)
         st = entry.stat(follow_symlinks=False)
         if entry.is_symlink() or (os.name == 'nt' and bool(st.st_file_attributes & 0x400)):
             return True
         
-        if not entry.path.startswith(root_str):
-            return True
-        
-        if is_protected_path(Path(entry.path)):
-            return True
-            
         return False
     except (OSError, PermissionError, AttributeError, TypeError, RuntimeError):
         return True

@@ -209,18 +209,8 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     if entry.is_symlink() or ctx.is_junction(path_str) or _is_system_hidden(path_str, ctx.kernel32): return True
     return False
 
-def _process_file_node(entry: os.DirEntry, ctx: ScanContext) -> int:
-    """Extrae el tamaño de un archivo, evitando procesar el mismo inodo dos veces."""
-    try:
-        st = entry.stat(follow_symlinks=False)
-        file_id = (st.st_dev, st.st_ino)
-        if file_id in ctx.visited_files: return 0
-        ctx.visited_files.add(file_id)
-        return int(st.st_size)
-    except (OSError, PermissionError): return 0
-
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
-    """Escaneo recursivo de directorios con límites de profundidad y validación de sandbox."""
+    """Escaneo recursivo de directorios optimizado mediante el uso de atributos de DirEntry."""
     if not ctx.sandbox_base_norm or depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN: 
         return ScanResult(0, True)
     
@@ -231,23 +221,23 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
     except (OSError, RuntimeError):
         return ScanResult(0, False)
 
-    try:
-        root_stat = os.stat(root_path)
-        node_id = (root_stat.st_dev, root_stat.st_ino)
-        if node_id in ctx.visited_dirs: return ScanResult(0, True)
-        ctx.visited_dirs.add(node_id)
-    except (OSError, PermissionError): return ScanResult(0, False)
-
     total_bytes = 0
     try:
         with os.scandir(root_path) as it:
             for entry in it:
                 if _should_skip_entry(entry, ctx): continue
+                
                 if entry.is_dir(follow_symlinks=False):
                     res = _sum_directory_recursive(entry.path, ctx, depth + 1)
                     total_bytes += res.bytes_found
                 else:
-                    total_bytes += _process_file_node(entry, ctx)
+                    try:
+                        st = entry.stat(follow_symlinks=False)
+                        file_id = (st.st_dev, st.st_ino)
+                        if file_id not in ctx.visited_files:
+                            ctx.visited_files.add(file_id)
+                            total_bytes += int(st.st_size)
+                    except (OSError, PermissionError): continue
         return ScanResult(total_bytes, True)
     except (OSError, PermissionError): return ScanResult(total_bytes, False)
 

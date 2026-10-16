@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
-- Rechazadas por tests: 28
+- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Rechazadas por tests: 27
 - Rechazadas por guardia de seguridad: 50
-- Sin cambios (nada sustancial que mejorar): 15
+- Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-14 | 19 | 4 | 4 | 2 | 41 |
+| 2026-10-14 | 18 | 3 | 4 | 1 | 40 |
 | 2026-10-15 | 142 | 19 | 41 | 11 | 137 |
-| 2026-10-16 | 29 | 5 | 5 | 2 | 43 |
+| 2026-10-16 | 32 | 5 | 5 | 2 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
-- robustez ante casos límite: **40**
 - seguridad defensiva: **40**
+- robustez ante casos límite: **39**
 - manejo de errores y validación de entradas: **37**
-- rendimiento: **28**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **17**
-- `diskreport.py`: **17**
+- `diskreport.py`: **18**
 - `duplicates.py`: **17**
+- `assistant.py`: **16**
 - `healthscore.py`: **16**
-- `assistant.py`: **15**
+- `memory.py`: **16**
 - `scanner.py`: **14**
+- `browser.py`: **14**
 - `quarantine.py`: **14**
 - `branding.py`: **14**
 - `settings.py`: **14**
-- `browser.py`: **13**
 - `main.py`: **13**
 - `safety.py`: **12**
 - `organizer.py`: **8**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T03:43:57` **diskreport.py** (rendimiento): Optimizé la función `_is_excluded_path` para reducir llamadas redundantes al sistema de archivos moviendo la verificación de `is_protected_path` al inicio, evitando que se ejecute la lógica costosa de `entry.stat` o validaciones de caracteres en rutas que ya sabemos que debemos omitir.
+- `2026-10-16T03:43:47` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo de archivos mediante la implementación de `os.scandir` de forma que aprovecha los atributos de archivo ya recuperados por el sistema operativo, reduciendo drásticamente las llamadas a `stat()` (que suelen ser costosas en E/S) al centralizar la lógica de tamaño en una única llamada durante la iteración.
+- `2026-10-16T03:42:34` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la iteración secuencial sobre los tokens de consulta por una búsqueda directa mediante `next()` sobre una expresión generadora, evitando el bucle `for` redundante y mejorando la eficiencia en la resolución de consultas.
 - `2026-10-16T03:34:33` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo docstrings técnicos en las funciones de validación compleja y normalizando el estilo de los comentarios, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
 - `2026-10-16T03:33:52` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados a los métodos de `Scanner` y funciones auxiliares, clarificando el propósito, el "porqué" de las validaciones de seguridad y los tipos de retorno, además de estandarizar la nomenclatura de los parámetros de tipo para alinearlos con el enfoque de documentación técnica exigido.
 - `2026-10-16T03:33:22` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación de los validadores (`_VALIDATORS`) y sus helpers asociados mediante docstrings explícitos que aclaran el propósito de cada verificación, facilitando el mantenimiento y auditoría del módulo de seguridad sin alterar la lógica.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T03:02:19` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` y `entries_from_folders` implementando validaciones de entrada más estrictas y manejo explícito de errores de acceso al sistema de archivos, asegurando que los fallos en una iteración no detengan el proceso completo ni propaguen valores inválidos.
 - `2026-10-16T02:53:43` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de la validación al reemplazar el bloque `except Exception` en `validate` por un manejo granular que registra el error de forma segura y evita que claves corruptas contaminen el objeto resultante, asegurando que cada valor sea validado individualmente.
 - `2026-10-16T02:53:13` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las heurísticas agregando validaciones preventivas contra valores `None` o rutas mal formadas en los puntos de entrada, asegurando que `_run_file_heuristics` y `scan_file` manejen de forma segura las excepciones que pudieran surgir al manipular metadatos de archivos.
-- `2026-10-16T02:46:03` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `purge_all` y `restore_item` al asegurar que las rutas se resuelvan antes de realizar validaciones, previniendo errores de comparación de rutas relativos/absolutos que podrían causar fallos en entornos de ejecución complejos.
-- `2026-10-16T02:45:07` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `trim_working_set` y las consultas de procesos añadiendo validaciones explícitas de tipos y manejo de errores ante fallos inesperados de la API de Windows, asegurando que cualquier entrada malformada sea rechazada antes de interactuar con el sistema operativo.
-- `2026-10-16T02:43:50` **main.py** (manejo de errores y validación de entradas): He mejorado la robustez ante errores de `main.py` mediante una validación más estricta en el método `_collect_settings`, asegurando que el acceso a variables de `ctk.StringVar` y widgets esté encapsulado en bloques `try/except` robustos para evitar que una configuración de entrada malformada (ej. un usuario borrando contenido de un `Entry` esperado como numérico) cause una excepción que interrumpa la persistencia de ajustes.
