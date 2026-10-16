@@ -257,7 +257,10 @@ class SystemMetrics:
         """Inicializa métricas asegurando tipos correctos tras la creación."""
         for field_name in self._FIELDS_TO_VALIDATE:
             val = getattr(self, field_name)
-            if not isinstance(val, (int, float)):
+            # Garantizar que incluso si se inyectan objetos complejos, se intenten convertir
+            try:
+                setattr(self, field_name, float(val) if not isinstance(val, (int, float)) else val)
+            except (ValueError, TypeError):
                 setattr(self, field_name, 0.0)
         self.validate()
 
@@ -341,7 +344,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     2. Itera sobre el pipeline para normalizar ratios y disparar reglas.
     3. Agrega resultados de áreas individuales al total ponderado.
     """
+    # Manejo robusto de entrada nula
     m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
+    m.validate()
     
     if not m.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Métricas inestables detectadas."])

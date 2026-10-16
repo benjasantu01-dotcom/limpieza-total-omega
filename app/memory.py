@@ -327,8 +327,11 @@ def _iter_process_memory(kernel32: ctypes.WinDLL, psapi: ctypes.WinDLL, pmc: PRO
     """Generador que recorre procesos para evitar listas intermedias masivas."""
     max_pids = 2048
     pids = (ctypes.c_uint32 * max_pids)()
-    cb_needed = ctypes.c_uint32()
+    cb_needed = ctypes.c_uint32(0)
+    
+    # EnumProcesses retorna non-zero en caso de éxito
     if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
+        # Calcular el número real de PIDs devueltos por el sistema
         count = min(max_pids, cb_needed.value // ctypes.sizeof(ctypes.c_uint32))
         for i in range(count):
             pid = int(pids[i])

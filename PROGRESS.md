@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **190** (37.7% de aceptación)
 - Rechazadas por tests: 29
-- Rechazadas por guardia de seguridad: 48
+- Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 112 | 15 | 30 | 9 | 130 |
-| 2026-10-16 | 78 | 14 | 18 | 6 | 92 |
+| 2026-10-15 | 110 | 15 | 29 | 9 | 129 |
+| 2026-10-16 | 80 | 14 | 18 | 6 | 94 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
-- robustez ante casos límite: **40**
+- robustez ante casos límite: **42**
 - manejo de errores y validación de entradas: **38**
 - rendimiento: **35**
-- seguridad defensiva: **32**
+- seguridad defensiva: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
 - `duplicates.py`: **18**
-- `memory.py`: **17**
-- `healthscore.py`: **16**
+- `memory.py`: **18**
+- `healthscore.py`: **17**
 - `quarantine.py`: **16**
 - `assistant.py`: **14**
 - `main.py`: **14**
 - `scanner.py`: **14**
-- `settings.py`: **13**
-- `safety.py`: **12**
+- `settings.py`: **12**
 - `browser.py`: **12**
 - `branding.py`: **11**
+- `safety.py`: **11**
 - `organizer.py`: **9**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T09:01:34` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_iter_process_memory` para manejar correctamente escenarios donde `EnumProcesses` falla parcialmente o devuelve listas incompletas, y se agregó una validación de `ctypes.c_uint32` en el buffer de PIDs para evitar errores de memoria ante valores inesperados del sistema.
+- `2026-10-16T08:59:40` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor de cómputo ante entradas nulas, estructuras de datos corruptas o valores extremos dentro de `SystemMetrics` mediante la implementación de una validación más estricta en el método `__post_init__` y una garantía de integridad previa al procesamiento del pipeline en `compute_score`.
 - `2026-10-16T08:50:18` **diskreport.py** (robustez ante casos límite): Se mejoró la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o inaccesibles durante la iteración, envolviendo la llamada al generador en un bloque `try-except` para evitar que una falla puntual en la lectura de atributos detenga el escaneo completo de un disco.
 - `2026-10-16T08:48:48` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` y las funciones de renderizado gráfico mediante el manejo explícito de valores de entrada extremos y rutas inexistentes, asegurando que `ensure_safe_to_modify` se utilice correctamente y evitando fallos ante escalados o dimensiones inválidas que podrían corromper la interfaz.
 - `2026-10-16T08:48:09` **assistant.py** (robustez ante casos límite): Mejoré `_get_source_value` para añadir una validación de tipo estricta sobre el `source`, evitando que el asistente intente acceder a atributos de objetos inyectados inesperados (como listas o tipos básicos) que podrían causar excepciones al ser tratados como contenedores de métricas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T07:48:54` **quarantine.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings estructurados (usando el formato Google Style) en todas las funciones y métodos de la clase `IsolationManager`, aclarando los argumentos, valores de retorno y excepciones, además de unificar criterios de nomenclatura interna.
 - `2026-10-16T07:48:24` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` mediante la adición de docstrings estructuradas (formato Google) en las funciones críticas de E/S, clarificando las precondiciones de seguridad y el manejo de excepciones para los desarrolladores.
 - `2026-10-16T07:47:56` **memory.py** (legibilidad y documentación): Se introdujeron type hints en funciones críticas, se documentaron parámetros complejos y se extrajo la lógica de ordenamiento de procesos pesados a una función dedicada para mejorar la legibilidad y mantenibilidad del módulo.
-- `2026-10-16T07:47:29` **main.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad de `main.py` mediante la refactorización de `_build_single_health_bar` y `_apply_ui_update_safely`, añadiendo type hints más precisos, extrayendo lógica de cálculo a variables descriptivas y corrigiendo inconsistencias en la nomenclatura de los componentes de UI para clarificar la intención del código.
-- `2026-10-16T07:37:43` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos en los métodos de `SystemMetrics` y la clarificación del flujo de datos en `compute_score`, asegurando que cada paso de la validación y el cálculo esté claramente documentado.
