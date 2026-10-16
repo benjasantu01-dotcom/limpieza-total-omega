@@ -296,6 +296,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _on_closing(self) -> None:
         """Gestiona el cierre ordenado de hilos, cancelando el pool y liberando recursos."""
         with self._executor_lock:
+            if self._closing: return
             self._closing = True
             executor = self._executor
             self._executor = None

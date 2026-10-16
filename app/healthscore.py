@@ -323,10 +323,13 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     if not math.isfinite(normalized_ratio):
         return
     for rule in rules:
-        if rule.check(metrics, normalized_ratio):
-            clean_msg = _apply_rule_safely(metrics, rule)
-            if clean_msg:
-                findings.append(clean_msg)
+        try:
+            if rule.check(metrics, normalized_ratio):
+                clean_msg = _apply_rule_safely(metrics, rule)
+                if clean_msg:
+                    findings.append(clean_msg)
+        except Exception:
+            continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Computa el puntaje global recorriendo el pipeline de normalizadores y reglas."""

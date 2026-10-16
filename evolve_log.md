@@ -1391,3 +1391,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-16T04:24:11` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de redundancia en `_collect_candidates` para verificar que la ruta actual no haya sido eliminada o bloqueada durante la iteración del `scandir`, mejorando la robustez ante la concurrencia externa que suele afectar a los recorridos de disco.
 - `2026-10-16T04:24:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T04:24:11` Corrida terminada. Total usado hoy: 104.
+- `2026-10-16T04:32:42` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-10-16T04:33:29` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha robustecido el motor frente a casos límite en el `pipeline` mediante la adición de validaciones `try-except` integrales y un chequeo de tipos estricto para las funciones normalizadoras, previniendo que una sola métrica malformada contamine o rompa el cálculo del score global.
+- `2026-10-16T04:34:38` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta de hilos en `on_closing` y una protección de estado en `_worker_thread_logic` para evitar que las tareas asíncronas intenten interactuar con widgets o colas de eventos después de que la ventana principal ha iniciado su proceso de destrucción, mitigando excepciones de `TclError` y condiciones de carrera al cerrar la app.
+- `2026-10-16T04:35:16` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-16T04:35:30` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-16T04:35:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T04:35:30` Corrida terminada. Total usado hoy: 108.

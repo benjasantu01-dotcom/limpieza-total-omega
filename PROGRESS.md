@@ -8,45 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **191** (37.9% de aceptación)
 - Rechazadas por tests: 27
-- Rechazadas por guardia de seguridad: 51
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 221
+- Rechazadas por guardia de seguridad: 50
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-14 | 8 | 1 | 2 | 1 | 38 |
+| 2026-10-14 | 6 | 1 | 1 | 0 | 38 |
 | 2026-10-15 | 142 | 19 | 41 | 11 | 137 |
-| 2026-10-16 | 41 | 7 | 8 | 2 | 46 |
+| 2026-10-16 | 43 | 7 | 8 | 2 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
-- robustez ante casos límite: **40**
+- robustez ante casos límite: **42**
 - manejo de errores y validación de entradas: **37**
 - rendimiento: **37**
-- seguridad defensiva: **32**
+- seguridad defensiva: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **18**
 - `duplicates.py`: **18**
+- `healthscore.py`: **17**
 - `memory.py`: **17**
 - `assistant.py`: **16**
-- `healthscore.py`: **16**
 - `branding.py`: **14**
 - `settings.py`: **14**
 - `quarantine.py`: **14**
 - `browser.py`: **13**
+- `main.py`: **13**
 - `scanner.py`: **13**
-- `safety.py`: **12**
-- `main.py`: **12**
+- `safety.py`: **11**
 - `organizer.py`: **8**
-- `startup.py`: **6**
+- `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T04:34:38` **main.py** (robustez ante casos límite): Se introdujo una validación robusta de hilos en `on_closing` y una protección de estado en `_worker_thread_logic` para evitar que las tareas asíncronas intenten interactuar con widgets o colas de eventos después de que la ventana principal ha iniciado su proceso de destrucción, mitigando excepciones de `TclError` y condiciones de carrera al cerrar la app.
+- `2026-10-16T04:33:29` **healthscore.py** (robustez ante casos límite): Se ha robustecido el motor frente a casos límite en el `pipeline` mediante la adición de validaciones `try-except` integrales y un chequeo de tipos estricto para las funciones normalizadoras, previniendo que una sola métrica malformada contamine o rompa el cálculo del score global.
 - `2026-10-16T04:24:11` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de redundancia en `_collect_candidates` para verificar que la ruta actual no haya sido eliminada o bloqueada durante la iteración del `scandir`, mejorando la robustez ante la concurrencia externa que suele afectar a los recorridos de disco.
 - `2026-10-16T04:23:57` **diskreport.py** (robustez ante casos límite): Reforcé la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo una validación más estricta sobre el descriptor de archivo (`os.DirEntry`) antes de intentar realizar operaciones de lectura, reduciendo el ruido de excepciones en el bucle principal.
 - `2026-10-16T04:14:33` **assistant.py** (robustez ante casos límite): Se fortalece la robustez del módulo `assistant.py` ante casos límite mediante la validación estricta de la estructura del contexto durante la ingestión y la lectura, garantizando que valores numéricos inesperados (`inf`, `NaN`) o tipos de datos corruptos en el `SystemContext` no rompan la lógica de consulta ni provoquen errores de cálculo.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T03:43:47` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo de archivos mediante la implementación de `os.scandir` de forma que aprovecha los atributos de archivo ya recuperados por el sistema operativo, reduciendo drásticamente las llamadas a `stat()` (que suelen ser costosas en E/S) al centralizar la lógica de tamaño en una única llamada durante la iteración.
 - `2026-10-16T03:42:34` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la iteración secuencial sobre los tokens de consulta por una búsqueda directa mediante `next()` sobre una expresión generadora, evitando el bucle `for` redundante y mejorando la eficiencia en la resolución de consultas.
 - `2026-10-16T03:34:33` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo docstrings técnicos en las funciones de validación compleja y normalizando el estilo de los comentarios, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
-- `2026-10-16T03:33:52` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados a los métodos de `Scanner` y funciones auxiliares, clarificando el propósito, el "porqué" de las validaciones de seguridad y los tipos de retorno, además de estandarizar la nomenclatura de los parámetros de tipo para alinearlos con el enfoque de documentación técnica exigido.
-- `2026-10-16T03:33:22` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación de los validadores (`_VALIDATORS`) y sus helpers asociados mediante docstrings explícitos que aclaran el propósito de cada verificación, facilitando el mantenimiento y auditoría del módulo de seguridad sin alterar la lógica.
