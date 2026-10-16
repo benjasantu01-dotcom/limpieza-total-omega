@@ -747,7 +747,12 @@ def _validate_integrity_before_move(source: Path, original_size: int, original_i
         raise RuntimeError(f"Falla al verificar integridad del origen antes de mover: {e}")
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode]:
-    """Ejecuta el aislamiento atómico de un archivo, coordinando validaciones."""
+    """
+    Ejecuta el aislamiento atómico de un archivo.
+    
+    Coordina validaciones de estado (TOCTOU) y asegura que el archivo no sea 
+    reemplazado mientras se realizan las operaciones de lectura y copia.
+    """
     _check_path_syntax_integrity(destination)
     if not source.exists():
         raise FileNotFoundError("Archivo origen no existe.")

@@ -565,7 +565,7 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
 }
 
 def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
-    """Evalúa la lista de validadores contra los metadatos obtenidos."""
+    """Itera a través de los validadores configurados lanzando excepción ante la primera violación."""
     if not path.exists():
          raise UnsafePathError("Archivo eliminado antes de la validación.", SafetyValidationErrorCode.IO_ERROR)
     try:
@@ -580,7 +580,7 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
         raise UnsafePathError(f"Error evaluando reglas: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 def _get_path_stat_robust(path: Path) -> os.stat_result:
-    """Lee metadatos de archivo con reintentos para manejar bloqueos transitorios."""
+    """Obtiene metadatos del archivo usando reintentos para evitar bloqueos compartidos."""
     max_retries = 3
     for attempt in range(max_retries):
         try:
@@ -626,7 +626,7 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
     raise UnsafePathError(f"Error tras reintentos leyendo metadatos: {path.name}", SafetyValidationErrorCode.IO_ERROR)
 
 def _check_file_integrity(path: Path, initial_stat: os.stat_result) -> None:
-    """Verifica condiciones de Time-of-Check Time-of-Use (TOCTOU)."""
+    """Verifica que el archivo no haya cambiado entre la inspección y la operación (TOCTOU)."""
     if not path.exists():
         raise UnsafePathError("El archivo ya no existe (TOCTOU).", SafetyValidationErrorCode.IO_ERROR)
     current_stat = _get_path_stat_robust(path)
@@ -661,7 +661,7 @@ def _validate_access_permissions(path: Path) -> None:
 
 @lru_cache(maxsize=4096)
 def _normalize_resolved(path_str: str) -> Path:
-    """Resuelve la ruta absoluta de forma segura."""
+    """Resuelve la ruta absoluta de forma segura evitando errores de resolución."""
     try:
         return Path(os.path.abspath(path_str)).resolve(strict=False)
     except (OSError, RuntimeError):
@@ -774,7 +774,7 @@ def is_sensitive_file(path: PathLike) -> bool:
     except (TypeError, ValueError, OSError): return True 
 
 def _validate_structural_safety(target_path: Path, path_string: str) -> None:
-    """Validación sintáctica profunda de la ruta."""
+    """Realiza una validación sintáctica profunda de la integridad de la ruta."""
     if not isinstance(path_string, str):
         raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC)
     if path_string.startswith(("\\\\.\\", "//./", LONG_PATH_PREFIX)) and not path_string.startswith(LONG_PATH_PREFIX):
@@ -919,7 +919,7 @@ def _check_hard_link_security(path: Path, stat_res: os.stat_result) -> None:
         raise UnsafePathError(f"Archivo con múltiples hard links detectado: {path.name}", SafetyValidationErrorCode.HARD_LINK_DETECTED)
 
 def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Optional[Path]) -> None:
-    """Validaciones finales sobre archivos específicos para operaciones de escritura."""
+    """Realiza validaciones finales de seguridad sobre archivos para operaciones de escritura."""
     if not os.access(p, os.W_OK):
         raise UnsafePathError(f"Permisos de escritura insuficientes: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
     
@@ -939,7 +939,7 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
     Función de entrada principal para validar si un archivo puede ser modificado.
-    Lanza `UnsafePathError` ante cualquier riesgo.
+    Lanza `UnsafePathError` ante cualquier riesgo detectado.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC)
@@ -993,14 +993,14 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         raise UnsafePathError(f"Error crítico durante la validación: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> bool:
-    """Versión booleana de `ensure_safe_to_modify` para filtros en bucles."""
+    """Versión booleana de `ensure_safe_to_modify` para uso en filtros de bucles."""
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive, base_dir=base_dir)
         return True
     except (UnsafePathError, ValueError, TypeError, OSError, PermissionError): return False
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> list[Path]:
-    """Aplica la validación de seguridad a una colección de rutas."""
+    """Aplica la validación de seguridad a una colección de rutas retornando solo las válidas."""
     results: list[Path] = []
     if paths is None: return results
     for p in paths:
@@ -1010,7 +1010,7 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
     return results
 
 def describe_protection(path: PathLike) -> str:
-    """Genera una descripción legible de por qué una ruta fue bloqueada o permitida."""
+    """Genera una descripción legible de los motivos por los cuales una ruta fue bloqueada."""
     if path is None: return "Ruta nula."
     try:
         p = normalize(path)
