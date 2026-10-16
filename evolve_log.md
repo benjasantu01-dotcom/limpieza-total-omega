@@ -1252,3 +1252,44 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-16T03:23:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-16T03:23:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T03:23:22` Corrida terminada. Total usado hoy: 80.
+- `2026-10-16T03:31:37` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-10-16T03:31:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T03:32:02` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-16T03:32:21` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-16T03:33:22` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de los validadores (`_VALIDATORS`) y sus helpers asociados mediante docstrings explícitos que aclaran el propósito de cada verificación, facilitando el mantenimiento y auditoría del módulo de seguridad sin alterar la lógica.
+- `2026-10-16T03:33:52` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados a los métodos de `Scanner` y funciones auxiliares, clarificando el propósito, el "porqué" de las validaciones de seguridad y los tipos de retorno, además de estandarizar la nomenclatura de los parámetros de tipo para alinearlos con el enfoque de documentación técnica exigido.
+- `2026-10-16T03:33:53` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T03:34:33` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad añadiendo docstrings técnicos en las funciones de validación compleja y normalizando el estilo de los comentarios, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
+- `2026-10-16T03:34:43` Tests FALLARON:
+```
+__________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/scanner.py:185: SyntaxWarning: invalid escape sequence '\s'
+    """Detecta binarios que usan nombres de procesos críticos del SO fuera de sus rutas legítimas (ej: c:\temp\svchost.exe)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 7 warnings in 0.96s
+
+```
+- `2026-10-16T03:34:43` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se introdujeron type hints más precisos (especificando los tipos de retorno en las funciones de validación) y se reemplazó el `global` de `_FULL_SCAN_CACHE` por una gestión basada en una propiedad de clase o caché local más limpia, mejorando la legibilidad y estructura de `startup.py`.
+- `2026-10-16T03:34:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T03:34:43` Corrida terminada. Total usado hoy: 84.

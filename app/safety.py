@@ -520,26 +520,26 @@ def _check_owner(p: Path, _, __) -> bool: return _is_file_owned_by_system(str(p)
 def _check_virtual(p: Path, _, __) -> bool: return _is_virtual_drive(str(p))
 
 _VALIDATORS: Final[list[_IntegrityCheck]] = [
-    _rule(ProtectionReason.SYMLINK, _check_symlink),
-    _rule(ProtectionReason.REPARSE_POINT, _check_reparse),
-    _rule(ProtectionReason.KERNEL_LOCKED, _check_kernel_locked),
-    _rule(ProtectionReason.READ_ONLY, _check_read_only),
-    _rule(ProtectionReason.VOLUME_READ_ONLY, _check_vol_read_only),
-    _rule(ProtectionReason.REMOVABLE_DRIVE, _check_vol_removable),
-    _rule(ProtectionReason.VOLUME_RESTRICTED, _check_vol_restricted),
-    _rule(ProtectionReason.IN_USE, _check_in_use),
-    _rule(ProtectionReason.SYSTEM_HIDDEN, _check_sys_hidden),
-    _rule(ProtectionReason.OFFLINE, _check_offline),
-    _rule(ProtectionReason.ENCRYPTED_OR_COMPRESSED, _check_enc_comp),
-    _rule(ProtectionReason.SPARSE_FILE, _check_sparse),
-    _rule(ProtectionReason.HARD_LINK, _check_hard_link),
-    _rule(ProtectionReason.ADS, _check_ads),
-    _rule(ProtectionReason.EMPTY_FILE, _check_empty),
-    _rule(ProtectionReason.EXCESSIVE_SIZE, _check_size),
-    _rule(ProtectionReason.MOUNT_POINT, _check_mount),
-    _rule(ProtectionReason.INVALID_TYPE, _check_type),
-    _rule(ProtectionReason.SYSTEM_OWNER, _check_owner),
-    _rule(ProtectionReason.VIRTUAL_DRIVE, _check_virtual),
+    _rule(ProtectionReason.SYMLINK, _check_symlink), # Verifica enlaces simbólicos
+    _rule(ProtectionReason.REPARSE_POINT, _check_reparse), # Verifica puntos de reparse
+    _rule(ProtectionReason.KERNEL_LOCKED, _check_kernel_locked), # Verifica archivos bloqueados por el kernel
+    _rule(ProtectionReason.READ_ONLY, _check_read_only), # Verifica atributos de solo lectura
+    _rule(ProtectionReason.VOLUME_READ_ONLY, _check_vol_read_only), # Verifica estados de solo lectura en volumen
+    _rule(ProtectionReason.REMOVABLE_DRIVE, _check_vol_removable), # Verifica si el volumen es extraíble
+    _rule(ProtectionReason.VOLUME_RESTRICTED, _check_vol_restricted), # Verifica cifrado o compresión de volumen
+    _rule(ProtectionReason.IN_USE, _check_in_use), # Verifica exclusividad de uso
+    _rule(ProtectionReason.SYSTEM_HIDDEN, _check_sys_hidden), # Verifica atributos de sistema u ocultos
+    _rule(ProtectionReason.OFFLINE, _check_offline), # Verifica si el archivo está en caché offline
+    _rule(ProtectionReason.ENCRYPTED_OR_COMPRESSED, _check_enc_comp), # Verifica cifrado o compresión de archivo
+    _rule(ProtectionReason.SPARSE_FILE, _check_sparse), # Verifica archivos dispersos (sparse)
+    _rule(ProtectionReason.HARD_LINK, _check_hard_link), # Verifica múltiples hard links
+    _rule(ProtectionReason.ADS, _check_ads), # Verifica flujos de datos alternativos (ADS)
+    _rule(ProtectionReason.EMPTY_FILE, _check_empty), # Verifica si el archivo es vacío
+    _rule(ProtectionReason.EXCESSIVE_SIZE, _check_size), # Verifica si el archivo excede el tamaño máximo
+    _rule(ProtectionReason.MOUNT_POINT, _check_mount), # Verifica si es un punto de montaje
+    _rule(ProtectionReason.INVALID_TYPE, _check_type), # Verifica si el tipo es inválido
+    _rule(ProtectionReason.SYSTEM_OWNER, _check_owner), # Verifica la propiedad del sistema
+    _rule(ProtectionReason.VIRTUAL_DRIVE, _check_virtual), # Verifica unidades virtuales
 ]
 
 _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {

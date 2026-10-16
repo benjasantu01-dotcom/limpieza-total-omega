@@ -238,11 +238,14 @@ class Scanner:
         return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Identifica si una entrada es un punto de reanálisis (Junction)."""
+        """Identifica si una entrada es un punto de reanálisis (Junction) mediante atributos Win32."""
         return bool(_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Evalúa si la entrada debe ser procesada según políticas de seguridad y contención de rutas."""
+        """
+        Valida que la entrada sea segura para procesar: verifica jerarquía, 
+        permisos, existencia, y ausencia de puntos de reanálisis (Junctions).
+        """
         if entry is None or not hasattr(entry, 'path') or not entry.path:
             return False
         
@@ -272,7 +275,7 @@ class Scanner:
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        """Registra subdirectorios válidos en la pila si no se supera el límite de profundidad."""
+        """Registra subdirectorios válidos en la pila si no se supera el límite de profundidad (max_depth)."""
         if current_depth >= SCAN_LIMITS.max_depth or entry is None or not hasattr(entry, 'path') or not entry.path:
             return
         
@@ -307,7 +310,10 @@ class Scanner:
             logger.debug(f"Error de acceso en entrada {entry.path}: {e}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta toda la suite de heurísticas sobre un archivo validado."""
+        """
+        Ejecuta la suite completa de heurísticas (ALL_CHECKS) sobre un archivo validado,
+        gestionando el estado de legibilidad para optimizar el escaneo de red o disco.
+        """
         if path is None: return
         path_str = str(path)
         if path_str not in self.path_stat_cache:
@@ -328,7 +334,7 @@ class Scanner:
                 logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
-    """Escaneo heurístico individual para un archivo específico."""
+    """Escaneo heurístico individual para un archivo específico, omitiendo rutas protegidas o bloqueadas."""
     if path is None or not isinstance(path, Path) or not path.exists() or _cached_is_protected(str(path)): 
         return []
     if not _is_readable(path) or _is_locked_by_os(path): 
@@ -344,7 +350,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """Realiza el escaneo recursivo mediante una estructura de pila (stack)."""
+    """Realiza el escaneo recursivo mediante una estructura de pila (stack) sobre un directorio base."""
     if directory is None: return []
     try:
         path_str: str = str(directory).strip()
@@ -372,7 +378,10 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     return scanner.results
 
 def run_windows_defender_quick_scan() -> str:
-    """Ejecuta un escaneo rápido del sistema mediante el framework de Windows Defender."""
+    """
+    Ejecuta un escaneo rápido del sistema mediante el framework de Windows Defender.
+    Verifica primero el estado de RealTimeProtectionEnabled para evitar escaneos innecesarios.
+    """
     try:
         status = subprocess.run(
             ["powershell", "-Command", "Get-MpComputerStatus | Select-Object -ExpandProperty RealTimeProtectionEnabled"],

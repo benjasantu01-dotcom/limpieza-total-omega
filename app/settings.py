@@ -220,10 +220,11 @@ class _Validators:
 
     @staticmethod
     def _is_reparse_point(path: Path) -> bool:
-        """Detecta symlinks o reparse points; retorna True si la ruta debe ser evitada."""
+        """Determina si la ruta es un punto de reanálisis (symlink/junction) usando atributos de archivo de Windows."""
         try:
             if path.is_symlink(): return True
             if not path.exists(): return False
+            # 0x400: FILE_ATTRIBUTE_REPARSE_POINT
             return bool(path.stat().st_file_attributes & 0x400) if hasattr(path.stat(), 'st_file_attributes') else False
         except (OSError, PermissionError):
             return True
@@ -231,7 +232,10 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=128)
     def _run_safety_checks(path_str: str) -> bool:
-        """Resuelve la ruta y aplica validaciones estrictas de safety.py."""
+        """
+        Resuelve la ruta absoluta y verifica si está protegida o si es un punto de reanálisis.
+        Usa caché LRU para evitar llamadas repetitivas al sistema de archivos.
+        """
         try:
             p = Path(path_str).expanduser()
             if not p.is_absolute(): return False
@@ -360,10 +364,11 @@ def validate(raw_values: Any) -> AppSettings:
     return config 
 
 def _is_file_secure_to_read(st: os.stat_result, file_obj: Any) -> bool:
-    """Verifica metadatos del archivo para asegurar que no contenga permisos inseguros."""
+    """Verifica metadatos del archivo para asegurar que no contenga permisos inseguros (escritura global, etc)."""
     try:
         if file_obj.closed or not stat.S_ISREG(st.st_mode): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
+        # Verifica permisos de ejecución o escritura en grupos/otros
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
         if st.st_mode & (stat.S_ISUID | stat.S_ISGID) or st.st_nlink != 1: return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
@@ -371,7 +376,7 @@ def _is_file_secure_to_read(st: os.stat_result, file_obj: Any) -> bool:
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
-    """Lee y parsea el JSON con bloqueo de archivo (flock) para evitar lecturas parciales."""
+    """Lee y parsea el JSON con bloqueo de archivo (flock) para evitar lecturas parciales concurrentes."""
     if not file_path.exists(): return None
     try:
         if _Validators._is_reparse_point(file_path) or file_path.is_symlink(): return None
@@ -393,7 +398,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         return None
 
 def _is_dir_safe(path: Path) -> bool:
-    """Comprueba que el directorio padre no tenga permisos excesivos de escritura (grupo/otros)."""
+    """Comprueba que el directorio padre sea propiedad del usuario y no tenga permisos de escritura excesivos."""
     try:
         if not path.is_dir() or _Validators._is_reparse_point(path): return False
         st = path.stat()
@@ -410,7 +415,7 @@ def _load_impl(ruta: Path) -> AppSettings:
     return _coerce_and_verify(validate(data)) if data is not None else DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Carga los ajustes, implementando una caché basada en el tiempo de modificación del archivo."""
+    """Carga los ajustes, implementando una caché basada en el tiempo de modificación del archivo (mtime)."""
     primary_path = settings_path(custom_base)
     try:
         if primary_path.exists() and primary_path.is_file():
@@ -426,7 +431,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     return DEFAULTS.copy()
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
-    """Asegura que los valores cargados coincidan con el tipo de los defaults originales."""
+    """Asegura que los valores cargados coincidan con el tipo de los defaults originales y valida dependencias."""
     final: AppSettings = DEFAULTS.copy()
     for key, val in settings.items():
         if key in DEFAULTS:
@@ -438,7 +443,7 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     return final
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
-    """Persistencia: limpia los datos, verifica el entorno y delega la escritura al gestor."""
+    """Persistencia: limpia los datos, verifica el entorno y delega la escritura atómica al gestor."""
     if not _is_dict(values): return None
     config_path = settings_path(custom_base)
     try:
@@ -454,7 +459,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
-    """Actualiza campos específicos, aplicando validaciones antes de persistir."""
+    """Actualiza campos específicos, aplicando validaciones antes de persistir cambios."""
     if not changes or not _is_dict(changes): return load(custom_base)
     current = load(custom_base)
     modified = False
@@ -469,7 +474,7 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     return current
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
-    """Restaura la configuración a valores de fábrica."""
+    """Restaura la configuración a valores de fábrica y limpia la caché."""
     config_path = settings_path(custom_base)
     if is_safe_to_modify(str(config_path)):
         save(DEFAULTS, custom_base)
@@ -486,13 +491,13 @@ def assistant_api_key(custom_base: PathLike | None = None) -> str:
     return str(load(custom_base).get("asistente_clave_api", "")).strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
-    """Determina si el asistente está habilitado verificando claves y configuración."""
+    """Determina si el asistente está habilitado verificando presencia de credenciales."""
     if os.environ.get(API_KEY_ENV_VAR): return True
     settings = load(custom_base)
     return bool(settings.get("asistente_activado")) and bool(str(settings.get("asistente_clave_api", "")).strip())
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
-    """Genera una descripción legible de la configuración para UI o logs."""
+    """Genera una descripción legible de la configuración para interfaz de usuario o logs."""
     current = load(custom_base)
     api_key_env = os.environ.get(API_KEY_ENV_VAR)
     api_key_file = str(current.get("asistente_clave_api", "")).strip()

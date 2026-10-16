@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
-- Rechazadas por tests: 27
+- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Rechazadas por tests: 28
 - Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 221
@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-14 | 23 | 4 | 4 | 2 | 41 |
+| 2026-10-14 | 19 | 4 | 4 | 2 | 41 |
 | 2026-10-15 | 142 | 19 | 41 | 11 | 137 |
-| 2026-10-16 | 26 | 4 | 5 | 2 | 43 |
+| 2026-10-16 | 29 | 5 | 5 | 2 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
-- robustez ante casos límite: **44**
-- legibilidad y documentación: **42**
+- legibilidad y documentación: **45**
+- robustez ante casos límite: **40**
 - seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **37**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
-- `duplicates.py`: **18**
-- `healthscore.py`: **17**
 - `memory.py`: **17**
+- `diskreport.py`: **17**
+- `duplicates.py`: **17**
+- `healthscore.py`: **16**
 - `assistant.py`: **15**
-- `browser.py`: **14**
+- `scanner.py`: **14**
 - `quarantine.py`: **14**
 - `branding.py`: **14**
-- `scanner.py`: **13**
+- `settings.py`: **14**
+- `browser.py`: **13**
 - `main.py`: **13**
-- `settings.py`: **13**
-- `safety.py`: **11**
+- `safety.py`: **12**
 - `organizer.py`: **8**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T03:34:33` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo docstrings técnicos en las funciones de validación compleja y normalizando el estilo de los comentarios, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
+- `2026-10-16T03:33:52` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados a los métodos de `Scanner` y funciones auxiliares, clarificando el propósito, el "porqué" de las validaciones de seguridad y los tipos de retorno, además de estandarizar la nomenclatura de los parámetros de tipo para alinearlos con el enfoque de documentación técnica exigido.
+- `2026-10-16T03:33:22` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación de los validadores (`_VALIDATORS`) y sus helpers asociados mediante docstrings explícitos que aclaran el propósito de cada verificación, facilitando el mantenimiento y auditoría del módulo de seguridad sin alterar la lógica.
 - `2026-10-16T03:22:28` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento mediante la adición de Type Hints detallados, la estructuración de la configuración de escaneo como un dataclass para facilitar la escalabilidad y la documentación de las funciones de bajo nivel que interactúan con el kernel.
 - `2026-10-16T03:22:01` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings técnicos detallados en las funciones de bajo nivel y la estandarización de los tipos de retorno, aclarando la intención detrás de las interacciones con la API nativa de Windows.
 - `2026-10-16T03:12:10` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de escaneo y procesamiento, detallando las responsabilidades de cada etapa del pipeline para clarificar cómo el flujo garantiza la seguridad y eficiencia.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T02:46:03` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `purge_all` y `restore_item` al asegurar que las rutas se resuelvan antes de realizar validaciones, previniendo errores de comparación de rutas relativos/absolutos que podrían causar fallos en entornos de ejecución complejos.
 - `2026-10-16T02:45:07` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `trim_working_set` y las consultas de procesos añadiendo validaciones explícitas de tipos y manejo de errores ante fallos inesperados de la API de Windows, asegurando que cualquier entrada malformada sea rechazada antes de interactuar con el sistema operativo.
 - `2026-10-16T02:43:50` **main.py** (manejo de errores y validación de entradas): He mejorado la robustez ante errores de `main.py` mediante una validación más estricta en el método `_collect_settings`, asegurando que el acceso a variables de `ctk.StringVar` y widgets esté encapsulado en bloques `try/except` robustos para evitar que una configuración de entrada malformada (ej. un usuario borrando contenido de un `Entry` esperado como numérico) cause una excepción que interrumpa la persistencia de ajustes.
-- `2026-10-16T02:32:27` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` implementando un manejo explícito de errores de lectura y asegurando la liberación inmediata del descriptor de archivo mediante el bloque `with`, previniendo bloqueos innecesarios en sistemas con alta latencia de E/S.
-- `2026-10-16T01:01:10` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_load_impl` y `save` eliminando la llamada a `resolve()` sobre la ruta del archivo, evitando así que una ruta de configuración pueda ser "engañada" mediante symlinks que apunten fuera de las carpetas validadas o hacia ubicaciones protegidas de nivel de sistema antes de las comprobaciones de integridad.
-- `2026-10-16T01:00:36` **scanner.py** (seguridad defensiva): Se reforzó la seguridad del escáner implementando una validación estricta en `_is_safe_entry` para prevenir ataques de "Path Traversal" o acceso indebido mediante enlaces simbólicos fuera de la raíz, utilizando `Path.resolve()` comparado contra la ruta base resuelta antes de permitir cualquier operación de lectura o heurística.
