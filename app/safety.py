@@ -65,7 +65,7 @@ class SecurityDescriptor(NamedTuple):
                 is_readonly=bool(attrs & Win32Attr.READONLY),
                 is_reparse=bool(attrs & Win32Attr.REPARSE_POINT)
             )
-        except Exception:
+        except (OSError, ctypes.ArgumentError, AttributeError):
             return cls(0, True, True, True, True)
 
 class FileMetadata(TypedDict):
@@ -599,11 +599,17 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                                 ("nFileSizeLow", ctypes.c_uint32)]
                 
                 data = WIN32_FILE_ATTRIBUTE_DATA()
-                if not ctypes.windll.kernel32.GetFileAttributesExW(_to_long_path(str(path)), 0, ctypes.byref(data)):
+                try:
+                    res = ctypes.windll.kernel32.GetFileAttributesExW(_to_long_path(str(path)), 0, ctypes.byref(data))
+                except (ctypes.ArgumentError, AttributeError):
+                    res = 0
+                
+                if not res:
                     err = ctypes.windll.kernel32.GetLastError()
                     if err == ERROR_FILE_NOT_FOUND:
                         raise UnsafePathError(f"Archivo inexistente: {path.name}", SafetyValidationErrorCode.IO_ERROR)
-                    raise UnsafePathError(f"Acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+                    if err == ERROR_ACCESS_DENIED:
+                        raise UnsafePathError(f"Acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
             return path.stat()
         except (PermissionError, FileNotFoundError):
             raise UnsafePathError(f"Acceso denegado o archivo inexistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)

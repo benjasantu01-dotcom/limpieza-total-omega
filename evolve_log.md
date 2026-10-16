@@ -536,3 +536,39 @@ assert ['arc'] == []
 - `2026-10-16T07:08:20` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-16T07:08:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T07:08:20` Corrida terminada. Total usado hoy: 168.
+- `2026-10-16T07:15:44` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-10-16T07:16:31` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine.py` mediante la validación proactiva y el uso de `is_safe_to_modify` en operaciones de `purge_all`, evitando riesgos de excepciones no controladas al procesar archivos fuera del manifiesto y garantizando que las condiciones de seguridad se verifiquen antes de intentar cualquier operación de sistema.
+- `2026-10-16T07:16:36` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T07:16:40` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-16T07:16:47` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-16T07:17:33` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-16T07:18:20` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_get_path_stat_robust` y `_get_security_descriptor` mediante el manejo explícito de excepciones de bajo nivel en las llamadas a `ctypes`, evitando fallos silenciosos y capturando errores de acceso específicos en lugar de excepciones genéricas.
+- `2026-10-16T07:18:39` Tests FALLARON:
+```
+stem_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+>       assert flagged is not None and flagged.severity == "warning"
+E       assert (None is not None)
+
+evolve/tests/test_basic.py:213: AssertionError
+=============================== warnings summary ===============================
+app/scanner.py:187
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/scanner.py:187: SyntaxWarning: invalid escape sequence '\s'
+    """Detecta binarios que usan nombres de procesos críticos del SO fuera de sus rutas legítimas (ej: c:\temp\svchost.exe)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - assert None is not None
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - assert (None is not None)
+2 failed, 297 passed, 8 warnings in 1.62s
+
+```
+- `2026-10-16T07:18:39` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez del módulo `scanner.py` mediante la validación proactiva de tipos y valores nulos en los parámetros de entrada de las heurísticas, evitando errores de ejecución (`AttributeError` o `TypeError`) al procesar rutas malformadas.
+- `2026-10-16T07:18:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T07:18:39` Corrida terminada. Total usado hoy: 172.

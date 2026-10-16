@@ -307,7 +307,7 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
     Eliminación segura: valida permisos, hash, inodo y ausencia de bloqueos 
     antes de invocar unlink del sistema con protección contra enlaces simbólicos.
     """
-    if is_protected_path(path):
+    if not is_safe_to_modify(path) or is_protected_path(path):
         return False
     
     # Prevenir ADS (Alternate Data Streams) en Windows
@@ -1075,7 +1075,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                     purged_ids.add(item_map[f.name].item_id)
             else:
                 # Archivo huérfano: si está dentro del sandbox y es seguro, lo eliminamos
-                if _safe_unlink(f):
+                if is_safe_to_modify(f) and _safe_unlink(f):
                     continue
         
         if purged_ids:
