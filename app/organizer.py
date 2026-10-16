@@ -368,7 +368,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             try:
                 if not item.is_file() or item.is_symlink(): continue
                 item_res = item.resolve(strict=True)
-                # Verifica que el archivo a borrar esté contenido en el directorio de revisión (evita escape de ruta)
+                # Verifica que el archivo a borrar sea hijo directo del directorio de revisión para evitar escapes
                 if dest_res != item_res.parent: continue
                 if not is_safe_to_modify(item_res) or is_protected_path(item_res): continue
                 

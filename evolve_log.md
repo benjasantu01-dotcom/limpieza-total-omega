@@ -1475,3 +1475,22 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-10-16T05:04:54` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
 - `2026-10-16T05:04:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T05:04:54` Corrida terminada. Total usado hoy: 120.
+- `2026-10-16T05:13:23` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-10-16T05:14:36` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `on_save_settings` al añadir una re-validación explícita de `safety.is_safe_to_modify` sobre todas las rutas contenidas en los ajustes (especialmente `carpeta_excluida`) antes de proceder con el guardado, previniendo que una modificación manual externa o un error de lógica del usuario corrompa la persistencia con rutas fuera de los límites permitidos.
+- `2026-10-16T05:15:04` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré la seguridad en `_is_process_executable_safe` añadiendo una validación explícita mediante `is_protected_path` sobre rutas normalizadas, asegurando que solo se procesen rutas absolutas y evitando el acceso a archivos de sistema incluso si `GetModuleFileNameExW` retorna una ruta válida pero sensible.
+- `2026-10-16T05:15:05` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T05:15:38` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha reforzado la seguridad en `delete_reviewed` implementando una validación de alcance mediante `is_relative_to` (o comparación de padres resueltos) y bloqueando explícitamente el borrado de archivos que no residan bajo la carpeta de revisión definida, mitigando riesgos de inyección de rutas (`path traversal`).
+- `2026-10-16T05:16:06` Tests FALLARON:
+```
+was - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: [Errno 9] Bad file descriptor
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: [Errno 9] Bad file descriptor
+8 failed, 291 passed, 7 warnings in 2.19s
+
+```
+- `2026-10-16T05:16:06` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad de `_write_temp_to_final` agregando una validación estricta de "Owner/Group" tras la copia (en sistemas compatibles con POSIX) para evitar ataques de manipulación de permisos durante el aislamiento, además de asegurar que el descriptor de archivo no sea un enlace simbólico mediante `O_NOFOLLOW` en la apertura final.
+- `2026-10-16T05:16:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T05:16:06` Corrida terminada. Total usado hoy: 124.

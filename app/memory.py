@@ -398,7 +398,10 @@ def _is_process_executable_safe(pid: int, handle: int) -> bool:
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
             path_str: str = buf.value
             if not path_str or path_str.startswith("\\\\"): return False
-            return not is_protected_path(path_str)
+            
+            # Normalizar ruta para asegurar chequeo contra lista negra
+            abs_path = os.path.abspath(path_str)
+            return not is_protected_path(abs_path)
     except (ctypes.ArgumentError, OSError, ValueError, RuntimeError):
         return False
     return False

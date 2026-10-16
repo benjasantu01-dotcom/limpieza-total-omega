@@ -2024,9 +2024,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         try:
             propuestos = self._collect_settings()
             
+            # Validación de seguridad defensiva sobre las rutas de configuración
             if "carpeta_excluida" in propuestos and propuestos["carpeta_excluida"]:
-                if not self._is_safe_disk_operation(propuestos["carpeta_excluida"]):
-                    self.log(f"Error: Ruta de configuración restringida: {propuestos['carpeta_excluida']}", "Ajustes")
+                path_to_check = Path(propuestos["carpeta_excluida"]).resolve(strict=False)
+                if not path_to_check.exists() or not safety.is_safe_to_modify(path_to_check):
+                    self.log(f"Error: Ruta de configuración restringida o inexistente: {propuestos['carpeta_excluida']}", "Ajustes")
                     return
 
             if propuestos.get("asistente_activado") and not self.settings.get("asistente_activado"):
