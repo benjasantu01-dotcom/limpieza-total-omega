@@ -48,6 +48,13 @@ JUNK_EXTENSIONS: Final[frozenset[str]] = frozenset({
 })
 JUNK_EXTENSIONS_TUPLE: Final[tuple[str, ...]] = tuple(JUNK_EXTENSIONS)
 
+@dataclass(frozen=True)
+class ScanSettings:
+    """Configuración inmutable para el proceso de escaneo de archivos."""
+    max_depth: int = MAX_SCAN_DEPTH
+    max_size: int = MAX_FILE_SIZE_BYTES
+    extensions: tuple[str, ...] = JUNK_EXTENSIONS_TUPLE
+
 class SortConfig(NamedTuple):
     """Configuración que mapea un campo de ordenamiento con su función de extracción."""
     field: str
@@ -115,7 +122,10 @@ def is_valid_junk_extension(filename: str) -> bool:
     return Path(filename).suffix.lower() in JUNK_EXTENSIONS
 
 def _get_win_attributes(entry: os.DirEntry) -> int:
-    """Obtiene una máscara de bits de atributos de archivo de Windows mediante llamadas nativas."""
+    """
+    Obtiene la máscara de bits de atributos de archivo de Windows utilizando el 
+    atributo st_file_attributes expuesto por os.DirEntry.stat() en entornos NT.
+    """
     try:
         return entry.stat(follow_symlinks=False).st_file_attributes
     except (OSError, AttributeError, ValueError):
@@ -153,7 +163,10 @@ def _is_allowed_directory(name: str) -> bool:
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 def _try_open_win_file(path: Path) -> bool:
-    """Intenta obtener acceso de lectura exclusivo a un archivo bajo Windows para detectar bloqueos."""
+    """
+    Intenta abrir un handle de lectura exclusiva (ShareMode: 0) en Windows.
+    Si falla, se asume que el archivo está bloqueado por otro proceso.
+    """
     handle = ctypes.windll.kernel32.CreateFileW(
         str(path), 0x80000000, 0x00000001, None, 3, 0x00000080, None
     )

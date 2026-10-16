@@ -1233,3 +1233,22 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-16T03:13:31` ➖ Sin cambios en main.py (enfoque: legibilidad y documentación). Motivo: Se ha mejorado la documentación y la mantenibilidad de `main.py` mediante la adición de Type Hints en los métodos que gestionan la creación de widgets de la interfaz, asegurando que los parámetros sean explícitos y facilitando la navegación del código.
 - `2026-10-16T03:13:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T03:13:31` Corrida terminada. Total usado hoy: 76.
+- `2026-10-16T03:21:28` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-10-16T03:22:01` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la adición de docstrings técnicos detallados en las funciones de bajo nivel y la estandarización de los tipos de retorno, aclarando la intención detrás de las interacciones con la API nativa de Windows.
+- `2026-10-16T03:22:28` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y el mantenimiento mediante la adición de Type Hints detallados, la estructuración de la configuración de escaneo como un dataclass para facilitar la escalabilidad y la documentación de las funciones de bajo nivel que interactúan con el kernel.
+- `2026-10-16T03:23:16` Tests FALLARON:
+```
+_restoring - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: [Errno 21] Is a directory: 13
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: [Errno 21] Is a directory: 15
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: [Errno 21] Is a directory: 17
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: [Errno 21] Is a directory: 19
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: [Errno 21] Is a directory: 21
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: [Errno 21] Is a directory: 23
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: [Errno 21] Is a directory: 25
+8 failed, 291 passed, 7 warnings in 2.06s
+
+```
+- `2026-10-16T03:23:16` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_safe_unlink` y `quarantine_file` para reducir el anidamiento excesivo y clarificar el flujo de control, añadiendo docstrings descriptivos a los bloques lógicos más críticos.
+- `2026-10-16T03:23:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-16T03:23:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T03:23:22` Corrida terminada. Total usado hoy: 80.
