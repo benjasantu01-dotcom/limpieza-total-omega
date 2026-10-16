@@ -329,16 +329,17 @@ def _iter_process_memory(kernel32: ctypes.WinDLL, psapi: ctypes.WinDLL, pmc: PRO
     pids = (ctypes.c_uint32 * max_pids)()
     cb_needed = ctypes.c_uint32(0)
     
-    # EnumProcesses retorna non-zero en caso de éxito
-    if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
-        # Calcular el número real de PIDs devueltos por el sistema
-        count = min(max_pids, cb_needed.value // ctypes.sizeof(ctypes.c_uint32))
-        for i in range(count):
-            pid = int(pids[i])
-            if pid > 4:
-                ws = _query_working_set_bytes(pid, kernel32, psapi, pmc)
-                if ws is not None:
-                    yield ProcessMemory(f"PID {pid}", pid, ws)
+    try:
+        if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
+            count = min(max_pids, cb_needed.value // ctypes.sizeof(ctypes.c_uint32))
+            for i in range(count):
+                pid = int(pids[i])
+                if pid > 4:
+                    ws = _query_working_set_bytes(pid, kernel32, psapi, pmc)
+                    if ws is not None:
+                        yield ProcessMemory(f"PID {pid}", pid, ws)
+    except (ctypes.ArgumentError, OSError, ValueError):
+        pass
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Enumera procesos activos y retorna los N más pesados usando una caché de 60 segundos."""
@@ -355,10 +356,8 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
         
         try:
-            _CACHE_TOP_PROC = CacheEntry(
-                now, 
-                _get_top_n(list(_iter_process_memory(kernel32, psapi, pmc)), limit)
-            )
+            raw_list = list(_iter_process_memory(kernel32, psapi, pmc))
+            _CACHE_TOP_PROC = CacheEntry(now, _get_top_n(raw_list, limit))
         except (ctypes.ArgumentError, OSError, TypeError):
             pass
             

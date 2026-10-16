@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 30
-- Rechazadas por guardia de seguridad: 47
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 225
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 94 | 12 | 27 | 9 | 94 |
-| 2026-10-16 | 91 | 18 | 20 | 8 | 131 |
+| 2026-10-15 | 94 | 12 | 24 | 9 | 93 |
+| 2026-10-16 | 93 | 18 | 20 | 8 | 133 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,15 +25,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - seguridad defensiva: **38**
 - legibilidad y documentación: **38**
 - rendimiento: **35**
-- manejo de errores y validación de entradas: **30**
+- manejo de errores y validación de entradas: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
+- `memory.py`: **18**
 - `duplicates.py`: **17**
-- `memory.py`: **17**
+- `healthscore.py`: **17**
 - `quarantine.py`: **17**
-- `healthscore.py`: **16**
 - `scanner.py`: **14**
 - `assistant.py`: **14**
 - `settings.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T11:34:16` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `top_memory_processes` añadiendo validaciones de tipo y estructura al resultado de `EnumProcesses` para evitar excepciones en tiempo de ejecución, además de asegurar que el acceso a `psapi` se gestione con mayor cuidado ante errores inesperados del sistema.
+- `2026-10-16T11:31:45` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `summarize` y `compute_score` validando explícitamente los datos de entrada para evitar excepciones imprevistas si el sistema recibe métricas parcialmente corruptas o resultados de análisis nulos.
 - `2026-10-16T11:22:25` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `_collect_summary_data` envolviendo las llamadas de alto riesgo en bloques `try...except` específicos para evitar que errores inesperados de I/O detengan el escaneo completo de forma silenciosa, y agregué una validación de tipo en `summarize` para asegurar que las entradas del heap no causen errores de desempacado.
 - `2026-10-16T09:59:29` **settings.py** (seguridad defensiva): Se ha mejorado la robustez de las validaciones de ruta añadiendo un chequeo explícito de `is_protected_path` en `_is_safe_path` y reforzando `perform_atomic_write` para evitar escrituras en archivos que hayan mutado a symlinks durante la ejecución, asegurando que el estado del sistema de archivos sea consistente con las expectativas de seguridad.
 - `2026-10-16T09:51:28` **scanner.py** (seguridad defensiva): Se ha restringido el acceso a archivos de sistema durante el escaneo al integrar `is_protected_path` directamente en `_is_safe_entry`, garantizando que ninguna ruta protegida (según la lista global de `safety.py`) sea procesada ni encolada, cumpliendo estrictamente con el enfoque de seguridad defensiva.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T09:09:07` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite mediante la adición de un chequeo de espacio en disco previo al inicio de cualquier operación de aislamiento (`_ensure_disk_space`), evitando fallos en mitad de la transferencia (operación atómica), y se ha reforzado `_is_filesystem_read_only` para manejar escenarios de sistemas de archivos bloqueados o sin permisos antes de realizar cualquier escritura.
 - `2026-10-16T09:01:34` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_iter_process_memory` para manejar correctamente escenarios donde `EnumProcesses` falla parcialmente o devuelve listas incompletas, y se agregó una validación de `ctypes.c_uint32` en el buffer de PIDs para evitar errores de memoria ante valores inesperados del sistema.
 - `2026-10-16T08:59:40` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez del motor de cómputo ante entradas nulas, estructuras de datos corruptas o valores extremos dentro de `SystemMetrics` mediante la implementación de una validación más estricta en el método `__post_init__` y una garantía de integridad previa al procesamiento del pipeline en `compute_score`.
-- `2026-10-16T08:50:18` **diskreport.py** (robustez ante casos límite): Se mejoró la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o inaccesibles durante la iteración, envolviendo la llamada al generador en un bloque `try-except` para evitar que una falla puntual en la lectura de atributos detenga el escaneo completo de un disco.
-- `2026-10-16T08:48:48` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` y las funciones de renderizado gráfico mediante el manejo explícito de valores de entrada extremos y rutas inexistentes, asegurando que `ensure_safe_to_modify` se utilice correctamente y evitando fallos ante escalados o dimensiones inválidas que podrían corromper la interfaz.
