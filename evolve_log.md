@@ -772,3 +772,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-16T09:20:25` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad de la función `ask` y `_call_gemini` integrando un chequeo explícito que impide el envío de datos si el contexto contiene una estructura insegura, evitando que errores de lógica en capas superiores se propaguen hacia la red.
 - `2026-10-16T09:20:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-16T09:20:25` Corrida terminada. Total usado hoy: 220.
+- `2026-10-16T09:28:09` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-10-16T09:28:42` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T09:28:49` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-16T09:29:50` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-10-16T09:30:17` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-10-16T09:30:17` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T09:30:48` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_excluded_path` añadiendo una validación explícita mediante `pathlib` para asegurar que, tras resolver rutas, la entrada escaneada no intente escapar del directorio raíz mediante ataques de tipo "path traversal" (ej. `..`), previniendo fugas de contexto fuera del árbol de directorios permitido.
+- `2026-10-16T09:30:51` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-16T09:31:07` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha robustecido la detección de rutas en `is_junction` y `_collect_candidates` mediante el uso de `os.path.realpath` y la validación explícita de puntos de reanálisis para evitar la recursión infinita o el seguimiento involuntario de enlaces simbólicos fuera de las zonas permitidas.
+- `2026-10-16T09:31:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-16T09:31:07` Corrida terminada. Total usado hoy: 224.

@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Mejoras aceptadas: **195** (38.7% de aceptación)
 - Rechazadas por tests: 30
 - Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 110 | 14 | 29 | 9 | 122 |
-| 2026-10-16 | 83 | 16 | 19 | 6 | 96 |
+| 2026-10-15 | 110 | 14 | 29 | 9 | 118 |
+| 2026-10-16 | 85 | 16 | 19 | 6 | 98 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,12 +25,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - robustez ante casos límite: **44**
 - manejo de errores y validación de entradas: **38**
 - rendimiento: **35**
-- seguridad defensiva: **31**
+- seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
-- `duplicates.py`: **18**
+- `diskreport.py`: **20**
+- `duplicates.py`: **19**
 - `memory.py`: **18**
 - `healthscore.py`: **17**
 - `quarantine.py`: **17**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-16T09:31:07` **duplicates.py** (seguridad defensiva): Se ha robustecido la detección de rutas en `is_junction` y `_collect_candidates` mediante el uso de `os.path.realpath` y la validación explícita de puntos de reanálisis para evitar la recursión infinita o el seguimiento involuntario de enlaces simbólicos fuera de las zonas permitidas.
+- `2026-10-16T09:30:48` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` añadiendo una validación explícita mediante `pathlib` para asegurar que, tras resolver rutas, la entrada escaneada no intente escapar del directorio raíz mediante ataques de tipo "path traversal" (ej. `..`), previniendo fugas de contexto fuera del árbol de directorios permitido.
 - `2026-10-16T09:20:25` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de la función `ask` y `_call_gemini` integrando un chequeo explícito que impide el envío de datos si el contexto contiene una estructura insegura, evitando que errores de lógica en capas superiores se propaguen hacia la red.
 - `2026-10-16T09:19:05` **settings.py** (robustez ante casos límite): Mejoré la resiliencia en la inicialización del archivo `config.json` manejando explícitamente posibles excepciones de concurrencia y permisos durante la creación del directorio base y la verificación de seguridad, evitando que la app falle si el sistema operativo bloquea la escritura temporalmente o si el usuario carece de permisos de escritura en la ruta configurada.
 - `2026-10-16T09:09:07` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite mediante la adición de un chequeo de espacio en disco previo al inicio de cualquier operación de aislamiento (`_ensure_disk_space`), evitando fallos en mitad de la transferencia (operación atómica), y se ha reforzado `_is_filesystem_read_only` para manejar escenarios de sistemas de archivos bloqueados o sin permisos antes de realizar cualquier escritura.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T08:19:01` **healthscore.py** (rendimiento): Se optimizó el acceso a las reglas de diagnóstico dentro del pipeline mediante el uso de una caché de diccionario (`_RULES_CACHE`) para evitar la recreación o reevaluación innecesaria de objetos en cada corrida, mejorando la eficiencia al procesar métricas recurrentes.
 - `2026-10-16T08:18:34` **duplicates.py** (rendimiento): Optimizé la recolección de archivos introduciendo un chequeo de `st_size` previo en `_collect_candidates` para evitar realizar llamadas a `stat` adicionales o instanciar objetos `Path` innecesarios dentro de los bucles de escaneo profundo, mejorando el rendimiento en discos con alta densidad de archivos.
 - `2026-10-16T08:09:03` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas costosas a `Path.resolve()` dentro del bucle principal, utilizando `os.path.join` y `os.path.normpath` para validar la contención del sandbox sin realizar I/O innecesario.
-- `2026-10-16T08:07:21` **startup.py** (legibilidad y documentación): Se han documentado las restricciones de seguridad, el propósito del caché y la lógica de resolución de rutas mediante docstrings detallados, mejorando la mantenibilidad del código sin alterar su comportamiento funcional.
-- `2026-10-16T07:58:51` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `scanner.py` mediante la implementación de `TypeAlias` explícitos y docstrings detallados en las funciones de heurística, clarificando el propósito, el contrato de los parámetros y el comportamiento ante errores para facilitar el mantenimiento y la extensibilidad del motor de escaneo.

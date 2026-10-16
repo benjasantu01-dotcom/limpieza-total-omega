@@ -155,7 +155,8 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
             return True
             
         entry_path = Path(entry.path).resolve()
-        if not str(entry_path).startswith(str(root_path)):
+        # Seguridad: Bloquea rutas que intenten salir del directorio raíz (path traversal)
+        if root_path not in entry_path.parents and entry_path != root_path:
             return True
             
         if is_protected_path(entry_path):
