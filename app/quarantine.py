@@ -283,42 +283,35 @@ def _is_file_in_use_by_system(path: Path) -> bool:
             
     return not _is_file_exclusive(path)
 
+def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected_inode: Inode) -> bool:
+    """Valida los prerrequisitos de integridad antes de realizar el unlinking."""
+    try:
+        if not is_safe_to_modify(path) or is_protected_path(path):
+            return False
+        if ":" in path.name:
+            return False
+            
+        st = path.stat()
+        if st.st_nlink > 1 or (expected_inode != 0 and st.st_ino != expected_inode):
+            return False
+        if hasattr(os, 'getuid') and st.st_uid != os.getuid():
+            return False
+        
+        if expected_hash and _get_sha256(path) != expected_hash:
+            return False
+        
+        if _is_file_in_use_by_system(path):
+            return False
+        return True
+    except (OSError, PermissionError):
+        return False
+
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0) -> bool:
     """Elimina un archivo tras validar su integridad, hash e inodo."""
-    if not is_safe_to_modify(path) or is_protected_path(path):
-        return False
-    
-    if ":" in path.name:
+    if not _validate_file_for_unlink(path, expected_hash, expected_inode):
         return False
         
     try:
-        flags = os.O_RDONLY
-        if hasattr(os, 'O_NOFOLLOW'):
-            flags |= os.O_NOFOLLOW
-        
-        fd = os.open(path, flags)
-        try:
-            st = os.fstat(fd)
-            if st.st_nlink > 1 or (expected_inode != 0 and st.st_ino != expected_inode):
-                return False
-            if hasattr(os, 'getuid') and st.st_uid != os.getuid():
-                return False
-            
-            if expected_hash:
-                hasher = hashlib.sha256()
-                with os.fdopen(fd, "rb", closefd=False) as handle:
-                    while True:
-                        chunk = handle.read(CHUNK_SIZE)
-                        if not chunk: break
-                        hasher.update(chunk)
-                if hasher.hexdigest() != expected_hash:
-                    return False
-        finally:
-            os.close(fd)
-            
-        if _is_file_in_use_by_system(path):
-            return False
-            
         parent = path.parent
         _check_io_error_context(path.unlink)
         
@@ -326,7 +319,6 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
             dir_fd = os.open(str(parent), os.O_RDONLY)
             try: os.fsync(dir_fd)
             finally: os.close(dir_fd)
-        
         return True
     except (OSError, PermissionError):
         return False

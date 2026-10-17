@@ -127,15 +127,16 @@ def _get_file_size(path: Path) -> int:
     if not isinstance(path, Path): 
         return -1
     try:
-        stat_result = path.stat()
-        return int(stat_result.st_size)
+        return int(path.stat().st_size)
     except (OSError, PermissionError, FileNotFoundError, AttributeError, ValueError, TypeError):
         return -1
 
 def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
     """Retorna metadatos solo si es un archivo estándar, excluyendo symlinks y reparse points."""
+    if entry is None:
+        return None
     try:
-        if entry is None or entry.is_symlink():
+        if entry.is_symlink():
             return None
         if not entry.is_file(follow_symlinks=False):
             return None

@@ -947,9 +947,11 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC)
-        
+    
+    # Validar entrada basica antes de convertir
     if not isinstance(path, (str, Path, os.PathLike)):
         raise UnsafePathError(f"Tipo de ruta no soportado: {type(path).__name__}", SafetyValidationErrorCode.GENERIC)
+        
     try:
         path_str = str(path)
         if not path_str.strip():
