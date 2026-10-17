@@ -1705,3 +1705,51 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-17T01:58:39` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._check_path_safety, _Validators._run_safety_checks, _Validators._validate_enum_str
 - `2026-10-17T01:58:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T01:58:39` Corrida terminada. Total usado hoy: 48.
+- `2026-10-17T02:07:02` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-10-17T02:07:31` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-17T02:08:13` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó la estructura de datos del mapa de tokens de funciones (`_TOKENS_MAP`) y se redujo la complejidad de la búsqueda en `local_answer` utilizando un `set` precalculado (`_TOKEN_KEYS`) y un mapeo directo, eliminando búsquedas innecesarias en cada iteración del bucle.
+- `2026-10-17T02:09:13` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-17T02:10:16` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-17T02:10:57` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimizé la generación de gradientes en `branding.py` reemplazando la lógica de interpolación lineal por una caché de `_rgb_to_hex` más agresiva y simplificando el cálculo de segmentos para reducir la carga de CPU durante el renderizado de la UI.
+- `2026-10-17T02:11:08` Tests FALLARON:
+```
+eligrosa.mkdir(parents=True)
+        (peligrosa / "x").write_text("secreto")
+>       assert browser.detect_profiles(
+            bases=[tmp_path], cache_paths={"Chrome": r"Perfil\Cookies"}
+        ) == []
+E       AssertionError: assert [BrowserCache...size_bytes=7)] == []
+E         
+E         Left contains one more item: BrowserCache(browser='Chrome', path=PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_never_rep0/Perfil/Cookies'), size_bytes=7)
+E         
+E         Full diff:
+E         - []
+E         + [
+E         +     BrowserCache(
+E         +         browser='Chrome',
+E         +         path=PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_never_rep0/Perfil/Cookies'),
+E         +         size_bytes=7,
+E         +     ),
+E         + ]
+
+evolve/tests/test_modules.py:755: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_data_folders - AssertionError: assert [BrowserCache...size_bytes=7)] == []
+  
+  Left contains one more item: BrowserCache(browser='Chrome', path=PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_never_rep0/Perfil/Cookies'), size_bytes=7)
+  
+  Full diff:
+  - []
+  + [
+  +     BrowserCache(
+  +         browser='Chrome',
+  +         path=PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_never_rep0/Perfil/Cookies'),
+  +         size_bytes=7,
+  +     ),
+  + ]
+1 failed, 298 passed in 1.65s
+
+```
+- `2026-10-17T02:11:08` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento del escaneo recursivo mediante la reutilización del estado del `ScanContext` y la eliminación de llamadas redundantes a `resolve(strict=True)` dentro de los bucles, aprovechando la normalización de rutas previa.
+- `2026-10-17T02:11:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T02:11:08` Corrida terminada. Total usado hoy: 52.

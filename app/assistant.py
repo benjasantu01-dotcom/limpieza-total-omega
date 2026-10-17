@@ -637,7 +637,6 @@ _TOKENS_MAP: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
     "puntaje": handle_score, "salud": handle_score, "nota": handle_score, "score": handle_score,
     "inicio": handle_startup, "arranque": handle_startup, "arranca": handle_startup, "encender": handle_startup
 }
-_TOKEN_KEYS: Final[set[str]] = set(_TOKENS_MAP.keys())
 
 def _sanitize_query(question: str) -> str:
     """Limpia, trunca y desinfecta la consulta del usuario antes del procesamiento."""
@@ -660,10 +659,11 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     if not q_sanitized:
         return Answer("Entrada no válida.")
     
-    # Búsqueda optimizada: O(M) sobre palabras de la pregunta, donde M es longitud consulta, vs O(N_tokens)
+    # Búsqueda O(M) sobre palabras de la pregunta
     for word in _TOKEN_REGEX.findall(q_sanitized.lower()):
-        if word in _TOKENS_MAP:
-            return _TOKENS_MAP[word](context, question)
+        handler = _TOKENS_MAP.get(word)
+        if handler:
+            return handler(context, question)
             
     cuerpo: str = _format_problem_message(context.active_problems, context.score if context.score is not None else "N/A")
     return Answer(_validate_response_length(cuerpo), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
