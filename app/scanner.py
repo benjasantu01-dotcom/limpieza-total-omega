@@ -320,8 +320,10 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
         """
         Gestiona la ramificación del escaneo entre directorios y archivos.
-        Valida la seguridad de la entrada y, si es directorio, lo encola; si es archivo,
-        ejecuta la suite de heurísticas solo si su extensión es relevante.
+        
+        Determina si la entrada es un directorio para continuar la recursión o 
+        si es un archivo candidato a análisis heurístico. Valida la seguridad 
+        antes de cualquier operación de I/O.
         """
         if entry is None or not hasattr(entry, 'path') or not entry.path:
             return
@@ -379,7 +381,13 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """Realiza el escaneo recursivo mediante una estructura de pila (stack) sobre un directorio base."""
+    """
+    Realiza el escaneo recursivo mediante una estructura de pila (stack) sobre 
+    un directorio base, validando permisos y rutas antes de iniciar el proceso.
+    
+    Returns:
+        Una lista de objetos Suspicion encontrados durante el recorrido.
+    """
     if directory is None: return []
     try:
         path_str: str = str(directory).strip()

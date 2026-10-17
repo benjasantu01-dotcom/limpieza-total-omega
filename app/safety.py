@@ -39,6 +39,19 @@ class SafetyAction(Enum):
     READ = auto()
     MODIFY = auto()
 
+class Win32Attr(IntEnum):
+    """Mapeo de constantes de atributos de archivos Win32."""
+    READONLY: int = 0x01
+    HIDDEN: int = 0x02
+    SYSTEM: int = 0x04
+    DIRECTORY: int = 0x10
+    TEMPORARY: int = 0x100
+    SPARSE_FILE: int = 0x200
+    REPARSE_POINT: int = 0x400
+    COMPRESSED: int = 0x800
+    OFFLINE: int = 0x1000
+    ENCRYPTED: int = 0x4000
+
 class SecurityDescriptor(NamedTuple):
     """Contenedor de metadatos de seguridad extraídos vía Win32 API."""
     attrs: int
@@ -58,7 +71,10 @@ class SecurityDescriptor(NamedTuple):
             return cls(0, True, True, True, True)
         try:
             attrs = _get_file_attrs(path_str)
-            is_protected = bool(attrs & (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | Win32Attr.TEMPORARY | Win32Attr.REPARSE_POINT))
+            # Agrupa atributos de riesgo sistémico
+            risk_flags = (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | 
+                          Win32Attr.TEMPORARY | Win32Attr.REPARSE_POINT)
+            is_protected = bool(attrs & risk_flags)
             is_in_use = is_protected or (attrs != INVALID_FILE_ATTRIBUTES and _is_file_locked_by_other_process(path_str))
             
             return cls(
@@ -92,19 +108,6 @@ __all__ = [
     "describe_protection",
     "is_running_as_admin",
 ]
-
-class Win32Attr(IntEnum):
-    """Mapeo de constantes de atributos de archivos Win32."""
-    READONLY: int = 0x01
-    HIDDEN: int = 0x02
-    SYSTEM: int = 0x04
-    DIRECTORY: int = 0x10
-    TEMPORARY: int = 0x100
-    SPARSE_FILE: int = 0x200
-    REPARSE_POINT: int = 0x400
-    COMPRESSED: int = 0x800
-    OFFLINE: int = 0x1000
-    ENCRYPTED: int = 0x4000
 
 MAX_PATH_LENGTH: Final[int] = 260
 MAX_FILENAME_LENGTH: Final[int] = 255
@@ -179,7 +182,6 @@ class SafetyValidationErrorCode(IntEnum):
     OFFLINE_FILE = 18
     ENCRYPTED_OR_COMPRESSED = 19
     VOLUME_READ_ONLY = 20
-    REMOTE_DRIVE_DETECTED = 21
     REMOVABLE_DRIVE_DETECTED = 22
     KERNEL_LOCKED_FILE = 23
     WRITE_ACCESS_DENIED = 24
@@ -250,7 +252,7 @@ PROTECTED_DIR_NAMES: Final[set[str]] = {
 
 SENSITIVE_EXTENSIONS: Final[set[str]] = {
     ".sys", ".dll", ".exe", ".msi", ".drv", ".ocx", ".cpl", ".efi",
-    ".reg", ".pol", ".key", ".pem", ".pfx", ".pfx", ".p12", ".crt", ".cer",
+    ".reg", ".pol", ".key", ".pem", ".pfx", ".p12", ".crt", ".cer",
 }
 
 _SYSTEM_ROOT_PATHS: Final[set[Path]] = {
@@ -292,10 +294,7 @@ def is_running_as_admin() -> bool:
 
 @lru_cache(maxsize=128)
 def _is_virtual_drive(path_str: str) -> bool:
-    """
-    Detecta si la unidad es un remapeo de dispositivo virtual o unión de DOS.
-    Evita que operaciones de archivo afecten unidades montadas fuera del alcance local.
-    """
+    """Detecta si la unidad es un remapeo de dispositivo virtual."""
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
     drive = os.path.splitdrive(path_str)[0]
     if not drive: return False
@@ -311,15 +310,13 @@ def _is_virtual_drive(path_str: str) -> bool:
     return False
 
 def _is_file_owned_by_system(path_str: str) -> bool:
-    """
-    Valida la propiedad mediante el Security Identifier (SID) de sistema.
-    Bloquea la modificación de objetos cuyos permisos pertenecen a la cuenta SYSTEM.
-    """
+    """Valida la propiedad mediante el SID de sistema (SYSTEM/LocalService)."""
     if os.name != 'nt' or not isinstance(path_str, str): return False
     try:
         advapi32 = ctypes.windll.advapi32
         kernel32 = ctypes.windll.kernel32
         sid_ptr = ctypes.c_void_p()
+        # SE_FILE_OBJECT = 1, DACL_SECURITY_INFORMATION = 0x00000004
         res = advapi32.GetNamedSecurityInfoW(
             path_str, 1, 0x00000001, ctypes.byref(sid_ptr), None, None, None, None
         )
@@ -336,10 +333,7 @@ def _is_file_owned_by_system(path_str: str) -> bool:
     return False
 
 def _has_invalid_chars(path_str: Optional[str]) -> bool:
-    """
-    Busca caracteres de control y secuencias BIDI potencialmente maliciosas.
-    Previene ataques de inyección y ofuscación en nombres de archivos.
-    """
+    """Busca caracteres de control y secuencias BIDI potencialmente maliciosas."""
     if not isinstance(path_str, str) or not path_str: return True
     return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E\u206A-\u206F]', path_str))
 
@@ -365,10 +359,7 @@ def _is_device_file(path: Path) -> bool:
 
 @lru_cache(maxsize=512)
 def _has_alternate_data_stream(path_name: str) -> bool:
-    """
-    Detecta flujos de datos NTFS (ADS) que pueden esconder payloads.
-    Bloquea archivos con streams extra para evitar ejecución de código oculto.
-    """
+    """Detecta flujos de datos NTFS (ADS)."""
     return ":" in path_name and len(path_name.split(":")) > 2
 
 def _is_system_directory_junction(path_str: str) -> bool:
@@ -379,10 +370,7 @@ def _is_system_directory_junction(path_str: str) -> bool:
 
 @lru_cache(maxsize=1024)
 def _is_file_locked_by_other_process(path_str: str) -> bool:
-    """
-    Verifica disponibilidad exclusiva del archivo mediante apertura de solo atributos.
-    Previene colisiones de escritura con procesos del sistema o antivirus.
-    """
+    """Verifica disponibilidad exclusiva mediante apertura de solo atributos."""
     if not isinstance(path_str, str) or os.name != 'nt' or not os.path.isabs(path_str): return False
     if os.path.isdir(path_str) or not os.path.exists(path_str): return False
     
@@ -422,6 +410,7 @@ def _is_volume_readonly(path_str: Optional[str]) -> bool:
         if not os.path.exists(root): return False
         flags = ctypes.c_ulong()
         if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
+            # 0x80000 = FILE_READ_ONLY_VOLUME
             return bool(flags.value & 0x80000)
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError, MemoryError): pass
     return False
@@ -462,6 +451,7 @@ def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
         if not os.path.exists(root): return False
         flags = ctypes.c_ulong()
         if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
+            # 0x10 = FILE_FILE_COMPRESSION, 0x20000 = FILE_SUPPORTS_ENCRYPTION
             return bool(flags.value & (0x10 | 0x20000))
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError): pass
     return False
@@ -507,7 +497,7 @@ def _validate_drive_restrictions(target_path: Path) -> None:
         if drive_type == DRIVE_NO_ROOT_DIR:
             raise UnsafePathError("Unidad inaccesible.", SafetyValidationErrorCode.IO_ERROR)
         if drive_type == DRIVE_REMOTE:
-            raise UnsafePathError("Unidad de red bloqueada.", SafetyValidationErrorCode.REMOTE_DRIVE_DETECTED)
+            raise UnsafePathError("Unidad de red bloqueada.", SafetyValidationErrorCode.IO_ERROR)
         if drive_type == DRIVE_REMOVABLE:
             raise UnsafePathError("Unidad extraíble bloqueada.", SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED)
         if drive_type == DRIVE_CDROM or _is_volume_readonly(str(target_path)):
@@ -575,7 +565,6 @@ _REASON_TO_CODE: Final[dict[ProtectionReason, SafetyValidationErrorCode]] = {
     ProtectionReason.VOLUME_READ_ONLY: SafetyValidationErrorCode.VOLUME_READ_ONLY,
     ProtectionReason.REMOVABLE_DRIVE: SafetyValidationErrorCode.REMOVABLE_DRIVE_DETECTED,
     ProtectionReason.VOLUME_RESTRICTED: SafetyValidationErrorCode.VOLUME_RESTRICTED,
-    ProtectionReason.REMOTE_DRIVE: SafetyValidationErrorCode.REMOTE_DRIVE_DETECTED,
     ProtectionReason.KERNEL_LOCKED: SafetyValidationErrorCode.KERNEL_LOCKED_FILE,
     ProtectionReason.ACCESS_WRITE: SafetyValidationErrorCode.WRITE_ACCESS_DENIED,
     ProtectionReason.MOUNT_POINT: SafetyValidationErrorCode.MOUNT_POINT_DETECTED,
