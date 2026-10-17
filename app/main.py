@@ -197,9 +197,7 @@ def validated_ui_operation(func: Callable) -> Callable:
     Decorador: asegura que la instancia de la app no esté en proceso de cierre
     antes de proceder con la lógica del callback, protegiendo la cola de eventos.
     """
-    @wraps(func)
     def wrapper(self: Any, *args: Any, **kwargs: Any) -> Optional[Any]:
-        # Prevenir ejecución si la app está cerrándose o el componente es inválido
         if getattr(self, '_closing', False) or (hasattr(self, 'winfo_exists') and not self.winfo_exists()):
             return None
         try:
@@ -1995,12 +1993,23 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         except (ValueError, TypeError):
             return default
 
+    def _safe_validate_inputs(self, propuestos: AppSettings) -> bool:
+        """Valida que los inputs del formulario sean seguros antes de procesar."""
+        if "carpeta_excluida" in propuestos and propuestos["carpeta_excluida"]:
+            try:
+                p = Path(propuestos["carpeta_excluida"]).resolve(strict=False)
+                if not p.exists() or not safety.is_safe_to_modify(p):
+                    self.log(f"Error: Ruta restringida o inválida: {propuestos['carpeta_excluida']}", "Ajustes")
+                    return False
+            except Exception:
+                return False
+        return True
+
     def _collect_settings(self) -> AppSettings:
         """Recopila todos los valores de configuración desde los widgets de la UI."""
         valores: AppSettings = dict(self.settings)  # type: ignore
         for clave, variable in self.setting_vars.items():
             try:
-                # Acceso robusto a variables tk.Variable o valores directos
                 val = variable.get() if hasattr(variable, 'get') else variable
                 if isinstance(val, str):
                     val = self._sanitize_path(val)
@@ -2009,7 +2018,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 continue
         
         try:
-            # Validar widgets de entrada antes de extraer valores
             if self._check_widget_integrity(getattr(self, 'min_dup_entry', None)):
                 valores["duplicados_tamano_minimo_kb"] = self._get_numeric_setting_from_widget(self.min_dup_entry, "duplicados_tamano_minimo_kb", 64)
                 
@@ -2031,13 +2039,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Persiste los cambios de configuración en el archivo de ajustes."""
         try:
             propuestos = self._collect_settings()
-            
-            # Validación de seguridad defensiva sobre las rutas de configuración
-            if "carpeta_excluida" in propuestos and propuestos["carpeta_excluida"]:
-                path_to_check = Path(propuestos["carpeta_excluida"]).resolve(strict=False)
-                if not path_to_check.exists() or not safety.is_safe_to_modify(path_to_check):
-                    self.log(f"Error: Ruta de configuración restringida o inexistente: {propuestos['carpeta_excluida']}", "Ajustes")
-                    return
+            if not self._safe_validate_inputs(propuestos):
+                return
 
             if propuestos.get("asistente_activado") and not self.settings.get("asistente_activado"):
                 if not self._confirm(

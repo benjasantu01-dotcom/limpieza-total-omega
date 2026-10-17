@@ -27,7 +27,7 @@ MetricKey: TypeAlias = str
 # Constantes de rendimiento para validación
 _ALLOWED_CHARS: Final[set[str]] = set(string.ascii_letters + string.digits + " .,:()-_%")
 _FORBIDDEN_CHARS: Final[set[str]] = {chr(i) for i in range(32) if chr(i) not in (" ", "\t")} # Bloquear caracteres de control
-_BLOCKED_TERMS: Final[frozenset[str]] = frozenset(["system32", "windows", "admin", "c:\\", "system", "kernel"])
+_BLOCKED_TERMS: Final[frozenset[str]] = frozenset(["system32", "windows", "admin", "c:\\", "system", "kernel", "path", "root", "drive"])
 _MAX_MSG_LEN: Final[int] = 128
 _BAR_CACHE: Dict[Tuple[int, int], str] = {}
 
@@ -258,7 +258,6 @@ class SystemMetrics:
         """Inicializa métricas asegurando tipos correctos tras la creación."""
         for field_name in self._FIELDS_TO_VALIDATE:
             val = getattr(self, field_name)
-            # Forzar conversión temprana y segura para evitar errores de tipo en el pipeline
             setattr(self, field_name, _validate_numeric(val, 0.0, -1.0, 1e9))
         self.validate()
 
@@ -310,8 +309,11 @@ def _sanitize_msg(msg: str | Any) -> str:
 def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:
     """Envoltorio seguro para ejecutar factories de reglas sin exponer errores."""
     try:
-        res = rule.message_factory(metrics)
-        return _sanitize_msg(res)
+        raw_res = rule.message_factory(metrics)
+        if not isinstance(raw_res, str):
+            return ""
+        clean = _sanitize_msg(raw_res)
+        return clean if clean else ""
     except Exception:
         return ""
 
@@ -351,8 +353,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
             metric_breakdown[entry.area] = val_int
             total_points += val_int
-        except Exception as e:
-            logging.error(f"Error técnico procesando métrica {entry.area}: {e}")
+        except Exception:
             metric_breakdown[entry.area] = 0
             
     if m.quarantined_count > 0:

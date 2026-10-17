@@ -251,6 +251,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     p_entry = Path(entry.path)
+                    # Validación estricta de seguridad sobre la entrada detectada
                     if not _safe_path_check(p_entry):
                         continue
                     try:

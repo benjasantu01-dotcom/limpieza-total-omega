@@ -344,7 +344,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         candidates = _get_top_n(_iter_process_memory(kernel32, psapi, pmc), limit * 2)
         validated = []
         for proc in candidates:
-            # Re-validar seguridad solo para el top final
             handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, proc.pid)
             if handle and _is_process_executable_safe(proc.pid, handle):
                 validated.append(proc)
@@ -391,12 +390,13 @@ def _is_process_executable_safe(pid: int, handle: int) -> bool:
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return False
     
-    buf = ctypes.create_unicode_buffer(2048) # Buffer ampliado para rutas largas
+    buf = ctypes.create_unicode_buffer(4096)
     try:
-        length = psapi.GetModuleFileNameExW(handle, None, buf, 2047)
+        length = psapi.GetModuleFileNameExW(handle, None, buf, 4095)
         if length > 0:
             path_str = os.path.abspath(buf.value)
-            if not path_str or path_str.startswith("\\\\"): return False
+            # Evitar rutas UNC potencialmente peligrosas
+            if not path_str or path_str.startswith(r"\\"): return False
             return not is_protected_path(Path(path_str))
     except (ctypes.ArgumentError, OSError):
         pass
