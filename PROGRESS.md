@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **169** (33.5% de aceptación)
+- Mejoras aceptadas: **172** (34.1% de aceptación)
 - Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 52
+- Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 240
+- Sin respuesta de la IA (error o límite): 236
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 103 | 17 | 24 | 11 | 169 |
-| 2026-10-17 | 66 | 6 | 28 | 9 | 71 |
+| 2026-10-16 | 103 | 17 | 24 | 11 | 165 |
+| 2026-10-17 | 69 | 6 | 29 | 9 | 71 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **43**
 - manejo de errores y validación de entradas: **38**
 - rendimiento: **34**
-- robustez ante casos límite: **30**
+- robustez ante casos límite: **33**
 - seguridad defensiva: **24**
 
 ## Mejoras aceptadas por archivo
@@ -33,19 +33,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **18**
 - `duplicates.py`: **17**
 - `quarantine.py`: **14**
+- `safety.py`: **13**
 - `assistant.py`: **13**
+- `settings.py`: **12**
 - `browser.py`: **12**
 - `organizer.py`: **12**
-- `safety.py`: **12**
-- `settings.py`: **11**
+- `scanner.py`: **11**
 - `healthscore.py`: **11**
-- `scanner.py`: **10**
 - `main.py`: **8**
 - `branding.py`: **8**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-17T07:45:06` **settings.py** (robustez ante casos límite): Se reforzó la robustez del cargador de JSON implementando un manejo defensivo ante la lectura de archivos con contenido vacío o malformado, añadiendo una verificación de `encoding` explícita y asegurando que `os.replace` no sea interrumpido por estados de archivo bloqueados mediante una gestión más estricta de los descriptores de archivo (`close` manual antes del reemplazo).
+- `2026-10-17T07:44:22` **scanner.py** (robustez ante casos límite): Se ha robustecido el escáner mediante la implementación de `_is_valid_file_path` para centralizar la validación de archivos antes de cualquier operación (stat, acceso, etc.), previniendo errores en rutas que cambian su estado de existencia durante el recorrido o que poseen caracteres de control, mejorando la resiliencia ante condiciones de carrera y sistemas de archivos inestables.
+- `2026-10-17T07:43:55` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera (Race Conditions) y errores de acceso transitorios, añadiendo una validación explícita de existencia mediante `path.exists()` dentro de los bloques críticos y centralizando la gestión de estados de archivo volátiles para evitar excepciones no controladas durante la evaluación de seguridad.
 - `2026-10-17T07:34:51` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_file` ante errores de I/O al verificar la existencia y el estado de la ruta destino después de un intento fallido de escritura, garantizando que no queden archivos huérfanos o en estado inconsistente en caso de interrupción del sistema.
 - `2026-10-17T07:33:33` **memory.py** (robustez ante casos límite): Se mejoró la robustez de `_is_process_executable_safe` añadiendo el manejo explícito de rutas con longitud excesiva (más de 1024 caracteres) y errores de acceso denegado durante la consulta del nombre de archivo, evitando fallos silenciosos ante procesos bloqueados por permisos elevados.
 - `2026-10-17T07:24:22` **healthscore.py** (robustez ante casos límite): Se ha robustecido el `SystemMetrics.__post_init__` y los métodos de validación para prevenir inyecciones de datos no numéricos o corrompidos, asegurando que `NaN` o tipos inesperados no propaguen errores durante el cálculo del pipeline.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-17T06:34:12` **assistant.py** (rendimiento): Se optimizó la búsqueda de handlers en `local_answer` reemplazando la lógica de iteración sobre tokens por una búsqueda directa de palabras clave, evitando re-procesar toda la consulta y aprovechando la naturaleza de diccionario de `_TOKENS_MAP`.
 - `2026-10-17T06:33:08` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `startup.py` mediante la normalización de docstrings (haciendo explícitas las precondiciones y efectos) y la unificación de los nombres de los parámetros de tipo para asegurar consistencia con el estilo de documentación técnica requerido.
 - `2026-10-17T06:24:14` **scanner.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el método `Scanner.process_entry` y la función `scan_directory` para mejorar la claridad de los flujos de control críticos.
-- `2026-10-17T06:23:53` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` sustituyendo literales "mágicos" por enumeraciones claras (`Win32Attr`) en los chequeos de `SecurityDescriptor` y `_get_file_attrs`, y documentando la intención de los validadores mediante type hints más precisos.
-- `2026-10-17T06:22:30` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando la intención de los chequeos críticos (TOCTOU, integridad atómica y validación de sandbox) mediante docstrings extendidos, eliminando redundancias en la verificación de rutas y consolidando la lógica de manejo de errores.
-- `2026-10-17T06:13:24` **organizer.py** (legibilidad y documentación): Se introdujo documentación técnica (docstrings) detallando el propósito y las restricciones de seguridad de las funciones de bajo nivel que interactúan con el sistema de archivos, facilitando la comprensión del flujo crítico de la aplicación.

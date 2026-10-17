@@ -84,12 +84,19 @@ def _cached_is_protected(path_str: str) -> bool:
     """Caché para la validación de rutas protegidas para evitar syscalls repetitivas."""
     return is_protected_path(Path(path_str))
 
+def _is_valid_file_path(path: Path) -> bool:
+    """Valida la integridad básica de un Path antes de realizar operaciones de I/O."""
+    try:
+        return path.exists() and path.is_file()
+    except (OSError, PermissionError, ValueError):
+        return False
+
 def _is_locked_by_os(path: Path) -> bool:
     """
     Verifica si un archivo está bloqueado por otro proceso.
     Intenta abrir un handle exclusivo (lectura). Si falla, se asume bloqueado.
     """
-    if not isinstance(path, Path) or not path.exists():
+    if not _is_valid_file_path(path):
         return True
     try:
         # 0x80000000: GENERIC_READ, 0x00000080: FILE_ATTRIBUTE_NORMAL
@@ -105,10 +112,10 @@ def _is_locked_by_os(path: Path) -> bool:
 
 def _is_readable(path: Path) -> bool:
     """Valida si el archivo existe y posee permisos de lectura mediante el sistema operativo."""
-    if not isinstance(path, Path) or not path.exists():
+    if not _is_valid_file_path(path):
         return False
     try:
-        return path.is_file() and os.access(path, os.R_OK)
+        return os.access(path, os.R_OK)
     except (OSError, PermissionError, ValueError, AttributeError):
         return False
 
@@ -124,7 +131,7 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 
 def _get_file_size(path: Path) -> int:
     """Retorna el tamaño en bytes del archivo. Devuelve -1 si el archivo es inaccesible."""
-    if not isinstance(path, Path) or not path.exists(): 
+    if not _is_valid_file_path(path): 
         return -1
     try:
         return int(path.stat().st_size)
@@ -366,7 +373,7 @@ class Scanner:
 
 def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escaneo heurístico individual para un archivo específico, omitiendo rutas protegidas o bloqueadas."""
-    if path is None or not isinstance(path, Path) or not path.exists() or _cached_is_protected(str(path)): 
+    if path is None or not isinstance(path, Path) or not _is_valid_file_path(path) or _cached_is_protected(str(path)): 
         return []
     if not _is_readable(path) or _is_locked_by_os(path): 
         return []

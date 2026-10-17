@@ -165,7 +165,6 @@ class _SettingsManager:
         """
         temp_path: Path = config_path.with_suffix(".tmp")
         try:
-            # Validación estricta de seguridad pre-escritura
             if not is_safe_to_modify(str(temp_path)) or not is_safe_to_modify(str(config_path)):
                 return False
                 
@@ -174,7 +173,6 @@ class _SettingsManager:
                 f.flush()
                 os.fsync(f.fileno())
             
-            # Verificación final antes de reemplazar
             if config_path.exists() and config_path.is_symlink():
                 return False
                 
@@ -233,7 +231,6 @@ class _Validators:
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
         """Valida que la cadena sea una ruta absoluta y libre de zonas protegidas."""
-        # Prohibir caracteres de control o inyección básica de rutas
         if not path_str or len(path_str) > 2048 or any(c in path_str for c in ("\0", "\r", "\n", "\033")): return False
         if path_str.startswith(("\\\\", "//")): return False
         if is_protected_path(path_str): return False
@@ -347,7 +344,6 @@ def _is_file_secure_to_read(st: os.stat_result, file_obj: Any) -> bool:
     try:
         if file_obj.closed or not stat.S_ISREG(st.st_mode): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
-        # Permisos restrictivos
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
         if st.st_mode & (stat.S_ISUID | stat.S_ISGID) or st.st_nlink != 1: return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False

@@ -193,7 +193,6 @@ class SafetyValidationErrorCode(IntEnum):
     PATH_TOO_DEEP = 31
     SYSTEM_OWNER_PROTECTION = 32
     VIRTUAL_DRIVE_DETECTED = 33
-    BIDI_SPOOFING = 34
     CIRCULAR_REFERENCE = 35
 
 class UnsafePathError(Exception):
@@ -939,11 +938,10 @@ def _check_hard_link_security(path: Path, stat_res: os.stat_result) -> None:
 
 def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Optional[Path]) -> None:
     """Realiza validaciones finales de seguridad sobre archivos para operaciones de escritura."""
-    if not os.access(p, os.W_OK):
-        raise UnsafePathError(f"Permisos de escritura insuficientes: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
-    
     if not p.exists():
         raise UnsafePathError(f"El archivo fue eliminado: {p.name}", SafetyValidationErrorCode.ACCESS_DENIED)
+    if not os.access(p, os.W_OK):
+        raise UnsafePathError(f"Permisos de escritura insuficientes: {p.name}", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
         
     _validate_access_permissions(p)
     if _is_file_in_use_by_system(str(p)):
