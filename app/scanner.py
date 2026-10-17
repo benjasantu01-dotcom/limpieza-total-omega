@@ -298,6 +298,10 @@ class Scanner:
             real_path: Path = p.resolve()
             if not str(real_path).lower().startswith(self.base_root_str):
                 return False
+                
+            # Adicional: Chequeo de inmutabilidad básica (el disco no debe ser de solo lectura)
+            if not os.access(p.parent, os.R_OK):
+                return False
 
             # 4. Validación de integridad de nombre
             if not _is_valid_path_structure(path_str) or self._has_invalid_name(entry.name):
@@ -355,6 +359,7 @@ class Scanner:
         if path is None: return
         path_str = str(path)
         if path_str not in self.path_stat_cache:
+            # Re-verificación estricta de seguridad ante TOCTOU
             if not _is_readable(path) or _is_locked_by_os(path):
                 self.path_stat_cache[path_str] = False
                 return

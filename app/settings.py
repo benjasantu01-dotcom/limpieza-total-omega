@@ -12,7 +12,6 @@ from __future__ import annotations
 import json
 import os
 import stat
-import time
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
@@ -165,7 +164,11 @@ class _SettingsManager:
         """
         temp_path: Path = config_path.with_suffix(".tmp")
         try:
-            if not is_safe_to_modify(str(temp_path)) or not is_safe_to_modify(str(config_path)):
+            # Normalización estricta antes de validar
+            real_config = Path(os.path.realpath(config_path))
+            real_temp = Path(os.path.realpath(temp_path))
+
+            if not is_safe_to_modify(str(real_temp)) or not is_safe_to_modify(str(real_config)):
                 return False
                 
             with open(temp_path, "w", encoding="utf-8") as f:
@@ -203,9 +206,11 @@ class _Validators:
     def _is_reparse_point(path: Path) -> bool:
         """Determina si la ruta es un punto de reanálisis (symlink/junction)."""
         try:
-            if path.is_symlink(): return True
-            if not path.exists(): return False
-            return bool(path.stat().st_file_attributes & 0x400) if hasattr(path.stat(), 'st_file_attributes') else False
+            # Usar realpath para resolver la cadena real antes de analizar atributos
+            p = Path(os.path.realpath(path))
+            if p.is_symlink(): return True
+            if not p.exists(): return False
+            return bool(p.stat().st_file_attributes & 0x400) if hasattr(p.stat(), 'st_file_attributes') else False
         except (OSError, PermissionError):
             return True
 
@@ -216,7 +221,7 @@ class _Validators:
         try:
             p = Path(path_str).expanduser()
             if not p.is_absolute(): return False
-            resolved = p.resolve()
+            resolved = Path(os.path.realpath(p))
             if any(_Validators._is_reparse_point(parent) for parent in resolved.parents):
                 return False
             return not is_protected_path(str(resolved)) and is_safe_to_modify(str(resolved))
@@ -314,7 +319,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
         return _MANAGER.path_cache[cache_key]
     
     try:
-        raw_base = Path(custom_base).resolve() if custom_base else SETTINGS_DIR.resolve()
+        raw_base = Path(os.path.realpath(custom_base)) if custom_base else Path(os.path.realpath(SETTINGS_DIR))
         if _Validators._is_safe_path(str(raw_base)) and not _Validators._is_reparse_point(raw_base):
             if not raw_base.exists(): 
                 try: raw_base.mkdir(parents=True, exist_ok=True)
@@ -353,10 +358,11 @@ def _is_file_secure_to_read(st: os.stat_result, file_obj: Any) -> bool:
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     """Lee y parsea el JSON con validaciones de seguridad."""
     try:
-        if not file_path.exists() or file_path.is_symlink(): return None
-        if _Validators._is_reparse_point(file_path) or not is_safe_to_modify(str(file_path)): return None
+        real_path = Path(os.path.realpath(file_path))
+        if not real_path.exists() or real_path.is_symlink(): return None
+        if _Validators._is_reparse_point(real_path) or not is_safe_to_modify(str(real_path)): return None
         
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(real_path, "r", encoding="utf-8") as f:
             st = os.fstat(f.fileno())
             if not _is_file_secure_to_read(st, f): return None
             content = f.read(MAX_SETTINGS_SIZE + 1)
@@ -368,8 +374,9 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
 def _is_dir_safe(path: Path) -> bool:
     """Comprueba seguridad de directorio padre."""
     try:
-        if not path.is_dir() or _Validators._is_reparse_point(path): return False
-        st = path.stat()
+        real_path = Path(os.path.realpath(path))
+        if not real_path.is_dir() or _Validators._is_reparse_point(real_path): return False
+        st = real_path.stat()
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if st.st_mode & (stat.S_IWGRP | stat.S_IWOTH): return False
         return True
@@ -377,24 +384,26 @@ def _is_dir_safe(path: Path) -> bool:
 
 def _load_impl(ruta: Path) -> AppSettings:
     """Implementación base de carga."""
-    if not ruta.exists() or not ruta.is_file() or _Validators._is_reparse_point(ruta):
+    real_path = Path(os.path.realpath(ruta))
+    if not real_path.exists() or not real_path.is_file() or _Validators._is_reparse_point(real_path):
         return DEFAULTS.copy()
-    if not is_safe_to_modify(str(ruta)):
+    if not is_safe_to_modify(str(real_path)):
         return DEFAULTS.copy()
-    data = _read_and_parse_json(ruta)
+    data = _read_and_parse_json(real_path)
     return _coerce_and_verify(validate(data)) if data is not None else DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga ajustes con caché basada en mtime."""
     primary_path = settings_path(custom_base)
     try:
-        if primary_path.exists() and primary_path.is_file():
-            st = primary_path.stat()
+        real_path = Path(os.path.realpath(primary_path))
+        if real_path.exists() and real_path.is_file():
+            st = real_path.stat()
             mtime = st.st_mtime
-            cache_key = str(primary_path)
+            cache_key = str(real_path)
             cached = _MANAGER.settings_cache.get(cache_key)
             if cached and cached[0] == mtime: return cached[1].copy()
-            settings = _load_impl(primary_path)
+            settings = _load_impl(real_path)
             _MANAGER.settings_cache[cache_key] = (mtime, settings)
             return settings
     except (OSError, PermissionError): pass
@@ -416,11 +425,12 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     config_path = settings_path(custom_base)
     try:
         cleaned_settings = _coerce_and_verify(validate(values))
-        parent = config_path.parent
-        if not is_safe_to_modify(str(config_path)) or not _is_dir_safe(parent): return None
+        real_path = Path(os.path.realpath(config_path))
+        parent = real_path.parent
+        if not is_safe_to_modify(str(real_path)) or not _is_dir_safe(parent): return None
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
-        return config_path if _MANAGER.perform_atomic_write(config_path, serialized) else None
+        return config_path if _MANAGER.perform_atomic_write(real_path, serialized) else None
     except (OSError, PermissionError, AttributeError): return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
@@ -443,7 +453,7 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
 def reset(custom_base: PathLike | None = None) -> AppSettings:
     """Restaura valores de fábrica."""
     config_path = settings_path(custom_base)
-    if is_safe_to_modify(str(config_path)):
+    if is_safe_to_modify(str(os.path.realpath(config_path))):
         save(DEFAULTS, custom_base)
         _MANAGER.clear()
     return DEFAULTS.copy()
