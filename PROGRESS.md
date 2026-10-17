@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **184** (36.5% de aceptación)
+- Mejoras aceptadas: **185** (36.7% de aceptación)
 - Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 49
+- Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 229
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 31 | 2 | 10 | 3 | 20 |
+| 2026-10-15 | 31 | 2 | 10 | 3 | 16 |
 | 2026-10-16 | 116 | 19 | 26 | 12 | 177 |
-| 2026-10-17 | 37 | 3 | 13 | 3 | 32 |
+| 2026-10-17 | 38 | 3 | 15 | 3 | 33 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +26,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **38**
 - rendimiento: **37**
 - robustez ante casos límite: **34**
-- seguridad defensiva: **31**
+- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,8 +34,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **20**
 - `memory.py`: **18**
 - `assistant.py`: **15**
+- `quarantine.py`: **15**
 - `healthscore.py`: **14**
-- `quarantine.py`: **14**
 - `safety.py`: **13**
 - `settings.py`: **12**
 - `branding.py`: **11**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-17T03:49:32` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `quarantine.py` mediante la implementación de un chequeo estricto de **identidad de archivo** (vía `os.path.samefile`) previo a cualquier operación destructiva o de movimiento, evitando condiciones de carrera de tipo TOCTOU y asegurando que las rutas origen y destino no colisionen accidentalmente en el sistema de archivos durante las operaciones de aislamiento.
 - `2026-10-17T03:42:53` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` al reemplazar la validación simplista por un chequeo robusto que utiliza `os.path.abspath` para normalizar la ruta antes de verificarla contra las políticas de seguridad, evitando bypasses por rutas relativas o inconsistencias en el formato de `GetModuleFileNameExW`.
 - `2026-10-17T03:39:08` **healthscore.py** (seguridad defensiva): Se endureció la validación de entrada en `_sanitize_msg` y `_apply_rule_safely` mediante la implementación de una máscara de caracteres estrictamente alfanuméricos y la eliminación de posibles inyecciones de control, garantizando que el asistente de IA solo procese texto limpio y seguro.
 - `2026-10-17T03:30:02` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_collect_candidates` para prevenir el seguimiento involuntario de enlaces simbólicos o puntos de reanálisis fuera de la jerarquía permitida, asegurando que `is_safe_to_modify` se valide tanto en la entrada como en su resolución, y se añadió una validación explícita para evitar que `os.scandir` acceda a rutas que no superan las restricciones del sistema antes de procesarlas.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-17T02:38:32` **safety.py** (rendimiento): Se implementó un mecanismo de caché local (`_PATH_CACHE`) en `is_protected_path` para evitar la redundancia de cálculos costosos (resoluciones de `Path` y chequeos de sistema) al validar listas extensas de archivos, mejorando drásticamente el rendimiento en escaneos profundos.
 - `2026-10-17T02:27:56` **memory.py** (rendimiento): Se optimizó `_iter_process_memory` reemplazando la creación de una lista intermedia (`list(...)`) por una evaluación perezosa en `top_memory_processes` y eliminando consultas redundantes de seguridad mediante la validación directa del PID, reduciendo el overhead de memoria y ciclos de CPU durante el escaneo de procesos.
 - `2026-10-17T02:19:38` **main.py** (rendimiento): Se implementó un mecanismo de caché `lru_cache` para la validación de directorios en `_validate_disk_access`, reduciendo significativamente las llamadas recurrentes al sistema de archivos al procesar múltiples rutas durante los análisis de disco.
-- `2026-10-17T02:18:44` **healthscore.py** (rendimiento): Se optimizó el acceso a los datos dentro de `compute_score` eliminando la llamada repetitiva a `m.validate()` (que ya ocurre al instanciar `SystemMetrics` en `__post_init__`) y se redujo la sobrecarga de `_render_bar` mediante el uso de almacenamiento en caché simple para las cadenas de caracteres de la barra en `summarize`.

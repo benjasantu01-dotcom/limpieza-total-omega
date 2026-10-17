@@ -500,7 +500,7 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
         raise PermissionError("Directorio de cuarentena sin permisos de escritura.")
     
     _check_device_consistency(resolved_source, resolved_dest_dir)
-    if os.path.samefile(resolved_source, resolved_dest_dir):
+    if os.path.exists(resolved_dest_dir) and os.path.samefile(resolved_source, resolved_dest_dir):
         raise UnsafePathError("Operación circular detectada.")
         
     _verify_quarantine_preconditions(resolved_source, resolved_dest_dir)
@@ -634,6 +634,9 @@ def _validate_file_transfer_preconditions(source: Path, destination: Path) -> No
         raise PermissionError("Archivo origen marcado como solo lectura/sistema.")
 
     if destination.exists():
+        # Verificación crítica de identidad para evitar sobrescritura inadvertida
+        if os.path.samefile(source, destination):
+            raise UnsafePathError("Operación circular: origen y destino son el mismo archivo.")
         raise FileExistsError(f"El destino ya existe: {destination}")
 
 
@@ -710,7 +713,7 @@ def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, Inode]:
         if temp_dest.exists():
             try: _check_io_error_context(temp_dest.unlink)
             except OSError: pass
-        if destination.exists():
+        if destination.exists() and not os.path.samefile(source, destination):
             _safe_unlink(destination)
         raise OSError(f"Error crítico en transferencia: {e}")
 
@@ -780,7 +783,7 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
             raise FileExistsError("Colisión de ruta: archivo destino ya presente.")
         return _write_temp_to_final(source, destination)
     except (OSError, IOError, RuntimeError) as e:
-        if destination.exists():
+        if destination.exists() and not os.path.samefile(source, destination):
             _safe_unlink(destination)
         raise RuntimeError(f"Error durante aislamiento: {e}")
 
@@ -908,10 +911,12 @@ def quarantine_file(
             raise RuntimeError("Falla crítica: el destino no es coherente tras la copia.")
             
         if source_path.exists():
-            try:
-                _check_io_error_context(source_path.unlink)
-            except OSError as e:
-                raise RuntimeError(f"Aislamiento exitoso, pero falla al remover origen: {e}")
+            # Confirmación de identidad previo al unlink final
+            if not os.path.samefile(source_path, destination):
+                try:
+                    _check_io_error_context(source_path.unlink)
+                except OSError as e:
+                    raise RuntimeError(f"Aislamiento exitoso, pero falla al remover origen: {e}")
                 
         item = _register_quarantine_item(destination, source_path, file_hash, file_inode, clean_reason, st_info.st_size, base)
         _verify_transaction_integrity(item, destination)

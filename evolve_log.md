@@ -457,3 +457,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-17T03:43:03` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-10-17T03:43:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T03:43:03` Corrida terminada. Total usado hoy: 88.
+- `2026-10-17T03:48:50` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-10-17T03:49:32` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `quarantine.py` mediante la implementación de un chequeo estricto de **identidad de archivo** (vía `os.path.samefile`) previo a cualquier operación destructiva o de movimiento, evitando condiciones de carrera de tipo TOCTOU y asegurando que las rutas origen y destino no colisionen accidentalmente en el sistema de archivos durante las operaciones de aislamiento.
+- `2026-10-17T03:49:54` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-17T03:50:40` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-10-17T03:50:52` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: Scanner._is_reparse_point
+- `2026-10-17T03:50:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T03:50:52` Corrida terminada. Total usado hoy: 92.
