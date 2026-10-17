@@ -52,7 +52,12 @@ ERROR_ACCESS_DENIED: int = 5
 _partial_cache: Dict[Path, str] = {}
 
 def is_junction(path: Path) -> bool:
-    """Verifica si la ruta es un punto de reanálisis (Junction/Symlink) usando Win32 API."""
+    """
+    Verifica si la ruta es un punto de reanálisis (Junction/Symlink).
+    
+    Utiliza Win32 API para identificar si el archivo es un punto de montaje o enlace 
+    simbólico, evitando seguir estructuras que podrían causar bucles infinitos.
+    """
     if not is_safe_to_modify(path):
         return True
     if path.is_symlink():
@@ -91,7 +96,12 @@ class DuplicateGroup:
 
     @property
     def wasted_bytes(self) -> int:
-        """Calcula el espacio total recuperable excluyendo la copia original."""
+        """
+        Calcula el espacio total recuperable.
+        
+        Se asume que uno de los archivos del grupo es el 'original' y debe preservarse, 
+        por lo tanto el espacio recuperable es (Total - 1) * tamaño.
+        """
         if not self.paths or self.count <= 1 or self.size_bytes < 0:
             return 0
         return (self.count - 1) * self.size_bytes
@@ -99,8 +109,10 @@ class DuplicateGroup:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Intenta validar si el archivo es accesible para lectura exclusiva.
-    Retorna True si el archivo está bloqueado por otro proceso o inaccesible.
+    Verifica si el archivo está en uso exclusivo.
+    
+    Intenta abrir el archivo en modo lectura; si el sistema operativo deniega el acceso
+    (Sharing Violation), se considera bloqueado.
     """
     if not is_safe_to_modify(path):
         return True
@@ -120,8 +132,10 @@ def _is_file_locked(path: Path) -> bool:
 
 def _safe_path_check(path: Path) -> bool:
     """
-    Gatekeeper principal: valida seguridad, ausencia de protección y bucles (junctions).
-    Asegura que ni la ruta original ni su destino real (resolved) sean peligrosos.
+    Valida que una ruta sea segura para análisis.
+    
+    Verifica contra listas protegidas, puntos de reanálisis (junctions) y 
+    asegura que la resolución de la ruta (`path.resolve()`) no escape a zonas críticas.
     """
     try:
         resolved = path.resolve()
@@ -145,7 +159,11 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
 
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula el SHA256 completo de un archivo. Retorna None si hay error de acceso."""
+    """
+    Calcula el hash SHA256 completo de un archivo.
+    
+    Utiliza lectura por bloques para manejar archivos grandes sin saturar la memoria RAM.
+    """
     if chunk_size <= 0 or not path.is_file():
         return None
     try:
@@ -159,7 +177,12 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Calcula hash SHA256 del segmento inicial, con caché para evitar relecturas innecesarias."""
+    """
+    Calcula hash SHA256 del segmento inicial (primeros 64KB).
+    
+    Utiliza una caché en memoria para evitar relecturas de archivos durante la 
+    comparación jerárquica de duplicados.
+    """
     if path in _partial_cache:
         return _partial_cache[path]
     if read_bytes <= 0 or not path.is_file():
@@ -177,7 +200,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
 
 
 def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
-    """Paso 1: Agrupa rutas por su tamaño en bytes para descartar archivos únicos."""
+    """Agrupa rutas por su tamaño en bytes para descartar archivos únicos."""
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
         if not p: continue
@@ -205,10 +228,14 @@ def _resolve_and_verify_root(directory_path: PathLike) -> Optional[Path]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Recolección BFS de archivos usando (dev, ino) para evitar procesar hardlinks duplicados."""
+    """
+    Recolección BFS de archivos candidatos.
+    
+    Usa el par (dev, ino) para evitar procesar hardlinks duplicados o 
+    seguir bucles de directorios de manera ineficiente.
+    """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     queue: deque[Tuple[Path, int]] = deque()
-    visited_dirs: set[Path] = set()
     visited_inodes: set[Tuple[int, int]] = set()
 
     for d in directories:

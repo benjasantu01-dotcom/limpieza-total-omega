@@ -96,7 +96,7 @@ class ColorSegment(NamedTuple):
     end_index: int
 
 class PaletteDict(TypedDict):
-    """Estructura de datos para la configuración cromática del sistema (hexadecimal)."""
+    """Estructura de datos para la configuración cromática del sistema."""
     background: ColorHex
     surface: ColorHex
     surface_alt: ColorHex
@@ -120,7 +120,7 @@ class PaletteDict(TypedDict):
     glow: ColorHex
 
 class FontSizesDict(TypedDict):
-    """Jerarquía de tamaños tipográficos (en puntos) disponibles en la interfaz."""
+    """Jerarquía de tamaños tipográficos (en puntos)."""
     display: int
     title: int
     subtitle: int
@@ -158,7 +158,7 @@ C_TEXT_DIM: Final[ColorHex] = "#5c6b85"
 C_BORDER: Final[ColorHex] = "#2a3654"
 C_GLOW: Final[ColorHex] = "#00f0c0"
 
-PALETTE: Final[Mapping[str, ColorHex]] = MappingProxyType({
+PALETTE: Final[PaletteDict] = MappingProxyType({
     "background": C_BACKGROUND, "surface": C_SURFACE, "surface_alt": C_SURFACE_ALT,
     "surface_hover": C_SURFACE_HOVER, "card": C_CARD, "accent": C_ACCENT,
     "accent_hover": C_ACCENT_HOVER, "accent_dim": C_ACCENT_DIM, "accent2": C_ACCENT2,
@@ -166,12 +166,12 @@ PALETTE: Final[Mapping[str, ColorHex]] = MappingProxyType({
     "info": C_INFO, "warning": C_WARNING, "danger": C_DANGER,
     "danger_hover": C_DANGER_HOVER, "text": C_TEXT, "text_muted": C_TEXT_MUTED,
     "text_dim": C_TEXT_DIM, "border": C_BORDER, "glow": C_GLOW,
-})
+}) # type: ignore
 
-FONT_SIZES: Final[Mapping[str, int]] = MappingProxyType({
+FONT_SIZES: Final[FontSizesDict] = MappingProxyType({
     "display": 46, "title": 26, "subtitle": 13, "heading": 16,
     "body": UI_CONFIG.body_size, "mono": 11, "caption": 10,
-})
+}) # type: ignore
 
 SEVERITY_STYLES: Final[Mapping[SeverityType, SeverityStyle]] = MappingProxyType({
     SeverityType.OK: (C_SUCCESS, "Correcto"),
@@ -201,8 +201,8 @@ SEVERITY_MAP: Final[Mapping[SeverityType, str]] = MappingProxyType({
 })
 
 def app_title() -> str: return f"{APP_NAME} v{APP_VERSION}"
-def color(name: Optional[str]) -> ColorHex: return PALETTE.get(name, "#808080") if name else "#808080"
-def font_size(name: Optional[str]) -> int: return FONT_SIZES.get(name, UI_CONFIG.body_size) if name else UI_CONFIG.body_size
+def color(name: Optional[str]) -> ColorHex: return PALETTE.get(name, "#808080") if name else "#808080" # type: ignore
+def font_size(name: Optional[str]) -> int: return FONT_SIZES.get(name, UI_CONFIG.body_size) if name else UI_CONFIG.body_size # type: ignore
 def icon(section: Optional[str]) -> str: return ICONS.get(section.strip(), "\u2022") if section else "\u2022"
 def tab_label(section: Optional[str]) -> str: return f"{icon(section)}  {section}" if section else "\u2022  Desconocido"
 
