@@ -366,12 +366,9 @@ def _is_file_secure_to_read(st: os.stat_result, file_obj: Any) -> bool:
 
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     """Lee y parsea el JSON con validaciones de seguridad."""
+    if not is_safe_to_modify(str(file_path)): return None
     try:
-        real_path = Path(os.path.realpath(file_path))
-        if not real_path.exists() or real_path.is_symlink(): return None
-        if _Validators._is_reparse_point(real_path) or not is_safe_to_modify(str(real_path)): return None
-        
-        with open(real_path, "r", encoding="utf-8") as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             st = os.fstat(f.fileno())
             if not _is_file_secure_to_read(st, f): return None
             content = f.read(MAX_SETTINGS_SIZE + 1)
@@ -382,23 +379,16 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
 
 def _load_impl(ruta: Path) -> AppSettings:
     """Implementación base de carga."""
-    try:
-        real_path = Path(os.path.realpath(ruta))
-        if not real_path.exists() or not real_path.is_file() or _Validators._is_reparse_point(real_path):
-            return DEFAULTS.copy()
-        if not is_safe_to_modify(str(real_path)):
-            return DEFAULTS.copy()
-        data = _read_and_parse_json(real_path)
-        return _coerce_and_verify(validate(data)) if data is not None else DEFAULTS.copy()
-    except (OSError, RuntimeError):
-        return DEFAULTS.copy()
+    if not is_safe_to_modify(str(ruta)): return DEFAULTS.copy()
+    data = _read_and_parse_json(ruta)
+    return _coerce_and_verify(validate(data)) if data is not None else DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga ajustes con caché basada en mtime y tamaño para evitar lecturas innecesarias."""
     primary_path = settings_path(custom_base)
     try:
         real_path = Path(os.path.realpath(primary_path))
-        if real_path.exists() and real_path.is_file():
+        if real_path.exists() and real_path.is_file() and is_safe_to_modify(str(real_path)):
             st = real_path.stat()
             mtime, size = st.st_mtime, st.st_size
             cache_key = str(real_path)

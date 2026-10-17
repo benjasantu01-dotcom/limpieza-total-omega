@@ -588,10 +588,11 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
 def _get_path_stat_robust(path: Path) -> os.stat_result:
     """Obtiene metadatos del archivo usando reintentos para evitar bloqueos compartidos."""
     max_retries = 3
+    if not isinstance(path, Path):
+        raise UnsafePathError("Tipo de objeto de ruta inválido", SafetyValidationErrorCode.GENERIC)
+    
     for attempt in range(max_retries):
         try:
-            if not isinstance(path, Path):
-                raise UnsafePathError("Tipo de objeto de ruta inválido", SafetyValidationErrorCode.GENERIC)
             if _is_device_file(path):
                 raise UnsafePathError(f"Acceso a dispositivo bloqueado: {path.name}", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
                 
@@ -605,12 +606,7 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                                 ("nFileSizeLow", ctypes.c_uint32)]
                 
                 data = WIN32_FILE_ATTRIBUTE_DATA()
-                try:
-                    res = ctypes.windll.kernel32.GetFileAttributesExW(_to_long_path(str(path)), 0, ctypes.byref(data))
-                except (ctypes.ArgumentError, AttributeError):
-                    res = 0
-                
-                if not res:
+                if not ctypes.windll.kernel32.GetFileAttributesExW(_to_long_path(str(path)), 0, ctypes.byref(data)):
                     err = ctypes.windll.kernel32.GetLastError()
                     if err == ERROR_FILE_NOT_FOUND:
                         raise UnsafePathError(f"Archivo inexistente: {path.name}", SafetyValidationErrorCode.IO_ERROR)
@@ -662,8 +658,8 @@ def _validate_access_permissions(path: Path) -> None:
             raise UnsafePathError("Permisos de lectura denegados.", SafetyValidationErrorCode.ACCESS_DENIED)
         if not os.access(path, os.W_OK):
             raise UnsafePathError("Permisos de escritura denegados.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
-    except Exception:
-        raise UnsafePathError("Acceso al archivo denegado por el sistema.", SafetyValidationErrorCode.ACCESS_DENIED)
+    except Exception as e:
+        raise UnsafePathError(f"Error de acceso: {e}", SafetyValidationErrorCode.ACCESS_DENIED)
 
 @lru_cache(maxsize=4096)
 def _normalize_resolved(path_str: str) -> Path:
@@ -810,7 +806,7 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         raise UnsafePathError("Caracteres inválidos detectados.", SafetyValidationErrorCode.INVALID_CHARS)
     if unicodedata.normalize('NFKC', path_string) != path_string:
         raise UnsafePathError("Codificación de caracteres sospechosa.", SafetyValidationErrorCode.SUSPICIOUS_ENCODING)
-    if _has_alternate_data_stream(path_string):
+    if _has_alternate_data_stream(target_path.name):
         raise UnsafePathError("Flujo de datos alternativo detectado.", SafetyValidationErrorCode.ADS_DETECTED)
     if _is_device_file(target_path):
         raise UnsafePathError("Acceso a dispositivo bloqueado.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
