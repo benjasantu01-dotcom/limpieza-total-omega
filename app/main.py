@@ -382,7 +382,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _ensure_path_writable_and_clean(self, path: Union[str, Path]) -> None:
         """Verifica la seguridad y limpieza de la ruta para prevenir escrituras malintencionadas."""
-        self._validate_disk_access(path)
+        p = self._validate_disk_access(path)
+        if p.is_symlink():
+            raise safety.UnsafePathError("Operación denegada: Ruta de destino es un enlace simbólico.")
 
     def _init_window_properties(self) -> None:
         """Configura los parámetros iniciales de la ventana (título, geometría, branding)."""

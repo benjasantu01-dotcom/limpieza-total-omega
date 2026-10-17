@@ -138,6 +138,7 @@ def _safe_path_check(path: Path) -> bool:
     reanálisis y resolución de rutas para evitar escapes fuera de sandbox.
     """
     try:
+        # Resolvemos la ruta antes de verificar para evitar bypass por '..'
         resolved = path.resolve()
         return (is_safe_to_modify(path) and 
                 not is_protected_path(path) and 
@@ -151,6 +152,7 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """Predicado de filtrado para determinar si un archivo es apto para el análisis."""
     if st_size <= 0 or not path.exists():
         return False
+    # Verificación estricta de seguridad defensiva
     if is_protected_path(path) or not _safe_path_check(path) or is_system_or_hidden(path):
         return False
     if _is_file_locked(path):
@@ -165,7 +167,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     Utiliza lectura por bloques configurables para minimizar el consumo de memoria 
     en archivos de gran tamaño.
     """
-    if chunk_size <= 0 or not path.is_file():
+    if chunk_size <= 0 or not path.is_file() or not is_safe_to_modify(path):
         return None
     try:
         digest = hashlib.sha256()
@@ -186,7 +188,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
     """
     if path in _partial_cache:
         return _partial_cache[path]
-    if read_bytes <= 0 or not path.is_file():
+    if read_bytes <= 0 or not path.is_file() or not is_safe_to_modify(path):
         return None
     try:
         with open(path, "rb") as f:
@@ -207,7 +209,7 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
         if not p: continue
         try:
             path_obj = Path(p).resolve()
-            if path_obj.exists() and path_obj.is_file():
+            if path_obj.exists() and path_obj.is_file() and is_safe_to_modify(path_obj):
                 st_size = path_obj.stat().st_size
                 if _is_valid_candidate(path_obj, st_size):
                     groups[st_size].append(path_obj)
@@ -277,7 +279,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Aplica una función de hashing para generar grupos de colisión."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if path.exists() and (digest := hash_func(path)):
+        if path.exists() and is_safe_to_modify(path) and (digest := hash_func(path)):
             groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
@@ -319,7 +321,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     """Calcula métricas de antigüedad y longitud de ruta para selección de keeper."""
-    if not isinstance(path, Path): return None
+    if not isinstance(path, Path) or not is_safe_to_modify(path): return None
     try:
         if not path.exists(): return None
         stat = path.stat()

@@ -142,7 +142,8 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         if not p.exists():
             return None
         
-        resolved_path = p.resolve()
+        # Resolucion real contra el filesystem para evitar bypass de protecciones mediante symlinks
+        resolved_path = Path(os.path.realpath(p))
         if not resolved_path.is_dir() or is_protected_path(resolved_path) or not os.access(resolved_path, os.R_OK):
             return None
         return resolved_path

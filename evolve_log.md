@@ -1404,3 +1404,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-17T12:22:08` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-10-17T12:22:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T12:22:08` Corrida terminada. Total usado hoy: 292.
+- `2026-10-17T12:27:54` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-10-17T12:28:30` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_validate_root` al añadir `os.path.realpath` para asegurar que el `is_protected_path` se ejecute sobre la ruta absoluta y real del sistema de archivos, previniendo ataques de resolución de enlaces simbólicos maliciosos antes de iniciar cualquier escaneo.
+- `2026-10-17T12:28:56` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `duplicates.py` mediante la implementación de un mecanismo de validación de estado (check-before-act) en `_is_valid_candidate` y el filtrado estricto de rutas raíz en `_collect_candidates`, asegurando que ninguna operación de I/O sobre archivos candidatos proceda si el archivo es un punto de reanálisis o reside en un directorio protegido.
+- `2026-10-17T12:29:35` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
+- `2026-10-17T12:30:33` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se introdujo una validación de seguridad adicional en `_ensure_path_writable_and_clean` para asegurar que, antes de cualquier operación de escritura, se verifique no solo la ruta destino, sino también que no sea un punto de reparse (junction/symlink) mediante una comprobación explícita adicional a `resolve()`, reforzando la protección contra la escalada de privilegios a través de enlaces simbólicos maliciosos.
+- `2026-10-17T12:30:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T12:30:33` Corrida terminada. Total usado hoy: 296.
