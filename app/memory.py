@@ -391,11 +391,15 @@ def _is_process_executable_safe(pid: int, handle: int) -> bool:
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return False
     
-    buf = ctypes.create_unicode_buffer(1024)
-    if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
-        path_str = os.path.abspath(buf.value)
-        if not path_str or path_str.startswith("\\\\"): return False
-        return not is_protected_path(Path(path_str))
+    buf = ctypes.create_unicode_buffer(2048) # Buffer ampliado para rutas largas
+    try:
+        length = psapi.GetModuleFileNameExW(handle, None, buf, 2047)
+        if length > 0:
+            path_str = os.path.abspath(buf.value)
+            if not path_str or path_str.startswith("\\\\"): return False
+            return not is_protected_path(Path(path_str))
+    except (ctypes.ArgumentError, OSError):
+        pass
     return False
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:

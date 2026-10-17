@@ -922,7 +922,8 @@ def quarantine_file(
         _verify_transaction_integrity(item, destination)
         return item
     except (OSError, IOError, RuntimeError) as e:
-        _cleanup_orphaned_destination(destination)
+        if destination.exists() and not os.path.exists(source_path):
+            _cleanup_orphaned_destination(destination)
         raise RuntimeError(f"Error durante aislamiento: {e}")
 
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:

@@ -879,3 +879,10 @@ FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - Attr
 - `2026-10-17T07:25:11` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez del manejo de errores durante el ciclo de vida de los widgets mediante la implementación de `winfo_exists()` explícito en los decoradores y en los callbacks críticos, previniendo excepciones cuando la aplicación se cierra durante operaciones asíncronas de larga duración.
 - `2026-10-17T07:25:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T07:25:11` Corrida terminada. Total usado hoy: 176.
+- `2026-10-17T07:32:59` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-10-17T07:33:33` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `_is_process_executable_safe` añadiendo el manejo explícito de rutas con longitud excesiva (más de 1024 caracteres) y errores de acceso denegado durante la consulta del nombre de archivo, evitando fallos silenciosos ante procesos bloqueados por permisos elevados.
+- `2026-10-17T07:34:00` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-17T07:34:51` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se mejora la robustez de `quarantine_file` ante errores de I/O al verificar la existencia y el estado de la ruta destino después de un intento fallido de escritura, garantizando que no queden archivos huérfanos o en estado inconsistente en caso de interrupción del sistema.
+- `2026-10-17T07:34:58` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-17T07:34:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T07:34:58` Corrida terminada. Total usado hoy: 180.
