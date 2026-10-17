@@ -101,21 +101,22 @@ def _is_file_locked(path: Path) -> bool:
     """
     Intenta validar si el archivo es accesible para lectura exclusiva.
     Retorna True si el archivo está bloqueado por otro proceso o inaccesible.
-    Se requiere acceso exclusivo (buffering=0) para verificar locks de SO.
     """
     if not is_safe_to_modify(path):
         return True
     try:
         if not path.is_file() or not os.access(path, os.R_OK):
             return True
-        with open(path, "rb", buffering=0) as f:
+        # Usamos open para verificar lock. Si falla por uso, retornamos True.
+        with open(path, "rb") as f:
+            f.peek(1)
             return False
     except OSError as e:
-        if hasattr(e, 'winerror'):
-            if e.winerror in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED):
-                return True
+        # 32: Sharing violation, 5: Access denied
+        if hasattr(e, 'winerror') and e.winerror in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED):
+            return True
         return True
-    except (IOError, PermissionError):
+    except (IOError, PermissionError, ValueError):
         return True
 
 

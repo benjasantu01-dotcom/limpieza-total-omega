@@ -346,12 +346,14 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     for entry in _PIPELINE:
         try:
             area_ratio = _clamp(entry.scorer(m))
-            _evaluate_rules(m, _RULES_CACHE.get(entry.area, entry.rules), area_ratio, recommendations)
+            rules = _RULES_CACHE.get(entry.area, entry.rules)
+            if rules:
+                _evaluate_rules(m, rules, area_ratio, recommendations)
             points = area_ratio * entry.weight
             val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
             metric_breakdown[entry.area] = val_int
             total_points += val_int
-        except (ValueError, TypeError, AttributeError) as e:
+        except Exception as e:
             logging.error(f"Error técnico procesando métrica {entry.area}: {e}")
             metric_breakdown[entry.area] = 0
             

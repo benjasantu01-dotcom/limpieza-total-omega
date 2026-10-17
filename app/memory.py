@@ -407,9 +407,12 @@ def _is_process_executable_safe(pid: int, handle: int) -> bool:
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
             path_str: str = buf.value
+            # Validamos que sea una ruta existente antes de procesarla para evitar errores.
+            path = Path(path_str)
+            if not path.is_file(): return False
             # Se excluyen rutas UNC y se valida mediante la política de seguridad central.
             if not path_str or path_str.startswith("\\\\"): return False
-            return not is_protected_path(Path(path_str))
+            return not is_protected_path(path)
     except (ctypes.ArgumentError, OSError, ValueError, RuntimeError):
         return False
     return False
