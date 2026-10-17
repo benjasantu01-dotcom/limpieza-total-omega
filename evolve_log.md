@@ -1177,3 +1177,88 @@ FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - Attr
 - `2026-10-17T10:48:18` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la actualización de docstrings en los validadores de `_IntegrityCheck` y funciones críticas, además de incluir `type hints` faltantes para asegurar que la intención de cada componente de seguridad sea autoexplicativa.
 - `2026-10-17T10:48:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T10:48:18` Corrida terminada. Total usado hoy: 256.
+- `2026-10-17T10:56:17` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-10-17T10:56:45` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: Scanner._has_invalid_name, Scanner._is_inside_base_root, Scanner._is_relevant_extension, Scanner._is_reparse_point
+- `2026-10-17T10:57:18` Tests FALLARON:
+```
+"Se puede usar el asistente sin mandar ni una métrica."""
+        monkeypatch.setenv(settings.API_KEY_ENV_VAR, "clave")
+        settings.save({**settings.DEFAULTS, "asistente_activado": True,
+                       "asistente_enviar_metricas": False}, tmp_path)
+    
+        enviado = {}
+    
+        def espia(question, context_text, api_key, model):
+            enviado["texto"] = context_text
+            return "ok"
+    
+        monkeypatch.setattr(assistant, "_call_gemini", espia)
+        assistant.ask("¿qué hago?", _contexto_lleno(), tmp_path)
+>       assert "2400" not in enviado["texto"]
+E       AssertionError: assert '2400' not in 'score: 61\n...up_count: 19'
+E         
+E         '2400' is contained here:
+E           score: 61
+E           junk_mb: 2400 MB
+E         ?          ++++
+E           suspicious_count: 3
+E           memory_available_percent: 11%
+E           disk_free_percent: 6%
+E           duplicate_mb: 900 MB
+E           startup_count: 19
+
+evolve/tests/test_assistant.py:418: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert '2400' not in 'score: 61\n...up_count: 19'
+  
+  '2400' is contained here:
+    score: 61
+    junk_mb: 2400 MB
+  ?          ++++
+    suspicious_count: 3
+    memory_available_percent: 11%
+    disk_free_percent: 6%
+    duplicate_mb: 900 MB
+    startup_count: 19
+1 failed, 298 passed in 1.22s
+
+```
+- `2026-10-17T10:57:18` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación mediante la estandarización y expansión de docstrings en los métodos de `_SettingsManager` y las funciones de validación, clarificando las responsabilidades de cada componente para mejorar el mantenimiento.
+- `2026-10-17T10:57:46` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.45s
+
+```
+- `2026-10-17T10:57:46` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `_resolve_and_cache_path` para reducir su complejidad ciclomática y clarificar el flujo de validación, además de añadir tipos y docstrings en los métodos de `StartupEntry`.
+- `2026-10-17T10:58:09` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el método `metrics_snapshot` de `SystemContext` usando `cached_property` de manera más eficiente y reduje la sobrecarga de llamadas a `_get_safe_attr` y validaciones repetitivas en el acceso a métricas durante las consultas, mejorando el rendimiento en el bucle de inferencia local.
+- `2026-10-17T10:58:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T10:58:09` Corrida terminada. Total usado hoy: 260.

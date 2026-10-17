@@ -366,13 +366,8 @@ class SystemContext:
 
     @cached_property
     def metrics_snapshot(self) -> dict[str, float]:
-        """Snapshot cacheado de las métricas numéricas usando acceso seguro."""
-        snapshot = {}
-        for k in _VALIDATORS.keys():
-            val = _get_safe_attr(self, k, -1.0)
-            if _is_safe_numeric_context(val):
-                snapshot[k] = float(val)
-        return snapshot
+        """Snapshot cacheado de las métricas numéricas usando acceso directo."""
+        return {k: float(getattr(self, k)) for k in _VALIDATORS if _check_metric_integrity(getattr(self, k))}
 
     @cached_property
     def active_problems(self) -> tuple[str, ...]:
@@ -456,8 +451,9 @@ class SystemContext:
             if _is_safe_key(k) and (k in _VALIDATORS or k == "grade"):
                 setattr(self, k, v)
         self.analyzed = True
-        for attr in ("metrics_snapshot", "active_problems", "_hash_tuple"):
-            self.__dict__.pop(attr, None)
+        self.__dict__.pop("metrics_snapshot", None)
+        self.__dict__.pop("active_problems", None)
+        self.__dict__.pop("_hash_tuple", None)
 
     def ingest(self, source: Any) -> bool:
         """Normaliza e importa datos externos al contexto de manera transaccional."""
