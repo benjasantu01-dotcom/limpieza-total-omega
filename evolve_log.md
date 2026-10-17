@@ -416,3 +416,21 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-17T03:00:14` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se introdujo una comprobación de existencia y legibilidad en `_is_process_executable_safe` para evitar fallos cuando el proceso apunta a un archivo que ha desaparecido o al que no se tiene acceso, mitigando el riesgo de excepciones inesperadas al procesar handles de procesos volátiles.
 - `2026-10-17T03:00:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T03:00:14` Corrida terminada. Total usado hoy: 72.
+- `2026-10-17T03:08:08` Arrancando corrida. Quedan hoy ~228 peticiones objetivo.
+- `2026-10-17T03:08:37` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-17T03:09:22` Tests FALLARON:
+```
+Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error durante aislamiento: Error durante aislamiento: Error crítico en transferencia: Falla durante operación I/O de copia: Falla crítica: el hash del archivo copiado no coincide.
+8 failed, 291 passed in 2.35s
+
+```
+- `2026-10-17T03:09:22` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `quarantine_file` ante situaciones de concurrencia y fallos parciales agregando un chequeo explícito de espacio en disco previo a la operación y asegurando que los manejadores de archivos se cierren correctamente ante excepciones inesperadas mediante bloques `try-finally`.
+- `2026-10-17T03:09:42` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-17T03:10:16` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-10-17T03:10:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T03:10:16` Corrida terminada. Total usado hoy: 76.
