@@ -344,8 +344,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     2. Itera sobre el pipeline para normalizar ratios y disparar reglas.
     3. Agrega resultados de áreas individuales al total ponderado.
     """
-    # Manejo robusto de entrada nula
-    m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
+    # Manejo robusto de entrada nula y validación de estado
+    if not isinstance(metrics, SystemMetrics):
+        m = SystemMetrics()
+    else:
+        m = metrics
+    
     m.validate()
     
     if not m.is_finite:
@@ -368,7 +372,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             
             metric_breakdown[entry.area] = val_int
             total_points += val_int
-        except Exception as e:
+        except (ValueError, TypeError, AttributeError) as e:
             logging.error(f"Error técnico procesando métrica {entry.area}: {e}")
             metric_breakdown[entry.area] = 0
             

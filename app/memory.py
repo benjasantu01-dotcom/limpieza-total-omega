@@ -247,6 +247,7 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
 
 def _get_top_n(processes: List[ProcessMemory], limit: int) -> List[ProcessMemory]:
     """Extrae los N procesos con mayor uso de memoria."""
+    if not isinstance(limit, int) or limit < 0: return []
     return heapq.nlargest(limit, processes)
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
@@ -260,6 +261,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     
     processes: List[ProcessMemory] = []
     for line in lines[1:]:
+        if not line: continue
         proc = _extract_process_info(line)
         if proc is not None:
             processes.append(proc)
@@ -331,12 +333,12 @@ def _iter_process_memory(kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS
         if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
             count = min(max_pids, cb_needed.value // ctypes.sizeof(ctypes.c_uint32))
             for i in range(count):
-                pid = int(pids[i])
-                if pid > 4:
-                    ws = _query_working_set_bytes(pid, kernel32, psapi, pmc)
+                pid_val = pids[i]
+                if pid_val is not None and pid_val > 4:
+                    ws = _query_working_set_bytes(pid_val, kernel32, psapi, pmc)
                     if ws is not None:
-                        yield ProcessMemory(f"PID {pid}", pid, ws)
-    except (ctypes.ArgumentError, OSError, ValueError):
+                        yield ProcessMemory(f"PID {pid_val}", pid_val, ws)
+    except (ctypes.ArgumentError, OSError, ValueError, TypeError):
         pass
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:

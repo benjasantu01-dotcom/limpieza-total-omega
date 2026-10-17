@@ -1633,3 +1633,14 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-10-17T00:57:21` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se mejoró la robustez de `suggest_keeper` y `format_group` mediante la validación explícita de tipos y estados, previniendo errores de ejecución ante entradas inesperadas (`None` o datos corruptos) en el pipeline de reportes.
 - `2026-10-17T00:57:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T00:57:21` Corrida terminada. Total usado hoy: 24.
+- `2026-10-17T01:06:01` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-10-17T01:07:03` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-17T01:07:55` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del motor `compute_score` añadiendo validaciones preventivas antes de acceder a los recursos del pipeline, asegurando que las entradas no sean `None` y que el estado interno sea consistente antes de realizar cálculos aritméticos.
+- `2026-10-17T01:08:56` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-17T01:09:59` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-17T01:11:05` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-10-17T01:12:17` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-17T01:13:26` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_iter_process_memory` y `parse_windows_process_csv` añadiendo validaciones de entrada más estrictas y manejo explícito de errores, evitando que valores nulos o tipos incorrectos comprometan la integridad de los datos en tiempo de ejecución.
+- `2026-10-17T01:13:44` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_process_directory` y `stage_for_review` capturando excepciones de forma específica, validando tipos de datos y asegurando que las operaciones de sistema se realicen sobre rutas resueltas para evitar errores de permisos o colisiones silenciosas durante el bucle de escaneo.
+- `2026-10-17T01:13:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T01:13:44` Corrida terminada. Total usado hoy: 28.
