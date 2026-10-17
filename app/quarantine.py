@@ -1057,6 +1057,11 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             if f.name == MANIFEST_NAME:
                 continue
             
+            # Defensa: no tocar rutas que el sistema considera protegidas, 
+            # aunque estén dentro del directorio de cuarentena (ej. ocultos).
+            if is_protected_path(f):
+                continue
+            
             if f.name in item_map:
                 if _is_item_purgable(f, item_map[f.name]):
                     found_in_fs.add(item_map[f.name].item_id)

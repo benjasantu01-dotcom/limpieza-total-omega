@@ -320,7 +320,7 @@ def _query_working_set_bytes(pid: int, kernel32: Any, psapi: Any, pmc: PROCESS_M
     return None
 
 def _iter_process_memory(kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
-    """Enumera todos los procesos del sistema usando un búfer dinámico para evitar truncamientos."""
+    """Enumera procesos del sistema validando su seguridad al obtener métricas."""
     size = 4096
     while True:
         pids = (ctypes.c_uint32 * (size // 4))()
@@ -331,15 +331,19 @@ def _iter_process_memory(kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS
                 for i in range(count):
                     pid_val = pids[i]
                     if pid_val > 4:
-                        ws = _query_working_set_bytes(pid_val, kernel32, psapi, pmc)
-                        if ws is not None:
-                            yield ProcessMemory(f"PID {pid_val}", pid_val, ws)
+                        handle = _is_process_accessible(pid_val, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
+                        if handle:
+                            if _is_process_executable_safe(pid_val, handle):
+                                ws = _query_working_set_bytes(pid_val, kernel32, psapi, pmc)
+                                if ws is not None:
+                                    yield ProcessMemory(f"PID {pid_val}", pid_val, ws)
+                            kernel32.CloseHandle(handle)
                 return
         size *= 2
         if size > 1024 * 1024: break
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Obtiene los procesos más pesados, validando seguridad antes de incluirlos en el reporte."""
+    """Obtiene los procesos más pesados tras validación de seguridad."""
     global _CACHE_TOP_PROC
     if not _is_windows: return []
     now = time.time()
@@ -348,15 +352,8 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         kernel32, psapi = ctypes.windll.kernel32, ctypes.windll.psapi
         pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
         
-        candidates = _get_top_n(_iter_process_memory(kernel32, psapi, pmc), limit * 2)
-        validated = []
-        for proc in candidates:
-            handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, proc.pid)
-            if handle and _is_process_executable_safe(proc.pid, handle):
-                validated.append(proc)
-            if handle: kernel32.CloseHandle(handle)
-            if len(validated) >= limit: break
-        _CACHE_TOP_PROC = CacheEntry(now, validated)
+        candidates = _get_top_n(_iter_process_memory(kernel32, psapi, pmc), limit)
+        _CACHE_TOP_PROC = CacheEntry(now, candidates)
             
     return _CACHE_TOP_PROC.data
 
