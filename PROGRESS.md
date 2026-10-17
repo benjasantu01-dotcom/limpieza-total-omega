@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **172** (34.1% de aceptación)
+- Mejoras aceptadas: **173** (34.3% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 238
+- Sin respuesta de la IA (error o límite): 237
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 62 | 8 | 16 | 9 | 121 |
-| 2026-10-17 | 110 | 10 | 37 | 14 | 117 |
+| 2026-10-16 | 62 | 8 | 16 | 9 | 117 |
+| 2026-10-17 | 111 | 10 | 37 | 14 | 120 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,17 +25,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **40**
 - rendimiento: **34**
 - robustez ante casos límite: **29**
-- seguridad defensiva: **27**
+- seguridad defensiva: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
 - `memory.py`: **18**
 - `duplicates.py`: **15**
+- `assistant.py`: **14**
 - `quarantine.py`: **14**
 - `safety.py`: **14**
 - `browser.py`: **14**
-- `assistant.py`: **13**
 - `healthscore.py`: **12**
 - `settings.py`: **12**
 - `main.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-17T12:18:56` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `assistant.py` centralizando la validación de URLs y estructuras de datos para prevenir inyecciones y accesos no autorizados, asegurando que `_call_gemini` solo procese URLs que cumplan con los estándares de seguridad de la aplicación antes de ejecutar cualquier petición de red.
 - `2026-10-17T12:12:32` **settings.py** (robustez ante casos límite): Se reforzó la robustez ante permisos denegados y condiciones de carrera en `_read_and_parse_json` y `settings_path`, asegurando que cualquier fallo al acceder al sistema de archivos sea capturado sin detener la ejecución y devolviendo siempre un estado predecible.
 - `2026-10-17T12:09:37` **scanner.py** (robustez ante casos límite): Se introdujo una validación de `path.exists()` y `path.is_file()` basada en `try/except` robusta dentro de `_is_valid_file_path`, además de sanitizar la comparación de `base_root` contra entradas de disco usando `Path.resolve(strict=False)` para evitar fallos de resolución en rutas con permisos restringidos o inexistentes durante el escaneo.
 - `2026-10-17T12:09:03` **safety.py** (robustez ante casos límite): Se ha añadido una verificación de "reparse points" (puntos de reparseo) en la función `is_protected_path` para evitar que se ignoren rutas de sistema que utilicen técnicas de redirección de archivos o carpetas, mejorando la solidez ante casos límite de estructura de archivos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-17T11:08:01` **diskreport.py** (rendimiento): Optimicé el método `_collect_summary_data` reemplazando la creación de una lista intermedia y el uso de `sorted` en `largest_files` por la reutilización directa del *min-heap* generado durante el recorrido, eliminando ciclos de procesamiento innecesarios y reduciendo el uso de memoria.
 - `2026-10-17T11:07:31` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo eliminando la limpieza redundante del caché de seguridad (`ctx.safety_cache.clear()`) en cada iteración de navegador y consolidando el contexto en una única instancia, permitiendo que la memoización de rutas seguras persista durante toda la ejecución del reporte.
 - `2026-10-17T10:58:09` **assistant.py** (rendimiento): Optimicé el método `metrics_snapshot` de `SystemContext` usando `cached_property` de manera más eficiente y reduje la sobrecarga de llamadas a `_get_safe_attr` y validaciones repetitivas en el acceso a métricas durante las consultas, mejorando el rendimiento en el bucle de inferencia local.
-- `2026-10-17T10:48:18` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la actualización de docstrings en los validadores de `_IntegrityCheck` y funciones críticas, además de incluir `type hints` faltantes para asegurar que la intención de cada componente de seguridad sea autoexplicativa.

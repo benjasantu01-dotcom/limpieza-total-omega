@@ -1393,3 +1393,14 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-17T12:12:32` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante permisos denegados y condiciones de carrera en `_read_and_parse_json` y `settings_path`, asegurando que cualquier fallo al acceder al sistema de archivos sea capturado sin detener la ejecución y devolviendo siempre un estado predecible.
 - `2026-10-17T12:12:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T12:12:32` Corrida terminada. Total usado hoy: 288.
+- `2026-10-17T12:17:45` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-10-17T12:18:15` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-10-17T12:18:56` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `assistant.py` centralizando la validación de URLs y estructuras de datos para prevenir inyecciones y accesos no autorizados, asegurando que `_call_gemini` solo procese URLs que cumplan con los estándares de seguridad de la aplicación antes de ejecutar cualquier petición de red.
+- `2026-10-17T12:19:44` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-17T12:20:19` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-10-17T12:20:24` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-17T12:21:13` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-17T12:21:35` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-17T12:22:08` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-17T12:22:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T12:22:08` Corrida terminada. Total usado hoy: 292.
