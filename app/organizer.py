@@ -159,6 +159,7 @@ def _try_open_win_file(path: Path) -> bool:
         return False
 
 def _is_file_locked(path: Path) -> bool:
+    """Verifica si un archivo está bloqueado por otro proceso intentando abrirlo en modo lectura."""
     if not path or not path.is_file(): return True
     if os.name == 'nt':
         return not _try_open_win_file(path)
@@ -168,6 +169,7 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
+    """Evita operaciones donde el destino sea un ancestro de la fuente o la misma ruta."""
     try:
         src_resolved = src.resolve(strict=False)
         dest_resolved = dest.resolve(strict=False)
@@ -197,6 +199,7 @@ def _validate_file_identity(junk_file: JunkFile, src_real: Path) -> bool:
         return False
 
 def _can_write_to_destination(dest_real: Path, size: int) -> bool:
+    """Verifica permisos de escritura y disponibilidad de espacio en disco en la carpeta destino."""
     target_dir = dest_real.parent if dest_real.exists() else dest_real
     if not target_dir.is_dir() or not os.access(target_dir, os.W_OK):
         return False

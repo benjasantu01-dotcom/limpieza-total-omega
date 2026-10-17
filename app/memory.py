@@ -396,7 +396,12 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def _is_process_executable_safe(pid: int, handle: int) -> bool:
-    """Verifica si el ejecutable de un proceso reside en una ubicación permitida mediante seguridad centralizada."""
+    """
+    Verifica si el ejecutable de un proceso reside en una ubicación permitida.
+    
+    Usa seguridad centralizada (`is_protected_path`) para validar que el ejecutable
+    no sea un componente del sistema o esté en una ruta no autorizada.
+    """
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return False
     
@@ -404,7 +409,7 @@ def _is_process_executable_safe(pid: int, handle: int) -> bool:
         buf = ctypes.create_unicode_buffer(1024)
         if psapi.GetModuleFileNameExW(handle, None, buf, 1024) > 0:
             path_str: str = buf.value
-            # Si la ruta es inválida, UNC o protegida, se bloquea por seguridad
+            # Se excluyen rutas UNC y se valida mediante la política de seguridad central.
             if not path_str or path_str.startswith("\\\\"): return False
             return not is_protected_path(Path(path_str))
     except (ctypes.ArgumentError, OSError, ValueError, RuntimeError):
