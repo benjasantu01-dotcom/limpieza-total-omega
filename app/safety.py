@@ -31,8 +31,8 @@ LONG_PATH_PREFIX: Final[str] = "\\\\?\\"
 PathLike: TypeAlias = Union[str, os.PathLike]
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
 
-# Cache para optimizar validaciones repetitivas
-_PATH_CACHE: Final[dict[str, bool]] = {}
+# Cache optimizado para validaciones de rutas
+_PROTECTED_PATH_CACHE: Final[dict[str, bool]] = {}
 
 class SafetyAction(Enum):
     """Define la criticidad de la operación para ajustar el rigor de la validación."""
@@ -71,7 +71,6 @@ class SecurityDescriptor(NamedTuple):
             return cls(0, True, True, True, True)
         try:
             attrs = _get_file_attrs(path_str)
-            # Agrupa atributos de riesgo sistémico
             risk_flags = (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | 
                           Win32Attr.TEMPORARY | Win32Attr.REPARSE_POINT)
             is_protected = bool(attrs & risk_flags)
@@ -316,7 +315,6 @@ def _is_file_owned_by_system(path_str: str) -> bool:
         advapi32 = ctypes.windll.advapi32
         kernel32 = ctypes.windll.kernel32
         sid_ptr = ctypes.c_void_p()
-        # SE_FILE_OBJECT = 1, DACL_SECURITY_INFORMATION = 0x00000004
         res = advapi32.GetNamedSecurityInfoW(
             path_str, 1, 0x00000001, ctypes.byref(sid_ptr), None, None, None, None
         )
@@ -410,7 +408,6 @@ def _is_volume_readonly(path_str: Optional[str]) -> bool:
         if not os.path.exists(root): return False
         flags = ctypes.c_ulong()
         if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
-            # 0x80000 = FILE_READ_ONLY_VOLUME
             return bool(flags.value & 0x80000)
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError, MemoryError): pass
     return False
@@ -451,7 +448,6 @@ def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
         if not os.path.exists(root): return False
         flags = ctypes.c_ulong()
         if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
-            # 0x10 = FILE_FILE_COMPRESSION, 0x20000 = FILE_SUPPORTS_ENCRYPTION
             return bool(flags.value & (0x10 | 0x20000))
     except (AttributeError, OSError, TypeError, ctypes.ArgumentError): pass
     return False
@@ -725,40 +721,38 @@ def is_drive_root(path: PathLike) -> bool:
     except (UnsafePathError, TypeError, OSError): return True
 
 def is_protected_path(path: PathLike) -> bool:
-    """Determina si la ruta forma parte de una zona protegida del sistema (con caché)."""
+    """Determina si la ruta forma parte de una zona protegida del sistema."""
     if not isinstance(path, (str, Path)) or not path: return True
     path_str = str(path)
-    if path_str in _PATH_CACHE: return _PATH_CACHE[path_str]
+    if path_str in _PROTECTED_PATH_CACHE: return _PROTECTED_PATH_CACHE[path_str]
     
     try:
         p_str_low = path_str.lower()
         p = Path(path)
         
-        # Validación rápida por prefijo de sistema
         if any(p_str_low.startswith(root) for root in _SYSTEM_ROOT_STRS):
-            _PATH_CACHE[path_str] = True
+            _PROTECTED_PATH_CACHE[path_str] = True
             return True
         
-        # Validación rápida por componentes protegidos
         parts = {p.lower() for p in p.parts}
         if not PROTECTED_DIR_NAMES.isdisjoint(parts):
-            _PATH_CACHE[path_str] = True
+            _PROTECTED_PATH_CACHE[path_str] = True
             return True
         
         if _is_kernel_managed(p_str_low):
-            _PATH_CACHE[path_str] = True
+            _PROTECTED_PATH_CACHE[path_str] = True
             return True
         
         attrs = _get_file_attrs(str(p))
         if attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN):
-            _PATH_CACHE[path_str] = True
+            _PROTECTED_PATH_CACHE[path_str] = True
             return True
         
         res = p == Path(p.anchor)
-        _PATH_CACHE[path_str] = res
+        _PROTECTED_PATH_CACHE[path_str] = res
         return res
     except Exception:
-        _PATH_CACHE[path_str] = True
+        _PROTECTED_PATH_CACHE[path_str] = True
         return True
 
 @lru_cache(maxsize=4096)
@@ -931,7 +925,7 @@ def _validate_path_components(path: Path) -> None:
     for i in range(len(parts)):
         current_check = anchor.joinpath(*parts[:i+1])
         if current_check.exists():
-            resolved = current_check.resolve()
+            resolved = _normalize_resolved(str(current_check))
             if resolved in visited:
                 raise UnsafePathError(f"Referencia circular detectada: {current_check}", SafetyValidationErrorCode.CIRCULAR_REFERENCE)
             visited.add(resolved)
@@ -969,7 +963,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     if path is None:
         raise UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC)
     
-    # Validar entrada basica antes de convertir
     if not isinstance(path, (str, Path, os.PathLike)):
         raise UnsafePathError(f"Tipo de ruta no soportado: {type(path).__name__}", SafetyValidationErrorCode.GENERIC)
         

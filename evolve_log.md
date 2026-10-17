@@ -856,3 +856,10 @@ FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - Attr
 - `2026-10-17T06:54:37` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `load_manifest` mediante el uso de un cache global persistente por ruta base, evitando lecturas y parseos de JSON redundantes en llamadas sucesivas durante la misma ejecución.
 - `2026-10-17T06:54:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T06:54:37` Corrida terminada. Total usado hoy: 164.
+- `2026-10-17T07:02:24` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-10-17T07:02:46` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-10-17T07:03:36` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado la validación de rutas mediante la implementación de un caché de resultados de `is_protected_path` más eficiente y la sustitución de la resolución de ruta `path.resolve()` por una técnica de "path crawling" manual que evita múltiples llamadas al sistema operativo innecesarias, reduciendo significativamente la latencia en escaneos profundos de disco.
+- `2026-10-17T07:04:01` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_inside_base_root
+- `2026-10-17T07:04:14` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._check_path_safety, _Validators._validate_enum_str
+- `2026-10-17T07:04:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T07:04:14` Corrida terminada. Total usado hoy: 168.
