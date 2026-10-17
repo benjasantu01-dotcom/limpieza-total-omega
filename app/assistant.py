@@ -505,15 +505,15 @@ def _ensure_safe_text(text: Any) -> bool:
 def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
     """Acceso seguro a atributos evitando recursión, inyecciones de clase y acceso a métodos."""
     if depth > _MAX_NESTING_DEPTH or not _is_safe_key(key): return None
-    # Verificamos si source es mapeable o tiene atributos antes de acceder
-    try:
-        if isinstance(source, dict):
-            return source.get(key)
-        elif hasattr(source, key):
+    # Validación explícita de capacidad de acceso antes de operar
+    if isinstance(source, dict):
+        return source.get(key)
+    if hasattr(source, key):
+        try:
             val: Any = getattr(source, key)
             return val if not callable(val) else None
-    except Exception:
-        pass
+        except Exception:
+            return None
     return None
 
 def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> SystemContext:
