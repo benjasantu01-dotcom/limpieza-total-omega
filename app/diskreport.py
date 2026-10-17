@@ -379,7 +379,10 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     if root is None: 
         return ["Error: La ruta seleccionada no es válida o no tiene permisos de lectura."]
     
-    data = _collect_summary_data(root, skip_protected, limit=20)
+    try:
+        data = _collect_summary_data(root, skip_protected, limit=20)
+    except Exception:
+        return ["Error: Falló el escaneo de archivos debido a un error inesperado."]
         
     if data.total_files == 0: 
         return ["Aviso: No se encontraron archivos accesibles en la ruta seleccionada."]

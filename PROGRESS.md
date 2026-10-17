@@ -8,34 +8,34 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **177** (35.1% de aceptación)
 - Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 240
+- Sin respuesta de la IA (error o límite): 241
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 61 | 5 | 17 | 7 | 44 |
+| 2026-10-15 | 59 | 5 | 16 | 7 | 43 |
 | 2026-10-16 | 116 | 19 | 26 | 12 | 177 |
-| 2026-10-17 | 0 | 0 | 0 | 1 | 19 |
+| 2026-10-17 | 2 | 0 | 0 | 1 | 21 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **40**
 - robustez ante casos límite: **39**
+- legibilidad y documentación: **38**
 - seguridad defensiva: **35**
 - rendimiento: **34**
-- manejo de errores y validación de entradas: **29**
+- manejo de errores y validación de entradas: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
-- `memory.py`: **16**
-- `duplicates.py`: **16**
-- `quarantine.py`: **15**
+- `diskreport.py`: **20**
+- `duplicates.py`: **17**
+- `memory.py`: **15**
 - `scanner.py`: **14**
 - `assistant.py`: **14**
+- `quarantine.py`: **14**
 - `healthscore.py`: **13**
 - `safety.py`: **12**
 - `settings.py`: **12**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-17T00:57:21` **duplicates.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `suggest_keeper` y `format_group` mediante la validación explícita de tipos y estados, previniendo errores de ejecución ante entradas inesperadas (`None` o datos corruptos) en el pipeline de reportes.
+- `2026-10-17T00:57:11` **diskreport.py** (manejo de errores y validación de entradas): Mejora la robustez del método `summarize` y el manejo de rutas en `_validate_root`, capturando errores específicos al procesar archivos y asegurando que las funciones de alto nivel no fallen silenciosamente ante estados de sistema inesperados o permisos restringidos.
 - `2026-10-16T14:04:03` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_file_locked` para evitar lecturas concurrentes o bloqueos de sistema mediante un manejo de excepciones más robusto al intentar abrir el archivo, y se mejoró `_safe_path_check` para asegurar que las comparaciones de rutas sean consistentes ante la resolución de enlaces simbólicos.
 - `2026-10-16T13:54:47` **branding.py** (seguridad defensiva): Mejoré la seguridad de `save_logo_svg` utilizando `filter_safe_paths` para validar la integridad de la ruta y evitando el uso innecesario de `ensure_safe_to_modify` antes de una comprobación explícita, siguiendo estrictamente el enfoque defensivo.
 - `2026-10-16T13:23:07` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_is_excluded_path` para manejar archivos inaccesibles debido a errores de sistema (como archivos de sistema en uso o bloqueados) mediante un manejo de excepciones más granular y preventivo.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-16T12:42:50` **browser.py** (rendimiento): Optimizé el rendimiento de `_sum_directory_recursive` evitando llamadas costosas a `os.path.normpath` dentro de cada paso del loop mediante la pre-normalización en el contexto y usando una búsqueda directa en `set` para la validación de exclusiones, reduciendo la redundancia de validaciones en el recorrido.
 - `2026-10-16T12:34:52` **assistant.py** (rendimiento): Optimicé el mecanismo de búsqueda de `local_answer` reemplazando la iteración secuencial `next(...)` sobre todo el diccionario por un acceso directo basado en la primera palabra clave detectada, reduciendo la complejidad temporal de O(N) a O(1) para el emparejamiento de intenciones.
 - `2026-10-16T12:32:48` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo mediante la adición de docstrings técnicos detallados en los métodos de validación y gestión de archivos, aclarando el propósito y las restricciones de seguridad de cada lógica, facilitando así el mantenimiento preventivo y la auditoría del código.
-- `2026-10-16T12:23:39` **safety.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de validación interna, clarificando el propósito y el comportamiento esperado ante errores, facilitando así el mantenimiento futuro sin alterar la lógica.
-- `2026-10-16T12:22:17` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos para documentar las asunciones críticas de seguridad y el manejo de excepciones en `_atomic_isolate_file`, mejorando la legibilidad técnica del proceso de aislamiento.

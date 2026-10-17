@@ -107,7 +107,6 @@ def _is_file_locked(path: Path) -> bool:
     try:
         if not path.is_file() or not os.access(path, os.R_OK):
             return True
-        # Usamos flags de apertura mínima para verificar lock sin leer contenido
         with open(path, "rb", buffering=0) as f:
             return False
     except OSError as e:
@@ -124,7 +123,6 @@ def _safe_path_check(path: Path) -> bool:
     Gatekeeper principal: valida seguridad, ausencia de protección y bucles (junctions).
     """
     try:
-        # Resolvemos para evitar engaños por rutas relativas o symlinks
         resolved = path.resolve()
         return (is_safe_to_modify(path) and 
                 not is_protected_path(path) and 
@@ -206,12 +204,7 @@ def _resolve_and_verify_root(directory_path: PathLike) -> Optional[Path]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """
-    Recolección BFS de archivos. Utiliza (dev, ino) para identificar archivos únicos (hardlinks).
-    :param directories: Directorios a escanear.
-    :param min_size: Tamaño mínimo en bytes para considerar un archivo.
-    :param skip_protected: Flag para omitir rutas protegidas.
-    """
+    """Recolección BFS de archivos usando (dev, ino) para identificar hardlinks."""
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     queue: deque[Tuple[Path, int]] = deque()
     visited_dirs: set[Path] = set()
@@ -297,6 +290,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     """Calcula métricas (modificación, longitud de ruta) para heurística de selección."""
+    if not isinstance(path, Path): return None
     try:
         if not path.exists(): return None
         stat = path.stat()
@@ -311,6 +305,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         return None
     candidates: List[Tuple[Tuple[float, int], Path]] = []
     for p in group.paths:
+        if not isinstance(p, Path): continue
         score = _calculate_keeper_heuristic(p)
         if score is not None:
             candidates.append((score, p))
@@ -330,5 +325,6 @@ def format_group(group: DuplicateGroup) -> List[str]:
     mb_t, mb_w = round(group.size_bytes / 1048576, 2), round(group.wasted_bytes / 1048576, 2)
     lines = [f"{group.count} copias de {mb_t} MB (recuperable: {mb_w} MB)"]
     for path in group.paths:
-        lines.append(f"   {_get_path_label(path, keeper)} {path}")
+        if isinstance(path, Path):
+            lines.append(f"   {_get_path_label(path, keeper)} {path}")
     return lines

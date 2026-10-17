@@ -1626,3 +1626,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-10-17T00:49:16` ➖ Sin cambios en assistant.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `_extract_text_from_gemini_json` implementando una validación explícita de `finishReason` y tipos, garantizando que solo se procesen respuestas completas y estructuradas, evitando excepciones por acceder a claves inexistentes en payloads malformados.
 - `2026-10-17T00:49:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T00:49:16` Corrida terminada. Total usado hoy: 20.
+- `2026-10-17T00:55:49` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-10-17T00:56:21` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-17T00:56:44` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-17T00:57:11` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del método `summarize` y el manejo de rutas en `_validate_root`, capturando errores específicos al procesar archivos y asegurando que las funciones de alto nivel no fallen silenciosamente ante estados de sistema inesperados o permisos restringidos.
+- `2026-10-17T00:57:21` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se mejoró la robustez de `suggest_keeper` y `format_group` mediante la validación explícita de tipos y estados, previniendo errores de ejecución ante entradas inesperadas (`None` o datos corruptos) en el pipeline de reportes.
+- `2026-10-17T00:57:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T00:57:21` Corrida terminada. Total usado hoy: 24.
