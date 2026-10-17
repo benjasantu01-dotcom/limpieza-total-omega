@@ -245,8 +245,8 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         return None
     return None
 
-def _get_top_n(processes: List[ProcessMemory], limit: int) -> List[ProcessMemory]:
-    """Extrae los N procesos con mayor uso de memoria."""
+def _get_top_n(processes: Iterator[ProcessMemory], limit: int) -> List[ProcessMemory]:
+    """Extrae los N procesos con mayor uso de memoria usando evaluación perezosa."""
     if not isinstance(limit, int) or limit < 0: return []
     return heapq.nlargest(limit, processes)
 
@@ -259,14 +259,13 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     if len(lines) < 2:
         return []
     
-    processes: List[ProcessMemory] = []
-    for line in lines[1:]:
-        if not line: continue
-        proc = _extract_process_info(line)
-        if proc is not None:
-            processes.append(proc)
+    def _gen():
+        for line in lines[1:]:
+            if line:
+                proc = _extract_process_info(line)
+                if proc: yield proc
             
-    return _get_top_n(processes, limit)
+    return _get_top_n(_gen(), limit)
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Ejecuta GlobalMemoryStatusEx via ctypes para obtener el estado real de RAM."""
@@ -356,8 +355,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         pmc.cb = ctypes.sizeof(PROCESS_MEMORY_COUNTERS)
         
         try:
-            raw_list = list(_iter_process_memory(kernel32, psapi, pmc))
-            _CACHE_TOP_PROC = CacheEntry(now, _get_top_n(raw_list, limit))
+            _CACHE_TOP_PROC = CacheEntry(now, _get_top_n(_iter_process_memory(kernel32, psapi, pmc), limit))
         except (ctypes.ArgumentError, OSError, TypeError):
             pass
             
