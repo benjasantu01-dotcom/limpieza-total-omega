@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
+- Mejoras aceptadas: **182** (36.1% de aceptación)
 - Rechazadas por tests: 24
 - Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 233
+- Sin respuesta de la IA (error o límite): 231
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 31 | 2 | 10 | 3 | 28 |
+| 2026-10-15 | 31 | 2 | 10 | 3 | 24 |
 | 2026-10-16 | 116 | 19 | 26 | 12 | 177 |
-| 2026-10-17 | 33 | 3 | 13 | 3 | 28 |
+| 2026-10-17 | 35 | 3 | 13 | 3 | 30 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,12 +26,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **38**
 - rendimiento: **37**
 - robustez ante casos límite: **34**
-- seguridad defensiva: **27**
+- seguridad defensiva: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **19**
-- `diskreport.py`: **19**
+- `duplicates.py`: **20**
+- `diskreport.py`: **20**
 - `memory.py`: **17**
 - `assistant.py`: **15**
 - `quarantine.py`: **14**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-17T03:30:02` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_collect_candidates` para prevenir el seguimiento involuntario de enlaces simbólicos o puntos de reanálisis fuera de la jerarquía permitida, asegurando que `is_safe_to_modify` se valide tanto en la entrada como en su resolución, y se añadió una validación explícita para evitar que `os.scandir` acceda a rutas que no superan las restricciones del sistema antes de procesarlas.
+- `2026-10-17T03:29:52` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_excluded_path` implementando un chequeo estricto para evitar el acceso a archivos con atributos especiales de Windows (como archivos temporales de sistema o reparse points) mediante `st_file_attributes`, reduciendo el riesgo de seguir punteros o estructuras de sistema que puedan causar comportamientos inesperados durante el escaneo.
 - `2026-10-17T03:20:14` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva al reemplazar el acceso directo a los atributos del `SystemContext` dentro de `ingest` y `_apply_updates` por validaciones explícitas de integridad, garantizando que solo los nombres de campos permitidos y tipos correctos puedan modificar el estado interno, mitigando riesgos de inyección de atributos no deseados.
 - `2026-10-17T03:19:20` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante condiciones de carrera y fallos en el sistema de archivos al implementar `os.replace` (atómico) dentro de un bloque `try-except` más estricto, y agregando una verificación de integridad de disco basada en `statvfs` antes de cualquier escritura para evitar truncar el archivo si no hay espacio.
 - `2026-10-17T03:00:14` **memory.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y legibilidad en `_is_process_executable_safe` para evitar fallos cuando el proceso apunta a un archivo que ha desaparecido o al que no se tiene acceso, mitigando el riesgo de excepciones inesperadas al procesar handles de procesos volátiles.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-17T02:18:44` **healthscore.py** (rendimiento): Se optimizó el acceso a los datos dentro de `compute_score` eliminando la llamada repetitiva a `m.validate()` (que ya ocurre al instanciar `SystemMetrics` en `__post_init__`) y se redujo la sobrecarga de `_render_bar` mediante el uso de almacenamiento en caché simple para las cadenas de caracteres de la barra en `summarize`.
 - `2026-10-17T02:18:13` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando un `set` para `visited_dirs` con resolución de rutas (`resolve()`), evitando que el algoritmo recorra múltiples veces estructuras de directorios simbólicas o uniones (junctions) que apunten a los mismos destinos reales, reduciendo drásticamente las llamadas a `os.scandir` en árboles de archivos complejos.
 - `2026-10-17T02:17:48` **diskreport.py** (rendimiento): Optimicé `walk_files` reemplazando la creación repetitiva de objetos `Path` por el uso de `os.path.join`, evitando así la sobrecarga de instanciar miles de objetos `Path` innecesarios durante el recorrido profundo de directorios.
-- `2026-10-17T02:10:57` **branding.py** (rendimiento): Optimizé la generación de gradientes en `branding.py` reemplazando la lógica de interpolación lineal por una caché de `_rgb_to_hex` más agresiva y simplificando el cálculo de segmentos para reducir la carga de CPU durante el renderizado de la UI.
-- `2026-10-17T02:08:13` **assistant.py** (rendimiento): Se optimizó la estructura de datos del mapa de tokens de funciones (`_TOKENS_MAP`) y se redujo la complejidad de la búsqueda en `local_answer` utilizando un `set` precalculado (`_TOKEN_KEYS`) y un mapeo directo, eliminando búsquedas innecesarias en cada iteración del bucle.

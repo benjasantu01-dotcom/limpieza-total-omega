@@ -107,12 +107,10 @@ def _is_file_locked(path: Path) -> bool:
     try:
         if not path.is_file() or not os.access(path, os.R_OK):
             return True
-        # Usamos open para verificar lock. Si falla por uso, retornamos True.
         with open(path, "rb") as f:
             f.peek(1)
             return False
     except OSError as e:
-        # 32: Sharing violation, 5: Access denied
         if hasattr(e, 'winerror') and e.winerror in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED):
             return True
         return True
@@ -219,24 +217,18 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     
     while queue:
         current_dir, depth = queue.popleft()
-        
-        try:
-            real_current = current_dir.resolve()
-        except (OSError, PermissionError):
+        if depth > MAX_RECURSION_DEPTH:
             continue
-            
-        if real_current in visited_dirs or depth > MAX_RECURSION_DEPTH:
-            continue
-        visited_dirs.add(real_current)
             
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
+                    p_entry = Path(entry.path)
+                    if not _safe_path_check(p_entry):
+                        continue
                     try:
-                        p_entry = Path(entry.path)
                         if entry.is_dir(follow_symlinks=False):
-                            if not is_junction(p_entry) and _safe_path_check(p_entry):
-                                queue.append((p_entry, depth + 1))
+                            queue.append((p_entry, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat()
                             if st.st_size < min_size or (st.st_dev, st.st_ino) in visited_inodes:
