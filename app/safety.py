@@ -744,7 +744,7 @@ def is_protected_path(path: PathLike) -> bool:
             return True
         
         attrs = _get_file_attrs(str(p))
-        if attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN):
+        if attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT):
             _PROTECTED_PATH_CACHE[path_str] = True
             return True
         

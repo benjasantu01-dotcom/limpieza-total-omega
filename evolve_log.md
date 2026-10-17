@@ -1384,3 +1384,12 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-17T12:00:05` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Se introdujo una comprobación explícita de `OSError` al realizar `stat()` en `_validate_integrity` para manejar archivos bloqueados o inaccesibles por el sistema operativo, evitando que una falla de I/O detenga la validación de integridad o cause una excepción no controlada.
 - `2026-10-17T12:00:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T12:00:05` Corrida terminada. Total usado hoy: 284.
+- `2026-10-17T12:07:35` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-10-17T12:07:56` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-17T12:09:03` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una verificación de "reparse points" (puntos de reparseo) en la función `is_protected_path` para evitar que se ignoren rutas de sistema que utilicen técnicas de redirección de archivos o carpetas, mejorando la solidez ante casos límite de estructura de archivos.
+- `2026-10-17T12:09:37` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se introdujo una validación de `path.exists()` y `path.is_file()` basada en `try/except` robusta dentro de `_is_valid_file_path`, además de sanitizar la comparación de `base_root` contra entradas de disco usando `Path.resolve(strict=False)` para evitar fallos de resolución en rutas con permisos restringidos o inexistentes durante el escaneo.
+- `2026-10-17T12:10:37` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-17T12:11:40` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-17T12:12:32` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante permisos denegados y condiciones de carrera en `_read_and_parse_json` y `settings_path`, asegurando que cualquier fallo al acceder al sistema de archivos sea capturado sin detener la ejecución y devolviendo siempre un estado predecible.
+- `2026-10-17T12:12:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T12:12:32` Corrida terminada. Total usado hoy: 288.

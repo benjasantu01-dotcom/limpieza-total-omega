@@ -382,13 +382,16 @@ def _is_dir_safe(path: Path) -> bool:
 
 def _load_impl(ruta: Path) -> AppSettings:
     """Implementación base de carga."""
-    real_path = Path(os.path.realpath(ruta))
-    if not real_path.exists() or not real_path.is_file() or _Validators._is_reparse_point(real_path):
+    try:
+        real_path = Path(os.path.realpath(ruta))
+        if not real_path.exists() or not real_path.is_file() or _Validators._is_reparse_point(real_path):
+            return DEFAULTS.copy()
+        if not is_safe_to_modify(str(real_path)):
+            return DEFAULTS.copy()
+        data = _read_and_parse_json(real_path)
+        return _coerce_and_verify(validate(data)) if data is not None else DEFAULTS.copy()
+    except (OSError, RuntimeError):
         return DEFAULTS.copy()
-    if not is_safe_to_modify(str(real_path)):
-        return DEFAULTS.copy()
-    data = _read_and_parse_json(real_path)
-    return _coerce_and_verify(validate(data)) if data is not None else DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga ajustes con caché basada en mtime y tamaño para evitar lecturas innecesarias."""

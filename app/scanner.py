@@ -87,8 +87,9 @@ def _cached_is_protected(path_str: str) -> bool:
 def _is_valid_file_path(path: Path) -> bool:
     """Valida la integridad básica de un Path antes de realizar operaciones de I/O."""
     try:
+        # Usamos exists() y is_file() de forma aislada para evitar errores de red/permisos
         return path.exists() and path.is_file()
-    except (OSError, PermissionError, ValueError):
+    except (OSError, PermissionError, ValueError, RuntimeError):
         return False
 
 def _is_locked_by_os(path: Path) -> bool:
@@ -243,8 +244,9 @@ class Scanner:
         self.seen: set[str] = set()
         self.safe_cache: set[str] = set()
         self.path_stat_cache: Dict[str, bool] = {}
+        # Usamos resolve(strict=False) para no abortar si la ruta base es compleja
         try:
-            self.base_root_str: str = str(base_root.resolve()).lower()
+            self.base_root_str: str = str(base_root.resolve(strict=False)).lower()
         except (OSError, RuntimeError):
             self.base_root_str = str(base_root).lower()
         self.now_ts: float = datetime.now().timestamp()
@@ -253,7 +255,7 @@ class Scanner:
     def _is_inside_base_root(self, entry_path: str) -> bool:
         """Verifica mediante resolución de ruta si el elemento pertenece al árbol de escaneo."""
         try:
-            resolved: str = str(Path(entry_path).resolve()).lower()
+            resolved: str = str(Path(entry_path).resolve(strict=False)).lower()
             return resolved.startswith(self.base_root_str)
         except (OSError, RuntimeError):
             return False
@@ -295,7 +297,8 @@ class Scanner:
             if not p.exists():
                 return False
             
-            real_path: Path = p.resolve()
+            # Usamos strict=False para evitar errores de permisos intermedios
+            real_path: Path = p.resolve(strict=False)
             if not str(real_path).lower().startswith(self.base_root_str):
                 return False
                 
@@ -405,7 +408,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     try:
         path_str: str = str(directory).strip()
         if not path_str or not _is_valid_path_structure(path_str): return []
-        base_path: Path = Path(path_str).resolve(strict=True)
+        base_path: Path = Path(path_str).resolve(strict=False)
         if not base_path.is_dir() or base_path.is_symlink() or not os.access(base_path, os.R_OK) or _cached_is_protected(str(base_path)):
             return []
         scanner: Scanner = Scanner(base_root=base_path)
