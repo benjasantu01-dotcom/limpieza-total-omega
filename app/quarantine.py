@@ -297,30 +297,28 @@ def _is_file_in_use_by_system(path: Path) -> bool:
     return not _is_file_exclusive(path)
 
 def _validate_file_for_unlink(path: Path, expected_hash: Optional[str], expected_inode: Inode) -> bool:
-    """Validación de seguridad previa a la ejecución de unlink()."""
+    """Valida los prerrequisitos de seguridad antes de proceder con una operación destructiva."""
     try:
-        if not is_safe_to_modify(path) or is_protected_path(path):
-            return False
-        if ":" in path.name:
+        if not is_safe_to_modify(path) or is_protected_path(path) or ":" in path.name:
             return False
             
         st = path.stat()
+        # Verificar estado del inodo y enlaces físicos para prevenir suplantaciones (TOCTOU)
         if st.st_nlink > 1 or (expected_inode != 0 and st.st_ino != expected_inode):
             return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid():
             return False
         
+        # Validar consistencia mediante hash si se proporcionó
         if expected_hash and _get_sha256(path) != expected_hash:
             return False
         
-        if _is_file_in_use_by_system(path):
-            return False
-        return True
+        return not _is_file_in_use_by_system(path)
     except (OSError, PermissionError):
         return False
 
 def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode: Inode = 0) -> bool:
-    """Eliminación controlada con sincronización de metadatos de directorio."""
+    """Eliminación controlada con sincronización de metadatos de directorio para asegurar persistencia."""
     if not _validate_file_for_unlink(path, expected_hash, expected_inode):
         return False
         
@@ -328,6 +326,7 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
         parent = path.parent
         _check_io_error_context(path.unlink)
         
+        # Sincronizar directorio padre para asegurar que el borrado se refleje en el FS
         if parent.exists():
             dir_fd = os.open(str(parent), os.O_RDONLY)
             try: os.fsync(dir_fd)
@@ -693,7 +692,11 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
 
 
 def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, Inode]:
-    """Transfiere el archivo y asegura persistencia mediante fsync."""
+    """
+    Transfiere el archivo al destino de forma segura y atómica.
+    Utiliza un archivo temporal, fsync para volcado de buffers y reemplazo atómico 
+    para garantizar que el sistema siempre vea un estado consistente.
+    """
     _check_path_syntax_integrity(destination)
     _validate_file_transfer_preconditions(source, destination)
     
@@ -757,7 +760,8 @@ def _validate_integrity_before_move(source: Path, original_size: int, original_i
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> Tuple[str, Inode]:
     """
     Ejecuta el aislamiento atómico de un archivo.
-    Coordina validaciones de estado (TOCTOU) para asegurar la inmutabilidad durante la copia.
+    Coordina validaciones de estado (TOCTOU) para asegurar la inmutabilidad durante 
+    todo el proceso desde la captura inicial hasta la persistencia final.
     """
     _check_path_syntax_integrity(destination)
     if not source.exists():

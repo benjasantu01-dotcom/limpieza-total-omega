@@ -504,27 +504,27 @@ def _validate_drive_restrictions(target_path: Path) -> None:
     except (AttributeError, OSError, ctypes.ArgumentError):
         pass
 
-def _check_symlink(p: Path, _, __) -> bool: return p.is_symlink()
-def _check_reparse(p: Path, _, sd: SecurityDescriptor) -> bool: return sd.is_reparse
-def _check_kernel_locked(p: Path, _, __) -> bool: return _is_kernel_managed(str(p))
+def _check_symlink(p: Path, _: os.stat_result, __: SecurityDescriptor) -> bool: return p.is_symlink()
+def _check_reparse(p: Path, _: os.stat_result, sd: SecurityDescriptor) -> bool: return sd.is_reparse
+def _check_kernel_locked(p: Path, _: os.stat_result, __: SecurityDescriptor) -> bool: return _is_kernel_managed(str(p))
 def _check_read_only(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: 
     return not bool(st.st_mode & stat.S_IWRITE) or sd.is_readonly
-def _check_vol_read_only(p: Path, _, __) -> bool: return _is_volume_readonly(str(p))
-def _check_vol_removable(p: Path, _, __) -> bool: return _is_volume_removable_media(str(p))
-def _check_vol_restricted(p: Path, _, __) -> bool: return _is_volume_compressed_or_encrypted(str(p))
-def _check_in_use(_, __, sd: SecurityDescriptor) -> bool: return sd.is_in_use
-def _check_sys_hidden(_, __, sd: SecurityDescriptor) -> bool: return sd.is_protected_system
-def _check_offline(_, __, sd: SecurityDescriptor) -> bool: return sd.has_flag(Win32Attr.OFFLINE)
-def _check_enc_comp(_, __, sd: SecurityDescriptor) -> bool: return bool(sd.attrs & (Win32Attr.COMPRESSED | Win32Attr.ENCRYPTED))
-def _check_sparse(_, __, sd: SecurityDescriptor) -> bool: return sd.has_flag(Win32Attr.SPARSE_FILE)
-def _check_hard_link(p: Path, st: os.stat_result, __) -> bool: return p.is_file() and st.st_nlink > 1
-def _check_ads(p: Path, _, __) -> bool: return _has_alternate_data_stream(p.name)
-def _check_empty(p: Path, st: os.stat_result, __) -> bool: return p.is_file() and st.st_size == 0
-def _check_size(p: Path, st: os.stat_result, __) -> bool: return p.is_file() and st.st_size > MAX_FILE_SIZE
-def _check_mount(p: Path, _, __) -> bool: return os.path.ismount(p)
-def _check_type(_, st: os.stat_result, __) -> bool: return not (stat.S_ISREG(st.st_mode) or stat.S_ISDIR(st.st_mode))
-def _check_owner(p: Path, _, __) -> bool: return _is_file_owned_by_system(str(p))
-def _check_virtual(p: Path, _, __) -> bool: return _is_virtual_drive(str(p))
+def _check_vol_read_only(p: Path, _: os.stat_result, __: SecurityDescriptor) -> bool: return _is_volume_readonly(str(p))
+def _check_vol_removable(p: Path, _: os.stat_result, __: SecurityDescriptor) -> bool: return _is_volume_removable_media(str(p))
+def _check_vol_restricted(p: Path, _: os.stat_result, __: SecurityDescriptor) -> bool: return _is_volume_compressed_or_encrypted(str(p))
+def _check_in_use(p: Path, _: os.stat_result, sd: SecurityDescriptor) -> bool: return sd.is_in_use
+def _check_sys_hidden(p: Path, _: os.stat_result, sd: SecurityDescriptor) -> bool: return sd.is_protected_system
+def _check_offline(p: Path, _: os.stat_result, sd: SecurityDescriptor) -> bool: return sd.has_flag(Win32Attr.OFFLINE)
+def _check_enc_comp(p: Path, _: os.stat_result, sd: SecurityDescriptor) -> bool: return bool(sd.attrs & (Win32Attr.COMPRESSED | Win32Attr.ENCRYPTED))
+def _check_sparse(p: Path, _: os.stat_result, sd: SecurityDescriptor) -> bool: return sd.has_flag(Win32Attr.SPARSE_FILE)
+def _check_hard_link(p: Path, st: os.stat_result, __: SecurityDescriptor) -> bool: return p.is_file() and st.st_nlink > 1
+def _check_ads(p: Path, _: os.stat_result, __: SecurityDescriptor) -> bool: return _has_alternate_data_stream(p.name)
+def _check_empty(p: Path, st: os.stat_result, __: SecurityDescriptor) -> bool: return p.is_file() and st.st_size == 0
+def _check_size(p: Path, st: os.stat_result, __: SecurityDescriptor) -> bool: return p.is_file() and st.st_size > MAX_FILE_SIZE
+def _check_mount(p: Path, _: os.stat_result, __: SecurityDescriptor) -> bool: return os.path.ismount(p)
+def _check_type(p: Path, st: os.stat_result, __: SecurityDescriptor) -> bool: return not (stat.S_ISREG(st.st_mode) or stat.S_ISDIR(st.st_mode))
+def _check_owner(p: Path, _: os.stat_result, __: SecurityDescriptor) -> bool: return _is_file_owned_by_system(str(p))
+def _check_virtual(p: Path, _: os.stat_result, __: SecurityDescriptor) -> bool: return _is_virtual_drive(str(p))
 
 _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _rule(ProtectionReason.SYMLINK, _check_symlink),
