@@ -41,6 +41,7 @@ Optimización de caché mediante marcas de tiempo para reducir re-cálculos de U
 Invalidación inteligente mediante digests de estado para evitar re-compilaciones.
 Uso de conjuntos (sets) para gestión de estado de UI y debounces.
 Caché de validación de rutas mediante LRU para reducir llamadas al sistema.
+Caché local de métricas calculadas para evitar overhead de re-escaneo en duplicados.
 
 Instalar dependencias:
     pip install customtkinter

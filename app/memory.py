@@ -320,19 +320,23 @@ def _query_working_set_bytes(pid: int, kernel32: Any, psapi: Any, pmc: PROCESS_M
     return None
 
 def _iter_process_memory(kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
-    """Enumera todos los procesos del sistema y extrae su consumo de memoria de forma perezosa."""
-    buf_size = 4096
-    pids = (ctypes.c_uint32 * (buf_size // 4))()
-    cb_needed = ctypes.c_uint32(0)
-    
-    if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
-        count = cb_needed.value // 4
-        for i in range(count):
-            pid_val = pids[i]
-            if pid_val > 4:
-                ws = _query_working_set_bytes(pid_val, kernel32, psapi, pmc)
-                if ws is not None:
-                    yield ProcessMemory(f"PID {pid_val}", pid_val, ws)
+    """Enumera todos los procesos del sistema usando un búfer dinámico para evitar truncamientos."""
+    size = 4096
+    while True:
+        pids = (ctypes.c_uint32 * (size // 4))()
+        cb_needed = ctypes.c_uint32(0)
+        if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
+            if cb_needed.value < size:
+                count = cb_needed.value // 4
+                for i in range(count):
+                    pid_val = pids[i]
+                    if pid_val > 4:
+                        ws = _query_working_set_bytes(pid_val, kernel32, psapi, pmc)
+                        if ws is not None:
+                            yield ProcessMemory(f"PID {pid_val}", pid_val, ws)
+                return
+        size *= 2
+        if size > 1024 * 1024: break
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Obtiene los procesos más pesados, validando seguridad antes de incluirlos en el reporte."""

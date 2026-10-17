@@ -1313,3 +1313,12 @@ FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size 
 - `2026-10-17T11:08:11` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se optimizó el proceso de recolección de archivos (`_collect_candidates`) evitando el llamado repetitivo a `os.scandir` y la resolución de rutas mediante la implementación de un diccionario de "tamaño-a-inodos" que permite filtrar duplicados reales antes de computar hashes, reduciendo drásticamente las operaciones I/O innecesarias en el árbol de archivos.
 - `2026-10-17T11:08:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T11:08:11` Corrida terminada. Total usado hoy: 264.
+- `2026-10-17T11:16:39` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-10-17T11:17:09` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-10-17T11:17:10` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-17T11:17:21` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-17T11:18:35` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un mecanismo de caché en el módulo de duplicados (vía `duplicates.py` si fuera necesario, pero aquí se optimizó la consulta desde `main.py`) para evitar la re-evaluación costosa del espacio recuperable, consolidando el acceso a datos en la lógica de salud para mejorar el tiempo de respuesta del dashboard.
+- `2026-10-17T11:19:12` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó `_iter_process_memory` para realizar una sola llamada a `EnumProcesses` mediante un búfer dinámico, reduciendo drásticamente las syscalls innecesarias y evitando el riesgo de truncar la lista de procesos en sistemas con alta carga.
+- `2026-10-17T11:19:25` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el rendimiento de `_process_directory` reemplazando la verificación repetida `entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE)` dentro del bucle principal por una estructura de control más eficiente, aprovechando que el conjunto `JUNK_EXTENSIONS` ya es `frozenset` para realizar consultas de tiempo constante `O(1)` en lugar de lineal `O(N)`.
+- `2026-10-17T11:19:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T11:19:25` Corrida terminada. Total usado hoy: 268.

@@ -7,45 +7,48 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **171** (33.9% de aceptación)
-- Rechazadas por tests: 21
+- Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 241
+- Sin respuesta de la IA (error o límite): 242
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 72 | 12 | 17 | 10 | 129 |
-| 2026-10-17 | 99 | 9 | 34 | 10 | 112 |
+| 2026-10-16 | 69 | 11 | 17 | 10 | 129 |
+| 2026-10-17 | 102 | 9 | 34 | 10 | 113 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **42**
 - manejo de errores y validación de entradas: **40**
 - seguridad defensiva: **34**
-- rendimiento: **28**
-- robustez ante casos límite: **27**
+- rendimiento: **31**
+- robustez ante casos límite: **24**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
-- `memory.py`: **18**
+- `memory.py`: **19**
 - `duplicates.py`: **15**
 - `assistant.py`: **14**
 - `quarantine.py`: **14**
 - `browser.py`: **14**
 - `safety.py`: **13**
 - `healthscore.py`: **12**
-- `scanner.py`: **11**
-- `settings.py`: **11**
-- `organizer.py`: **10**
-- `main.py`: **9**
+- `organizer.py`: **11**
+- `main.py`: **10**
+- `scanner.py`: **10**
+- `settings.py`: **10**
 - `branding.py`: **7**
-- `startup.py`: **4**
+- `startup.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-17T11:19:25` **organizer.py** (rendimiento): Se optimizó el rendimiento de `_process_directory` reemplazando la verificación repetida `entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE)` dentro del bucle principal por una estructura de control más eficiente, aprovechando que el conjunto `JUNK_EXTENSIONS` ya es `frozenset` para realizar consultas de tiempo constante `O(1)` en lugar de lineal `O(N)`.
+- `2026-10-17T11:19:12` **memory.py** (rendimiento): Se optimizó `_iter_process_memory` para realizar una sola llamada a `EnumProcesses` mediante un búfer dinámico, reduciendo drásticamente las syscalls innecesarias y evitando el riesgo de truncar la lista de procesos en sistemas con alta carga.
+- `2026-10-17T11:18:35` **main.py** (rendimiento): Se implementó un mecanismo de caché en el módulo de duplicados (vía `duplicates.py` si fuera necesario, pero aquí se optimizó la consulta desde `main.py`) para evitar la re-evaluación costosa del espacio recuperable, consolidando el acceso a datos en la lógica de salud para mejorar el tiempo de respuesta del dashboard.
 - `2026-10-17T11:08:01` **diskreport.py** (rendimiento): Optimicé el método `_collect_summary_data` reemplazando la creación de una lista intermedia y el uso de `sorted` en `largest_files` por la reutilización directa del *min-heap* generado durante el recorrido, eliminando ciclos de procesamiento innecesarios y reduciendo el uso de memoria.
 - `2026-10-17T11:07:31` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo eliminando la limpieza redundante del caché de seguridad (`ctx.safety_cache.clear()`) en cada iteración de navegador y consolidando el contexto en una única instancia, permitiendo que la memoización de rutas seguras persista durante toda la ejecución del reporte.
 - `2026-10-17T10:58:09` **assistant.py** (rendimiento): Optimicé el método `metrics_snapshot` de `SystemContext` usando `cached_property` de manera más eficiente y reduje la sobrecarga de llamadas a `_get_safe_attr` y validaciones repetitivas en el acceso a métricas durante las consultas, mejorando el rendimiento en el bucle de inferencia local.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-17T10:28:52` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` mediante la adición de docstrings precisos en métodos clave, la estandarización de tipos con `typing` y la clarificación de la lógica de `_is_excluded_path` mediante la descomposición de condiciones complejas.
 - `2026-10-17T10:28:34` **browser.py** (legibilidad y documentación): Se introdujeron docstrings detallados en funciones críticas del proceso recursivo y se estandarizaron las validaciones mediante el uso de nombres más descriptivos, facilitando la comprensión del flujo de escaneo seguro.
 - `2026-10-17T10:17:17` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del escáner implementando un manejo de excepciones más granular y defensivo en la función `_is_safe_entry`, asegurando que cualquier error durante la resolución de rutas o acceso a atributos del sistema se capture y resulte en una exclusión segura en lugar de propagarse o causar un comportamiento inesperado.
-- `2026-10-17T10:16:44` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` implementando una validación de tipo temprana para `base_dir` y una gestión de errores más granular, asegurando que cualquier fallo en la resolución de rutas no comprometa la integridad del proceso de validación.
-- `2026-10-17T10:08:12` **quarantine.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_manifest` mediante la captura explícita de `OSError` y `IOError` en la operación de escritura atómica, asegurando que cualquier fallo en la integridad de la persistencia del manifiesto sea notificado correctamente sin corromper el estado de la cuarentena.
-- `2026-10-17T10:06:44` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `_is_process_executable_safe` y `trim_working_set` implementando validaciones estrictas de tipo y estado para prevenir el procesamiento de handles nulos o rutas inexistentes antes de interactuar con el sistema de archivos.
