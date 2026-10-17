@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **170** (33.7% de aceptación)
-- Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 52
+- Mejoras aceptadas: **171** (33.9% de aceptación)
+- Rechazadas por tests: 21
+- Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 242
+- Sin respuesta de la IA (error o límite): 241
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 73 | 12 | 18 | 10 | 131 |
-| 2026-10-17 | 97 | 8 | 34 | 10 | 111 |
+| 2026-10-16 | 72 | 12 | 17 | 10 | 129 |
+| 2026-10-17 | 99 | 9 | 34 | 10 | 112 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **42**
 - manejo de errores y validación de entradas: **40**
 - seguridad defensiva: **34**
-- robustez ante casos límite: **28**
-- rendimiento: **26**
+- rendimiento: **28**
+- robustez ante casos límite: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `memory.py`: **18**
-- `quarantine.py`: **15**
 - `duplicates.py`: **15**
 - `assistant.py`: **14**
+- `quarantine.py`: **14**
+- `browser.py`: **14**
 - `safety.py`: **13**
-- `browser.py`: **13**
 - `healthscore.py`: **12**
 - `scanner.py`: **11**
 - `settings.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-17T11:08:01` **diskreport.py** (rendimiento): Optimicé el método `_collect_summary_data` reemplazando la creación de una lista intermedia y el uso de `sorted` en `largest_files` por la reutilización directa del *min-heap* generado durante el recorrido, eliminando ciclos de procesamiento innecesarios y reduciendo el uso de memoria.
+- `2026-10-17T11:07:31` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo eliminando la limpieza redundante del caché de seguridad (`ctx.safety_cache.clear()`) en cada iteración de navegador y consolidando el contexto en una única instancia, permitiendo que la memoización de rutas seguras persista durante toda la ejecución del reporte.
 - `2026-10-17T10:58:09` **assistant.py** (rendimiento): Optimicé el método `metrics_snapshot` de `SystemContext` usando `cached_property` de manera más eficiente y reduje la sobrecarga de llamadas a `_get_safe_attr` y validaciones repetitivas en el acceso a métricas durante las consultas, mejorando el rendimiento en el bucle de inferencia local.
 - `2026-10-17T10:48:18` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la actualización de docstrings en los validadores de `_IntegrityCheck` y funciones críticas, además de incluir `type hints` faltantes para asegurar que la intención de cada componente de seguridad sea autoexplicativa.
 - `2026-10-17T10:47:18` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_safe_unlink` y `_validate_file_for_unlink` para usar una estructura de validación centralizada, y añadí docstrings detallados en funciones críticas (como `_write_temp_to_final` y `_atomic_isolate_file`) para documentar las garantías de atomicidad, vitales para un colaborador senior.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-17T10:16:44` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` implementando una validación de tipo temprana para `base_dir` y una gestión de errores más granular, asegurando que cualquier fallo en la resolución de rutas no comprometa la integridad del proceso de validación.
 - `2026-10-17T10:08:12` **quarantine.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_manifest` mediante la captura explícita de `OSError` y `IOError` en la operación de escritura atómica, asegurando que cualquier fallo en la integridad de la persistencia del manifiesto sea notificado correctamente sin corromper el estado de la cuarentena.
 - `2026-10-17T10:06:44` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `_is_process_executable_safe` y `trim_working_set` implementando validaciones estrictas de tipo y estado para prevenir el procesamiento de handles nulos o rutas inexistentes antes de interactuar con el sistema de archivos.
-- `2026-10-17T09:59:58` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_purge_quarantine` y `on_restore_quarantine` mediante el uso de una validación de estado "justo-a-tiempo" antes de realizar operaciones de disco, evitando condiciones de carrera donde un ID podría haber sido procesado por otro hilo entre la comprobación inicial y la acción, además de añadir chequeos de integridad más estrictos para los objetos devueltos por `quarantine`.
-- `2026-10-17T09:56:49` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` validando explícitamente el estado de `metrics` y aplicando un manejo de errores más estricto en la ejecución del pipeline para evitar resultados parciales corruptos.

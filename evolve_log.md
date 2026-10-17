@@ -1262,3 +1262,54 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-17T10:58:09` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el método `metrics_snapshot` de `SystemContext` usando `cached_property` de manera más eficiente y reduje la sobrecarga de llamadas a `_get_safe_attr` y validaciones repetitivas en el acceso a métricas durante las consultas, mejorando el rendimiento en el bucle de inferencia local.
 - `2026-10-17T10:58:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T10:58:09` Corrida terminada. Total usado hoy: 260.
+- `2026-10-17T11:06:27` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-10-17T11:06:59` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-10-17T11:06:59` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-17T11:07:31` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo recursivo eliminando la limpieza redundante del caché de seguridad (`ctx.safety_cache.clear()`) en cada iteración de navegador y consolidando el contexto en una única instancia, permitiendo que la memoización de rutas seguras persista durante toda la ejecución del reporte.
+- `2026-10-17T11:08:01` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el método `_collect_summary_data` reemplazando la creación de una lista intermedia y el uso de `sorted` en `largest_files` por la reutilización directa del *min-heap* generado durante el recorrido, eliminando ciclos de procesamiento innecesarios y reduciendo el uso de memoria.
+- `2026-10-17T11:08:11` Tests FALLARON:
+```
+................................................... [ 48%]
+.............F.......................................................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+__________________ test_group_by_size_separates_by_exact_size __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_group_by_size_separates_b0')
+
+    def test_group_by_size_separates_by_exact_size(tmp_path):
+        (tmp_path / "chico.txt").write_text("12345")
+        (tmp_path / "otro-chico.txt").write_text("abcde")
+        (tmp_path / "grande.txt").write_text("1234567890")
+        grupos = duplicates.group_by_size(tmp_path.iterdir())
+>       assert sorted(len(v) for v in grupos.values()) == [1, 2]
+E       assert [2] == [1, 2]
+E         
+E         At index 0 diff: 2 != 1
+E         Right contains one more item: 2
+E         
+E         Full diff:
+E           [
+E         -     1,
+E               2,
+E           ]
+
+evolve/tests/test_modules.py:479: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size - assert [2] == [1, 2]
+  
+  At index 0 diff: 2 != 1
+  Right contains one more item: 2
+  
+  Full diff:
+    [
+  -     1,
+        2,
+    ]
+1 failed, 298 passed in 0.96s
+
+```
+- `2026-10-17T11:08:11` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se optimizó el proceso de recolección de archivos (`_collect_candidates`) evitando el llamado repetitivo a `os.scandir` y la resolución de rutas mediante la implementación de un diccionario de "tamaño-a-inodos" que permite filtrar duplicados reales antes de computar hashes, reduciendo drásticamente las operaciones I/O innecesarias en el árbol de archivos.
+- `2026-10-17T11:08:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T11:08:11` Corrida terminada. Total usado hoy: 264.

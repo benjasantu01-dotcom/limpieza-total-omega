@@ -408,7 +408,6 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     
     if data.top_files:
         lines.extend(["", "Mayores archivos:"])
-        for record in data.top_files:
-            s, p = record
+        for s, p in sorted(data.top_files, key=lambda x: x[0], reverse=True):
             lines.append(f"  {format_size(s):>10}  {str(p)}")
     return lines

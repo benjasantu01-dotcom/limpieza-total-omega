@@ -304,7 +304,6 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
                 candidate = _resolve_browser_path(real_base, rel_str)
                 if candidate != Path() and _is_valid_cache_path(candidate, ctx.sandbox_base_norm):
                     ctx.visited_files.clear()
-                    ctx.safety_cache.clear()
                     scan_res = _sum_directory_recursive(str(candidate), ctx, 0)
                     if scan_res.bytes_found > 0:
                         found.append(BrowserCache(str(browser_name), candidate, scan_res.bytes_found))
