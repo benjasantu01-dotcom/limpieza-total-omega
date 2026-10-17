@@ -252,11 +252,11 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
 @safe_path_operation(0)
 def directory_size(path: Optional[OSPath]) -> int:
     """Cálculo del tamaño en bytes para una ruta dada, aplicando contextos de seguridad."""
-    if not path or not isinstance(path, (str, Path)): 
+    if not isinstance(path, (str, Path)): 
         return 0
     
     path_obj = Path(path)
-    if not path_obj.exists():
+    if not path_obj.is_dir():
         return 0
         
     resolved_path = path_obj.resolve(strict=True)

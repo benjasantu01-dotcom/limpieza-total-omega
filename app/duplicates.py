@@ -321,12 +321,15 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     """Calcula métricas de antigüedad y longitud de ruta para selección de keeper."""
-    if not isinstance(path, Path) or not is_safe_to_modify(path): return None
+    if not isinstance(path, Path) or not is_safe_to_modify(path): 
+        return None
     try:
-        if not path.exists(): return None
+        # Verificamos existencia explícitamente antes de stat
+        if not path.is_file():
+            return None
         stat = path.stat()
         return float(stat.st_mtime), len(str(path))
-    except (OSError, AttributeError):
+    except (OSError, AttributeError, FileNotFoundError):
         return None
 
 
@@ -334,13 +337,19 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """Sugiere el 'original' basándose en la menor antigüedad del archivo."""
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
+    
     candidates: List[Tuple[Tuple[float, int], Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path): continue
+        if not isinstance(p, Path): 
+            continue
         score = _calculate_keeper_heuristic(p)
         if score is not None:
             candidates.append((score, p))
-    return min(candidates, key=lambda x: x[0])[1] if candidates else None
+            
+    if not candidates:
+        return None
+        
+    return min(candidates, key=lambda x: x[0])[1]
 
 
 def _get_path_label(path: Path, keeper: Optional[Path]) -> str:
