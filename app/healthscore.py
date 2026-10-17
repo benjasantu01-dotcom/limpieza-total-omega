@@ -303,7 +303,7 @@ def grade_for_score(score: float | int) -> str:
 def _sanitize_msg(msg: str | Any) -> str:
     """Limpia cadenas de texto eliminando caracteres prohibidos y previniendo inyecciones."""
     if not isinstance(msg, str): return ""
-    clean = "".join(c for c in msg if c not in _FORBIDDEN_CHARS and c in _ALLOWED_CHARS)
+    clean = "".join(c for c in msg if c in _ALLOWED_CHARS)
     lower_msg = clean.lower()
     if any(b in lower_msg for b in _BLOCKED_TERMS):
         return ""
@@ -313,7 +313,7 @@ def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:
     """Envoltorio seguro para ejecutar factories de reglas sin exponer errores."""
     try:
         res = rule.message_factory(metrics)
-        return _sanitize_msg(res) if isinstance(res, str) else ""
+        return _sanitize_msg(res)
     except Exception:
         return ""
 

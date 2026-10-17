@@ -448,3 +448,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-17T03:30:02` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_collect_candidates` para prevenir el seguimiento involuntario de enlaces simbólicos o puntos de reanálisis fuera de la jerarquía permitida, asegurando que `is_safe_to_modify` se valide tanto en la entrada como en su resolución, y se añadió una validación explícita para evitar que `os.scandir` acceda a rutas que no superan las restricciones del sistema antes de procesarlas.
 - `2026-10-17T03:30:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T03:30:02` Corrida terminada. Total usado hoy: 84.
+- `2026-10-17T03:38:38` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-10-17T03:39:08` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se endureció la validación de entrada en `_sanitize_msg` y `_apply_rule_safely` mediante la implementación de una máscara de caracteres estrictamente alfanuméricos y la eliminación de posibles inyecciones de control, garantizando que el asistente de IA solo procese texto limpio y seguro.
+- `2026-10-17T03:40:09` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-17T03:41:12` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-17T03:42:26` Gemini no devolvió un bloque de archivo válido para main.py (enfoque: seguridad defensiva).
+- `2026-10-17T03:42:53` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` al reemplazar la validación simplista por un chequeo robusto que utiliza `os.path.abspath` para normalizar la ruta antes de verificarla contra las políticas de seguridad, evitando bypasses por rutas relativas o inconsistencias en el formato de `GetModuleFileNameExW`.
+- `2026-10-17T03:43:03` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-10-17T03:43:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T03:43:03` Corrida terminada. Total usado hoy: 88.
