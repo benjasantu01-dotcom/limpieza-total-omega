@@ -434,3 +434,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-17T03:10:16` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
 - `2026-10-17T03:10:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T03:10:16` Corrida terminada. Total usado hoy: 76.
+- `2026-10-17T03:18:19` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-10-17T03:18:49` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-17T03:19:20` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante condiciones de carrera y fallos en el sistema de archivos al implementar `os.replace` (atómico) dentro de un bloque `try-except` más estricto, y agregando una verificación de integridad de disco basada en `statvfs` antes de cualquier escritura para evitar truncar el archivo si no hay espacio.
+- `2026-10-17T03:19:45` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-17T03:20:14` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva al reemplazar el acceso directo a los atributos del `SystemContext` dentro de `ingest` y `_apply_updates` por validaciones explícitas de integridad, garantizando que solo los nombres de campos permitidos y tipos correctos puedan modificar el estado interno, mitigando riesgos de inyección de atributos no deseados.
+- `2026-10-17T03:20:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T03:20:14` Corrida terminada. Total usado hoy: 80.

@@ -121,7 +121,7 @@ def _get_safe_attr(obj: Any, name: str, default: Any = None) -> Any:
     if not _is_safe_key(name): return default
     try:
         # Forzamos a solo acceder si está definido en los validadores conocidos o es el grado
-        if name not in _VALIDATORS and name != "grade": return default
+        if name not in _VALIDATORS and name != "grade" and name != "analyzed": return default
         val = getattr(obj, name, default)
         return val if not callable(val) else default
     except Exception:
@@ -449,11 +449,11 @@ class SystemContext:
         return True
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
-        """Aplica cambios al contexto y limpia cachés internas con validación de tamaño."""
+        """Aplica cambios al contexto y limpia cachés internas con validación de seguridad."""
         if len(updates) > _MAX_COLLECTION_SIZE:
             return
         for k, v in updates.items():
-            if _is_safe_key(k):
+            if _is_safe_key(k) and (k in _VALIDATORS or k == "grade"):
                 setattr(self, k, v)
         self.analyzed = True
         for attr in ("metrics_snapshot", "active_problems", "_hash_tuple"):

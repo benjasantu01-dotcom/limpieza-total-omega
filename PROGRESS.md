@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 48
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 236
+- Sin respuesta de la IA (error o límite): 233
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 31 | 2 | 10 | 3 | 32 |
+| 2026-10-15 | 31 | 2 | 10 | 3 | 28 |
 | 2026-10-16 | 116 | 19 | 26 | 12 | 177 |
-| 2026-10-17 | 31 | 3 | 12 | 3 | 27 |
+| 2026-10-17 | 33 | 3 | 13 | 3 | 28 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **44**
 - manejo de errores y validación de entradas: **38**
 - rendimiento: **37**
-- robustez ante casos límite: **33**
-- seguridad defensiva: **26**
+- robustez ante casos límite: **34**
+- seguridad defensiva: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **19**
 - `diskreport.py`: **19**
 - `memory.py`: **17**
-- `assistant.py`: **14**
+- `assistant.py`: **15**
 - `quarantine.py`: **14**
 - `healthscore.py`: **13**
 - `safety.py`: **13**
+- `settings.py`: **12**
 - `branding.py`: **11**
 - `organizer.py`: **11**
 - `scanner.py`: **11**
-- `settings.py`: **11**
 - `main.py`: **10**
 - `browser.py`: **10**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-17T03:20:14` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva al reemplazar el acceso directo a los atributos del `SystemContext` dentro de `ingest` y `_apply_updates` por validaciones explícitas de integridad, garantizando que solo los nombres de campos permitidos y tipos correctos puedan modificar el estado interno, mitigando riesgos de inyección de atributos no deseados.
+- `2026-10-17T03:19:20` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante condiciones de carrera y fallos en el sistema de archivos al implementar `os.replace` (atómico) dentro de un bloque `try-except` más estricto, y agregando una verificación de integridad de disco basada en `statvfs` antes de cualquier escritura para evitar truncar el archivo si no hay espacio.
 - `2026-10-17T03:00:14` **memory.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y legibilidad en `_is_process_executable_safe` para evitar fallos cuando el proceso apunta a un archivo que ha desaparecido o al que no se tiene acceso, mitigando el riesgo de excepciones inesperadas al procesar handles de procesos volátiles.
 - `2026-10-17T02:58:51` **healthscore.py** (robustez ante casos límite): Se ha mejorado la resiliencia del motor `compute_score` ante valores `None` o estados inconsistentes en las métricas durante la iteración del pipeline, asegurando que un fallo en una sola regla o scorer no invalide el procesamiento de las áreas restantes.
 - `2026-10-17T02:58:25` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez frente a casos límite en `_is_file_locked` para manejar correctamente errores de sistema al verificar archivos, asegurando que cualquier error inesperado al intentar abrir un archivo para lectura exclusiva se trate como una restricción de acceso, evitando que el escáner intente procesar archivos inaccesibles o bloqueados por el kernel.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-17T02:17:48` **diskreport.py** (rendimiento): Optimicé `walk_files` reemplazando la creación repetitiva de objetos `Path` por el uso de `os.path.join`, evitando así la sobrecarga de instanciar miles de objetos `Path` innecesarios durante el recorrido profundo de directorios.
 - `2026-10-17T02:10:57` **branding.py** (rendimiento): Optimizé la generación de gradientes en `branding.py` reemplazando la lógica de interpolación lineal por una caché de `_rgb_to_hex` más agresiva y simplificando el cálculo de segmentos para reducir la carga de CPU durante el renderizado de la UI.
 - `2026-10-17T02:08:13` **assistant.py** (rendimiento): Se optimizó la estructura de datos del mapa de tokens de funciones (`_TOKENS_MAP`) y se redujo la complejidad de la búsqueda en `local_answer` utilizando un `set` precalculado (`_TOKEN_KEYS`) y un mapeo directo, eliminando búsquedas innecesarias en cada iteración del bucle.
-- `2026-10-17T01:57:59` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados y descriptivos en las funciones de validación crítica, asegurando que el "porqué" de las restricciones de seguridad sea transparente para futuros mantenimientos sin alterar la funcionalidad.
-- `2026-10-17T01:48:35` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la adición de docstrings técnicos detallados en funciones clave, la estandarización de type hints y la consolidación de la lógica de validación de rutas para clarificar el flujo de control en operaciones críticas.
