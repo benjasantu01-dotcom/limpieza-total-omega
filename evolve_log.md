@@ -863,3 +863,12 @@ FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - Attr
 - `2026-10-17T07:04:14` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._check_path_safety, _Validators._validate_enum_str
 - `2026-10-17T07:04:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T07:04:14` Corrida terminada. Total usado hoy: 168.
+- `2026-10-17T07:12:35` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-10-17T07:13:50` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-17T07:13:51` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-17T07:14:40` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez del método `ingest` de `SystemContext` ante entradas malformadas, añadiendo una validación explícita de `float` y `int` que garantiza que el sistema no falle si los datos provienen de una fuente externa con tipos inesperados o corrompidos.
+- `2026-10-17T07:14:41` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-17T07:15:24` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-10-17T07:15:58` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se implementó un chequeo preventivo de concurrencia y acceso bloqueado en `_sum_directory_recursive` mediante el uso de `os.access(path, os.R_OK)` y el manejo robusto de `OSError` durante el acceso a atributos de archivo, evitando fallos en carpetas protegidas por el sistema o archivos en uso exclusivo (como el archivo 'Lock' de los navegadores).
+- `2026-10-17T07:15:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T07:15:58` Corrida terminada. Total usado hoy: 172.

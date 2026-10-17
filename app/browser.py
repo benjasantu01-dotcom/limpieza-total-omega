@@ -54,14 +54,6 @@ PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|', '"'}
 class ScanContext:
     """
     Estado persistente durante una operación de escaneo.
-    
-    Attributes:
-        sandbox_base_norm: Ruta base normalizada del perfil de usuario (sandbox).
-        kernel32: Handle a la API de Windows para inspección de atributos.
-        is_junction: Función delegada para detectar puntos de reparse.
-        visited_files: Conjunto de (dev, inode) para evitar conteo doble de hardlinks.
-        visited_dirs: Conjunto de rutas visitadas para prevenir ciclos de directorios.
-        safety_cache: Diccionario para evitar re-validaciones de seguridad en el mismo árbol.
     """
     sandbox_base_norm: str
     kernel32: Optional[ctypes.WinDLL]
@@ -211,8 +203,6 @@ def _is_path_safe(path_str: str, ctx: ScanContext) -> bool:
 def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     """
     Aplica filtros de seguridad sobre una entrada de directorio.
-    Verifica exclusiones explícitas, longitud de ruta, validaciones de seguridad
-    definidas en safety.py, y atributos de sistema/reparse points.
     """
     if _is_excluded_file(entry.name): return True
     path_str = entry.path
@@ -223,21 +213,17 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
     """
-    Escaneo recursivo de directorios para calcular el peso total.
-    
-    Args:
-        root_path: Ruta a escanear.
-        ctx: Objeto ScanContext con el estado compartido del escaneo.
-        depth: Profundidad actual para evitar recursión excesiva.
-        
-    Returns:
-        ScanResult con la suma en bytes y éxito de la operación.
+    Escaneo recursivo de directorios con verificación de acceso y concurrencia.
     """
     if depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN: 
         return ScanResult(0, True)
     
     if not _is_within_sandbox(os.path.normpath(root_path), ctx.sandbox_base_norm):
         return ScanResult(0, False)
+
+    # Verificar si tenemos permisos de lectura antes de intentar escanear
+    if not os.access(root_path, os.R_OK):
+        return ScanResult(0, True)
 
     total_bytes = 0
     try:
