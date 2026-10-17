@@ -289,7 +289,10 @@ def is_running_as_admin() -> bool:
 
 @lru_cache(maxsize=128)
 def _is_virtual_drive(path_str: str) -> bool:
-    """Detecta si la unidad es un remapeo de dispositivo virtual o unión de DOS."""
+    """
+    Detecta si la unidad es un remapeo de dispositivo virtual o unión de DOS.
+    Evita que operaciones de archivo afecten unidades montadas fuera del alcance local.
+    """
     if os.name != 'nt' or not isinstance(path_str, str) or not path_str: return False
     drive = os.path.splitdrive(path_str)[0]
     if not drive: return False
@@ -305,7 +308,10 @@ def _is_virtual_drive(path_str: str) -> bool:
     return False
 
 def _is_file_owned_by_system(path_str: str) -> bool:
-    """Valida la propiedad mediante el Security Identifier (SID) de sistema."""
+    """
+    Valida la propiedad mediante el Security Identifier (SID) de sistema.
+    Bloquea la modificación de objetos cuyos permisos pertenecen a la cuenta SYSTEM.
+    """
     if os.name != 'nt' or not isinstance(path_str, str): return False
     try:
         advapi32 = ctypes.windll.advapi32
@@ -327,7 +333,10 @@ def _is_file_owned_by_system(path_str: str) -> bool:
     return False
 
 def _has_invalid_chars(path_str: Optional[str]) -> bool:
-    """Busca caracteres de control y secuencias BIDI potencialmente maliciosas."""
+    """
+    Busca caracteres de control y secuencias BIDI potencialmente maliciosas.
+    Previene ataques de inyección y ofuscación en nombres de archivos.
+    """
     if not isinstance(path_str, str) or not path_str: return True
     return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E\u206A-\u206F]', path_str))
 
@@ -353,7 +362,10 @@ def _is_device_file(path: Path) -> bool:
 
 @lru_cache(maxsize=512)
 def _has_alternate_data_stream(path_name: str) -> bool:
-    """Detecta flujos de datos NTFS (ADS) que pueden esconder payloads."""
+    """
+    Detecta flujos de datos NTFS (ADS) que pueden esconder payloads.
+    Bloquea archivos con streams extra para evitar ejecución de código oculto.
+    """
     return ":" in path_name and len(path_name.split(":")) > 2
 
 def _is_system_directory_junction(path_str: str) -> bool:
@@ -364,7 +376,10 @@ def _is_system_directory_junction(path_str: str) -> bool:
 
 @lru_cache(maxsize=1024)
 def _is_file_locked_by_other_process(path_str: str) -> bool:
-    """Verifica disponibilidad exclusiva del archivo mediante CreateFileW."""
+    """
+    Verifica disponibilidad exclusiva del archivo mediante apertura de solo atributos.
+    Previene colisiones de escritura con procesos del sistema o antivirus.
+    """
     if not isinstance(path_str, str) or os.name != 'nt' or not os.path.isabs(path_str): return False
     if os.path.isdir(path_str) or not os.path.exists(path_str): return False
     
