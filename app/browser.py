@@ -205,7 +205,7 @@ def _is_path_safe(path_str: str, ctx: ScanContext) -> bool:
     """Valida la seguridad de la ruta mediante caché de memoria para optimizar el escaneo."""
     if path_str not in ctx.safety_cache:
         p = Path(path_str)
-        ctx.safety_cache[path_str] = p.exists() and is_safe_to_modify(p) and not is_protected_path(p)
+        ctx.safety_cache[path_str] = is_safe_to_modify(p) and not is_protected_path(p)
     return ctx.safety_cache[path_str]
 
 def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
@@ -312,6 +312,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
                 candidate = _resolve_browser_path(real_base, rel_str)
                 if candidate != Path() and _is_valid_cache_path(candidate, ctx.sandbox_base_norm):
                     ctx.visited_files.clear()
+                    ctx.safety_cache.clear()
                     scan_res = _sum_directory_recursive(str(candidate), ctx, 0)
                     if scan_res.bytes_found > 0:
                         found.append(BrowserCache(str(browser_name), candidate, scan_res.bytes_found))

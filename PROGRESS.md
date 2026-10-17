@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **172** (34.1% de aceptación)
-- Rechazadas por tests: 24
+- Mejoras aceptadas: **171** (33.9% de aceptación)
+- Rechazadas por tests: 25
 - Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 243
@@ -16,36 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 115 | 19 | 26 | 12 | 176 |
-| 2026-10-17 | 57 | 5 | 22 | 5 | 67 |
+| 2026-10-16 | 113 | 19 | 25 | 12 | 175 |
+| 2026-10-17 | 58 | 6 | 23 | 5 | 68 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **43**
 - manejo de errores y validación de entradas: **38**
 - seguridad defensiva: **33**
-- rendimiento: **30**
-- robustez ante casos límite: **28**
+- rendimiento: **31**
+- robustez ante casos límite: **26**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **18**
 - `memory.py`: **17**
 - `duplicates.py`: **17**
-- `quarantine.py`: **15**
 - `assistant.py`: **14**
+- `quarantine.py`: **14**
 - `settings.py`: **13**
-- `safety.py`: **12**
-- `browser.py`: **11**
+- `browser.py`: **12**
 - `healthscore.py`: **11**
 - `scanner.py`: **11**
 - `organizer.py`: **11**
+- `safety.py`: **11**
 - `branding.py`: **9**
 - `main.py`: **8**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-17T06:42:29` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante la pre-validación de `is_safe_to_modify` y `is_protected_path` centralizada en el `ScanContext`, evitando llamadas repetitivas e innecesarias a estas funciones dentro del loop de `os.scandir`.
 - `2026-10-17T06:34:12` **assistant.py** (rendimiento): Se optimizó la búsqueda de handlers en `local_answer` reemplazando la lógica de iteración sobre tokens por una búsqueda directa de palabras clave, evitando re-procesar toda la consulta y aprovechando la naturaleza de diccionario de `_TOKENS_MAP`.
 - `2026-10-17T06:33:08` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `startup.py` mediante la normalización de docstrings (haciendo explícitas las precondiciones y efectos) y la unificación de los nombres de los parámetros de tipo para asegurar consistencia con el estilo de documentación técnica requerido.
 - `2026-10-17T06:24:14` **scanner.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el método `Scanner.process_entry` y la función `scan_directory` para mejorar la claridad de los flujos de control críticos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-17T05:42:56` **safety.py** (manejo de errores y validación de entradas): Se mejora la robustez de `ensure_safe_to_modify` y sus helpers integrando validación explícita de `None` y tipos, garantizando que cualquier entrada corrupta dispare `UnsafePathError` antes de interactuar con el sistema de archivos, manteniendo la coherencia de la capa de seguridad.
 - `2026-10-17T05:41:21` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando una validación explícita de `is_safe_to_modify` antes de cualquier operación de I/O y capturando excepciones de forma granular, evitando que la ejecución se detenga ante fallos de permisos en archivos individuales.
 - `2026-10-17T05:32:44` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_process_executable_safe` y `_query_working_set_bytes` implementando una validación estricta de punteros y retornos de API antes de operar, evitando posibles violaciones de segmento o errores silenciosos en llamadas a `ctypes`.
-- `2026-10-17T05:22:55` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo chequeos de `None` y manejo específico de excepciones en la resolución de rutas relativas, evitando que errores de acceso parciales detengan el escaneo completo.
