@@ -127,11 +127,15 @@ def _clamp(value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
 
 def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float], NormalizedRatio]:
     """
-    Fábrica para crear normalizadores lineales de métricas.
+    Fábrica de funciones normalizadoras.
+    
+    Genera un 'scorer' que asigna 1.0 a valores ideales y 0.0 cuando se alcanza 
+    o supera el límite definido.
     
     Args:
-        limit: Valor umbral para el cálculo.
-        inverse: Si True, un valor mayor al límite reduce el ratio.
+        limit: El valor de referencia máximo o mínimo.
+        inverse: Si True, valores crecientes reducen la salud (ej. basura). 
+                 Si False, valores crecientes aumentan la salud (ej. RAM libre).
     """
     def scorer(val: float) -> NormalizedRatio:
         if not math.isfinite(val) or limit <= 0.0: return 0.0
@@ -333,6 +337,9 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
     Computa el puntaje global mediante el pipeline.
+    
+    Itera sobre el _PIPELINE configurado para normalizar cada métrica, aplicar 
+    reglas de diagnóstico, y calcular el puntaje ponderado final.
     """
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema inválidos."])

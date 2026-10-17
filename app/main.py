@@ -359,7 +359,18 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     @lru_cache(maxsize=128)
     def _validate_disk_access(self, path: Union[str, Path]) -> Path:
-        """Valida que una ruta sea absoluta, no un enlace simbólico y ajena a la estructura de la App."""
+        """
+        Valida que una ruta sea absoluta, no un enlace simbólico y ajena a la estructura de la App.
+        
+        Args:
+            path: La ruta a validar.
+            
+        Returns:
+            Path: Objeto Path resuelto y validado.
+            
+        Raises:
+            safety.UnsafePathError: Si la ruta infringe las reglas de seguridad.
+        """
         try:
             clean_p = self._sanitize_path(path)
             p = Path(clean_p).resolve(strict=False)
@@ -415,7 +426,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     @safe_ui_operation
     def _debounce_action(self, key: str, delay: int, callback: AsyncCallback) -> None:
-        """Implementa un mecanismo de debounce para evitar spam de eventos rápidos en la UI."""
+        """
+        Implementa un mecanismo de debounce para evitar spam de eventos rápidos en la UI.
+        
+        Args:
+            key: Clave única del evento.
+            delay: Retardo en ms.
+            callback: Función a ejecutar tras el retardo.
+        """
         if key in self._debounces:
             self.after_cancel(self._debounces[key])
         self._debounces[key] = self.after(delay, callback)
@@ -459,7 +477,17 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _action(self, parent: ctk.CTk, text: str, command: AsyncCallback, 
                 danger: bool = False, column: int = 0, secondary: bool = False) -> ctk.CTkButton:
-        """Crea un botón estilizado con semántica visual y gestión de seguridad."""
+        """
+        Crea un botón estilizado con semántica visual y gestión de seguridad.
+        
+        Args:
+            parent: Widget padre.
+            text: Texto del botón.
+            command: Callback a ejecutar.
+            danger: Indica si el estilo es de peligro (borrado).
+            column: Posición en la grilla.
+            secondary: Indica estilo secundario.
+        """
         if danger:
             fondo, hover, texto = ("danger", "danger_hover", "text")
         elif secondary:

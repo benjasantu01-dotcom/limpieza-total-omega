@@ -225,7 +225,7 @@ def _is_system_process(pid: int) -> bool:
     return pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid()
 
 def _extract_process_info(line: str) -> Optional[ProcessMemory]:
-    """Parseador de líneas CSV para generar objetos ProcessMemory."""
+    """Valida y parsea una línea CSV para extraer datos de un proceso."""
     if not isinstance(line, str) or not line.strip() or "," not in line: 
         return None
         
@@ -237,16 +237,19 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     try:
         pid = int(pid_str)
         ws = _safe_int_conversion(ws_str)
-        if pid <= 0 or _is_system_process(pid):
+        
+        # Filtros de exclusión: PIDs críticos y procesos con métricas fuera de rango lógico.
+        if _is_system_process(pid) or pid <= 0:
             return None
-        if 0 < ws < MAX_VALID_PROCESS_MEM:
-            return ProcessMemory(name, pid, BytesValue(ws))
+        if not (0 < ws < MAX_VALID_PROCESS_MEM):
+            return None
+            
+        return ProcessMemory(name, pid, BytesValue(ws))
     except (ValueError, TypeError):
         return None
-    return None
 
 def _get_top_n(processes: Iterator[ProcessMemory], limit: int) -> List[ProcessMemory]:
-    """Extrae los N procesos con mayor uso de memoria usando evaluación perezosa."""
+    """Retorna una lista ordenada con los N procesos de mayor consumo de memoria."""
     if not isinstance(limit, int) or limit < 0: return []
     return heapq.nlargest(limit, processes)
 
@@ -300,7 +303,7 @@ def read_snapshot() -> MemorySnapshot:
     return _get_cached_snapshot(int(time.time() / 5))
 
 def _is_process_accessible(pid: int, access_mask: int, kernel32: Any) -> Optional[int]:
-    """Intenta obtener un Handle win32 verificando permisos."""
+    """Intenta obtener un Handle win32 verificando permisos de acceso."""
     if _is_system_process(pid): return None
     return kernel32.OpenProcess(access_mask, False, pid)
 
@@ -317,7 +320,7 @@ def _query_working_set_bytes(pid: int, kernel32: Any, psapi: Any, pmc: PROCESS_M
     return None
 
 def _iter_process_memory(kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
-    """Generador eficiente que recorre procesos para evitar listas intermedias masivas."""
+    """Enumera todos los procesos del sistema y extrae su consumo de memoria de forma perezosa."""
     buf_size = 4096
     pids = (ctypes.c_uint32 * (buf_size // 4))()
     cb_needed = ctypes.c_uint32(0)
@@ -332,7 +335,7 @@ def _iter_process_memory(kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS
                     yield ProcessMemory(f"PID {pid_val}", pid_val, ws)
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Enumera procesos y valida seguridad solo sobre el subconjunto más pesado."""
+    """Obtiene los procesos más pesados, validando seguridad antes de incluirlos en el reporte."""
     global _CACHE_TOP_PROC
     if not _is_windows: return []
     now = time.time()
@@ -386,7 +389,7 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def _is_process_executable_safe(pid: int, handle: int) -> bool:
-    """Verifica si el ejecutable de un proceso reside en una ubicación permitida."""
+    """Verifica si el ejecutable de un proceso reside en una ubicación permitida (seguridad)."""
     if not handle or handle == INVALID_HANDLE_VALUE: return False
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return False
