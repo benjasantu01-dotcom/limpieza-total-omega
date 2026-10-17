@@ -101,6 +101,7 @@ def _is_file_locked(path: Path) -> bool:
     """
     Intenta validar si el archivo es accesible para lectura exclusiva.
     Retorna True si el archivo está bloqueado por otro proceso o inaccesible.
+    Se requiere acceso exclusivo (buffering=0) para verificar locks de SO.
     """
     if not is_safe_to_modify(path):
         return True
@@ -121,6 +122,7 @@ def _is_file_locked(path: Path) -> bool:
 def _safe_path_check(path: Path) -> bool:
     """
     Gatekeeper principal: valida seguridad, ausencia de protección y bucles (junctions).
+    Asegura que ni la ruta original ni su destino real (resolved) sean peligrosos.
     """
     try:
         resolved = path.resolve()
@@ -204,7 +206,7 @@ def _resolve_and_verify_root(directory_path: PathLike) -> Optional[Path]:
 
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
-    """Recolección BFS de archivos usando (dev, ino) para identificar hardlinks."""
+    """Recolección BFS de archivos usando (dev, ino) para evitar procesar hardlinks duplicados."""
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     queue: deque[Tuple[Path, int]] = deque()
     visited_dirs: set[Path] = set()

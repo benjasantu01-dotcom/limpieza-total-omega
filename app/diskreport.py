@@ -61,7 +61,13 @@ def _safe_stat(path: Union[str, Path]) -> Optional[os.stat_result]:
 
 
 class ExtStats:
-    """Acumulador para métricas agregadas de archivos por extensión."""
+    """
+    Acumulador para métricas agregadas de archivos por extensión.
+    
+    Attributes:
+        total_bytes (int): Sumatoria del tamaño de archivos con esta extensión.
+        count (int): Cantidad total de archivos procesados para esta extensión.
+    """
     __slots__ = ('total_bytes', 'count')
     
     def __init__(self) -> None:
@@ -69,7 +75,7 @@ class ExtStats:
         self.count: int = 0
 
     def add(self, size: int) -> None:
-        """Suma el tamaño de un archivo y aumenta el contador de la extensión."""
+        """Incrementa el total de bytes y el contador de archivos si el tamaño es válido."""
         if not isinstance(size, int) or size < 0:
             return
         self.total_bytes += size
@@ -77,14 +83,24 @@ class ExtStats:
 
 
 class GlobalStats:
-    """Clase principal de agregación que rastrea totales globales y por extensión."""
+    """
+    Clase de agregación que rastrea totales globales y desgloses por extensión.
+    
+    Sirve como contenedor principal durante el recorrido del sistema de archivos.
+    """
     def __init__(self) -> None:
         self.total_bytes: int = 0
         self.total_files: int = 0
         self.ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
 
     def register_file(self, size: int, suffix: str) -> None:
-        """Registra un archivo en las estadísticas globales y específicas de extensión."""
+        """
+        Actualiza los contadores globales y el acumulador específico de la extensión.
+        
+        Args:
+            size (int): Tamaño en bytes del archivo.
+            suffix (str): Extensión del archivo (ej: '.txt').
+        """
         if not isinstance(size, int) or size < 0:
             return
         self.total_bytes += size
