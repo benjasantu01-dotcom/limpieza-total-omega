@@ -315,6 +315,8 @@ def _query_working_set_bytes(pid: int, kernel32: Any, psapi: Any, pmc: PROCESS_M
         if psapi.GetProcessMemoryInfo(process_handle, ctypes.byref(pmc), ctypes.c_uint32(pmc.cb)):
             val = pmc.WorkingSetSize
             return BytesValue(val) if 0 < val < MAX_VALID_PROCESS_MEM else None
+    except (ctypes.WinError, OSError):
+        return None
     finally:
         kernel32.CloseHandle(process_handle)
     return None
@@ -421,13 +423,14 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if not proc_handle or proc_handle == INVALID_HANDLE_VALUE:
         return False, "Acceso denegado o proceso no encontrado."
 
-    if not _is_process_executable_safe(target_pid, proc_handle):
-        kernel32.CloseHandle(proc_handle)
-        return False, "Proceso protegido o ubicación insegura."
-        
     try:
+        if not _is_process_executable_safe(target_pid, proc_handle):
+            return False, "Proceso protegido o ubicación insegura."
+            
         if psapi.EmptyWorkingSet(proc_handle) == 0:
             return False, "El sistema operativo rechazó la operación de limpieza."
         return True, f"Working set liberado. {TRIM_WARNING}"
+    except (ctypes.WinError, OSError):
+        return False, "Error al intentar interactuar con el proceso."
     finally:
         kernel32.CloseHandle(proc_handle)

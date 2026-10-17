@@ -104,11 +104,13 @@ def _is_filesystem_read_only(path: Path) -> bool:
     """Intenta determinar si el directorio tiene permisos de escritura mediante un archivo temporal."""
     if not path.exists(): return True
     try:
+        # Usar un nombre de archivo único para evitar conflictos de concurrencia
         test_file = path / f".test_{uuid.uuid4().hex}"
         test_file.touch()
         test_file.unlink()
         return False
     except (OSError, PermissionError):
+        # Ante cualquier error de permisos o I/O, asumimos que es lectura solo por seguridad
         return True
 
 def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
