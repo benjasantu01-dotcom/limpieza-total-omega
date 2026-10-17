@@ -208,7 +208,9 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     path_str = entry.path
     if len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS): return True
     if not _is_path_safe(path_str, ctx): return True
-    if entry.is_symlink() or ctx.is_junction(path_str) or _is_system_hidden(path_str, ctx.kernel32): return True
+    try:
+        if entry.is_symlink() or ctx.is_junction(path_str) or _is_system_hidden(path_str, ctx.kernel32): return True
+    except OSError: return True
     return False
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
@@ -221,7 +223,6 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
     if not _is_within_sandbox(os.path.normpath(root_path), ctx.sandbox_base_norm):
         return ScanResult(0, False)
 
-    # Verificar si tenemos permisos de lectura antes de intentar escanear
     if not os.access(root_path, os.R_OK):
         return ScanResult(0, True)
 
@@ -231,18 +232,18 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
             for entry in it:
                 if _should_skip_entry(entry, ctx): continue
                 
-                if entry.is_dir(follow_symlinks=False):
-                    res = _sum_directory_recursive(entry.path, ctx, depth + 1)
-                    total_bytes += res.bytes_found
-                else:
-                    try:
+                try:
+                    if entry.is_dir(follow_symlinks=False):
+                        res = _sum_directory_recursive(entry.path, ctx, depth + 1)
+                        total_bytes += res.bytes_found
+                    else:
                         st = entry.stat(follow_symlinks=False)
                         if st.st_size is not None and st.st_size >= 0:
                             file_id = (st.st_dev, st.st_ino)
                             if file_id not in ctx.visited_files:
                                 ctx.visited_files.add(file_id)
                                 total_bytes += int(st.st_size)
-                    except (OSError, PermissionError): continue
+                except (OSError, PermissionError): continue
         return ScanResult(total_bytes, True)
     except (OSError, PermissionError): return ScanResult(total_bytes, False)
 
@@ -267,7 +268,9 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
     real = str(candidate.resolve(strict=True))
     if not _is_within_sandbox(os.path.normpath(real), base_abs_str): return False
     if not is_safe_to_modify(Path(real)) or is_protected_path(Path(real)): return False
-    return not (candidate.is_symlink() or _IS_JUNCTION_FN(real) or _is_excluded_file(candidate.name))
+    try:
+        return not (candidate.is_symlink() or _IS_JUNCTION_FN(real) or _is_excluded_file(candidate.name))
+    except OSError: return False
 
 @safe_path_operation(Path())
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
@@ -278,7 +281,6 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     target_real = target.resolve(strict=True)
     if len(str(target_real)) >= MAX_PATH_LEN: return Path()
     
-    # Verificación de contención estricta tras la resolución de la ruta
     if _is_within_sandbox(os.path.normpath(str(target_real)), os.path.normpath(str(real_base))):
         return target_real
     return Path()

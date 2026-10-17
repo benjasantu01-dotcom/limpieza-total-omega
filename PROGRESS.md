@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **171** (33.9% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 53
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 238
+- Rechazadas por guardia de seguridad: 52
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 240
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 92 | 16 | 23 | 11 | 134 |
-| 2026-10-17 | 79 | 6 | 30 | 9 | 104 |
+| 2026-10-16 | 90 | 16 | 22 | 10 | 134 |
+| 2026-10-17 | 81 | 6 | 30 | 9 | 106 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **39**
+- legibilidad y documentación: **37**
 - rendimiento: **34**
 - seguridad defensiva: **34**
 - robustez ante casos límite: **33**
-- manejo de errores y validación de entradas: **31**
+- manejo de errores y validación de entradas: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **18**
 - `diskreport.py`: **18**
+- `memory.py`: **17**
 - `duplicates.py`: **16**
-- `assistant.py`: **14**
+- `assistant.py`: **15**
 - `quarantine.py`: **14**
 - `safety.py`: **13**
-- `organizer.py`: **12**
+- `browser.py`: **13**
 - `settings.py`: **12**
-- `browser.py`: **12**
 - `healthscore.py`: **12**
 - `scanner.py`: **11**
+- `organizer.py`: **11**
 - `main.py`: **8**
 - `branding.py`: **7**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-17T09:47:44` **browser.py** (manejo de errores y validación de entradas): Se reforzó la validación de `_sum_directory_recursive` mediante una verificación de `None` sobre `st.st_size` y la captura de errores específicos al acceder a las propiedades de `os.DirEntry` para evitar fallos durante la iteración en archivos bloqueados.
+- `2026-10-17T09:47:01` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez del manejo de datos externos en `AssistantConfig` y `_build_payload`, eliminando riesgos de propagación de excepciones en puntos críticos y reforzando la validación del esquema JSON para evitar errores durante la serialización remota.
 - `2026-10-17T08:24:56` **settings.py** (seguridad defensiva): Reforcé la integridad defensiva al centralizar la validación de rutas y prevenir condiciones de carrera mediante el uso explícito de `os.path.realpath` para normalizar rutas antes de cualquier chequeo de seguridad, evitando bypasses por enlaces simbólicos o rutas relativas maliciosas.
 - `2026-10-17T08:24:21` **scanner.py** (seguridad defensiva): Se introdujo una validación explícita para detectar si el sistema de archivos es de solo lectura o si el archivo está siendo manipulado mediante un enlace simbólico que apunta fuera de la jerarquía permitida, fortaleciendo la defensa contra ataques de tipo "Time-of-Check to Time-of-Use" (TOCTOU).
 - `2026-10-17T08:15:19` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` implementando una validación estricta del estado de los archivos antes de cualquier operación de I/O en `_perform_secure_copy` y `_write_temp_to_final`, asegurando que no se sigan enlaces simbólicos durante la lectura y que el archivo copiado no sea un punto de reparse, mitigando así riesgos de acceso no autorizado fuera del sandbox.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-17T07:45:06` **settings.py** (robustez ante casos límite): Se reforzó la robustez del cargador de JSON implementando un manejo defensivo ante la lectura de archivos con contenido vacío o malformado, añadiendo una verificación de `encoding` explícita y asegurando que `os.replace` no sea interrumpido por estados de archivo bloqueados mediante una gestión más estricta de los descriptores de archivo (`close` manual antes del reemplazo).
 - `2026-10-17T07:44:22` **scanner.py** (robustez ante casos límite): Se ha robustecido el escáner mediante la implementación de `_is_valid_file_path` para centralizar la validación de archivos antes de cualquier operación (stat, acceso, etc.), previniendo errores en rutas que cambian su estado de existencia durante el recorrido o que poseen caracteres de control, mejorando la resiliencia ante condiciones de carrera y sistemas de archivos inestables.
 - `2026-10-17T07:43:55` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera (Race Conditions) y errores de acceso transitorios, añadiendo una validación explícita de existencia mediante `path.exists()` dentro de los bloques críticos y centralizando la gestión de estados de archivo volátiles para evitar excepciones no controladas durante la evaluación de seguridad.
-- `2026-10-17T07:34:51` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_file` ante errores de I/O al verificar la existencia y el estado de la ruta destino después de un intento fallido de escritura, garantizando que no queden archivos huérfanos o en estado inconsistente en caso de interrupción del sistema.
-- `2026-10-17T07:33:33` **memory.py** (robustez ante casos límite): Se mejoró la robustez de `_is_process_executable_safe` añadiendo el manejo explícito de rutas con longitud excesiva (más de 1024 caracteres) y errores de acceso denegado durante la consulta del nombre de archivo, evitando fallos silenciosos ante procesos bloqueados por permisos elevados.
