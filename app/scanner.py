@@ -300,7 +300,7 @@ class Scanner:
                 return False
                 
             # Adicional: Chequeo de inmutabilidad básica (el disco no debe ser de solo lectura)
-            if not os.access(p.parent, os.R_OK):
+            if p.parent and not os.access(p.parent, os.R_OK):
                 return False
 
             # 4. Validación de integridad de nombre
@@ -310,6 +310,7 @@ class Scanner:
             self.safe_cache.add(path_str)
             return True
         except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
+            # En caso de error de acceso al sistema de archivos, se considera inseguro/inaccesible
             return False
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:

@@ -1147,3 +1147,10 @@ FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - Attr
 - `2026-10-17T10:08:18` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-10-17T10:08:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T10:08:18` Corrida terminada. Total usado hoy: 240.
+- `2026-10-17T10:15:38` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-10-17T10:16:44` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `ensure_safe_to_modify` implementando una validación de tipo temprana para `base_dir` y una gestión de errores más granular, asegurando que cualquier fallo en la resolución de rutas no comprometa la integridad del proceso de validación.
+- `2026-10-17T10:17:17` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez del escáner implementando un manejo de excepciones más granular y defensivo en la función `_is_safe_entry`, asegurando que cualquier error durante la resolución de rutas o acceso a atributos del sistema se capture y resulte en una exclusión segura en lugar de propagarse o causar un comportamiento inesperado.
+- `2026-10-17T10:18:20` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-17T10:18:47` ➖ Sin cambios en startup.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `parse_registry_csv` ante entradas de registro malformadas o tipos de datos inesperados, asegurando que la iteración sobre el diccionario `reader` no falle si los datos no cumplen con el esquema esperado.
+- `2026-10-17T10:18:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T10:18:47` Corrida terminada. Total usado hoy: 244.

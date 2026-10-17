@@ -986,8 +986,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
                 raise UnsafePathError("Tipo de directorio base inválido.", SafetyValidationErrorCode.GENERIC)
             try:
                 base = _normalize_resolved(str(base_dir))
-            except (TypeError, ValueError):
-                raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.GENERIC)
+            except (TypeError, ValueError, OSError):
+                raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.IO_ERROR)
         
         _validate_path_components(p)
         _validate_preconditions(p, base_dir)
