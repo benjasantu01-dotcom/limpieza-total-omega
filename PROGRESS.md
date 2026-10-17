@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **174** (34.5% de aceptación)
+- Mejoras aceptadas: **173** (34.3% de aceptación)
 - Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 47
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 242
+- Rechazadas por guardia de seguridad: 46
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 243
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 15 | 1 | 6 | 2 | 2 |
+| 2026-10-15 | 13 | 1 | 4 | 2 | 2 |
 | 2026-10-16 | 116 | 19 | 26 | 12 | 177 |
-| 2026-10-17 | 43 | 4 | 15 | 3 | 63 |
+| 2026-10-17 | 44 | 4 | 16 | 4 | 64 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **37**
 - rendimiento: **37**
+- legibilidad y documentación: **35**
 - robustez ante casos límite: **34**
+- manejo de errores y validación de entradas: **34**
 - seguridad defensiva: **33**
-- manejo de errores y validación de entradas: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **20**
 - `duplicates.py`: **18**
-- `memory.py`: **17**
+- `memory.py`: **18**
 - `quarantine.py`: **15**
 - `assistant.py`: **14**
 - `healthscore.py`: **13**
-- `safety.py`: **12**
 - `settings.py`: **12**
-- `scanner.py`: **10**
+- `safety.py`: **11**
 - `branding.py`: **10**
 - `browser.py`: **10**
 - `main.py`: **9**
+- `scanner.py`: **9**
 - `organizer.py`: **9**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-17T05:32:44` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_process_executable_safe` y `_query_working_set_bytes` implementando una validación estricta de punteros y retornos de API antes de operar, evitando posibles violaciones de segmento o errores silenciosos en llamadas a `ctypes`.
 - `2026-10-17T05:22:55` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo chequeos de `None` y manejo específico de excepciones en la resolución de rutas relativas, evitando que errores de acceso parciales detengan el escaneo completo.
 - `2026-10-17T05:22:40` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `directory_size` validando explícitamente la integridad del objeto `path` antes de intentar resolverlo, evitando errores silenciosos o comportamientos inesperados ante entradas nulas o mal formadas.
 - `2026-10-17T05:21:58` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` mejorando el manejo de errores mediante la validación explícita de `destination` y asegurando que las operaciones de sistema de archivos no fallen ante rutas mal formadas o permisos insuficientes, capturando `OSError` de forma granular.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-17T03:19:20` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante condiciones de carrera y fallos en el sistema de archivos al implementar `os.replace` (atómico) dentro de un bloque `try-except` más estricto, y agregando una verificación de integridad de disco basada en `statvfs` antes de cualquier escritura para evitar truncar el archivo si no hay espacio.
 - `2026-10-17T03:00:14` **memory.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y legibilidad en `_is_process_executable_safe` para evitar fallos cuando el proceso apunta a un archivo que ha desaparecido o al que no se tiene acceso, mitigando el riesgo de excepciones inesperadas al procesar handles de procesos volátiles.
 - `2026-10-17T02:58:51` **healthscore.py** (robustez ante casos límite): Se ha mejorado la resiliencia del motor `compute_score` ante valores `None` o estados inconsistentes en las métricas durante la iteración del pipeline, asegurando que un fallo en una sola regla o scorer no invalide el procesamiento de las áreas restantes.
-- `2026-10-17T02:58:25` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez frente a casos límite en `_is_file_locked` para manejar correctamente errores de sistema al verificar archivos, asegurando que cualquier error inesperado al intentar abrir un archivo para lectura exclusiva se trate como una restricción de acceso, evitando que el escáner intente procesar archivos inaccesibles o bloqueados por el kernel.

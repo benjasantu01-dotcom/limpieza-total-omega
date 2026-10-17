@@ -723,3 +723,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-17T05:22:55` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `largest_folders` añadiendo chequeos de `None` y manejo específico de excepciones en la resolución de rutas relativas, evitando que errores de acceso parciales detengan el escaneo completo.
 - `2026-10-17T05:22:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T05:22:55` Corrida terminada. Total usado hoy: 128.
+- `2026-10-17T05:30:40` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-10-17T05:31:07` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-17T05:31:30` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: SystemMetrics.safe_get
+- `2026-10-17T05:32:32` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de los callbacks de la interfaz gráfica implementando una capa de validación centralizada en `run_async` y `_safe_run` para capturar errores de ejecución antes de que alcancen el bucle principal, asegurando que las operaciones asíncronas no sigan intentando interactuar con la UI si la aplicación está en estado de cierre o si el entorno de ejecución se ha vuelto inválido (ej. directorio de trabajo eliminado).
+- `2026-10-17T05:32:44` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_process_executable_safe` y `_query_working_set_bytes` implementando una validación estricta de punteros y retornos de API antes de operar, evitando posibles violaciones de segmento o errores silenciosos en llamadas a `ctypes`.
+- `2026-10-17T05:32:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T05:32:44` Corrida terminada. Total usado hoy: 132.

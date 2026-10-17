@@ -303,7 +303,7 @@ def _is_process_accessible(pid: int, access_mask: int, kernel32: Any) -> Optiona
     """Intenta obtener un Handle win32 verificando permisos y seguridad del ejecutable."""
     if _is_system_process(pid): return None
     handle = kernel32.OpenProcess(access_mask, False, pid)
-    if handle is None or handle == INVALID_HANDLE_VALUE: return None
+    if handle is None or handle == 0 or handle == INVALID_HANDLE_VALUE: return None
     
     if not _is_process_executable_safe(pid, handle):
         kernel32.CloseHandle(handle)
@@ -313,9 +313,10 @@ def _is_process_accessible(pid: int, access_mask: int, kernel32: Any) -> Optiona
 def _query_working_set_bytes(pid: int, kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
     """Consulta los contadores de memoria de un PID mediante la API PSAPI."""
     process_handle = _is_process_accessible(pid, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
-    if not process_handle: return None
+    if process_handle is None: return None
     try:
-        if psapi.GetProcessMemoryInfo(process_handle, ctypes.byref(pmc), pmc.cb):
+        # Verificar que el puntero de estructura sea válido antes de llamar a la API
+        if psapi.GetProcessMemoryInfo(process_handle, ctypes.byref(pmc), ctypes.c_uint32(pmc.cb)):
             val = pmc.WorkingSetSize
             return BytesValue(val) if 0 < val < MAX_VALID_PROCESS_MEM else None
     finally:
@@ -407,6 +408,7 @@ def _is_process_executable_safe(pid: int, handle: int) -> bool:
             path_str: str = os.path.abspath(buf.value)
             path = Path(path_str)
             if not path.is_file(): return False
+            # Bloquear rutas UNC o rutas vacías antes de consultar seguridad
             if not path_str or path_str.startswith("\\\\"): return False
             return not is_protected_path(path)
     except (ctypes.ArgumentError, OSError, ValueError, RuntimeError):
@@ -431,7 +433,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "API del sistema no disponible."
     
     proc_handle = _is_process_accessible(target_pid, TRIM_ACCESS_MASK, kernel32)
-    if not proc_handle:
+    if proc_handle is None:
         return False, "Proceso protegido o acceso denegado (requiere privilegios)."
         
     try:
@@ -442,5 +444,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.ArgumentError, OSError):
         return False, "Error inesperado al ejecutar llamada del sistema."
     finally:
-        if proc_handle and proc_handle != INVALID_HANDLE_VALUE:
+        if proc_handle is not None and proc_handle != INVALID_HANDLE_VALUE:
             kernel32.CloseHandle(proc_handle)
