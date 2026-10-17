@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 54
+- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 55
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 230
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 62 | 8 | 16 | 9 | 109 |
-| 2026-10-17 | 117 | 10 | 38 | 14 | 121 |
+| 2026-10-16 | 62 | 8 | 16 | 9 | 105 |
+| 2026-10-17 | 119 | 11 | 39 | 14 | 121 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **42**
 - manejo de errores y validación de entradas: **40**
+- seguridad defensiva: **36**
 - rendimiento: **34**
-- seguridad defensiva: **34**
 - robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
@@ -33,11 +33,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **19**
 - `duplicates.py`: **16**
 - `quarantine.py`: **15**
+- `safety.py`: **15**
 - `assistant.py`: **14**
-- `safety.py`: **14**
 - `browser.py`: **14**
+- `settings.py`: **13**
 - `healthscore.py`: **12**
-- `settings.py`: **12**
 - `main.py`: **11**
 - `organizer.py`: **11**
 - `scanner.py`: **10**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-17T12:50:09` **settings.py** (seguridad defensiva): Se reforzó la integridad de las operaciones de escritura impidiendo que `perform_atomic_write` proceda si el directorio destino o sus padres contienen puntos de reparse, mitigando ataques de escalada de privilegios o redirección de archivos fuera del alcance esperado mediante `_is_dir_safe`.
+- `2026-10-17T12:49:02` **safety.py** (seguridad defensiva): Mejoré `_validate_preconditions` añadiendo una comprobación explícita para evitar modificaciones en archivos con el atributo `FILE_ATTRIBUTE_SYSTEM` o `FILE_ATTRIBUTE_HIDDEN` activo, reforzando la protección defensiva contra la manipulación accidental de archivos críticos del SO que no siempre están cubiertos por las listas de nombres protegidos.
 - `2026-10-17T12:41:10` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad en `quarantine.py` implementando una validación explícita para evitar que `purge_all` intente procesar o eliminar archivos ocultos o de sistema que podrían haber sido colocados manualmente en el directorio de cuarentena, utilizando `is_protected_path` como barrera defensiva adicional antes de cualquier operación destructiva.
 - `2026-10-17T12:40:18` **organizer.py** (seguridad defensiva): Mejoré la seguridad en `delete_reviewed` implementando una validación estricta para asegurar que cada archivo a borrar resida físicamente dentro de la carpeta de revisión, evitando posibles ataques de recorrido de directorios (directory traversal) mediante enlaces simbólicos o rutas malintencionadas.
 - `2026-10-17T12:39:49` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_iter_process_memory` al validar la seguridad del ejecutable de cada proceso mediante `_is_process_executable_safe` durante la enumeración, evitando que procesos en rutas protegidas sean incluidos en listas de diagnóstico o manipulables.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-17T11:58:41` **main.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de concurrencia y limpieza de recursos en `on_closing` y `_on_tab_change` implementando verificaciones de estado más robustas que previenen excepciones por hilos huérfanos intentando acceder a widgets destruidos.
 - `2026-10-17T11:48:24` **diskreport.py** (robustez ante casos límite): Se introdujo una gestión de errores más robusta en `walk_files` y `_is_excluded_path` mediante la validación de la existencia de `st_file_attributes` y el uso de `OSError` genérico al manejar atributos, previniendo fallos en sistemas de archivos donde ciertos metadatos no son accesibles o compatibles.
 - `2026-10-17T11:38:06` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` y `entries_from_registry` implementando una estrategia de ejecución por lotes en PowerShell y evitando la re-generación innecesaria de iteradores, reduciendo el overhead de llamadas al sistema.
-- `2026-10-17T11:37:37` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de settings mediante la implementación de `os.stat` antes de realizar operaciones de IO costosas, evitando lecturas innecesarias del archivo si el `mtime` o el tamaño no han cambiado desde la última vez.
-- `2026-10-17T11:28:54` **safety.py** (rendimiento): Optimizamos `is_protected_path` reemplazando la creación innecesaria de `Path` y múltiples llamadas a `Path.parts` por un chequeo temprano basado en strings, aprovechando que ya contamos con `_SYSTEM_ROOT_STRS` y el cache interno para reducir drásticamente el uso de CPU en bucles de escaneo.

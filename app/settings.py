@@ -144,6 +144,17 @@ _ENUM_VALS: Final[MappingProxyType[ConfigKey, frozenset[str]]] = MappingProxyTyp
     ConfigKey.ASISTENTE_MODELO: VALID_MODELS
 })
 
+def _is_dir_safe(path: Path) -> bool:
+    """Comprueba seguridad de directorio padre contra reparse points y permisos."""
+    try:
+        real_path = Path(os.path.realpath(path))
+        if not real_path.is_dir() or _Validators._is_reparse_point(real_path): return False
+        st = real_path.stat()
+        if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
+        if st.st_mode & (stat.S_IWGRP | stat.S_IWOTH): return False
+        return True
+    except OSError: return False
+
 class _SettingsManager:
     """
     Singleton que centraliza el acceso a la caché de settings en memoria
@@ -159,11 +170,11 @@ class _SettingsManager:
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
-        Persiste los datos de forma atómica: escribe en un .tmp, sincroniza buffers,
-        y reemplaza el original usando os.replace, verificando integridad.
+        Persiste los datos de forma atómica: verifica seguridad y reemplaza el original.
         """
         temp_path: Path = config_path.with_suffix(".tmp")
         try:
+            if not _is_dir_safe(config_path.parent): return False
             real_config = Path(os.path.realpath(config_path))
             real_temp = Path(os.path.realpath(temp_path))
 
@@ -369,17 +380,6 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
             return data if _is_dict(data) else None
     except (OSError, IOError, PermissionError, AttributeError, RuntimeError, json.JSONDecodeError): return None
 
-def _is_dir_safe(path: Path) -> bool:
-    """Comprueba seguridad de directorio padre."""
-    try:
-        real_path = Path(os.path.realpath(path))
-        if not real_path.is_dir() or _Validators._is_reparse_point(real_path): return False
-        st = real_path.stat()
-        if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-        if st.st_mode & (stat.S_IWGRP | stat.S_IWOTH): return False
-        return True
-    except OSError: return False
-
 def _load_impl(ruta: Path) -> AppSettings:
     """Implementación base de carga."""
     try:
@@ -427,8 +427,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     try:
         cleaned_settings = _coerce_and_verify(validate(values))
         real_path = Path(os.path.realpath(config_path))
-        parent = real_path.parent
-        if not is_safe_to_modify(str(real_path)) or not _is_dir_safe(parent): return None
+        if not is_safe_to_modify(str(real_path)): return None
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
         return config_path if _MANAGER.perform_atomic_write(real_path, serialized) else None

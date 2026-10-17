@@ -839,6 +839,11 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
     
+    # Refuerzo defensivo: bloquear archivos marcados por el SO como críticos
+    attrs = _get_file_attrs(str(target_path))
+    if attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN):
+        raise UnsafePathError("Protección defensiva: Archivo de sistema oculto.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
+
     if _is_kernel_managed(str(target_path)):
         raise UnsafePathError(f"Archivo de sistema crítico: {target_path.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
     

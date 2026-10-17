@@ -1419,3 +1419,43 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-17T12:41:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-10-17T12:41:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T12:41:15` Corrida terminada. Total usado hoy: 300.
+- `2026-10-17T12:48:14` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-17T12:49:02` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Mejoré `_validate_preconditions` añadiendo una comprobación explícita para evitar modificaciones en archivos con el atributo `FILE_ATTRIBUTE_SYSTEM` o `FILE_ATTRIBUTE_HIDDEN` activo, reforzando la protección defensiva contra la manipulación accidental de archivos críticos del SO que no siempre están cubiertos por las listas de nombres protegidos.
+- `2026-10-17T12:49:27` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: Scanner._is_inside_base_root
+- `2026-10-17T12:50:09` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la integridad de las operaciones de escritura impidiendo que `perform_atomic_write` proceda si el directorio destino o sus padres contienen puntos de reparse, mitigando ataques de escalada de privilegios o redirección de archivos fuera del alcance esperado mediante `_is_dir_safe`.
+- `2026-10-17T12:50:21` Tests FALLARON:
+```
+om_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '/home/runner...\App\\app.exe' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+E         + /home/runner/work/limpieza-total-omega/limpieza-total-omega/C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '/home/runner...\App\\app.exe' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+  + /home/runner/work/limpieza-total-omega/limpieza-total-omega/C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.60s
+
+```
+- `2026-10-17T12:50:21` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Reforcé la seguridad defensiva en `_extract_quoted_path` y `_resolve_and_cache_path` mediante una verificación estricta de rutas relativas y el uso de `pathlib.Path.resolve(strict=False)` para evitar ataques de salto de directorio (directory traversal) antes de cualquier operación de I/O, asegurando que la normalización sea robusta incluso para rutas que no existen físicamente.
+- `2026-10-17T12:50:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T12:50:21` Corrida terminada. Total usado hoy: 304.
