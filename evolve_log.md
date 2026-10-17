@@ -1376,3 +1376,11 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-17T11:49:04` ➖ Sin cambios en healthscore.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez del motor frente a casos límite en el `Pipeline` mediante un chequeo de integridad profundo que valida la existencia de todas las claves de métricas requeridas antes de procesar, evitando errores de clave ausente en `metric_breakdown`.
 - `2026-10-17T11:49:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T11:49:04` Corrida terminada. Total usado hoy: 280.
+- `2026-10-17T11:57:25` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-10-17T11:58:41` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la resiliencia ante errores de concurrencia y limpieza de recursos en `on_closing` y `_on_tab_change` implementando verificaciones de estado más robustas que previenen excepciones por hilos huérfanos intentando acceder a widgets destruidos.
+- `2026-10-17T11:59:09` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-17T11:59:09` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-17T11:59:38` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-17T12:00:05` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Se introdujo una comprobación explícita de `OSError` al realizar `stat()` en `_validate_integrity` para manejar archivos bloqueados o inaccesibles por el sistema operativo, evitando que una falla de I/O detenga la validación de integridad o cause una excepción no controlada.
+- `2026-10-17T12:00:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T12:00:05` Corrida terminada. Total usado hoy: 284.

@@ -7,25 +7,25 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **169** (33.5% de aceptación)
-- Rechazadas por tests: 19
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 241
+- Sin respuesta de la IA (error o límite): 242
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 63 | 9 | 16 | 10 | 126 |
-| 2026-10-17 | 106 | 10 | 36 | 13 | 115 |
+| 2026-10-16 | 62 | 8 | 16 | 9 | 125 |
+| 2026-10-17 | 107 | 10 | 36 | 14 | 117 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **42**
 - manejo de errores y validación de entradas: **40**
 - rendimiento: **34**
-- seguridad defensiva: **28**
-- robustez ante casos límite: **25**
+- seguridad defensiva: **27**
+- robustez ante casos límite: **26**
 
 ## Mejoras aceptadas por archivo
 
@@ -38,14 +38,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `safety.py`: **13**
 - `healthscore.py`: **12**
 - `settings.py`: **11**
-- `scanner.py`: **10**
+- `main.py`: **10**
 - `organizer.py`: **10**
-- `main.py`: **9**
+- `scanner.py`: **9**
 - `branding.py`: **7**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-17T11:58:41` **main.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de concurrencia y limpieza de recursos en `on_closing` y `_on_tab_change` implementando verificaciones de estado más robustas que previenen excepciones por hilos huérfanos intentando acceder a widgets destruidos.
 - `2026-10-17T11:48:24` **diskreport.py** (robustez ante casos límite): Se introdujo una gestión de errores más robusta en `walk_files` y `_is_excluded_path` mediante la validación de la existencia de `st_file_attributes` y el uso de `OSError` genérico al manejar atributos, previniendo fallos en sistemas de archivos donde ciertos metadatos no son accesibles o compatibles.
 - `2026-10-17T11:38:06` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` y `entries_from_registry` implementando una estrategia de ejecución por lotes en PowerShell y evitando la re-generación innecesaria de iteradores, reduciendo el overhead de llamadas al sistema.
 - `2026-10-17T11:37:37` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de settings mediante la implementación de `os.stat` antes de realizar operaciones de IO costosas, evitando lecturas innecesarias del archivo si el `mtime` o el tamaño no han cambiado desde la última vez.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-17T10:47:18` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_safe_unlink` y `_validate_file_for_unlink` para usar una estructura de validación centralizada, y añadí docstrings detallados en funciones críticas (como `_write_temp_to_final` y `_atomic_isolate_file`) para documentar las garantías de atomicidad, vitales para un colaborador senior.
 - `2026-10-17T10:38:35` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante docstrings explicativos y se ha refactorizado `_iter_process_memory` y `_extract_process_info` para clarificar la lógica de filtrado de procesos, asegurando que la intención del código sea evidente para otros desarrolladores.
 - `2026-10-17T10:38:20` **main.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `main.py` mediante la implementación de `docstrings` de estilo Google en los métodos críticos de gestión de la UI y ejecución asíncrona, eliminando redundancias en las firmas de los métodos y normalizando la documentación para los desarrolladores.
-- `2026-10-17T10:36:57` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings detallados en las funciones de cómputo y pipeline, clarificando los contratos de entrada/salida y la semántica de la normalización, facilitando así el mantenimiento futuro.
