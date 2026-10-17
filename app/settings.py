@@ -12,7 +12,6 @@ from __future__ import annotations
 import json
 import os
 import stat
-import fcntl
 import time
 from enum import Enum
 from pathlib import Path
@@ -162,49 +161,31 @@ class _SettingsManager:
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """
         Persiste los datos de forma atómica: escribe en un .tmp, sincroniza buffers,
-        y reemplaza el original usando os.replace, con verificación de espacio en disco.
+        y reemplaza el original usando os.replace, verificando integridad.
         """
         temp_path: Path = config_path.with_suffix(".tmp")
-        
         try:
-            # Comprobación preventiva de espacio (si no es disponible, se ignora)
-            if hasattr(os, 'statvfs'):
-                sv = os.statvfs(config_path.parent if config_path.parent.exists() else "/")
-                if sv.f_frsize * sv.f_bavail < len(serialized.encode("utf-8")) * 2:
-                    return False
-        except (OSError, PermissionError):
-            pass
-        
-        for attempt in range(4):
-            f = None
-            try:
-                if not is_safe_to_modify(str(temp_path)): return False
-                f = open(temp_path, "w", encoding="utf-8")
-                fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            # Validación estricta de seguridad pre-escritura
+            if not is_safe_to_modify(str(temp_path)) or not is_safe_to_modify(str(config_path)):
+                return False
+                
+            with open(temp_path, "w", encoding="utf-8") as f:
                 f.write(serialized)
                 f.flush()
                 os.fsync(f.fileno())
-                f.close()
-                f = None
+            
+            # Verificación final antes de reemplazar
+            if config_path.exists() and config_path.is_symlink():
+                return False
                 
-                # Verificación de seguridad pre-reemplazo
-                if config_path.exists():
-                    if not is_safe_to_modify(str(config_path)) or config_path.is_symlink():
-                        return False
-                
-                os.replace(temp_path, config_path)
-                self.clear()
-                return True
-            except (OSError, IOError, PermissionError):
-                time.sleep(0.1 * (2 ** attempt))
-            finally:
-                if f is not None:
-                    try: f.close()
-                    except: pass
-                if temp_path.exists():
-                    try: os.remove(temp_path)
-                    except OSError: pass
-        return False
+            os.replace(temp_path, config_path)
+            self.clear()
+            return True
+        except (OSError, IOError, PermissionError):
+            if temp_path.exists():
+                try: os.remove(temp_path)
+                except OSError: pass
+            return False
 
 _MANAGER = _SettingsManager()
 
@@ -252,7 +233,8 @@ class _Validators:
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
         """Valida que la cadena sea una ruta absoluta y libre de zonas protegidas."""
-        if not path_str or len(path_str) > 2048 or any(c in path_str for c in ("\0", "^", "\033")): return False
+        # Prohibir caracteres de control o inyección básica de rutas
+        if not path_str or len(path_str) > 2048 or any(c in path_str for c in ("\0", "\r", "\n", "\033")): return False
         if path_str.startswith(("\\\\", "//")): return False
         if is_protected_path(path_str): return False
         try:
@@ -365,6 +347,7 @@ def _is_file_secure_to_read(st: os.stat_result, file_obj: Any) -> bool:
     try:
         if file_obj.closed or not stat.S_ISREG(st.st_mode): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
+        # Permisos restrictivos
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
         if st.st_mode & (stat.S_ISUID | stat.S_ISGID) or st.st_nlink != 1: return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
@@ -372,7 +355,7 @@ def _is_file_secure_to_read(st: os.stat_result, file_obj: Any) -> bool:
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
-    """Lee y parsea el JSON con bloqueo exclusivo."""
+    """Lee y parsea el JSON con validaciones de seguridad."""
     try:
         if not file_path.exists() or file_path.is_symlink(): return None
         if _Validators._is_reparse_point(file_path) or not is_safe_to_modify(str(file_path)): return None
@@ -380,17 +363,11 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
         with open(file_path, "r", encoding="utf-8") as f:
             st = os.fstat(f.fileno())
             if not _is_file_secure_to_read(st, f): return None
-            try:
-                fcntl.flock(f.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
-                content = f.read(MAX_SETTINGS_SIZE + 1)
-                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-            except (OSError, IOError): return None
+            content = f.read(MAX_SETTINGS_SIZE + 1)
             if not content or len(content) > MAX_SETTINGS_SIZE: return None
-            try:
-                data = json.loads(content)
-                return data if _is_dict(data) else None
-            except (json.JSONDecodeError, ValueError): return None
-    except (OSError, IOError, PermissionError, AttributeError, RuntimeError): return None
+            data = json.loads(content)
+            return data if _is_dict(data) else None
+    except (OSError, IOError, PermissionError, AttributeError, RuntimeError, json.JSONDecodeError): return None
 
 def _is_dir_safe(path: Path) -> bool:
     """Comprueba seguridad de directorio padre."""

@@ -464,3 +464,66 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-17T03:50:52` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: Scanner._is_reparse_point
 - `2026-10-17T03:50:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T03:50:52` Corrida terminada. Total usado hoy: 92.
+- `2026-10-17T03:59:05` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-10-17T03:59:40` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad en el manejo de archivos al eliminar el uso de `fcntl.flock` (no disponible en Windows nativo sin extensiones y propenso a fallos en sistemas de archivos locales) reemplazándolo por una verificación de exclusividad más robusta y portabilidad de metadatos, además de endurecer las validaciones de `path` evitando la resolución de rutas que contengan caracteres nulos o secuencias de escape ocultas antes de acceder al disco.
+- `2026-10-17T04:00:09` Tests FALLARON:
+```
+e == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_reads_entries - AssertionError: assert [] == ['MiApp', 'Otra']
+  
+  Right contains 2 more items, first extra item: 'MiApp'
+  
+  Full diff:
+  + []
+  - [
+  -     'MiApp',
+  -     'Otra',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert [] == ['Real']
+  
+  Right contains one more item: 'Real'
+  
+  Full diff:
+  + []
+  - [
+  -     'Real',
+  - ]
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+4 failed, 295 passed in 1.75s
+
+```
+- `2026-10-17T04:00:09` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad de `startup.py` añadiendo una validación de ruta mediante `is_safe_to_modify` antes de intentar resolver ejecutables en disco, mitigando el riesgo de que el escáner acceda a ubicaciones sensibles no capturadas previamente por los filtros básicos.
+- `2026-10-17T04:00:09` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-17T04:00:09` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-17T04:00:29` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-17T04:00:29` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-17T04:01:00` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-17T04:01:00` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-17T04:01:15` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-17T04:01:15` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-17T04:01:35` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-17T04:01:35` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-17T04:02:05` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-17T04:02:05` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-17T04:02:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T04:02:05` Corrida terminada. Total usado hoy: 96.
