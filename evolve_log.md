@@ -402,3 +402,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-10-17T02:39:43` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): el archivo se encogió al 57% del original (posible pérdida de código)
 - `2026-10-17T02:39:43` Rotación — log: 1374 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T02:39:43` Corrida terminada. Total usado hoy: 64.
+- `2026-10-17T02:47:44` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-10-17T02:48:33` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `_get_source_value` para manejar de forma segura el acceso a datos cuando el objeto fuente es un `SystemContext` o un diccionario mal formado, evitando excepciones durante la ingesta de métricas y reforzando la protección contra inyección de métodos.
+- `2026-10-17T02:49:02` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-10-17T02:49:30` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos de error mediante la implementación de una validación explícita de `st_size` en la recursión, evitando excepciones por archivos que se eliminan o bloquean mientras se escanea, y fortaleciendo el filtrado de rutas mediante `pathlib` en lugar de manipulación de strings en casos críticos.
+- `2026-10-17T02:49:44` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `_is_excluded_path` añadiendo una comprobación explícita de `OSError` al llamar a `entry.stat()` y optimicé el manejo de rutas inexistentes durante el recorrido del sistema de archivos para prevenir fallos en escenarios de concurrencia o archivos temporales que desaparecen durante el escaneo.
+- `2026-10-17T02:49:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T02:49:44` Corrida terminada. Total usado hoy: 68.

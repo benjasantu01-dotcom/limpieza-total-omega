@@ -233,10 +233,11 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
                 else:
                     try:
                         st = entry.stat(follow_symlinks=False)
-                        file_id = (st.st_dev, st.st_ino)
-                        if file_id not in ctx.visited_files:
-                            ctx.visited_files.add(file_id)
-                            total_bytes += int(st.st_size)
+                        if st.st_size is not None and st.st_size >= 0:
+                            file_id = (st.st_dev, st.st_ino)
+                            if file_id not in ctx.visited_files:
+                                ctx.visited_files.add(file_id)
+                                total_bytes += int(st.st_size)
                     except (OSError, PermissionError): continue
         return ScanResult(total_bytes, True)
     except (OSError, PermissionError): return ScanResult(total_bytes, False)

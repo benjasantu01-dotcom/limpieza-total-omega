@@ -510,17 +510,16 @@ def _ensure_safe_text(text: Any) -> bool:
 def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
     """Acceso seguro a atributos evitando recursión, inyecciones de clase y acceso a métodos."""
     if depth > _MAX_NESTING_DEPTH or not _is_safe_key(key): return None
-    # Solo permitir acceso a tipos que son contenedores válidos (dicts u objetos)
-    if not isinstance(source, dict) and not hasattr(source, "__dict__"): return None
+    # Verificamos si source es mapeable o tiene atributos antes de acceder
     try:
         if isinstance(source, dict):
             return source.get(key)
-        if hasattr(source, key):
+        elif hasattr(source, key):
             val: Any = getattr(source, key)
             return val if not callable(val) else None
-        return None
-    except (AttributeError, ValueError, TypeError):
-        return None
+    except Exception:
+        pass
+    return None
 
 def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> SystemContext:
     """Crea un objeto SystemContext a partir de múltiples fuentes de datos de análisis."""
