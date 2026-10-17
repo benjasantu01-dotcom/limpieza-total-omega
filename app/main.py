@@ -40,6 +40,7 @@ Se implementa memoización de contexto para evitar re-cálculos en el asistente.
 Optimización de caché mediante marcas de tiempo para reducir re-cálculos de UI.
 Invalidación inteligente mediante digests de estado para evitar re-compilaciones.
 Uso de conjuntos (sets) para gestión de estado de UI y debounces.
+Caché de validación de rutas mediante LRU para reducir llamadas al sistema.
 
 Instalar dependencias:
     pip install customtkinter
@@ -358,6 +359,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         except (safety.UnsafePathError, PermissionError) as e:
             raise RuntimeError(f"Violación de seguridad de entorno: {e}")
 
+    @lru_cache(maxsize=128)
     def _validate_disk_access(self, path: Union[str, Path]) -> Path:
         """Valida que una ruta sea absoluta, no un enlace simbólico y ajena a la estructura de la App."""
         try:

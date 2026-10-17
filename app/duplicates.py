@@ -218,9 +218,15 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     
     while queue:
         current_dir, depth = queue.popleft()
-        if current_dir in visited_dirs or depth > MAX_RECURSION_DEPTH:
+        
+        try:
+            real_current = current_dir.resolve()
+        except (OSError, PermissionError):
             continue
-        visited_dirs.add(current_dir)
+            
+        if real_current in visited_dirs or depth > MAX_RECURSION_DEPTH:
+            continue
+        visited_dirs.add(real_current)
             
         try:
             with os.scandir(current_dir) as iterator:

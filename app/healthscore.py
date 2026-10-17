@@ -29,6 +29,7 @@ _ALLOWED_CHARS: Final[set[str]] = set(string.ascii_letters + string.digits + " .
 _FORBIDDEN_CHARS: Final[set[str]] = {chr(i) for i in range(32) if chr(i) not in (" ", "\t")} # Bloquear caracteres de control
 _BLOCKED_TERMS: Final[frozenset[str]] = frozenset(["system32", "windows", "admin", "c:\\", "system", "kernel"])
 _MAX_MSG_LEN: Final[int] = 128
+_BAR_CACHE: Dict[Tuple[int, int], str] = {}
 
 class Scorer(Protocol):
     """
@@ -257,7 +258,6 @@ class SystemMetrics:
         """Inicializa métricas asegurando tipos correctos tras la creación."""
         for field_name in self._FIELDS_TO_VALIDATE:
             val = getattr(self, field_name)
-            # Garantizar que incluso si se inyectan objetos complejos, se intenten convertir
             try:
                 setattr(self, field_name, float(val) if not isinstance(val, (int, float)) else val)
             except (ValueError, TypeError):
@@ -303,15 +303,10 @@ def grade_for_score(score: float | int) -> str:
 def _sanitize_msg(msg: str | Any) -> str:
     """Limpia cadenas de texto eliminando caracteres prohibidos y previniendo inyecciones."""
     if not isinstance(msg, str): return ""
-    # 1. Eliminar caracteres de control y forzar ASCII restringido
     clean = "".join(c for c in msg if c not in _FORBIDDEN_CHARS and c in _ALLOWED_CHARS)
-    
-    # 2. Bloquear términos sensibles que no deben aparecer en logs o interfaz
     lower_msg = clean.lower()
     if any(b in lower_msg for b in _BLOCKED_TERMS):
         return ""
-        
-    # 3. Truncar y limpiar espacios
     return clean.strip()[:_MAX_MSG_LEN]
 
 def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:
@@ -338,19 +333,8 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
     Computa el puntaje global mediante el pipeline.
-    
-    Proceso:
-    1. Valida la integridad de las métricas.
-    2. Itera sobre el pipeline para normalizar ratios y disparar reglas.
-    3. Agrega resultados de áreas individuales al total ponderado.
     """
-    # Manejo robusto de entrada nula y validación de estado
-    if not isinstance(metrics, SystemMetrics):
-        m = SystemMetrics()
-    else:
-        m = metrics
-    
-    m.validate()
+    m = metrics if isinstance(metrics, SystemMetrics) else SystemMetrics()
     
     if not m.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Métricas inestables detectadas."])
@@ -361,15 +345,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for entry in _PIPELINE:
         try:
-            # Normalizar área específica
             area_ratio = _clamp(entry.scorer(m))
-            # Evaluar reglas de diagnóstico usando caché
             _evaluate_rules(m, _RULES_CACHE.get(entry.area, entry.rules), area_ratio, recommendations)
-            
-            # Ponderar y registrar puntos
             points = area_ratio * entry.weight
             val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
-            
             metric_breakdown[entry.area] = val_int
             total_points += val_int
         except (ValueError, TypeError, AttributeError) as e:
@@ -388,9 +367,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     )
 
 def _render_bar(points: int, max_val: int) -> str:
-    """Crea una representación visual de barra para reportes."""
-    p = max(0, min(points, max_val))
-    return "#" * p + "." * (max_val - p)
+    """Crea una representación visual de barra para reportes con caché."""
+    key = (points, max_val)
+    if key not in _BAR_CACHE:
+        p = max(0, min(points, max_val))
+        _BAR_CACHE[key] = "#" * p + "." * (max_val - p)
+    return _BAR_CACHE[key]
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera una lista de líneas legible para el informe de salud."""
@@ -398,13 +380,10 @@ def summarize(result: HealthResult | None) -> List[str]:
         return ["Error: Informe de salud no disponible."]
     
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
-    
-    # Iteración segura sobre el pipeline para construir el desglose ordenado
     for entry in _PIPELINE:
         p = result.breakdown.get(entry.area, 0)
         lines.append(f"  {entry.area.capitalize():<12} {p:>2}/{entry.weight:<2} [{_render_bar(p, entry.weight)}]")
     
-    # Limpieza de recomendaciones usando comprensión de listas directa
     recs = [sanitized for r in result.recommendations if (sanitized := _sanitize_msg(r))]
     if not recs:
         recs = ["No hay advertencias activas."]

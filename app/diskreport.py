@@ -299,7 +299,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     if root_path is None: return
     
     visited_inodes: set[Inode] = set()
-    stack: List[Path] = [root_path]
+    stack: List[str] = [str(root_path)]
     
     while stack:
         current_dir = stack.pop()
@@ -315,7 +315,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(Path(entry.path))
+                                stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             yield Path(entry.path), st.st_size
