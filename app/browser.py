@@ -271,13 +271,15 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
 
 @safe_path_operation(Path())
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
-    """Combina la base del usuario con la subruta relativa del navegador."""
+    """Combina la base del usuario con la subruta relativa del navegador de forma segura."""
     if not _is_valid_rel_path(rel_str): return Path()
     target = real_base.joinpath(*rel_str.split("\\"))
     if not target.exists() or not target.is_dir(): return Path()
     target_real = target.resolve(strict=True)
     if len(str(target_real)) >= MAX_PATH_LEN: return Path()
-    if _is_within_sandbox(os.path.normpath(str(target_real)), str(real_base)):
+    
+    # Verificación de contención estricta tras la resolución de la ruta
+    if _is_within_sandbox(os.path.normpath(str(target_real)), os.path.normpath(str(real_base))):
         return target_real
     return Path()
 

@@ -487,8 +487,7 @@ class Answer:
 
 def _is_safe_path_input(text: str) -> bool:
     """Verifica si el texto parece contener rutas o caracteres de control maliciosos."""
-    # Validación reforzada: Rechazo inmediato de caracteres de control o intentos de elusión
-    if _REGEX_CONTROL_CHARS.search(text) or _REGEX_ANSI_ESCAPE.search(text): return True
+    if _contains_forbidden_patterns(text): return True
     if is_protected_path(text): return True
     return bool(_REGEX_STRUCTURE_INJECTION.search(text) or _REGEX_PATH_TRAVERSAL.search(text) or _REGEX_SYSTEM_PATHS.search(text))
 
@@ -505,7 +504,7 @@ def _ensure_safe_text(text: Any) -> bool:
         return False
     if _is_safe_path_input(text):
         return False
-    return not _contains_forbidden_patterns(text)
+    return True
 
 def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
     """Acceso seguro a atributos evitando recursión, inyecciones de clase y acceso a métodos."""

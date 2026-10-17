@@ -893,3 +893,10 @@ FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - Attr
 - `2026-10-17T07:45:18` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
 - `2026-10-17T07:45:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T07:45:18` Corrida terminada. Total usado hoy: 184.
+- `2026-10-17T07:53:18` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-10-17T07:54:00` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad de `_is_safe_path_input` integrando `_contains_forbidden_patterns` para asegurar que cualquier entrada que simule una ruta (o contenga comandos prohibidos) sea rechazada de forma centralizada antes de llegar a cualquier motor de procesamiento.
+- `2026-10-17T07:54:36` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-10-17T07:55:23` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_valid_cache_path` y `_resolve_browser_path` para prevenir ataques de trayectoria (path traversal) y asegurar que las rutas resueltas residan físicamente dentro del sandbox del usuario, evitando el uso de atajos malintencionados incluso antes de realizar cualquier operación de lectura.
+- `2026-10-17T07:55:35` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `walk_files` implementando un chequeo explícito de puntos de reparse (reparse points) mediante `os.path.isdir` y validación de atributos, para asegurar que el escaneo no siga enlaces simbólicos o junctions que puedan apuntar fuera del árbol de directorios permitido, cumpliendo con el enfoque de seguridad defensiva.
+- `2026-10-17T07:55:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T07:55:35` Corrida terminada. Total usado hoy: 188.

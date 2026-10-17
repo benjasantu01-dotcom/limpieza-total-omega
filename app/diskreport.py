@@ -295,7 +295,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """Generador recursivo que recorre archivos bajo `directory`."""
+    """Generador recursivo que recorre archivos bajo `directory` sin seguir puntos de reparse."""
     root_path = _validate_root(directory)
     if root_path is None: return
     
@@ -311,9 +311,12 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         if skip_protected and _is_excluded_path(entry, root_path):
                             continue
                         
+                        # Doble chequeo contra puntos de reparse/links para evitar fugas del árbol
                         if entry.is_dir(follow_symlinks=False):
                             try:
                                 st = entry.stat(follow_symlinks=False)
+                                if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x400):
+                                    continue
                                 inode = (st.st_dev, st.st_ino)
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
