@@ -76,10 +76,9 @@ class ExtStats:
 
     def add(self, size: int) -> None:
         """Incrementa el total de bytes y el contador de archivos si el tamaño es válido."""
-        if not isinstance(size, int) or size < 0:
-            return
-        self.total_bytes += size
-        self.count += 1
+        if isinstance(size, int) and size >= 0:
+            self.total_bytes += size
+            self.count += 1
 
 
 class GlobalStats:
@@ -96,17 +95,12 @@ class GlobalStats:
     def register_file(self, size: int, suffix: str) -> None:
         """
         Actualiza los contadores globales y el acumulador específico de la extensión.
-        
-        Args:
-            size (int): Tamaño en bytes del archivo.
-            suffix (str): Extensión del archivo (ej: '.txt').
         """
-        if not isinstance(size, int) or size < 0:
-            return
-        self.total_bytes += size
-        self.total_files += 1
-        ext: str = (suffix.lower() if suffix else "(sin extensión)")
-        self.ext_stats[ext].add(size)
+        if isinstance(size, int) and size >= 0:
+            self.total_bytes += size
+            self.total_files += 1
+            ext: str = (suffix.lower() if suffix else "(sin extensión)")
+            self.ext_stats[ext].add(size)
 
 
 class FolderMetrics:
@@ -134,10 +128,7 @@ def _bytes_to_mb(size_bytes: int | float | None) -> float:
     """Convierte bytes a MB con redondeo a dos decimales y manejo de errores."""
     if not isinstance(size_bytes, (int, float)) or size_bytes < 0:
         return 0.0
-    try:
-        return round(float(size_bytes) / MB_SIZE, 2)
-    except (ZeroDivisionError, OverflowError, ValueError):
-        return 0.0
+    return round(float(size_bytes) / MB_SIZE, 2)
 
 
 def _validate_limit(limit: Any) -> int:
@@ -360,7 +351,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
-            if not path or root is None: continue
             rel = path.relative_to(root)
             if not rel.parts: continue
             top_folder = root / rel.parts[0]

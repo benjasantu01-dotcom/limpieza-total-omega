@@ -1627,6 +1627,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         clean_id = "".join(c for c in raw_id if c.isalnum() or c == "-")
         
         def task() -> None:
+            # Validación de integridad just-in-time
             if not quarantine.item_exists(clean_id):
                 self._safe_run_ui_callback(lambda: self.log(f"Error: El ID '{clean_id}' no existe o ya fue restaurado.", "Cuarentena"))
                 return
@@ -1663,7 +1664,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            # Re-verificar estado justo antes de la operación destructiva
+            # Validación de estado just-in-time para evitar carrera
             actual = quarantine.list_items()
             if not actual:
                 self._safe_run_ui_callback(lambda: self.log("La cuarentena ya estaba vacía.", "Cuarentena"))

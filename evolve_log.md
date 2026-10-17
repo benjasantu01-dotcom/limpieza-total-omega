@@ -1131,3 +1131,12 @@ FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - Attr
 - `2026-10-17T09:47:44` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se reforzó la validación de `_sum_directory_recursive` mediante una verificación de `None` sobre `st.st_size` y la captura de errores específicos al acceder a las propiedades de `os.DirEntry` para evitar fallos durante la iteración en archivos bloqueados.
 - `2026-10-17T09:47:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T09:47:44` Corrida terminada. Total usado hoy: 232.
+- `2026-10-17T09:55:18` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-10-17T09:55:50` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del módulo `diskreport.py` mediante la validación proactiva de tipos y valores en las funciones de entrada y las clases de datos, evitando excepciones por parámetros inesperados (como `None` o valores negativos) antes de que las operaciones de bajo nivel fallen.
+- `2026-10-17T09:56:16` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-17T09:56:49` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` validando explícitamente el estado de `metrics` y aplicando un manejo de errores más estricto en la ejecución del pipeline para evitar resultados parciales corruptos.
+- `2026-10-17T09:57:49` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-17T09:58:52` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-17T09:59:58` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `on_purge_quarantine` y `on_restore_quarantine` mediante el uso de una validación de estado "justo-a-tiempo" antes de realizar operaciones de disco, evitando condiciones de carrera donde un ID podría haber sido procesado por otro hilo entre la comprobación inicial y la acción, además de añadir chequeos de integridad más estrictos para los objetos devueltos por `quarantine`.
+- `2026-10-17T09:59:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T09:59:58` Corrida terminada. Total usado hoy: 236.
