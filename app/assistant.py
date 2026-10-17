@@ -50,7 +50,7 @@ from itertools import islice
 from functools import lru_cache, wraps, cached_property
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Final, TypeAlias, Callable, Optional, Union, NamedTuple, Iterator
+from typing import Any, Final, TypeAlias, Callable, Optional, Union, NamedTuple, Iterator, Dict
 
 import settings
 from safety import is_protected_path
@@ -281,7 +281,7 @@ _CRITERIOS_SALUD: Final[tuple[ProblemCriterion, ...]] = (
     ProblemCriterion("startup_count", 15, ">", "{:d} programas de inicio")
 )
 
-_EXPLANATION_MAP: Final[dict[str, str]] = {
+_EXPLANATION_MAP: Final[Dict[str, str]] = {
     "basura": "Archivos temporales y restos de instaladores: ocupan espacio innecesario sin aportar valor operativo.",
     "seguridad": "Archivos con señales de riesgo: extensiones inusuales o ejecutables sin firma, requieren revisión manual.",
     "memoria": "Recursos de acceso rápido: si la memoria disponible es baja, Windows utiliza el disco duro, ralentizando todo.",
@@ -320,7 +320,10 @@ def _validate_response_length(text: Any) -> str:
     return text[:_MAX_TEXT_LENGTH]
 
 def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
-    """Valida la estructura del JSON remoto para impedir ataques de desbordamiento (depth check)."""
+    """
+    Valida recursivamente la estructura del JSON remoto.
+    Previene inyecciones de complejidad mediante límites de profundidad y tamaño de colecciones.
+    """
     if depth > _MAX_NESTING_DEPTH: return False
     if val is None or isinstance(val, (int, float, bool, str)): return True
     if isinstance(val, (list, tuple, set)):
@@ -332,7 +335,10 @@ def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
     return False
 
 def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
-    """Detecta si una estructura de datos excede los límites de profundidad o complejidad permitidos."""
+    """
+    Detecta si un objeto de entrada excede la profundidad permitida o límites de colección.
+    Utilizada para sanitizar datos externos antes de ser procesados por la lógica de negocio.
+    """
     if depth > _MAX_NESTING_DEPTH: return True
     if val is None or isinstance(val, (int, float, bool, str)): return False
     if isinstance(val, (list, tuple, set)):

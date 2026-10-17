@@ -468,3 +468,9 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-17T14:42:20` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez del manejo de archivos en `_read_and_parse_json` y `_load_impl` centralizando la validación mediante `is_safe_to_modify` antes de cualquier apertura de archivo para prevenir condiciones de carrera y ataques de Path Traversal, eliminando la redundancia y asegurando una degradación elegante ante archivos dañados.
 - `2026-10-17T14:42:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T14:42:20` Corrida terminada. Total usado hoy: 348.
+- `2026-10-17T14:50:25` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-17T14:50:53` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-17T14:51:36` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la aplicación de *type hints* estrictos en el `_EXPLANATION_MAP` y la normalización de la estructura de las constantes de configuración, además de documentar mediante *docstrings* el propósito técnico de las funciones de validación de carga, alineándome con el enfoque de legibilidad solicitado.
+- `2026-10-17T14:51:36` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-10-17T14:51:36` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T14:51:36` Corrida terminada. Total usado hoy: 350.
