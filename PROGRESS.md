@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **172** (34.1% de aceptación)
+- Mejoras aceptadas: **174** (34.5% de aceptación)
 - Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 49
+- Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 242
 
@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 17 | 1 | 8 | 2 | 2 |
+| 2026-10-15 | 15 | 1 | 6 | 2 | 2 |
 | 2026-10-16 | 116 | 19 | 26 | 12 | 177 |
-| 2026-10-17 | 39 | 4 | 15 | 3 | 63 |
+| 2026-10-17 | 43 | 4 | 15 | 3 | 63 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **39**
+- legibilidad y documentación: **37**
 - rendimiento: **37**
 - robustez ante casos límite: **34**
 - seguridad defensiva: **33**
-- manejo de errores y validación de entradas: **29**
+- manejo de errores y validación de entradas: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
-- `memory.py`: **18**
+- `diskreport.py`: **20**
 - `duplicates.py`: **18**
+- `memory.py`: **17**
 - `quarantine.py`: **15**
+- `assistant.py`: **14**
 - `healthscore.py`: **13**
-- `assistant.py`: **13**
 - `safety.py`: **12**
 - `settings.py`: **12**
-- `organizer.py`: **10**
 - `scanner.py`: **10**
-- `branding.py`: **9**
+- `branding.py`: **10**
+- `browser.py`: **10**
 - `main.py`: **9**
-- `browser.py`: **9**
+- `organizer.py`: **9**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-17T05:22:55` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo chequeos de `None` y manejo específico de excepciones en la resolución de rutas relativas, evitando que errores de acceso parciales detengan el escaneo completo.
+- `2026-10-17T05:22:40` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `directory_size` validando explícitamente la integridad del objeto `path` antes de intentar resolverlo, evitando errores silenciosos o comportamientos inesperados ante entradas nulas o mal formadas.
+- `2026-10-17T05:21:58` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` mejorando el manejo de errores mediante la validación explícita de `destination` y asegurando que las operaciones de sistema de archivos no fallen ante rutas mal formadas o permisos insuficientes, capturando `OSError` de forma granular.
+- `2026-10-17T05:21:10` **assistant.py** (manejo de errores y validación de entradas): Reforcé `_validate_response_length` y los manejadores de respuesta para evitar el procesamiento o retorno de textos nulos o excesivamente truncados, garantizando que el asistente devuelva siempre información útil o un mensaje de error controlado en lugar de contenido vacío.
 - `2026-10-17T03:59:40` **settings.py** (seguridad defensiva): Se reforzó la seguridad en el manejo de archivos al eliminar el uso de `fcntl.flock` (no disponible en Windows nativo sin extensiones y propenso a fallos en sistemas de archivos locales) reemplazándolo por una verificación de exclusividad más robusta y portabilidad de metadatos, además de endurecer las validaciones de `path` evitando la resolución de rutas que contengan caracteres nulos o secuencias de escape ocultas antes de acceder al disco.
 - `2026-10-17T03:49:32` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `quarantine.py` mediante la implementación de un chequeo estricto de **identidad de archivo** (vía `os.path.samefile`) previo a cualquier operación destructiva o de movimiento, evitando condiciones de carrera de tipo TOCTOU y asegurando que las rutas origen y destino no colisionen accidentalmente en el sistema de archivos durante las operaciones de aislamiento.
 - `2026-10-17T03:42:53` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_process_executable_safe` al reemplazar la validación simplista por un chequeo robusto que utiliza `os.path.abspath` para normalizar la ruta antes de verificarla contra las políticas de seguridad, evitando bypasses por rutas relativas o inconsistencias en el formato de `GetModuleFileNameExW`.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-17T03:00:14` **memory.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y legibilidad en `_is_process_executable_safe` para evitar fallos cuando el proceso apunta a un archivo que ha desaparecido o al que no se tiene acceso, mitigando el riesgo de excepciones inesperadas al procesar handles de procesos volátiles.
 - `2026-10-17T02:58:51` **healthscore.py** (robustez ante casos límite): Se ha mejorado la resiliencia del motor `compute_score` ante valores `None` o estados inconsistentes en las métricas durante la iteración del pipeline, asegurando que un fallo en una sola regla o scorer no invalide el procesamiento de las áreas restantes.
 - `2026-10-17T02:58:25` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez frente a casos límite en `_is_file_locked` para manejar correctamente errores de sistema al verificar archivos, asegurando que cualquier error inesperado al intentar abrir un archivo para lectura exclusiva se trate como una restricción de acceso, evitando que el escáner intente procesar archivos inaccesibles o bloqueados por el kernel.
-- `2026-10-17T02:49:30` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos de error mediante la implementación de una validación explícita de `st_size` en la recursión, evitando excepciones por archivos que se eliminan o bloquean mientras se escanea, y fortaleciendo el filtrado de rutas mediante `pathlib` en lugar de manipulación de strings en casos críticos.
-- `2026-10-17T02:48:33` **assistant.py** (robustez ante casos límite): Se mejoró la robustez de `_get_source_value` para manejar de forma segura el acceso a datos cuando el objeto fuente es un `SystemContext` o un diccionario mal formado, evitando excepciones durante la ingesta de métricas y reforzando la protección contra inyección de métodos.
-- `2026-10-17T02:38:32` **safety.py** (rendimiento): Se implementó un mecanismo de caché local (`_PATH_CACHE`) en `is_protected_path` para evitar la redundancia de cálculos costosos (resoluciones de `Path` y chequeos de sistema) al validar listas extensas de archivos, mejorando drásticamente el rendimiento en escaneos profundos.
-- `2026-10-17T02:27:56` **memory.py** (rendimiento): Se optimizó `_iter_process_memory` reemplazando la creación de una lista intermedia (`list(...)`) por una evaluación perezosa en `top_memory_processes` y eliminando consultas redundantes de seguridad mediante la validación directa del PID, reduciendo el overhead de memoria y ciclos de CPU durante el escaneo de procesos.

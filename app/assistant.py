@@ -142,7 +142,7 @@ def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Calla
             if ctx.is_empty:
                 return Answer("Primero analizá el sistema.")
             result: Answer = func(ctx, q)
-            if isinstance(result, Answer) and result.text:
+            if isinstance(result, Answer) and result.text and len(result.text) > 0:
                 return result
             logging.error(f"Handler {func.__name__} devolvió respuesta vacía")
         except (AttributeError, TypeError, Exception) as e:
@@ -315,8 +315,8 @@ def _safe_float(val: Any, default: float = 0.0) -> float:
         return default
 
 def _validate_response_length(text: Any) -> str:
-    """Trunca el texto asegurando que no exceda el límite definido."""
-    if not isinstance(text, str): return ""
+    """Trunca el texto asegurando que no exceda el límite definido y no sea vacío."""
+    if not isinstance(text, str) or not text: return "Respuesta no disponible."
     return text[:_MAX_TEXT_LENGTH]
 
 def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
@@ -577,7 +577,7 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     startup_count: int = int(snap.get("startup_count", 0))
     if startup_count > 12:
         msg += f" Sí te conviene mirar los {startup_count} programas de inicio."
-    return Answer(_validate_response_length(msg), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
+    return Answer(msg, notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
 
 @_safe_handler_wrapper
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
@@ -593,7 +593,7 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     if free < 10:
         msg += " ¡Alerta! Estás por debajo del 10%, afecta la estabilidad."
     msg += " Empezá por Limpieza: mueve los candidatos a revisión."
-    return Answer(_validate_response_length(msg), notice=OFFLINE_NOTICE)
+    return Answer(msg, notice=OFFLINE_NOTICE)
 
 @_safe_handler_wrapper
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
@@ -607,7 +607,7 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
         info: str = f"Hay {count} archivo(s) marcados, {warn} con advertencia."
         sugerencia: str = "Son señales, no una condena: si no reconocés alguno, usá 'Aislar hallazgos'."
         texto = f"{info} {sugerencia} La limpieza solo mueve a cuarentena."
-    return Answer(_validate_response_length(texto), notice=OFFLINE_NOTICE)
+    return Answer(texto, notice=OFFLINE_NOTICE)
 
 @_safe_handler_wrapper
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
@@ -616,7 +616,7 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     grade_str: str = f" (nota {ctx.grade})" if ctx.grade else ""
     explicacion: str = " El puntaje combina basura, seguridad, memoria, disco, duplicados y programas de inicio."
     return Answer(
-        _validate_response_length(f"{resumen}{grade_str}{explicacion}"), 
+        f"{resumen}{grade_str}{explicacion}", 
         notice=OFFLINE_NOTICE
     )
 
@@ -627,7 +627,7 @@ def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     estado: str = f"Tenés {count} programas que arrancan con Windows."
     valoracion: str = "Son bastantes, y cada uno suma tiempo de encendido." if count > 15 else ("Es normal." if count > 8 else "Está bien.")
     cierre: str = " La app los lista, pero desactivalos desde el Administrador de tareas de Windows."
-    return Answer(_validate_response_length(f"{estado} {valoracion}{cierre}"), notice=OFFLINE_NOTICE)
+    return Answer(f"{estado} {valoracion}{cierre}", notice=OFFLINE_NOTICE)
 
 _TOKENS_MAP: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
     "ram": handle_ram, "memoria": handle_ram, "lenta": handle_ram, "lento": handle_ram, "acelerar": handle_ram,
@@ -665,7 +665,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             return handler(context, question)
             
     cuerpo: str = _format_problem_message(context.active_problems, context.score if context.score is not None else "N/A")
-    return Answer(_validate_response_length(cuerpo), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
+    return Answer(cuerpo, notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
 
 def available(base: str | Path | None = None) -> bool:
     """Determina si la consulta a IA está habilitada globalmente mediante settings."""

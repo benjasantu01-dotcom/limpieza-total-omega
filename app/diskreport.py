@@ -188,7 +188,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
             try:
                 st = entry.stat(follow_symlinks=False)
                 # 0x400: FILE_ATTRIBUTE_REPARSE_POINT, 0x100: FILE_ATTRIBUTE_TEMPORARY
-                if bool(st.st_file_attributes & 0x400) or bool(st.st_file_attributes & 0x100):
+                if hasattr(st, 'st_file_attributes') and (bool(st.st_file_attributes & 0x400) or bool(st.st_file_attributes & 0x100)):
                     return True
             except (OSError, PermissionError):
                 return True
@@ -351,10 +351,10 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
-            # Obtenemos la carpeta inmediata superior a root
-            parts = path.relative_to(root).parts
-            if not parts: continue
-            top_folder = root / parts[0]
+            if not path or root is None: continue
+            rel = path.relative_to(root)
+            if not rel.parts: continue
+            top_folder = root / rel.parts[0]
             curr = stats[str(top_folder)]
             curr.size += size
             curr.file_count += 1

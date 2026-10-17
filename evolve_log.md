@@ -716,3 +716,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-17T05:14:30` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-10-17T05:14:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T05:14:30` Corrida terminada. Total usado hoy: 124.
+- `2026-10-17T05:20:29` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-10-17T05:21:10` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Reforcé `_validate_response_length` y los manejadores de respuesta para evitar el procesamiento o retorno de textos nulos o excesivamente truncados, garantizando que el asistente devuelva siempre información útil o un mensaje de error controlado en lugar de contenido vacío.
+- `2026-10-17T05:21:58` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `save_logo_svg` mejorando el manejo de errores mediante la validación explícita de `destination` y asegurando que las operaciones de sistema de archivos no fallen ante rutas mal formadas o permisos insuficientes, capturando `OSError` de forma granular.
+- `2026-10-17T05:22:40` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `directory_size` validando explícitamente la integridad del objeto `path` antes de intentar resolverlo, evitando errores silenciosos o comportamientos inesperados ante entradas nulas o mal formadas.
+- `2026-10-17T05:22:55` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `largest_folders` añadiendo chequeos de `None` y manejo específico de excepciones en la resolución de rutas relativas, evitando que errores de acceso parciales detengan el escaneo completo.
+- `2026-10-17T05:22:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T05:22:55` Corrida terminada. Total usado hoy: 128.

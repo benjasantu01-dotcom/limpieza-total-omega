@@ -245,10 +245,16 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
 @safe_path_operation(0)
 def directory_size(path: Optional[OSPath]) -> int:
     """Calcula el peso total de una ruta, aplicando filtros de seguridad y contexto."""
-    if not isinstance(path, (str, Path)) or not path: return 0
-    path_obj = Path(path).resolve(strict=True)
-    ctx = ScanContext(os.path.normpath(str(path_obj)), _get_kernel32(), _IS_JUNCTION_FN, set(), set(), {})
-    return _sum_directory_recursive(str(path_obj), ctx, 0).bytes_found
+    if not path or not isinstance(path, (str, Path)): 
+        return 0
+    
+    path_obj = Path(path)
+    if not path_obj.exists():
+        return 0
+        
+    resolved_path = path_obj.resolve(strict=True)
+    ctx = ScanContext(os.path.normpath(str(resolved_path)), _get_kernel32(), _IS_JUNCTION_FN, set(), set(), {})
+    return _sum_directory_recursive(str(resolved_path), ctx, 0).bytes_found
 
 @safe_path_operation(False)
 def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
