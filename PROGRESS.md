@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Mejoras aceptadas: **177** (35.1% de aceptación)
 - Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 45
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 237
+- Sin respuesta de la IA (error o límite): 236
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 38 | 3 | 11 | 5 | 37 |
+| 2026-10-15 | 35 | 3 | 11 | 5 | 36 |
 | 2026-10-16 | 116 | 19 | 26 | 12 | 177 |
-| 2026-10-17 | 25 | 2 | 8 | 2 | 23 |
+| 2026-10-17 | 26 | 2 | 11 | 2 | 23 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **44**
 - manejo de errores y validación de entradas: **38**
-- rendimiento: **36**
-- seguridad defensiva: **33**
+- rendimiento: **37**
+- seguridad defensiva: **30**
 - robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
-- `duplicates.py`: **19**
+- `diskreport.py`: **19**
+- `duplicates.py`: **18**
 - `memory.py`: **17**
 - `quarantine.py`: **15**
-- `healthscore.py`: **13**
 - `assistant.py`: **13**
+- `safety.py`: **13**
 - `organizer.py`: **12**
 - `scanner.py`: **12**
-- `safety.py`: **12**
+- `healthscore.py`: **12**
 - `branding.py`: **11**
 - `settings.py`: **11**
 - `main.py`: **10**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-17T02:38:32` **safety.py** (rendimiento): Se implementó un mecanismo de caché local (`_PATH_CACHE`) en `is_protected_path` para evitar la redundancia de cálculos costosos (resoluciones de `Path` y chequeos de sistema) al validar listas extensas de archivos, mejorando drásticamente el rendimiento en escaneos profundos.
 - `2026-10-17T02:27:56` **memory.py** (rendimiento): Se optimizó `_iter_process_memory` reemplazando la creación de una lista intermedia (`list(...)`) por una evaluación perezosa en `top_memory_processes` y eliminando consultas redundantes de seguridad mediante la validación directa del PID, reduciendo el overhead de memoria y ciclos de CPU durante el escaneo de procesos.
 - `2026-10-17T02:19:38` **main.py** (rendimiento): Se implementó un mecanismo de caché `lru_cache` para la validación de directorios en `_validate_disk_access`, reduciendo significativamente las llamadas recurrentes al sistema de archivos al procesar múltiples rutas durante los análisis de disco.
 - `2026-10-17T02:18:44` **healthscore.py** (rendimiento): Se optimizó el acceso a los datos dentro de `compute_score` eliminando la llamada repetitiva a `m.validate()` (que ya ocurre al instanciar `SystemMetrics` en `__post_init__`) y se redujo la sobrecarga de `_render_bar` mediante el uso de almacenamiento en caché simple para las cadenas de caracteres de la barra en `summarize`.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-17T01:38:09` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando type hints a los retornos de función y docstrings que explican el "PORQUÉ" de las estrategias de filtrado, para cumplir con el enfoque de legibilidad.
 - `2026-10-17T01:37:39` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings precisos en las clases `ExtStats` y `GlobalStats`, clarificando el propósito de sus métodos y su rol en la agregación de datos para evitar confusiones en futuros mantenimientos.
 - `2026-10-17T01:37:05` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `browser.py` añadiendo docstrings descriptivos con el propósito de las funciones, los tipos de datos utilizados y, especialmente, clarificando la lógica de seguridad y contención (sandbox) que previene el acceso a rutas fuera del scope de usuario.
-- `2026-10-17T01:28:46` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del código mediante la adición de docstrings técnicos explicativos en funciones críticas de renderizado, y se reemplazó el uso de `tuple()` con literales de secuencia donde era posible, aumentando la mantenibilidad sin alterar la lógica de ejecución.

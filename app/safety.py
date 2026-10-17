@@ -31,6 +31,9 @@ LONG_PATH_PREFIX: Final[str] = "\\\\?\\"
 PathLike: TypeAlias = Union[str, os.PathLike]
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
 
+# Cache para optimizar validaciones repetitivas
+_PATH_CACHE: Final[dict[str, bool]] = {}
+
 class SafetyAction(Enum):
     """Define la criticidad de la operación para ajustar el rigor de la validación."""
     READ = auto()
@@ -732,28 +735,42 @@ def is_drive_root(path: PathLike) -> bool:
         return p == Path(p.anchor)
     except (UnsafePathError, TypeError, OSError): return True
 
-@lru_cache(maxsize=4096)
 def is_protected_path(path: PathLike) -> bool:
-    """Determina si la ruta forma parte de una zona protegida del sistema."""
+    """Determina si la ruta forma parte de una zona protegida del sistema (con caché)."""
     if not isinstance(path, (str, Path)) or not path: return True
+    path_str = str(path)
+    if path_str in _PATH_CACHE: return _PATH_CACHE[path_str]
+    
     try:
-        path_str = str(path).lower()
+        p_str_low = path_str.lower()
         p = Path(path)
         
         # Validación rápida por prefijo de sistema
-        if any(path_str.startswith(root) for root in _SYSTEM_ROOT_STRS): return True
+        if any(p_str_low.startswith(root) for root in _SYSTEM_ROOT_STRS):
+            _PATH_CACHE[path_str] = True
+            return True
         
         # Validación rápida por componentes protegidos
         parts = {p.lower() for p in p.parts}
-        if not PROTECTED_DIR_NAMES.isdisjoint(parts): return True
+        if not PROTECTED_DIR_NAMES.isdisjoint(parts):
+            _PATH_CACHE[path_str] = True
+            return True
         
-        if _is_kernel_managed(path_str): return True
+        if _is_kernel_managed(p_str_low):
+            _PATH_CACHE[path_str] = True
+            return True
         
         attrs = _get_file_attrs(str(p))
-        if attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN): return True
+        if attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN):
+            _PATH_CACHE[path_str] = True
+            return True
         
-        return p == Path(p.anchor)
-    except Exception: return True
+        res = p == Path(p.anchor)
+        _PATH_CACHE[path_str] = res
+        return res
+    except Exception:
+        _PATH_CACHE[path_str] = True
+        return True
 
 @lru_cache(maxsize=4096)
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
