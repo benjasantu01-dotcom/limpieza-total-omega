@@ -1652,3 +1652,35 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-10-17T01:19:58` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez del escaneo implementando una validación exhaustiva de estados de error en `_get_file_size` y `_safe_stat`, centralizando la captura de excepciones no previstas para asegurar que los fallos de acceso en archivos bloqueados o permisos denegados no interrumpan el flujo de trabajo del bucle principal.
 - `2026-10-17T01:19:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T01:19:58` Corrida terminada. Total usado hoy: 32.
+- `2026-10-17T01:26:20` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-10-17T01:26:25` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-17T01:27:05` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del manejo de errores en `settings.py` al reemplazar bloques `except Exception` genéricos en `update()` por una captura específica, y al añadir una validación estricta de tipo en `_coerce_and_verify` para evitar la inyección de tipos de datos inesperados en el diccionario de configuración.
+- `2026-10-17T01:27:43` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.60s
+
+```
+- `2026-10-17T01:27:43` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `StartupEntry._extract_quoted_path` y `_resolve_and_cache_path` mediante la validación explícita de `path_str` antes de instanciar objetos `Path`, previniendo excepciones innecesarias ante rutas malformadas y evitando el acceso a rutas excesivamente largas que podrían comprometer la estabilidad en Windows.
+- `2026-10-17T01:28:29` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `SystemContext` extrayendo la lógica de validación de los datos de entrada a un método `_validate_and_sanitize_data` y añadiendo docstrings técnicos que explican la intención del flujo de ingesta y la protección de integridad.
+- `2026-10-17T01:28:46` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y la claridad del código mediante la adición de docstrings técnicos explicativos en funciones críticas de renderizado, y se reemplazó el uso de `tuple()` con literales de secuencia donde era posible, aumentando la mantenibilidad sin alterar la lógica de ejecución.
+- `2026-10-17T01:28:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T01:28:46` Corrida terminada. Total usado hoy: 36.

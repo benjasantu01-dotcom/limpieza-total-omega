@@ -307,6 +307,7 @@ SHIELD_BASE_COORDS: Final[CoordinateSequence] = (64, 18, 100, 31, 100, 67, 90, 9
 
 @lru_cache(maxsize=128)
 def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
+    """Calcula las coordenadas escaladas para el polígono del escudo."""
     return tuple(x + (c * scale) if i % 2 == 0 else y + (c * scale) for i, c in enumerate(SHIELD_BASE_COORDS))
 
 @lru_cache(maxsize=8)
@@ -339,6 +340,7 @@ STRIPE_BASE_Y_OFFSET: Final[float] = 18.0
 
 @lru_cache(maxsize=16)
 def _get_stripe_params(scale: float, n: int) -> Tuple[Tuple[float, float, float], ...]:
+    """Calcula los parámetros de grosor y offset vertical para las bandas del escudo."""
     tf = STRIPE_THICKNESS_SCALE * scale
     params = []
     for i in range(n):
@@ -348,6 +350,7 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[Tuple[float, float, float]
     return tuple(params)
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
+    """Dibuja las franjas decorativas sobre el escudo utilizando gradientes segmentados."""
     try:
         if scale <= 0: return
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
@@ -360,6 +363,7 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
     except Exception: pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
+    """Dibuja elementos gráficos secundarios (cruz y símbolo Omega) sobre el escudo."""
     try:
         lw = max(2, int(8.0 * scale))
         ts = max(8, int(UI_CONFIG.header_size * scale))

@@ -425,6 +425,22 @@ class SystemContext:
         if not clean or is_protected_path(clean): return ""
         return clean if _ensure_safe_text(clean) else ""
 
+    def _validate_and_sanitize_data(self, source: Any) -> dict[str, Any]:
+        """
+        Extrae datos válidos de una fuente externa. 
+        Aplica validaciones de integridad y desinfección de seguridad antes de cualquier modificación.
+        """
+        updates: dict[str, Any] = {}
+        for key, spec in _VALIDATORS.items():
+            value: Any = self._apply_field(source, key, spec)
+            if value is not None:
+                updates[key] = value
+        
+        grade_val: str = self._clean_grade(_get_source_value(source, "grade"))
+        if grade_val:
+            updates["grade"] = grade_val
+        return updates
+
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad sobre el objeto fuente (estructura y profundidad)."""
         if source is None: return False
@@ -447,14 +463,8 @@ class SystemContext:
         """Normaliza e importa datos externos al contexto de manera transaccional."""
         if not self._validate_ingestion_source(source):
             return False
-        updates: dict[str, Any] = {}
-        for key, spec in _VALIDATORS.items():
-            value: Any = self._apply_field(source, key, spec)
-            if value is not None:
-                updates[key] = value
-        grade_val: str = self._clean_grade(_get_source_value(source, "grade"))
-        if grade_val:
-            updates["grade"] = grade_val
+        
+        updates = self._validate_and_sanitize_data(source)
         if updates:
             try:
                 self._apply_updates(updates)

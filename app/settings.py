@@ -455,7 +455,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """
     Asegura que los valores cargados coincidan con el tipo de los defaults originales 
-    y valida la coherencia lógica de las dependencias (ej: desactivar asistente si falta clave).
+    y valida la coherencia lógica de las dependencias.
     """
     final: AppSettings = DEFAULTS.copy()
     for key, val in settings.items():
@@ -499,7 +499,7 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
                 if val is not None and val != current.get(k):
                     current[k] = val
                     modified = True
-            except Exception:
+            except (ValueError, TypeError, KeyError):
                 continue
     if modified: save(current, custom_base)
     return current
