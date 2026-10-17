@@ -383,6 +383,8 @@ def _load_impl(ruta: Path) -> AppSettings:
     """Implementación base de carga."""
     if not ruta.exists() or not ruta.is_file() or _Validators._is_reparse_point(ruta):
         return DEFAULTS.copy()
+    if not is_safe_to_modify(str(ruta)):
+        return DEFAULTS.copy()
     data = _read_and_parse_json(ruta)
     return _coerce_and_verify(validate(data)) if data is not None else DEFAULTS.copy()
 

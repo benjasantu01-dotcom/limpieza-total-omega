@@ -771,3 +771,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-10-17T05:42:56` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez de `ensure_safe_to_modify` y sus helpers integrando validación explícita de `None` y tipos, garantizando que cualquier entrada corrupta dispare `UnsafePathError` antes de interactuar con el sistema de archivos, manteniendo la coherencia de la capa de seguridad.
 - `2026-10-17T05:42:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T05:42:56` Corrida terminada. Total usado hoy: 136.
+- `2026-10-17T05:51:03` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-10-17T05:51:34` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación robusta y defensiva contra entradas `None` o rutas mal formadas en `_get_file_size` y `_is_readable`, asegurando que el scanner no se interrumpa ante datos inesperados, siguiendo el principio de capturar excepciones específicas y validar antes de operar.
+- `2026-10-17T05:52:03` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_load_impl` al añadir una verificación explícita de `is_safe_to_modify` antes de procesar el archivo, garantizando que el acceso a disco sea consistente con las políticas de seguridad del proyecto incluso si el archivo es válido pero se encuentra en una ubicación restringida.
+- `2026-10-17T05:52:31` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-17T05:52:51` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: AreaExplanation
+- `2026-10-17T05:52:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T05:52:51` Corrida terminada. Total usado hoy: 140.

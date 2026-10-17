@@ -89,7 +89,7 @@ def _is_locked_by_os(path: Path) -> bool:
     Verifica si un archivo está bloqueado por otro proceso.
     Intenta abrir un handle exclusivo (lectura). Si falla, se asume bloqueado.
     """
-    if not isinstance(path, Path):
+    if not isinstance(path, Path) or not path.exists():
         return True
     try:
         # 0x80000000: GENERIC_READ, 0x00000080: FILE_ATTRIBUTE_NORMAL
@@ -105,7 +105,7 @@ def _is_locked_by_os(path: Path) -> bool:
 
 def _is_readable(path: Path) -> bool:
     """Valida si el archivo existe y posee permisos de lectura mediante el sistema operativo."""
-    if not isinstance(path, Path):
+    if not isinstance(path, Path) or not path.exists():
         return False
     try:
         return path.is_file() and os.access(path, os.R_OK)
@@ -124,7 +124,7 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 
 def _get_file_size(path: Path) -> int:
     """Retorna el tamaño en bytes del archivo. Devuelve -1 si el archivo es inaccesible."""
-    if not isinstance(path, Path): 
+    if not isinstance(path, Path) or not path.exists(): 
         return -1
     try:
         return int(path.stat().st_size)
