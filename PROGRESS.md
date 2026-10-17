@@ -7,45 +7,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **168** (33.3% de aceptación)
-- Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 52
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 241
+- Rechazadas por tests: 23
+- Rechazadas por guardia de seguridad: 51
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 242
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 106 | 18 | 25 | 11 | 172 |
-| 2026-10-17 | 62 | 6 | 27 | 8 | 69 |
+| 2026-10-16 | 104 | 17 | 24 | 11 | 172 |
+| 2026-10-17 | 64 | 6 | 27 | 9 | 70 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **43**
 - manejo de errores y validación de entradas: **38**
 - rendimiento: **34**
-- seguridad defensiva: **27**
-- robustez ante casos límite: **26**
+- robustez ante casos límite: **28**
+- seguridad defensiva: **25**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **18**
 - `duplicates.py`: **17**
 - `memory.py`: **17**
-- `diskreport.py`: **17**
-- `quarantine.py`: **14**
+- `quarantine.py`: **13**
 - `assistant.py`: **13**
 - `settings.py`: **12**
 - `browser.py`: **12**
 - `organizer.py`: **12**
 - `safety.py`: **12**
-- `scanner.py`: **11**
-- `healthscore.py`: **10**
+- `healthscore.py`: **11**
+- `scanner.py`: **10**
 - `main.py`: **8**
 - `branding.py`: **8**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-17T07:24:22` **healthscore.py** (robustez ante casos límite): Se ha robustecido el `SystemMetrics.__post_init__` y los métodos de validación para prevenir inyecciones de datos no numéricos o corrompidos, asegurando que `NaN` o tipos inesperados no propaguen errores durante el cálculo del pipeline.
+- `2026-10-17T07:23:20` **diskreport.py** (robustez ante casos límite): Mejora la robustez del escaneo frente a errores de sistema (como archivos bloqueados o permisos denegados) al envolver la inicialización del `scandir` y la lectura de atributos en bloques `try-except` más granulares en `walk_files`, previniendo que una sola falla de acceso detenga el recorrido de todo un directorio.
 - `2026-10-17T07:15:58` **browser.py** (robustez ante casos límite): Se implementó un chequeo preventivo de concurrencia y acceso bloqueado en `_sum_directory_recursive` mediante el uso de `os.access(path, os.R_OK)` y el manejo robusto de `OSError` durante el acceso a atributos de archivo, evitando fallos en carpetas protegidas por el sistema o archivos en uso exclusivo (como el archivo 'Lock' de los navegadores).
 - `2026-10-17T07:03:36` **safety.py** (rendimiento): Se ha optimizado la validación de rutas mediante la implementación de un caché de resultados de `is_protected_path` más eficiente y la sustitución de la resolución de ruta `path.resolve()` por una técnica de "path crawling" manual que evita múltiples llamadas al sistema operativo innecesarias, reduciendo significativamente la latencia en escaneos profundos de disco.
 - `2026-10-17T06:54:14` **organizer.py** (rendimiento): Se optimizó el proceso de filtrado durante el escaneo recursivo mediante la implementación de `JUNK_EXTENSIONS_TUPLE` y el pre-cálculo de nombres protegidos, reduciendo la cantidad de llamadas repetitivas a `path.suffix.lower()` y `path.exists()` dentro del bucle de `os.scandir`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-17T06:13:24` **organizer.py** (legibilidad y documentación): Se introdujo documentación técnica (docstrings) detallando el propósito y las restricciones de seguridad de las funciones de bajo nivel que interactúan con el sistema de archivos, facilitando la comprensión del flujo crítico de la aplicación.
 - `2026-10-17T06:02:55` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y tipos explícitos, clarificando la lógica de las funciones críticas y el flujo de los pasos de hashing para facilitar su mantenimiento.
 - `2026-10-17T06:02:17` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación de los tipos de datos internos y se refinaron los docstrings en las funciones críticas de escaneo (`_sum_directory_recursive` y `_should_skip_entry`) para clarificar el uso de `ctx` y la lógica de recursión.
-- `2026-10-17T06:01:51` **branding.py** (legibilidad y documentación): Mejora la legibilidad y el mantenimiento de la documentación mediante la conversión de los bloques de configuración de color y tamaño en `TypedDict`s reales en lugar de `MappingProxyType` genéricos, permitiendo que las herramientas de análisis estático detecten errores de clave inexistente.
-- `2026-10-17T05:52:03` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_load_impl` al añadir una verificación explícita de `is_safe_to_modify` antes de procesar el archivo, garantizando que el acceso a disco sea consistente con las políticas de seguridad del proyecto incluso si el archivo es válido pero se encuentra en una ubicación restringida.

@@ -258,10 +258,8 @@ class SystemMetrics:
         """Inicializa métricas asegurando tipos correctos tras la creación."""
         for field_name in self._FIELDS_TO_VALIDATE:
             val = getattr(self, field_name)
-            try:
-                setattr(self, field_name, float(val) if not isinstance(val, (int, float)) else val)
-            except (ValueError, TypeError):
-                setattr(self, field_name, 0.0)
+            # Forzar conversión temprana y segura para evitar errores de tipo en el pipeline
+            setattr(self, field_name, _validate_numeric(val, 0.0, -1.0, 1e9))
         self.validate()
 
     def safe_get(self, field_name: str, default: Any = 0) -> Any:
