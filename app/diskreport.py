@@ -161,7 +161,10 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
             
         entry_path = Path(entry.path)
         # Prevenir Path Traversal: asegurar que la entrada esté contenida en la raíz
-        if root_path not in entry_path.resolve().parents and entry_path.resolve() != root_path:
+        try:
+            if root_path not in entry_path.resolve().parents and entry_path.resolve() != root_path:
+                return True
+        except (OSError, RuntimeError):
             return True
             
         if is_protected_path(entry_path):
@@ -178,9 +181,10 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         if os.name == 'nt':
             try:
                 st = entry.stat(follow_symlinks=False)
-                # 0x400: FILE_ATTRIBUTE_REPARSE_POINT, 0x100: FILE_ATTRIBUTE_TEMPORARY
-                if hasattr(st, 'st_file_attributes') and (bool(st.st_file_attributes & 0x400) or bool(st.st_file_attributes & 0x100)):
-                    return True
+                if hasattr(st, 'st_file_attributes'):
+                    # 0x400: FILE_ATTRIBUTE_REPARSE_POINT, 0x100: FILE_ATTRIBUTE_TEMPORARY
+                    if bool(st.st_file_attributes & 0x400) or bool(st.st_file_attributes & 0x100):
+                        return True
             except (OSError, PermissionError):
                 return True
         

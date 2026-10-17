@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **170** (33.7% de aceptación)
-- Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 53
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 240
+- Mejoras aceptadas: **169** (33.5% de aceptación)
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 52
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 241
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 65 | 10 | 17 | 10 | 126 |
-| 2026-10-17 | 105 | 10 | 36 | 11 | 114 |
+| 2026-10-16 | 63 | 9 | 16 | 10 | 126 |
+| 2026-10-17 | 106 | 10 | 36 | 13 | 115 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **42**
 - manejo de errores y validación de entradas: **40**
 - rendimiento: **34**
-- seguridad defensiva: **30**
-- robustez ante casos límite: **24**
+- seguridad defensiva: **28**
+- robustez ante casos límite: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `memory.py`: **18**
 - `duplicates.py`: **15**
-- `safety.py`: **14**
 - `quarantine.py`: **14**
 - `browser.py`: **14**
 - `assistant.py`: **13**
+- `safety.py`: **13**
 - `healthscore.py`: **12**
-- `organizer.py`: **11**
 - `settings.py`: **11**
 - `scanner.py`: **10**
+- `organizer.py`: **10**
 - `main.py`: **9**
 - `branding.py`: **7**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-17T11:48:24` **diskreport.py** (robustez ante casos límite): Se introdujo una gestión de errores más robusta en `walk_files` y `_is_excluded_path` mediante la validación de la existencia de `st_file_attributes` y el uso de `OSError` genérico al manejar atributos, previniendo fallos en sistemas de archivos donde ciertos metadatos no son accesibles o compatibles.
 - `2026-10-17T11:38:06` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` y `entries_from_registry` implementando una estrategia de ejecución por lotes en PowerShell y evitando la re-generación innecesaria de iteradores, reduciendo el overhead de llamadas al sistema.
 - `2026-10-17T11:37:37` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de settings mediante la implementación de `os.stat` antes de realizar operaciones de IO costosas, evitando lecturas innecesarias del archivo si el `mtime` o el tamaño no han cambiado desde la última vez.
 - `2026-10-17T11:28:54` **safety.py** (rendimiento): Optimizamos `is_protected_path` reemplazando la creación innecesaria de `Path` y múltiples llamadas a `Path.parts` por un chequeo temprano basado en strings, aprovechando que ya contamos con `_SYSTEM_ROOT_STRS` y el cache interno para reducir drásticamente el uso de CPU en bucles de escaneo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-17T10:38:35` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante docstrings explicativos y se ha refactorizado `_iter_process_memory` y `_extract_process_info` para clarificar la lógica de filtrado de procesos, asegurando que la intención del código sea evidente para otros desarrolladores.
 - `2026-10-17T10:38:20` **main.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `main.py` mediante la implementación de `docstrings` de estilo Google en los métodos críticos de gestión de la UI y ejecución asíncrona, eliminando redundancias en las firmas de los métodos y normalizando la documentación para los desarrolladores.
 - `2026-10-17T10:36:57` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings detallados en las funciones de cómputo y pipeline, clarificando los contratos de entrada/salida y la semántica de la normalización, facilitando así el mantenimiento futuro.
-- `2026-10-17T10:36:26` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones de bajo nivel y la estandarización de tipos, asegurando que las decisiones de diseño sobre el pipeline de hashing sean claras para futuros colaboradores.

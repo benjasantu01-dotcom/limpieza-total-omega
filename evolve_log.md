@@ -1366,3 +1366,13 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-17T11:39:06` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-10-17T11:39:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T11:39:06` Corrida terminada. Total usado hoy: 276.
+- `2026-10-17T11:47:11` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-10-17T11:47:45` ➖ Sin cambios en browser.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez de `directory_size` y `_sum_directory_recursive` ante archivos inaccesibles o bloqueados, asegurando que `os.scandir` y `entry.stat` operen siempre bajo un manejo de excepciones controlado para evitar fallos durante el recorrido de directorios con permisos heterogéneos.
+- `2026-10-17T11:47:46` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-17T11:47:50` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-17T11:48:24` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se introdujo una gestión de errores más robusta en `walk_files` y `_is_excluded_path` mediante la validación de la existencia de `st_file_attributes` y el uso de `OSError` genérico al manejar atributos, previniendo fallos en sistemas de archivos donde ciertos metadatos no son accesibles o compatibles.
+- `2026-10-17T11:48:49` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-17T11:48:50` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-17T11:49:04` ➖ Sin cambios en healthscore.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez del motor frente a casos límite en el `Pipeline` mediante un chequeo de integridad profundo que valida la existencia de todas las claves de métricas requeridas antes de procesar, evitando errores de clave ausente en `metric_breakdown`.
+- `2026-10-17T11:49:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T11:49:04` Corrida terminada. Total usado hoy: 280.
