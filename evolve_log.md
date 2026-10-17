@@ -849,3 +849,10 @@ FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - Attr
 - `2026-10-17T06:43:28` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: HealthResult.is_healthy, SystemMetrics.safe_get
 - `2026-10-17T06:43:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T06:43:28` Corrida terminada. Total usado hoy: 160.
+- `2026-10-17T06:52:13` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-10-17T06:53:21` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se implementó un sistema de "Debounce" inteligente para las actualizaciones de la UI en el panel de Salud y los logs, evitando repintados innecesarios y saturación del hilo principal durante la ejecución de tareas asíncronas intensivas.
+- `2026-10-17T06:53:48` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Mejoré la eficiencia de `top_memory_processes` y `_iter_process_memory` reemplazando la creación de una lista grande de PIDs por una consulta dinámica con `EnumProcesses` optimizada, y reduciendo la frecuencia de llamadas costosas a `GetModuleFileNameExW` (que accede al disco/kernel por cada proceso) al procesar solo los procesos más pesados tras el ordenamiento parcial en lugar de validar todos los existentes.
+- `2026-10-17T06:54:14` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el proceso de filtrado durante el escaneo recursivo mediante la implementación de `JUNK_EXTENSIONS_TUPLE` y el pre-cálculo de nombres protegidos, reduciendo la cantidad de llamadas repetitivas a `path.suffix.lower()` y `path.exists()` dentro del bucle de `os.scandir`.
+- `2026-10-17T06:54:37` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `load_manifest` mediante el uso de un cache global persistente por ruta base, evitando lecturas y parseos de JSON redundantes en llamadas sucesivas durante la misma ejecución.
+- `2026-10-17T06:54:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T06:54:37` Corrida terminada. Total usado hoy: 164.
