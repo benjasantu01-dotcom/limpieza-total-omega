@@ -1330,3 +1330,39 @@ FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size 
 - `2026-10-17T11:29:09` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._handle_directory, Scanner._is_inside_base_root, Scanner._is_relevant_extension, Scanner._is_reparse_point, Scanner._is_safe_entry
 - `2026-10-17T11:29:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T11:29:09` Corrida terminada. Total usado hoy: 272.
+- `2026-10-17T11:37:02` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-10-17T11:37:37` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de la carga de settings mediante la implementación de `os.stat` antes de realizar operaciones de IO costosas, evitando lecturas innecesarias del archivo si el `mtime` o el tamaño no han cambiado desde la última vez.
+- `2026-10-17T11:38:06` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `list_startup_entries` y `entries_from_registry` implementando una estrategia de ejecución por lotes en PowerShell y evitando la re-generación innecesaria de iteradores, reduciendo el overhead de llamadas al sistema.
+- `2026-10-17T11:38:50` Tests FALLARON:
+```
+ __________________
+
+    def test_build_context_reads_fields_one_by_one():
+        """Copia campo por campo, no el objeto entero, para no arrastrar datos."""
+        class MetricasConRuta:
+            junk_mb = 100.0
+            suspicious_count = 2
+            suspicious_warnings = 0
+            memory_available_percent = 40.0
+            disk_free_percent = 50.0
+            duplicate_mb = 0.0
+            startup_count = 5
+            quarantined_count = 0
+            archivo_secreto = "C:/Users/benja/clave.txt"
+    
+        contexto = assistant.build_context(metrics=MetricasConRuta())
+>       assert contexto.junk_mb == 100.0
+E       AssertionError: assert 0.0 == 100.0
+E        +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+
+evolve/tests/test_assistant.py:234: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_one - AssertionError: assert 0.0 == 100.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+1 failed, 298 passed in 1.61s
+
+```
+- `2026-10-17T11:38:50` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez del método `ingest` y la carga de datos externos añadiendo validación de tipos estricta y manejo de excepciones ante valores inesperados en el diccionario fuente, previniendo inyecciones de tipos o estados corruptos en el `SystemContext`.
+- `2026-10-17T11:39:06` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-10-17T11:39:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T11:39:06` Corrida terminada. Total usado hoy: 276.

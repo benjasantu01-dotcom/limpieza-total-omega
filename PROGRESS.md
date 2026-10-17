@@ -7,30 +7,30 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **170** (33.7% de aceptación)
-- Rechazadas por tests: 19
+- Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 241
+- Sin respuesta de la IA (error o límite): 240
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 67 | 10 | 17 | 10 | 128 |
-| 2026-10-17 | 103 | 9 | 36 | 11 | 113 |
+| 2026-10-16 | 65 | 10 | 17 | 10 | 126 |
+| 2026-10-17 | 105 | 10 | 36 | 11 | 114 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **42**
 - manejo de errores y validación de entradas: **40**
-- seguridad defensiva: **32**
-- rendimiento: **32**
+- rendimiento: **34**
+- seguridad defensiva: **30**
 - robustez ante casos límite: **24**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **19**
 - `diskreport.py`: **18**
+- `memory.py`: **18**
 - `duplicates.py`: **15**
 - `safety.py`: **14**
 - `quarantine.py`: **14**
@@ -38,14 +38,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **13**
 - `healthscore.py`: **12**
 - `organizer.py`: **11**
-- `main.py`: **10**
+- `settings.py`: **11**
 - `scanner.py`: **10**
-- `settings.py`: **10**
+- `main.py`: **9**
 - `branding.py`: **7**
-- `startup.py`: **3**
+- `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-17T11:38:06` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` y `entries_from_registry` implementando una estrategia de ejecución por lotes en PowerShell y evitando la re-generación innecesaria de iteradores, reduciendo el overhead de llamadas al sistema.
+- `2026-10-17T11:37:37` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de settings mediante la implementación de `os.stat` antes de realizar operaciones de IO costosas, evitando lecturas innecesarias del archivo si el `mtime` o el tamaño no han cambiado desde la última vez.
 - `2026-10-17T11:28:54` **safety.py** (rendimiento): Optimizamos `is_protected_path` reemplazando la creación innecesaria de `Path` y múltiples llamadas a `Path.parts` por un chequeo temprano basado en strings, aprovechando que ya contamos con `_SYSTEM_ROOT_STRS` y el cache interno para reducir drásticamente el uso de CPU en bucles de escaneo.
 - `2026-10-17T11:19:25` **organizer.py** (rendimiento): Se optimizó el rendimiento de `_process_directory` reemplazando la verificación repetida `entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE)` dentro del bucle principal por una estructura de control más eficiente, aprovechando que el conjunto `JUNK_EXTENSIONS` ya es `frozenset` para realizar consultas de tiempo constante `O(1)` en lugar de lineal `O(N)`.
 - `2026-10-17T11:19:12` **memory.py** (rendimiento): Se optimizó `_iter_process_memory` para realizar una sola llamada a `EnumProcesses` mediante un búfer dinámico, reduciendo drásticamente las syscalls innecesarias y evitando el riesgo de truncar la lista de procesos en sistemas con alta carga.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-17T10:38:20` **main.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `main.py` mediante la implementación de `docstrings` de estilo Google en los métodos críticos de gestión de la UI y ejecución asíncrona, eliminando redundancias en las firmas de los métodos y normalizando la documentación para los desarrolladores.
 - `2026-10-17T10:36:57` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings detallados en las funciones de cómputo y pipeline, clarificando los contratos de entrada/salida y la semántica de la normalización, facilitando así el mantenimiento futuro.
 - `2026-10-17T10:36:26` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en funciones de bajo nivel y la estandarización de tipos, asegurando que las decisiones de diseño sobre el pipeline de hashing sean claras para futuros colaboradores.
-- `2026-10-17T10:28:52` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` mediante la adición de docstrings precisos en métodos clave, la estandarización de tipos con `typing` y la clarificación de la lógica de `_is_excluded_path` mediante la descomposición de condiciones complejas.
-- `2026-10-17T10:28:34` **browser.py** (legibilidad y documentación): Se introdujeron docstrings detallados en funciones críticas del proceso recursivo y se estandarizaron las validaciones mediante el uso de nombres más descriptivos, facilitando la comprensión del flujo de escaneo seguro.

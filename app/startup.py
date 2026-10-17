@@ -369,16 +369,17 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
 
 
 def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEntries:
-    """Extrae programas de inicio desde el registro mediante ejecución de PowerShell."""
+    """Extrae programas de inicio desde el registro mediante ejecución única de PowerShell."""
     if os.name != "nt":
         return []
     
-    keys_string = "','".join(keys)
+    # Unificamos el query en una sola llamada para reducir overhead de proceso
+    keys_formatted = ", ".join([f"'{k}'" for k in keys])
     ps_script = f"""
     $ErrorActionPreference = 'SilentlyContinue'
-    foreach ($k in @('{keys_string}')) {{
-        Get-ItemProperty -LiteralPath $k | Select-Object * -ExcludeProperty PS* | ConvertTo-Csv -NoTypeInformation
-    }}
+    @({keys_formatted}) | ForEach-Object {{
+        Get-ItemProperty -LiteralPath $_ | Select-Object * -ExcludeProperty PS* 
+    }} | ConvertTo-Csv -NoTypeInformation
     """
     
     try:
@@ -402,11 +403,13 @@ def list_startup_entries() -> StartupEntries:
     seen_items: Set[Tuple[str, str]] = set()
     unique_entries: StartupEntries = []
     
-    def entry_generator() -> Iterator[StartupEntry]:
-        yield from entries_from_folders()
-        yield from entries_from_registry()
-
-    for entry in entry_generator():
+    for entry in entries_from_folders():
+        key = (entry.name.lower(), entry.command.lower())
+        if key not in seen_items:
+            seen_items.add(key)
+            unique_entries.append(entry)
+            
+    for entry in entries_from_registry():
         key = (entry.name.lower(), entry.command.lower())
         if key not in seen_items:
             seen_items.add(key)

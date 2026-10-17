@@ -150,7 +150,7 @@ class _SettingsManager:
     y métodos de persistencia atómica.
     """
     def __init__(self) -> None:
-        self.settings_cache: dict[str, tuple[float, AppSettings]] = {}
+        self.settings_cache: dict[str, tuple[float, int, AppSettings]] = {}
         self.path_cache: dict[Optional[str], Path] = {}
 
     def clear(self) -> None:
@@ -164,7 +164,6 @@ class _SettingsManager:
         """
         temp_path: Path = config_path.with_suffix(".tmp")
         try:
-            # Normalización estricta antes de validar
             real_config = Path(os.path.realpath(config_path))
             real_temp = Path(os.path.realpath(temp_path))
 
@@ -206,7 +205,6 @@ class _Validators:
     def _is_reparse_point(path: Path) -> bool:
         """Determina si la ruta es un punto de reanálisis (symlink/junction)."""
         try:
-            # Usar realpath para resolver la cadena real antes de analizar atributos
             p = Path(os.path.realpath(path))
             if p.is_symlink(): return True
             if not p.exists(): return False
@@ -393,18 +391,18 @@ def _load_impl(ruta: Path) -> AppSettings:
     return _coerce_and_verify(validate(data)) if data is not None else DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Carga ajustes con caché basada en mtime."""
+    """Carga ajustes con caché basada en mtime y tamaño para evitar lecturas innecesarias."""
     primary_path = settings_path(custom_base)
     try:
         real_path = Path(os.path.realpath(primary_path))
         if real_path.exists() and real_path.is_file():
             st = real_path.stat()
-            mtime = st.st_mtime
+            mtime, size = st.st_mtime, st.st_size
             cache_key = str(real_path)
             cached = _MANAGER.settings_cache.get(cache_key)
-            if cached and cached[0] == mtime: return cached[1].copy()
+            if cached and cached[0] == mtime and cached[1] == size: return cached[2].copy()
             settings = _load_impl(real_path)
-            _MANAGER.settings_cache[cache_key] = (mtime, settings)
+            _MANAGER.settings_cache[cache_key] = (mtime, size, settings)
             return settings
     except (OSError, PermissionError): pass
     return DEFAULTS.copy()
