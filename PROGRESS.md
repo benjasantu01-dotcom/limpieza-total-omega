@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **172** (34.1% de aceptación)
-- Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 51
+- Rechazadas por tests: 20
+- Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 241
 
@@ -16,29 +16,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 88 | 15 | 21 | 10 | 134 |
-| 2026-10-17 | 84 | 6 | 30 | 9 | 107 |
+| 2026-10-16 | 86 | 14 | 21 | 10 | 133 |
+| 2026-10-17 | 86 | 6 | 31 | 9 | 108 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **36**
-- legibilidad y documentación: **35**
-- rendimiento: **34**
+- manejo de errores y validación de entradas: **38**
 - seguridad defensiva: **34**
+- legibilidad y documentación: **34**
+- rendimiento: **33**
 - robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **19**
-- `memory.py`: **17**
+- `memory.py`: **18**
 - `duplicates.py`: **16**
-- `assistant.py`: **15**
-- `quarantine.py`: **14**
+- `quarantine.py`: **15**
+- `assistant.py`: **14**
 - `browser.py`: **13**
 - `healthscore.py`: **13**
-- `settings.py`: **12**
 - `safety.py`: **12**
 - `organizer.py`: **11**
+- `settings.py`: **11**
 - `scanner.py`: **10**
 - `main.py`: **9**
 - `branding.py`: **7**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-17T10:08:12` **quarantine.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_manifest` mediante la captura explícita de `OSError` y `IOError` en la operación de escritura atómica, asegurando que cualquier fallo en la integridad de la persistencia del manifiesto sea notificado correctamente sin corromper el estado de la cuarentena.
+- `2026-10-17T10:06:44` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `_is_process_executable_safe` y `trim_working_set` implementando validaciones estrictas de tipo y estado para prevenir el procesamiento de handles nulos o rutas inexistentes antes de interactuar con el sistema de archivos.
 - `2026-10-17T09:59:58` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_purge_quarantine` y `on_restore_quarantine` mediante el uso de una validación de estado "justo-a-tiempo" antes de realizar operaciones de disco, evitando condiciones de carrera donde un ID podría haber sido procesado por otro hilo entre la comprobación inicial y la acción, además de añadir chequeos de integridad más estrictos para los objetos devueltos por `quarantine`.
 - `2026-10-17T09:56:49` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` validando explícitamente el estado de `metrics` y aplicando un manejo de errores más estricto en la ejecución del pipeline para evitar resultados parciales corruptos.
 - `2026-10-17T09:55:50` **diskreport.py** (manejo de errores y validación de entradas): Mejora la robustez del módulo `diskreport.py` mediante la validación proactiva de tipos y valores en las funciones de entrada y las clases de datos, evitando excepciones por parámetros inesperados (como `None` o valores negativos) antes de que las operaciones de bajo nivel fallen.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-17T08:04:46` **healthscore.py** (seguridad defensiva): Se ha mejorado la robustez y seguridad del motor de renderizado de recomendaciones al aplicar un filtrado de contenido más estricto y un manejo de errores más defensivo, asegurando que los mensajes dinámicos no puedan contener rutas de archivos o información sensible incluso si el `message_factory` original intentara inyectarlos.
 - `2026-10-17T08:03:55` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `duplicates.py` añadiendo una capa extra de validación en `_collect_candidates` para asegurar que, antes de procesar cualquier entrada detectada por `os.scandir`, la ruta no solo sea segura según las listas de bloqueo, sino que su resolución canónica (evitando enlaces simbólicos o junctions que apunten fuera de los límites) sea igualmente válida y segura, evitando así el seguimiento accidental de punteros a zonas protegidas del sistema.
 - `2026-10-17T07:55:35` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` implementando un chequeo explícito de puntos de reparse (reparse points) mediante `os.path.isdir` y validación de atributos, para asegurar que el escaneo no siga enlaces simbólicos o junctions que puedan apuntar fuera del árbol de directorios permitido, cumpliendo con el enfoque de seguridad defensiva.
-- `2026-10-17T07:55:23` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_valid_cache_path` y `_resolve_browser_path` para prevenir ataques de trayectoria (path traversal) y asegurar que las rutas resueltas residan físicamente dentro del sandbox del usuario, evitando el uso de atajos malintencionados incluso antes de realizar cualquier operación de lectura.
-- `2026-10-17T07:54:00` **assistant.py** (seguridad defensiva): Reforcé la seguridad de `_is_safe_path_input` integrando `_contains_forbidden_patterns` para asegurar que cualquier entrada que simule una ruta (o contenga comandos prohibidos) sea rechazada de forma centralizada antes de llegar a cualquier motor de procesamiento.

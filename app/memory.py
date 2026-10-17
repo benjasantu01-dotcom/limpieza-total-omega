@@ -387,6 +387,7 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 def _is_process_executable_safe(pid: int, handle: int) -> bool:
     """Verifica si el ejecutable de un proceso reside en una ubicación permitida."""
+    if not handle or handle == INVALID_HANDLE_VALUE: return False
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return False
     
@@ -395,7 +396,6 @@ def _is_process_executable_safe(pid: int, handle: int) -> bool:
         length = psapi.GetModuleFileNameExW(handle, None, buf, 4095)
         if length > 0:
             path_str = os.path.abspath(buf.value)
-            # Evitar rutas UNC potencialmente peligrosas
             if not path_str or path_str.startswith(r"\\"): return False
             return not is_protected_path(Path(path_str))
     except (ctypes.ArgumentError, OSError):
@@ -414,9 +414,12 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     psapi, kernel32 = ctypes.windll.psapi, ctypes.windll.kernel32
     proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
     
-    if not proc_handle or not _is_process_executable_safe(target_pid, proc_handle):
-        if proc_handle: kernel32.CloseHandle(proc_handle)
-        return False, "Proceso protegido o acceso denegado."
+    if not proc_handle or proc_handle == INVALID_HANDLE_VALUE:
+        return False, "Acceso denegado o proceso no encontrado."
+
+    if not _is_process_executable_safe(target_pid, proc_handle):
+        kernel32.CloseHandle(proc_handle)
+        return False, "Proceso protegido o ubicación insegura."
         
     try:
         if psapi.EmptyWorkingSet(proc_handle) == 0:

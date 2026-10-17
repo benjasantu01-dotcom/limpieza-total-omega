@@ -1140,3 +1140,10 @@ FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - Attr
 - `2026-10-17T09:59:58` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `on_purge_quarantine` y `on_restore_quarantine` mediante el uso de una validación de estado "justo-a-tiempo" antes de realizar operaciones de disco, evitando condiciones de carrera donde un ID podría haber sido procesado por otro hilo entre la comprobación inicial y la acción, además de añadir chequeos de integridad más estrictos para los objetos devueltos por `quarantine`.
 - `2026-10-17T09:59:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T09:59:58` Corrida terminada. Total usado hoy: 236.
+- `2026-10-17T10:05:27` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-10-17T10:06:44` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `_is_process_executable_safe` y `trim_working_set` implementando validaciones estrictas de tipo y estado para prevenir el procesamiento de handles nulos o rutas inexistentes antes de interactuar con el sistema de archivos.
+- `2026-10-17T10:07:16` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-17T10:08:12` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `save_manifest` mediante la captura explícita de `OSError` y `IOError` en la operación de escritura atómica, asegurando que cualquier fallo en la integridad de la persistencia del manifiesto sea notificado correctamente sin corromper el estado de la cuarentena.
+- `2026-10-17T10:08:18` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-10-17T10:08:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T10:08:18` Corrida terminada. Total usado hoy: 240.

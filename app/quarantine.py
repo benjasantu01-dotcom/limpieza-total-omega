@@ -602,7 +602,7 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
         if temp_name and os.path.exists(temp_name):
             try: os.unlink(temp_name)
             except OSError: pass
-        raise RuntimeError(f"Falla al persistir manifiesto: {e}")
+        raise RuntimeError(f"Falla al persistir manifiesto en disco: {e}")
 
 
 def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
