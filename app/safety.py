@@ -1002,6 +1002,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
 
         base = None
         if base_dir:
+            if not isinstance(base_dir, (str, Path, os.PathLike)):
+                raise UnsafePathError("Tipo de directorio base inválido.", SafetyValidationErrorCode.GENERIC)
             try:
                 base = _normalize_resolved(str(base_dir))
             except (TypeError, ValueError):

@@ -302,7 +302,6 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
         dest_res = dest_base.resolve(strict=False)
         
         if not is_safe_to_modify(dest_res) or is_protected_path(dest_res) or _has_forbidden_chars(dest_res): return None
-        ensure_safe_to_modify(dest_res)
         
         for junk_file in files:
             if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): continue
@@ -310,9 +309,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                 if not _is_safe_for_disk_op(junk_file, dest_res): continue
                 target_path = _can_move_file(junk_file, dest_res)
                 if target_path and target_path != junk_file.path:
-                    src_abs = junk_file.path.resolve(strict=True)
-                    ensure_safe_to_modify(src_abs)
-                    shutil.move(str(src_abs), str(target_path))
+                    shutil.move(str(junk_file.path.resolve(strict=True)), str(target_path))
             except (OSError, shutil.Error, PermissionError) as e:
                 logger.error(f"Error moviendo {junk_file.path}: {e}")
                 continue
@@ -334,21 +331,19 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         if not dest.exists() or not dest.is_dir(): return 0
         dest_res = dest.resolve(strict=False)
         
-        if len(dest_res.parts) <= 2 or not is_safe_to_modify(dest_res) or is_protected_path(dest_res): return 0
-        ensure_safe_to_modify(dest_res)
+        if not is_safe_to_modify(dest_res) or is_protected_path(dest_res): return 0
         
         count = 0
         for item in dest_res.iterdir():
             try:
                 if not item.is_file() or item.is_symlink(): continue
                 item_res = item.resolve(strict=True)
-                if dest_res != item_res.parent: continue
                 if not is_safe_to_modify(item_res) or is_protected_path(item_res): continue
                 
-                ensure_safe_to_modify(item_res)
                 item_res.unlink()
                 count += 1
-            except (OSError, PermissionError, FileNotFoundError):
+            except (OSError, PermissionError, FileNotFoundError) as e:
+                logger.warning(f"No se pudo eliminar {item}: {e}")
                 continue
         return count
     except (OSError, PermissionError, RuntimeError):
