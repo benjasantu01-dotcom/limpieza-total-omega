@@ -727,18 +727,19 @@ def is_protected_path(path: PathLike) -> bool:
     
     try:
         p_str_low = path_str.lower()
-        p = Path(path)
         
+        # Optimización: evitar conversión a Path si no es necesario
         if any(p_str_low.startswith(root) for root in _SYSTEM_ROOT_STRS):
             _PROTECTED_PATH_CACHE[path_str] = True
             return True
         
-        parts = {p.lower() for p in p.parts}
-        if not PROTECTED_DIR_NAMES.isdisjoint(parts):
+        if _is_kernel_managed(p_str_low):
             _PROTECTED_PATH_CACHE[path_str] = True
             return True
-        
-        if _is_kernel_managed(p_str_low):
+            
+        p = Path(path)
+        parts = {part.lower() for part in p.parts}
+        if not PROTECTED_DIR_NAMES.isdisjoint(parts):
             _PROTECTED_PATH_CACHE[path_str] = True
             return True
         

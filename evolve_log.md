@@ -1322,3 +1322,11 @@ FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size 
 - `2026-10-17T11:19:25` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el rendimiento de `_process_directory` reemplazando la verificación repetida `entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE)` dentro del bucle principal por una estructura de control más eficiente, aprovechando que el conjunto `JUNK_EXTENSIONS` ya es `frozenset` para realizar consultas de tiempo constante `O(1)` en lugar de lineal `O(N)`.
 - `2026-10-17T11:19:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T11:19:25` Corrida terminada. Total usado hoy: 268.
+- `2026-10-17T11:26:51` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-10-17T11:27:41` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de caché (dict de clase `_MANIFEST_CACHE`) para los ítems del manifiesto basado en el `mtime` del archivo, evitando múltiples lecturas y deserializaciones de JSON durante operaciones masivas (como `purge_all` o listados repetitivos) en un mismo ciclo de ejecución.
+- `2026-10-17T11:28:02` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-10-17T11:28:54` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimizamos `is_protected_path` reemplazando la creación innecesaria de `Path` y múltiples llamadas a `Path.parts` por un chequeo temprano basado en strings, aprovechando que ya contamos con `_SYSTEM_ROOT_STRS` y el cache interno para reducir drásticamente el uso de CPU en bucles de escaneo.
+- `2026-10-17T11:28:55` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-17T11:29:09` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._handle_directory, Scanner._is_inside_base_root, Scanner._is_relevant_extension, Scanner._is_reparse_point, Scanner._is_safe_entry
+- `2026-10-17T11:29:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T11:29:09` Corrida terminada. Total usado hoy: 272.
