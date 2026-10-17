@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 53
+- Rechazadas por guardia de seguridad: 54
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 229
+- Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 103 | 17 | 24 | 11 | 157 |
-| 2026-10-17 | 76 | 6 | 29 | 9 | 72 |
+| 2026-10-16 | 103 | 17 | 24 | 11 | 153 |
+| 2026-10-17 | 77 | 6 | 30 | 9 | 74 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,14 +25,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **38**
 - rendimiento: **34**
 - robustez ante casos límite: **33**
-- seguridad defensiva: **31**
+- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **19**
 - `diskreport.py`: **19**
 - `duplicates.py`: **18**
-- `quarantine.py`: **14**
+- `quarantine.py`: **15**
 - `assistant.py`: **14**
 - `browser.py`: **13**
 - `safety.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-17T08:15:19` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` implementando una validación estricta del estado de los archivos antes de cualquier operación de I/O en `_perform_secure_copy` y `_write_temp_to_final`, asegurando que no se sigan enlaces simbólicos durante la lectura y que el archivo copiado no sea un punto de reparse, mitigando así riesgos de acceso no autorizado fuera del sandbox.
 - `2026-10-17T08:07:23` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `memory.py` al asegurar que `_is_process_executable_safe` valide la ruta del ejecutable contra `is_protected_path` de forma robusta, transformando rutas relativas a absolutas y manejando explícitamente posibles errores de longitud de buffer, previniendo así cualquier manipulación de procesos en rutas sensibles.
 - `2026-10-17T08:07:05` **main.py** (seguridad defensiva): Se ha implementado un mecanismo de "defensive unlinking" en la recolección de entradas del formulario de ajustes mediante un nuevo método `_safe_validate_inputs`, evitando que el uso de strings malformados o rutas no normalizadas impacten en la integridad de `settings.json` antes de pasar por `safety.py`.
 - `2026-10-17T08:04:46` **healthscore.py** (seguridad defensiva): Se ha mejorado la robustez y seguridad del motor de renderizado de recomendaciones al aplicar un filtrado de contenido más estricto y un manejo de errores más defensivo, asegurando que los mensajes dinámicos no puedan contener rutas de archivos o información sensible incluso si el `message_factory` original intentara inyectarlos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-17T07:33:33` **memory.py** (robustez ante casos límite): Se mejoró la robustez de `_is_process_executable_safe` añadiendo el manejo explícito de rutas con longitud excesiva (más de 1024 caracteres) y errores de acceso denegado durante la consulta del nombre de archivo, evitando fallos silenciosos ante procesos bloqueados por permisos elevados.
 - `2026-10-17T07:24:22` **healthscore.py** (robustez ante casos límite): Se ha robustecido el `SystemMetrics.__post_init__` y los métodos de validación para prevenir inyecciones de datos no numéricos o corrompidos, asegurando que `NaN` o tipos inesperados no propaguen errores durante el cálculo del pipeline.
 - `2026-10-17T07:23:20` **diskreport.py** (robustez ante casos límite): Mejora la robustez del escaneo frente a errores de sistema (como archivos bloqueados o permisos denegados) al envolver la inicialización del `scandir` y la lectura de atributos en bloques `try-except` más granulares en `walk_files`, previniendo que una sola falla de acceso detenga el recorrido de todo un directorio.
-- `2026-10-17T07:15:58` **browser.py** (robustez ante casos límite): Se implementó un chequeo preventivo de concurrencia y acceso bloqueado en `_sum_directory_recursive` mediante el uso de `os.access(path, os.R_OK)` y el manejo robusto de `OSError` durante el acceso a atributos de archivo, evitando fallos en carpetas protegidas por el sistema o archivos en uso exclusivo (como el archivo 'Lock' de los navegadores).

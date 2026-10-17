@@ -666,6 +666,10 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
             if not (stat_src.st_mode & 0o100000):
                 raise OSError("El archivo origen no es un archivo regular.")
             
+            # Validación estricta contra puntos de reparse durante I/O
+            if os.name == 'nt':
+                _check_path_for_junctions(source)
+            
             if stat_src.st_nlink > 1:
                 raise UnsafePathError("Archivo origen con enlaces físicos múltiples.")
             

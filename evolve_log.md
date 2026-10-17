@@ -908,3 +908,13 @@ FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - Attr
 - `2026-10-17T08:07:23` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `memory.py` al asegurar que `_is_process_executable_safe` valide la ruta del ejecutable contra `is_protected_path` de forma robusta, transformando rutas relativas a absolutas y manejando explícitamente posibles errores de longitud de buffer, previniendo así cualquier manipulación de procesos en rutas sensibles.
 - `2026-10-17T08:07:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-17T08:07:23` Corrida terminada. Total usado hoy: 192.
+- `2026-10-17T08:13:38` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-10-17T08:14:12` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-10-17T08:15:19` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad del módulo `quarantine.py` implementando una validación estricta del estado de los archivos antes de cualquier operación de I/O en `_perform_secure_copy` y `_write_temp_to_final`, asegurando que no se sigan enlaces simbólicos durante la lectura y que el archivo copiado no sea un punto de reparse, mitigando así riesgos de acceso no autorizado fuera del sandbox.
+- `2026-10-17T08:16:03` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-17T08:16:04` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-17T08:17:07` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-17T08:17:14` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-17T08:18:26` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-10-17T08:18:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-17T08:18:26` Corrida terminada. Total usado hoy: 196.
