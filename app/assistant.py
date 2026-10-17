@@ -658,11 +658,10 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     if not q_sanitized:
         return Answer("Entrada no válida.")
     
-    # Búsqueda O(M) sobre palabras de la pregunta
+    # Búsqueda directa por palabra clave
     for word in _TOKEN_REGEX.findall(q_sanitized.lower()):
-        handler = _TOKENS_MAP.get(word)
-        if handler:
-            return handler(context, question)
+        if word in _TOKENS_MAP:
+            return _TOKENS_MAP[word](context, question)
             
     cuerpo: str = _format_problem_message(context.active_problems, context.score if context.score is not None else "N/A")
     return Answer(cuerpo, notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)

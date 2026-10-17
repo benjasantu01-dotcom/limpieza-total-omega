@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **173** (34.3% de aceptación)
+- Mejoras aceptadas: **172** (34.1% de aceptación)
 - Rechazadas por tests: 24
-- Rechazadas por guardia de seguridad: 47
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 243
 
@@ -16,37 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-15 | 2 | 0 | 0 | 0 | 0 |
-| 2026-10-16 | 116 | 19 | 26 | 12 | 177 |
-| 2026-10-17 | 55 | 5 | 21 | 5 | 66 |
+| 2026-10-16 | 115 | 19 | 26 | 12 | 176 |
+| 2026-10-17 | 57 | 5 | 22 | 5 | 67 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **42**
+- legibilidad y documentación: **43**
 - manejo de errores y validación de entradas: **38**
 - seguridad defensiva: **33**
-- robustez ante casos límite: **31**
-- rendimiento: **29**
+- rendimiento: **30**
+- robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **18**
 - `diskreport.py`: **18**
 - `memory.py`: **17**
+- `duplicates.py`: **17**
 - `quarantine.py`: **15**
+- `assistant.py`: **14**
 - `settings.py`: **13**
-- `assistant.py`: **13**
-- `healthscore.py`: **12**
 - `safety.py`: **12**
 - `browser.py`: **11**
+- `healthscore.py`: **11**
 - `scanner.py`: **11**
 - `organizer.py`: **11**
-- `main.py`: **9**
 - `branding.py`: **9**
-- `startup.py`: **4**
+- `main.py`: **8**
+- `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-17T06:34:12` **assistant.py** (rendimiento): Se optimizó la búsqueda de handlers en `local_answer` reemplazando la lógica de iteración sobre tokens por una búsqueda directa de palabras clave, evitando re-procesar toda la consulta y aprovechando la naturaleza de diccionario de `_TOKENS_MAP`.
+- `2026-10-17T06:33:08` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `startup.py` mediante la normalización de docstrings (haciendo explícitas las precondiciones y efectos) y la unificación de los nombres de los parámetros de tipo para asegurar consistencia con el estilo de documentación técnica requerido.
 - `2026-10-17T06:24:14` **scanner.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el método `Scanner.process_entry` y la función `scan_directory` para mejorar la claridad de los flujos de control críticos.
 - `2026-10-17T06:23:53` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` sustituyendo literales "mágicos" por enumeraciones claras (`Win32Attr`) en los chequeos de `SecurityDescriptor` y `_get_file_attrs`, y documentando la intención de los validadores mediante type hints más precisos.
 - `2026-10-17T06:22:30` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando la intención de los chequeos críticos (TOCTOU, integridad atómica y validación de sandbox) mediante docstrings extendidos, eliminando redundancias en la verificación de rutas y consolidando la lógica de manejo de errores.
@@ -60,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-17T05:41:21` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando una validación explícita de `is_safe_to_modify` antes de cualquier operación de I/O y capturando excepciones de forma granular, evitando que la ejecución se detenga ante fallos de permisos en archivos individuales.
 - `2026-10-17T05:32:44` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_process_executable_safe` y `_query_working_set_bytes` implementando una validación estricta de punteros y retornos de API antes de operar, evitando posibles violaciones de segmento o errores silenciosos en llamadas a `ctypes`.
 - `2026-10-17T05:22:55` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo chequeos de `None` y manejo específico de excepciones en la resolución de rutas relativas, evitando que errores de acceso parciales detengan el escaneo completo.
-- `2026-10-17T05:22:40` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `directory_size` validando explícitamente la integridad del objeto `path` antes de intentar resolverlo, evitando errores silenciosos o comportamientos inesperados ante entradas nulas o mal formadas.
-- `2026-10-17T05:21:58` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` mejorando el manejo de errores mediante la validación explícita de `destination` y asegurando que las operaciones de sistema de archivos no fallen ante rutas mal formadas o permisos insuficientes, capturando `OSError` de forma granular.
