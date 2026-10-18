@@ -379,6 +379,13 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
         if handle == -1: 
             err = kernel32.GetLastError()
             return err in (ERROR_SHARING_VIOLATION, ERROR_INVALID_NAME)
+        
+        # Validación de integridad de manejador
+        file_info = (ctypes.c_uint64 * 3)()
+        if not kernel32.GetFileInformationByHandle(handle, file_info):
+            kernel32.CloseHandle(handle)
+            return True
+            
         kernel32.CloseHandle(handle)
         return False
     except (OSError, ctypes.ArgumentError, AttributeError, MemoryError, PermissionError):
@@ -601,6 +608,10 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                 raise UnsafePathError(f"Acceso a dispositivo bloqueado: {path.name}", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
                 
             if os.name == 'nt':
+                # Chequeo previo de disponibilidad real de handle
+                if _is_file_locked_by_other_process(str(path)):
+                    raise UnsafePathError(f"Archivo bloqueado por otro proceso: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
+
                 class WIN32_FILE_ATTRIBUTE_DATA(ctypes.Structure):
                     _fields_ = [("dwFileAttributes", ctypes.c_uint32),
                                 ("ftCreationTime", ctypes.c_uint64),

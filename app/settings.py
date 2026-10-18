@@ -348,7 +348,9 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     if not is_safe_to_modify(str(file_path)): return None
     try:
         with open(file_path, "r", encoding="utf-8") as f:
-            st = os.fstat(f.fileno())
+            try:
+                st = os.fstat(f.fileno())
+            except OSError: return None
             if not _is_file_secure_to_read(st, f): return None
             content = f.read(MAX_SETTINGS_SIZE + 1)
             if not content or len(content) > MAX_SETTINGS_SIZE: return None

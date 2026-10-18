@@ -1104,3 +1104,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-10-18T06:12:54` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` ante fallos de sincronización y condiciones de carrera al asegurar que el archivo original no se elimine prematuramente si la verificación post-aislamiento falla, y añadiendo una validación explícita de `st_nlink` después de la copia.
 - `2026-10-18T06:12:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T06:12:54` Corrida terminada. Total usado hoy: 144.
+- `2026-10-18T06:16:42` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-10-18T06:17:02` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-18T06:18:04` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de concurrencia y disponibilidad real mediante `GetFileInformationByHandle` antes de intentar operaciones de lectura/escritura, mejorando la robustez ante archivos bloqueados por el sistema durante escaneos rápidos y evitando excepciones innecesarias en `_get_path_stat_robust`.
+- `2026-10-18T06:18:31` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-18T06:18:47` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_is_file_secure_to_read` ante casos de archivos corruptos o bloqueados (excepciones de E/S) al realizar la lectura, y se añadió una verificación explícita para evitar procesar archivos que contengan contenido nulo o JSON malformado que podría causar desbordamientos en la lógica de validación subsiguiente.
+- `2026-10-18T06:18:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T06:18:47` Corrida terminada. Total usado hoy: 148.
