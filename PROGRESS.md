@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-17 | 54 | 5 | 11 | 7 | 83 |
-| 2026-10-18 | 140 | 11 | 37 | 14 | 142 |
+| 2026-10-17 | 51 | 5 | 11 | 7 | 82 |
+| 2026-10-18 | 143 | 11 | 37 | 14 | 143 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **41**
-- seguridad defensiva: **37**
 - rendimiento: **37**
-- robustez ante casos límite: **32**
+- robustez ante casos límite: **35**
+- seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
-- `memory.py`: **18**
+- `quarantine.py`: **20**
 - `safety.py`: **18**
+- `diskreport.py`: **17**
+- `memory.py`: **17**
 - `settings.py`: **16**
-- `diskreport.py`: **16**
-- `main.py`: **14**
-- `assistant.py`: **14**
+- `assistant.py`: **15**
 - `duplicates.py`: **14**
 - `browser.py`: **13**
+- `main.py`: **13**
 - `scanner.py`: **12**
 - `healthscore.py`: **11**
 - `organizer.py`: **11**
-- `branding.py`: **9**
+- `branding.py`: **10**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-18T14:49:01` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` ante archivos que desaparecen o son bloqueados durante el escaneo, añadiendo un `try-except` específico dentro de la lógica de recolección para evitar que una excepción en un archivo puntual aborte el reporte completo del disco.
+- `2026-10-18T14:46:47` **branding.py** (robustez ante casos límite): Se ha añadido validación mediante `is_safe_to_modify` en la función `save_logo_svg` para prevenir errores ante rutas no existentes o permisos denegados, integrando robustez ante casos límite del sistema de archivos.
+- `2026-10-18T14:46:18` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para manejar correctamente casos donde los datos de entrada contengan valores no primitivos o tipos inesperados, evitando errores de recursión o desbordamiento al procesar objetos complejos.
 - `2026-10-18T14:37:56` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` y `estimate_impact` evitando la conversión completa a `list` cuando solo se requiere iterar o contar, reemplazando el consumo innecesario de memoria y tiempo de CPU por el uso directo de iteradores.
 - `2026-10-18T14:26:58` **quarantine.py** (rendimiento): Mejoré la eficiencia del acceso al manifiesto en `load_manifest` mediante el uso de un diccionario de caché más robusto, evitando lecturas redundantes de disco y re-parseo de JSON, y optimicé el bucle de purgado en `purge_all` para minimizar las llamadas a `save_manifest`.
 - `2026-10-18T14:15:56` **duplicates.py** (rendimiento): Optimizado el rendimiento de `_collect_candidates` utilizando `os.scandir` para obtener metadatos (`st_dev`, `st_ino`, `st_size`) en una única llamada al sistema (syscall) por entrada, eliminando llamadas redundantes a `entry.is_file()` y `entry.stat()` que degradaban el rendimiento en directorios grandes.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-18T13:45:48` **main.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de los componentes críticos en `main.py`, incluyendo docstrings descriptivos para los decoradores de seguridad (`ensure_safety`, `safe_ui_operation`, `validated_ui_operation`) y la corrección de tipado en las firmas de los métodos para reflejar mejor su naturaleza de retorno asíncrono y manejo de excepciones.
 - `2026-10-18T13:35:51` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del pipeline de análisis añadiendo docstrings descriptivos a las constantes críticas y transformando `_PIPELINE` de una tupla anónima a una estructura más legible y mantenible.
 - `2026-10-18T13:35:39` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings estandarizados, especificando tipos en los retornos y estructurando mejor las explicaciones de las funciones, además de corregir una inconsistencia semántica en `_safe_path_check` para hacerla más explícita.
-- `2026-10-18T13:35:15` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `diskreport.py` añadiendo docstrings descriptivos a funciones internas y normalizando las anotaciones de tipo para asegurar que la intención del código sea clara para otros colaboradores, manteniendo el cumplimiento estricto con las reglas de seguridad.
-- `2026-10-18T13:34:49` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints más precisos, la documentación exhaustiva del `ScanContext` y la estandarización de las firmas en las funciones de utilidad, facilitando la comprensión del flujo de seguridad para futuros desarrolladores.
-- `2026-10-18T13:25:59` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `branding.py` mediante la adición de Type Hints detallados en los argumentos de funciones críticas de dibujo y la estandarización de las descripciones en los docstrings, facilitando la comprensión de las unidades y comportamientos esperados sin alterar la lógica.

@@ -380,7 +380,6 @@ class SystemContext:
     @cached_property
     def metrics_snapshot(self) -> dict[str, float]:
         """Snapshot cacheado de las métricas numéricas para acceso eficiente."""
-        # Acceso directo al __dict__ interno para evitar múltiples getattr/hasattr
         s = self.__dict__
         return {k: float(s[k]) for k in _VALIDATORS if k in s and isinstance(s[k], (int, float)) and math.isfinite(s[k])}
 
