@@ -424,6 +424,8 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         if path.exists():
             if not path.is_dir():
                  raise UnsafePathError("Ruta de cuarentena apunta a un archivo existente.")
+            if not os.access(path, os.W_OK | os.R_OK):
+                 raise PermissionError("Directorio inaccesible para operaciones de I/O.")
             if not is_safe_to_modify(path):
                 raise UnsafePathError("Ruta de cuarentena marcada como insegura.")
             if _is_filesystem_read_only(path):

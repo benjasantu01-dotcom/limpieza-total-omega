@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **195** (38.7% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 52
+- Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-17 | 89 | 7 | 25 | 13 | 122 |
-| 2026-10-18 | 103 | 9 | 27 | 9 | 100 |
+| 2026-10-17 | 89 | 7 | 25 | 13 | 118 |
+| 2026-10-18 | 106 | 9 | 28 | 9 | 100 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **40**
+- robustez ante casos límite: **38**
 - rendimiento: **37**
-- robustez ante casos límite: **35**
 - seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **19**
-- `quarantine.py`: **19**
+- `safety.py`: **20**
+- `quarantine.py`: **20**
 - `memory.py`: **18**
 - `diskreport.py`: **17**
 - `assistant.py`: **16**
 - `settings.py`: **15**
 - `browser.py`: **14**
+- `scanner.py`: **13**
 - `duplicates.py`: **13**
-- `scanner.py`: **12**
 - `main.py`: **12**
 - `organizer.py`: **11**
 - `healthscore.py`: **11**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-18T10:43:26` **scanner.py** (robustez ante casos límite): Se añadió una validación de rutas inexistentes dentro de `_is_valid_file_path` y se mejoró la resiliencia ante `FileNotFoundError` en las heurísticas para evitar el colapso del bucle ante archivos temporales que desaparecen durante la ejecución.
+- `2026-10-18T10:43:12` **safety.py** (robustez ante casos límite): Se ha añadido un chequeo de `PermissionError` y `OSError` específico al momento de intentar resolver el descriptor de seguridad en `SecurityDescriptor.from_path`, garantizando que si el acceso al sistema de archivos es restringido durante la introspección, la función no propague errores sin gestionar y retorne un descriptor de "seguro/bloqueado" en lugar de fallar la ejecución.
+- `2026-10-18T10:42:05` **quarantine.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de concurrencia y permisos durante la inicialización del directorio de cuarentena, utilizando `os.access` y una verificación explícita de `os.O_DIRECTORY` para asegurar que la ruta sandbox no sea un archivo o un punto de montaje bloqueado antes de cualquier operación de I/O.
 - `2026-10-18T10:33:23` **memory.py** (robustez ante casos límite): Se mejoró la robustez de `_is_process_executable_safe` añadiendo un manejo de excepciones más granular y verificando explícitamente que la ruta resuelta sea un archivo válido antes de consultar `is_protected_path`, previniendo errores en casos donde `GetModuleFileNameExW` retorne rutas vacías o inválidas.
 - `2026-10-18T10:31:43` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `summarize` y `compute_score` ante fallos de entrada y estados parciales, protegiendo al motor de análisis contra excepciones de redondeo o datos inesperados que podrían romper la interfaz.
 - `2026-10-18T10:22:29` **duplicates.py** (robustez ante casos límite): Se ha robustecido el escaneo de directorios en `_collect_candidates` para manejar correctamente errores de acceso denegado específicos al listar contenido, evitando que una sola carpeta bloqueada interrumpa el proceso de recolección de todo el disco.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-18T09:53:40` **main.py** (rendimiento): Se implementó un sistema de "batching" y delegación mediante `after_idle` en `_flush_logs` para consolidar múltiples llamadas de log en una sola operación de actualización de la UI, reduciendo significativamente la carga sobre el hilo principal durante procesos intensivos.
 - `2026-10-18T09:42:06` **diskreport.py** (rendimiento): Optimizé `_collect_summary_data` para evitar llamadas redundantes a `path.exists()` (que ya es validado por `walk_files`) y mejoré el rendimiento de `largest_folders` reduciendo la creación de objetos `Path` intermedios, unificando el acceso a `stats` bajo una clave única de string.
 - `2026-10-18T09:41:01` **assistant.py** (rendimiento): Optimicé el `SystemContext` reemplazando los `getattr` recurrentes dentro del bucle de `ingest` y `metrics_snapshot` por un acceso directo al diccionario `__dict__` o mediante una estructura de datos más eficiente, reduciendo la sobrecarga de introspección y llamadas a funciones en cada iteración de análisis.
-- `2026-10-18T09:31:28` **scanner.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo añadiendo docstrings técnicos detallados a las funciones de chequeo heurístico, aclarando el propósito y los pre-requisitos de cada lógica de detección.
-- `2026-10-18T09:30:59` **safety.py** (legibilidad y documentación): Se introdujeron type hints en funciones críticas y se refactorizaron los validadores (`_check_*`) para usar un objeto `SecurityDescriptor` consistente en lugar de parámetros redundantes, mejorando la legibilidad y mantenimiento del motor de reglas.
-- `2026-10-18T09:21:39` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la adición de docstrings técnicos detallados en los métodos de validación, clarificando la lógica de seguridad, y reforzando las anotaciones de tipo para reducir la ambigüedad en el manejo de rutas y descriptores.

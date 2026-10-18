@@ -95,7 +95,7 @@ def _is_valid_file_path(path: Path) -> bool:
         return False
     try:
         return path.exists() and path.is_file()
-    except (OSError, PermissionError, ValueError, RuntimeError):
+    except (OSError, PermissionError, ValueError, RuntimeError, FileNotFoundError):
         return False
 
 def _is_locked_by_os(path: Path) -> bool:
@@ -132,7 +132,7 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
     try:
         stat_res = entry.stat(follow_symlinks=False)
         return int(getattr(stat_res, "st_file_attributes", 0))
-    except (AttributeError, OSError, PermissionError):
+    except (AttributeError, OSError, PermissionError, FileNotFoundError):
         return 0
 
 def _get_file_size(path: Path) -> int:
@@ -156,7 +156,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
         if _cached_is_protected(entry.path) or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask):
             return None
         return entry.stat(follow_symlinks=False)
-    except (OSError, PermissionError, AttributeError):
+    except (OSError, PermissionError, AttributeError, FileNotFoundError):
         return None
 
 def _is_valid_path_structure(path_str: Optional[str]) -> bool:
@@ -205,7 +205,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
             mtime = getattr(stats, "st_mtime", 0.0)
             if isinstance(mtime, (int, float)) and mtime > 0 and (now_ts - float(mtime)) < (SCAN_LIMITS.recent_hours * 3600):
                 return Suspicion(path, "Ejecutable reciente detectado en carpeta volátil", "info")
-    except (OSError, AttributeError, ValueError, TypeError) as e:
+    except (OSError, AttributeError, ValueError, TypeError, FileNotFoundError) as e:
         logger.debug(f"Error analizando fecha de archivo {path}: {e}")
     return None
 
@@ -232,7 +232,7 @@ def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Ti
     try:
         if _get_file_size(path) == 0:
             return Suspicion(path, "Ejecutable vacío detectado", "warning")
-    except (OSError, PermissionError, AttributeError) as e:
+    except (OSError, PermissionError, AttributeError, FileNotFoundError) as e:
         logger.debug(f"Error verificando tamaño en {path}: {e}")
     return None
 
@@ -340,7 +340,7 @@ class Scanner:
             elif entry.is_file(follow_symlinks=False):
                 if self._is_relevant_extension(entry.name):
                     self._run_file_heuristics(Path(entry.path), entry)
-        except (OSError, PermissionError) as e:
+        except (OSError, PermissionError, FileNotFoundError) as e:
             logger.debug(f"Error de acceso en entrada {entry.path}: {e}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
@@ -361,7 +361,7 @@ class Scanner:
                 finding: Optional[Suspicion] = check_fn(path, entry, self.now_ts)
                 if finding is not None:
                     self.results.append(finding)
-            except (OSError, PermissionError, AttributeError, ValueError, TypeError) as e:
+            except (OSError, PermissionError, AttributeError, ValueError, TypeError, FileNotFoundError) as e:
                 logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
 
 def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None) -> ScanResult:
@@ -376,7 +376,7 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
         try:
             res = check_fn(path, entry, now_ts)
             if res is not None: findings.append(res)
-        except (OSError, PermissionError, AttributeError, ValueError, TypeError) as e:
+        except (OSError, PermissionError, AttributeError, ValueError, TypeError, FileNotFoundError) as e:
             logger.debug(f"Heurística individual {check_fn.__name__} fallida en {path}: {e}")
     return findings
 
@@ -403,7 +403,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
                 for entry in it:
                     if entry is not None:
                         scanner.process_entry(entry, directory_stack, depth)
-        except (PermissionError, OSError) as e:
+        except (PermissionError, OSError, FileNotFoundError) as e:
             logger.debug(f"Directorio inaccesible omitido {current_dir}: {e}")
             continue
     return scanner.results

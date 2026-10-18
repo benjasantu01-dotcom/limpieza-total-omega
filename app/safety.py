@@ -83,7 +83,7 @@ class SecurityDescriptor(NamedTuple):
                 is_readonly=bool(attrs & Win32Attr.READONLY),
                 is_reparse=bool(attrs & Win32Attr.REPARSE_POINT)
             )
-        except (OSError, ctypes.ArgumentError, AttributeError, ValueError, MemoryError):
+        except (OSError, ctypes.ArgumentError, AttributeError, ValueError, MemoryError, PermissionError):
             return cls(0, True, True, True, True)
 
 class FileMetadata(TypedDict):
