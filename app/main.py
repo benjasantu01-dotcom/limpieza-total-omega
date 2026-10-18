@@ -261,6 +261,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Limpia caracteres no imprimibles de rutas para evitar inyecciones de control."""
         return "".join(c for c in str(path) if c.isprintable())
 
+    def _ensure_safe_path_for_action(self, path: Union[str, Path]) -> Path:
+        """Valida que la ruta sea segura antes de cualquier operación destructiva."""
+        p = Path(self._sanitize_path(path)).resolve(strict=False)
+        safety.ensure_safe_to_modify(p)
+        return p
+
     def _init_component_registry(self) -> None:
         """Inicializa estructuras de datos, cachés, colas de log y estados de UI."""
         self._initialized_tabs: Dict[str, bool] = {name: False for name in TABS}
@@ -386,9 +392,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _ensure_path_writable_and_clean(self, path: Union[str, Path]) -> None:
         """Verifica la seguridad y limpieza de la ruta para prevenir escrituras malintencionadas."""
-        p = self._validate_disk_access(path)
-        if p.is_symlink():
-            raise safety.UnsafePathError("Operación denegada: Ruta de destino es un enlace simbólico.")
+        self._ensure_safe_path_for_action(path)
 
     def _init_window_properties(self) -> None:
         """Configura los parámetros iniciales de la ventana (título, geometría, branding)."""
@@ -1945,10 +1949,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def task() -> None:
             try:
-                clean_dest = self._sanitize_path(destino)
-                ruta_destino = Path(clean_dest).resolve(strict=False)
-                self._ensure_path_writable_and_clean(ruta_destino.parent)
-                
+                ruta_destino = self._ensure_safe_path_for_action(destino)
                 ruta = reporting.save_report(self.report_data, str(ruta_destino), as_markdown=as_markdown)
                 self.log(f"Informe guardado en: {ruta}", "Informe")
             except Exception as e:

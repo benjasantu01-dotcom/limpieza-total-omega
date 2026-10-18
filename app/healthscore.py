@@ -27,7 +27,6 @@ MetricKey: TypeAlias = str
 
 # Constantes de rendimiento para validación
 _ALLOWED_CHARS: Final[set[str]] = set(string.ascii_letters + string.digits + " .,:()-_%")
-_FORBIDDEN_CHARS: Final[set[str]] = {chr(i) for i in range(32) if chr(i) not in (" ", "\t")} # Bloquear caracteres de control
 _BLOCKED_TERMS: Final[frozenset[str]] = frozenset(["system32", "windows", "admin", "c:\\", "system", "kernel", "path", "root", "drive"])
 _MAX_MSG_LEN: Final[int] = 128
 
@@ -297,21 +296,24 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _sanitize_msg(msg: str | Any) -> str:
-    """Limpia cadenas de texto eliminando caracteres prohibidos."""
+    """Limpia cadenas de texto garantizando integridad defensiva."""
     if not isinstance(msg, str): return ""
+    # Filtrar caracteres de control e inaceptables a nivel de byte/string
     clean = "".join(c for c in msg if c in _ALLOWED_CHARS)
+    
+    # Verificación estricta contra términos bloqueados y longitud
     lower_msg = clean.lower()
-    if any(b in lower_msg for b in _BLOCKED_TERMS):
-        return ""
+    for term in _BLOCKED_TERMS:
+        if term in lower_msg:
+            return ""
+            
     return clean.strip()[:_MAX_MSG_LEN]
 
 def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:
     """Envoltorio seguro para ejecutar factories de reglas sin exponer errores."""
     try:
         raw_res = rule.message_factory(metrics)
-        if not isinstance(raw_res, str): return ""
-        clean = _sanitize_msg(raw_res)
-        return clean if clean else ""
+        return _sanitize_msg(raw_res)
     except Exception: return ""
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio, findings: List[str]) -> None:
