@@ -1483,3 +1483,11 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-18T08:51:20` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: _ValidationResult
 - `2026-10-18T08:51:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T08:51:20` Corrida terminada. Total usado hoy: 208.
+- `2026-10-18T08:59:40` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-10-18T08:59:42` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-18T09:00:17` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_registry_csv` y `entries_from_registry` agregando validaciones de tipo y estructura ante respuestas inesperadas de PowerShell, además de asegurar que `_process_folder_entry` gestione correctamente errores en `os.DirEntry.path` para evitar interrupciones en el escaneo.
+- `2026-10-18T09:01:01` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): el archivo se encogió al 54% del original (posible pérdida de código)
+- `2026-10-18T09:01:34` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad añadiendo un bloque de `TypeDoc` estructurado en `PaletteDict` y `FontSizesDict`, además de clarificar la intención de las constantes de configuración visual mediante comentarios de nivel de módulo para evitar ambigüedades en futuras modificaciones.
+- `2026-10-18T09:01:45` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica interna mediante docstrings más precisos que aclaran las precondiciones de seguridad de las funciones, se introdujeron type hints más específicos en las colecciones de datos y se reemplazó el uso de nombres de variables ambiguos en los bucles principales para mejorar la mantenibilidad del código sin alterar su lógica operativa.
+- `2026-10-18T09:01:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T09:01:45` Corrida terminada. Total usado hoy: 212.

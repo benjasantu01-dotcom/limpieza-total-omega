@@ -96,7 +96,8 @@ class ColorSegment(NamedTuple):
     end_index: int
 
 class PaletteDict(TypedDict):
-    """Estructura de datos para la configuración cromática del sistema."""
+    """Estructura cromática corporativa. 
+    Define colores base para backgrounds, superficies, estados y tipografía."""
     background: ColorHex
     surface: ColorHex
     surface_alt: ColorHex
@@ -120,7 +121,7 @@ class PaletteDict(TypedDict):
     glow: ColorHex
 
 class FontSizesDict(TypedDict):
-    """Jerarquía de tamaños tipográficos (en puntos)."""
+    """Escalafón tipográfico. Valores en puntos (pt) para consistencia de lectura."""
     display: int
     title: int
     subtitle: int
@@ -135,7 +136,7 @@ APP_SHORT_NAME: Final[str] = "Omega"
 APP_TAGLINE: Final[str] = "Limpieza y seguridad, en un solo lugar"
 APP_VERSION: Final[str] = "2.1.0"
 
-# Paleta Maestra
+# Paleta Maestra: Hexadecimales con alta fidelidad para el modo oscuro
 C_BACKGROUND: Final[ColorHex] = "#0a0e17"
 C_SURFACE: Final[ColorHex] = "#141b2d"
 C_SURFACE_ALT: Final[ColorHex] = "#1e2740"

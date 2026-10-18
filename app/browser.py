@@ -288,12 +288,12 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             real_base = base.resolve(strict=True)
             ctx = ScanContext(os.path.normpath(str(real_base)), kernel, _IS_JUNCTION_FN, set(), set(), {})
             
-            for browser_name, rel_str in browser_map.items():
-                candidate = _resolve_browser_path(real_base, rel_str)
+            for browser_key, relative_path in browser_map.items():
+                candidate = _resolve_browser_path(real_base, relative_path)
                 if candidate != Path() and _is_valid_cache_path(candidate, ctx.sandbox_base_norm):
                     scan_res = _sum_directory_recursive(str(candidate), ctx, 0)
                     if scan_res.bytes_found > 0:
-                        found.append(BrowserCache(str(browser_name), candidate, scan_res.bytes_found))
+                        found.append(BrowserCache(str(browser_key), candidate, scan_res.bytes_found))
         except (OSError, RuntimeError): continue
     
     found.sort(key=lambda c: c.size_bytes, reverse=True)

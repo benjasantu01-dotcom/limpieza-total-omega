@@ -273,16 +273,21 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
         if not entry.is_file(follow_symlinks=False) or entry.is_symlink():
             return None
         
+        # Validar si el nombre de archivo es accesible
+        entry_path = entry.path
+        if not isinstance(entry_path, str):
+            return None
+            
         _, ext = os.path.splitext(entry.name)
         if ext.lower() not in EXECUTABLE_EXTS:
             return None
             
-        p = Path(entry.path)
+        p = Path(entry_path)
         if is_protected_path(p):
             return None
             
         name = os.path.splitext(entry.name)[0]
-        return StartupEntry(name=name, command=entry.path, source="carpeta")
+        return StartupEntry(name=name, command=entry_path, source="carpeta")
     except (OSError, PermissionError, ValueError, TypeError):
         return None
 
@@ -348,7 +353,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
         reader = csv.DictReader(f)
         
         for row in reader:
-            if not row: continue
+            if not isinstance(row, dict): continue
             raw_val_name = row.get("Name")
             raw_val_cmd = row.get("Value")
             
@@ -396,7 +401,9 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
             capture_output=True, text=True, timeout=10, check=False
         )
         if process.returncode == 0 and process.stdout:
-            return parse_registry_csv(process.stdout)
+            # Filtrar posibles líneas vacías o advertencias de PowerShell en el stdout
+            stdout_content = "\n".join([line for line in process.stdout.splitlines() if line.strip()])
+            return parse_registry_csv(stdout_content)
     except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError):
         return []
     return []
