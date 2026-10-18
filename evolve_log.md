@@ -564,3 +564,46 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-18T12:37:22` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-10-18T12:37:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T12:37:22` Corrida terminada. Total usado hoy: 296.
+- `2026-10-18T12:43:22` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-10-18T12:43:24` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-18T12:43:24` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-18T12:43:44` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-18T12:43:44` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-18T12:44:14` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-18T12:44:14` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-18T12:44:29` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-18T12:44:29` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-18T12:44:50` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-18T12:44:50` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-18T12:45:20` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-18T12:45:20` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-18T12:45:35` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-18T12:45:35` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-18T12:45:55` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-18T12:45:55` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-18T12:46:25` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-18T12:46:25` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-18T12:47:07` Tests FALLARON:
+```
+0.0
+            startup_count = 5
+            quarantined_count = 0
+            archivo_secreto = "C:/Users/benja/clave.txt"
+    
+        contexto = assistant.build_context(metrics=MetricasConRuta())
+>       assert contexto.junk_mb == 100.0
+E       AssertionError: assert 0.0 == 100.0
+E        +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+
+evolve/tests/test_assistant.py:234: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_extras - AssertionError: assert 0.0 == 8.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).memory_total_gb
+FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_one - AssertionError: assert 0.0 == 100.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+2 failed, 297 passed in 1.02s
+
+```
+- `2026-10-18T12:47:07` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejora la robustez del manejo de datos externos y la consistencia de las respuestas mediante una validación más estricta en el método `ingest` y una inicialización defensiva en `SystemContext`, asegurando que ninguna métrica mal formada pueda comprometer la integridad del estado interno del asistente.
+- `2026-10-18T12:47:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T12:47:07` Corrida terminada. Total usado hoy: 300.
