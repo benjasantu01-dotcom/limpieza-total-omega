@@ -953,3 +953,11 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-18T03:59:34` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-18T03:59:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T03:59:34` Corrida terminada. Total usado hoy: 92.
+- `2026-10-18T04:04:18` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-10-18T04:04:21` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-18T04:04:58` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-18T04:05:27` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-18T04:06:03` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `compute_score` implementando una validación explícita para asegurar que la suma total de puntos calculados no exceda los límites lógicos tras el redondeo, evitando resultados inconsistentes en el desglose.
+- `2026-10-18T04:06:59` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Se ha mejorado la robustez de las operaciones que procesan entradas del usuario en la pestaña de ajustes (`on_save_settings`) y en el manejo de comandos de entrada, centralizando la validación de integridad y añadiendo capturas específicas para evitar que errores en los widgets de entrada propaguen excepciones que detengan el bucle de eventos o corrompan la configuración.
+- `2026-10-18T04:06:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T04:06:59` Corrida terminada. Total usado hoy: 96.

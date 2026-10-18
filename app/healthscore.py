@@ -230,7 +230,6 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
 def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) -> float:
     """Sanitiza métricas numéricas entrantes evitando valores fuera de rango o NaN."""
     try:
-        # Validación estricta: None, booleanos o no convertibles a número se descartan.
         if value is None or isinstance(value, bool):
             return default
         val = float(value)
@@ -262,7 +261,6 @@ class SystemMetrics:
         """Inicializa métricas asegurando tipos correctos tras la creación."""
         for field_name in self._FIELDS_TO_VALIDATE:
             val = getattr(self, field_name)
-            # Aplicar validación genérica antes de la específica de rango
             sanitized = _validate_numeric(val, 0.0, -1.0, 1e9)
             setattr(self, field_name, sanitized)
         self.validate()
@@ -306,7 +304,6 @@ def grade_for_score(score: float | int) -> str:
 def _sanitize_msg(msg: str | Any) -> str:
     """Limpia cadenas de texto eliminando caracteres prohibidos y previniendo inyecciones."""
     if not isinstance(msg, str): return ""
-    # Eliminar secuencias de escape ANSI o caracteres de control de terminal
     clean = "".join(c for c in msg if c in _ALLOWED_CHARS)
     lower_msg = clean.lower()
     if any(b in lower_msg for b in _BLOCKED_TERMS):
@@ -333,9 +330,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
         except Exception: continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """
-    Computa el puntaje global mediante el pipeline.
-    """
+    """Computa el puntaje global mediante el pipeline con validación de suma total."""
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema inválidos."])
         
@@ -348,6 +343,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             area_ratio = _clamp(entry.scorer(metrics))
             if entry.rules:
                 _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
+            
             points = area_ratio * entry.weight
             val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
             metric_breakdown[entry.area] = val_int

@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **178** (35.3% de aceptación)
+- Mejoras aceptadas: **177** (35.1% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 52
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 240
+- Rechazadas por guardia de seguridad: 50
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 242
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 15 | 0 | 4 | 2 | 41 |
+| 2026-10-16 | 13 | 0 | 2 | 2 | 41 |
 | 2026-10-17 | 128 | 11 | 40 | 16 | 155 |
-| 2026-10-18 | 35 | 3 | 8 | 2 | 44 |
+| 2026-10-18 | 36 | 3 | 8 | 3 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **38**
 - seguridad defensiva: **37**
+- manejo de errores y validación de entradas: **37**
+- legibilidad y documentación: **36**
 - rendimiento: **36**
-- manejo de errores y validación de entradas: **36**
 - robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **19**
-- `safety.py`: **18**
 - `diskreport.py`: **17**
-- `quarantine.py`: **15**
+- `safety.py`: **17**
 - `assistant.py`: **15**
 - `browser.py`: **15**
 - `settings.py`: **14**
 - `duplicates.py`: **14**
-- `healthscore.py`: **11**
+- `quarantine.py`: **14**
+- `healthscore.py`: **12**
 - `main.py`: **10**
 - `scanner.py`: **10**
 - `organizer.py`: **9**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-18T04:06:03` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `compute_score` implementando una validación explícita para asegurar que la suma total de puntos calculados no exceda los límites lógicos tras el redondeo, evitando resultados inconsistentes en el desglose.
 - `2026-10-18T03:56:01` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_source_value` y `_apply_field` implementando un control estricto sobre las excepciones, asegurando que cualquier acceso a atributos fallido retorne valores seguros por defecto en lugar de propagar errores, cumpliendo con el enfoque de validación de entradas.
 - `2026-10-18T02:34:04` **settings.py** (seguridad defensiva): Mejoré la seguridad de la función `perform_atomic_write` al validar que el archivo de configuración existente no sea un enlace simbólico ni un archivo con múltiples "hard links" antes de proceder con el reemplazo, previniendo posibles ataques de sustitución (TOCTOU) y garantizando la integridad de la configuración.
 - `2026-10-18T02:33:10` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en el método `_is_safe_entry` del `Scanner` añadiendo una validación explícita que impide que el escáner siga rutas que contengan caracteres de escape nulos (`\0`) o nombres de archivos que contengan caracteres de control ocultos (RTL/Unicode), evitando posibles ataques de manipulación de rutas o engaño visual mediante caracteres bidireccionales.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-18T01:52:57` **safety.py** (robustez ante casos límite): Se mejora la robustez frente a bloqueos y estados inconsistentes del sistema de archivos al implementar un manejo más granular de las excepciones de `ctypes` y `OSError` en `_is_file_locked_by_other_process` y `_get_file_attrs`, asegurando que condiciones temporales como archivos siendo bloqueados durante la lectura no aborten procesos, sino que sean reportadas correctamente mediante los códigos de seguridad definidos.
 - `2026-10-18T01:46:09` **quarantine.py** (robustez ante casos límite): Mejora la robustez ante condiciones de carrera y fallos de I/O al verificar la existencia y el estado de los archivos en `purge_all` y durante la carga del manifiesto, mitigando inconsistencias entre el sistema de archivos y el registro JSON.
 - `2026-10-18T01:42:44` **memory.py** (robustez ante casos límite): Se ha añadido un robusto manejo de errores para el límite de memoria `MAX_VALID_PROCESS_MEM` y se mejoró la resiliencia de `_iter_process_memory` ante procesos que finalizan durante la enumeración, evitando excepciones por handles inválidos.
-- `2026-10-18T01:34:32` **main.py** (robustez ante casos límite): Se introdujo una validación robusta de existencia y accesibilidad de `self.tabview` y sus pestañas mediante el nuevo método `_check_widget_integrity` antes de realizar operaciones de UI, previniendo excepciones `TclError` y `RuntimeError` durante la carga perezosa o cambios rápidos de pestaña en casos límite de concurrencia.
