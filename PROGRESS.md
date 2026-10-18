@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
+- Mejoras aceptadas: **190** (37.7% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 52
+- Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 224
 
@@ -16,26 +16,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-17 | 102 | 9 | 31 | 14 | 132 |
-| 2026-10-18 | 87 | 8 | 21 | 8 | 92 |
+| 2026-10-17 | 101 | 9 | 29 | 14 | 131 |
+| 2026-10-18 | 89 | 8 | 22 | 8 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **43**
 - seguridad defensiva: **42**
-- legibilidad y documentación: **41**
 - manejo de errores y validación de entradas: **40**
-- robustez ante casos límite: **37**
+- robustez ante casos límite: **36**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **18**
-- `memory.py`: **17**
+- `quarantine.py`: **19**
+- `memory.py`: **18**
 - `diskreport.py`: **17**
 - `safety.py`: **17**
-- `assistant.py`: **16**
 - `settings.py`: **16**
 - `browser.py`: **15**
+- `assistant.py`: **15**
 - `duplicates.py`: **14**
 - `healthscore.py`: **12**
 - `scanner.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-18T09:21:39` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la adición de docstrings técnicos detallados en los métodos de validación, clarificando la lógica de seguridad, y reforzando las anotaciones de tipo para reducir la ambigüedad en el manejo de rutas y descriptores.
+- `2026-10-18T09:20:30` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de type hints de retorno y docstrings detallados en funciones críticas (`_is_process_accessible`, `_query_working_set_bytes`, `_is_process_executable_safe`) y se ha estandarizado la nomenclatura de variables internas para mayor claridad, garantizando que la lógica de validación sea explícita y fácil de auditar.
 - `2026-10-18T09:12:11` **main.py** (legibilidad y documentación): Mejora la legibilidad del código mediante la documentación detallada de los métodos del orquestador principal, clarificando el propósito, las responsabilidades de manejo de excepciones y las políticas de seguridad de cada bloque, facilitando el mantenimiento y la comprensión técnica del flujo.
 - `2026-10-18T09:10:43` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo integrando Type Hints faltantes y expandiendo los docstrings en las funciones clave para clarificar el flujo de trabajo del pipeline de detección (especialmente en la lógica de selección de estrategias de hashing), facilitando el mantenimiento a futuro.
 - `2026-10-18T09:10:17` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` añadiendo docstrings detallados en funciones clave y tipado consistente, facilitando el mantenimiento y la comprensión de la lógica de escaneo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-18T08:29:57` **diskreport.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `summarize` y `walk_files` capturando específicamente `OSError` y `PermissionError` para evitar que fallos aislados en el acceso a metadatos de archivos (como errores de lectura por cambios en el sistema de archivos durante el escaneo) interrumpan la generación del reporte, manteniendo el proceso ejecutable incluso ante condiciones de archivos bloqueados.
 - `2026-10-18T08:29:32` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `directory_size` y `detect_profiles` mediante la validación proactiva de parámetros de entrada (`None` o tipos incorrectos) y se aseguró que el contexto del escáner (`ScanContext`) no sea inicializado con rutas inexistentes, previniendo errores de resolución en tiempo de ejecución.
 - `2026-10-18T08:21:50` **assistant.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `_call_gemini` y `_extract_text_from_gemini_json` implementando una validación explícita de `Content-Length` y tipos de respuesta para prevenir errores de tipo `NoneType` al acceder a los datos de la API, cumpliendo con el enfoque de validación defensiva.
-- `2026-10-18T06:59:22` **settings.py** (seguridad defensiva): Se endureció la validación de seguridad en `_is_dir_safe` añadiendo una comprobación explícita para evitar directorios con permisos de escritura para el grupo u otros (World-Writable), bloqueando vectores de escalada de privilegios o manipulación por otros usuarios en sistemas compartidos.
-- `2026-10-18T06:58:52` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez de las verificaciones de seguridad en `scanner.py` reemplazando llamadas a `os.access` (que pueden fallar por condiciones de carrera o privilegios de token en Windows) por una validación de atributos de archivo más directa y segura, y se ha estandarizado el manejo de `path.resolve()` para evitar resoluciones que excedan los límites del sistema cuando las rutas son excesivamente largas.

@@ -101,7 +101,10 @@ def _verify_source_fs_permissions(path: Path) -> None:
             pass
 
 def _is_filesystem_read_only(path: Path) -> bool:
-    """Intenta determinar si el directorio tiene permisos de escritura mediante un archivo temporal."""
+    """
+    Determina si un directorio es de solo lectura intentando crear un archivo temporal.
+    Garantiza que cualquier escritura futura no sea abortada prematuramente.
+    """
     if not path.exists(): return True
     try:
         test_file = path / f".test_{uuid.uuid4().hex}"
@@ -113,8 +116,8 @@ def _is_filesystem_read_only(path: Path) -> bool:
 
 def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
     """
-    Wrapper de I/O con estrategia de reintento para mitigar bloqueos transitorios 
-    comunes en Windows (indexación, antivirus, etc.).
+    Wrapper de I/O con estrategia de reintento exponencial (backoff).
+    Mitiga fallos transitorios causados por bloqueos de indexación o antivirus en Windows.
     """
     max_retries = 3
     for i in range(max_retries):
@@ -137,8 +140,9 @@ def _win_has_system_attributes(path: Path) -> bool:
 
 def _is_file_exclusive(path: Path) -> bool:
     """
-    Verifica si el archivo permite acceso exclusivo. En Windows usa CreateFileW 
-    con flags de compartición nulos para detectar bloqueos por otros procesos.
+    Verifica si el archivo permite acceso exclusivo. 
+    En Windows: intenta abrir el archivo sin flag de compartición.
+    En POSIX: utiliza fcntl para intentar obtener un lock exclusivo preventivo.
     """
     if os.name == 'nt':
         k32 = ctypes.windll.kernel32

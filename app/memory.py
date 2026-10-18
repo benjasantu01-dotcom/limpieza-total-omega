@@ -302,12 +302,18 @@ def read_snapshot() -> MemorySnapshot:
     return _get_cached_snapshot(int(time.time() / 5))
 
 def _is_process_accessible(pid: int, access_mask: int, kernel32: Any) -> Optional[int]:
-    """Intenta obtener un Handle win32 verificando permisos de acceso."""
+    """
+    Intenta obtener un handle Win32 al proceso solicitando el acceso especificado.
+    Retorna el handle si es posible, o None si el acceso es denegado o el proceso es crítico.
+    """
     if _is_system_process(pid): return None
     return kernel32.OpenProcess(access_mask, False, pid)
 
 def _query_working_set_bytes(pid: int, handle: int, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
-    """Consulta los contadores de memoria de un PID mediante la API PSAPI usando un handle ya abierto."""
+    """
+    Consulta los contadores de memoria del proceso mediante PSAPI usando un handle abierto.
+    Retorna BytesValue del working set o None si la consulta falla o es inválida.
+    """
     try:
         if psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), ctypes.c_uint32(pmc.cb)):
             val = pmc.WorkingSetSize
@@ -317,16 +323,19 @@ def _query_working_set_bytes(pid: int, handle: int, psapi: Any, pmc: PROCESS_MEM
     return None
 
 def _is_process_executable_safe(pid: int, handle: int) -> bool:
-    """Verifica si el ejecutable del proceso reside en una ubicación segura."""
+    """
+    Verifica si el ejecutable asociado al proceso reside en una ruta segura.
+    Retorna True si la ruta NO es protegida, False de lo contrario.
+    """
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return False
     
-    buf = ctypes.create_unicode_buffer(4096)
+    buffer_path = ctypes.create_unicode_buffer(4096)
     try:
-        length = psapi.GetModuleFileNameExW(handle, None, buf, 4095)
+        length = psapi.GetModuleFileNameExW(handle, None, buffer_path, 4095)
         if length > 0:
-            path_str = os.path.abspath(buf.value)
-            return not is_protected_path(Path(path_str))
+            executable_path = Path(os.path.abspath(buffer_path.value))
+            return not is_protected_path(executable_path)
     except (ctypes.ArgumentError, OSError):
         pass
     return False
@@ -343,15 +352,15 @@ def _iter_process_memory(kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS
                 pid_val = pids[i]
                 if _is_system_process(pid_val) or pid_val <= 0: continue
                 
-                handle = _is_process_accessible(pid_val, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
-                if handle:
+                proc_handle = _is_process_accessible(pid_val, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
+                if proc_handle:
                     try:
-                        if _is_process_executable_safe(pid_val, handle):
-                            ws = _query_working_set_bytes(pid_val, handle, psapi, pmc)
+                        if _is_process_executable_safe(pid_val, proc_handle):
+                            ws = _query_working_set_bytes(pid_val, proc_handle, psapi, pmc)
                             if ws is not None:
                                 yield ProcessMemory(f"PID {pid_val}", pid_val, ws)
                     finally:
-                        kernel32.CloseHandle(handle)
+                        kernel32.CloseHandle(proc_handle)
             return
         max_pids *= 2
 
