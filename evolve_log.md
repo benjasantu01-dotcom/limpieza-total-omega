@@ -649,3 +649,12 @@ FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - Attr
 - `2026-10-18T01:34:32` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta de existencia y accesibilidad de `self.tabview` y sus pestañas mediante el nuevo método `_check_widget_integrity` antes de realizar operaciones de UI, previniendo excepciones `TclError` y `RuntimeError` durante la carga perezosa o cambios rápidos de pestaña en casos límite de concurrencia.
 - `2026-10-18T01:34:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T01:34:32` Corrida terminada. Total usado hoy: 36.
+- `2026-10-18T01:41:48` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-10-18T01:42:44` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha añadido un robusto manejo de errores para el límite de memoria `MAX_VALID_PROCESS_MEM` y se mejoró la resiliencia de `_iter_process_memory` ante procesos que finalizan durante la enumeración, evitando excepciones por handles inválidos.
+- `2026-10-18T01:43:21` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-18T01:44:12` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-18T01:45:15` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-18T01:46:09` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejora la robustez ante condiciones de carrera y fallos de I/O al verificar la existencia y el estado de los archivos en `purge_all` y durante la carga del manifiesto, mitigando inconsistencias entre el sistema de archivos y el registro JSON.
+- `2026-10-18T01:46:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 113): unterminated string literal (detected at line 113)
+- `2026-10-18T01:46:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T01:46:48` Corrida terminada. Total usado hoy: 40.

@@ -1024,6 +1024,7 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 def _is_item_purgable(file_path: Path, item: QuarantineItem) -> bool:
     """Verifica si el archivo es purgable conforme a metadatos de integridad."""
     return (
+        file_path.exists() and 
         file_path.is_file() and 
         not file_path.is_symlink() and
         item.verify_integrity(file_path) and
@@ -1061,9 +1062,10 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         if len(remaining) != len(items):
             save_manifest(remaining, base)
         
-        dir_fd = os.open(str(quarantine_root), os.O_RDONLY)
-        try: os.fsync(dir_fd)
-        finally: os.close(dir_fd)
+        if quarantine_root.exists():
+            dir_fd = os.open(str(quarantine_root), os.O_RDONLY)
+            try: os.fsync(dir_fd)
+            finally: os.close(dir_fd)
             
         return len(found_in_fs)
     except (OSError, PermissionError, UnsafePathError):

@@ -329,11 +329,13 @@ def _iter_process_memory(kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS
                 if pid_val > 4:
                     handle = _is_process_accessible(pid_val, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
                     if handle:
-                        if _is_process_executable_safe(pid_val, handle):
-                            ws = _query_working_set_bytes(pid_val, handle, psapi, pmc)
-                            if ws is not None:
-                                yield ProcessMemory(f"PID {pid_val}", pid_val, ws)
-                        kernel32.CloseHandle(handle)
+                        try:
+                            if _is_process_executable_safe(pid_val, handle):
+                                ws = _query_working_set_bytes(pid_val, handle, psapi, pmc)
+                                if ws is not None:
+                                    yield ProcessMemory(f"PID {pid_val}", pid_val, ws)
+                        finally:
+                            kernel32.CloseHandle(handle)
             return
         max_pids *= 2
         if max_pids > 16384: break
