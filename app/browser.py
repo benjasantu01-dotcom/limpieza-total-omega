@@ -225,6 +225,10 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
     if depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN: 
         return ScanResult(0, True)
     
+    norm_path = os.path.normcase(root_path)
+    if norm_path in ctx.visited_dirs: return ScanResult(0, True)
+    ctx.visited_dirs.add(norm_path)
+    
     total_bytes = 0
     try:
         with os.scandir(root_path) as it:

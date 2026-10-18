@@ -690,3 +690,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-18T13:56:28` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
 - `2026-10-18T13:56:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T13:56:28` Corrida terminada. Total usado hoy: 328.
+- `2026-10-18T14:04:55` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-18T14:05:23` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: legibilidad y documentación).
+- `2026-10-18T14:05:47` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-18T14:06:27` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó `SystemContext.metrics_snapshot` y `active_problems` reemplazando llamadas repetitivas a `self.__dict__` y `_check_metric_integrity` por un acceso directo y eficiente, reduciendo la sobrecarga de procesamiento en cada consulta del asistente.
+- `2026-10-18T14:06:59` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-10-18T14:07:10` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo recursivo integrando el `visited_dirs` en el `ScanContext` para prevenir visitas repetidas a directorios en estructuras de caché complejas, reduciendo la redundancia de I/O mediante un conjunto de rutas ya procesadas.
+- `2026-10-18T14:07:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T14:07:10` Corrida terminada. Total usado hoy: 332.

@@ -380,14 +380,15 @@ class SystemContext:
     @cached_property
     def metrics_snapshot(self) -> dict[str, float]:
         """Snapshot cacheado de las métricas numéricas para acceso eficiente."""
-        d = self.__dict__
-        return {k: float(d[k]) for k in _VALIDATORS if k in d and _check_metric_integrity(d[k])}
+        # Acceso directo al __dict__ interno para evitar múltiples getattr/hasattr
+        s = self.__dict__
+        return {k: float(s[k]) for k in _VALIDATORS if k in s and isinstance(s[k], (int, float)) and math.isfinite(s[k])}
 
     @cached_property
     def active_problems(self) -> tuple[str, ...]:
         """Evalúa los criterios de salud contra los datos actuales y retorna los problemas activos."""
         if not self.analyzed: return ()
-        snap: dict[str, float] = self.metrics_snapshot
+        snap = self.metrics_snapshot
         return tuple(msg for c in _CRITERIOS_SALUD if (msg := c.format_if_triggered(snap.get(c.metric_key, -1.0))) is not None)
 
     @cached_property
