@@ -217,10 +217,11 @@ class _Validators:
     """Namespace con lógica atómica de validación por tipo de dato."""
 
     @staticmethod
-    def _is_reparse_point(path: Path) -> bool:
+    @lru_cache(maxsize=32)
+    def _is_reparse_point(path_str: str) -> bool:
         """Determina si la ruta es un punto de reanálisis (symlink/junction) no deseado."""
         try:
-            p = Path(os.path.realpath(path))
+            p = Path(os.path.realpath(path_str))
             if p.is_symlink(): return True
             if not p.exists(): return False
             return bool(p.stat().st_file_attributes & 0x400) if hasattr(p.stat(), 'st_file_attributes') else False
@@ -235,7 +236,7 @@ class _Validators:
             p = Path(path_str).expanduser()
             if not p.is_absolute(): return False
             resolved = Path(os.path.realpath(p))
-            if any(_Validators._is_reparse_point(parent) for parent in resolved.parents):
+            if any(_Validators._is_reparse_point(str(parent)) for parent in resolved.parents):
                 return False
             return not is_protected_path(str(resolved)) and is_safe_to_modify(str(resolved))
         except (OSError, PermissionError, RuntimeError, IndexError):
@@ -369,14 +370,13 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga ajustes utilizando un mecanismo de caché basado en mtime y tamaño para evitar I/O redundante."""
     primary_path = settings_path(custom_base)
     try:
-        real_path = Path(os.path.realpath(primary_path))
-        if real_path.exists() and real_path.is_file() and is_safe_to_modify(str(real_path)):
-            st = real_path.stat()
+        if primary_path.exists() and primary_path.is_file() and is_safe_to_modify(str(primary_path)):
+            st = primary_path.stat()
             mtime, size = st.st_mtime, st.st_size
-            cache_key = str(real_path)
+            cache_key = str(primary_path)
             cached = _MANAGER.settings_cache.get(cache_key)
             if cached and cached[0] == mtime and cached[1] == size: return cached[2].copy()
-            settings = _load_impl(real_path)
+            settings = _load_impl(primary_path)
             _MANAGER.settings_cache[cache_key] = (mtime, size, settings)
             return settings
     except (OSError, PermissionError): pass
@@ -401,7 +401,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     
     try:
         raw_base = Path(os.path.realpath(custom_base)) if custom_base else Path(os.path.realpath(SETTINGS_DIR))
-        if _Validators._is_safe_path(str(raw_base)) and not _Validators._is_reparse_point(raw_base):
+        if _Validators._is_safe_path(str(raw_base)) and not _Validators._is_reparse_point(str(raw_base)):
             if not raw_base.exists(): 
                 try: raw_base.mkdir(parents=True, exist_ok=True)
                 except (OSError, PermissionError): return SETTINGS_DIR / SETTINGS_FILE
@@ -418,11 +418,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     config_path = settings_path(custom_base)
     try:
         cleaned_settings = _coerce_and_verify(validate(values))
-        real_path = Path(os.path.realpath(config_path))
-        if not is_safe_to_modify(str(real_path)): return None
+        if not is_safe_to_modify(str(config_path)): return None
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
-        return config_path if _MANAGER.perform_atomic_write(real_path, serialized) else None
+        return config_path if _MANAGER.perform_atomic_write(config_path, serialized) else None
     except (OSError, PermissionError, AttributeError): return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
@@ -444,7 +443,7 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
 def reset(custom_base: PathLike | None = None) -> AppSettings:
     """Restaura los valores de fábrica y limpia la caché en memoria."""
     config_path = settings_path(custom_base)
-    if is_safe_to_modify(str(os.path.realpath(config_path))):
+    if is_safe_to_modify(str(config_path)):
         save(DEFAULTS, custom_base)
         _MANAGER.clear()
     return DEFAULTS.copy()

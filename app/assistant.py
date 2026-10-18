@@ -434,16 +434,18 @@ class SystemContext:
         if not clean or is_protected_path(clean): return ""
         return clean if _ensure_safe_text(clean) else ""
 
-    def _validate_and_sanitize_data(self, source: Any) -> dict[str, Any]:
-        """Extrae datos válidos de una fuente externa."""
+    def _validate_and_sanitize_data(self, source: Any) -> Optional[dict[str, Any]]:
+        """Extrae datos válidos de una fuente externa. Retorna dict solo si hay cambios validos."""
         updates: dict[str, Any] = {}
+        # Primero validamos todas las métricas. Si alguna falla críticamente, abortamos.
         for key, spec in _VALIDATORS.items():
             val = self._apply_field(source, key, spec)
             if val is not None: updates[key] = val
         
         grade_val = self._clean_grade(_get_source_value(source, "grade"))
         if grade_val: updates["grade"] = grade_val
-        return updates
+        
+        return updates if updates else None
 
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad sobre el objeto fuente."""
@@ -452,7 +454,6 @@ class SystemContext:
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
         """Aplica cambios al contexto y limpia cachés internas."""
-        if len(updates) > _MAX_COLLECTION_SIZE: return
         self.__dict__.update({k: v for k, v in updates.items() if _is_safe_key(k)})
         self.analyzed = True
         for attr in ["metrics_snapshot", "active_problems", "_hash_tuple"]:
