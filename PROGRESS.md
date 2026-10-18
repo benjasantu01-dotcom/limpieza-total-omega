@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **185** (36.7% de aceptación)
+- Mejoras aceptadas: **188** (37.3% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 55
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 228
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 1 | 0 | 0 | 0 | 21 |
+| 2026-10-16 | 0 | 0 | 0 | 0 | 18 |
 | 2026-10-17 | 128 | 11 | 40 | 16 | 155 |
-| 2026-10-18 | 56 | 4 | 15 | 5 | 52 |
+| 2026-10-18 | 60 | 4 | 15 | 5 | 52 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **41**
-- seguridad defensiva: **36**
-- rendimiento: **35**
-- robustez ante casos límite: **28**
+- rendimiento: **37**
+- seguridad defensiva: **35**
+- robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **19**
 - `safety.py`: **18**
 - `quarantine.py`: **17**
+- `assistant.py`: **17**
 - `diskreport.py`: **16**
-- `assistant.py`: **16**
-- `duplicates.py`: **15**
-- `settings.py`: **14**
+- `settings.py`: **15**
+- `duplicates.py`: **14**
 - `browser.py`: **14**
 - `healthscore.py`: **13**
 - `organizer.py`: **11**
 - `scanner.py`: **11**
+- `branding.py`: **9**
 - `main.py`: **9**
-- `branding.py`: **8**
-- `startup.py`: **4**
+- `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-18T05:48:28` **branding.py** (robustez ante casos límite): Se mejora la robustez de `save_logo_svg` al verificar la existencia y el estado de la ruta mediante `is_safe_to_modify` antes de proceder, evitando lanzar excepciones innecesarias en el flujo de control y asegurando que las operaciones de escritura se realicen únicamente en rutas validadas.
+- `2026-10-18T05:48:08` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la carga de datos del asistente implementando un mecanismo de limpieza de tipo y validación de rango más estricto durante la ingestión (`ingest`), evitando que valores atípicos o maliciosos degraden la integridad del `SystemContext`.
+- `2026-10-18T05:47:19` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` y `estimate_impact` mediante el uso de generadores y una estructura de datos `set` para evitar múltiples iteraciones y duplicados en memoria, reduciendo la carga innecesaria de objetos en el escaneo completo.
+- `2026-10-18T05:46:48` **settings.py** (rendimiento): Optimicé el rendimiento de la carga inicial al evitar la recreación repetitiva de estructuras de control (`frozenset` y `MappingProxyType`) dentro de las funciones de validación, moviéndolas a constantes de módulo donde ya son evaluadas una sola vez por el intérprete.
 - `2026-10-18T05:37:58` **safety.py** (rendimiento): Se ha optimizado la validación `is_protected_path` implementando un mecanismo de validación de caché basado en `(path, mtime)` del directorio padre, reduciendo drásticamente las consultas costosas al sistema de archivos al detectar rutas protegidas que ya fueron verificadas y cuya estructura no ha cambiado.
 - `2026-10-18T05:36:53` **quarantine.py** (rendimiento): Optimicé `list_items` y `summarize` para evitar la carga redundante del manifiesto desde el disco, aprovechando que `load_manifest` ya implementa un caché eficiente, y reduje la complejidad algorítmica en `purge_all` al usar un set para las búsquedas, evitando iteraciones anidadas sobre la lista de ítems.
 - `2026-10-18T05:17:39` **duplicates.py** (rendimiento): Optimizé la recolección de archivos (`_collect_candidates`) evitando el cálculo redundante de `Path` mediante el uso de `entry.path` directo y eliminando la creación innecesaria de objetos `Path` antes de las validaciones críticas, reduciendo significativamente la sobrecarga de memoria y ciclos de CPU en escaneos profundos.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-18T04:56:32` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave (`_atomic_isolate_file`, `quarantine_file`, `_perform_secure_copy`), explicando el flujo de seguridad (integridad, atomicidad y prevención de TOCTOU) para facilitar el mantenimiento y la auditoría.
 - `2026-10-18T04:55:48` **organizer.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se reorganizaron las constantes de seguridad mediante una clase `SecurityLimits` para centralizar la configuración, mejorando la legibilidad y facilitando la auditoría de los límites definidos en el código.
 - `2026-10-18T04:48:22` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings detallados en funciones críticas, se han unificado los tipos para mayor claridad y se ha extraído la lógica de validación de seguridad de procesos para mejorar la legibilidad y mantenibilidad del flujo de trabajo en Windows.
-- `2026-10-18T04:46:20` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `healthscore.py` refinando la estructura de las reglas de diagnóstico mediante `Docstrings` explicativos y añadiendo `Type Hints` más precisos para clarificar la arquitectura del pipeline, facilitando así la auditoría técnica.
-- `2026-10-18T04:45:51` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna mediante la adición de docstrings estructurados (Google Style) en las funciones auxiliares de bajo nivel para clarificar su contrato de argumentos, excepciones y efectos secundarios, facilitando el mantenimiento futuro del motor de escaneo.
-- `2026-10-18T04:38:06` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints detallados, la mejora en la documentación de `walk_files` para clarificar el manejo de estados de recursión, y la refactorización de `_collect_summary_data` para simplificar su lógica interna, garantizando mayor claridad en el flujo de procesamiento de datos.
-- `2026-10-18T04:37:04` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `branding.py` mediante la adición de docstrings técnicos detallados en las funciones de manipulación de color y geometría, clarificando la lógica de transformación de espacios de color y el propósito de los parámetros en los métodos de dibujo del `Canvas`.

@@ -418,11 +418,12 @@ class SystemContext:
         """Valida, convierte y verifica límites de un campo individual según su especificación."""
         val: Any = _get_source_value(source, key)
         if val is None: return None
-        # Filtrado temprano de datos no numéricos o corrompidos (NaN/Inf)
-        if not _check_metric_integrity(val): return None
+        # Filtrado de tipos estrictos: no aceptamos strings que no sean números parseables
+        if isinstance(val, bool): return None
         try:
             valid_val: Optional[float] = _is_valid_numeric_update(val, spec)
             if valid_val is None: return None
+            # Garantizamos que el tipo sea consistente con el hint (int o float)
             return spec.type_hint(valid_val)
         except (ValueError, TypeError, Exception):
             return None

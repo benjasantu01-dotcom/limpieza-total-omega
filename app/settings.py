@@ -312,46 +312,21 @@ INT_KEYS: Final[frozenset[ConfigKey]] = frozenset((
     ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB, ConfigKey.TOP_ARCHIVOS, ConfigKey.TOP_PROCESOS
 ))
 
-def _determine_validator(key: ConfigKey) -> Callable[[ConfigKey, Any], Any]:
-    """Selecciona el validador apropiado basado en la enumeración de claves."""
-    if key in BOOL_KEYS: return _Validators.bool
-    if key in INT_KEYS: return _Validators.int
-    if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path
-    return _Validators.str
-
-@lru_cache(maxsize=1)
-def _build_validator_map() -> MappingProxyType[ConfigKey, _ValidatorEntry]:
-    """Genera y cachea el mapa de validadores para eficiencia en validación masiva."""
-    return MappingProxyType({key: _ValidatorEntry(_determine_validator(key)) for key in ConfigKey})
-
-def settings_path(custom_base: PathLike | None = None) -> Path:
-    """Calcula y asegura la existencia del directorio de configuración en un entorno validado."""
-    cache_key = str(custom_base) if custom_base else None
-    if cache_key in _MANAGER.path_cache:
-        return _MANAGER.path_cache[cache_key]
-    
-    try:
-        raw_base = Path(os.path.realpath(custom_base)) if custom_base else Path(os.path.realpath(SETTINGS_DIR))
-        if _Validators._is_safe_path(str(raw_base)) and not _Validators._is_reparse_point(raw_base):
-            if not raw_base.exists(): 
-                try: raw_base.mkdir(parents=True, exist_ok=True)
-                except (OSError, PermissionError): return SETTINGS_DIR / SETTINGS_FILE
-            if raw_base.is_dir() and _is_dir_safe(raw_base):
-                full_path = raw_base / SETTINGS_FILE
-                _MANAGER.path_cache[cache_key] = full_path
-                return full_path
-    except (OSError, RuntimeError, PermissionError, ValueError): pass
-    return SETTINGS_DIR / SETTINGS_FILE
+_VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, _ValidatorEntry]] = MappingProxyType({
+    k: _ValidatorEntry(_Validators.bool if k in BOOL_KEYS else 
+                      (_Validators.int if k in INT_KEYS else 
+                      (_Validators.path if k == ConfigKey.ULTIMA_CARPETA else _Validators.str))) 
+    for k in ConfigKey
+})
 
 def validate(raw_values: Any) -> AppSettings:
     """Valida iterativamente el diccionario bruto; los valores inválidos son omitidos."""
     if not _is_dict(raw_values): return DEFAULTS.copy()
     config = DEFAULTS.copy()
-    validators = _build_validator_map()
     for key_str, raw_val in raw_values.items():
         if (key_enum := _KEY_TO_ENUM.get(key_str)):
             try:
-                validated_val = validators[key_enum].func(key_enum, raw_val)
+                validated_val = _VALIDATOR_MAP[key_enum].func(key_enum, raw_val)
                 if validated_val is not None: config[key_enum.value] = validated_val
             except (ValueError, TypeError, AttributeError, KeyError): continue
     return config 
@@ -359,7 +334,6 @@ def validate(raw_values: Any) -> AppSettings:
 def _is_file_secure_to_read(st: os.stat_result, file_obj: Any) -> bool:
     """Comprueba permisos, metadatos y asegura que no es un enlace simbólico."""
     try:
-        # lstat verifica si el archivo actual es symlink, evitando TOCTOU
         st_l = os.lstat(file_obj.name)
         if file_obj.closed or not stat.S_ISREG(st.st_mode) or stat.S_ISLNK(st_l.st_mode): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE or st.st_nlink != 1: return False
@@ -416,6 +390,25 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
         final["asistente_activado"] = False
     return final
 
+def settings_path(custom_base: PathLike | None = None) -> Path:
+    """Calcula y asegura la existencia del directorio de configuración en un entorno validado."""
+    cache_key = str(custom_base) if custom_base else None
+    if cache_key in _MANAGER.path_cache:
+        return _MANAGER.path_cache[cache_key]
+    
+    try:
+        raw_base = Path(os.path.realpath(custom_base)) if custom_base else Path(os.path.realpath(SETTINGS_DIR))
+        if _Validators._is_safe_path(str(raw_base)) and not _Validators._is_reparse_point(raw_base):
+            if not raw_base.exists(): 
+                try: raw_base.mkdir(parents=True, exist_ok=True)
+                except (OSError, PermissionError): return SETTINGS_DIR / SETTINGS_FILE
+            if raw_base.is_dir() and _is_dir_safe(raw_base):
+                full_path = raw_base / SETTINGS_FILE
+                _MANAGER.path_cache[cache_key] = full_path
+                return full_path
+    except (OSError, RuntimeError, PermissionError, ValueError): pass
+    return SETTINGS_DIR / SETTINGS_FILE
+
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     """Persiste el objeto de configuración serializándolo a JSON y delegando la escritura al gestor atómico."""
     if not _is_dict(values): return None
@@ -434,11 +427,10 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     if not changes or not _is_dict(changes): return load(custom_base)
     current = load(custom_base)
     modified = False
-    validators = _build_validator_map()
     for k, v in changes.items():
         if (key_enum := _KEY_TO_ENUM.get(k)):
             try:
-                val = validators[key_enum].func(key_enum, v)
+                val = _VALIDATOR_MAP[key_enum].func(key_enum, v)
                 if val is not None and val != current.get(k):
                     current[k] = val
                     modified = True

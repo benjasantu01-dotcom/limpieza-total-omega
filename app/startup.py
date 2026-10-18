@@ -411,13 +411,14 @@ def list_startup_entries() -> StartupEntries:
     seen_items: Set[Tuple[str, str]] = set()
     unique_entries: StartupEntries = []
     
-    for entry in entries_from_folders():
-        key = (entry.name.lower(), entry.command.lower())
-        if key not in seen_items:
-            seen_items.add(key)
-            unique_entries.append(entry)
-            
-    for entry in entries_from_registry():
+    # Generador eficiente para procesar fuentes de entrada
+    def _generator() -> Iterator[StartupEntry]:
+        for entry in entries_from_folders():
+            yield entry
+        for entry in entries_from_registry():
+            yield entry
+
+    for entry in _generator():
         key = (entry.name.lower(), entry.command.lower())
         if key not in seen_items:
             seen_items.add(key)
@@ -429,11 +430,10 @@ def list_startup_entries() -> StartupEntries:
 
 def estimate_impact(entries: Iterable[StartupEntry]) -> str:
     """Estima el impacto en el rendimiento basándose en la cantidad de entradas."""
-    count: int = sum(1 for _ in entries)
-    thresholds: List[Tuple[int, str]] = [(5, "ok"), (10, "info"), (18, "warning")]
-    for limit, label in thresholds:
-        if count <= limit:
-            return label
+    count = sum(1 for _ in entries)
+    if count <= 5: return "ok"
+    if count <= 10: return "info"
+    if count <= 18: return "warning"
     return "danger"
 
 

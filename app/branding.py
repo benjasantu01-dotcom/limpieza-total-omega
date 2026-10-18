@@ -320,7 +320,7 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     if not destination: return None
     try:
         target = Path(destination).resolve()
-        if not filter_safe_paths([target]): return None
+        if not is_safe_to_modify(target): return None
         ensure_safe_to_modify(target)
         if target.parent.exists() and not target.parent.is_dir(): return None
         target.parent.mkdir(parents=True, exist_ok=True)
