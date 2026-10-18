@@ -698,3 +698,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-18T14:07:10` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo recursivo integrando el `visited_dirs` en el `ScanContext` para prevenir visitas repetidas a directorios en estructuras de caché complejas, reduciendo la redundancia de I/O mediante un conjunto de rutas ya procesadas.
 - `2026-10-18T14:07:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T14:07:10` Corrida terminada. Total usado hoy: 332.
+- `2026-10-18T14:15:05` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-18T14:15:30` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-10-18T14:15:56` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizado el rendimiento de `_collect_candidates` utilizando `os.scandir` para obtener metadatos (`st_dev`, `st_ino`, `st_size`) en una única llamada al sistema (syscall) por entrada, eliminando llamadas redundantes a `entry.is_file()` y `entry.stat()` que degradaban el rendimiento en directorios grandes.
+- `2026-10-18T14:16:22` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-10-18T14:17:16` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de caché con invalidación selectiva para los resultados de escaneos pesados (duplicados, basura, startup), evitando re-escaneos redundantes de disco al cambiar de pestañas o repetir consultas en una misma sesión.
+- `2026-10-18T14:17:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T14:17:16` Corrida terminada. Total usado hoy: 336.

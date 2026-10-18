@@ -136,7 +136,7 @@ def _safe_path_check(path: Path) -> bool:
 
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """Valida si un archivo cumple los criterios para ser procesado como duplicado."""
-    if st_size <= 0 or not path.exists():
+    if st_size <= 0:
         return False
     if is_system_or_hidden(path):
         return False
@@ -239,12 +239,12 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        st = entry.stat(follow_symlinks=False)
                         if entry.is_dir(follow_symlinks=False):
                             p_entry = Path(entry.path)
                             if _safe_path_check(p_entry):
                                 queue.append((p_entry, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
-                            st = entry.stat()
                             if st.st_size < min_size or (st.st_dev, st.st_ino) in visited_inodes:
                                 continue
                             
