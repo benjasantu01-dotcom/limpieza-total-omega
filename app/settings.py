@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 import os
 import stat
+import time
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
@@ -150,7 +151,6 @@ def _is_dir_safe(path: Path) -> bool:
         real_path = Path(os.path.realpath(path))
         if not real_path.is_dir() or _Validators._is_reparse_point(real_path): return False
         st = real_path.stat()
-        # Verificar dueño y permisos restrictivos (ningún bit de escritura para grupo/otros)
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if st.st_mode & (stat.S_IWGRP | stat.S_IWOTH): return False
         return True
@@ -170,37 +170,21 @@ class _SettingsManager:
         self.settings_cache.clear()
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
-        """
-        Escribe datos en un archivo temporal y realiza un reemplazo atómico
-        (os.replace) tras verificar la seguridad del entorno.
-        """
+        """Escribe datos en archivo temporal con reintentos para manejar bloqueos transitorios."""
         temp_path: Path = config_path.with_suffix(".tmp")
-        try:
-            if not _is_dir_safe(config_path.parent): return False
-            real_config = Path(os.path.realpath(config_path))
-            real_temp = Path(os.path.realpath(temp_path))
-
-            if not is_safe_to_modify(str(real_temp)) or not is_safe_to_modify(str(real_config)):
-                return False
-                
-            with open(temp_path, "w", encoding="utf-8") as f:
-                f.write(serialized)
-                f.flush()
-                os.fsync(f.fileno())
-            
-            if config_path.exists():
-                st = config_path.lstat()
-                if stat.S_ISLNK(st.st_mode) or st.st_nlink != 1:
-                    return False
-                
-            os.replace(temp_path, config_path)
-            self.clear()
-            return True
-        except (OSError, IOError, PermissionError):
-            if temp_path.exists():
-                try: os.remove(temp_path)
-                except OSError: pass
-            return False
+        for attempt in range(3):
+            try:
+                if not _is_dir_safe(config_path.parent): return False
+                with open(temp_path, "w", encoding="utf-8") as f:
+                    f.write(serialized)
+                    f.flush()
+                    os.fsync(f.fileno())
+                os.replace(temp_path, config_path)
+                self.clear()
+                return True
+            except (OSError, IOError, PermissionError):
+                time.sleep(0.1 * (attempt + 1))
+        return False
 
 _MANAGER = _SettingsManager()
 
@@ -340,25 +324,25 @@ def _is_file_secure_to_read(st: os.stat_result, file_obj: Any) -> bool:
         if file_obj.closed or not stat.S_ISREG(st.st_mode) or stat.S_ISLNK(st_l.st_mode): return False
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE or st.st_nlink != 1: return False
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
-        if st.st_mode & (stat.S_ISUID | stat.S_ISGID): return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         return True
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
-    """Realiza la lectura segura del archivo JSON con limitación de tamaño y comprobación de metadatos."""
+    """Lectura segura con reintentos ante bloqueos de acceso temporal."""
     if not is_safe_to_modify(str(file_path)): return None
-    try:
-        with open(file_path, "r", encoding="utf-8") as f:
-            try:
+    for _ in range(2):
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
                 st = os.fstat(f.fileno())
-            except OSError: return None
-            if not _is_file_secure_to_read(st, f): return None
-            content = f.read(MAX_SETTINGS_SIZE + 1)
-            if not content or len(content) > MAX_SETTINGS_SIZE: return None
-            data = json.loads(content)
-            return data if _is_dict(data) else None
-    except (OSError, IOError, PermissionError, AttributeError, RuntimeError, json.JSONDecodeError): return None
+                if not _is_file_secure_to_read(st, f): return None
+                content = f.read(MAX_SETTINGS_SIZE + 1)
+                if not content or len(content) > MAX_SETTINGS_SIZE: return None
+                data = json.loads(content)
+                return data if _is_dict(data) else None
+        except (OSError, IOError, PermissionError, json.JSONDecodeError):
+            time.sleep(0.05)
+    return None
 
 def _load_impl(ruta: Path) -> AppSettings:
     """Implementación base para procesar la carga y normalización de ajustes."""

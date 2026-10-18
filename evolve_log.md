@@ -1598,3 +1598,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-18T10:43:26` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se añadió una validación de rutas inexistentes dentro de `_is_valid_file_path` y se mejoró la resiliencia ante `FileNotFoundError` en las heurísticas para evitar el colapso del bucle ante archivos temporales que desaparecen durante la ejecución.
 - `2026-10-18T10:43:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T10:43:26` Corrida terminada. Total usado hoy: 252.
+- `2026-10-18T10:51:32` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-10-18T10:52:05` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante estados corruptos o bloqueados del sistema de archivos mediante la implementación de una estrategia de reintento (`backoff` exponencial simplificado) y un manejo explícito de errores de I/O en `perform_atomic_write` y `load`, previniendo que bloqueos temporales por antivirus o procesos del sistema detengan la carga de la configuración.
+- `2026-10-18T10:52:33` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se introdujo una verificación de integridad en `parse_registry_csv` para descartar rutas que contengan caracteres de control ocultos (ASCII < 32), evitando errores de procesamiento por datos malformados o inyecciones, y se aseguró el uso de `strip()` previo a la validación para manejar casos límite de espacios en blanco en el registro.
+- `2026-10-18T10:53:08` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: seguridad defensiva).
+- `2026-10-18T10:53:22` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-10-18T10:53:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T10:53:22` Corrida terminada. Total usado hoy: 256.

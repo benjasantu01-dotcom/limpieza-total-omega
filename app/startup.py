@@ -319,17 +319,23 @@ def _is_registry_entry_safe(entry_name: str, entry_command: str, seen_commands: 
     """Valida que una entrada extraída del registro sea única, no nula y no apunte a rutas sospechosas."""
     if not isinstance(entry_name, str) or not isinstance(entry_command, str):
         return False
-    if not entry_name.strip() or not entry_command.strip() or entry_command.startswith(r"\\") or entry_command in seen_commands:
+    
+    # Validar caracteres de control ocultos (ASCII < 32) en el registro
+    if any(ord(c) < 32 for c in entry_command):
+        return False
+        
+    clean_name = entry_name.strip()
+    clean_cmd = entry_command.strip()
+    
+    if not clean_name or not clean_cmd or clean_cmd.startswith(r"\\") or clean_cmd in seen_commands:
         return False
     
     try:
-        clean_path = entry_command.strip('"')
-        if not clean_path or ("\\" not in clean_path and "/" not in clean_path):
+        target_path = Path(clean_cmd.strip('"'))
+        if not target_path or ("\\" not in str(target_path) and "/" not in str(target_path)):
             return False
-        if any(c in clean_path for c in SUSPICIOUS_CHARS):
+        if any(c in str(target_path) for c in SUSPICIOUS_CHARS):
             return False
-        
-        target_path = Path(clean_path)
         if is_protected_path(target_path) or ".." in str(target_path):
             return False
         return True
@@ -360,15 +366,9 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             if not isinstance(raw_val_name, str) or not isinstance(raw_val_cmd, str):
                 continue
             
-            clean_name = raw_val_name.strip()
-            clean_cmd = raw_val_cmd.strip()
-            
-            if not clean_cmd or not clean_name:
-                continue
-            
-            if _is_registry_entry_safe(clean_name, clean_cmd, seen_commands):
-                seen_commands.add(clean_cmd)
-                parsed_entries.append(StartupEntry(name=clean_name, command=clean_cmd, source=source))
+            if _is_registry_entry_safe(raw_val_name, raw_val_cmd, seen_commands):
+                seen_commands.add(raw_val_cmd.strip())
+                parsed_entries.append(StartupEntry(name=raw_val_name.strip(), command=raw_val_cmd.strip(), source=source))
             
     except (csv.Error, OSError, ValueError, TypeError):
         return []

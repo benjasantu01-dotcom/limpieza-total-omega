@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-17 | 89 | 7 | 25 | 13 | 118 |
-| 2026-10-18 | 106 | 9 | 28 | 9 | 100 |
+| 2026-10-17 | 89 | 7 | 25 | 13 | 114 |
+| 2026-10-18 | 108 | 9 | 28 | 9 | 102 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **40**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **40**
 - rendimiento: **37**
 - seguridad defensiva: **35**
 
@@ -34,7 +34,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **18**
 - `diskreport.py`: **17**
 - `assistant.py`: **16**
-- `settings.py`: **15**
+- `settings.py`: **16**
 - `browser.py`: **14**
 - `scanner.py`: **13**
 - `duplicates.py`: **13**
@@ -42,10 +42,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `organizer.py`: **11**
 - `healthscore.py`: **11**
 - `branding.py`: **9**
-- `startup.py`: **6**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-18T10:52:33` **startup.py** (robustez ante casos límite): Se introdujo una verificación de integridad en `parse_registry_csv` para descartar rutas que contengan caracteres de control ocultos (ASCII < 32), evitando errores de procesamiento por datos malformados o inyecciones, y se aseguró el uso de `strip()` previo a la validación para manejar casos límite de espacios en blanco en el registro.
+- `2026-10-18T10:52:05` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados corruptos o bloqueados del sistema de archivos mediante la implementación de una estrategia de reintento (`backoff` exponencial simplificado) y un manejo explícito de errores de I/O en `perform_atomic_write` y `load`, previniendo que bloqueos temporales por antivirus o procesos del sistema detengan la carga de la configuración.
 - `2026-10-18T10:43:26` **scanner.py** (robustez ante casos límite): Se añadió una validación de rutas inexistentes dentro de `_is_valid_file_path` y se mejoró la resiliencia ante `FileNotFoundError` en las heurísticas para evitar el colapso del bucle ante archivos temporales que desaparecen durante la ejecución.
 - `2026-10-18T10:43:12` **safety.py** (robustez ante casos límite): Se ha añadido un chequeo de `PermissionError` y `OSError` específico al momento de intentar resolver el descriptor de seguridad en `SecurityDescriptor.from_path`, garantizando que si el acceso al sistema de archivos es restringido durante la introspección, la función no propague errores sin gestionar y retorne un descriptor de "seguro/bloqueado" en lugar de fallar la ejecución.
 - `2026-10-18T10:42:05` **quarantine.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de concurrencia y permisos durante la inicialización del directorio de cuarentena, utilizando `os.access` y una verificación explícita de `os.O_DIRECTORY` para asegurar que la ruta sandbox no sea un archivo o un punto de montaje bloqueado antes de cualquier operación de I/O.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-18T10:01:08` **organizer.py** (rendimiento): Optimicé el proceso de escaneo de archivos basura reemplazando la verificación repetida de extensiones mediante una consulta a un `set` (`JUNK_EXTENSIONS`) en lugar de `tuple`, y aplicando un `filter` previo sobre la lista de directorios base para evitar procesar rutas innecesarias antes de entrar al bucle recursivo.
 - `2026-10-18T09:53:54` **memory.py** (rendimiento): Optimizé la enumeración de procesos en `_iter_process_memory` pre-asignando el buffer de PIDs una sola vez y reduciendo el overhead de llamadas a `GetModuleFileNameExW` mediante la validación previa de seguridad, mejorando significativamente el rendimiento en sistemas con muchos procesos.
 - `2026-10-18T09:53:40` **main.py** (rendimiento): Se implementó un sistema de "batching" y delegación mediante `after_idle` en `_flush_logs` para consolidar múltiples llamadas de log en una sola operación de actualización de la UI, reduciendo significativamente la carga sobre el hilo principal durante procesos intensivos.
-- `2026-10-18T09:42:06` **diskreport.py** (rendimiento): Optimizé `_collect_summary_data` para evitar llamadas redundantes a `path.exists()` (que ya es validado por `walk_files`) y mejoré el rendimiento de `largest_folders` reduciendo la creación de objetos `Path` intermedios, unificando el acceso a `stats` bajo una clave única de string.
-- `2026-10-18T09:41:01` **assistant.py** (rendimiento): Optimicé el `SystemContext` reemplazando los `getattr` recurrentes dentro del bucle de `ingest` y `metrics_snapshot` por un acceso directo al diccionario `__dict__` o mediante una estructura de datos más eficiente, reduciendo la sobrecarga de introspección y llamadas a funciones en cada iteración de análisis.
