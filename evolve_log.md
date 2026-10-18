@@ -1520,3 +1520,12 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-18T09:42:06` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `_collect_summary_data` para evitar llamadas redundantes a `path.exists()` (que ya es validado por `walk_files`) y mejoré el rendimiento de `largest_folders` reduciendo la creación de objetos `Path` intermedios, unificando el acceso a `stats` bajo una clave única de string.
 - `2026-10-18T09:42:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T09:42:06` Corrida terminada. Total usado hoy: 228.
+- `2026-10-18T09:50:30` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-10-18T09:50:58` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-10-18T09:51:20` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): el archivo se encogió al 59% del original (posible pérdida de código)
+- `2026-10-18T09:52:20` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-18T09:52:25` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-18T09:53:40` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un sistema de "batching" y delegación mediante `after_idle` en `_flush_logs` para consolidar múltiples llamadas de log en una sola operación de actualización de la UI, reduciendo significativamente la carga sobre el hilo principal durante procesos intensivos.
+- `2026-10-18T09:53:54` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé la enumeración de procesos en `_iter_process_memory` pre-asignando el buffer de PIDs una sola vez y reduciendo el overhead de llamadas a `GetModuleFileNameExW` mediante la validación previa de seguridad, mejorando significativamente el rendimiento en sistemas con muchos procesos.
+- `2026-10-18T09:53:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T09:53:54` Corrida terminada. Total usado hoy: 232.

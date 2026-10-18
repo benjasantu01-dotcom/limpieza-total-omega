@@ -42,6 +42,7 @@ Invalidación inteligente mediante digests de estado para evitar re-compilacione
 Uso de conjuntos (sets) para gestión de estado de UI y debounces.
 Caché de validación de rutas mediante LRU para reducir llamadas al sistema.
 Caché local de métricas calculadas para evitar overhead de re-escaneo en duplicados.
+Consolidación de logs mediante batching asíncrono para reducir colisiones UI.
 
 Instalar dependencias:
     pip install customtkinter
