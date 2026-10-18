@@ -8,45 +8,48 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **174** (34.5% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 49
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 242
+- Sin respuesta de la IA (error o límite): 241
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 41 | 5 | 8 | 6 | 86 |
+| 2026-10-16 | 38 | 5 | 8 | 6 | 85 |
 | 2026-10-17 | 128 | 11 | 40 | 16 | 155 |
-| 2026-10-18 | 5 | 0 | 1 | 1 | 1 |
+| 2026-10-18 | 8 | 0 | 2 | 1 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
-- legibilidad y documentación: **38**
+- legibilidad y documentación: **41**
 - seguridad defensiva: **36**
-- robustez ante casos límite: **29**
 - rendimiento: **29**
+- robustez ante casos límite: **26**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **19**
 - `memory.py`: **19**
-- `assistant.py`: **15**
+- `diskreport.py`: **18**
+- `safety.py`: **16**
 - `duplicates.py`: **15**
-- `safety.py`: **15**
+- `quarantine.py`: **14**
 - `settings.py`: **14**
-- `quarantine.py`: **13**
+- `assistant.py`: **14**
 - `browser.py`: **13**
 - `organizer.py`: **11**
+- `scanner.py`: **11**
 - `healthscore.py`: **10**
-- `scanner.py`: **10**
 - `main.py`: **9**
-- `branding.py`: **8**
+- `branding.py`: **7**
 - `startup.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-18T00:32:51` **scanner.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en los métodos principales, la estandarización de tipos con `typing.Final` para constantes de estado, y la refactorización de `_is_locked_by_os` para mejorar la claridad sobre su interacción con la API de Windows mediante constantes con nombres significativos.
+- `2026-10-18T00:32:24` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `safety.py` mediante la refactorización de `_get_path_stat_robust` para incluir docstrings descriptivos, la clarificación de tipos en las firmas de funciones complejas y la organización lógica de los validadores, facilitando la auditoría de seguridad solicitada.
+- `2026-10-18T00:31:16` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y la documentación interna del módulo `quarantine.py`, añadiendo docstrings técnicos en funciones críticas, normalizando type hints para mayor claridad en el flujo de datos (especialmente en validadores de seguridad) y renombrando variables internas para reflejar mejor su rol de protección (ej: `dest_dir` a `target_directory` para evitar ambigüedad con `dest` y `destination`).
 - `2026-10-18T00:22:51` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones críticas de validación y E/S mediante docstrings detallados que explican el "porqué" de las restricciones impuestas por seguridad, facilitando la auditoría del código conforme a las normas del proyecto.
 - `2026-10-18T00:22:39` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en las funciones internas, documentación docstring aclaratoria sobre el origen de los datos, y estandarización del manejo de tipos semánticos en las operaciones críticas de memoria.
 - `2026-10-18T00:13:53` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más precisos en las funciones de hashing y filtrado, y se han añadido anotaciones de tipo (type hints) explícitas en las funciones de recolección, asegurando que la intención y el manejo de los tipos sean claros para futuros colaboradores del proyecto.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-17T14:33:50` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `quarantine.py` implementando un chequeo preventivo de errores de escritura (`OSError`, `PermissionError`) en la función `_is_filesystem_read_only`, asegurando que cualquier fallo al intentar verificar permisos sea tratado correctamente y no interrumpa el flujo del bucle principal de la aplicación.
 - `2026-10-17T14:32:54` **memory.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `trim_working_set` y `_query_working_set_bytes` mediante la captura explícita de `ctypes.WinError` (específica para fallos de la API de Windows) y el uso de bloques `try...finally` garantizando que los `handles` de procesos siempre se cierren, evitando fugas de recursos en caso de excepciones durante las consultas.
 - `2026-10-17T14:21:14` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez del manejo de errores en `_calculate_keeper_heuristic` y `suggest_keeper` agregando chequeos explícitos para evitar excepciones por rutas inexistentes o inaccesibles, asegurando que la lógica de sugerencia no falle ante archivos que desaparecieron durante la ejecución.
-- `2026-10-17T14:20:23` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `directory_size` y `_resolve_browser_path` añadiendo validaciones preventivas de tipos y estados, asegurando que ante entradas `None` o rutas mal formadas el módulo retorne valores neutros en lugar de propagar excepciones.
-- `2026-10-17T14:12:52` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_source_value` y `_apply_field` implementando un chequeo explícito de tipos antes de llamar a `getattr` o `get`, evitando que el asistente falle ante objetos inesperados y asegurando que las conversiones numéricas sean seguras.
-- `2026-10-17T12:50:09` **settings.py** (seguridad defensiva): Se reforzó la integridad de las operaciones de escritura impidiendo que `perform_atomic_write` proceda si el directorio destino o sus padres contienen puntos de reparse, mitigando ataques de escalada de privilegios o redirección de archivos fuera del alcance esperado mediante `_is_dir_safe`.
