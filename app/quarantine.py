@@ -494,6 +494,11 @@ def _check_isolation_safety(source_path: Path, target_directory: Path) -> None:
     if _is_filesystem_read_only(target_directory):
         raise PermissionError("Directorio de cuarentena sin permisos de escritura.")
     
+    # Verificación de propiedad (POSIX)
+    if hasattr(os, 'getuid'):
+        if resolved_source.stat().st_uid != os.getuid():
+            raise UnsafePathError("Aislamiento denegado: el archivo no pertenece al usuario.")
+
     _check_device_consistency(resolved_source, resolved_dest_dir)
     if os.path.exists(resolved_dest_dir) and os.path.samefile(resolved_source, resolved_dest_dir):
         raise UnsafePathError("Operación circular detectada.")
@@ -848,6 +853,10 @@ def _validate_source_for_quarantine(source: Path) -> Path:
     if is_protected_path(source):
         raise UnsafePathError("La ruta origen está en una zona protegida.")
     
+    # Validar propiedad en POSIX antes de tocar nada
+    if hasattr(os, 'getuid') and source.stat().st_uid != os.getuid():
+        raise UnsafePathError("Aislamiento denegado: el archivo origen no pertenece al usuario.")
+
     _verify_source_fs_permissions(source)
     return source
 

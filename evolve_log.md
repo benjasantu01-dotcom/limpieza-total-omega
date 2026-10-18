@@ -1182,3 +1182,13 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-10-18T06:39:39` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la implementación de `_ensure_safe_path_for_action` en el orquestador, centralizando la validación de seguridad de rutas antes de ejecutar cualquier operación de escritura, y aplicando un filtro `Path.resolve(strict=False)` en los puntos de entrada críticos para prevenir inyecciones mediante rutas mal formadas.
 - `2026-10-18T06:39:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T06:39:39` Corrida terminada. Total usado hoy: 156.
+- `2026-10-18T06:47:15` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-10-18T06:47:44` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-10-18T06:48:08` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-10-18T06:49:01` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad del proceso de aislamiento mediante la validación estricta de la propiedad (UID) y permisos del archivo origen ANTES de cualquier operación de I/O, previniendo riesgos de manipulación mediante archivos sustituidos por otros usuarios o procesos con mayores privilegios.
+- `2026-10-18T06:49:59` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-18T06:50:04` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-18T06:50:12` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-18T06:50:35` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-18T06:50:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T06:50:35` Corrida terminada. Total usado hoy: 160.
