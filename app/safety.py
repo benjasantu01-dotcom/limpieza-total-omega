@@ -504,7 +504,7 @@ def _validate_drive_restrictions(target_path: Path) -> None:
     except (AttributeError, OSError, ctypes.ArgumentError):
         pass
 
-# Predicados de validación para integridad
+# Predicados de validación para integridad: determinan si un archivo viola una condición específica
 def _check_symlink(p: Path, _: os.stat_result, __: SecurityDescriptor) -> bool: return p.is_symlink()
 def _check_reparse(p: Path, _: os.stat_result, sd: SecurityDescriptor) -> bool: return sd.is_reparse
 def _check_kernel_locked(p: Path, _: os.stat_result, __: SecurityDescriptor) -> bool: return _is_kernel_managed(str(p))

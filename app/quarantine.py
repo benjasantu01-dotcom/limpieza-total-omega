@@ -654,7 +654,10 @@ def _verify_copied_data(source_stat: os.stat_result, dest_path: Path, source_has
         raise OSError("Falla crítica: el hash del archivo copiado no coincide.")
 
 def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> None:
-    """Copia el archivo origen al destino temporal utilizando bajo control de I/O."""
+    """
+    Copia el archivo origen al destino temporal asegurando integridad mediante streaming
+    y buffers sincronizados al disco físico.
+    """
     flags = os.O_RDONLY
     if hasattr(os, 'O_NOFOLLOW'):
         flags |= os.O_NOFOLLOW
@@ -885,7 +888,16 @@ def quarantine_file(
     reason: str = "Marcado como sospechoso",
     base: PathLike = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
-    """Aísla un archivo sospechoso de manera atómica, registrando sus metadatos en el manifiesto."""
+    """
+    Aísla un archivo sospechoso en el sandbox de cuarentena.
+    
+    El proceso es:
+    1. Validar el origen (existencia, seguridad, permisos).
+    2. Preparar el directorio destino.
+    3. Realizar una copia atómica al sandbox con verificación de integridad.
+    4. Registrar metadatos (hash, inodo) en el manifiesto JSON.
+    5. Eliminar el original solo si la integridad del copiado se confirma.
+    """
     if not source:
         raise ValueError("La ruta origen proporcionada es nula o vacía.")
         

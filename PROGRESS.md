@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **179** (35.5% de aceptación)
+- Mejoras aceptadas: **180** (35.7% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 50
+- Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 240
+- Sin respuesta de la IA (error o límite): 238
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 5 | 0 | 0 | 0 | 37 |
+| 2026-10-16 | 3 | 0 | 0 | 0 | 35 |
 | 2026-10-17 | 128 | 11 | 40 | 16 | 155 |
-| 2026-10-18 | 46 | 4 | 10 | 4 | 48 |
+| 2026-10-18 | 49 | 4 | 11 | 4 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **44**
 - manejo de errores y validación de entradas: **41**
-- legibilidad y documentación: **41**
 - seguridad defensiva: **37**
-- robustez ante casos límite: **31**
+- robustez ante casos límite: **29**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **19**
 - `diskreport.py`: **17**
-- `safety.py`: **16**
-- `quarantine.py`: **15**
+- `safety.py`: **17**
+- `quarantine.py`: **16**
 - `assistant.py`: **15**
-- `browser.py`: **14**
 - `duplicates.py`: **14**
 - `settings.py`: **14**
 - `healthscore.py`: **13**
+- `browser.py`: **13**
+- `organizer.py`: **11**
 - `scanner.py`: **11**
-- `organizer.py`: **10**
-- `branding.py`: **9**
 - `main.py`: **9**
+- `branding.py`: **8**
 - `startup.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-18T04:57:30` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings técnicos detallados en las funciones de validación de bajo nivel, especificando el propósito de cada chequeo de seguridad para facilitar la auditoría y mantenimiento del código.
+- `2026-10-18T04:56:32` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave (`_atomic_isolate_file`, `quarantine_file`, `_perform_secure_copy`), explicando el flujo de seguridad (integridad, atomicidad y prevención de TOCTOU) para facilitar el mantenimiento y la auditoría.
+- `2026-10-18T04:55:48` **organizer.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se reorganizaron las constantes de seguridad mediante una clase `SecurityLimits` para centralizar la configuración, mejorando la legibilidad y facilitando la auditoría de los límites definidos en el código.
 - `2026-10-18T04:48:22` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings detallados en funciones críticas, se han unificado los tipos para mayor claridad y se ha extraído la lógica de validación de seguridad de procesos para mejorar la legibilidad y mantenibilidad del flujo de trabajo en Windows.
 - `2026-10-18T04:46:20` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `healthscore.py` refinando la estructura de las reglas de diagnóstico mediante `Docstrings` explicativos y añadiendo `Type Hints` más precisos para clarificar la arquitectura del pipeline, facilitando así la auditoría técnica.
 - `2026-10-18T04:45:51` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna mediante la adición de docstrings estructurados (Google Style) en las funciones auxiliares de bajo nivel para clarificar su contrato de argumentos, excepciones y efectos secundarios, facilitando el mantenimiento futuro del motor de escaneo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-18T04:17:19` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `stage_for_review` y `delete_reviewed` mediante la captura explícita de excepciones al resolver rutas, evitando que fallos silenciosos en la resolución de `Path` (como errores de permisos o rutas inexistentes) interrumpan el proceso, asegurando que las validaciones de seguridad se mantengan estrictas.
 - `2026-10-18T04:06:03` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `compute_score` implementando una validación explícita para asegurar que la suma total de puntos calculados no exceda los límites lógicos tras el redondeo, evitando resultados inconsistentes en el desglose.
 - `2026-10-18T03:56:01` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_source_value` y `_apply_field` implementando un control estricto sobre las excepciones, asegurando que cualquier acceso a atributos fallido retorne valores seguros por defecto en lugar de propagar errores, cumpliendo con el enfoque de validación de entradas.
-- `2026-10-18T02:34:04` **settings.py** (seguridad defensiva): Mejoré la seguridad de la función `perform_atomic_write` al validar que el archivo de configuración existente no sea un enlace simbólico ni un archivo con múltiples "hard links" antes de proceder con el reemplazo, previniendo posibles ataques de sustitución (TOCTOU) y garantizando la integridad de la configuración.
-- `2026-10-18T02:33:10` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en el método `_is_safe_entry` del `Scanner` añadiendo una validación explícita que impide que el escáner siga rutas que contengan caracteres de escape nulos (`\0`) o nombres de archivos que contengan caracteres de control ocultos (RTL/Unicode), evitando posibles ataques de manipulación de rutas o engaño visual mediante caracteres bidireccionales.
-- `2026-10-18T02:24:05` **quarantine.py** (seguridad defensiva): Mejoré la seguridad de `_perform_secure_copy` añadiendo una validación explícita mediante `is_safe_to_modify` antes de abrir el descriptor de archivo destino, garantizando que ninguna operación de escritura accidental escape del entorno seguro definido por `safety.py`.
