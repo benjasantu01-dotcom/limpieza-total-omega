@@ -691,3 +691,32 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-18T01:55:02` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejora la robustez del parseo del registro ante rutas con espacios y comillas mal formadas, añadiendo una validación de existencia física mediante `path.exists()` antes de marcarla como ejecutable, evitando reportar rutas huérfanas o basura residual como ejecutables activos.
 - `2026-10-18T01:55:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T01:55:02` Corrida terminada. Total usado hoy: 44.
+- `2026-10-18T02:02:09` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-10-18T02:02:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-18T02:03:11` Tests FALLARON:
+```
+0.0
+            startup_count = 5
+            quarantined_count = 0
+            archivo_secreto = "C:/Users/benja/clave.txt"
+    
+        contexto = assistant.build_context(metrics=MetricasConRuta())
+>       assert contexto.junk_mb == 100.0
+E       AssertionError: assert 0.0 == 100.0
+E        +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+
+evolve/tests/test_assistant.py:234: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_extras - AssertionError: assert 0.0 == 8.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).memory_total_gb
+FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_one - AssertionError: assert 0.0 == 100.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).junk_mb
+2 failed, 297 passed in 1.65s
+
+```
+- `2026-10-18T02:03:11` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se endureció la validación de seguridad en `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para rechazar explícitamente cualquier tipo de contenedor (listas, diccionarios o sets) en el JSON remoto, permitiendo solo tipos primitivos y planos, evitando así ataques de desbordamiento por estructuras profundamente anidadas.
+- `2026-10-18T02:03:55` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` al verificar la existencia y el tipo del directorio padre antes de intentar operaciones de escritura, mitigando posibles errores de sistema de archivos y asegurando que las rutas validadas por `safety` se traten de forma consistente.
+- `2026-10-18T02:04:24` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-10-18T02:04:51` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva al reemplazar el uso de `os.scandir` (que es vulnerable a errores de acceso profundo en subdirectorios) por un patrón de resolución robusto en `walk_files` y añadiendo validaciones de rutas cortas mediante `Path.resolve()` para evitar que el escáner sea engañado por enlaces simbólicos o puntos de reparse que intenten escapar del directorio raíz (`root_path`).
+- `2026-10-18T02:04:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T02:04:51` Corrida terminada. Total usado hoy: 48.

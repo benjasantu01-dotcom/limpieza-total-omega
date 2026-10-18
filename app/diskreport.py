@@ -162,6 +162,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
             
         entry_path = Path(entry.path)
         try:
+            # Validación de escape de raíz mediante resolución estricta
             if root_path not in entry_path.resolve().parents and entry_path.resolve() != root_path:
                 return True
         except (OSError, RuntimeError):
@@ -304,6 +305,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Exclusión de rutas inseguras antes de cualquier acceso stat
                         if skip_protected and _is_excluded_path(entry, root_path):
                             continue
                         
