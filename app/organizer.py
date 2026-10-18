@@ -119,9 +119,11 @@ def is_valid_junk_extension(filename: str) -> bool:
     if not filename: return False
     return Path(filename).suffix.lower() in JUNK_EXTENSIONS
 
-def _get_win_attributes(entry: os.DirEntry) -> int:
-    """Extrae atributos de archivo específicos de Windows usando la API de DirEntry."""
+def _get_win_attributes(entry: os.DirEntry | Path) -> int:
+    """Extrae atributos de archivo específicos de Windows usando la API de DirEntry o Path."""
     try:
+        if isinstance(entry, os.DirEntry):
+            return entry.stat(follow_symlinks=False).st_file_attributes
         return entry.stat(follow_symlinks=False).st_file_attributes
     except (OSError, AttributeError, ValueError):
         return 0
@@ -200,7 +202,7 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
     if len(str(src)) > LIMITS.MAX_PATH_LENGTH or len(str(dest)) > LIMITS.MAX_PATH_LENGTH: return False
     return not (is_protected_path(src) or is_protected_path(dest))
 
-def _is_system_hidden(entry: os.DirEntry) -> bool:
+def _is_system_hidden(entry: os.DirEntry | Path) -> bool:
     """Identifica archivos marcados como ocultos o de sistema."""
     return bool(_get_win_attributes(entry) & LIMITS.WIN_ATTR_MASK)
 
@@ -233,7 +235,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         dest_real = dest.resolve(strict=False)
         
         if src_real.name.lower() in SYSTEM_CRITICAL_NAMES or is_protected_path(src_real): return False
-        if src_real.is_symlink() or (os.name == 'nt' and bool(src_real.stat().st_file_attributes & LIMITS.WIN_ATTR_JUNCTION)): return False
+        if src_real.is_symlink() or (os.name == 'nt' and _is_system_hidden(src_real)): return False
         if not (is_safe_to_modify(src_real) and _validate_path_security(src_real, dest_real)): return False
         
         # Validar consistencia de dispositivos para evitar movimientos entre volúmenes distintos si fuera necesario
