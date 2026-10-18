@@ -1000,6 +1000,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             raw = entry_widget.get().strip()
             if not raw:
                 return default
+            # Sanitizar entrada incluso si se espera un número
             clean_raw = self._sanitize_path(raw)
             if numeric:
                 return self._validate_numeric_setting(clean_raw, default)

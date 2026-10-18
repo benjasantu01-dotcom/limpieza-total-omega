@@ -416,10 +416,13 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """Solicita al SO forzar la liberación del working set tras validar seguridad."""
     if not _is_windows: return False, "Solo soportado en Windows."
     
-    try: target_pid = int(pid)
-    except (ValueError, TypeError): return False, "El PID debe ser un valor numérico."
+    try: 
+        target_pid = int(pid)
+    except (ValueError, TypeError): 
+        return False, "El PID debe ser un valor numérico."
         
-    if _is_system_process(target_pid): return False, "Operación no permitida en procesos del sistema."
+    if _is_system_process(target_pid): 
+        return False, "Operación no permitida en procesos del sistema."
     
     psapi, kernel32 = ctypes.windll.psapi, ctypes.windll.kernel32
     proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
@@ -428,13 +431,14 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Acceso denegado o proceso no encontrado."
 
     try:
+        # Validación de seguridad del proceso antes de cualquier manipulación de memoria.
         if not _is_process_executable_safe(target_pid, proc_handle):
             return False, "Proceso protegido o ubicación insegura."
             
         if psapi.EmptyWorkingSet(proc_handle) == 0:
             return False, "El sistema operativo rechazó la operación de limpieza."
         return True, f"Working set liberado. {TRIM_WARNING}"
-    except (ctypes.WinError, OSError):
-        return False, "Error al intentar interactuar con el proceso."
+    except (ctypes.WinError, OSError, Exception):
+        return False, "Error inesperado al intentar interactuar con el proceso."
     finally:
         kernel32.CloseHandle(proc_handle)

@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 49
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-17 | 75 | 6 | 19 | 11 | 89 |
-| 2026-10-18 | 118 | 10 | 30 | 12 | 134 |
+| 2026-10-17 | 72 | 6 | 18 | 11 | 89 |
+| 2026-10-18 | 121 | 10 | 30 | 12 | 135 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **42**
-- legibilidad y documentación: **40**
 - robustez ante casos límite: **40**
 - rendimiento: **37**
-- manejo de errores y validación de entradas: **34**
+- manejo de errores y validación de entradas: **37**
+- legibilidad y documentación: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `safety.py`: **19**
+- `memory.py`: **19**
 - `quarantine.py`: **19**
-- `memory.py`: **18**
+- `safety.py`: **18**
 - `diskreport.py`: **17**
 - `settings.py`: **16**
 - `assistant.py`: **15**
 - `browser.py`: **14**
-- `scanner.py`: **13**
 - `duplicates.py`: **13**
+- `main.py`: **13**
 - `healthscore.py`: **12**
-- `main.py`: **12**
-- `organizer.py`: **10**
+- `scanner.py`: **12**
+- `organizer.py`: **11**
 - `branding.py`: **8**
-- `startup.py`: **7**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-18T13:06:14` **organizer.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `stage_for_review` y `delete_reviewed` para asegurar que el uso de `resolve(strict=True)` no bloquee la ejecución ante rutas inexistentes, además de añadir validaciones explícitas de tipos y estados para evitar excepciones no capturadas durante operaciones de sistema.
+- `2026-10-18T13:05:57` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `trim_working_set` añadiendo validaciones preventivas sobre el handle y los parámetros de entrada, asegurando que cualquier fallo en la interacción con el kernel sea capturado de forma específica antes de intentar operaciones de memoria.
+- `2026-10-18T13:05:28` **main.py** (manejo de errores y validación de entradas): Se ha mejorado `_safe_get_entry_value` para manejar de forma robusta entradas vacías, tipos de datos incorrectos y errores de estado de widgets de Tkinter, asegurando que cualquier entrada malintencionada o inesperada devuelva un valor por defecto seguro sin romper el flujo de la aplicación.
 - `2026-10-18T12:55:12` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `duplicates.py` ante entradas inválidas o nulas en sus funciones principales (`suggest_keeper`, `format_group`, `group_by_size`) mediante validaciones de tipo y estructura, evitando excepciones durante el procesamiento de datos mal formados.
 - `2026-10-18T12:54:37` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `base_directories` y `detect_profiles` añadiendo validaciones explícitas contra `None` y tipos incorrectos, asegurando que el módulo no falle silenciosamente o de forma inesperada si las variables de entorno o parámetros de entrada son maliciosos o inexistentes.
 - `2026-10-18T12:54:10` **branding.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `save_logo_svg` utilizando una validación explícita para evitar fallos por rutas nulas o directorios protegidos, asegurando que el uso de `ensure_safe_to_modify` (o `is_safe_to_modify`) sea robusto ante parámetros inesperados.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-18T11:02:10` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_should_skip_entry` y `_sum_directory_recursive` mediante el uso de `is_safe_to_modify` antes de realizar operaciones de acceso (`stat`), evitando que el escáner intente interactuar con rutas que violen las políticas de seguridad incluso antes de que ocurra un error de sistema.
 - `2026-10-18T10:52:33` **startup.py** (robustez ante casos límite): Se introdujo una verificación de integridad en `parse_registry_csv` para descartar rutas que contengan caracteres de control ocultos (ASCII < 32), evitando errores de procesamiento por datos malformados o inyecciones, y se aseguró el uso de `strip()` previo a la validación para manejar casos límite de espacios en blanco en el registro.
 - `2026-10-18T10:52:05` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados corruptos o bloqueados del sistema de archivos mediante la implementación de una estrategia de reintento (`backoff` exponencial simplificado) y un manejo explícito de errores de I/O en `perform_atomic_write` y `load`, previniendo que bloqueos temporales por antivirus o procesos del sistema detengan la carga de la configuración.
-- `2026-10-18T10:43:26` **scanner.py** (robustez ante casos límite): Se añadió una validación de rutas inexistentes dentro de `_is_valid_file_path` y se mejoró la resiliencia ante `FileNotFoundError` en las heurísticas para evitar el colapso del bucle ante archivos temporales que desaparecen durante la ejecución.
-- `2026-10-18T10:43:12` **safety.py** (robustez ante casos límite): Se ha añadido un chequeo de `PermissionError` y `OSError` específico al momento de intentar resolver el descriptor de seguridad en `SecurityDescriptor.from_path`, garantizando que si el acceso al sistema de archivos es restringido durante la introspección, la función no propague errores sin gestionar y retorne un descriptor de "seguro/bloqueado" en lugar de fallar la ejecución.
-- `2026-10-18T10:42:05` **quarantine.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de concurrencia y permisos durante la inicialización del directorio de cuarentena, utilizando `os.access` y una verificación explícita de `os.O_DIRECTORY` para asegurar que la ruta sandbox no sea un archivo o un punto de montaje bloqueado antes de cualquier operación de I/O.
