@@ -238,7 +238,6 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
         pid = int(pid_str)
         ws = _safe_int_conversion(ws_str)
         
-        # Filtros de exclusión: PIDs críticos y procesos con métricas fuera de rango lógico.
         if _is_system_process(pid) or pid <= 0:
             return None
         if not (0 < ws < MAX_VALID_PROCESS_MEM):
@@ -262,7 +261,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     if len(lines) < 2:
         return []
     
-    def _gen():
+    def _gen() -> Iterator[ProcessMemory]:
         for line in lines[1:]:
             if line:
                 proc = _extract_process_info(line)

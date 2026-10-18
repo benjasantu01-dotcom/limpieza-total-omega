@@ -175,7 +175,10 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
-    """Verifica que la operación de movimiento no sea recursiva para prevenir pérdida de datos."""
+    """
+    Verifica que la operación no cause recursividad lógica (ej. mover un padre 
+    dentro de su propio hijo), evitando ciclos destructivos en el sistema de archivos.
+    """
     try:
         src_resolved = src.resolve(strict=False)
         dest_resolved = dest.resolve(strict=False)
@@ -200,7 +203,11 @@ def _is_system_hidden(entry: os.DirEntry) -> bool:
     return bool(_get_win_attributes(entry) & WIN_ATTR_MASK)
 
 def _validate_file_identity(junk_file: JunkFile, src_real: Path) -> bool:
-    """Verifica la identidad física del archivo mediante inodo para evitar race conditions."""
+    """
+    Verifica la identidad física mediante el inodo y el ID de dispositivo. 
+    Protege contra 'TOCTOU' (Time of Check, Time of Use) al asegurar que el 
+    archivo procesado es el mismo que fue detectado originalmente.
+    """
     try:
         stat_result = src_real.stat()
         return (junk_file._ino is None or stat_result.st_ino == junk_file._ino) and \
@@ -220,7 +227,11 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
         return False
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
-    """Valida el conjunto de criterios de seguridad antes de realizar cualquier operación de E/S."""
+    """
+    Orquestador de seguridad que valida todas las precondiciones antes de 
+    realizar una operación de E/S. Verifica integridad, bloqueos y límites 
+    de seguridad definidos en `safety.py`.
+    """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     try:
         if not junk_file.path.exists(): return False
@@ -343,7 +354,11 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         return None
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Borra físicamente los archivos que han sido movidos a la carpeta de revisión."""
+    """
+    Borra físicamente los archivos que han sido movidos a la carpeta de revisión.
+    Implementa validaciones estrictas para asegurar que solo se eliminen objetos 
+    dentro del directorio de cuarentena y bajo condiciones de seguridad absoluta.
+    """
     if not isinstance(review_dir, str) or not review_dir: return 0
     try:
         dest = Path(review_dir).expanduser()
