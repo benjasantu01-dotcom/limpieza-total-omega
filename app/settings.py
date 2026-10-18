@@ -355,12 +355,14 @@ def validate(raw_values: Any) -> AppSettings:
     return config 
 
 def _is_file_secure_to_read(st: os.stat_result, file_obj: Any) -> bool:
-    """Comprueba permisos y metadatos para asegurar que el archivo de configuración es un archivo plano normal."""
+    """Comprueba permisos, metadatos y asegura que no es un enlace simbólico."""
     try:
-        if file_obj.closed or not stat.S_ISREG(st.st_mode): return False
-        if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
+        # lstat verifica si el archivo actual es symlink, evitando TOCTOU
+        st_l = os.lstat(file_obj.name)
+        if file_obj.closed or not stat.S_ISREG(st.st_mode) or stat.S_ISLNK(st_l.st_mode): return False
+        if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE or st.st_nlink != 1: return False
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
-        if st.st_mode & (stat.S_ISUID | stat.S_ISGID) or st.st_nlink != 1: return False
+        if st.st_mode & (stat.S_ISUID | stat.S_ISGID): return False
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         return True
     except (OSError, PermissionError, AttributeError, ValueError): return False

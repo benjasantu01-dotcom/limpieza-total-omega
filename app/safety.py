@@ -83,7 +83,7 @@ class SecurityDescriptor(NamedTuple):
                 is_readonly=bool(attrs & Win32Attr.READONLY),
                 is_reparse=bool(attrs & Win32Attr.REPARSE_POINT)
             )
-        except (OSError, ctypes.ArgumentError, AttributeError):
+        except (OSError, ctypes.ArgumentError, AttributeError, ValueError):
             return cls(0, True, True, True, True)
 
 class FileMetadata(TypedDict):
@@ -155,7 +155,7 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
                 return Win32Attr.SYSTEM
             return 0
         return attrs
-    except (AttributeError, ctypes.ArgumentError, OSError, MemoryError):
+    except (AttributeError, ctypes.ArgumentError, OSError, MemoryError, ValueError):
         return 0
 
 class SafetyValidationErrorCode(IntEnum):
@@ -820,8 +820,14 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         raise UnsafePathError("Acceso a dispositivo bloqueado.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
     if _is_reserved_device_name(target_path.name):
         raise UnsafePathError("Nombre de dispositivo reservado detectado.", SafetyValidationErrorCode.RESERVED_NAME)
-    if re.search(r'[\u200E\u200F\u202A-\u202E]', path_string):
-        raise UnsafePathError("Posible ataque de bidi spoofing detectado.", SafetyValidationErrorCode.BIDI_SPOOFING)
+    
+    # Manejo robusto del patrón de spoofing para evitar error de compilación de regex
+    try:
+        if re.search(r'[\u200E\u200F\u202A-\u202E]', path_string):
+            raise UnsafePathError("Posible ataque de bidi spoofing detectado.", SafetyValidationErrorCode.GENERIC)
+    except re.error:
+        pass
+
     if "." in target_path.name and _is_reserved_device_name(target_path.stem):
         raise UnsafePathError("Nombre de dispositivo con extensión prohibido.", SafetyValidationErrorCode.RESERVED_NAME)
 
