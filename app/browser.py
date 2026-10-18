@@ -210,7 +210,6 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     if len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS): return True
     if not _is_path_safe(path_str, ctx): return True
     try:
-        # Usamos métodos de entry para evitar llamadas a stat cuando es posible
         if entry.is_symlink() or ctx.is_junction(path_str) or _is_system_hidden(path_str, ctx.kernel32): return True
     except OSError: return True
     return False
@@ -249,6 +248,8 @@ def directory_size(path: Optional[OSPath]) -> int:
     if not path_obj.exists() or not path_obj.is_dir(): return 0
     
     resolved_path = str(path_obj.resolve(strict=True))
+    if not is_safe_to_modify(Path(resolved_path)): return 0
+    
     ctx = ScanContext(os.path.normpath(resolved_path), _get_kernel32(), _IS_JUNCTION_FN, set(), set(), {})
     return _sum_directory_recursive(resolved_path, ctx, 0).bytes_found
 
@@ -257,7 +258,6 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
     """Valida la integridad de un directorio de caché como candidato para escaneo."""
     if not candidate.exists() or not candidate.is_dir() or not os.access(candidate, os.R_OK): return False
     
-    # Optimizamos evitando resolver múltiples veces
     try:
         real = str(candidate.resolve(strict=True))
         if not _is_within_sandbox(os.path.normpath(real), base_abs_str): return False

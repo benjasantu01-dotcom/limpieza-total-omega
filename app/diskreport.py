@@ -143,7 +143,7 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         if not p.exists():
             return None
         
-        resolved_path = Path(os.path.realpath(p))
+        resolved_path = p.resolve(strict=False)
         if not resolved_path.is_dir() or is_protected_path(resolved_path) or not os.access(resolved_path, os.R_OK):
             return None
         return resolved_path
@@ -163,7 +163,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         entry_path = Path(entry.path)
         try:
             # Validación de escape de raíz mediante resolución estricta
-            if root_path not in entry_path.resolve().parents and entry_path.resolve() != root_path:
+            if root_path not in entry_path.resolve(strict=False).parents and entry_path.resolve(strict=False) != root_path:
                 return True
         except (OSError, RuntimeError):
             return True
@@ -276,7 +276,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if mount is None:
         return None
     try:
-        p = Path(mount).resolve()
+        p = Path(mount).resolve(strict=False)
         if p.exists() and not is_protected_path(p):
             usage = shutil.disk_usage(p)
             return DriveUsage(str(p), usage.total, usage.used, usage.free)
