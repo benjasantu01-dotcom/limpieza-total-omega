@@ -511,7 +511,7 @@ def _validate_drive_restrictions(target_path: Path) -> None:
     except (AttributeError, OSError, ctypes.ArgumentError, MemoryError):
         pass
 
-# Predicados de validación para integridad: determinan si un archivo viola una condición específica
+# Predicados de validación para integridad
 def _check_symlink(p: Path, _: os.stat_result, __: SecurityDescriptor) -> bool: return p.is_symlink()
 def _check_reparse(p: Path, _: os.stat_result, sd: SecurityDescriptor) -> bool: return sd.is_reparse
 def _check_kernel_locked(p: Path, _: os.stat_result, __: SecurityDescriptor) -> bool: return _is_kernel_managed(str(p))
@@ -596,7 +596,6 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
 def _get_path_stat_robust(path: Path) -> os.stat_result:
     """
     Obtiene metadatos del archivo mediante reintentos.
-    Utiliza GetFileAttributesExW para bypass de bloqueos en Windows.
     """
     max_retries = 3
     if not isinstance(path, Path):
@@ -608,7 +607,6 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                 raise UnsafePathError(f"Acceso a dispositivo bloqueado: {path.name}", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
                 
             if os.name == 'nt':
-                # Chequeo previo de disponibilidad real de handle
                 if _is_file_locked_by_other_process(str(path)):
                     raise UnsafePathError(f"Archivo bloqueado por otro proceso: {path.name}", SafetyValidationErrorCode.FILE_IN_USE)
 

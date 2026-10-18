@@ -1506,3 +1506,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-18T09:21:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-10-18T09:21:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T09:21:44` Corrida terminada. Total usado hoy: 220.
+- `2026-10-18T09:30:08` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-10-18T09:30:59` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se introdujeron type hints en funciones críticas y se refactorizaron los validadores (`_check_*`) para usar un objeto `SecurityDescriptor` consistente en lugar de parámetros redundantes, mejorando la legibilidad y mantenimiento del motor de reglas.
+- `2026-10-18T09:31:28` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad y mantenibilidad del módulo añadiendo docstrings técnicos detallados a las funciones de chequeo heurístico, aclarando el propósito y los pre-requisitos de cada lógica de detección.
+- `2026-10-18T09:31:57` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-18T09:32:07` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-10-18T09:32:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T09:32:07` Corrida terminada. Total usado hoy: 224.

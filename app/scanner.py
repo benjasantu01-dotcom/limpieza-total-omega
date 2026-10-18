@@ -178,7 +178,11 @@ def _is_target_extension(name: str) -> bool:
         return False
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
-    """Analiza si el nombre del archivo contiene una extensión doble sospechosa como técnica de enmascaramiento."""
+    """
+    Analiza si el nombre del archivo combina extensiones de documentos con ejecutables.
+    Técnica común para engañar usuarios mostrando iconos de archivo inofensivo.
+    Requiere un objeto Path válido.
+    """
     if path is None or not hasattr(path, 'name') or not path.name: return None
     try:
         if DOUBLE_EXTENSION_RE.search(path.name):
@@ -188,7 +192,11 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
-    """Detecta ejecutables creados recientemente dentro de carpetas de descarga o temporales."""
+    """
+    Detecta ejecutables recién descargados en carpetas volátiles (Downloads, Temp, Desktop).
+    El umbral de tiempo se define en SCAN_LIMITS.recent_hours.
+    Requiere un objeto entry válido para consultar mtime de forma eficiente.
+    """
     if path is None or path.parent is None: return None
     try:
         if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
@@ -202,7 +210,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
-    """Detecta binarios maliciosos que intentan suplantar procesos del sistema fuera de System32."""
+    """
+    Identifica binarios que utilizan nombres críticos del sistema pero residen fuera de %System32%.
+    Esta heurística detecta suplantación de procesos privilegiados.
+    """
     if path is None or not hasattr(path, 'name') or not path.name: return None
     try:
         if path.name.lower() in SYSTEM_LOOKALIKES:
@@ -213,7 +224,10 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
-    """Identifica archivos ejecutables con tamaño de 0 bytes, indicativo de carga incompleta o maliciosa."""
+    """
+    Verifica si un ejecutable tiene tamaño 0 bytes.
+    Útil para descartar archivos corrompidos o creados por malware como marcadores de infección.
+    """
     if path is None: return None
     try:
         if _get_file_size(path) == 0:
