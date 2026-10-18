@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **189** (37.5% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 56
+- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 54
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-17 | 115 | 10 | 39 | 15 | 133 |
-| 2026-10-18 | 74 | 6 | 17 | 7 | 88 |
+| 2026-10-17 | 113 | 10 | 37 | 15 | 133 |
+| 2026-10-18 | 75 | 7 | 17 | 7 | 90 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **42**
-- legibilidad y documentación: **41**
+- legibilidad y documentación: **39**
 - rendimiento: **37**
 - robustez ante casos límite: **37**
-- manejo de errores y validación de entradas: **32**
+- manejo de errores y validación de entradas: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **19**
 - `quarantine.py`: **18**
 - `safety.py`: **18**
-- `assistant.py`: **16**
+- `memory.py`: **18**
+- `assistant.py`: **17**
 - `diskreport.py`: **16**
 - `settings.py`: **16**
-- `duplicates.py`: **14**
+- `duplicates.py`: **13**
 - `healthscore.py`: **13**
 - `browser.py`: **13**
 - `organizer.py`: **11**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-18T08:21:50` **assistant.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `_call_gemini` y `_extract_text_from_gemini_json` implementando una validación explícita de `Content-Length` y tipos de respuesta para prevenir errores de tipo `NoneType` al acceder a los datos de la API, cumpliendo con el enfoque de validación defensiva.
 - `2026-10-18T06:59:22` **settings.py** (seguridad defensiva): Se endureció la validación de seguridad en `_is_dir_safe` añadiendo una comprobación explícita para evitar directorios con permisos de escritura para el grupo u otros (World-Writable), bloqueando vectores de escalada de privilegios o manipulación por otros usuarios en sistemas compartidos.
 - `2026-10-18T06:58:52` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez de las verificaciones de seguridad en `scanner.py` reemplazando llamadas a `os.access` (que pueden fallar por condiciones de carrera o privilegios de token en Windows) por una validación de atributos de archivo más directa y segura, y se ha estandarizado el manejo de `path.resolve()` para evitar resoluciones que excedan los límites del sistema cuando las rutas son excesivamente largas.
 - `2026-10-18T06:49:01` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad del proceso de aislamiento mediante la validación estricta de la propiedad (UID) y permisos del archivo origen ANTES de cualquier operación de I/O, previniendo riesgos de manipulación mediante archivos sustituidos por otros usuarios o procesos con mayores privilegios.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-18T06:11:39` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_iter_process_memory` para gestionar casos donde el conteo de procesos cambia dinámicamente durante la iteración y se introdujo un manejo seguro de errores al consultar el nombre de módulo para evitar que un proceso con denegación de acceso interrumpa el diagnóstico global.
 - `2026-10-18T05:57:38` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia (`path.exists()`) y manejo de errores específico en `_calculate_keeper_heuristic` para evitar caídas al intentar analizar archivos que fueron movidos o eliminados por procesos externos durante el tiempo que transcurre entre la recolección y la sugerencia del archivo a conservar.
 - `2026-10-18T05:57:14` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia de archivos dentro del generador `walk_files` y en el acumulador `_collect_summary_data` para evitar errores de tipo `FileNotFoundError` (o `OSError` con código 2) que ocurren cuando un archivo se elimina o mueve por un proceso externo mientras se está ejecutando el escaneo, aumentando la robustez ante condiciones de carrera.
-- `2026-10-18T05:48:28` **branding.py** (robustez ante casos límite): Se mejora la robustez de `save_logo_svg` al verificar la existencia y el estado de la ruta mediante `is_safe_to_modify` antes de proceder, evitando lanzar excepciones innecesarias en el flujo de control y asegurando que las operaciones de escritura se realicen únicamente en rutas validadas.

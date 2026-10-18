@@ -1388,3 +1388,45 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-10-18T08:12:52` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-10-18T08:12:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T08:12:52` Corrida terminada. Total usado hoy: 192.
+- `2026-10-18T08:18:57` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-10-18T08:19:00` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-18T08:19:00` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-18T08:19:20` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-18T08:19:20` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-18T08:19:50` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-18T08:19:50` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-18T08:20:05` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-18T08:20:05` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-10-18T08:20:25` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-18T08:20:25` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-10-18T08:20:55` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-10-18T08:20:55` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-10-18T08:21:50` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `_call_gemini` y `_extract_text_from_gemini_json` implementando una validación explícita de `Content-Length` y tipos de respuesta para prevenir errores de tipo `NoneType` al acceder a los datos de la API, cumpliendo con el enfoque de validación defensiva.
+- `2026-10-18T08:22:24` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-18T08:22:43` Tests FALLARON:
+```
+........................................................................ [ 24%]
+.........................F.............................................. [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_save_logo_svg_writes_the_file ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+1 failed, 298 passed in 1.34s
+
+```
+- `2026-10-18T08:22:43` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `save_logo_svg` añadiendo una validación explícita para evitar intentos de escritura en rutas no existentes o con formato inválido, y se mejoró el manejo de excepciones en las funciones de dibujo del `Canvas` para asegurar que parámetros `None` o numéricamente inválidos no interrumpan el renderizado de la UI.
+- `2026-10-18T08:22:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T08:22:43` Corrida terminada. Total usado hoy: 196.

@@ -754,14 +754,15 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: 
                 return None
-            if res.headers.get("Content-Length") and int(res.headers.get("Content-Length")) > _MAX_RESPONSE_BYTES: 
+            content_length = res.headers.get("Content-Length")
+            if content_length is not None and int(content_length) > _MAX_RESPONSE_BYTES: 
                 return None
             raw_res: bytes = res.read(_MAX_RESPONSE_BYTES + 1)
             if not isinstance(raw_res, bytes) or len(raw_res) > _MAX_RESPONSE_BYTES: 
                 return None
             data: Any = json.loads(raw_res.decode("utf-8"))
             return _extract_text_from_gemini_json(data)
-    except (urllib.error.HTTPError, urllib.error.URLError, json.JSONDecodeError, OSError):
+    except (urllib.error.HTTPError, urllib.error.URLError, json.JSONDecodeError, OSError, ValueError):
         return None
 
 def ask(question: str, context: SystemContext | None = None,
