@@ -148,6 +148,7 @@ _ENUM_VALS: Final[MappingProxyType[ConfigKey, frozenset[str]]] = MappingProxyTyp
 def _is_dir_safe(path: Path) -> bool:
     """Valida que el directorio sea seguro: sin puntos de reanálisis y con permisos estrictos de escritura."""
     try:
+        if not path.exists(): return True
         real_path = Path(os.path.realpath(path))
         if not real_path.is_dir() or _Validators._is_reparse_point(real_path): return False
         st = real_path.stat()
@@ -219,10 +220,12 @@ class _Validators:
         try:
             p = Path(path_str).expanduser()
             if not p.is_absolute(): return False
-            resolved = Path(os.path.realpath(p))
-            if any(_Validators._is_reparse_point(str(parent)) for parent in resolved.parents):
-                return False
-            return not is_protected_path(str(resolved)) and is_safe_to_modify(str(resolved))
+            if p.exists():
+                resolved = Path(os.path.realpath(p))
+                if any(_Validators._is_reparse_point(str(parent)) for parent in resolved.parents):
+                    return False
+                return not is_protected_path(str(resolved)) and is_safe_to_modify(str(resolved))
+            return not is_protected_path(str(p)) and is_safe_to_modify(str(p))
         except (OSError, PermissionError, RuntimeError, IndexError):
             return False
 
@@ -384,7 +387,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
         return _MANAGER.path_cache[cache_key]
     
     try:
-        raw_base = Path(os.path.realpath(custom_base)) if custom_base else Path(os.path.realpath(SETTINGS_DIR))
+        raw_base = Path(custom_base).resolve() if custom_base else Path(SETTINGS_DIR).resolve()
         if _Validators._is_safe_path(str(raw_base)) and not _Validators._is_reparse_point(str(raw_base)):
             if not raw_base.exists(): 
                 try: raw_base.mkdir(parents=True, exist_ok=True)

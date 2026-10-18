@@ -29,12 +29,13 @@ logger: Final = logging.getLogger(__name__)
 GENERIC_READ: Final = 0x80000000
 FILE_ATTRIBUTE_NORMAL: Final = 0x00000080
 OPEN_EXISTING: Final = 3
+FILE_ATTRIBUTE_REPARSE_POINT: Final = 0x400
 
 class ScannerLimits(NamedTuple):
     """Parámetros de configuración para el motor de escaneo y sus límites de seguridad."""
     max_path: int = 260
     recent_hours: int = 24
-    reparse_point_attr_mask: int = 0x400
+    reparse_point_attr_mask: int = FILE_ATTRIBUTE_REPARSE_POINT
     max_depth: int = 50
 
 SCAN_LIMITS: Final = ScannerLimits()
@@ -153,6 +154,7 @@ def _safe_stat(entry: os.DirEntry) -> Optional[os.stat_result]:
             return None
         if not entry.is_file(follow_symlinks=False):
             return None
+        # Verifica atributos de archivo para detectar Junctions o Mount Points no expuestos por is_symlink
         if _cached_is_protected(entry.path) or (_get_file_attributes(entry) & SCAN_LIMITS.reparse_point_attr_mask):
             return None
         return entry.stat(follow_symlinks=False)
@@ -294,6 +296,7 @@ class Scanner:
 
             if entry.is_symlink():
                 return False
+            # Bloquea puntos de reanálisis incluso si no se marcan como symlinks (Junctions de Windows)
             if self._is_reparse_point(entry):
                 return False
             if _cached_is_protected(path_str):
