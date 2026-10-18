@@ -975,3 +975,12 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-18T04:19:27` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-10-18T04:19:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T04:19:27` Corrida terminada. Total usado hoy: 100.
+- `2026-10-18T04:24:41` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-10-18T04:25:37` ➖ Sin cambios en safety.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `ensure_safe_to_modify` ante errores de entrada (`None` o tipos inesperados) dentro de los bloques de validación de `base_dir` y `path`, evitando excepciones no capturadas que podrían colapsar el flujo de la aplicación.
+- `2026-10-18T04:26:06` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `_get_file_size` y `_is_locked_by_os` reemplazando validaciones implícitas por un manejo de errores más estricto, asegurando que cualquier entrada `None` o ruta mal formada sea gestionada explícitamente antes de intentar interactuar con el sistema operativo.
+- `2026-10-18T04:26:07` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-18T04:26:15` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-18T04:27:33` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la carga de JSON en `_read_and_parse_json` y `_coerce_and_verify` agregando validaciones de tipo explícitas y manejo defensivo de errores, asegurando que un JSON malformado o un objeto inesperado (ej. lista en lugar de dict) no comprometa la integridad de la configuración ni lance excepciones inesperadas.
+- `2026-10-18T04:27:46` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-18T04:27:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T04:27:46` Corrida terminada. Total usado hoy: 104.

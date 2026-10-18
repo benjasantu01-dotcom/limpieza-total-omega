@@ -91,8 +91,10 @@ def _cached_is_protected(path_str: str) -> bool:
 
 def _is_valid_file_path(path: Path) -> bool:
     """Valida la integridad básica de un Path antes de realizar operaciones de I/O."""
+    if not isinstance(path, Path):
+        return False
     try:
-        return path is not None and path.exists() and path.is_file()
+        return path.exists() and path.is_file()
     except (OSError, PermissionError, ValueError, RuntimeError):
         return False
 
@@ -100,9 +102,8 @@ def _is_locked_by_os(path: Path) -> bool:
     """
     Verifica si un archivo está bloqueado por otro proceso en Windows.
     Utiliza CreateFileW para intentar obtener un handle de lectura exclusivo.
-    Si el resultado es INVALID_HANDLE_VALUE (-1), el archivo está bloqueado.
     """
-    if not _is_valid_file_path(path):
+    if not isinstance(path, Path):
         return True
     try:
         handle = ctypes.windll.kernel32.CreateFileW(
@@ -136,7 +137,7 @@ def _get_file_attributes(entry: os.DirEntry) -> int:
 
 def _get_file_size(path: Path) -> int:
     """Retorna el tamaño en bytes del archivo. Devuelve -1 si el archivo es inaccesible."""
-    if not _is_valid_file_path(path): 
+    if not isinstance(path, Path):
         return -1
     try:
         return int(path.stat().st_size)
@@ -231,9 +232,6 @@ ALL_CHECKS: Final[Sequence[SuspicionCheck]] = (
 class Scanner:
     """
     Controlador centralizado para la ejecución de escaneo recursivo.
-    
-    Gestiona el estado de los resultados encontrados, el caché de rutas seguras
-    y la lógica de recursión segura para evitar el acceso a directorios bloqueados.
     """
     
     def __init__(self, base_root: Path) -> None:
@@ -277,7 +275,6 @@ class Scanner:
             return True
         
         try:
-            # Validación defensiva contra caracteres nulos o maliciosos en la ruta completa
             if "\0" in path_str or RTL_CHAR_RE.search(path_str):
                 return False
 
@@ -378,10 +375,7 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """
-    Inicia el recorrido de escaneo desde un directorio base utilizando un enfoque 
-    iterativo seguro para evitar desbordamiento de pila y accesos recursivos no deseados.
-    """
+    """Inicia el recorrido de escaneo desde un directorio base."""
     if directory is None: return []
     try:
         path_str: str = str(directory).strip()
@@ -409,10 +403,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     return scanner.results
 
 def run_windows_defender_quick_scan() -> str:
-    """
-    Interactúa con Windows Defender a través de PowerShell para ejecutar 
-    un escaneo rápido del sistema.
-    """
+    """Interactúa con Windows Defender a través de PowerShell."""
     try:
         status = subprocess.run(
             ["powershell", "-Command", "Get-MpComputerStatus | Select-Object -ExpandProperty RealTimeProtectionEnabled"],

@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **177** (35.1% de aceptación)
+- Mejoras aceptadas: **176** (34.9% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 50
-- Sin cambios (nada sustancial que mejorar): 20
+- Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 243
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 11 | 0 | 1 | 1 | 41 |
+| 2026-10-16 | 8 | 0 | 1 | 1 | 40 |
 | 2026-10-17 | 128 | 11 | 40 | 16 | 155 |
-| 2026-10-18 | 38 | 3 | 9 | 3 | 47 |
+| 2026-10-18 | 40 | 3 | 9 | 4 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **39**
+- manejo de errores y validación de entradas: **41**
 - seguridad defensiva: **37**
-- rendimiento: **35**
 - legibilidad y documentación: **35**
+- rendimiento: **32**
 - robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **19**
-- `diskreport.py`: **17**
 - `safety.py`: **17**
-- `browser.py`: **15**
+- `diskreport.py`: **16**
 - `quarantine.py`: **15**
-- `duplicates.py`: **14**
+- `browser.py`: **14**
+- `settings.py`: **14**
 - `assistant.py`: **14**
-- `settings.py`: **13**
+- `duplicates.py`: **13**
 - `healthscore.py`: **12**
+- `scanner.py`: **11**
 - `main.py`: **10**
 - `organizer.py`: **10**
-- `scanner.py`: **10**
 - `branding.py`: **8**
 - `startup.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-18T04:27:33` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la carga de JSON en `_read_and_parse_json` y `_coerce_and_verify` agregando validaciones de tipo explícitas y manejo defensivo de errores, asegurando que un JSON malformado o un objeto inesperado (ej. lista en lugar de dict) no comprometa la integridad de la configuración ni lance excepciones inesperadas.
+- `2026-10-18T04:26:06` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez de `_get_file_size` y `_is_locked_by_os` reemplazando validaciones implícitas por un manejo de errores más estricto, asegurando que cualquier entrada `None` o ruta mal formada sea gestionada explícitamente antes de intentar interactuar con el sistema operativo.
 - `2026-10-18T04:19:10` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` añadiendo un manejo de excepciones más granular y validación explícita de tipos, evitando que errores de formato en el JSON dejen a la aplicación en un estado de fallo persistente o retorno de datos corruptos.
 - `2026-10-18T04:17:19` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `stage_for_review` y `delete_reviewed` mediante la captura explícita de excepciones al resolver rutas, evitando que fallos silenciosos en la resolución de `Path` (como errores de permisos o rutas inexistentes) interrumpan el proceso, asegurando que las validaciones de seguridad se mantengan estrictas.
 - `2026-10-18T04:06:03` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `compute_score` implementando una validación explícita para asegurar que la suma total de puntos calculados no exceda los límites lógicos tras el redondeo, evitando resultados inconsistentes en el desglose.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-18T02:13:19` **healthscore.py** (seguridad defensiva): Se ha mejorado `_sanitize_msg` para incluir un escape de caracteres sospechosos que puedan ser interpretados como secuencias de escape de terminal o caracteres de control, fortaleciendo la integridad de la salida de texto frente a posibles inyecciones en los mensajes del sistema.
 - `2026-10-18T02:04:51` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva al reemplazar el uso de `os.scandir` (que es vulnerable a errores de acceso profundo en subdirectorios) por un patrón de resolución robusto en `walk_files` y añadiendo validaciones de rutas cortas mediante `Path.resolve()` para evitar que el escáner sea engañado por enlaces simbólicos o puntos de reparse que intenten escapar del directorio raíz (`root_path`).
 - `2026-10-18T02:03:55` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` al verificar la existencia y el tipo del directorio padre antes de intentar operaciones de escritura, mitigando posibles errores de sistema de archivos y asegurando que las rutas validadas por `safety` se traten de forma consistente.
-- `2026-10-18T01:54:47` **settings.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_secure_to_read` para detectar enlaces simbólicos mediante `st_nlink` y `lstat`, previniendo ataques de tipo "Time-of-check to time-of-use" (TOCTOU) y acceso a archivos vinculados externamente que podrían comprometer la integridad de la configuración.
-- `2026-10-18T01:52:57` **safety.py** (robustez ante casos límite): Se mejora la robustez frente a bloqueos y estados inconsistentes del sistema de archivos al implementar un manejo más granular de las excepciones de `ctypes` y `OSError` en `_is_file_locked_by_other_process` y `_get_file_attrs`, asegurando que condiciones temporales como archivos siendo bloqueados durante la lectura no aborten procesos, sino que sean reportadas correctamente mediante los códigos de seguridad definidos.

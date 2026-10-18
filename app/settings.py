@@ -407,11 +407,12 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     """Asegura coherencia entre los valores cargados y la lógica de seguridad predefinida."""
+    if not isinstance(settings, dict): return DEFAULTS.copy()
     final: AppSettings = DEFAULTS.copy()
     for key, val in settings.items():
         if key in DEFAULTS and val is not None and isinstance(val, type(DEFAULTS[key])):
             final[key] = val
-    if final["asistente_activado"] and not (final["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
+    if final.get("asistente_activado") and not (final.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         final["asistente_activado"] = False
     return final
 
