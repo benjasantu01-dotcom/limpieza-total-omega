@@ -19,6 +19,7 @@ from pathlib import Path
 import math
 import logging
 import string
+from functools import lru_cache
 
 ScoreMap: TypeAlias = Dict[str, float]
 NormalizedRatio: TypeAlias = Annotated[float, "Valor de salud normalizado entre 0.0 (crítico) y 1.0 (óptimo)"]
@@ -29,7 +30,6 @@ _ALLOWED_CHARS: Final[set[str]] = set(string.ascii_letters + string.digits + " .
 _FORBIDDEN_CHARS: Final[set[str]] = {chr(i) for i in range(32) if chr(i) not in (" ", "\t")} # Bloquear caracteres de control
 _BLOCKED_TERMS: Final[frozenset[str]] = frozenset(["system32", "windows", "admin", "c:\\", "system", "kernel", "path", "root", "drive"])
 _MAX_MSG_LEN: Final[int] = 128
-_BAR_CACHE: Dict[Tuple[int, int], str] = {}
 
 class Scorer(Protocol):
     """
@@ -195,7 +195,6 @@ _PIPELINE: Final[Tuple[PipelineEntry, ...]] = (
 )
 
 _verify_pipeline_integrity(WEIGHTS, _PIPELINE)
-_RULES_CACHE: Final[Dict[MetricKey, Tuple[RecommendationRule, ...]]] = {e.area: e.rules for e in _PIPELINE}
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio: 
     """Calcula el score normalizado de archivos basura."""
@@ -314,32 +313,24 @@ def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:
     """Envoltorio seguro para ejecutar factories de reglas sin exponer errores."""
     try:
         raw_res = rule.message_factory(metrics)
-        if not isinstance(raw_res, str):
-            return ""
+        if not isinstance(raw_res, str): return ""
         clean = _sanitize_msg(raw_res)
         return clean if clean else ""
-    except Exception:
-        return ""
+    except Exception: return ""
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio, findings: List[str]) -> None:
     """Ejecuta reglas de diagnóstico y registra advertencias halladas."""
-    if not math.isfinite(normalized_ratio):
-        return
+    if not math.isfinite(normalized_ratio): return
     for rule in rules:
         try:
             if rule.check(metrics, normalized_ratio):
                 clean_msg = _apply_rule_safely(metrics, rule)
-                if clean_msg:
-                    findings.append(clean_msg)
-        except Exception:
-            continue
+                if clean_msg: findings.append(clean_msg)
+        except Exception: continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """
     Computa el puntaje global mediante el pipeline.
-    
-    Itera sobre el _PIPELINE configurado para normalizar cada métrica, aplicar 
-    reglas de diagnóstico, y calcular el puntaje ponderado final.
     """
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema inválidos."])
@@ -351,9 +342,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     for entry in _PIPELINE:
         try:
             area_ratio = _clamp(entry.scorer(metrics))
-            rules = _RULES_CACHE.get(entry.area, entry.rules)
-            if rules:
-                _evaluate_rules(metrics, rules, area_ratio, recommendations)
+            if entry.rules:
+                _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             points = area_ratio * entry.weight
             val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
             metric_breakdown[entry.area] = val_int
@@ -372,13 +362,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
     )
 
+@lru_cache(maxsize=128)
 def _render_bar(points: int, max_val: int) -> str:
     """Crea una representación visual de barra para reportes con caché."""
-    key = (points, max_val)
-    if key not in _BAR_CACHE:
-        p = max(0, min(points, max_val))
-        _BAR_CACHE[key] = "#" * p + "." * (max_val - p)
-    return _BAR_CACHE[key]
+    p = max(0, min(points, max_val))
+    return "#" * p + "." * (max_val - p)
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera una lista de líneas legible para el informe de salud."""

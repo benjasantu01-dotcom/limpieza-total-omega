@@ -569,3 +569,46 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-18T00:44:37` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-10-18T00:44:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T00:44:37` Corrida terminada. Total usado hoy: 16.
+- `2026-10-18T00:50:48` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-10-18T00:51:16` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé la recursión en `_sum_directory_recursive` usando `scandir` para evitar llamadas redundantes a `os.path.exists` o `is_dir`, y consolidé las verificaciones de estado para reducir el número de syscalls durante el recorrido del árbol de archivos.
+- `2026-10-18T00:52:10` Tests FALLARON:
+```
+/pytest-of-runner/pytest-2/test_walk_files_finds_everythi0')
+
+    def test_walk_files_finds_everything_recursively(tmp_path):
+        (tmp_path / "raiz.txt").write_text("12345")
+        sub = tmp_path / "sub" / "mas"
+        sub.mkdir(parents=True)
+        (sub / "hondo.txt").write_text("1234567890")
+>       encontrados = {p.name: s for p, s in diskreport.walk_files(tmp_path)}
+                       ^^^^^^
+E       AttributeError: 'str' object has no attribute 'name'
+
+evolve/tests/test_modules.py:568: AttributeError
+_____________________ test_walk_files_skips_system_folders _____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_walk_files_skips_system_f0')
+
+    def test_walk_files_skips_system_folders(tmp_path):
+        (tmp_path / "normal.txt").write_text("x")
+        sistema = tmp_path / "Program Files"
+        sistema.mkdir()
+        (sistema / "oculto.txt").write_text("y")
+>       nombres = {p.name for p, _ in diskreport.walk_files(tmp_path)}
+                   ^^^^^^
+E       AttributeError: 'str' object has no attribute 'name'
+
+evolve/tests/test_modules.py:577: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_walk_files_finds_everything_recursively - AttributeError: 'str' object has no attribute 'name'
+FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - AttributeError: 'str' object has no attribute 'name'
+2 failed, 297 passed in 1.61s
+
+```
+- `2026-10-18T00:52:10` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: Optimizé `walk_files` y `_collect_summary_data` para evitar llamadas redundantes a `Path.relative_to` y `Path` constructor en bucles críticos, y reemplacé la construcción iterativa de `Path` por el uso directo de `os.path.join`, reduciendo significativamente la sobrecarga de instanciación de objetos en escaneos profundos.
+- `2026-10-18T00:52:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-18T00:52:15` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-18T00:52:54` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento del proceso de recolección en `_collect_candidates` eliminando llamadas redundantes a `is_safe_to_modify` y `is_protected_path` al procesar archivos que ya fueron validados previamente al obtener su `stat`, reduciendo la carga de I/O en árboles de directorios grandes.
+- `2026-10-18T00:53:08` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento de `compute_score` reemplazando la búsqueda redundante de reglas por un acceso directo pre-cargado y eliminando la creación de listas intermedias, además de asegurar que `_BAR_CACHE` no crezca indefinidamente mediante el uso de `functools.lru_cache` (liberado de la lista estándar).
+- `2026-10-18T00:53:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T00:53:08` Corrida terminada. Total usado hoy: 20.

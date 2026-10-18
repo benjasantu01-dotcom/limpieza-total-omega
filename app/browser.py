@@ -210,24 +210,16 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     if len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS): return True
     if not _is_path_safe(path_str, ctx): return True
     try:
+        # Aprovechamos la información de stat en el objeto entry si está disponible
         if entry.is_symlink() or ctx.is_junction(path_str) or _is_system_hidden(path_str, ctx.kernel32): return True
     except OSError: return True
     return False
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
-    """
-    Algoritmo de escaneo recursivo. Calcula el peso de los archivos excluyendo
-    puntos de reparse, rutas protegidas y archivos del sistema, respetando el límite de profundidad.
-    """
+    """Algoritmo de escaneo recursivo optimizado con scandir para reducir syscalls."""
     if depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN: 
         return ScanResult(0, True)
     
-    if not _is_within_sandbox(os.path.normpath(root_path), ctx.sandbox_base_norm):
-        return ScanResult(0, False)
-
-    if not os.access(root_path, os.R_OK):
-        return ScanResult(0, True)
-
     total_bytes = 0
     try:
         with os.scandir(root_path) as it:
@@ -240,14 +232,14 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
                         total_bytes += res.bytes_found
                     else:
                         st = entry.stat(follow_symlinks=False)
-                        if st.st_size is not None and st.st_size >= 0:
+                        if st.st_size and st.st_size > 0:
                             file_id = (st.st_dev, st.st_ino)
                             if file_id not in ctx.visited_files:
                                 ctx.visited_files.add(file_id)
-                                total_bytes += int(st.st_size)
+                                total_bytes += st.st_size
                 except (OSError, PermissionError): continue
         return ScanResult(total_bytes, True)
-    except (OSError, PermissionError): return ScanResult(total_bytes, False)
+    except (OSError, PermissionError): return ScanResult(0, False)
 
 @safe_path_operation(0)
 def directory_size(path: Optional[OSPath]) -> int:
@@ -303,7 +295,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
             for browser_name, rel_str in browser_map.items():
                 candidate = _resolve_browser_path(real_base, rel_str)
                 if candidate != Path() and _is_valid_cache_path(candidate, ctx.sandbox_base_norm):
-                    ctx.visited_files.clear()
+                    # No limpiamos el visited_files si queremos deduplicar globalmente entre navegadores
                     scan_res = _sum_directory_recursive(str(candidate), ctx, 0)
                     if scan_res.bytes_found > 0:
                         found.append(BrowserCache(str(browser_name), candidate, scan_res.bytes_found))

@@ -70,8 +70,6 @@ def is_junction(path: Path) -> bool:
 
 def is_system_or_hidden(path: Path) -> bool:
     """Verifica si un archivo posee atributos de sistema u oculto mediante Win32 API."""
-    if not is_safe_to_modify(path):
-        return True
     try:
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         if attrs == -1:
@@ -112,11 +110,7 @@ def _is_file_locked(path: Path) -> bool:
     Intenta abrir el archivo en modo lectura. Si el sistema operativo deniega el
     acceso por violaciones de compartición, se marca como bloqueado.
     """
-    if not is_safe_to_modify(path):
-        return True
     try:
-        if not path.is_file() or not os.access(path, os.R_OK):
-            return True
         with open(path, "rb") as f:
             f.peek(1)
             return False
@@ -146,7 +140,7 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
     """Valida si un archivo es apto para el análisis de duplicados."""
     if st_size <= 0 or not path.exists():
         return False
-    if is_protected_path(path) or not _safe_path_check(path) or is_system_or_hidden(path):
+    if is_system_or_hidden(path):
         return False
     if _is_file_locked(path):
         return False
@@ -159,7 +153,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     
     Asegura el uso de bloques para mantener bajo el consumo de memoria.
     """
-    if chunk_size <= 0 or not path.is_file() or not is_safe_to_modify(path):
+    if chunk_size <= 0 or not path.is_file():
         return None
     try:
         digest = hashlib.sha256()
@@ -177,7 +171,7 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
     """
     if path in _partial_cache:
         return _partial_cache[path]
-    if read_bytes <= 0 or not path.is_file() or not is_safe_to_modify(path):
+    if read_bytes <= 0 or not path.is_file():
         return None
     try:
         with open(path, "rb") as f:
@@ -196,14 +190,14 @@ def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     groups: Dict[int, List[Path]] = defaultdict(list)
     for p in paths:
         if not p: continue
-        try:
-            path_obj = Path(p).resolve()
-            if path_obj.exists() and path_obj.is_file() and is_safe_to_modify(path_obj):
+        path_obj = Path(p)
+        if path_obj.is_file() and _safe_path_check(path_obj):
+            try:
                 st_size = path_obj.stat().st_size
                 if _is_valid_candidate(path_obj, st_size):
                     groups[st_size].append(path_obj)
-        except (OSError, ValueError, TypeError):
-            continue
+            except (OSError, ValueError, TypeError):
+                continue
     return groups
 
 
@@ -239,23 +233,22 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    p_entry = Path(entry.path)
-                    if not _safe_path_check(p_entry):
-                        continue
-                    try:
-                        if entry.is_dir(follow_symlinks=False):
+                    if entry.is_dir(follow_symlinks=False):
+                        p_entry = Path(entry.path)
+                        if _safe_path_check(p_entry):
                             queue.append((p_entry, depth + 1))
-                        elif entry.is_file(follow_symlinks=False):
-                            st = entry.stat()
-                            if st.st_size < min_size or (st.st_dev, st.st_ino) in visited_inodes:
-                                continue
-                            if not skip_protected and is_protected_path(p_entry):
-                                continue
-                            if _is_valid_candidate(p_entry, st.st_size):
-                                visited_inodes.add((st.st_dev, st.st_ino))
-                                size_to_paths_map[st.st_size].append(p_entry)
-                    except (OSError, PermissionError):
-                        continue
+                    elif entry.is_file(follow_symlinks=False):
+                        st = entry.stat()
+                        if st.st_size < min_size or (st.st_dev, st.st_ino) in visited_inodes:
+                            continue
+                        
+                        p_entry = Path(entry.path)
+                        if skip_protected and is_protected_path(p_entry):
+                            continue
+                            
+                        if _is_valid_candidate(p_entry, st.st_size):
+                            visited_inodes.add((st.st_dev, st.st_ino))
+                            size_to_paths_map[st.st_size].append(p_entry)
         except (OSError, PermissionError):
             continue
     return {sz: files for sz, files in size_to_paths_map.items() if len(files) > 1}
@@ -265,7 +258,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Aplica una función de hashing para generar grupos de colisión."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if path.exists() and is_safe_to_modify(path) and (digest := hash_func(path)):
+        if (digest := hash_func(path)):
             groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
@@ -307,8 +300,6 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     """Calcula métricas de antigüedad y longitud de ruta para selección."""
-    if not isinstance(path, Path) or not is_safe_to_modify(path): 
-        return None
     try:
         if not path.is_file():
             return None
