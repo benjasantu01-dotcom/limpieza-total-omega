@@ -166,8 +166,9 @@ logging.basicConfig(
 
 def ensure_safety(func: Callable) -> Callable:
     """
-    Decorador: invoca `safety.ensure_safe_to_modify` antes de delegar
-    ejecución a cualquier método que realice operaciones de disco.
+    Decorador: Aplica una pre-condición de seguridad (gatekeeper) invocando
+    `safety.ensure_safe_to_modify` sobre el directorio Home del usuario antes 
+    de ejecutar cualquier operación que involucre escritura o manipulación de archivos.
     """
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -182,13 +183,14 @@ def ensure_safety(func: Callable) -> Callable:
 
 def safe_ui_operation(func: Callable) -> Callable:
     """
-    Decorador: intercepta excepciones de ciclo de vida (TclError, RuntimeError)
-    típicas cuando los widgets fueron destruidos o la app se cerró durante un callback.
+    Decorador: Actúa como capa de aislamiento para operaciones de UI.
+    Captura excepciones de ciclo de vida (TclError, RuntimeError) que ocurren
+    cuando se intenta interactuar con un widget que ya fue destruido o una 
+    ventana cerrada, garantizando que el bucle principal de eventos no colapse.
     """
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Optional[Any]:
         try:
-            # Validar existencia del objeto (self o widget) antes de ejecutar
             if args and hasattr(args[0], 'winfo_exists') and not args[0].winfo_exists():
                 return None
             return func(*args, **kwargs)
@@ -199,8 +201,9 @@ def safe_ui_operation(func: Callable) -> Callable:
 
 def validated_ui_operation(func: Callable) -> Callable:
     """
-    Decorador: asegura que la instancia de la app no esté en proceso de cierre
-    antes de proceder con la lógica del callback, protegiendo la cola de eventos.
+    Decorador: Verifica el estado de la instancia de la aplicación antes de 
+    ejecutar un callback. Evita la ejecución de lógica pesada durante el 
+    proceso de cierre (`_closing`) para preservar la integridad de la cola de eventos.
     """
     @wraps(func)
     def wrapper(self: Any, *args: Any, **kwargs: Any) -> Optional[Any]:

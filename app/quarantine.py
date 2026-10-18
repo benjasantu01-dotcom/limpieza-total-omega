@@ -225,7 +225,10 @@ class QuarantineItem:
             return None
 
     def _validate_integrity(self, stored_path: Path) -> bool:
-        """Verificación estructural: confirma que el archivo en el disco coincida con los metadatos."""
+        """
+        Validación estructural básica: verifica que el archivo exista, no sea
+        un enlace simbólico y que su inodo y tamaño coincidan con los registrados.
+        """
         if not stored_path.exists(): return False
         try:
             _check_path_for_junctions(stored_path)
@@ -233,6 +236,7 @@ class QuarantineItem:
                 return False
             
             st = stored_path.stat()
+            # En POSIX, verificamos que el UID sea el mismo para evitar manipulación
             if hasattr(os, 'getuid') and st.st_uid != os.getuid():
                 return False
 
@@ -251,7 +255,10 @@ class QuarantineItem:
             return False
 
     def verify_integrity(self, stored_path: Path) -> bool:
-        """Verificación completa de integridad: metadatos y validación de hash SHA256."""
+        """
+        Verificación de integridad avanzada: confirma metadatos y re-calcula el 
+        hash SHA256 del archivo para asegurar que no ha sido alterado en el disco.
+        """
         if not self._validate_integrity(stored_path):
             return False
         try:
@@ -454,8 +461,6 @@ def _validate_quarantine_path(path: Path, base: Path) -> Path:
     """Validación anti-manipulación para asegurar que el acceso no escape del sandbox."""
     if not is_within_directory(path, base):
         raise UnsafePathError("Acceso fuera del sandbox detectado.")
-    if path.name != path.name:
-        raise UnsafePathError("Intento de manipulación de ruta detectado.")
     return path
 
 def _check_windows_file_attributes(path: Path) -> None:

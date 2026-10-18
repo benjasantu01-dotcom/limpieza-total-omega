@@ -247,8 +247,8 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     except (ValueError, TypeError):
         return None
 
-def _get_top_n(processes: Iterator[ProcessMemory], limit: int) -> List[ProcessMemory]:
-    """Retorna una lista ordenada con los N procesos de mayor consumo de memoria."""
+def _filter_and_sort_processes(processes: Iterator[ProcessMemory], limit: int) -> List[ProcessMemory]:
+    """Filtra y ordena procesos retornando los N de mayor consumo de memoria."""
     if not isinstance(limit, int) or limit < 0: return []
     return heapq.nlargest(limit, processes)
 
@@ -267,7 +267,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
                 proc = _extract_process_info(line)
                 if proc: yield proc
             
-    return _get_top_n(_gen(), limit)
+    return _filter_and_sort_processes(_gen(), limit)
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Ejecuta GlobalMemoryStatusEx via ctypes para obtener el estado real de RAM."""
@@ -311,8 +311,8 @@ def _is_process_accessible(pid: int, access_mask: int, kernel32: Any) -> Optiona
 
 def _query_working_set_bytes(pid: int, handle: int, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
     """
-    Consulta los contadores de memoria del proceso mediante PSAPI usando un handle abierto.
-    Retorna BytesValue del working set o None si la consulta falla o es inválida.
+    Consulta mediante PSAPI los contadores de memoria de un proceso (WorkingSetSize).
+    Verifica que el handle sea válido y que el consumo esté dentro de umbrales lógicos.
     """
     try:
         if psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), ctypes.c_uint32(pmc.cb)):
@@ -324,8 +324,8 @@ def _query_working_set_bytes(pid: int, handle: int, psapi: Any, pmc: PROCESS_MEM
 
 def _is_process_executable_safe(pid: int, handle: int) -> bool:
     """
-    Verifica si el ejecutable asociado al proceso reside en una ruta segura.
-    Retorna True si la ruta NO es protegida, False de lo contrario.
+    Valida la integridad de la ruta del ejecutable mediante GetModuleFileNameExW.
+    Retorna True solo si la ruta reside fuera de directorios del sistema protegidos.
     """
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return False
@@ -336,7 +336,6 @@ def _is_process_executable_safe(pid: int, handle: int) -> bool:
         if length > 0:
             exe_str = buffer_path.value.strip()
             if not exe_str: return False
-            # Normalizar la ruta para asegurar la comparación correcta contra reglas de seguridad.
             executable_path = Path(os.path.normpath(exe_str)).resolve()
             return executable_path.is_file() and not is_protected_path(executable_path)
     except (ctypes.ArgumentError, OSError, ValueError, RuntimeError):
@@ -344,7 +343,10 @@ def _is_process_executable_safe(pid: int, handle: int) -> bool:
     return False
 
 def _iter_process_memory(kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
-    """Enumera procesos del sistema validando su seguridad al obtener métricas."""
+    """
+    Enumera procesos activos del sistema, aplicando filtros de seguridad sobre 
+    la ubicación del ejecutable antes de extraer las métricas de memoria.
+    """
     max_pids = 4096
     pids = (ctypes.c_uint32 * max_pids)()
     cb_needed = ctypes.c_uint32(0)
@@ -375,7 +377,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         kernel32, psapi = ctypes.windll.kernel32, ctypes.windll.psapi
         pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
         
-        candidates = _get_top_n(_iter_process_memory(kernel32, psapi, pmc), limit)
+        candidates = _filter_and_sort_processes(_iter_process_memory(kernel32, psapi, pmc), limit)
         _CACHE_TOP_PROC = CacheEntry(now, candidates)
             
     return _CACHE_TOP_PROC.data
