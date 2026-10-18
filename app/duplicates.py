@@ -258,10 +258,10 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                         if st.st_size < min_size or (st.st_dev, st.st_ino) in visited_inodes:
                             continue
                         
-                        p_entry = Path(entry.path)
-                        if skip_protected and is_protected_path(p_entry):
+                        if skip_protected and is_protected_path(Path(entry.path)):
                             continue
                             
+                        p_entry = Path(entry.path)
                         if _is_valid_candidate(p_entry, st.st_size):
                             visited_inodes.add((st.st_dev, st.st_ino))
                             size_to_paths_map[st.st_size].append(p_entry)

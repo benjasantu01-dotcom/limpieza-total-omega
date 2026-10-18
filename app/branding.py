@@ -356,7 +356,9 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
         params = _get_stripe_params(scale, n)
         segs = get_gradient_segments(n)
         for s in segs:
-            canvas.create_rectangle(cx - params[s.start_index][0], by + params[s.start_index][1], cx + params[s.start_index][0], by + params[s.end_index - 1][2], fill=s.hex_color, outline="")
+            p_start = params[s.start_index]
+            p_end = params[s.end_index - 1]
+            canvas.create_rectangle(cx - p_start[0], by + p_start[1], cx + p_start[0], by + p_end[2], fill=s.hex_color, outline="")
     except Exception: pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
