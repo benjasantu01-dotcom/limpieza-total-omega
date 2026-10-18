@@ -169,7 +169,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     Returns:
         Hexdigest del archivo o None si falla el acceso.
     """
-    if chunk_size <= 0 or not path.is_file():
+    if chunk_size <= 0 or not isinstance(path, Path) or not path.is_file():
         return None
     try:
         digest = hashlib.sha256()
@@ -191,8 +191,8 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
     Returns:
         Hexdigest de los bytes leídos o None si falla el acceso.
     """
-    if path in _partial_cache:
-        return _partial_cache[path]
+    if not isinstance(path, Path) or path in _partial_cache:
+        return _partial_cache.get(path)
     if read_bytes <= 0 or not path.is_file():
         return None
     try:
@@ -210,16 +210,18 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
 def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     """Agrupa rutas por tamaño para filtrar candidatos únicos."""
     groups: Dict[int, List[Path]] = defaultdict(list)
+    if paths is None:
+        return groups
     for p in paths:
         if not p: continue
-        path_obj = Path(p)
-        if path_obj.is_file() and _safe_path_check(path_obj):
-            try:
+        try:
+            path_obj = Path(p)
+            if path_obj.is_file() and _safe_path_check(path_obj):
                 st_size = path_obj.stat().st_size
                 if _is_valid_candidate(path_obj, st_size):
                     groups[st_size].append(path_obj)
-            except (OSError, ValueError, TypeError):
-                continue
+        except (OSError, ValueError, TypeError):
+            continue
     return groups
 
 
@@ -242,6 +244,7 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     Realiza un escaneo iterativo de directorios y filtra por tamaño y seguridad.
     """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
+    if directories is None: return size_to_paths_map
     queue: deque[Tuple[Path, int]] = deque()
     visited_inodes: set[Tuple[int, int]] = set()
 
@@ -285,6 +288,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Aplica una función de hashing para generar grupos de colisión."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
+        if not isinstance(path, Path): continue
         if (digest := hash_func(path)):
             groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
@@ -322,7 +326,8 @@ def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Suma el total de bytes recuperables de una lista de grupos."""
-    return sum(g.wasted_bytes for g in groups)
+    if not groups: return 0
+    return sum(g.wasted_bytes for g in groups if isinstance(g, DuplicateGroup))
 
 
 def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
@@ -335,7 +340,7 @@ def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
         Tupla (mtime, len_path) o None si el archivo es inaccesible.
     """
     try:
-        if not path.is_file():
+        if not isinstance(path, Path) or not path.is_file():
             return None
         stat = path.stat()
         return float(stat.st_mtime), len(str(path))

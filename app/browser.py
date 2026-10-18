@@ -176,13 +176,13 @@ def base_directories() -> List[Path]:
     if not isinstance(local_env, str) or not local_env or _is_unc_path(local_env):
         return []
     p = Path(local_env)
-    if p.exists() and p.is_dir():
-        try:
+    try:
+        if p.exists() and p.is_dir():
             path_local = p.resolve(strict=True)
             if is_safe_to_modify(path_local) and not is_protected_path(path_local):
                 return [path_local]
-        except (OSError, RuntimeError):
-            return []
+    except (OSError, RuntimeError):
+        pass
     return []
 
 def _is_excluded_file(name: str) -> bool:
@@ -283,8 +283,8 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     kernel = _get_kernel32()
     
     for base in raw_bases:
+        if not isinstance(base, Path) or not base.exists(): continue
         try:
-            if not isinstance(base, Path) or not base.exists(): continue
             real_base = base.resolve(strict=True)
             ctx = ScanContext(os.path.normpath(str(real_base)), kernel, _IS_JUNCTION_FN, set(), set(), {})
             

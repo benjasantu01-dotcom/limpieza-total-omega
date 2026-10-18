@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 50
-- Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 222
+- Rechazadas por guardia de seguridad: 49
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-17 | 77 | 6 | 20 | 12 | 89 |
-| 2026-10-18 | 115 | 10 | 30 | 12 | 133 |
+| 2026-10-17 | 75 | 6 | 19 | 11 | 89 |
+| 2026-10-18 | 118 | 10 | 30 | 12 | 134 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **42**
 - seguridad defensiva: **42**
+- legibilidad y documentación: **40**
 - robustez ante casos límite: **40**
 - rendimiento: **37**
-- manejo de errores y validación de entradas: **31**
+- manejo de errores y validación de entradas: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
 - `safety.py`: **19**
+- `quarantine.py`: **19**
 - `memory.py`: **18**
 - `diskreport.py`: **17**
 - `settings.py`: **16**
 - `assistant.py`: **15**
+- `browser.py`: **14**
 - `scanner.py`: **13**
-- `browser.py`: **13**
+- `duplicates.py`: **13**
 - `healthscore.py`: **12**
-- `duplicates.py`: **12**
 - `main.py`: **12**
-- `organizer.py`: **11**
+- `organizer.py`: **10**
+- `branding.py`: **8**
 - `startup.py`: **7**
-- `branding.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-18T12:55:12` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `duplicates.py` ante entradas inválidas o nulas en sus funciones principales (`suggest_keeper`, `format_group`, `group_by_size`) mediante validaciones de tipo y estructura, evitando excepciones durante el procesamiento de datos mal formados.
+- `2026-10-18T12:54:37` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `base_directories` y `detect_profiles` añadiendo validaciones explícitas contra `None` y tipos incorrectos, asegurando que el módulo no falle silenciosamente o de forma inesperada si las variables de entorno o parámetros de entrada son maliciosos o inexistentes.
+- `2026-10-18T12:54:10` **branding.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `save_logo_svg` utilizando una validación explícita para evitar fallos por rutas nulas o directorios protegidos, asegurando que el uso de `ensure_safe_to_modify` (o `is_safe_to_modify`) sea robusto ante parámetros inesperados.
 - `2026-10-18T11:23:54` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `_is_dir_safe` para incluir una verificación de existencia de archivo (no solo directorio) y se evitó la resolución de `os.path.realpath` dentro de los validadores de rutas si esta resulta en una ruta que no existe, previniendo errores en rutas que aún no se han creado o que han sido eliminadas.
 - `2026-10-18T11:23:40` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la validación explícita del estado de "puntos de reanálisis" al navegar directorios, asegurando que `_is_safe_entry` y `_safe_stat` utilicen consistentemente `os.DirEntry` con `follow_symlinks=False` para evitar escapar del árbol de directorios permitido.
 - `2026-10-18T11:13:51` **organizer.py** (seguridad defensiva): Se añadió una validación explícita para evitar que los archivos de sistema críticos (usando `st_file_attributes`) sean procesados, reforzando la seguridad defensiva contra intentos de manipulación de archivos que el sistema operativo protege activamente.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-18T10:43:26` **scanner.py** (robustez ante casos límite): Se añadió una validación de rutas inexistentes dentro de `_is_valid_file_path` y se mejoró la resiliencia ante `FileNotFoundError` en las heurísticas para evitar el colapso del bucle ante archivos temporales que desaparecen durante la ejecución.
 - `2026-10-18T10:43:12` **safety.py** (robustez ante casos límite): Se ha añadido un chequeo de `PermissionError` y `OSError` específico al momento de intentar resolver el descriptor de seguridad en `SecurityDescriptor.from_path`, garantizando que si el acceso al sistema de archivos es restringido durante la introspección, la función no propague errores sin gestionar y retorne un descriptor de "seguro/bloqueado" en lugar de fallar la ejecución.
 - `2026-10-18T10:42:05` **quarantine.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de concurrencia y permisos durante la inicialización del directorio de cuarentena, utilizando `os.access` y una verificación explícita de `os.O_DIRECTORY` para asegurar que la ruta sandbox no sea un archivo o un punto de montaje bloqueado antes de cualquier operación de I/O.
-- `2026-10-18T10:33:23` **memory.py** (robustez ante casos límite): Se mejoró la robustez de `_is_process_executable_safe` añadiendo un manejo de excepciones más granular y verificando explícitamente que la ruta resuelta sea un archivo válido antes de consultar `is_protected_path`, previniendo errores en casos donde `GetModuleFileNameExW` retorne rutas vacías o inválidas.
-- `2026-10-18T10:31:43` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `summarize` y `compute_score` ante fallos de entrada y estados parciales, protegiendo al motor de análisis contra excepciones de redondeo o datos inesperados que podrían romper la interfaz.
-- `2026-10-18T10:22:29` **duplicates.py** (robustez ante casos límite): Se ha robustecido el escaneo de directorios en `_collect_candidates` para manejar correctamente errores de acceso denegado específicos al listar contenido, evitando que una sola carpeta bloqueada interrumpa el proceso de recolección de todo el disco.
