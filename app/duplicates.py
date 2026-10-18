@@ -322,7 +322,7 @@ def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
         Tupla (mtime, len_path) o None si el archivo es inaccesible.
     """
     try:
-        if not path.exists() or not path.is_file():
+        if not path.is_file():
             return None
         stat = path.stat()
         return float(stat.st_mtime), len(str(path))
@@ -351,7 +351,9 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 def _get_path_label(path: Path, keeper: Optional[Path]) -> str:
     """Etiqueta visual para distinguir entre keeper y réplicas."""
-    return "[conservar]" if keeper is not None and path == keeper else "[duplicado]"
+    if keeper is None:
+        return "[?]"
+    return "[conservar]" if path == keeper else "[duplicado]"
 
 
 def format_group(group: DuplicateGroup) -> List[str]:

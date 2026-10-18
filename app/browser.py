@@ -246,7 +246,7 @@ def directory_size(path: Optional[OSPath]) -> int:
     """Cálculo del tamaño en bytes para una ruta dada, aplicando contextos de seguridad."""
     if not isinstance(path, (str, Path)): return 0
     path_obj = Path(path)
-    if not path_obj.is_dir(): return 0
+    if not path_obj.exists() or not path_obj.is_dir(): return 0
     
     resolved_path = str(path_obj.resolve(strict=True))
     ctx = ScanContext(os.path.normpath(resolved_path), _get_kernel32(), _IS_JUNCTION_FN, set(), set(), {})
@@ -280,12 +280,14 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     
     browser_map = cache_paths if isinstance(cache_paths, dict) else BROWSER_CACHE_PATHS
     found: List[BrowserCache] = []
-    ctx = ScanContext("", _get_kernel32(), _IS_JUNCTION_FN, set(), set(), {})
+    kernel = _get_kernel32()
     
     for base in raw_bases:
         try:
+            if not isinstance(base, Path) or not base.exists(): continue
             real_base = base.resolve(strict=True)
-            ctx.sandbox_base_norm = os.path.normpath(str(real_base))
+            ctx = ScanContext(os.path.normpath(str(real_base)), kernel, _IS_JUNCTION_FN, set(), set(), {})
+            
             for browser_name, rel_str in browser_map.items():
                 candidate = _resolve_browser_path(real_base, rel_str)
                 if candidate != Path() and _is_valid_cache_path(candidate, ctx.sandbox_base_norm):
