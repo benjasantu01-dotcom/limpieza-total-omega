@@ -628,3 +628,44 @@ FAILED evolve/tests/test_assistant.py::test_build_context_reads_fields_one_by_on
 - `2026-10-18T13:16:08` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_valid_file_path` y `_is_readable` mediante una validación más estricta del tipo de entrada, evitando que excepciones inesperadas durante la inspección de metadatos provoquen falsos negativos en el flujo principal.
 - `2026-10-18T13:16:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T13:16:08` Corrida terminada. Total usado hoy: 312.
+- `2026-10-18T13:24:10` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-18T13:24:44` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_read_and_parse_json` y `save` mediante el manejo explícito de errores durante la lectura/escritura y validación de tipos, evitando que una corrupción parcial del JSON o una falla en el sistema de archivos propague excepciones inesperadas.
+- `2026-10-18T13:25:12` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.69s
+
+```
+- `2026-10-18T13:25:12` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado `_resolve_and_cache_path` y `_resolve_path_from_command` para manejar rutas con espacios (típicas en Windows) mediante una validación más robusta, evitando que rutas mal formadas provoquen excepciones o falsos positivos en el escaneo de inicio.
+- `2026-10-18T13:25:42` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: Answer.is_online, AreaExplanation, SystemContext.__hash__, SystemContext._apply_updates, SystemContext._hash_tuple, SystemContext._validate_ingestion_source
+- `2026-10-18T13:25:59` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `branding.py` mediante la adición de Type Hints detallados en los argumentos de funciones críticas de dibujo y la estandarización de las descripciones en los docstrings, facilitando la comprensión de las unidades y comportamientos esperados sin alterar la lógica.
+- `2026-10-18T13:25:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T13:25:59` Corrida terminada. Total usado hoy: 316.

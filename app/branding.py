@@ -222,7 +222,7 @@ def grade_color(grade: Optional[str]) -> ColorHex: return GRADE_COLORS.get(grade
 
 @lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> ColorHex:
-    """Calcula el color asociado a un puntaje numérico basado en umbrales predefinidos."""
+    """Calcula el color asociado a un puntaje numérico (0.0 a 100.0) basado en umbrales predefinidos."""
     if score is None: return C_TEXT_MUTED
     try:
         valor = float(score)
@@ -234,7 +234,7 @@ def score_color(score: Union[float, int, None]) -> ColorHex:
 
 @lru_cache(maxsize=64)
 def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588", empty: str = "\u2591") -> str:
-    """Genera una representación textual en formato barra de progreso según un porcentaje."""
+    """Genera una representación textual en formato barra de progreso (porcentaje 0-100)."""
     try:
         valor = float(percent) if percent is not None else 0.0
         ancho = max(1, int(width))
@@ -385,7 +385,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except Exception: pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una línea horizontal con gradiente interpolado para indicadores visuales."""
+    """Dibuja una línea horizontal con gradiente interpolado (ancho/alto en píxeles)."""
     try:
         w = max(1, int(width))
         h = max(1, int(height))
@@ -395,7 +395,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except Exception: pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """Dibuja un indicador circular (anillo) que representa el porcentaje de progreso o salud."""
+    """Dibuja un indicador circular (anillo) que representa el progreso o salud (0.0 a 100.0)."""
     try:
         if percent is None: return
         val = max(0.0, min(100.0, float(percent)))

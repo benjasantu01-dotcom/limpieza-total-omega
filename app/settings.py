@@ -173,19 +173,17 @@ class _SettingsManager:
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """Escribe datos en archivo temporal con reintentos para manejar bloqueos transitorios."""
         temp_path: Path = config_path.with_suffix(".tmp")
-        for attempt in range(3):
-            try:
-                if not _is_dir_safe(config_path.parent): return False
-                with open(temp_path, "w", encoding="utf-8") as f:
-                    f.write(serialized)
-                    f.flush()
-                    os.fsync(f.fileno())
-                os.replace(temp_path, config_path)
-                self.clear()
-                return True
-            except (OSError, IOError, PermissionError):
-                time.sleep(0.1 * (attempt + 1))
-        return False
+        try:
+            if not _is_dir_safe(config_path.parent): return False
+            with open(temp_path, "w", encoding="utf-8") as f:
+                f.write(serialized)
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(temp_path, config_path)
+            self.clear()
+            return True
+        except (OSError, IOError, PermissionError):
+            return False
 
 _MANAGER = _SettingsManager()
 
@@ -203,10 +201,10 @@ class _Validators:
 
     @staticmethod
     @lru_cache(maxsize=32)
-    def _is_reparse_point(path_str: str) -> bool:
+    def _is_reparse_point(path_str: str | Path) -> bool:
         """Determina si la ruta es un punto de reanálisis (symlink/junction) no deseado."""
         try:
-            p = Path(os.path.realpath(path_str))
+            p = Path(os.path.realpath(str(path_str)))
             if p.is_symlink(): return True
             if not p.exists(): return False
             return bool(p.stat().st_file_attributes & 0x400) if hasattr(p.stat(), 'st_file_attributes') else False
@@ -332,20 +330,18 @@ def _is_file_secure_to_read(st: os.stat_result, file_obj: Any) -> bool:
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
 def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
-    """Lectura segura con reintentos ante bloqueos de acceso temporal."""
+    """Lectura segura con validación estricta de metadatos de archivo."""
     if not is_safe_to_modify(str(file_path)): return None
-    for _ in range(2):
-        try:
-            with open(file_path, "r", encoding="utf-8") as f:
-                st = os.fstat(f.fileno())
-                if not _is_file_secure_to_read(st, f): return None
-                content = f.read(MAX_SETTINGS_SIZE + 1)
-                if not content or len(content) > MAX_SETTINGS_SIZE: return None
-                data = json.loads(content)
-                return data if _is_dict(data) else None
-        except (OSError, IOError, PermissionError, json.JSONDecodeError):
-            time.sleep(0.05)
-    return None
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            st = os.fstat(f.fileno())
+            if not _is_file_secure_to_read(st, f): return None
+            content = f.read(MAX_SETTINGS_SIZE + 1)
+            if not content or len(content) > MAX_SETTINGS_SIZE: return None
+            data = json.loads(content)
+            return data if _is_dict(data) else None
+    except (OSError, IOError, PermissionError, json.JSONDecodeError):
+        return None
 
 def _load_impl(ruta: Path) -> AppSettings:
     """Implementación base para procesar la carga y normalización de ajustes."""
@@ -409,7 +405,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
         return config_path if _MANAGER.perform_atomic_write(config_path, serialized) else None
-    except (OSError, PermissionError, AttributeError): return None
+    except (OSError, PermissionError, AttributeError, TypeError): return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
     """Actualiza parcialmente los ajustes existentes verificando cada cambio mediante validadores."""
