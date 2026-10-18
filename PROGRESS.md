@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 49
-- Sin cambios (nada sustancial que mejorar): 22
+- Rechazadas por guardia de seguridad: 48
+- Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-17 | 69 | 5 | 17 | 10 | 87 |
-| 2026-10-18 | 126 | 11 | 32 | 12 | 135 |
+| 2026-10-17 | 67 | 5 | 16 | 9 | 87 |
+| 2026-10-18 | 130 | 11 | 32 | 12 | 135 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **42**
+- legibilidad y documentación: **42**
 - manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **40**
-- legibilidad y documentación: **38**
-- rendimiento: **34**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
-- `safety.py`: **19**
+- `diskreport.py`: **18**
 - `memory.py`: **18**
-- `diskreport.py`: **17**
+- `safety.py`: **18**
 - `settings.py`: **17**
+- `browser.py`: **14**
 - `assistant.py`: **14**
-- `browser.py`: **13**
+- `duplicates.py`: **14**
+- `healthscore.py`: **13**
 - `scanner.py`: **13**
-- `duplicates.py`: **13**
 - `main.py`: **13**
-- `healthscore.py`: **12**
-- `organizer.py`: **11**
+- `organizer.py`: **10**
 - `branding.py`: **9**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-18T13:35:51` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del pipeline de análisis añadiendo docstrings descriptivos a las constantes críticas y transformando `_PIPELINE` de una tupla anónima a una estructura más legible y mantenible.
+- `2026-10-18T13:35:39` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings estandarizados, especificando tipos en los retornos y estructurando mejor las explicaciones de las funciones, además de corregir una inconsistencia semántica en `_safe_path_check` para hacerla más explícita.
+- `2026-10-18T13:35:15` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `diskreport.py` añadiendo docstrings descriptivos a funciones internas y normalizando las anotaciones de tipo para asegurar que la intención del código sea clara para otros colaboradores, manteniendo el cumplimiento estricto con las reglas de seguridad.
+- `2026-10-18T13:34:49` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints más precisos, la documentación exhaustiva del `ScanContext` y la estandarización de las firmas en las funciones de utilidad, facilitando la comprensión del flujo de seguridad para futuros desarrolladores.
 - `2026-10-18T13:25:59` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `branding.py` mediante la adición de Type Hints detallados en los argumentos de funciones críticas de dibujo y la estandarización de las descripciones en los docstrings, facilitando la comprensión de las unidades y comportamientos esperados sin alterar la lógica.
 - `2026-10-18T13:24:44` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `save` mediante el manejo explícito de errores durante la lectura/escritura y validación de tipos, evitando que una corrupción parcial del JSON o una falla en el sistema de archivos propague excepciones inesperadas.
 - `2026-10-18T13:16:08` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_valid_file_path` y `_is_readable` mediante una validación más estricta del tipo de entrada, evitando que excepciones inesperadas durante la inspección de metadatos provoquen falsos negativos en el flujo principal.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-18T12:55:12` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `duplicates.py` ante entradas inválidas o nulas en sus funciones principales (`suggest_keeper`, `format_group`, `group_by_size`) mediante validaciones de tipo y estructura, evitando excepciones durante el procesamiento de datos mal formados.
 - `2026-10-18T12:54:37` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `base_directories` y `detect_profiles` añadiendo validaciones explícitas contra `None` y tipos incorrectos, asegurando que el módulo no falle silenciosamente o de forma inesperada si las variables de entorno o parámetros de entrada son maliciosos o inexistentes.
 - `2026-10-18T12:54:10` **branding.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `save_logo_svg` utilizando una validación explícita para evitar fallos por rutas nulas o directorios protegidos, asegurando que el uso de `ensure_safe_to_modify` (o `is_safe_to_modify`) sea robusto ante parámetros inesperados.
-- `2026-10-18T11:23:54` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `_is_dir_safe` para incluir una verificación de existencia de archivo (no solo directorio) y se evitó la resolución de `os.path.realpath` dentro de los validadores de rutas si esta resulta en una ruta que no existe, previniendo errores en rutas que aún no se han creado o que han sido eliminadas.
-- `2026-10-18T11:23:40` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la validación explícita del estado de "puntos de reanálisis" al navegar directorios, asegurando que `_is_safe_entry` y `_safe_stat` utilicen consistentemente `os.DirEntry` con `follow_symlinks=False` para evitar escapar del árbol de directorios permitido.
-- `2026-10-18T11:13:51` **organizer.py** (seguridad defensiva): Se añadió una validación explícita para evitar que los archivos de sistema críticos (usando `st_file_attributes`) sean procesados, reforzando la seguridad defensiva contra intentos de manipulación de archivos que el sistema operativo protege activamente.
-- `2026-10-18T11:13:26` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_process_executable_safe` al implementar una validación de ruta absoluta normalizada antes de consultar `is_protected_path`, previniendo errores de resolución en rutas relativas o mal formadas.

@@ -42,20 +42,26 @@ __all__ = [
 ]
 
 # Aliases para mejorar la legibilidad de las firmas de funciones
-JunctionChecker: TypeAlias = Callable[[str], bool]  # Valida si una ruta es un punto de reparse
-BrowserMap: TypeAlias = Dict[str, str]              # Mapeo de nombre de navegador a subruta
-OSPath: TypeAlias = Union[str, Path]                # Acepta tanto strings como objetos Path
-VisitedDirs: TypeAlias = Set[str]                   # Tracking para evitar bucles recursivos
-SafetyCache: TypeAlias = Dict[str, bool]            # Memoización de validaciones de seguridad
+JunctionChecker: TypeAlias = Callable[[str], bool]
+BrowserMap: TypeAlias = Dict[str, str]
+OSPath: TypeAlias = Union[str, Path]
+VisitedDirs: TypeAlias = Set[str]
+SafetyCache: TypeAlias = Dict[str, bool]
 
 PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|', '"'}
 
 @dataclass
 class ScanContext:
     """
-    Contenedor de estado para una operación de escaneo. Mantiene la integridad
-    del sandbox, el caché de seguridad y el historial de archivos visitados
-    para evitar redundancias y bucles infinitos.
+    Estado compartido durante una operación de escaneo recursivo.
+    
+    Attributes:
+        sandbox_base_norm: Ruta base normalizada (LOCALAPPDATA) para restringir el alcance.
+        kernel32: Instancia de la DLL para llamadas de sistema Win32 (solo en Windows).
+        is_junction: Callback para detectar puntos de reparse (Junctions).
+        visited_files: Set de tuplas (device_id, inode_id) para detectar duplicados (hardlinks).
+        visited_dirs: Set de rutas para evitar bucles de directorios.
+        safety_cache: Memoización de verificaciones de seguridad de `safety.py`.
     """
     sandbox_base_norm: str
     kernel32: Optional[ctypes.WinDLL]
@@ -64,7 +70,7 @@ class ScanContext:
     visited_dirs: VisitedDirs
     safety_cache: SafetyCache
 
-def safe_path_operation(default: Any) -> Callable:
+def safe_path_operation(default: Any) -> Callable[[Callable], Callable]:
     """
     Decorador: intercepta excepciones de E/S comunes en Windows (como archivos 
     bloqueados por el sistema) para garantizar que el proceso de escaneo 
