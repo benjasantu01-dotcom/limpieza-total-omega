@@ -118,7 +118,10 @@ HEALTH_AREAS: Tuple[HealthMetricConfig, ...] = (
 _SETTINGS_CACHE: Dict[str, Any] = {"data": None, "last_load": 0}
 
 def get_cached_settings() -> Dict[str, Any]:
-    """Carga de configuración desde archivo con caché temporal."""
+    """
+    Carga de configuración desde archivo con caché temporal.
+    Valida la integridad de las rutas excluidas antes de retornar.
+    """
     now = time.time()
     if _SETTINGS_CACHE["data"] and (now - _SETTINGS_CACHE["last_load"] < 60):
         return _SETTINGS_CACHE["data"]
@@ -210,7 +213,10 @@ def validated_ui_operation(func: Callable) -> Callable:
     return wrapper
 
 def _check_environment_integrity() -> None:
-    """Valida requisitos de seguridad críticos al arrancar el proceso y antes de instanciar la UI."""
+    """
+    Valida requisitos de seguridad críticos al arrancar el proceso y antes de 
+    instanciar la UI. Previene ejecución en entornos protegidos o inestables.
+    """
     cwd = Path.cwd().resolve(strict=False)
     if not cwd.exists():
         raise RuntimeError("Directorio de trabajo actual no existe.")
@@ -237,8 +243,8 @@ ctk.set_default_color_theme("dark-blue")
 
 class LimpiezaTotalOmegaApp(ctk.CTk):
     """
-    Orquestador principal: gestiona la interfaz, el ciclo de vida de 
-    la aplicación y la delegación de tareas entre módulos.
+    Orquestador principal: gestiona la interfaz gráfica, el ciclo de vida de 
+    la aplicación y la delegación de tareas pesadas entre módulos.
     """
 
     def __init__(self) -> None:
@@ -254,7 +260,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._setup_application()
 
     def _check_widget_integrity(self, widget: Any) -> bool:
-        """Verifica existencia de widget de forma genérica."""
+        """Verifica existencia de un widget de Tkinter/CTk de forma genérica."""
         return hasattr(widget, 'winfo_exists') and widget.winfo_exists()
 
     def _sanitize_path(self, path: Union[str, Path]) -> str:
@@ -332,7 +338,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _validate_environment(self) -> None:
         """
         Verifica que el entorno de ejecución tenga permisos de escritura en directorios base
-        y no residan en ubicaciones bloqueadas (enlaces simbólicos, sistemas protegidos).
+        y no resida en ubicaciones bloqueadas (enlaces simbólicos, sistemas protegidos).
         """
         try:
             app_root = Path(__file__).resolve(strict=False).parent
@@ -368,8 +374,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @lru_cache(maxsize=128)
     def _validate_disk_access(self, path: Union[str, Path]) -> Path:
         """
-        Valida que una ruta sea absoluta, no un enlace simbólico, no un punto de montaje removible 
-        y ajena a la estructura de la App.
+        Valida que una ruta sea absoluta, no un enlace simbólico, no un punto de montaje 
+        removible y ajena a la estructura de archivos propia de la App.
         """
         try:
             clean_p = self._sanitize_path(path)
@@ -429,9 +435,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     @safe_ui_operation
     def _debounce_action(self, key: str, delay: int, callback: AsyncCallback) -> None:
-        """
-        Implementa un mecanismo de debounce para evitar spam de eventos rápidos en la UI.
-        """
+        """Implementa un mecanismo de debounce para evitar spam de eventos rápidos en la UI."""
         if key in self._debounces:
             self.after_cancel(self._debounces[key])
         self._debounces[key] = self.after(delay, callback)

@@ -165,7 +165,7 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     
     Args:
         path: Archivo a hashear.
-        chunk_size: Tamaño de lectura del buffer.
+        chunk_size: Tamaño de lectura del buffer (default 1MB).
     Returns:
         Hexdigest del archivo o None si falla el acceso.
     """
@@ -184,6 +184,12 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Calcula el hash SHA256 de los primeros N bytes con caché de resultados.
+    
+    Args:
+        path: Archivo a hashear parcialmente.
+        read_bytes: Cantidad de bytes a leer desde el inicio.
+    Returns:
+        Hexdigest de los bytes leídos o None si falla el acceso.
     """
     if path in _partial_cache:
         return _partial_cache[path]
@@ -232,6 +238,8 @@ def _resolve_and_verify_root(directory_path: PathLike) -> Optional[Path]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Recolección BFS de archivos candidatos evitando inodos ya visitados.
+    
+    Realiza un escaneo iterativo de directorios y filtra por tamaño y seguridad.
     """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     queue: deque[Tuple[Path, int]] = deque()
@@ -318,6 +326,8 @@ def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     """
     Calcula métricas de antigüedad y longitud de ruta para selección.
     
+    Args:
+        path: Archivo a evaluar.
     Returns:
         Tupla (mtime, len_path) o None si el archivo es inaccesible.
     """
