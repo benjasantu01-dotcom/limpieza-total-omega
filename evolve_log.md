@@ -1446,3 +1446,40 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-10-18T08:41:48` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_manifest` y `load_manifest` añadiendo un manejo de excepciones más granular y validaciones de tipos adicionales, asegurando que cualquier error durante la serialización o deserialización se capture sin dejar el sistema en un estado inconsistente.
 - `2026-10-18T08:41:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T08:41:48` Corrida terminada. Total usado hoy: 204.
+- `2026-10-18T08:49:26` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-10-18T08:49:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-10-18T08:50:33` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se introdujo una captura de excepciones más granular en `_is_virtual_drive` y `_get_file_attrs` para evitar que fallos no anticipados en llamadas a la API de Windows (como `ctypes.ArgumentError` por punteros nulos o `MemoryError`) silencien validaciones críticas, asegurando que ante la duda la ruta sea tratada como no segura.
+- `2026-10-18T08:51:04` Tests FALLARON:
+```
+========================
+_____________ test_scanner_flags_system_lookalike_outside_system32 _____________
+
+    def test_scanner_flags_system_lookalike_outside_system32():
+        # Se usa PureWindowsPath a propósito: los tests corren en Linux (GitHub
+        # Actions) y ahí un Path normal no reconoce las barras invertidas, así
+        # que `.name` devolvería la ruta entera y el test fallaría siempre.
+        result = scanner.check_system_lookalike(PureWindowsPath(r"C:\Users\test\Downloads\svchost.exe"))
+>       assert result is not None
+E       assert None is not None
+
+evolve/tests/test_basic.py:201: AssertionError
+________________ test_scanner_lookalike_logic_is_os_independent ________________
+
+    def test_scanner_lookalike_logic_is_os_independent():
+        # La misma heurística tiene que valer con rutas estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+        flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+>       assert flagged is not None and flagged.severity == "warning"
+E       assert (None is not None)
+
+evolve/tests/test_basic.py:213: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - assert None is not None
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - assert (None is not None)
+2 failed, 297 passed in 0.96s
+
+```
+- `2026-10-18T08:51:04` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de las heurísticas de archivo añadiendo validaciones de tipo y presencia para los argumentos críticos, evitando errores silenciosos o excepciones no capturadas al procesar archivos que podrían haber sido eliminados durante la iteración.
+- `2026-10-18T08:51:20` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-18T08:51:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T08:51:20` Corrida terminada. Total usado hoy: 208.

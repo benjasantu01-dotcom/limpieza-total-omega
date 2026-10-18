@@ -83,7 +83,7 @@ class SecurityDescriptor(NamedTuple):
                 is_readonly=bool(attrs & Win32Attr.READONLY),
                 is_reparse=bool(attrs & Win32Attr.REPARSE_POINT)
             )
-        except (OSError, ctypes.ArgumentError, AttributeError, ValueError):
+        except (OSError, ctypes.ArgumentError, AttributeError, ValueError, MemoryError):
             return cls(0, True, True, True, True)
 
 class FileMetadata(TypedDict):
@@ -155,7 +155,7 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
                 return Win32Attr.SYSTEM
             return 0
         return attrs
-    except (AttributeError, ctypes.ArgumentError, OSError, MemoryError, ValueError):
+    except (AttributeError, ctypes.ArgumentError, OSError, MemoryError, ValueError, TypeError):
         return 0
 
 class SafetyValidationErrorCode(IntEnum):
@@ -303,7 +303,7 @@ def _is_virtual_drive(path_str: str) -> bool:
         if res > 0:
             device_path = buf.value
             return device_path.startswith("\\DosDevices\\") or device_path.startswith("\\??\\")
-    except (AttributeError, OSError, ctypes.ArgumentError):
+    except (AttributeError, OSError, ctypes.ArgumentError, MemoryError, TypeError):
         return True 
     return False
 
@@ -325,7 +325,7 @@ def _is_file_owned_by_system(path_str: str) -> bool:
                     return sid_val.startswith("S-1-5-18") or sid_val.startswith("S-1-5-80")
             finally:
                 kernel32.LocalFree(sid_ptr)
-    except (AttributeError, OSError, ctypes.ArgumentError, PermissionError):
+    except (AttributeError, OSError, ctypes.ArgumentError, PermissionError, MemoryError):
         pass
     return False
 
@@ -401,7 +401,7 @@ def _is_file_in_use_by_system(path_str: str) -> bool:
     try:
         h_module = ctypes.windll.kernel32.GetModuleHandleW(path_str)
         return h_module != 0
-    except (OSError, ctypes.ArgumentError): return False
+    except (OSError, ctypes.ArgumentError, MemoryError): return False
 
 @lru_cache(maxsize=128)
 def _is_volume_readonly(path_str: Optional[str]) -> bool:
@@ -442,7 +442,7 @@ def _is_volume_removable_media(path_str: Optional[str]) -> bool:
     try:
         root = os.path.splitdrive(path_str)[0] + "\\"
         return _get_drive_type(root) == DRIVE_REMOVABLE
-    except (AttributeError, OSError, TypeError, ctypes.ArgumentError): pass
+    except (AttributeError, OSError, TypeError, ctypes.ArgumentError, MemoryError): pass
     return False
 
 @lru_cache(maxsize=128)
@@ -455,7 +455,7 @@ def _is_volume_compressed_or_encrypted(path_str: Optional[str]) -> bool:
         flags = ctypes.c_ulong()
         if ctypes.windll.kernel32.GetVolumeInformationW(root, None, 0, None, None, ctypes.byref(flags), None, 0) != 0:
             return bool(flags.value & (0x10 | 0x20000))
-    except (AttributeError, OSError, TypeError, ctypes.ArgumentError): pass
+    except (AttributeError, OSError, TypeError, ctypes.ArgumentError, MemoryError): pass
     return False
 
 @lru_cache(maxsize=1024)
@@ -508,7 +508,7 @@ def _validate_drive_restrictions(target_path: Path) -> None:
             raise UnsafePathError("Volumen cifrado o comprimido.", SafetyValidationErrorCode.VOLUME_RESTRICTED)
         if _is_virtual_drive(str(target_path)):
             raise UnsafePathError("Unidad virtual bloqueada.", SafetyValidationErrorCode.VIRTUAL_DRIVE_DETECTED)
-    except (AttributeError, OSError, ctypes.ArgumentError):
+    except (AttributeError, OSError, ctypes.ArgumentError, MemoryError):
         pass
 
 # Predicados de validación para integridad: determinan si un archivo viola una condición específica
@@ -907,7 +907,7 @@ def _get_final_path_normalized(path: Path) -> Optional[Path]:
                 return _normalize_resolved(buf.value)
         finally:
             kernel32.CloseHandle(handle)
-    except (OSError, AttributeError, ctypes.ArgumentError):
+    except (OSError, AttributeError, ctypes.ArgumentError, MemoryError):
         return None
     return None
 
@@ -1027,7 +1027,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         return p
     except UnsafePathError:
         raise
-    except (OSError, AttributeError, RuntimeError, ValueError, TypeError) as e:
+    except (OSError, AttributeError, RuntimeError, ValueError, TypeError, MemoryError) as e:
         raise UnsafePathError(f"Validación fallida: {e}", SafetyValidationErrorCode.IO_ERROR)
     except Exception as e:
         raise UnsafePathError(f"Error crítico durante la validación: {e}", SafetyValidationErrorCode.IO_ERROR)
@@ -1037,7 +1037,7 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive, base_dir=base_dir)
         return True
-    except (UnsafePathError, ValueError, TypeError, OSError, PermissionError): return False
+    except (UnsafePathError, ValueError, TypeError, OSError, PermissionError, MemoryError): return False
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> list[Path]:
     """Aplica la validación de seguridad a una colección de rutas retornando solo las válidas."""
@@ -1046,7 +1046,7 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
     for p in paths:
         if p is None: continue
         try: results.append(ensure_safe_to_modify(p, allow_sensitive=allow_sensitive, base_dir=base_dir))
-        except (UnsafePathError, ValueError, TypeError, OSError, PermissionError): continue
+        except (UnsafePathError, ValueError, TypeError, OSError, PermissionError, MemoryError): continue
     return results
 
 def describe_protection(path: PathLike) -> str:
