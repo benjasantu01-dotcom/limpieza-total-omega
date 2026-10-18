@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **180** (35.7% de aceptación)
+- Mejoras aceptadas: **181** (35.9% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 51
+- Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 238
+- Sin respuesta de la IA (error o límite): 236
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 3 | 0 | 0 | 0 | 35 |
+| 2026-10-16 | 2 | 0 | 0 | 0 | 32 |
 | 2026-10-17 | 128 | 11 | 40 | 16 | 155 |
-| 2026-10-18 | 49 | 4 | 11 | 4 | 48 |
+| 2026-10-18 | 51 | 4 | 12 | 4 | 49 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **44**
+- legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **41**
 - seguridad defensiva: **37**
-- robustez ante casos límite: **29**
-- rendimiento: **29**
+- rendimiento: **30**
+- robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **19**
-- `diskreport.py`: **17**
 - `safety.py`: **17**
+- `diskreport.py`: **16**
 - `quarantine.py`: **16**
-- `assistant.py`: **15**
+- `assistant.py`: **16**
 - `duplicates.py`: **14**
 - `settings.py`: **14**
 - `healthscore.py`: **13**
@@ -43,10 +43,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **11**
 - `main.py`: **9**
 - `branding.py`: **8**
-- `startup.py`: **3**
+- `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-18T05:08:34` **assistant.py** (rendimiento): Optimicé el método `metrics_snapshot` y los criterios de evaluación convirtiendo las llamadas dinámicas a `getattr` en un acceso directo a un diccionario cacheado, reduciendo significativamente la sobrecarga de reflexión y llamadas a métodos en cada iteración de los evaluadores.
+- `2026-10-18T05:07:54` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en funciones críticas y la estandarización de los tipos de retorno, facilitando la comprensión del flujo de datos entre el registro de Windows y la lógica de validación de seguridad.
 - `2026-10-18T04:57:30` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings técnicos detallados en las funciones de validación de bajo nivel, especificando el propósito de cada chequeo de seguridad para facilitar la auditoría y mantenimiento del código.
 - `2026-10-18T04:56:32` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave (`_atomic_isolate_file`, `quarantine_file`, `_perform_secure_copy`), explicando el flujo de seguridad (integridad, atomicidad y prevención de TOCTOU) para facilitar el mantenimiento y la auditoría.
 - `2026-10-18T04:55:48` **organizer.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se reorganizaron las constantes de seguridad mediante una clase `SecurityLimits` para centralizar la configuración, mejorando la legibilidad y facilitando la auditoría de los límites definidos en el código.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-18T04:26:06` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez de `_get_file_size` y `_is_locked_by_os` reemplazando validaciones implícitas por un manejo de errores más estricto, asegurando que cualquier entrada `None` o ruta mal formada sea gestionada explícitamente antes de intentar interactuar con el sistema operativo.
 - `2026-10-18T04:19:10` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` añadiendo un manejo de excepciones más granular y validación explícita de tipos, evitando que errores de formato en el JSON dejen a la aplicación en un estado de fallo persistente o retorno de datos corruptos.
 - `2026-10-18T04:17:19` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `stage_for_review` y `delete_reviewed` mediante la captura explícita de excepciones al resolver rutas, evitando que fallos silenciosos en la resolución de `Path` (como errores de permisos o rutas inexistentes) interrumpan el proceso, asegurando que las validaciones de seguridad se mantengan estrictas.
-- `2026-10-18T04:06:03` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `compute_score` implementando una validación explícita para asegurar que la suma total de puntos calculados no exceda los límites lógicos tras el redondeo, evitando resultados inconsistentes en el desglose.
-- `2026-10-18T03:56:01` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_source_value` y `_apply_field` implementando un control estricto sobre las excepciones, asegurando que cualquier acceso a atributos fallido retorne valores seguros por defecto en lugar de propagar errores, cumpliendo con el enfoque de validación de entradas.

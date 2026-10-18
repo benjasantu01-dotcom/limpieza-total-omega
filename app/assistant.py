@@ -379,7 +379,7 @@ class SystemContext:
 
     @cached_property
     def metrics_snapshot(self) -> dict[str, float]:
-        """Snapshot cacheado de las métricas numéricas usando acceso directo."""
+        """Snapshot cacheado de las métricas numéricas para acceso eficiente."""
         return {k: float(getattr(self, k)) for k in _VALIDATORS if _check_metric_integrity(getattr(self, k))}
 
     @cached_property

@@ -236,7 +236,10 @@ class StartupEntry:
 
 
 def startup_folders() -> List[Path]:
-    """Retorna las rutas del sistema y del usuario configuradas para programas de inicio."""
+    """
+    Identifica las rutas estándar de inicio en Windows.
+    Retorna una lista de objetos Path validados que no están protegidos.
+    """
     if os.name != "nt":
         return []
     candidates: List[Path] = []
@@ -265,7 +268,7 @@ def startup_folders() -> List[Path]:
 
 
 def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
-    """Crea una instancia de StartupEntry para un archivo en la carpeta de inicio."""
+    """Valida un objeto DirEntry de una carpeta de inicio y retorna una instancia de StartupEntry."""
     try:
         if not entry.is_file(follow_symlinks=False) or entry.is_symlink():
             return None
@@ -308,7 +311,7 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
 
 
 def _is_registry_entry_safe(entry_name: str, entry_command: str, seen_commands: Set[str]) -> bool:
-    """Valida que una entrada del registro sea única y sintácticamente segura."""
+    """Valida que una entrada extraída del registro sea única, no nula y no apunte a rutas sospechosas."""
     if not isinstance(entry_name, str) or not isinstance(entry_command, str):
         return False
     if not entry_name.strip() or not entry_command.strip() or entry_command.startswith(r"\\") or entry_command in seen_commands:
@@ -330,7 +333,10 @@ def _is_registry_entry_safe(entry_name: str, entry_command: str, seen_commands: 
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
-    """Convierte el output CSV de PowerShell en una lista de objetos StartupEntry."""
+    """
+    Parsea una cadena CSV generada por PowerShell y la convierte en objetos StartupEntry.
+    El formato de entrada esperado es una salida de `Select-Object Name, Value`.
+    """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
         
@@ -343,7 +349,6 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
         
         for row in reader:
             if not row: continue
-            # El script de PS ya filtra y devuelve PropertyName y PropertyValue
             raw_val_name = row.get("Name")
             raw_val_cmd = row.get("Value")
             
@@ -366,11 +371,13 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
 
 
 def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEntries:
-    """Extrae programas de inicio desde el registro mediante ejecución única de PowerShell."""
+    """
+    Consulta las claves de registro Run especificadas y extrae programas mediante PowerShell.
+    Retorna StartupEntries tras procesar el output del sistema.
+    """
     if os.name != "nt":
         return []
     
-    # Optimizamos el query: traemos solo las propiedades relevantes para ahorrar procesamiento
     keys_formatted = ", ".join([f"'{k}'" for k in keys])
     ps_script = f"""
     $ErrorActionPreference = 'SilentlyContinue'
@@ -396,7 +403,7 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
 
 
 def list_startup_entries() -> StartupEntries:
-    """Retorna la lista consolidada de programas de inicio mediante caché global."""
+    """Consolida las entradas de carpetas y registro, eliminando duplicados mediante una caché global."""
     global _FULL_SCAN_CACHE
     if _FULL_SCAN_CACHE is not None:
         return _FULL_SCAN_CACHE
