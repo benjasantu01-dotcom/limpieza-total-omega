@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Mejoras aceptadas: **194** (38.5% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 47
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-17 | 58 | 5 | 11 | 7 | 83 |
-| 2026-10-18 | 139 | 11 | 36 | 14 | 140 |
+| 2026-10-17 | 54 | 5 | 11 | 7 | 83 |
+| 2026-10-18 | 140 | 11 | 37 | 14 | 142 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
-- seguridad defensiva: **41**
 - manejo de errores y validación de entradas: **41**
-- rendimiento: **36**
+- seguridad defensiva: **37**
+- rendimiento: **37**
 - robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
@@ -32,20 +32,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **21**
 - `memory.py`: **18**
 - `safety.py`: **18**
-- `diskreport.py`: **17**
 - `settings.py`: **16**
-- `duplicates.py`: **15**
-- `browser.py`: **14**
+- `diskreport.py`: **16**
 - `main.py`: **14**
 - `assistant.py`: **14**
-- `healthscore.py`: **12**
+- `duplicates.py`: **14**
+- `browser.py`: **13**
 - `scanner.py`: **12**
+- `healthscore.py`: **11**
 - `organizer.py`: **11**
 - `branding.py`: **9**
-- `startup.py`: **6**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-18T14:37:56` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` y `estimate_impact` evitando la conversión completa a `list` cuando solo se requiere iterar o contar, reemplazando el consumo innecesario de memoria y tiempo de CPU por el uso directo de iteradores.
 - `2026-10-18T14:26:58` **quarantine.py** (rendimiento): Mejoré la eficiencia del acceso al manifiesto en `load_manifest` mediante el uso de un diccionario de caché más robusto, evitando lecturas redundantes de disco y re-parseo de JSON, y optimicé el bucle de purgado en `purge_all` para minimizar las llamadas a `save_manifest`.
 - `2026-10-18T14:15:56` **duplicates.py** (rendimiento): Optimizado el rendimiento de `_collect_candidates` utilizando `os.scandir` para obtener metadatos (`st_dev`, `st_ino`, `st_size`) en una única llamada al sistema (syscall) por entrada, eliminando llamadas redundantes a `entry.is_file()` y `entry.stat()` que degradaban el rendimiento en directorios grandes.
 - `2026-10-18T14:07:10` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo integrando el `visited_dirs` en el `ScanContext` para prevenir visitas repetidas a directorios en estructuras de caché complejas, reduciendo la redundancia de I/O mediante un conjunto de rutas ya procesadas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-18T13:35:15` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `diskreport.py` añadiendo docstrings descriptivos a funciones internas y normalizando las anotaciones de tipo para asegurar que la intención del código sea clara para otros colaboradores, manteniendo el cumplimiento estricto con las reglas de seguridad.
 - `2026-10-18T13:34:49` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints más precisos, la documentación exhaustiva del `ScanContext` y la estandarización de las firmas en las funciones de utilidad, facilitando la comprensión del flujo de seguridad para futuros desarrolladores.
 - `2026-10-18T13:25:59` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `branding.py` mediante la adición de Type Hints detallados en los argumentos de funciones críticas de dibujo y la estandarización de las descripciones en los docstrings, facilitando la comprensión de las unidades y comportamientos esperados sin alterar la lógica.
-- `2026-10-18T13:24:44` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `save` mediante el manejo explícito de errores durante la lectura/escritura y validación de tipos, evitando que una corrupción parcial del JSON o una falla en el sistema de archivos propague excepciones inesperadas.

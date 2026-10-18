@@ -712,3 +712,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-18T14:27:01` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
 - `2026-10-18T14:27:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T14:27:01` Corrida terminada. Total usado hoy: 340.
+- `2026-10-18T14:35:31` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-18T14:36:21` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-10-18T14:36:44` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_reparse_point
+- `2026-10-18T14:37:42` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
+- `2026-10-18T14:37:56` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `list_startup_entries` y `estimate_impact` evitando la conversión completa a `list` cuando solo se requiere iterar o contar, reemplazando el consumo innecesario de memoria y tiempo de CPU por el uso directo de iteradores.
+- `2026-10-18T14:37:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T14:37:56` Corrida terminada. Total usado hoy: 344.

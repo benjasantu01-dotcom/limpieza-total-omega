@@ -418,14 +418,11 @@ def list_startup_entries() -> StartupEntries:
     seen_items: Set[Tuple[str, str]] = set()
     unique_entries: StartupEntries = []
     
-    # Generador eficiente para procesar fuentes de entrada
-    def _generator() -> Iterator[StartupEntry]:
-        for entry in entries_from_folders():
-            yield entry
-        for entry in entries_from_registry():
-            yield entry
+    def _iterator() -> Iterator[StartupEntry]:
+        yield from entries_from_folders()
+        yield from entries_from_registry()
 
-    for entry in _generator():
+    for entry in _iterator():
         key = (entry.name.lower(), entry.command.lower())
         if key not in seen_items:
             seen_items.add(key)
@@ -446,8 +443,8 @@ def estimate_impact(entries: Iterable[StartupEntry]) -> str:
 
 def summarize(entries: Optional[Iterable[StartupEntry]] = None) -> List[str]:
     """Genera un reporte legible con el inventario de inicio y su impacto estimado."""
-    entries_list = list(entries) if entries is not None else list_startup_entries()
-    total_count: int = len(entries_list)
+    entries_list = entries if entries is not None else list_startup_entries()
+    total_count: int = sum(1 for _ in entries_list)
         
     lines: List[str] = [f"Programas que arrancan con el sistema: {total_count}"]
     impact_level: str = estimate_impact(entries_list)
