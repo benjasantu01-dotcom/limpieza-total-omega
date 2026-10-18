@@ -1111,3 +1111,66 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-10-18T06:18:47` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_is_file_secure_to_read` ante casos de archivos corruptos o bloqueados (excepciones de E/S) al realizar la lectura, y se añadió una verificación explícita para evitar procesar archivos que contengan contenido nulo o JSON malformado que podría causar desbordamientos en la lógica de validación subsiguiente.
 - `2026-10-18T06:18:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T06:18:47` Corrida terminada. Total usado hoy: 148.
+- `2026-10-18T06:26:54` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-10-18T06:27:23` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.34s
+
+```
+- `2026-10-18T06:27:23` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha robustecido `_resolve_and_cache_path` para prevenir excepciones ante rutas inexistentes o inaccesibles, asegurando que `startup.py` no colapse al encontrar un ejecutable que ya no existe (un caso límite frecuente).
+- `2026-10-18T06:27:52` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: seguridad defensiva): el archivo se encogió al 31% del original (posible pérdida de código)
+- `2026-10-18T06:28:24` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` al reemplazar el uso de `mkdir` (que fallaría si el padre existe pero no es un directorio) por una validación explícita mediante `is_protected_path` para prevenir la escritura en ubicaciones críticas, asegurando que la operación sea segura antes de intentar cualquier interacción con el sistema de archivos.
+- `2026-10-18T06:28:35` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+....................................................F................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________ test_detect_profiles_finds_injected_cache_folders _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_finds_inj0')
+
+    def test_detect_profiles_finds_injected_cache_folders(tmp_path):
+        cache = tmp_path / "Navegador" / "Default" / "Cache"
+        cache.mkdir(parents=True)
+        (cache / "dato.bin").write_bytes(b"a" * 500)
+    
+        encontrados = browser.detect_profiles(
+            bases=[tmp_path],
+            cache_paths={"Navegador Falso": r"Navegador\Default\Cache"},
+        )
+>       assert len(encontrados) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:739: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_folders - assert 0 == 1
+ +  where 0 = len([])
+1 failed, 298 passed in 1.23s
+
+```
+- `2026-10-18T06:28:35` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_is_valid_rel_path` para incluir la validación de caracteres de control y rutas con formato inválido, y aseguré que `_resolve_browser_path` utilice `pathlib` de forma estricta para prevenir posibles fugas de directorio mediante manipulación de strings en la construcción de rutas de navegadores.
+- `2026-10-18T06:28:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T06:28:35` Corrida terminada. Total usado hoy: 152.

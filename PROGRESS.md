@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 56
+- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 57
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 0 | 0 | 0 | 0 | 6 |
+| 2026-10-16 | 0 | 0 | 0 | 0 | 2 |
 | 2026-10-17 | 128 | 11 | 40 | 16 | 155 |
-| 2026-10-18 | 67 | 4 | 16 | 6 | 55 |
+| 2026-10-18 | 68 | 6 | 17 | 6 | 55 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +26,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **41**
 - rendimiento: **37**
 - robustez ante casos límite: **37**
-- seguridad defensiva: **35**
+- seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
@@ -41,12 +41,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **13**
 - `organizer.py`: **12**
 - `scanner.py`: **11**
-- `branding.py`: **9**
+- `branding.py`: **10**
 - `main.py`: **9**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-18T06:28:24` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` al reemplazar el uso de `mkdir` (que fallaría si el padre existe pero no es un directorio) por una validación explícita mediante `is_protected_path` para prevenir la escritura en ubicaciones críticas, asegurando que la operación sea segura antes de intentar cualquier interacción con el sistema de archivos.
 - `2026-10-18T06:18:47` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_secure_to_read` ante casos de archivos corruptos o bloqueados (excepciones de E/S) al realizar la lectura, y se añadió una verificación explícita para evitar procesar archivos que contengan contenido nulo o JSON malformado que podría causar desbordamientos en la lógica de validación subsiguiente.
 - `2026-10-18T06:18:04` **safety.py** (robustez ante casos límite): Se ha añadido un chequeo de concurrencia y disponibilidad real mediante `GetFileInformationByHandle` antes de intentar operaciones de lectura/escritura, mejorando la robustez ante archivos bloqueados por el sistema durante escaneos rápidos y evitando excepciones innecesarias en `_get_path_stat_robust`.
 - `2026-10-18T06:12:54` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante fallos de sincronización y condiciones de carrera al asegurar que el archivo original no se elimine prematuramente si la verificación post-aislamiento falla, y añadiendo una validación explícita de `st_nlink` después de la copia.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-18T05:37:58` **safety.py** (rendimiento): Se ha optimizado la validación `is_protected_path` implementando un mecanismo de validación de caché basado en `(path, mtime)` del directorio padre, reduciendo drásticamente las consultas costosas al sistema de archivos al detectar rutas protegidas que ya fueron verificadas y cuya estructura no ha cambiado.
 - `2026-10-18T05:36:53` **quarantine.py** (rendimiento): Optimicé `list_items` y `summarize` para evitar la carga redundante del manifiesto desde el disco, aprovechando que `load_manifest` ya implementa un caché eficiente, y reduje la complejidad algorítmica en `purge_all` al usar un set para las búsquedas, evitando iteraciones anidadas sobre la lista de ítems.
 - `2026-10-18T05:17:39` **duplicates.py** (rendimiento): Optimizé la recolección de archivos (`_collect_candidates`) evitando el cálculo redundante de `Path` mediante el uso de `entry.path` directo y eliminando la creación innecesaria de objetos `Path` antes de las validaciones críticas, reduciendo significativamente la sobrecarga de memoria y ciclos de CPU en escaneos profundos.
-- `2026-10-18T05:17:00` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de `os.scandir` de forma más eficiente y evitando la resolución innecesaria de rutas (evitando llamadas repetitivas a `.resolve()`) dentro del bucle crítico, manteniendo la seguridad intacta.
