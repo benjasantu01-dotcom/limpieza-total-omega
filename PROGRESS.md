@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 47
-- Sin cambios (nada sustancial que mejorar): 20
+- Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-17 | 60 | 5 | 12 | 7 | 84 |
-| 2026-10-18 | 138 | 11 | 35 | 13 | 139 |
+| 2026-10-17 | 58 | 5 | 11 | 7 | 83 |
+| 2026-10-18 | 139 | 11 | 36 | 14 | 140 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
-- seguridad defensiva: **42**
+- seguridad defensiva: **41**
 - manejo de errores y validación de entradas: **41**
-- rendimiento: **35**
-- robustez ante casos límite: **33**
+- rendimiento: **36**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
+- `quarantine.py`: **21**
 - `memory.py`: **18**
 - `safety.py`: **18**
-- `settings.py`: **17**
 - `diskreport.py`: **17**
-- `assistant.py`: **15**
+- `settings.py`: **16**
 - `duplicates.py`: **15**
 - `browser.py`: **14**
 - `main.py`: **14**
+- `assistant.py`: **14**
 - `healthscore.py`: **12**
 - `scanner.py`: **12**
 - `organizer.py`: **11**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-18T14:26:58` **quarantine.py** (rendimiento): Mejoré la eficiencia del acceso al manifiesto en `load_manifest` mediante el uso de un diccionario de caché más robusto, evitando lecturas redundantes de disco y re-parseo de JSON, y optimicé el bucle de purgado en `purge_all` para minimizar las llamadas a `save_manifest`.
 - `2026-10-18T14:15:56` **duplicates.py** (rendimiento): Optimizado el rendimiento de `_collect_candidates` utilizando `os.scandir` para obtener metadatos (`st_dev`, `st_ino`, `st_size`) en una única llamada al sistema (syscall) por entrada, eliminando llamadas redundantes a `entry.is_file()` y `entry.stat()` que degradaban el rendimiento en directorios grandes.
 - `2026-10-18T14:07:10` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo integrando el `visited_dirs` en el `ScanContext` para prevenir visitas repetidas a directorios en estructuras de caché complejas, reduciendo la redundancia de I/O mediante un conjunto de rutas ya procesadas.
 - `2026-10-18T14:06:27` **assistant.py** (rendimiento): Se optimizó `SystemContext.metrics_snapshot` y `active_problems` reemplazando llamadas repetitivas a `self.__dict__` y `_check_metric_integrity` por un acceso directo y eficiente, reduciendo la sobrecarga de procesamiento en cada consulta del asistente.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-18T13:34:49` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints más precisos, la documentación exhaustiva del `ScanContext` y la estandarización de las firmas en las funciones de utilidad, facilitando la comprensión del flujo de seguridad para futuros desarrolladores.
 - `2026-10-18T13:25:59` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `branding.py` mediante la adición de Type Hints detallados en los argumentos de funciones críticas de dibujo y la estandarización de las descripciones en los docstrings, facilitando la comprensión de las unidades y comportamientos esperados sin alterar la lógica.
 - `2026-10-18T13:24:44` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_and_parse_json` y `save` mediante el manejo explícito de errores durante la lectura/escritura y validación de tipos, evitando que una corrupción parcial del JSON o una falla en el sistema de archivos propague excepciones inesperadas.
-- `2026-10-18T13:16:08` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_valid_file_path` y `_is_readable` mediante una validación más estricta del tipo de entrada, evitando que excepciones inesperadas durante la inspección de metadatos provoquen falsos negativos en el flujo principal.

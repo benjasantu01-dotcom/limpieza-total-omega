@@ -571,12 +571,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
         if not isinstance(data, list):
             raise ValueError("Formato de manifiesto inválido: no es una lista.")
             
-        items = []
-        for d in data:
-            if isinstance(d, dict):
-                item = QuarantineItem.from_dict(d)
-                if item:
-                    items.append(item)
+        items = [i for i in (QuarantineItem.from_dict(d) for d in data) if i]
                     
         _MANIFEST_CACHE[base_dir] = (items, current_mtime)
         return items
@@ -1086,7 +1081,6 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             
         items = load_manifest(base)
         item_map = {i.stored_name: i for i in items}
-        # Usar set para búsquedas O(1)
         purgado_ids: Set[str] = set()
         
         for f in quarantine_root.iterdir():
@@ -1100,8 +1094,8 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 continue
         
         if purgado_ids:
-            remaining = [i for i in items if i.item_id not in purgado_ids]
-            save_manifest(remaining, base)
+            new_items = [i for i in items if i.item_id not in purgado_ids]
+            save_manifest(new_items, base)
             
             if quarantine_root.exists():
                 dir_fd = os.open(str(quarantine_root), os.O_RDONLY)
