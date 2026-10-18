@@ -320,7 +320,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         elif entry.is_file(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             yield Path(entry.path), st.st_size
-                    except (OSError, PermissionError):
+                    except (OSError, PermissionError, FileNotFoundError):
                         continue
         except (PermissionError, OSError, FileNotFoundError): 
             continue
@@ -380,6 +380,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
+        if not path.exists(): continue
         stats.register_file(size, path.suffix)
         
         if limit > 0:

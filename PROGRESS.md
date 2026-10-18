@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Mejoras aceptadas: **190** (37.7% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 55
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 225
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 0 | 0 | 0 | 0 | 18 |
+| 2026-10-16 | 0 | 0 | 0 | 0 | 14 |
 | 2026-10-17 | 128 | 11 | 40 | 16 | 155 |
-| 2026-10-18 | 60 | 4 | 15 | 5 | 52 |
+| 2026-10-18 | 62 | 4 | 15 | 6 | 53 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,17 +26,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **41**
 - rendimiento: **37**
 - seguridad defensiva: **35**
-- robustez ante casos límite: **30**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **19**
 - `safety.py`: **18**
+- `diskreport.py`: **17**
 - `quarantine.py`: **17**
 - `assistant.py`: **17**
-- `diskreport.py`: **16**
+- `duplicates.py`: **15**
 - `settings.py`: **15**
-- `duplicates.py`: **14**
 - `browser.py`: **14**
 - `healthscore.py`: **13**
 - `organizer.py`: **11**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-18T05:57:38` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia (`path.exists()`) y manejo de errores específico en `_calculate_keeper_heuristic` para evitar caídas al intentar analizar archivos que fueron movidos o eliminados por procesos externos durante el tiempo que transcurre entre la recolección y la sugerencia del archivo a conservar.
+- `2026-10-18T05:57:14` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia de archivos dentro del generador `walk_files` y en el acumulador `_collect_summary_data` para evitar errores de tipo `FileNotFoundError` (o `OSError` con código 2) que ocurren cuando un archivo se elimina o mueve por un proceso externo mientras se está ejecutando el escaneo, aumentando la robustez ante condiciones de carrera.
 - `2026-10-18T05:48:28` **branding.py** (robustez ante casos límite): Se mejora la robustez de `save_logo_svg` al verificar la existencia y el estado de la ruta mediante `is_safe_to_modify` antes de proceder, evitando lanzar excepciones innecesarias en el flujo de control y asegurando que las operaciones de escritura se realicen únicamente en rutas validadas.
 - `2026-10-18T05:48:08` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la carga de datos del asistente implementando un mecanismo de limpieza de tipo y validación de rango más estricto durante la ingestión (`ingest`), evitando que valores atípicos o maliciosos degraden la integridad del `SystemContext`.
 - `2026-10-18T05:47:19` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` y `estimate_impact` mediante el uso de generadores y una estructura de datos `set` para evitar múltiples iteraciones y duplicados en memoria, reduciendo la carga innecesaria de objetos en el escaneo completo.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-18T05:07:54` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en funciones críticas y la estandarización de los tipos de retorno, facilitando la comprensión del flujo de datos entre el registro de Windows y la lógica de validación de seguridad.
 - `2026-10-18T04:57:30` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings técnicos detallados en las funciones de validación de bajo nivel, especificando el propósito de cada chequeo de seguridad para facilitar la auditoría y mantenimiento del código.
 - `2026-10-18T04:56:32` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave (`_atomic_isolate_file`, `quarantine_file`, `_perform_secure_copy`), explicando el flujo de seguridad (integridad, atomicidad y prevención de TOCTOU) para facilitar el mantenimiento y la auditoría.
-- `2026-10-18T04:55:48` **organizer.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se reorganizaron las constantes de seguridad mediante una clase `SecurityLimits` para centralizar la configuración, mejorando la legibilidad y facilitando la auditoría de los límites definidos en el código.
-- `2026-10-18T04:48:22` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings detallados en funciones críticas, se han unificado los tipos para mayor claridad y se ha extraído la lógica de validación de seguridad de procesos para mejorar la legibilidad y mantenibilidad del flujo de trabajo en Windows.
