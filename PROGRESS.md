@@ -7,37 +7,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **175** (34.7% de aceptación)
-- Rechazadas por tests: 16
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 239
+- Sin respuesta de la IA (error o límite): 240
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 35 | 4 | 7 | 6 | 82 |
+| 2026-10-16 | 33 | 3 | 7 | 6 | 81 |
 | 2026-10-17 | 128 | 11 | 40 | 16 | 155 |
-| 2026-10-18 | 12 | 1 | 3 | 2 | 2 |
+| 2026-10-18 | 14 | 1 | 3 | 2 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **42**
-- seguridad defensiva: **36**
-- rendimiento: **32**
-- robustez ante casos límite: **23**
+- seguridad defensiva: **35**
+- rendimiento: **34**
+- robustez ante casos límite: **22**
 
 ## Mejoras aceptadas por archivo
 
+- `memory.py`: **19**
 - `diskreport.py`: **18**
-- `memory.py`: **18**
 - `duplicates.py`: **16**
 - `safety.py`: **16**
-- `settings.py`: **15**
-- `assistant.py`: **14**
+- `quarantine.py`: **14**
+- `settings.py`: **14**
 - `browser.py`: **14**
-- `quarantine.py`: **13**
+- `assistant.py`: **13**
 - `organizer.py`: **11**
 - `scanner.py`: **11**
 - `healthscore.py`: **10**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-18T01:07:57` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` y `save_manifest` mediante la eliminación de una comprobación innecesaria de `stat()` en el camino caliente y reduciendo las llamadas a `resolve()` en el bucle principal, mejorando así la eficiencia de I/O.
+- `2026-10-18T01:06:07` **memory.py** (rendimiento): Optimicé el rendimiento de la enumeración de procesos en `memory.py` utilizando una lista pre-asignada de PIDs para reducir el overhead de llamadas al sistema y evitando la re-apertura de handles mediante la validación de seguridad única durante el ciclo de enumeración.
 - `2026-10-18T00:53:08` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` reemplazando la búsqueda redundante de reglas por un acceso directo pre-cargado y eliminando la creación de listas intermedias, además de asegurar que `_BAR_CACHE` no crezca indefinidamente mediante el uso de `functools.lru_cache` (liberado de la lista estándar).
 - `2026-10-18T00:52:54` **duplicates.py** (rendimiento): Optimicé el rendimiento del proceso de recolección en `_collect_candidates` eliminando llamadas redundantes a `is_safe_to_modify` y `is_protected_path` al procesar archivos que ya fueron validados previamente al obtener su `stat`, reduciendo la carga de I/O en árboles de directorios grandes.
 - `2026-10-18T00:51:16` **browser.py** (rendimiento): Optimizé la recursión en `_sum_directory_recursive` usando `scandir` para evitar llamadas redundantes a `os.path.exists` o `is_dir`, y consolidé las verificaciones de estado para reducir el número de syscalls durante el recorrido del árbol de archivos.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-18T00:13:02` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento añadiendo type hints faltantes en las estructuras de datos y normalizando la documentación de las clases de acumulación mediante docstrings estandarizados.
 - `2026-10-18T00:11:14` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos en las funciones de manipulación de color y dibujo para clarificar su propósito, parámetros y comportamiento ante entradas inválidas, facilitando el mantenimiento y la legibilidad sin alterar la funcionalidad.
 - `2026-10-17T14:51:36` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la aplicación de *type hints* estrictos en el `_EXPLANATION_MAP` y la normalización de la estructura de las constantes de configuración, además de documentar mediante *docstrings* el propósito técnico de las funciones de validación de carga, alineándome con el enfoque de legibilidad solicitado.
-- `2026-10-17T14:42:20` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de archivos en `_read_and_parse_json` y `_load_impl` centralizando la validación mediante `is_safe_to_modify` antes de cualquier apertura de archivo para prevenir condiciones de carrera y ataques de Path Traversal, eliminando la redundancia y asegurando una degradación elegante ante archivos dañados.
-- `2026-10-17T14:42:03` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las heurísticas de archivo mediante una validación explícita de `None` y tipos antes de acceder a atributos de `path`, previniendo potenciales excepciones en tiempo de ejecución al procesar archivos con metadatos malformados o inaccesibles.

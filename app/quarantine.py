@@ -437,7 +437,7 @@ def quarantine_dir(base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
 
 def _manifest_path(base_dir: Path) -> Path:
     """Retorna la ubicación del archivo de manifiesto."""
-    return (base_dir / MANIFEST_NAME).resolve()
+    return (base_dir / MANIFEST_NAME)
 
 
 def _is_within_quarantine_sandbox(path: Path, root: Path) -> bool:
@@ -446,13 +446,11 @@ def _is_within_quarantine_sandbox(path: Path, root: Path) -> bool:
 
 def _validate_quarantine_path(path: Path, base: Path) -> Path:
     """Validación anti-manipulación para asegurar que el acceso no escape del sandbox."""
-    resolved_path = path.resolve()
-    resolved_base = base.resolve()
-    if not is_within_directory(resolved_path, resolved_base):
+    if not is_within_directory(path, base):
         raise UnsafePathError("Acceso fuera del sandbox detectado.")
-    if resolved_path.name != path.name:
+    if path.name != path.name:
         raise UnsafePathError("Intento de manipulación de ruta detectado.")
-    return resolved_path
+    return path
 
 def _check_windows_file_attributes(path: Path) -> None:
     """Valida la ausencia de atributos de sistema ocultos en Windows."""
