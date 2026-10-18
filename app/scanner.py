@@ -92,11 +92,12 @@ def _cached_is_protected(path_str: str) -> bool:
 
 def _is_valid_file_path(path: Path) -> bool:
     """Valida la integridad básica de un Path antes de realizar operaciones de I/O."""
-    if not isinstance(path, Path):
+    if not isinstance(path, (Path, str)):
         return False
     try:
-        return path.exists() and path.is_file()
-    except (OSError, PermissionError, ValueError, RuntimeError, FileNotFoundError):
+        p = Path(path)
+        return p.is_file()
+    except (OSError, PermissionError, ValueError, RuntimeError, TypeError):
         return False
 
 def _is_locked_by_os(path: Path) -> bool:
@@ -119,11 +120,11 @@ def _is_locked_by_os(path: Path) -> bool:
 
 def _is_readable(path: Path) -> bool:
     """Valida si el archivo existe y posee permisos de lectura mediante el sistema operativo."""
-    if not _is_valid_file_path(path):
+    if not isinstance(path, (Path, str)):
         return False
     try:
         return os.access(path, os.R_OK)
-    except (OSError, PermissionError, ValueError, AttributeError):
+    except (OSError, PermissionError, ValueError, AttributeError, TypeError):
         return False
 
 def _get_file_attributes(entry: os.DirEntry) -> int:

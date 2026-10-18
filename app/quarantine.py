@@ -604,8 +604,10 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
             
         os.replace(temp_name, target_path)
         dir_fd = os.open(str(base_path), os.O_RDONLY)
-        try: os.fsync(dir_fd)
-        finally: os.close(dir_fd)
+        try:
+            os.fsync(dir_fd)
+        finally:
+            os.close(dir_fd)
         
         _MANIFEST_CACHE[base_path] = (items, target_path.stat().st_mtime)
         return target_path

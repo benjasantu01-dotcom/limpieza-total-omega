@@ -981,24 +981,15 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     Función de entrada principal para validar si un archivo puede ser modificado.
     Lanza `UnsafePathError` ante cualquier riesgo detectado.
     """
-    if path is None:
-        raise UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC)
-    
     if not isinstance(path, (str, Path, os.PathLike)):
         raise UnsafePathError(f"Tipo de ruta no soportado: {type(path).__name__}", SafetyValidationErrorCode.GENERIC)
         
     try:
-        path_str = str(path)
-        if not path_str.strip():
-            raise UnsafePathError("Ruta vacía no permitida.", SafetyValidationErrorCode.GENERIC)
+        path_str = str(path).strip()
+        if not path_str:
+            raise UnsafePathError("Ruta vacía o inválida.", SafetyValidationErrorCode.GENERIC)
             
-        if os.name == 'nt' and os.path.exists(path_str) and _is_file_locked_by_other_process(path_str):
-             raise UnsafePathError(f"Archivo bloqueado por el sistema: {path_str}", SafetyValidationErrorCode.FILE_IN_USE)
-
-        if _has_invalid_chars(path_str):
-            raise UnsafePathError("Caracteres inválidos detectados.", SafetyValidationErrorCode.INVALID_CHARS)
-        
-        p = normalize(path)
+        p = normalize(path_str)
         
         if p.name.lower() in _KERNEL_BLOCKED_FILES:
             raise UnsafePathError(f"Modificación bloqueada de archivo crítico: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
@@ -1026,7 +1017,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         else:
             parent = p.parent
             if parent.exists() and not os.access(parent, os.W_OK):
-                raise UnsafePathError("Directorio contenedor no tiene permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
+                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
         return p
     except UnsafePathError:
         raise
