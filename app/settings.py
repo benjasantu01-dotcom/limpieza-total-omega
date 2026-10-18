@@ -187,8 +187,10 @@ class _SettingsManager:
                 f.flush()
                 os.fsync(f.fileno())
             
-            if config_path.exists() and config_path.is_symlink():
-                return False
+            if config_path.exists():
+                st = config_path.lstat()
+                if stat.S_ISLNK(st.st_mode) or st.st_nlink != 1:
+                    return False
                 
             os.replace(temp_path, config_path)
             self.clear()

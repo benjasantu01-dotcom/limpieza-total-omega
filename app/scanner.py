@@ -258,7 +258,7 @@ class Scanner:
     def _has_invalid_name(self, name: str) -> bool:
         """Verifica si el nombre del archivo contiene caracteres reservados o de control."""
         if not name: return True
-        return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name))
+        return bool(INVALID_TRAILING_CHARS_RE.search(name) or RESERVED_NAMES_RE.match(name) or RTL_CHAR_RE.search(name) or "\0" in name)
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Determina si la entrada representa un punto de reanálisis (Junction o Symlink)."""
@@ -277,6 +277,10 @@ class Scanner:
             return True
         
         try:
+            # Validación defensiva contra caracteres nulos o maliciosos en la ruta completa
+            if "\0" in path_str or RTL_CHAR_RE.search(path_str):
+                return False
+
             if entry.is_symlink():
                 return False
             if self._is_reparse_point(entry):
