@@ -357,9 +357,9 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
         try:
             rel = path.relative_to(root)
             if not rel.parts: continue
-            top_folder = root / rel.parts[0]
-            stats[str(top_folder)].size += size
-            stats[str(top_folder)].file_count += 1
+            top_path = str(root / rel.parts[0])
+            stats[top_path].size += size
+            stats[top_path].file_count += 1
         except (ValueError, IndexError, OSError, AttributeError):
             continue
 
@@ -385,17 +385,13 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
-        try:
-            if not path.exists(): continue
-            stats.register_file(size, path.suffix)
-            
-            if limit > 0:
-                if len(top_heap) < limit:
-                    heapq.heappush(top_heap, (size, path))
-                elif size > top_heap[0][0]:
-                    heapq.heapreplace(top_heap, (size, path))
-        except (OSError, PermissionError):
-            continue
+        stats.register_file(size, path.suffix)
+        
+        if limit > 0:
+            if len(top_heap) < limit:
+                heapq.heappush(top_heap, (size, path))
+            elif size > top_heap[0][0]:
+                heapq.heapreplace(top_heap, (size, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 

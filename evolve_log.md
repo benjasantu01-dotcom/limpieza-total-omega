@@ -1513,3 +1513,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-10-18T09:32:07` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
 - `2026-10-18T09:32:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T09:32:07` Corrida terminada. Total usado hoy: 224.
+- `2026-10-18T09:40:19` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-10-18T09:41:01` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el `SystemContext` reemplazando los `getattr` recurrentes dentro del bucle de `ingest` y `metrics_snapshot` por un acceso directo al diccionario `__dict__` o mediante una estructura de datos más eficiente, reduciendo la sobrecarga de introspección y llamadas a funciones en cada iteración de análisis.
+- `2026-10-18T09:41:30` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-10-18T09:41:54` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-10-18T09:42:06` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `_collect_summary_data` para evitar llamadas redundantes a `path.exists()` (que ya es validado por `walk_files`) y mejoré el rendimiento de `largest_folders` reduciendo la creación de objetos `Path` intermedios, unificando el acceso a `stats` bajo una clave única de string.
+- `2026-10-18T09:42:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T09:42:06` Corrida terminada. Total usado hoy: 228.

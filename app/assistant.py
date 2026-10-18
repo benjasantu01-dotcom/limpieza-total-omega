@@ -380,14 +380,15 @@ class SystemContext:
     @cached_property
     def metrics_snapshot(self) -> dict[str, float]:
         """Snapshot cacheado de las métricas numéricas para acceso eficiente."""
-        return {k: float(getattr(self, k)) for k in _VALIDATORS if _check_metric_integrity(getattr(self, k))}
+        d = self.__dict__
+        return {k: float(d[k]) for k in _VALIDATORS if k in d and _check_metric_integrity(d[k])}
 
     @cached_property
     def active_problems(self) -> tuple[str, ...]:
         """Evalúa los criterios de salud contra los datos actuales y retorna los problemas activos."""
         if not self.analyzed: return ()
-        snapshot: dict[str, float] = self.metrics_snapshot
-        return tuple(msg for c in _CRITERIOS_SALUD if (msg := c.format_if_triggered(snapshot.get(c.metric_key, -1.0))) is not None)
+        snap: dict[str, float] = self.metrics_snapshot
+        return tuple(msg for c in _CRITERIOS_SALUD if (msg := c.format_if_triggered(snap.get(c.metric_key, -1.0))) is not None)
 
     @cached_property
     def _hash_tuple(self) -> tuple:
@@ -398,7 +399,7 @@ class SystemContext:
 
     def get_metric(self, key: str, default: float) -> float:
         """Retorna una métrica numérica validada o el valor por defecto si falla."""
-        val: Any = _get_safe_attr(self, key)
+        val: Any = self.__dict__.get(key)
         return float(val) if _is_safe_numeric_context(val) else default
 
     @property
@@ -418,12 +419,10 @@ class SystemContext:
         """Valida, convierte y verifica límites de un campo individual según su especificación."""
         val: Any = _get_source_value(source, key)
         if val is None: return None
-        # Filtrado de tipos estrictos: no aceptamos strings que no sean números parseables
         if isinstance(val, bool): return None
         try:
             valid_val: Optional[float] = _is_valid_numeric_update(val, spec)
             if valid_val is None: return None
-            # Garantizamos que el tipo sea consistente con el hint (int o float)
             return spec.type_hint(valid_val)
         except (ValueError, TypeError, Exception):
             return None
@@ -436,53 +435,39 @@ class SystemContext:
         return clean if _ensure_safe_text(clean) else ""
 
     def _validate_and_sanitize_data(self, source: Any) -> dict[str, Any]:
-        """
-        Extrae datos válidos de una fuente externa. 
-        Aplica validaciones de integridad y desinfección de seguridad antes de cualquier modificación.
-        """
+        """Extrae datos válidos de una fuente externa."""
         updates: dict[str, Any] = {}
         for key, spec in _VALIDATORS.items():
-            value: Any = self._apply_field(source, key, spec)
-            if value is not None:
-                updates[key] = value
+            val = self._apply_field(source, key, spec)
+            if val is not None: updates[key] = val
         
-        grade_val: str = self._clean_grade(_get_source_value(source, "grade"))
-        if grade_val:
-            updates["grade"] = grade_val
+        grade_val = self._clean_grade(_get_source_value(source, "grade"))
+        if grade_val: updates["grade"] = grade_val
         return updates
 
     def _validate_ingestion_source(self, source: Any) -> bool:
-        """Realiza comprobaciones de seguridad sobre el objeto fuente (estructura y profundidad)."""
+        """Realiza comprobaciones de seguridad sobre el objeto fuente."""
         if source is None: return False
-        if isinstance(source, dict):
-            return not _is_input_too_deep_or_complex(source)
-        return True
+        return not _is_input_too_deep_or_complex(source) if isinstance(source, dict) else True
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
-        """Aplica cambios al contexto y limpia cachés internas con validación de seguridad."""
-        if len(updates) > _MAX_COLLECTION_SIZE:
-            return
-        for k, v in updates.items():
-            if _is_safe_key(k) and (k in _VALIDATORS or k == "grade"):
-                setattr(self, k, v)
+        """Aplica cambios al contexto y limpia cachés internas."""
+        if len(updates) > _MAX_COLLECTION_SIZE: return
+        self.__dict__.update({k: v for k, v in updates.items() if _is_safe_key(k)})
         self.analyzed = True
-        self.__dict__.pop("metrics_snapshot", None)
-        self.__dict__.pop("active_problems", None)
-        self.__dict__.pop("_hash_tuple", None)
+        for attr in ["metrics_snapshot", "active_problems", "_hash_tuple"]:
+            self.__dict__.pop(attr, None)
 
     def ingest(self, source: Any) -> bool:
         """Normaliza e importa datos externos al contexto de manera transaccional."""
-        if not self._validate_ingestion_source(source):
-            return False
-        
+        if not self._validate_ingestion_source(source): return False
         updates = self._validate_and_sanitize_data(source)
-        if updates:
-            try:
-                self._apply_updates(updates)
-                return True
-            except Exception:
-                return False
-        return False
+        if not updates: return False
+        try:
+            self._apply_updates(updates)
+            return True
+        except Exception:
+            return False
 
 @dataclass
 class Answer:
@@ -510,32 +495,25 @@ def _ensure_safe_text(text: Any) -> bool:
     """Realiza una desinfección estricta sobre cadenas evitando inyecciones de comandos."""
     if not isinstance(text, str) or not text or len(text) > _MAX_TEXT_LENGTH:
         return False
-    # Filtro adicional contra caracteres peligrosos comunes en inyección
     if any(c in text for c in "<>|&^"):
         return False
-    if _is_safe_path_input(text):
-        return False
-    return True
+    return not _is_safe_path_input(text)
 
 def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
     """Acceso seguro a atributos evitando recursión, inyecciones de clase y acceso a métodos."""
     if depth > _MAX_NESTING_DEPTH or not _is_safe_key(key): return None
     try:
-        if isinstance(source, dict):
-            return source.get(key)
-        if hasattr(source, key):
-            val: Any = getattr(source, key)
-            return val if not callable(val) else None
+        if isinstance(source, dict): return source.get(key)
+        val = getattr(source, key, None)
+        return val if not callable(val) else None
     except Exception:
         return None
-    return None
 
 def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> SystemContext:
     """Crea un objeto SystemContext a partir de múltiples fuentes de datos de análisis."""
     ctx: SystemContext = SystemContext()
     for s in (metrics, health, extra):
-        if s is not None:
-            ctx.ingest(s)
+        if s is not None: ctx.ingest(s)
     return ctx
 
 def context_as_text(context: SystemContext) -> str:
