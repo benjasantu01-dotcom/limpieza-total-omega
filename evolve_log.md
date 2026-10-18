@@ -1071,3 +1071,11 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-10-18T05:28:19` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-10-18T05:28:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T05:28:19` Corrida terminada. Total usado hoy: 128.
+- `2026-10-18T05:36:01` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-10-18T05:36:53` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé `list_items` y `summarize` para evitar la carga redundante del manifiesto desde el disco, aprovechando que `load_manifest` ya implementa un caché eficiente, y reduje la complejidad algorítmica en `purge_all` al usar un set para las búsquedas, evitando iteraciones anidadas sobre la lista de ítems.
+- `2026-10-18T05:37:11` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-10-18T05:37:58` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado la validación `is_protected_path` implementando un mecanismo de validación de caché basado en `(path, mtime)` del directorio padre, reduciendo drásticamente las consultas costosas al sistema de archivos al detectar rutas protegidas que ya fueron verificadas y cuya estructura no ha cambiado.
+- `2026-10-18T05:37:59` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-18T05:38:16` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_inside_base_root, Scanner._is_relevant_extension, Scanner._is_reparse_point
+- `2026-10-18T05:38:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T05:38:16` Corrida terminada. Total usado hoy: 132.

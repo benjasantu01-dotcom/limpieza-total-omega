@@ -31,8 +31,8 @@ LONG_PATH_PREFIX: Final[str] = "\\\\?\\"
 PathLike: TypeAlias = Union[str, os.PathLike]
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
 
-# Cache optimizado para validaciones de rutas
-_PROTECTED_PATH_CACHE: Final[dict[str, bool]] = {}
+# Cache optimizado con timestamp para invalidación parcial
+_PROTECTED_PATH_CACHE: Final[dict[str, tuple[bool, float]]] = {}
 
 class SafetyAction(Enum):
     """Define la criticidad de la operación para ajustar el rigor de la validación."""
@@ -720,43 +720,38 @@ def is_drive_root(path: PathLike) -> bool:
     except (UnsafePathError, TypeError, OSError): return True
 
 def is_protected_path(path: PathLike) -> bool:
-    """Determina si la ruta forma parte de una zona protegida del sistema."""
+    """Determina si la ruta forma parte de una zona protegida del sistema con caché optimizado."""
     if not isinstance(path, (str, Path)) or not path: return True
     path_str = str(path)
     
-    # Check cache first
-    if path_str in _PROTECTED_PATH_CACHE: return _PROTECTED_PATH_CACHE[path_str]
-    
     try:
+        p = Path(path_str)
+        parent_dir = p.parent
+        mtime = parent_dir.stat().st_mtime if parent_dir.exists() else 0.0
+        
+        if path_str in _PROTECTED_PATH_CACHE:
+            cached_res, cached_mtime = _PROTECTED_PATH_CACHE[path_str]
+            if cached_mtime == mtime: return cached_res
+
         p_str_low = path_str.lower()
-        
-        # 1. Chequeo por string (muy rápido)
-        if any(p_str_low.startswith(root) for root in _SYSTEM_ROOT_STRS):
-            _PROTECTED_PATH_CACHE[path_str] = True
-            return True
-        
-        if _is_kernel_managed(p_str_low):
-            _PROTECTED_PATH_CACHE[path_str] = True
+        if any(p_str_low.startswith(root) for root in _SYSTEM_ROOT_STRS) or _is_kernel_managed(p_str_low):
+            _PROTECTED_PATH_CACHE[path_str] = (True, mtime)
             return True
             
-        # 2. Chequeo por componentes (Path)
-        p = Path(path)
         parts = {part.lower() for part in p.parts}
         if not PROTECTED_DIR_NAMES.isdisjoint(parts):
-            _PROTECTED_PATH_CACHE[path_str] = True
+            _PROTECTED_PATH_CACHE[path_str] = (True, mtime)
             return True
         
-        # 3. Chequeo por atributos de disco (costoso, se hace último)
         attrs = _get_file_attrs(str(p))
         if attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT):
-            _PROTECTED_PATH_CACHE[path_str] = True
+            _PROTECTED_PATH_CACHE[path_str] = (True, mtime)
             return True
         
         res = p == Path(p.anchor)
-        _PROTECTED_PATH_CACHE[path_str] = res
+        _PROTECTED_PATH_CACHE[path_str] = (res, mtime)
         return res
     except Exception:
-        _PROTECTED_PATH_CACHE[path_str] = True
         return True
 
 @lru_cache(maxsize=4096)
@@ -821,7 +816,6 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     if _is_reserved_device_name(target_path.name):
         raise UnsafePathError("Nombre de dispositivo reservado detectado.", SafetyValidationErrorCode.RESERVED_NAME)
     
-    # Manejo robusto del patrón de spoofing para evitar error de compilación de regex
     try:
         if re.search(r'[\u200E\u200F\u202A-\u202E]', path_string):
             raise UnsafePathError("Posible ataque de bidi spoofing detectado.", SafetyValidationErrorCode.GENERIC)
@@ -849,7 +843,6 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
     
-    # Refuerzo defensivo: bloquear archivos marcados por el SO como críticos
     attrs = _get_file_attrs(str(target_path))
     if attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN):
         raise UnsafePathError("Protección defensiva: Archivo de sistema oculto.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)

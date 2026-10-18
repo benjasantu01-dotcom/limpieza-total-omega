@@ -950,8 +950,7 @@ def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna una lista ordenada de ítems por fecha de aislamiento."""
     try:
         items = load_manifest(base)
-        items.sort(key=lambda x: x.quarantined_at, reverse=True)
-        return items
+        return sorted(items, key=lambda x: x.quarantined_at, reverse=True)
     except (OSError, UnsafePathError, PermissionError):
         return []
 
@@ -1063,31 +1062,26 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             
         items = load_manifest(base)
         item_map = {i.stored_name: i for i in items}
-        purged_ids: Set[str] = {i.item_id for i in items}
         found_in_fs: Set[str] = set()
         
         for f in quarantine_root.iterdir():
-            if f.name == MANIFEST_NAME:
-                continue
-            
-            if is_protected_path(f):
+            if f.name == MANIFEST_NAME or is_protected_path(f):
                 continue
             
             if f.name in item_map:
                 if _is_item_purgable(f, item_map[f.name]):
                     found_in_fs.add(item_map[f.name].item_id)
-            else:
-                if is_safe_to_modify(f) and _safe_unlink(f):
-                    continue
+            elif is_safe_to_modify(f) and _safe_unlink(f):
+                continue
         
-        remaining = [i for i in items if i.item_id not in found_in_fs]
-        if len(remaining) != len(items):
+        if len(found_in_fs) > 0:
+            remaining = [i for i in items if i.item_id not in found_in_fs]
             save_manifest(remaining, base)
-        
-        if quarantine_root.exists():
-            dir_fd = os.open(str(quarantine_root), os.O_RDONLY)
-            try: os.fsync(dir_fd)
-            finally: os.close(dir_fd)
+            
+            if quarantine_root.exists():
+                dir_fd = os.open(str(quarantine_root), os.O_RDONLY)
+                try: os.fsync(dir_fd)
+                finally: os.close(dir_fd)
             
         return len(found_in_fs)
     except (OSError, PermissionError, UnsafePathError):
@@ -1096,9 +1090,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
 
 def total_quarantined_bytes(base: PathLike = DEFAULT_QUARANTINE_DIR, items: Optional[List[QuarantineItem]] = None) -> int:
     """Calcula el peso total en bytes de ítems en cuarentena."""
-    if items is None:
-        items = load_manifest(base)
-    return sum(item.size_bytes for item in items)
+    return sum(item.size_bytes for item in (items or load_manifest(base)))
 
 
 def summarize(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[str]:
@@ -1106,6 +1098,7 @@ def summarize(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[str]:
     items = list_items(base)
     if not items:
         return ["La cuarentena está vacía."]
+    
     total_mb = sum(i.size_mb for i in items)
     lines = [f"{len(items)} archivo(s) en cuarentena — {total_mb:.2f} MB", ""]
     for item in items:
