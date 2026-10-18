@@ -292,7 +292,10 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """Generador recursivo que recorre archivos bajo `directory` sin seguir punteros de reparse."""
+    """
+    Generador recursivo que recorre archivos bajo `directory`.
+    Implementa prevención de ciclos mediante seguimiento de inodos.
+    """
     root_path = _validate_root(directory)
     if root_path is None: return
     
@@ -305,25 +308,18 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Exclusión de rutas inseguras antes de cualquier acceso stat
                         if skip_protected and _is_excluded_path(entry, root_path):
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
-                            try:
-                                st = entry.stat(follow_symlinks=False)
-                                inode = (st.st_dev, st.st_ino)
-                                if inode not in visited_inodes:
-                                    visited_inodes.add(inode)
-                                    stack.append(entry.path)
-                            except (OSError, PermissionError):
-                                continue
+                            st = entry.stat(follow_symlinks=False)
+                            inode = (st.st_dev, st.st_ino)
+                            if inode not in visited_inodes:
+                                visited_inodes.add(inode)
+                                stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            try:
-                                st = entry.stat(follow_symlinks=False)
-                                yield Path(entry.path), st.st_size
-                            except (OSError, PermissionError):
-                                continue
+                            st = entry.stat(follow_symlinks=False)
+                            yield Path(entry.path), st.st_size
                     except (OSError, PermissionError):
                         continue
         except (PermissionError, OSError, FileNotFoundError): 
@@ -376,20 +372,23 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
-    """Escanea archivos y consolida estadísticas totales y top-N mediante min-heap."""
+    """
+    Escanea el directorio y consolida métricas globales.
+    Usa un min-heap para mantener solo los N archivos más grandes durante el recorrido.
+    """
     stats = GlobalStats()
-    min_heap_for_top_files: List[FileRecord] = [] 
+    top_heap: List[FileRecord] = []
     
-    for path, size_bytes in walk_files(directory, skip_protected):
-        stats.register_file(size_bytes, path.suffix)
+    for path, size in walk_files(directory, skip_protected):
+        stats.register_file(size, path.suffix)
         
         if limit > 0:
-            if len(min_heap_for_top_files) < limit: 
-                heapq.heappush(min_heap_for_top_files, (size_bytes, path))
-            elif size_bytes > min_heap_for_top_files[0][0]: 
-                heapq.heapreplace(min_heap_for_top_files, (size_bytes, path))
+            if len(top_heap) < limit:
+                heapq.heappush(top_heap, (size, path))
+            elif size > top_heap[0][0]:
+                heapq.heapreplace(top_heap, (size, path))
                 
-    return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, min_heap_for_top_files)
+    return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:

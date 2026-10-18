@@ -168,7 +168,11 @@ class MetricSpec:
         return isinstance(val, (int, float)) and not isinstance(val, bool) and _check_metric_integrity(val)
 
 class ProblemCriterion(NamedTuple):
-    """Regla declarativa para detección de problemas basada en umbrales de diagnóstico."""
+    """
+    Regla declarativa para detectar condiciones de riesgo.
+    Define qué métrica monitorear, el umbral de disparo, la lógica de comparación
+    y el formato del mensaje de advertencia para el usuario.
+    """
     metric_key: str
     threshold: float
     operator: str
@@ -355,7 +359,10 @@ def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
 
 @dataclass
 class SystemContext:
-    """Contenedor de estado consolidado que representa la salud del sistema."""
+    """
+    Contenedor de estado consolidado que representa la salud del sistema.
+    Gestiona la ingesta de datos externos, su validación y la exposición de métricas seguras.
+    """
     score: Optional[int] = None
     grade: str = ""
     junk_mb: float = 0.0

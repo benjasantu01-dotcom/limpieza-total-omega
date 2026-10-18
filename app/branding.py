@@ -243,7 +243,7 @@ def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588
 
 @lru_cache(maxsize=512)
 def _hex_to_rgb(value: str) -> RGBTuple:
-    """Convierte un string hexadecimal a una tupla de valores RGB (0-255)."""
+    """Convierte un string hexadecimal (e.g., '#FF0000') a tupla RGB (255, 0, 0)."""
     try:
         val = int(value.lstrip('#'), 16)
         return ((val >> 16) & 0xFF, (val >> 8) & 0xFF, val & 0xFF)
@@ -251,12 +251,12 @@ def _hex_to_rgb(value: str) -> RGBTuple:
 
 @lru_cache(maxsize=512)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
-    """Convierte una tupla RGB (0-255) a su representación en string hexadecimal."""
+    """Convierte una tupla RGB a formato hexadecimal CSS válido."""
     return "#{:02x}{:02x}{:02x}".format(*[max(0, min(255, int(c))) for c in rgb])
 
 @lru_cache(maxsize=256)
 def blend(start: str, end: str, ratio: float) -> ColorHex:
-    """Calcula una interpolación lineal entre dos colores hexadecimales dado un ratio."""
+    """Realiza una interpolación lineal (lerp) entre dos colores basado en un ratio [0.0, 1.0]."""
     try:
         r1, g1, b1 = _hex_to_rgb(start)
         r2, g2, b2 = _hex_to_rgb(end)
@@ -266,7 +266,7 @@ def blend(start: str, end: str, ratio: float) -> ColorHex:
 
 @lru_cache(maxsize=128)
 def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, ...]:
-    """Agrupa una lista de colores consecutivos iguales en segmentos para optimizar el dibujo."""
+    """Agrupa colores consecutivos idénticos en segmentos para minimizar llamadas de dibujo."""
     if not colors: return ()
     segments = []
     curr, start = colors[0], 0
@@ -279,7 +279,7 @@ def _get_grouped_segments(colors: Tuple[ColorHex, ...]) -> Tuple[ColorSegment, .
 
 @lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorHex, ...]:
-    """Genera una secuencia de colores interpolados que forman un gradiente según el número de pasos."""
+    """Genera una secuencia de colores interpolados distribuida en 'steps' pasos."""
     n = max(1, int(steps))
     n_stops = len(stops)
     if n_stops < 2: return (stops[0],) * n
@@ -299,14 +299,14 @@ def gradient_colors(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) ->
 
 @lru_cache(maxsize=64)
 def get_gradient_segments(steps: int, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> Tuple[ColorSegment, ...]:
-    """Obtiene los segmentos de color optimizados para un gradiente dado el número de pasos."""
+    """Obtiene segmentos optimizados para dibujo en el Canvas mediante agrupamiento de colores."""
     return _get_grouped_segments(gradient_colors(steps, stops))
 
 SHIELD_BASE_COORDS: Final[CoordinateSequence] = (64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
 
 @lru_cache(maxsize=128)
 def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
-    """Escala y posiciona los vértices del polígono base para el dibujo del escudo."""
+    """Escala las coordenadas relativas del escudo según un factor de escala y offset."""
     return tuple(x + (c * scale) if i % 2 == 0 else y + (c * scale) for i, c in enumerate(SHIELD_BASE_COORDS))
 
 @lru_cache(maxsize=8)
@@ -337,7 +337,7 @@ STRIPE_BASE_Y_OFFSET: Final[float] = 18.0
 
 @lru_cache(maxsize=16)
 def _get_stripe_params(scale: float, n: int) -> Tuple[Tuple[float, float, float], ...]:
-    """Calcula los parámetros geométricos (grosor, posición Y) de las bandas decorativas del escudo."""
+    """Calcula dimensiones (grosor, offset inicial, offset final) para bandas decorativas."""
     tf = STRIPE_THICKNESS_SCALE * scale
     params = []
     for i in range(n):
@@ -347,7 +347,7 @@ def _get_stripe_params(scale: float, n: int) -> Tuple[Tuple[float, float, float]
     return tuple(params)
 
 def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Renderiza las bandas decorativas dentro del escudo utilizando el lienzo proporcionado."""
+    """Dibuja las bandas decorativas internas del escudo en el lienzo proporcionado."""
     try:
         if scale <= 0: return
         n = max(6, int(STRIPE_COUNT_FACTOR * scale))
@@ -360,7 +360,7 @@ def _draw_shield_stripes(canvas: CanvasElement, x: float, y: float, scale: float
     except Exception: pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, scale: float) -> None:
-    """Dibuja elementos decorativos sobre el escudo (líneas de corte y símbolo Omega)."""
+    """Renderiza el símbolo de corte y la letra Omega sobre el escudo."""
     try:
         lw = max(2, int(8.0 * scale))
         ts = max(8, int(UI_CONFIG.header_size * scale))
@@ -370,7 +370,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, x: float, y: float, sca
     except Exception: pass
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Ejecuta el proceso completo de dibujo del logo de la aplicación en el lienzo (Canvas)."""
+    """Renderiza el logo completo en el lienzo (Canvas), escalado y centrado."""
     try:
         val_size = float(size)
         if not math.isfinite(val_size): return
@@ -382,7 +382,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except Exception: pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una barra de gradiente horizontal de dimensiones específicas."""
+    """Dibuja una línea horizontal con gradiente interpolado para indicadores visuales."""
     try:
         w = max(1, int(width))
         h = max(1, int(height))
@@ -392,7 +392,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except Exception: pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[ColorHex] = None, fill: Optional[ColorHex] = None) -> None:
-    """Dibuja un anillo de progreso circular en el lienzo basado en un porcentaje dado."""
+    """Dibuja un indicador circular (anillo) que representa el porcentaje de progreso o salud."""
     try:
         if percent is None: return
         val = max(0.0, min(100.0, float(percent)))

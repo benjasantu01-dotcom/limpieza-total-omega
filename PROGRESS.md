@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **176** (34.9% de aceptación)
-- Rechazadas por tests: 14
+- Mejoras aceptadas: **177** (35.1% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 50
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 243
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 242
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 8 | 0 | 1 | 1 | 40 |
+| 2026-10-16 | 6 | 0 | 1 | 0 | 39 |
 | 2026-10-17 | 128 | 11 | 40 | 16 | 155 |
-| 2026-10-18 | 40 | 3 | 9 | 4 | 48 |
+| 2026-10-18 | 43 | 4 | 9 | 4 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **41**
+- legibilidad y documentación: **38**
 - seguridad defensiva: **37**
-- legibilidad y documentación: **35**
-- rendimiento: **32**
 - robustez ante casos límite: **31**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **19**
+- `memory.py`: **18**
 - `safety.py`: **17**
-- `diskreport.py`: **16**
+- `diskreport.py`: **17**
 - `quarantine.py`: **15**
+- `assistant.py`: **15**
 - `browser.py`: **14**
 - `settings.py`: **14**
-- `assistant.py`: **14**
 - `duplicates.py`: **13**
 - `healthscore.py`: **12**
 - `scanner.py`: **11**
-- `main.py`: **10**
 - `organizer.py`: **10**
-- `branding.py`: **8**
+- `branding.py`: **9**
+- `main.py`: **9**
 - `startup.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-18T04:38:06` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints detallados, la mejora en la documentación de `walk_files` para clarificar el manejo de estados de recursión, y la refactorización de `_collect_summary_data` para simplificar su lógica interna, garantizando mayor claridad en el flujo de procesamiento de datos.
+- `2026-10-18T04:37:04` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `branding.py` mediante la adición de docstrings técnicos detallados en las funciones de manipulación de color y geometría, clarificando la lógica de transformación de espacios de color y el propósito de los parámetros en los métodos de dibujo del `Canvas`.
+- `2026-10-18T04:36:08` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` documentando los criterios de salud con `docstrings` específicos y clarificando las responsabilidades de las funciones de validación de seguridad mediante comentarios explicativos del "PORQUÉ" técnico de cada restricción.
 - `2026-10-18T04:27:33` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la carga de JSON en `_read_and_parse_json` y `_coerce_and_verify` agregando validaciones de tipo explícitas y manejo defensivo de errores, asegurando que un JSON malformado o un objeto inesperado (ej. lista en lugar de dict) no comprometa la integridad de la configuración ni lance excepciones inesperadas.
 - `2026-10-18T04:26:06` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez de `_get_file_size` y `_is_locked_by_os` reemplazando validaciones implícitas por un manejo de errores más estricto, asegurando que cualquier entrada `None` o ruta mal formada sea gestionada explícitamente antes de intentar interactuar con el sistema operativo.
 - `2026-10-18T04:19:10` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `load_manifest` añadiendo un manejo de excepciones más granular y validación explícita de tipos, evitando que errores de formato en el JSON dejen a la aplicación en un estado de fallo persistente o retorno de datos corruptos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-18T02:23:10` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `delete_reviewed` implementando una validación estricta de "anclaje" al directorio de cuarentena, asegurando mediante `commonpath` que no sea posible escapar del directorio raíz de revisión ni mediante enlaces ni mediante estructuras de rutas complejas.
 - `2026-10-18T02:14:55` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `memory.py` asegurando que la función `_is_process_executable_safe` valide la ruta del ejecutable mediante `is_protected_path` antes de permitir cualquier interacción, y garantizando la limpieza de recursos (`CloseHandle`) ante cualquier excepción en la enumeración de procesos.
 - `2026-10-18T02:14:38` **main.py** (seguridad defensiva): Se introdujo una validación explícita `p.is_mount()` o check de acceso `os.access` en `_validate_disk_access` y se reforzó `_check_environment_integrity` para evitar que la aplicación intente interactuar con unidades extraíbles o montajes de red inestables que podrían bloquear el hilo principal durante un análisis de disco, cumpliendo con las reglas de seguridad defensiva.
-- `2026-10-18T02:13:19` **healthscore.py** (seguridad defensiva): Se ha mejorado `_sanitize_msg` para incluir un escape de caracteres sospechosos que puedan ser interpretados como secuencias de escape de terminal o caracteres de control, fortaleciendo la integridad de la salida de texto frente a posibles inyecciones en los mensajes del sistema.
-- `2026-10-18T02:04:51` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva al reemplazar el uso de `os.scandir` (que es vulnerable a errores de acceso profundo en subdirectorios) por un patrón de resolución robusto en `walk_files` y añadiendo validaciones de rutas cortas mediante `Path.resolve()` para evitar que el escáner sea engañado por enlaces simbólicos o puntos de reparse que intenten escapar del directorio raíz (`root_path`).
-- `2026-10-18T02:03:55` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` al verificar la existencia y el tipo del directorio padre antes de intentar operaciones de escritura, mitigando posibles errores de sistema de archivos y asegurando que las rutas validadas por `safety` se traten de forma consistente.
