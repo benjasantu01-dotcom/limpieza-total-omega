@@ -1577,3 +1577,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-18T10:12:38` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `SystemContext` ante valores externos malformados o faltantes durante la ingesta, asegurando que `ingest` sea una operación atómica y segura mediante la validación previa de todo el diccionario de métricas antes de actualizar el estado del objeto.
 - `2026-10-18T10:12:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T10:12:38` Corrida terminada. Total usado hoy: 240.
+- `2026-10-18T10:21:00` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-10-18T10:21:31` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-10-18T10:21:54` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-10-18T10:22:19` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Se mejora la robustez de `walk_files` frente a rutas que desaparecen durante la iteración (novedad común en sistemas de archivos dinámicos) y se asegura que el contador de `visited_inodes` sea consistente incluso ante fallos de `os.stat` parciales.
+- `2026-10-18T10:22:29` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha robustecido el escaneo de directorios en `_collect_candidates` para manejar correctamente errores de acceso denegado específicos al listar contenido, evitando que una sola carpeta bloqueada interrumpa el proceso de recolección de todo el disco.
+- `2026-10-18T10:22:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T10:22:29` Corrida terminada. Total usado hoy: 244.
