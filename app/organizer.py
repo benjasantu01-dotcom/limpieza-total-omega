@@ -301,8 +301,7 @@ def scan_for_junk(directories: Optional[Sequence[str | Path]] = None) -> List[Ju
     
     if not isinstance(scan_list, (list, tuple)): return []
 
-    for d in scan_list:
-        if d is None: continue
+    for d in filter(None, scan_list):
         try:
             p = Path(d).expanduser()
             if p.is_dir() and not _is_unc_path(p) and is_safe_to_modify(p):

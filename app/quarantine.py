@@ -967,11 +967,7 @@ def quarantine_file(
 
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna una lista ordenada de ítems por fecha de aislamiento."""
-    try:
-        items = load_manifest(base)
-        return sorted(items, key=lambda x: x.quarantined_at, reverse=True)
-    except (OSError, UnsafePathError, PermissionError):
-        return []
+    return sorted(load_manifest(base), key=lambda x: x.quarantined_at, reverse=True)
 
 
 def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
@@ -1081,7 +1077,8 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             
         items = load_manifest(base)
         item_map = {i.stored_name: i for i in items}
-        found_in_fs: Set[str] = set()
+        # Usar set para búsquedas O(1)
+        purgado_ids: Set[str] = set()
         
         for f in quarantine_root.iterdir():
             if f.name == MANIFEST_NAME or is_protected_path(f):
@@ -1089,12 +1086,12 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             
             if f.name in item_map:
                 if _is_item_purgable(f, item_map[f.name]):
-                    found_in_fs.add(item_map[f.name].item_id)
+                    purgado_ids.add(item_map[f.name].item_id)
             elif is_safe_to_modify(f) and _safe_unlink(f):
                 continue
         
-        if len(found_in_fs) > 0:
-            remaining = [i for i in items if i.item_id not in found_in_fs]
+        if purgado_ids:
+            remaining = [i for i in items if i.item_id not in purgado_ids]
             save_manifest(remaining, base)
             
             if quarantine_root.exists():
@@ -1102,7 +1099,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 try: os.fsync(dir_fd)
                 finally: os.close(dir_fd)
             
-        return len(found_in_fs)
+        return len(purgado_ids)
     except (OSError, PermissionError, UnsafePathError):
         return 0
 

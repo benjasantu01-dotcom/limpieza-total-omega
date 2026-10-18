@@ -732,7 +732,13 @@ def is_protected_path(path: PathLike) -> bool:
     """Determina si la ruta forma parte de una zona protegida del sistema con caché optimizado."""
     if not isinstance(path, (str, Path)) or not path: return True
     path_str = str(path)
+    p_str_low = path_str.lower()
     
+    # 1. Chequeo rápido por raíces conocidas
+    if any(p_str_low.startswith(root) for root in _SYSTEM_ROOT_STRS):
+        return True
+    
+    # 2. Uso de caché con validación de mtime del padre para evitar llamadas repetidas
     try:
         p = Path(path_str)
         parent_dir = p.parent
@@ -742,8 +748,7 @@ def is_protected_path(path: PathLike) -> bool:
             cached_res, cached_mtime = _PROTECTED_PATH_CACHE[path_str]
             if cached_mtime == mtime: return cached_res
 
-        p_str_low = path_str.lower()
-        if any(p_str_low.startswith(root) for root in _SYSTEM_ROOT_STRS) or _is_kernel_managed(p_str_low):
+        if _is_kernel_managed(p_str_low):
             _PROTECTED_PATH_CACHE[path_str] = (True, mtime)
             return True
             
