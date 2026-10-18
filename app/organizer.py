@@ -378,7 +378,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                 
                 item_res.unlink()
                 count += 1
-            except (OSError, PermissionError, FileNotFoundError) as e:
+            except (OSError, PermissionError, FileNotFoundError, ValueError) as e:
                 logger.warning(f"No se pudo eliminar {item}: {e}")
                 continue
         return count
