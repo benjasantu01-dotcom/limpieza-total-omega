@@ -334,26 +334,26 @@ def _is_process_executable_safe(pid: int, handle: int) -> bool:
 def _iter_process_memory(kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
     """Enumera procesos del sistema validando su seguridad al obtener métricas."""
     max_pids = 1024
-    while True:
+    while max_pids <= 16384:
         pids = (ctypes.c_uint32 * max_pids)()
         cb_needed = ctypes.c_uint32(0)
         if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
             count = cb_needed.value // 4
             for i in range(count):
                 pid_val = pids[i]
-                if pid_val > 4:
-                    handle = _is_process_accessible(pid_val, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
-                    if handle:
-                        try:
-                            if _is_process_executable_safe(pid_val, handle):
-                                ws = _query_working_set_bytes(pid_val, handle, psapi, pmc)
-                                if ws is not None:
-                                    yield ProcessMemory(f"PID {pid_val}", pid_val, ws)
-                        finally:
-                            kernel32.CloseHandle(handle)
+                if _is_system_process(pid_val) or pid_val <= 0: continue
+                
+                handle = _is_process_accessible(pid_val, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
+                if handle:
+                    try:
+                        if _is_process_executable_safe(pid_val, handle):
+                            ws = _query_working_set_bytes(pid_val, handle, psapi, pmc)
+                            if ws is not None:
+                                yield ProcessMemory(f"PID {pid_val}", pid_val, ws)
+                    finally:
+                        kernel32.CloseHandle(handle)
             return
         max_pids *= 2
-        if max_pids > 16384: break
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Obtiene los procesos más pesados tras validación de seguridad."""

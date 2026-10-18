@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Mejoras aceptadas: **193** (38.3% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 55
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 0 | 0 | 0 | 0 | 14 |
+| 2026-10-16 | 0 | 0 | 0 | 0 | 10 |
 | 2026-10-17 | 128 | 11 | 40 | 16 | 155 |
-| 2026-10-18 | 62 | 4 | 15 | 6 | 53 |
+| 2026-10-18 | 65 | 4 | 15 | 6 | 54 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **41**
 - rendimiento: **37**
+- robustez ante casos límite: **35**
 - seguridad defensiva: **35**
-- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **19**
+- `memory.py`: **20**
+- `quarantine.py`: **18**
 - `safety.py`: **18**
 - `diskreport.py`: **17**
-- `quarantine.py`: **17**
 - `assistant.py`: **17**
 - `duplicates.py`: **15**
 - `settings.py`: **15**
 - `browser.py`: **14**
 - `healthscore.py`: **13**
-- `organizer.py`: **11**
+- `organizer.py`: **12**
 - `scanner.py`: **11**
 - `branding.py`: **9**
 - `main.py`: **9**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-18T06:12:54` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante fallos de sincronización y condiciones de carrera al asegurar que el archivo original no se elimine prematuramente si la verificación post-aislamiento falla, y añadiendo una validación explícita de `st_nlink` después de la copia.
+- `2026-10-18T06:12:14` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_is_safe_for_disk_op` y `stage_for_review` añadiendo una comprobación explícita para evitar que `shutil.move` intente operar sobre archivos que se encuentran en el mismo sistema de archivos de forma potencialmente insegura, además de asegurar que `junk_file.path` sea siempre una ruta absoluta antes de cualquier resolución de seguridad.
+- `2026-10-18T06:11:39` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_iter_process_memory` para gestionar casos donde el conteo de procesos cambia dinámicamente durante la iteración y se introdujo un manejo seguro de errores al consultar el nombre de módulo para evitar que un proceso con denegación de acceso interrumpa el diagnóstico global.
 - `2026-10-18T05:57:38` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia (`path.exists()`) y manejo de errores específico en `_calculate_keeper_heuristic` para evitar caídas al intentar analizar archivos que fueron movidos o eliminados por procesos externos durante el tiempo que transcurre entre la recolección y la sugerencia del archivo a conservar.
 - `2026-10-18T05:57:14` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia de archivos dentro del generador `walk_files` y en el acumulador `_collect_summary_data` para evitar errores de tipo `FileNotFoundError` (o `OSError` con código 2) que ocurren cuando un archivo se elimina o mueve por un proceso externo mientras se está ejecutando el escaneo, aumentando la robustez ante condiciones de carrera.
 - `2026-10-18T05:48:28` **branding.py** (robustez ante casos límite): Se mejora la robustez de `save_logo_svg` al verificar la existencia y el estado de la ruta mediante `is_safe_to_modify` antes de proceder, evitando lanzar excepciones innecesarias en el flujo de control y asegurando que las operaciones de escritura se realicen únicamente en rutas validadas.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-18T05:17:00` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de `os.scandir` de forma más eficiente y evitando la resolución innecesaria de rutas (evitando llamadas repetitivas a `.resolve()`) dentro del bucle crítico, manteniendo la seguridad intacta.
 - `2026-10-18T05:16:27` **branding.py** (rendimiento): Se optimizó el acceso a constantes globales en el módulo `branding.py` mediante la pre-resolución de valores en el módulo, reduciendo la carga de búsqueda en diccionarios y llamadas a `MappingProxyType` durante las operaciones de dibujo intensivo en el `Canvas`.
 - `2026-10-18T05:08:34` **assistant.py** (rendimiento): Optimicé el método `metrics_snapshot` y los criterios de evaluación convirtiendo las llamadas dinámicas a `getattr` en un acceso directo a un diccionario cacheado, reduciendo significativamente la sobrecarga de reflexión y llamadas a métodos en cada iteración de los evaluadores.
-- `2026-10-18T05:07:54` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en funciones críticas y la estandarización de los tipos de retorno, facilitando la comprensión del flujo de datos entre el registro de Windows y la lógica de validación de seguridad.
-- `2026-10-18T04:57:30` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings técnicos detallados en las funciones de validación de bajo nivel, especificando el propósito de cada chequeo de seguridad para facilitar la auditoría y mantenimiento del código.
-- `2026-10-18T04:56:32` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave (`_atomic_isolate_file`, `quarantine_file`, `_perform_secure_copy`), explicando el flujo de seguridad (integridad, atomicidad y prevención de TOCTOU) para facilitar el mantenimiento y la auditoría.

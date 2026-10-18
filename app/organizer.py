@@ -97,6 +97,7 @@ class JunkFile:
 
     def __post_init__(self) -> None:
         try:
+            self.path = self.path.absolute()
             stat_result = self.path.stat()
             if self._ino is None:
                 self._ino = stat_result.st_ino
@@ -235,6 +236,9 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         if src_real.is_symlink() or (os.name == 'nt' and bool(src_real.stat().st_file_attributes & LIMITS.WIN_ATTR_JUNCTION)): return False
         if not (is_safe_to_modify(src_real) and _validate_path_security(src_real, dest_real)): return False
         
+        # Validar consistencia de dispositivos para evitar movimientos entre volúmenes distintos si fuera necesario
+        if src_real.drive != dest_real.drive: return False
+
         if not _validate_file_identity(junk_file, src_real) or _is_file_locked(src_real): return False
         if _is_recursive_violation(src_real, dest_real) or not _can_write_to_destination(dest_real, junk_file.size_bytes): return False
         
@@ -330,7 +334,9 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                 if not _is_safe_for_disk_op(junk_file, dest_res): continue
                 target_path = _can_move_file(junk_file, dest_res)
                 if target_path and target_path != junk_file.path:
-                    shutil.move(str(junk_file.path.resolve(strict=True)), str(target_path))
+                    # Validar nuevamente antes de mover por si el estado del FS cambió
+                    if junk_file.path.exists():
+                        shutil.move(str(junk_file.path.resolve(strict=True)), str(target_path))
             except (OSError, shutil.Error, PermissionError) as e:
                 logger.error(f"Error moviendo {junk_file.path}: {e}")
                 continue

@@ -720,6 +720,10 @@ def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, Inode]:
         try: os.fsync(dir_fd)
         finally: os.close(dir_fd)
         
+        # Validación post-escritura: verificar que sea un archivo único
+        if destination.stat().st_nlink > 1:
+             raise UnsafePathError("Integridad comprometida: el archivo destino tiene enlaces múltiples.")
+
         ensure_safe_to_modify(destination, allow_sensitive=True)
         return source_hash, destination.stat().st_ino
     except Exception as e:
@@ -931,14 +935,16 @@ def quarantine_file(
         if not destination.exists() or destination.stat().st_ino != file_inode or _get_sha256(destination) != file_hash:
             raise RuntimeError("Falla crítica: el destino no es coherente tras la copia.")
             
+        item = _register_quarantine_item(destination, source_path, file_hash, file_inode, clean_reason, st_info.st_size, base)
+        
+        # Solo procedemos a borrar el original una vez el manifiesto está persistido con éxito
         if source_path.exists():
             if not os.path.samefile(source_path, destination):
                 try:
                     _check_io_error_context(source_path.unlink)
                 except OSError as e:
-                    raise RuntimeError(f"Aislamiento exitoso, pero falla al remover origen: {e}")
+                    raise RuntimeError(f"Aislamiento exitoso y registrado, pero falla al remover original: {e}")
                 
-        item = _register_quarantine_item(destination, source_path, file_hash, file_inode, clean_reason, st_info.st_size, base)
         _verify_transaction_integrity(item, destination)
         return item
     except (OSError, IOError, RuntimeError) as e:
