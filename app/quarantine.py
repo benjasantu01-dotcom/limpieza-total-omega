@@ -669,6 +669,10 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
             if not is_safe_to_modify(temp_dest.parent):
                 raise UnsafePathError("Directorio de destino no seguro.")
             
+            # Verificación explícita de seguridad antes de abrir destino
+            if not is_safe_to_modify(temp_dest):
+                raise UnsafePathError("Ruta destino insegura detectada.")
+            
             dest_fd = os.open(str(temp_dest), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
             try:
                 with os.fdopen(dest_fd, "wb") as dest_handle:

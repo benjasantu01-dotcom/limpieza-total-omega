@@ -372,8 +372,8 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             try:
                 if not item.is_file() or item.is_symlink(): continue
                 item_res = item.resolve(strict=True)
-                # Seguridad crítica: verificar que el archivo resida efectivamente dentro del árbol de revisión
-                if dest_res not in item_res.parents: continue
+                # Seguridad crítica: verificar que el archivo resida físicamente bajo el directorio de revisión
+                if os.path.commonpath([str(dest_res), str(item_res)]) != str(dest_res): continue
                 if not is_safe_to_modify(item_res) or is_protected_path(item_res): continue
                 
                 item_res.unlink()
