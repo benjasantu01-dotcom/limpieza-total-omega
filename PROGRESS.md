@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **175** (34.7% de aceptación)
+- Mejoras aceptadas: **174** (34.5% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 50
+- Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 240
+- Sin respuesta de la IA (error o límite): 238
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 33 | 3 | 7 | 6 | 81 |
+| 2026-10-16 | 31 | 3 | 7 | 6 | 79 |
 | 2026-10-17 | 128 | 11 | 40 | 16 | 155 |
-| 2026-10-18 | 14 | 1 | 3 | 2 | 4 |
+| 2026-10-18 | 15 | 1 | 6 | 2 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **42**
-- seguridad defensiva: **35**
-- rendimiento: **34**
+- rendimiento: **35**
+- seguridad defensiva: **33**
 - robustez ante casos límite: **22**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **19**
-- `diskreport.py`: **18**
-- `duplicates.py`: **16**
-- `safety.py`: **16**
+- `diskreport.py`: **17**
+- `safety.py`: **17**
+- `duplicates.py`: **15**
 - `quarantine.py`: **14**
 - `settings.py`: **14**
 - `browser.py`: **14**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-18T01:12:36` **safety.py** (rendimiento): Se ha optimizado `is_protected_path` integrando el chequeo de la cache en el nivel más externo y utilizando una lógica de cortocircuito (`short-circuiting`) para las validaciones más costosas, evitando el cálculo innecesario de `Path` y atributos de disco cuando las comprobaciones de string (más rápidas) ya determinan que la ruta es protegida.
 - `2026-10-18T01:07:57` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` y `save_manifest` mediante la eliminación de una comprobación innecesaria de `stat()` en el camino caliente y reduciendo las llamadas a `resolve()` en el bucle principal, mejorando así la eficiencia de I/O.
 - `2026-10-18T01:06:07` **memory.py** (rendimiento): Optimicé el rendimiento de la enumeración de procesos en `memory.py` utilizando una lista pre-asignada de PIDs para reducir el overhead de llamadas al sistema y evitando la re-apertura de handles mediante la validación de seguridad única durante el ciclo de enumeración.
 - `2026-10-18T00:53:08` **healthscore.py** (rendimiento): Optimicé el rendimiento de `compute_score` reemplazando la búsqueda redundante de reglas por un acceso directo pre-cargado y eliminando la creación de listas intermedias, además de asegurar que `_BAR_CACHE` no crezca indefinidamente mediante el uso de `functools.lru_cache` (liberado de la lista estándar).
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-18T00:13:53` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más precisos en las funciones de hashing y filtrado, y se han añadido anotaciones de tipo (type hints) explícitas en las funciones de recolección, asegurando que la intención y el manejo de los tipos sean claros para futuros colaboradores del proyecto.
 - `2026-10-18T00:13:02` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento añadiendo type hints faltantes en las estructuras de datos y normalizando la documentación de las clases de acumulación mediante docstrings estandarizados.
 - `2026-10-18T00:11:14` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos en las funciones de manipulación de color y dibujo para clarificar su propósito, parámetros y comportamiento ante entradas inválidas, facilitando el mantenimiento y la legibilidad sin alterar la funcionalidad.
-- `2026-10-17T14:51:36` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la aplicación de *type hints* estrictos en el `_EXPLANATION_MAP` y la normalización de la estructura de las constantes de configuración, además de documentar mediante *docstrings* el propósito técnico de las funciones de validación de carga, alineándome con el enfoque de legibilidad solicitado.

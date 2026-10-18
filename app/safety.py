@@ -723,12 +723,14 @@ def is_protected_path(path: PathLike) -> bool:
     """Determina si la ruta forma parte de una zona protegida del sistema."""
     if not isinstance(path, (str, Path)) or not path: return True
     path_str = str(path)
+    
+    # Check cache first
     if path_str in _PROTECTED_PATH_CACHE: return _PROTECTED_PATH_CACHE[path_str]
     
     try:
         p_str_low = path_str.lower()
         
-        # Optimización: evitar conversión a Path si no es necesario
+        # 1. Chequeo por string (muy rápido)
         if any(p_str_low.startswith(root) for root in _SYSTEM_ROOT_STRS):
             _PROTECTED_PATH_CACHE[path_str] = True
             return True
@@ -737,12 +739,14 @@ def is_protected_path(path: PathLike) -> bool:
             _PROTECTED_PATH_CACHE[path_str] = True
             return True
             
+        # 2. Chequeo por componentes (Path)
         p = Path(path)
         parts = {part.lower() for part in p.parts}
         if not PROTECTED_DIR_NAMES.isdisjoint(parts):
             _PROTECTED_PATH_CACHE[path_str] = True
             return True
         
+        # 3. Chequeo por atributos de disco (costoso, se hace último)
         attrs = _get_file_attrs(str(p))
         if attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT):
             _PROTECTED_PATH_CACHE[path_str] = True

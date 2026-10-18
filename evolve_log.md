@@ -624,3 +624,10 @@ FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - Attr
 - `2026-10-18T01:07:57` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `load_manifest` y `save_manifest` mediante la eliminación de una comprobación innecesaria de `stat()` en el camino caliente y reduciendo las llamadas a `resolve()` en el bucle principal, mejorando así la eficiencia de I/O.
 - `2026-10-18T01:07:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T01:07:57` Corrida terminada. Total usado hoy: 24.
+- `2026-10-18T01:11:12` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-10-18T01:11:32` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
+- `2026-10-18T01:12:36` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado `is_protected_path` integrando el chequeo de la cache en el nivel más externo y utilizando una lógica de cortocircuito (`short-circuiting`) para las validaciones más costosas, evitando el cálculo innecesario de `Path` y atributos de disco cuando las comprobaciones de string (más rápidas) ya determinan que la ruta es protegida.
+- `2026-10-18T01:13:02` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_inside_base_root
+- `2026-10-18T01:13:37` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._check_path_safety
+- `2026-10-18T01:13:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T01:13:37` Corrida terminada. Total usado hoy: 28.
