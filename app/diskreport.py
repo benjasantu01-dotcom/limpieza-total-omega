@@ -83,7 +83,7 @@ class ExtStats:
 
 class GlobalStats:
     """
-    Clase de agregación que rastrea totales globales y desgloses por extensión.
+    Agregador global que rastrea totales acumulados y desgloses por extensión.
     """
     def __init__(self) -> None:
         self.total_bytes: int = 0
@@ -102,6 +102,7 @@ class GlobalStats:
 class FolderMetrics:
     """Acumulador para el peso total y conteo de archivos en directorios."""
     __slots__ = ('size', 'file_count')
+    
     def __init__(self) -> None:
         self.size: int = 0
         self.file_count: int = 0
@@ -142,7 +143,6 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         if not p.exists():
             return None
         
-        # Resolucion real contra el filesystem para evitar bypass de protecciones mediante symlinks
         resolved_path = Path(os.path.realpath(p))
         if not resolved_path.is_dir() or is_protected_path(resolved_path) or not os.access(resolved_path, os.R_OK):
             return None
@@ -161,7 +161,6 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
             return True
             
         entry_path = Path(entry.path)
-        # Prevenir Path Traversal: asegurar que la entrada esté contenida en la raíz
         try:
             if root_path not in entry_path.resolve().parents and entry_path.resolve() != root_path:
                 return True
@@ -171,19 +170,16 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         if is_protected_path(entry_path):
             return True
 
-        # Validaciones de caracteres para evitar nombres de archivo engañosos
         name = entry.name
         if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
             return True
         if any(char in name for char in ('<', '>', ':', '"', '|', '?', '*')):
             return True
         
-        # Filtros específicos de Windows: puntos de reparse (junctions/links)
         if os.name == 'nt':
             try:
                 st = entry.stat(follow_symlinks=False)
                 if hasattr(st, 'st_file_attributes'):
-                    # 0x400: FILE_ATTRIBUTE_REPARSE_POINT, 0x100: FILE_ATTRIBUTE_TEMPORARY
                     if bool(st.st_file_attributes & 0x400) or bool(st.st_file_attributes & 0x100):
                         return True
             except (OSError, PermissionError):
@@ -209,6 +205,7 @@ def _get_local_windows_drives() -> List[str]:
 
 @dataclass(frozen=True)
 class FileEntry:
+    """Registro de archivo individual con tamaño expresado en bytes y MB."""
     path: Path
     size_bytes: int
 
@@ -219,6 +216,7 @@ class FileEntry:
 
 @dataclass(frozen=True)
 class ExtensionUsage:
+    """Estadísticas de uso agrupadas por extensión de archivo."""
     extension: str
     size_bytes: int
     count: int
@@ -230,6 +228,7 @@ class ExtensionUsage:
 
 @dataclass(frozen=True)
 class FolderUsage:
+    """Métricas de uso de una carpeta específica."""
     path: Path
     size_bytes: int
     file_count: int
@@ -241,6 +240,7 @@ class FolderUsage:
 
 @dataclass(frozen=True)
 class DriveUsage:
+    """Estado de capacidad de una unidad de disco."""
     mount: str
     total: int
     used: int

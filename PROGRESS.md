@@ -5,47 +5,51 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **502**
-- Mejoras aceptadas: **170** (33.9% de aceptación)
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **172** (34.1% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 52
+- Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 242
+- Sin respuesta de la IA (error o límite): 243
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 42 | 5 | 12 | 6 | 87 |
+| 2026-10-16 | 41 | 5 | 11 | 6 | 87 |
 | 2026-10-17 | 128 | 11 | 40 | 16 | 155 |
+| 2026-10-18 | 3 | 0 | 0 | 0 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - seguridad defensiva: **36**
-- legibilidad y documentación: **33**
-- rendimiento: **30**
+- legibilidad y documentación: **36**
 - robustez ante casos límite: **29**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `memory.py`: **18**
 - `assistant.py`: **15**
+- `duplicates.py`: **15**
 - `safety.py`: **15**
-- `quarantine.py`: **14**
 - `settings.py`: **14**
-- `duplicates.py`: **14**
+- `quarantine.py`: **13**
 - `browser.py`: **13**
 - `healthscore.py`: **10**
 - `organizer.py`: **10**
 - `scanner.py`: **10**
 - `main.py`: **9**
-- `branding.py`: **7**
+- `branding.py`: **8**
 - `startup.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-18T00:13:53` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más precisos en las funciones de hashing y filtrado, y se han añadido anotaciones de tipo (type hints) explícitas en las funciones de recolección, asegurando que la intención y el manejo de los tipos sean claros para futuros colaboradores del proyecto.
+- `2026-10-18T00:13:02` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento añadiendo type hints faltantes en las estructuras de datos y normalizando la documentación de las clases de acumulación mediante docstrings estandarizados.
+- `2026-10-18T00:11:14` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos en las funciones de manipulación de color y dibujo para clarificar su propósito, parámetros y comportamiento ante entradas inválidas, facilitando el mantenimiento y la legibilidad sin alterar la funcionalidad.
 - `2026-10-17T14:51:36` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la aplicación de *type hints* estrictos en el `_EXPLANATION_MAP` y la normalización de la estructura de las constantes de configuración, además de documentar mediante *docstrings* el propósito técnico de las funciones de validación de carga, alineándome con el enfoque de legibilidad solicitado.
 - `2026-10-17T14:42:20` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de archivos en `_read_and_parse_json` y `_load_impl` centralizando la validación mediante `is_safe_to_modify` antes de cualquier apertura de archivo para prevenir condiciones de carrera y ataques de Path Traversal, eliminando la redundancia y asegurando una degradación elegante ante archivos dañados.
 - `2026-10-17T14:42:03` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las heurísticas de archivo mediante una validación explícita de `None` y tipos antes de acceder a atributos de `path`, previniendo potenciales excepciones en tiempo de ejecución al procesar archivos con metadatos malformados o inaccesibles.
@@ -58,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-17T12:50:09` **settings.py** (seguridad defensiva): Se reforzó la integridad de las operaciones de escritura impidiendo que `perform_atomic_write` proceda si el directorio destino o sus padres contienen puntos de reparse, mitigando ataques de escalada de privilegios o redirección de archivos fuera del alcance esperado mediante `_is_dir_safe`.
 - `2026-10-17T12:49:02` **safety.py** (seguridad defensiva): Mejoré `_validate_preconditions` añadiendo una comprobación explícita para evitar modificaciones en archivos con el atributo `FILE_ATTRIBUTE_SYSTEM` o `FILE_ATTRIBUTE_HIDDEN` activo, reforzando la protección defensiva contra la manipulación accidental de archivos críticos del SO que no siempre están cubiertos por las listas de nombres protegidos.
 - `2026-10-17T12:41:10` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad en `quarantine.py` implementando una validación explícita para evitar que `purge_all` intente procesar o eliminar archivos ocultos o de sistema que podrían haber sido colocados manualmente en el directorio de cuarentena, utilizando `is_protected_path` como barrera defensiva adicional antes de cualquier operación destructiva.
-- `2026-10-17T12:40:18` **organizer.py** (seguridad defensiva): Mejoré la seguridad en `delete_reviewed` implementando una validación estricta para asegurar que cada archivo a borrar resida físicamente dentro de la carpeta de revisión, evitando posibles ataques de recorrido de directorios (directory traversal) mediante enlaces simbólicos o rutas malintencionadas.
-- `2026-10-17T12:39:49` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_iter_process_memory` al validar la seguridad del ejecutable de cada proceso mediante `_is_process_executable_safe` durante la enumeración, evitando que procesos en rutas protegidas sean incluidos en listas de diagnóstico o manipulables.
-- `2026-10-17T12:30:33` **main.py** (seguridad defensiva): Se introdujo una validación de seguridad adicional en `_ensure_path_writable_and_clean` para asegurar que, antes de cualquier operación de escritura, se verifique no solo la ruta destino, sino también que no sea un punto de reparse (junction/symlink) mediante una comprobación explícita adicional a `resolve()`, reforzando la protección contra la escalada de privilegios a través de enlaces simbólicos maliciosos.
