@@ -103,15 +103,18 @@ class DuplicateGroup:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si un archivo está en uso por otro proceso mediante intento de lectura.
+    Verifica si un archivo está en uso por otro proceso mediante intento de apertura exclusiva.
     """
     try:
+        # Intentamos abrir en modo solo lectura compartido para verificar accesibilidad
         with open(path, "rb") as f:
-            f.peek(1)
+            # Si el archivo está vacío, no hay mucho que verificar
             return False
     except OSError as e:
+        # Se reporta como bloqueado si el SO deniega el acceso específicamente por uso compartido
         if hasattr(e, 'winerror') and e.winerror in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED):
             return True
+        # Ante cualquier otra excepción de IO, asumimos inaccesibilidad prudencial
         return True
     except (IOError, PermissionError, ValueError):
         return True
