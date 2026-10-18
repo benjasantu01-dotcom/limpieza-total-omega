@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **177** (35.1% de aceptación)
+- Mejoras aceptadas: **179** (35.5% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 242
+- Sin respuesta de la IA (error o límite): 240
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 6 | 0 | 1 | 0 | 39 |
+| 2026-10-16 | 5 | 0 | 0 | 0 | 37 |
 | 2026-10-17 | 128 | 11 | 40 | 16 | 155 |
-| 2026-10-18 | 43 | 4 | 9 | 4 | 48 |
+| 2026-10-18 | 46 | 4 | 10 | 4 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **41**
-- legibilidad y documentación: **38**
+- legibilidad y documentación: **41**
 - seguridad defensiva: **37**
 - robustez ante casos límite: **31**
-- rendimiento: **30**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **18**
-- `safety.py`: **17**
+- `memory.py`: **19**
 - `diskreport.py`: **17**
+- `safety.py`: **16**
 - `quarantine.py`: **15**
 - `assistant.py`: **15**
 - `browser.py`: **14**
+- `duplicates.py`: **14**
 - `settings.py`: **14**
-- `duplicates.py`: **13**
-- `healthscore.py`: **12**
+- `healthscore.py`: **13**
 - `scanner.py`: **11**
 - `organizer.py`: **10**
 - `branding.py`: **9**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-18T04:48:22` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings detallados en funciones críticas, se han unificado los tipos para mayor claridad y se ha extraído la lógica de validación de seguridad de procesos para mejorar la legibilidad y mantenibilidad del flujo de trabajo en Windows.
+- `2026-10-18T04:46:20` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `healthscore.py` refinando la estructura de las reglas de diagnóstico mediante `Docstrings` explicativos y añadiendo `Type Hints` más precisos para clarificar la arquitectura del pipeline, facilitando así la auditoría técnica.
+- `2026-10-18T04:45:51` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna mediante la adición de docstrings estructurados (Google Style) en las funciones auxiliares de bajo nivel para clarificar su contrato de argumentos, excepciones y efectos secundarios, facilitando el mantenimiento futuro del motor de escaneo.
 - `2026-10-18T04:38:06` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints detallados, la mejora en la documentación de `walk_files` para clarificar el manejo de estados de recursión, y la refactorización de `_collect_summary_data` para simplificar su lógica interna, garantizando mayor claridad en el flujo de procesamiento de datos.
 - `2026-10-18T04:37:04` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `branding.py` mediante la adición de docstrings técnicos detallados en las funciones de manipulación de color y geometría, clarificando la lógica de transformación de espacios de color y el propósito de los parámetros en los métodos de dibujo del `Canvas`.
 - `2026-10-18T04:36:08` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` documentando los criterios de salud con `docstrings` específicos y clarificando las responsabilidades de las funciones de validación de seguridad mediante comentarios explicativos del "PORQUÉ" técnico de cada restricción.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-18T02:34:04` **settings.py** (seguridad defensiva): Mejoré la seguridad de la función `perform_atomic_write` al validar que el archivo de configuración existente no sea un enlace simbólico ni un archivo con múltiples "hard links" antes de proceder con el reemplazo, previniendo posibles ataques de sustitución (TOCTOU) y garantizando la integridad de la configuración.
 - `2026-10-18T02:33:10` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en el método `_is_safe_entry` del `Scanner` añadiendo una validación explícita que impide que el escáner siga rutas que contengan caracteres de escape nulos (`\0`) o nombres de archivos que contengan caracteres de control ocultos (RTL/Unicode), evitando posibles ataques de manipulación de rutas o engaño visual mediante caracteres bidireccionales.
 - `2026-10-18T02:24:05` **quarantine.py** (seguridad defensiva): Mejoré la seguridad de `_perform_secure_copy` añadiendo una validación explícita mediante `is_safe_to_modify` antes de abrir el descriptor de archivo destino, garantizando que ninguna operación de escritura accidental escape del entorno seguro definido por `safety.py`.
-- `2026-10-18T02:23:10` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `delete_reviewed` implementando una validación estricta de "anclaje" al directorio de cuarentena, asegurando mediante `commonpath` que no sea posible escapar del directorio raíz de revisión ni mediante enlaces ni mediante estructuras de rutas complejas.
-- `2026-10-18T02:14:55` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `memory.py` asegurando que la función `_is_process_executable_safe` valide la ruta del ejecutable mediante `is_protected_path` antes de permitir cualquier interacción, y garantizando la limpieza de recursos (`CloseHandle`) ante cualquier excepción en la enumeración de procesos.
-- `2026-10-18T02:14:38` **main.py** (seguridad defensiva): Se introdujo una validación explícita `p.is_mount()` o check de acceso `os.access` en `_validate_disk_access` y se reforzó `_check_environment_integrity` para evitar que la aplicación intente interactuar con unidades extraíbles o montajes de red inestables que podrían bloquear el hilo principal durante un análisis de disco, cumpliendo con las reglas de seguridad defensiva.

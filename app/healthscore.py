@@ -75,8 +75,8 @@ class RecommendationRule(NamedTuple):
     Attributes:
         area: Identificador de la métrica analizada (ej: 'disco').
         threshold: Límite inferior de salud para activar la sugerencia.
-        message_factory: Función que genera un mensaje contextual a partir de las métricas.
-        check: Predicado (métricas, ratio) -> bool que decide si la regla debe dispararse.
+        message_factory: Callable que toma SystemMetrics y devuelve un string legible.
+        check: Predicado (SystemMetrics, NormalizedRatio) -> bool para disparar la regla.
     """
     area: MetricKey
     threshold: float
@@ -95,7 +95,7 @@ class PipelineEntry(NamedTuple):
     """
     area: MetricKey
     weight: int
-    scorer: Scorer
+    scorer: Callable[[SystemMetrics], NormalizedRatio]
     rules: Tuple[RecommendationRule, ...]
 
 __all__ = [
@@ -131,11 +131,6 @@ def create_linear_scorer(limit: float, inverse: bool = True) -> Callable[[float]
     
     Genera un 'scorer' que asigna 1.0 a valores ideales y 0.0 cuando se alcanza 
     o supera el límite definido.
-    
-    Args:
-        limit: El valor de referencia máximo o mínimo.
-        inverse: Si True, valores crecientes reducen la salud (ej. basura). 
-                 Si False, valores crecientes aumentan la salud (ej. RAM libre).
     """
     def scorer(val: float) -> NormalizedRatio:
         if not math.isfinite(val) or limit <= 0.0: return 0.0
@@ -170,7 +165,7 @@ _JUNK_SCORER = create_linear_scorer(_LIMIT_JUNK_MB, inverse=True)
 _DUP_SCORER = create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)
 _STARTUP_SCORER = create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inverse=True)
 
-# Funciones de factory para reglas del pipeline (mejoran legibilidad y testabilidad)
+# Funciones de factory para reglas del pipeline
 def _msg_seguridad(m: SystemMetrics) -> str: return f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad."
 def _msg_disco(m: SystemMetrics) -> str: return f"Queda {m.disk_free_percent:.1f}% de disco libre."
 def _msg_memoria(m: SystemMetrics) -> str: return "Memoria disponible baja: cerrá procesos innecesarios."
@@ -228,7 +223,7 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
     return _STARTUP_SCORER(float(startup_count) if isinstance(startup_count, (int, float)) else 0.0)
 
 def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) -> float:
-    """Sanitiza métricas numéricas entrantes evitando valores fuera de rango o NaN."""
+    """Sanitiza métricas numéricas evitando valores fuera de rango o NaN."""
     try:
         if value is None or isinstance(value, bool):
             return default
@@ -266,11 +261,11 @@ class SystemMetrics:
         self.validate()
 
     def safe_get(self, field_name: str, default: Any = 0) -> Any:
-        """Obtiene un valor de métrica de forma segura mediante introspección."""
+        """Obtiene un valor de métrica mediante introspección."""
         return getattr(self, field_name, default)
 
     def validate(self) -> None:
-        """Asegura rangos aceptables para todas las métricas mediante validación numérica."""
+        """Asegura rangos aceptables para todas las métricas."""
         self.junk_mb = _validate_numeric(self.junk_mb, 0.0, 0.0, 1048576.0)
         self.duplicate_mb = _validate_numeric(self.duplicate_mb, 0.0, 0.0, 1048576.0)
         self.suspicious_count = int(_validate_numeric(self.suspicious_count, 0, 0, 5000))
@@ -282,7 +277,7 @@ class SystemMetrics:
 
     @property
     def is_finite(self) -> bool:
-        """Valida que todos los campos críticos sean finitos (evita errores de cálculo)."""
+        """Valida que todos los campos críticos sean finitos."""
         return all(math.isfinite(float(getattr(self, f))) for f in self._FIELDS_TO_VALIDATE)
 
 @dataclass
@@ -302,7 +297,7 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _sanitize_msg(msg: str | Any) -> str:
-    """Limpia cadenas de texto eliminando caracteres prohibidos y previniendo inyecciones."""
+    """Limpia cadenas de texto eliminando caracteres prohibidos."""
     if not isinstance(msg, str): return ""
     clean = "".join(c for c in msg if c in _ALLOWED_CHARS)
     lower_msg = clean.lower()

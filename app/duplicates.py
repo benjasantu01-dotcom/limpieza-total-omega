@@ -55,7 +55,10 @@ def is_junction(path: Path) -> bool:
     """
     Verifica si la ruta es un punto de reanálisis (Junction/Symlink) mediante Win32 API.
     
-    Evita seguir estructuras que causan bucles infinitos o accesos fuera del sandbox.
+    Args:
+        path: Objeto Path de la ruta a verificar.
+    Returns:
+        bool: True si es un reparse point, un enlace simbólico o si la ruta es insegura.
     """
     if not is_safe_to_modify(path):
         return True
@@ -69,7 +72,14 @@ def is_junction(path: Path) -> bool:
 
 
 def is_system_or_hidden(path: Path) -> bool:
-    """Verifica si un archivo posee atributos de sistema u oculto mediante Win32 API."""
+    """
+    Verifica si el archivo posee atributos de sistema u oculto.
+    
+    Args:
+        path: Ruta del archivo.
+    Returns:
+        bool: True si el archivo es oculto o de sistema, False en caso contrario.
+    """
     try:
         attrs: int = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         if attrs == -1:
@@ -107,8 +117,10 @@ def _is_file_locked(path: Path) -> bool:
     """
     Verifica si el archivo está en uso exclusivo mediante sondeo de E/S.
     
-    Intenta abrir el archivo en modo lectura. Si el sistema operativo deniega el
-    acceso por violaciones de compartición, se marca como bloqueado.
+    Args:
+        path: Ruta del archivo a testear.
+    Returns:
+        bool: True si el archivo no puede abrirse para lectura exclusiva.
     """
     try:
         with open(path, "rb") as f:
@@ -151,7 +163,11 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo de un archivo mediante streaming.
     
-    Asegura el uso de bloques para mantener bajo el consumo de memoria.
+    Args:
+        path: Archivo a hashear.
+        chunk_size: Tamaño de lectura del buffer.
+    Returns:
+        Hexdigest del archivo o None si falla el acceso.
     """
     if chunk_size <= 0 or not path.is_file():
         return None
@@ -299,7 +315,12 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 
 def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
-    """Calcula métricas de antigüedad y longitud de ruta para selección."""
+    """
+    Calcula métricas de antigüedad y longitud de ruta para selección.
+    
+    Returns:
+        Tupla (mtime, len_path) o None si el archivo es inaccesible.
+    """
     try:
         if not path.is_file():
             return None

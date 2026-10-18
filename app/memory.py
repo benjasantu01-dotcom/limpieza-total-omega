@@ -316,6 +316,21 @@ def _query_working_set_bytes(pid: int, handle: int, psapi: Any, pmc: PROCESS_MEM
         return None
     return None
 
+def _is_process_executable_safe(pid: int, handle: int) -> bool:
+    """Verifica si el ejecutable del proceso reside en una ubicación segura."""
+    psapi = getattr(ctypes.windll, "psapi", None)
+    if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return False
+    
+    buf = ctypes.create_unicode_buffer(4096)
+    try:
+        length = psapi.GetModuleFileNameExW(handle, None, buf, 4095)
+        if length > 0:
+            path_str = os.path.abspath(buf.value)
+            return not is_protected_path(Path(path_str))
+    except (ctypes.ArgumentError, OSError):
+        pass
+    return False
+
 def _iter_process_memory(kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
     """Enumera procesos del sistema validando su seguridad al obtener métricas."""
     max_pids = 1024
@@ -386,24 +401,6 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
         report.extend(f"  Mayor consumo: {p.name} (PID {p.pid}) — {p.working_set_mb} MB" for p in processes[:3])
         
     return report
-
-def _is_process_executable_safe(pid: int, handle: int) -> bool:
-    """Verifica si el ejecutable de un proceso reside en una ubicación permitida (seguridad)."""
-    if not handle or handle == INVALID_HANDLE_VALUE: return False
-    psapi = getattr(ctypes.windll, "psapi", None)
-    if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return False
-    
-    buf = ctypes.create_unicode_buffer(4096)
-    try:
-        length = psapi.GetModuleFileNameExW(handle, None, buf, 4095)
-        if length > 0:
-            path_str = os.path.abspath(buf.value)
-            if not path_str or path_str.startswith(r"\\"): return False
-            # Validación estricta usando las reglas de safety.py
-            return not is_protected_path(Path(path_str))
-    except (ctypes.ArgumentError, OSError):
-        pass
-    return False
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """Solicita al SO forzar la liberación del working set tras validar seguridad."""
