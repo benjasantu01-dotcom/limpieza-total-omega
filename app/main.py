@@ -1988,11 +1988,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return self._safe_get_entry_value(widget, default, numeric=True)
 
     def _validate_numeric_setting(self, value: Any, default: int) -> int:
-        """Valida que un valor sea un entero positivo."""
+        """Valida que un valor sea un entero positivo, acotado razonablemente."""
         try:
             if value is None: return default
             val = int(value)
-            return val if val >= 0 else default
+            # Acotación para evitar valores absurdos que rompan la lógica de escaneo
+            return max(0, min(val, 100000)) if val >= 0 else default
         except (ValueError, TypeError):
             return default
 

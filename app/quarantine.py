@@ -558,7 +558,7 @@ def load_manifest(base: PathLike = DEFAULT_QUARANTINE_DIR, force_reload: bool = 
             data = json.load(f)
         
         if not isinstance(data, list):
-            return []
+            raise ValueError("Formato de manifiesto inválido: no es una lista.")
             
         items = []
         for d in data:
