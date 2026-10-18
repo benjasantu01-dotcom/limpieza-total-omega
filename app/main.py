@@ -362,12 +362,16 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @lru_cache(maxsize=128)
     def _validate_disk_access(self, path: Union[str, Path]) -> Path:
         """
-        Valida que una ruta sea absoluta, no un enlace simbólico y ajena a la estructura de la App.
+        Valida que una ruta sea absoluta, no un enlace simbólico, no un punto de montaje removible 
+        y ajena a la estructura de la App.
         """
         try:
             clean_p = self._sanitize_path(path)
             p = Path(clean_p).resolve(strict=False)
             
+            if not os.access(p, os.R_OK):
+                raise safety.UnsafePathError("Operación denegada: Acceso no permitido por sistema.")
+
             app_dir = Path(__file__).resolve(strict=False).parent
             if app_dir in p.parents or p == app_dir:
                  raise safety.UnsafePathError("Operación denegada: Acceso a estructura interna de la App.")

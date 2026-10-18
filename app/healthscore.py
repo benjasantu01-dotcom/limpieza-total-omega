@@ -306,6 +306,7 @@ def grade_for_score(score: float | int) -> str:
 def _sanitize_msg(msg: str | Any) -> str:
     """Limpia cadenas de texto eliminando caracteres prohibidos y previniendo inyecciones."""
     if not isinstance(msg, str): return ""
+    # Eliminar secuencias de escape ANSI o caracteres de control de terminal
     clean = "".join(c for c in msg if c in _ALLOWED_CHARS)
     lower_msg = clean.lower()
     if any(b in lower_msg for b in _BLOCKED_TERMS):

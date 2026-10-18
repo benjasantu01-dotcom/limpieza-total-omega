@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **181** (35.9% de aceptación)
+- Mejoras aceptadas: **184** (36.5% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 232
+- Sin respuesta de la IA (error o límite): 229
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-16 | 26 | 2 | 6 | 4 | 68 |
+| 2026-10-16 | 26 | 2 | 6 | 4 | 64 |
 | 2026-10-17 | 128 | 11 | 40 | 16 | 155 |
-| 2026-10-18 | 27 | 3 | 7 | 2 | 9 |
+| 2026-10-18 | 30 | 3 | 7 | 2 | 10 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **42**
 - rendimiento: **36**
+- seguridad defensiva: **33**
 - robustez ante casos límite: **31**
-- seguridad defensiva: **30**
 
 ## Mejoras aceptadas por archivo
 
+- `memory.py`: **20**
 - `diskreport.py`: **19**
-- `memory.py`: **19**
 - `safety.py`: **18**
 - `duplicates.py`: **15**
 - `browser.py`: **15**
 - `settings.py`: **14**
 - `quarantine.py`: **14**
 - `assistant.py`: **14**
-- `healthscore.py`: **11**
+- `healthscore.py`: **12**
+- `main.py`: **11**
 - `organizer.py`: **10**
 - `scanner.py`: **10**
-- `main.py`: **10**
 - `branding.py`: **8**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-18T02:14:55` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `memory.py` asegurando que la función `_is_process_executable_safe` valide la ruta del ejecutable mediante `is_protected_path` antes de permitir cualquier interacción, y garantizando la limpieza de recursos (`CloseHandle`) ante cualquier excepción en la enumeración de procesos.
+- `2026-10-18T02:14:38` **main.py** (seguridad defensiva): Se introdujo una validación explícita `p.is_mount()` o check de acceso `os.access` en `_validate_disk_access` y se reforzó `_check_environment_integrity` para evitar que la aplicación intente interactuar con unidades extraíbles o montajes de red inestables que podrían bloquear el hilo principal durante un análisis de disco, cumpliendo con las reglas de seguridad defensiva.
+- `2026-10-18T02:13:19` **healthscore.py** (seguridad defensiva): Se ha mejorado `_sanitize_msg` para incluir un escape de caracteres sospechosos que puedan ser interpretados como secuencias de escape de terminal o caracteres de control, fortaleciendo la integridad de la salida de texto frente a posibles inyecciones en los mensajes del sistema.
 - `2026-10-18T02:04:51` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva al reemplazar el uso de `os.scandir` (que es vulnerable a errores de acceso profundo en subdirectorios) por un patrón de resolución robusto en `walk_files` y añadiendo validaciones de rutas cortas mediante `Path.resolve()` para evitar que el escáner sea engañado por enlaces simbólicos o puntos de reparse que intenten escapar del directorio raíz (`root_path`).
 - `2026-10-18T02:03:55` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` al verificar la existencia y el tipo del directorio padre antes de intentar operaciones de escritura, mitigando posibles errores de sistema de archivos y asegurando que las rutas validadas por `safety` se traten de forma consistente.
 - `2026-10-18T01:54:47` **settings.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_secure_to_read` para detectar enlaces simbólicos mediante `st_nlink` y `lstat`, previniendo ataques de tipo "Time-of-check to time-of-use" (TOCTOU) y acceso a archivos vinculados externamente que podrían comprometer la integridad de la configuración.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-18T01:25:46` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez ante rutas de acceso denegado y errores de resolución de enlaces simbólicos en `_sum_directory_recursive` envolviendo la llamada `entry.stat()` en un bloque `try-except` específico, evitando que un único archivo bloqueado o con permisos restringidos aborte el escaneo de toda la rama del caché.
 - `2026-10-18T01:23:21` **assistant.py** (robustez ante casos límite): Mejora la robustez ante casos límite en la carga de datos del asistente mediante la validación estricta de tipos numéricos dentro de `_apply_field` y la prevención de fallos ante valores `NaN` o `inf` no detectados previamente en `ingest`.
 - `2026-10-18T01:22:33` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_registry` consolidando el filtrado de columnas directamente en el script de PowerShell para evitar procesar y filtrar manualmente en Python propiedades innecesarias del registro, reduciendo el volumen de datos transferidos entre procesos.
-- `2026-10-18T01:12:36` **safety.py** (rendimiento): Se ha optimizado `is_protected_path` integrando el chequeo de la cache en el nivel más externo y utilizando una lógica de cortocircuito (`short-circuiting`) para las validaciones más costosas, evitando el cálculo innecesario de `Path` y atributos de disco cuando las comprobaciones de string (más rápidas) ya determinan que la ruta es protegida.
-- `2026-10-18T01:07:57` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` y `save_manifest` mediante la eliminación de una comprobación innecesaria de `stat()` en el camino caliente y reduciendo las llamadas a `resolve()` en el bucle principal, mejorando así la eficiencia de I/O.
-- `2026-10-18T01:06:07` **memory.py** (rendimiento): Optimicé el rendimiento de la enumeración de procesos en `memory.py` utilizando una lista pre-asignada de PIDs para reducir el overhead de llamadas al sistema y evitando la re-apertura de handles mediante la validación de seguridad única durante el ciclo de enumeración.

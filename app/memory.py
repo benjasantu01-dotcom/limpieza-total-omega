@@ -399,6 +399,7 @@ def _is_process_executable_safe(pid: int, handle: int) -> bool:
         if length > 0:
             path_str = os.path.abspath(buf.value)
             if not path_str or path_str.startswith(r"\\"): return False
+            # Validación estricta usando las reglas de safety.py
             return not is_protected_path(Path(path_str))
     except (ctypes.ArgumentError, OSError):
         pass
