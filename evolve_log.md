@@ -641,3 +641,11 @@ FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - Attr
 - `2026-10-18T01:25:46` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante rutas de acceso denegado y errores de resolución de enlaces simbólicos en `_sum_directory_recursive` envolviendo la llamada `entry.stat()` en un bloque `try-except` específico, evitando que un único archivo bloqueado o con permisos restringidos aborte el escaneo de toda la rama del caché.
 - `2026-10-18T01:25:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T01:25:46` Corrida terminada. Total usado hoy: 32.
+- `2026-10-18T01:31:38` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-10-18T01:32:07` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se mejora la robustez de `walk_files` y `largest_folders` ante condiciones de carrera (archivos borrados mientras se escanea) y errores de acceso, encapsulando las operaciones de `os.scandir` dentro de un bloque de manejo de excepciones más granular para evitar interrupciones prematuras.
+- `2026-10-18T01:32:52` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-10-18T01:33:24` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se mejora la robustez del motor al prevenir explícitamente errores en la fase de inicialización de `SystemMetrics` mediante una validación estricta de tipos antes de aplicar cálculos, asegurando que `None` o valores no esperados no propaguen fallos en el `Pipeline`.
+- `2026-10-18T01:33:27` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-18T01:34:32` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta de existencia y accesibilidad de `self.tabview` y sus pestañas mediante el nuevo método `_check_widget_integrity` antes de realizar operaciones de UI, previniendo excepciones `TclError` y `RuntimeError` durante la carga perezosa o cambios rápidos de pestaña en casos límite de concurrencia.
+- `2026-10-18T01:34:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T01:34:32` Corrida terminada. Total usado hoy: 36.

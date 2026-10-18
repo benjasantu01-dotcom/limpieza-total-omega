@@ -230,6 +230,7 @@ def score_startup(startup_count: int | float) -> NormalizedRatio:
 def _validate_numeric(value: Any, default: float, min_v: float, max_v: float) -> float:
     """Sanitiza métricas numéricas entrantes evitando valores fuera de rango o NaN."""
     try:
+        # Validación estricta: None, booleanos o no convertibles a número se descartan.
         if value is None or isinstance(value, bool):
             return default
         val = float(value)
@@ -261,7 +262,9 @@ class SystemMetrics:
         """Inicializa métricas asegurando tipos correctos tras la creación."""
         for field_name in self._FIELDS_TO_VALIDATE:
             val = getattr(self, field_name)
-            setattr(self, field_name, _validate_numeric(val, 0.0, -1.0, 1e9))
+            # Aplicar validación genérica antes de la específica de rango
+            sanitized = _validate_numeric(val, 0.0, -1.0, 1e9)
+            setattr(self, field_name, sanitized)
         self.validate()
 
     def safe_get(self, field_name: str, default: Any = 0) -> Any:

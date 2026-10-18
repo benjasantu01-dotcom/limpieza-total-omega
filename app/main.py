@@ -586,7 +586,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @validated_ui_operation
     def _on_tab_change(self, tab_label: str) -> None:
         """Evento disparado al cambiar de pestaña; invoca carga perezosa."""
-        if self._closing: return
+        if self._closing or not self._check_widget_integrity(getattr(self, 'tabview', None)): 
+            return
         for name in TABS:
             if branding.tab_label(name) == tab_label:
                 self._tab_factory(name)

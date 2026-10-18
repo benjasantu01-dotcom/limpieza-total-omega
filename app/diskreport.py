@@ -356,9 +356,8 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             rel = path.relative_to(root)
             if not rel.parts: continue
             top_folder = root / rel.parts[0]
-            curr = stats[str(top_folder)]
-            curr.size += size
-            curr.file_count += 1
+            stats[str(top_folder)].size += size
+            stats[str(top_folder)].file_count += 1
         except (ValueError, IndexError, OSError, AttributeError):
             continue
 
