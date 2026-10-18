@@ -313,8 +313,6 @@ def _is_registry_entry_safe(entry_name: str, entry_command: str, seen_commands: 
         return False
     if not entry_name.strip() or not entry_command.strip() or entry_command.startswith(r"\\") or entry_command in seen_commands:
         return False
-    if entry_name.upper().startswith("PS"):
-        return False
     
     try:
         clean_path = entry_command.strip('"')
@@ -344,17 +342,16 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
         reader = csv.DictReader(f)
         
         for row in reader:
-            if not row or len(row) < 2: continue
-            
-            keys = list(row.keys())
-            raw_val_name = row.get(keys[0])
-            raw_val_cmd = row.get(keys[1])
+            if not row: continue
+            # El script de PS ya filtra y devuelve PropertyName y PropertyValue
+            raw_val_name = row.get("Name")
+            raw_val_cmd = row.get("Value")
             
             if not isinstance(raw_val_name, str) or not isinstance(raw_val_cmd, str):
                 continue
             
-            clean_name = "".join(c for c in raw_val_name if ord(c) >= 32).strip()
-            clean_cmd = "".join(c for c in raw_val_cmd if ord(c) >= 32).strip()
+            clean_name = raw_val_name.strip()
+            clean_cmd = raw_val_cmd.strip()
             
             if not clean_cmd or not clean_name:
                 continue
@@ -373,12 +370,16 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
     if os.name != "nt":
         return []
     
-    # Unificamos el query en una sola llamada para reducir overhead de proceso
+    # Optimizamos el query: traemos solo las propiedades relevantes para ahorrar procesamiento
     keys_formatted = ", ".join([f"'{k}'" for k in keys])
     ps_script = f"""
     $ErrorActionPreference = 'SilentlyContinue'
-    @({keys_formatted}) | ForEach-Object {{
-        Get-ItemProperty -LiteralPath $_ | Select-Object * -ExcludeProperty PS* 
+    foreach ($path in @({keys_formatted})) {{
+        $item = Get-ItemProperty -LiteralPath $path -ErrorAction SilentlyContinue
+        if ($item) {{
+            $item.PSObject.Properties | Where-Object {{ $_.Name -ne 'PSPath' -and $_.Name -ne 'PSParentPath' -and $_.Name -ne 'PSChildName' -and $_.Name -ne 'PSDrive' -and $_.Name -ne 'PSProvider' }} | 
+            Select-Object @{{Name='Name';Expression={{$_.Name}}}}, @{{Name='Value';Expression={{$_.Value}}}}
+        }}
     }} | ConvertTo-Csv -NoTypeInformation
     """
     

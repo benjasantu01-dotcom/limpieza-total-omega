@@ -631,3 +631,13 @@ FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - Attr
 - `2026-10-18T01:13:37` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._check_path_safety
 - `2026-10-18T01:13:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T01:13:37` Corrida terminada. Total usado hoy: 28.
+- `2026-10-18T01:21:29` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-10-18T01:22:33` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `entries_from_registry` consolidando el filtrado de columnas directamente en el script de PowerShell para evitar procesar y filtrar manualmente en Python propiedades innecesarias del registro, reduciendo el volumen de datos transferidos entre procesos.
+- `2026-10-18T01:23:21` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejora la robustez ante casos límite en la carga de datos del asistente mediante la validación estricta de tipos numéricos dentro de `_apply_field` y la prevención de fallos ante valores `NaN` o `inf` no detectados previamente en `ingest`.
+- `2026-10-18T01:23:37` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-18T01:24:19` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-18T01:24:57` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-10-18T01:24:58` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-18T01:25:46` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante rutas de acceso denegado y errores de resolución de enlaces simbólicos en `_sum_directory_recursive` envolviendo la llamada `entry.stat()` en un bloque `try-except` específico, evitando que un único archivo bloqueado o con permisos restringidos aborte el escaneo de toda la rama del caché.
+- `2026-10-18T01:25:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T01:25:46` Corrida terminada. Total usado hoy: 32.
