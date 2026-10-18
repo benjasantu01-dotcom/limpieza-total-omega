@@ -362,8 +362,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 @lru_cache(maxsize=128)
 def _render_bar(points: int, max_val: int) -> str:
     """Crea una representación visual de barra para reportes con caché."""
-    p = max(0, min(points, max_val))
-    return "#" * p + "." * (max_val - p)
+    try:
+        p = max(0, min(points, max_val))
+        return "#" * p + "." * (max_val - p)
+    except Exception:
+        return "." * max_val
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera una lista de líneas legible para el informe de salud."""

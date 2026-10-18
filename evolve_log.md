@@ -1584,3 +1584,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-18T10:22:29` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha robustecido el escaneo de directorios en `_collect_candidates` para manejar correctamente errores de acceso denegado específicos al listar contenido, evitando que una sola carpeta bloqueada interrumpa el proceso de recolección de todo el disco.
 - `2026-10-18T10:22:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T10:22:29` Corrida terminada. Total usado hoy: 244.
+- `2026-10-18T10:31:13` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-10-18T10:31:43` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `summarize` y `compute_score` ante fallos de entrada y estados parciales, protegiendo al motor de análisis contra excepciones de redondeo o datos inesperados que podrían romper la interfaz.
+- `2026-10-18T10:32:55` Gemini no devolvió un bloque de archivo válido para main.py (enfoque: robustez ante casos límite).
+- `2026-10-18T10:33:23` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `_is_process_executable_safe` añadiendo un manejo de excepciones más granular y verificando explícitamente que la ruta resuelta sea un archivo válido antes de consultar `is_protected_path`, previniendo errores en casos donde `GetModuleFileNameExW` retorne rutas vacías o inválidas.
+- `2026-10-18T10:33:33` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-18T10:33:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T10:33:33` Corrida terminada. Total usado hoy: 248.
