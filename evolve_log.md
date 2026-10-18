@@ -1192,3 +1192,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-10-18T06:50:35` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-10-18T06:50:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-18T06:50:35` Corrida terminada. Total usado hoy: 160.
+- `2026-10-18T06:57:28` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-10-18T06:58:21` ➖ Sin cambios en safety.py (enfoque: seguridad defensiva). Motivo: Se ha mejorado la robustez de `is_protected_path` al incluir una validación adicional mediante el chequeo de la firma de archivo/directorio utilizando la API de atributos, asegurando que los directorios protegidos sean detectados incluso si no coinciden exactamente con los nombres de la lista, y evitando el seguimiento accidental de puntos de reparse en la estructura de directorios.
+- `2026-10-18T06:58:52` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las verificaciones de seguridad en `scanner.py` reemplazando llamadas a `os.access` (que pueden fallar por condiciones de carrera o privilegios de token en Windows) por una validación de atributos de archivo más directa y segura, y se ha estandarizado el manejo de `path.resolve()` para evitar resoluciones que excedan los límites del sistema cuando las rutas son excesivamente largas.
+- `2026-10-18T06:59:22` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se endureció la validación de seguridad en `_is_dir_safe` añadiendo una comprobación explícita para evitar directorios con permisos de escritura para el grupo u otros (World-Writable), bloqueando vectores de escalada de privilegios o manipulación por otros usuarios en sistemas compartidos.
+- `2026-10-18T06:59:34` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-10-18T06:59:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-18T06:59:34` Corrida terminada. Total usado hoy: 164.

@@ -150,6 +150,7 @@ def _is_dir_safe(path: Path) -> bool:
         real_path = Path(os.path.realpath(path))
         if not real_path.is_dir() or _Validators._is_reparse_point(real_path): return False
         st = real_path.stat()
+        # Verificar dueño y permisos restrictivos (ningún bit de escritura para grupo/otros)
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if st.st_mode & (stat.S_IWGRP | stat.S_IWOTH): return False
         return True

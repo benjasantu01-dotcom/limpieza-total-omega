@@ -285,18 +285,10 @@ class Scanner:
             if _cached_is_protected(path_str):
                 return False
 
-            p = Path(path_str)
-            if not p.exists():
+            if not _is_valid_path_structure(path_str) or self._has_invalid_name(entry.name):
                 return False
             
-            real_path: Path = p.resolve(strict=False)
-            if not str(real_path).lower().startswith(self.base_root_str):
-                return False
-                
-            if p.parent and not os.access(p.parent, os.R_OK):
-                return False
-
-            if not _is_valid_path_structure(path_str) or self._has_invalid_name(entry.name):
+            if not self._is_inside_base_root(path_str):
                 return False
                 
             self.safe_cache.add(path_str)

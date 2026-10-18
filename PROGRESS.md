@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **202** (40.1% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 57
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 208
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-17 | 128 | 11 | 40 | 16 | 149 |
-| 2026-10-18 | 72 | 6 | 17 | 6 | 59 |
+| 2026-10-17 | 128 | 11 | 40 | 16 | 145 |
+| 2026-10-18 | 74 | 6 | 17 | 7 | 60 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
+- seguridad defensiva: **42**
 - manejo de errores y validación de entradas: **41**
-- seguridad defensiva: **40**
 - rendimiento: **37**
 - robustez ante casos límite: **37**
 
@@ -33,19 +33,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **19**
 - `safety.py`: **19**
 - `diskreport.py`: **18**
+- `settings.py`: **17**
 - `assistant.py`: **17**
-- `settings.py`: **16**
 - `duplicates.py`: **15**
 - `healthscore.py`: **14**
 - `browser.py`: **14**
 - `organizer.py`: **12**
-- `scanner.py`: **11**
+- `scanner.py`: **12**
 - `branding.py`: **10**
 - `main.py`: **10**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-18T06:59:22` **settings.py** (seguridad defensiva): Se endureció la validación de seguridad en `_is_dir_safe` añadiendo una comprobación explícita para evitar directorios con permisos de escritura para el grupo u otros (World-Writable), bloqueando vectores de escalada de privilegios o manipulación por otros usuarios en sistemas compartidos.
+- `2026-10-18T06:58:52` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez de las verificaciones de seguridad en `scanner.py` reemplazando llamadas a `os.access` (que pueden fallar por condiciones de carrera o privilegios de token en Windows) por una validación de atributos de archivo más directa y segura, y se ha estandarizado el manejo de `path.resolve()` para evitar resoluciones que excedan los límites del sistema cuando las rutas son excesivamente largas.
 - `2026-10-18T06:49:01` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad del proceso de aislamiento mediante la validación estricta de la propiedad (UID) y permisos del archivo origen ANTES de cualquier operación de I/O, previniendo riesgos de manipulación mediante archivos sustituidos por otros usuarios o procesos con mayores privilegios.
 - `2026-10-18T06:39:39` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la implementación de `_ensure_safe_path_for_action` en el orquestador, centralizando la validación de seguridad de rutas antes de ejecutar cualquier operación de escritura, y aplicando un filtro `Path.resolve(strict=False)` en los puntos de entrada críticos para prevenir inyecciones mediante rutas mal formadas.
 - `2026-10-18T06:38:43` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva al reemplazar las constantes globales de validación `_ALLOWED_CHARS` y `_BLOCKED_TERMS` por una lógica de filtrado más robusta en `_sanitize_msg` que evita la inyección de caracteres de control o términos sensibles mediante una lista blanca estricta y una verificación de tipos más exhaustiva.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-18T05:57:38` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia (`path.exists()`) y manejo de errores específico en `_calculate_keeper_heuristic` para evitar caídas al intentar analizar archivos que fueron movidos o eliminados por procesos externos durante el tiempo que transcurre entre la recolección y la sugerencia del archivo a conservar.
 - `2026-10-18T05:57:14` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia de archivos dentro del generador `walk_files` y en el acumulador `_collect_summary_data` para evitar errores de tipo `FileNotFoundError` (o `OSError` con código 2) que ocurren cuando un archivo se elimina o mueve por un proceso externo mientras se está ejecutando el escaneo, aumentando la robustez ante condiciones de carrera.
 - `2026-10-18T05:48:28` **branding.py** (robustez ante casos límite): Se mejora la robustez de `save_logo_svg` al verificar la existencia y el estado de la ruta mediante `is_safe_to_modify` antes de proceder, evitando lanzar excepciones innecesarias en el flujo de control y asegurando que las operaciones de escritura se realicen únicamente en rutas validadas.
-- `2026-10-18T05:48:08` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la carga de datos del asistente implementando un mecanismo de limpieza de tipo y validación de rango más estricto durante la ingestión (`ingest`), evitando que valores atípicos o maliciosos degraden la integridad del `SystemContext`.
-- `2026-10-18T05:47:19` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` y `estimate_impact` mediante el uso de generadores y una estructura de datos `set` para evitar múltiples iteraciones y duplicados en memoria, reduciendo la carga innecesaria de objetos en el escaneo completo.
