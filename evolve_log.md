@@ -820,3 +820,34 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-10-19T00:18:51` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó `_read_and_parse_json` para manejar archivos de configuración inexistentes o corruptos de forma más resiliente, garantizando que una anomalía de I/O (como un archivo siendo bloqueado por otro proceso durante la lectura) no propague una excepción no controlada hacia el flujo principal.
 - `2026-10-19T00:18:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-19T00:18:51` Corrida terminada. Total usado hoy: 8.
+- `2026-10-19T00:25:47` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-10-19T00:26:29` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.67s
+
+```
+- `2026-10-19T00:26:29` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejora la robustez de `StartupEntry` frente a rutas inválidas al añadir una validación de longitud máxima (MAX_PATH de 260 caracteres) y verificar la existencia del archivo en el método `_resolve_and_cache_path` mediante `os.path.exists`, evitando procesar rutas que no existen físicamente en el disco.
+- `2026-10-19T00:27:06` ➖ Sin cambios en assistant.py (enfoque: seguridad defensiva). Motivo: Reforcé la seguridad defensiva de `assistant.py` mediante la implementación de `_is_safe_payload_structure` en la validación de `SYSTEM_PROMPT` y en la serialización del payload hacia Gemini, asegurando que los datos no superen límites de complejidad lógica antes de ser procesados por la red.
+- `2026-10-19T00:27:37` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-10-19T00:27:50` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-10-19T00:27:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-19T00:27:50` Corrida terminada. Total usado hoy: 12.
