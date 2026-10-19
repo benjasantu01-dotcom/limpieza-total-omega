@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Mejoras aceptadas: **209** (41.5% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 47
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 28
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-17 | 9 | 0 | 1 | 2 | 18 |
+| 2026-10-17 | 9 | 0 | 1 | 2 | 14 |
 | 2026-10-18 | 144 | 11 | 37 | 15 | 143 |
-| 2026-10-19 | 53 | 4 | 9 | 11 | 47 |
+| 2026-10-19 | 56 | 4 | 10 | 11 | 47 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - robustez ante casos límite: **42**
+- seguridad defensiva: **42**
 - manejo de errores y validación de entradas: **40**
-- seguridad defensiva: **39**
 - rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
-- `settings.py`: **18**
+- `settings.py`: **19**
 - `duplicates.py`: **17**
 - `memory.py`: **17**
-- `safety.py`: **16**
+- `safety.py`: **17**
 - `diskreport.py`: **16**
 - `assistant.py`: **15**
 - `browser.py`: **15**
 - `healthscore.py`: **15**
+- `scanner.py`: **13**
 - `branding.py`: **13**
-- `scanner.py`: **12**
 - `organizer.py`: **11**
 - `main.py`: **11**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-19T05:23:04` **settings.py** (seguridad defensiva): Se endureció la seguridad defensiva en `_is_dir_safe` al implementar un chequeo de permisos que detecta si el directorio es escribible por el grupo o por otros (`others`), alineándolo con las mejores prácticas de seguridad de archivos para evitar configuraciones laxas en el sistema del usuario.
+- `2026-10-19T05:22:46` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `scanner.py` implementando una validación estricta de rutas mediante `pathlib.Path.resolve()` en el punto de entrada `scan_directory` para prevenir el uso de rutas relativas o maliciosas, y asegurando que las comparaciones contra `base_root` sean siempre absolutas y normalizadas.
+- `2026-10-19T05:22:18` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera (TOCTOU) introduciendo un chequeo de existencia inmediato y validación de tipo de archivo antes de procesar metadatos, además de limpiar el manejo de excepciones en `_get_path_stat_robust` para asegurar que errores inesperados sean tratados como `UnsafePathError`.
 - `2026-10-19T05:13:27` **quarantine.py** (seguridad defensiva): Se añadió una validación crítica en `quarantine_file` para verificar que el origen no sea un punto de montaje o unidad de disco raíz, evitando que `quarantine` intente procesar volúmenes enteros, mejorando la seguridad defensiva.
 - `2026-10-19T05:12:33` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_process_executable_safe` validando mediante `os.path.abspath` antes de resolver la ruta, asegurando que los chequeos de `is_protected_path` operen sobre rutas normalizadas y absolutas, evitando posibles ataques de recorrido de directorio o rutas ambiguas.
 - `2026-10-19T05:12:03` **main.py** (seguridad defensiva): He mejorado la robustez de la inicialización de la aplicación añadiendo una validación explícita para evitar que `_check_environment_integrity` falle silenciosamente o permita ejecutar la lógica en entornos donde el directorio de trabajo es inexistente o inseguro, protegiendo así la integridad desde el arranque.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-19T04:40:59` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` añadiendo una validación explícita para evitar que archivos con atributos de "archivo temporal" (FILE_ATTRIBUTE_TEMPORARY) sean procesados, previniendo posibles errores de I/O en sistemas que manejan buffers de memoria o archivos volátiles.
 - `2026-10-19T04:32:11` **memory.py** (robustez ante casos límite): Se mejoró la robustez de `_is_process_executable_safe` añadiendo un bloque `try-except` más específico y validaciones adicionales para prevenir errores cuando el proceso destino finaliza entre la apertura del handle y la lectura de su ruta, asegurando que la función retorne `False` en lugar de propagar excepciones ante estados transitorios del sistema.
 - `2026-10-19T04:30:30` **healthscore.py** (robustez ante casos límite): Se introdujo una comprobación defensiva en `_evaluate_rules` para prevenir divisiones por cero o cálculos inválidos al procesar reglas, y se aseguró que el pipeline utilice `_clamp` explícitamente para garantizar que los ratios siempre se mantengan dentro del rango [0.0, 1.0] antes de cualquier operación aritmética, protegiendo al motor de estados inconsistentes.
-- `2026-10-19T04:22:24` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `path.exists()` y `path.is_file()` en el filtro de `_collect_candidates` para evitar condiciones de carrera (Race Conditions) donde un archivo desaparece entre la iteración de `scandir` y el procesamiento, mejorando la robustez ante entornos con alta actividad de disco.
-- `2026-10-19T04:20:57` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la detección de rutas (específicamente la resolución de `LOCALAPPDATA`) añadiendo validaciones estrictas contra rutas inexistentes, vacías o que apunten a sistemas de archivos inaccesibles, evitando que `base_directories` falle silenciosamente o devuelva una configuración corrupta.
-- `2026-10-19T04:20:23` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación estricta de las rutas de archivo y la gestión preventiva de desbordamientos numéricos antes de cualquier operación de escritura o renderizado.

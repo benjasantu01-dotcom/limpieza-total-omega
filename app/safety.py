@@ -639,6 +639,8 @@ def _get_path_stat_robust(path: Path) -> os.stat_result:
                     if err == ERROR_ACCESS_DENIED:
                         raise UnsafePathError(f"Acceso denegado: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
             return path.stat()
+        except UnsafePathError:
+            raise
         except (PermissionError, FileNotFoundError):
             raise UnsafePathError(f"Acceso denegado o archivo inexistente: {path.name}", SafetyValidationErrorCode.ACCESS_DENIED)
         except OSError as e:
@@ -994,11 +996,6 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
     Función de entrada principal para validar si un archivo puede ser modificado.
-    
-    Por qué: Es el punto de control único para toda acción destructiva, centralizando 
-    la lógica de seguridad y evitando la duplicación de chequeos.
-    Qué hace: Normaliza, valida componentes, verifica precondiciones, comprueba integridad
-    (TOCTOU) y finalmente confirma permisos de acceso. Lanza UnsafePathError si falla.
     """
     if not isinstance(path, (str, Path, os.PathLike)):
         raise UnsafePathError(f"Tipo de ruta no soportado: {type(path).__name__}", SafetyValidationErrorCode.GENERIC)
@@ -1010,6 +1007,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             
         p = normalize(path_str)
         
+        # Validar tipo de objeto al inicio
+        if p.exists() and not (p.is_file() or p.is_dir()):
+            raise UnsafePathError(f"Tipo de archivo no soportado: {p.name}", SafetyValidationErrorCode.INVALID_TYPE)
+
         if p.name.lower() in _KERNEL_BLOCKED_FILES:
             raise UnsafePathError(f"Modificación bloqueada de archivo crítico: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
 
@@ -1046,21 +1047,14 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         raise UnsafePathError(f"Error crítico durante la validación: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> bool:
-    """
-    Versión booleana de `ensure_safe_to_modify`.
-    Uso: Filtrado preventivo en bucles (ej. al escanear directorios) donde no queremos
-    abortar por completo, sino simplemente ignorar ítems protegidos.
-    """
+    """Versión booleana de `ensure_safe_to_modify`."""
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive, base_dir=base_dir)
         return True
     except (UnsafePathError, ValueError, TypeError, OSError, PermissionError, MemoryError): return False
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> list[Path]:
-    """
-    Filtra una colección de rutas, devolviendo solo aquellas que son seguras para operar.
-    Útil para procesar listados generados por el escáner antes de enviarlos a la interfaz.
-    """
+    """Filtra una colección de rutas, devolviendo solo aquellas que son seguras para operar."""
     results: list[Path] = []
     if paths is None: return results
     for p in paths:

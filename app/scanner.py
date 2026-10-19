@@ -254,7 +254,7 @@ class Scanner:
         self.seen: set[str] = set()
         self.safe_cache: set[str] = set()
         self.path_stat_cache: Dict[str, bool] = {}
-        self.base_root_str: str = str(base_root.resolve(strict=False)).lower()
+        self.base_root_str: str = str(base_root.absolute()).lower()
         self.now_ts: float = datetime.now().timestamp()
 
     @lru_cache(maxsize=2048)
@@ -385,10 +385,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """Inicia el recorrido de escaneo desde un directorio base."""
     if directory is None: return []
     try:
-        path_str: str = str(directory).strip()
-        if not path_str or not _is_valid_path_structure(path_str): return []
-        base_path: Path = Path(path_str).resolve(strict=False)
-        if not base_path.exists() or not base_path.is_dir() or base_path.is_symlink() or not os.access(base_path, os.R_OK) or _cached_is_protected(str(base_path)):
+        base_path: Path = Path(directory).resolve(strict=True)
+        if not base_path.is_dir() or base_path.is_symlink() or not os.access(base_path, os.R_OK) or _cached_is_protected(str(base_path)):
             return []
         scanner: Scanner = Scanner(base_root=base_path)
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError) as e:
