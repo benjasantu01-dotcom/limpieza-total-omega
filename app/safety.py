@@ -744,39 +744,42 @@ def is_drive_root(path: PathLike) -> bool:
 def is_protected_path(path: PathLike) -> bool:
     """Determina si la ruta forma parte de una zona protegida del sistema (optimizado con caché)."""
     if not isinstance(path, (str, Path)) or not path: return True
-    path_str = str(path)
+    path_str = str(path).strip()
     p_str_low = path_str.lower()
     
-    # 1. Chequeo rápido por raíces conocidas
-    if any(p_str_low.startswith(root) for root in _SYSTEM_ROOT_STRS):
-        return True
-    
-    # 2. Uso de caché con validación de mtime del padre para evitar llamadas repetidas
+    # 1. Chequeo de caché persistente (mtime del padre para invalidación)
     try:
         p = Path(path_str)
         parent_dir = p.parent
-        mtime = parent_dir.stat().st_mtime if parent_dir.exists() else 0.0
+        current_mtime = parent_dir.stat().st_mtime if parent_dir.exists() else 0.0
         
         if path_str in _PROTECTED_PATH_CACHE:
             cached_res, cached_mtime = _PROTECTED_PATH_CACHE[path_str]
-            if cached_mtime == mtime: return cached_res
-
+            if cached_mtime == current_mtime: return cached_res
+        
+        # 2. Validación de prefijo rápido
+        if any(p_str_low.startswith(root) for root in _SYSTEM_ROOT_STRS):
+            _PROTECTED_PATH_CACHE[path_str] = (True, current_mtime)
+            return True
+        
+        # 3. Validación de componentes
         if _is_kernel_managed(p_str_low):
-            _PROTECTED_PATH_CACHE[path_str] = (True, mtime)
+            _PROTECTED_PATH_CACHE[path_str] = (True, current_mtime)
             return True
             
         parts = {part.lower() for part in p.parts}
         if not PROTECTED_DIR_NAMES.isdisjoint(parts):
-            _PROTECTED_PATH_CACHE[path_str] = (True, mtime)
+            _PROTECTED_PATH_CACHE[path_str] = (True, current_mtime)
             return True
         
+        # 4. Chequeo de atributos
         attrs = _get_file_attrs(str(p))
         if attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT):
-            _PROTECTED_PATH_CACHE[path_str] = (True, mtime)
+            _PROTECTED_PATH_CACHE[path_str] = (True, current_mtime)
             return True
         
         res = p == Path(p.anchor)
-        _PROTECTED_PATH_CACHE[path_str] = (res, mtime)
+        _PROTECTED_PATH_CACHE[path_str] = (res, current_mtime)
         return res
     except Exception:
         return True

@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 48
+- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 28
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-18 | 77 | 6 | 20 | 9 | 88 |
-| 2026-10-19 | 124 | 11 | 28 | 19 | 122 |
+| 2026-10-18 | 75 | 5 | 20 | 9 | 87 |
+| 2026-10-19 | 125 | 11 | 31 | 19 | 122 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
-- seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **44**
-- rendimiento: **35**
+- seguridad defensiva: **42**
+- rendimiento: **36**
 - robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **19**
-- `diskreport.py`: **18**
 - `quarantine.py`: **18**
 - `duplicates.py`: **18**
+- `diskreport.py`: **17**
 - `settings.py`: **16**
 - `healthscore.py`: **15**
+- `safety.py`: **15**
 - `memory.py`: **15**
 - `main.py`: **14**
-- `safety.py`: **14**
-- `branding.py`: **13**
 - `assistant.py`: **13**
 - `scanner.py`: **12**
+- `branding.py`: **12**
 - `organizer.py`: **9**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-19T13:00:41` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` centralizando la lógica de caché y reduciendo las llamadas redundantes al sistema de archivos al priorizar la validación de prefijos en memoria, evitando así múltiples `stat` innecesarios por cada llamada.
 - `2026-10-19T12:51:04` **quarantine.py** (rendimiento): Optimicé el acceso al sistema de archivos en `purge_all` eliminando la llamada innecesaria a `is_safe_to_modify` dentro del bucle de iteración, delegando la seguridad a las validaciones atómicas internas de `_safe_unlink` para reducir llamadas redundantes a `stat`.
 - `2026-10-19T12:50:07` **memory.py** (rendimiento): Se optimizó el acceso a los procesos mediante la carga previa de las funciones de la API de Windows fuera del bucle de enumeración y se reemplazó el uso intensivo de `getattr` dentro de las funciones críticas por referencias directas, reduciendo la sobrecarga de resolución de atributos en operaciones de alta frecuencia.
 - `2026-10-19T12:40:53` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de candidatos evitando llamadas redundantes a `stat()` y `_safe_path_check` al centralizar la verificación en el `scandir` y utilizando la información ya obtenida del `DirEntry`, lo que reduce drásticamente las operaciones de E/S innecesarias.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-19T11:59:31` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado semántico mediante la adición de docstrings detallados en las funciones de manipulación de color y dibujo, aclarando las responsabilidades de cada componente para facilitar el mantenimiento.
 - `2026-10-19T11:50:08` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a todas las funciones y métodos que carecían de ellos, clarificando las intenciones de las operaciones de seguridad y validación de datos para asegurar el mantenimiento a largo plazo.
 - `2026-10-19T11:49:43` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` y `entries_from_registry` capturando posibles estados donde `stdout` o la estructura del CSV pudieran ser inválidos, garantizando que un error en el parsing de una línea no detenga la lectura de todo el inventario de inicio.
-- `2026-10-19T11:49:13` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `validate` y `_coerce_and_verify` reemplazando el uso de `DEFAULTS.copy()` por una lógica más defensiva que evita la propagación de errores si `DEFAULTS` llegara a ser mutado accidentalmente y asegurando que la validación de tipos sea estricta incluso ante claves inesperadas en el archivo JSON.
