@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Mejoras aceptadas: **190** (37.7% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-17 | 38 | 5 | 8 | 6 | 45 |
+| 2026-10-17 | 34 | 5 | 8 | 6 | 45 |
 | 2026-10-18 | 144 | 11 | 37 | 15 | 143 |
-| 2026-10-19 | 11 | 2 | 2 | 4 | 33 |
+| 2026-10-19 | 12 | 2 | 2 | 4 | 36 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **45**
+- legibilidad y documentación: **41**
 - seguridad defensiva: **41**
 - robustez ante casos límite: **38**
 - rendimiento: **37**
-- manejo de errores y validación de entradas: **32**
+- manejo de errores y validación de entradas: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
 - `safety.py`: **18**
 - `settings.py`: **17**
-- `duplicates.py`: **16**
-- `memory.py`: **16**
 - `diskreport.py`: **16**
-- `assistant.py`: **14**
-- `main.py`: **13**
+- `assistant.py`: **15**
+- `memory.py`: **15**
+- `duplicates.py`: **15**
+- `main.py`: **12**
 - `organizer.py`: **12**
 - `scanner.py`: **12**
-- `healthscore.py`: **11**
 - `browser.py`: **11**
 - `branding.py`: **10**
+- `healthscore.py`: **10**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-19T02:20:29` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_validate_and_sanitize_data` en `assistant.py` mediante la captura explícita de excepciones durante el procesamiento de campos individuales, evitando que un valor mal formado interrumpa la ingesta de todo el conjunto de métricas.
 - `2026-10-19T00:58:08` **settings.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_read_and_parse_json` al implementar una comprobación explícita de `st_nlink` y `st_mode` antes de abrir el archivo, previniendo riesgos de ataques mediante enlaces físicos (hard links) y asegurando que solo se procesen archivos regulares sin permisos de ejecución ni escritura compartida.
 - `2026-10-19T00:57:36` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del módulo `scanner.py` implementando una validación estricta de rutas mediante `pathlib.Path.resolve()` en el punto de entrada, evitando ataques de tipo "path traversal" o manipulación de rutas relativas mediante el uso de `strict=False` (para evitar excepciones innecesarias en sistemas de archivos complejos) y asegurando la integridad del escaneo al impedir que se procesen entradas cuyos nombres contengan caracteres nulos o secuencias peligrosas antes de realizar cualquier syscall.
 - `2026-10-19T00:57:08` **safety.py** (seguridad defensiva): He mejorado `_validate_structural_safety` para incluir una validación estricta de nombres de archivo mediante `re.fullmatch` contra el patrón `_RESERVED_NAMES_PATTERN` en el `target_path.name`, asegurando que no solo el nombre base, sino nombres con extensiones (como `con.txt`) sean correctamente interceptados antes de realizar operaciones de disco.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-18T14:56:17` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_locked` para manejar correctamente archivos con permisos restringidos o sistemas de archivos con bloqueos exclusivos, evitando que el escaneo se detenga abruptamente o reporte falsos positivos debido a errores de sistema durante la fase de lectura.
 - `2026-10-18T14:49:01` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` ante archivos que desaparecen o son bloqueados durante el escaneo, añadiendo un `try-except` específico dentro de la lógica de recolección para evitar que una excepción en un archivo puntual aborte el reporte completo del disco.
 - `2026-10-18T14:46:47` **branding.py** (robustez ante casos límite): Se ha añadido validación mediante `is_safe_to_modify` en la función `save_logo_svg` para prevenir errores ante rutas no existentes o permisos denegados, integrando robustez ante casos límite del sistema de archivos.
-- `2026-10-18T14:46:18` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para manejar correctamente casos donde los datos de entrada contengan valores no primitivos o tipos inesperados, evitando errores de recursión o desbordamiento al procesar objetos complejos.

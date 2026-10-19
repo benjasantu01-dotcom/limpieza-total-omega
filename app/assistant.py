@@ -437,10 +437,12 @@ class SystemContext:
     def _validate_and_sanitize_data(self, source: Any) -> Optional[dict[str, Any]]:
         """Extrae datos válidos de una fuente externa. Retorna dict solo si hay cambios validos."""
         updates: dict[str, Any] = {}
-        # Primero validamos todas las métricas. Si alguna falla críticamente, abortamos.
         for key, spec in _VALIDATORS.items():
-            val = self._apply_field(source, key, spec)
-            if val is not None: updates[key] = val
+            try:
+                val = self._apply_field(source, key, spec)
+                if val is not None: updates[key] = val
+            except (Exception, ValueError, TypeError):
+                continue
         
         grade_val = self._clean_grade(_get_source_value(source, "grade"))
         if grade_val: updates["grade"] = grade_val
