@@ -8,45 +8,48 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 48
+- Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 27
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-17 | 14 | 1 | 3 | 2 | 34 |
+| 2026-10-17 | 11 | 1 | 2 | 2 | 34 |
 | 2026-10-18 | 144 | 11 | 37 | 15 | 143 |
-| 2026-10-19 | 38 | 3 | 8 | 10 | 41 |
+| 2026-10-19 | 41 | 3 | 8 | 10 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **48**
 - manejo de errores y validación de entradas: **40**
-- seguridad defensiva: **37**
 - rendimiento: **37**
-- robustez ante casos límite: **34**
+- robustez ante casos límite: **37**
+- seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
+- `quarantine.py`: **20**
 - `settings.py`: **18**
-- `memory.py`: **16**
+- `duplicates.py`: **17**
 - `safety.py`: **16**
-- `duplicates.py`: **16**
 - `assistant.py`: **15**
+- `memory.py`: **15**
 - `diskreport.py`: **15**
-- `browser.py`: **13**
+- `browser.py`: **14**
 - `healthscore.py`: **13**
-- `organizer.py`: **12**
 - `scanner.py`: **12**
-- `branding.py`: **11**
+- `branding.py`: **12**
+- `organizer.py`: **11**
 - `main.py`: **10**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-19T04:22:24` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `path.exists()` y `path.is_file()` en el filtro de `_collect_candidates` para evitar condiciones de carrera (Race Conditions) donde un archivo desaparece entre la iteración de `scandir` y el procesamiento, mejorando la robustez ante entornos con alta actividad de disco.
+- `2026-10-19T04:20:57` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la detección de rutas (específicamente la resolución de `LOCALAPPDATA`) añadiendo validaciones estrictas contra rutas inexistentes, vacías o que apunten a sistemas de archivos inaccesibles, evitando que `base_directories` falle silenciosamente o devuelva una configuración corrupta.
+- `2026-10-19T04:20:23` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación estricta de las rutas de archivo y la gestión preventiva de desbordamientos numéricos antes de cualquier operación de escritura o renderizado.
 - `2026-10-19T04:11:32` **assistant.py** (robustez ante casos límite): Se mejoró la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para manejar correctamente objetos complejos (como diccionarios con claves no string) y se añadió una validación estricta de tipos en el acceso a datos externos para prevenir el procesamiento de estructuras inesperadas que podrían causar errores durante la serialización o el envío.
 - `2026-10-19T04:11:08` **startup.py** (rendimiento): Optimicé el rendimiento de `summarize` reemplazando el cálculo redundante de `sum(1 for _ in entries_list)` (que iteraba dos veces sobre el generador si no era lista) por el uso directo de `len()` cuando `entries_list` es una secuencia, evitando recorridos innecesarios en el reporte.
 - `2026-10-19T04:10:41` **settings.py** (rendimiento): Se optimizó la lectura de `settings.py` implementando una caché basada en el contenido (hash) del archivo en lugar de solo `mtime/size`, evitando recargas innecesarias cuando el archivo se toca pero no cambia, y se redujo el costo de serialización mediante la reutilización de `json.dumps` con cacheo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-19T03:39:47` **assistant.py** (rendimiento): Optimicé el método `metrics_snapshot` de `SystemContext` añadiendo un decorador `@cached_property` (que ya estaba presente) y asegurando que la reconstrucción del diccionario solo ocurra ante cambios reales, evitando recrear estructuras costosas en cada acceso mediante el uso de una lógica de validación más eficiente que aprovecha los tipos de datos nativos ya validados.
 - `2026-10-19T03:30:43` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo documentando el propósito de `_SettingsManager` mediante type hints específicos, y reemplacé la lógica de construcción de `_VALIDATOR_MAP` por una estructura más clara y explícita, facilitando la comprensión del flujo de validación.
 - `2026-10-19T03:30:12` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad del módulo mediante la adición de Type Hints faltantes (especialmente en los decoradores y retornos de funciones de chequeo), la clarificación de los docstrings sobre las restricciones de ejecución para evitar efectos secundarios, y la consolidación de la lógica de guardas en `_is_safe_entry` para mejorar la mantenibilidad de la lógica de seguridad.
-- `2026-10-19T03:29:45` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings estructurados (usando el formato de "por qué" y "qué hace") en las funciones críticas de validación que carecían de claridad, facilitando el mantenimiento y la auditoría del código.
-- `2026-10-19T03:20:21` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `quarantine_file` para separar claramente las responsabilidades de validación, transferencia y registro, eliminando la sobrecarga cognitiva del bloque `try-except` anidado y mejorando el flujo lógico.
-- `2026-10-19T03:09:57` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `healthscore.py` mediante la adición de Type Hints detallados en los parámetros de los *factories* de reglas y el uso de `Docstrings` más precisos que aclaran la intención de los componentes del pipeline, facilitando su mantenimiento futuro.

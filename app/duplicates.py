@@ -247,11 +247,15 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                             if _safe_path_check(p_entry):
                                 queue.append((p_entry, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
+                            # Validar existencia antes de stat ante cambios concurrentes en el sistema
+                            if not entry.is_file(): continue
+                            p_entry = Path(entry.path)
+                            if not p_entry.exists() or not p_entry.is_file(): continue
+
                             st = entry.stat(follow_symlinks=False)
                             if st.st_size < min_size or (st.st_dev, st.st_ino) in visited_inodes:
                                 continue
                             
-                            p_entry = Path(entry.path)
                             if skip_protected and is_protected_path(p_entry):
                                 continue
                                 

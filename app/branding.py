@@ -321,9 +321,9 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     if not destination: return None
     try:
         target = Path(destination).resolve()
-        # Validación de seguridad: usamos chequeo booleano de seguridad
+        # Validación de seguridad defensiva: no escribir en rutas protegidas ni fuera del sistema permitido
         if is_protected_path(target) or not is_safe_to_modify(target): return None
-        if target.parent.exists() and not target.parent.is_dir(): return None
+        if target.exists() and not target.is_file(): return None
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(size), encoding="utf-8")
         return target

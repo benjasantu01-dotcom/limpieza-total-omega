@@ -178,16 +178,18 @@ def _is_within_sandbox(target_norm: str, base_norm: str) -> bool:
 def base_directories() -> List[Path]:
     """Retorna las rutas base autorizadas (LOCALAPPDATA) para realizar el escaneo."""
     local_env = os.environ.get("LOCALAPPDATA")
-    if not isinstance(local_env, str) or not local_env or _is_unc_path(local_env):
+    if not isinstance(local_env, str) or not local_env.strip() or _is_unc_path(local_env):
         return []
+    
     p = Path(local_env)
     try:
         if p.exists() and p.is_dir():
+            # Resolvemos para evitar trampas de symlink en la base
             path_local = p.resolve(strict=True)
             if is_safe_to_modify(path_local) and not is_protected_path(path_local):
                 return [path_local]
     except (OSError, RuntimeError):
-        pass
+        return []
     return []
 
 def _is_excluded_file(name: str) -> bool:
@@ -207,7 +209,6 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     path_str = entry.path
     if len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS): return True
     
-    # Verificación de seguridad básica, el contexto asegura que ya se validó el root
     try:
         if entry.is_symlink() or ctx.is_junction(path_str) or _is_system_hidden(path_str, ctx.kernel32): return True
     except OSError: return True
