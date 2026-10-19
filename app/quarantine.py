@@ -756,13 +756,11 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         if not destination.parent.exists():
             raise OSError("Directorio de cuarentena inaccesible durante la operación.")
         
-        pre_stat = source.stat()
-    except OSError:
-        raise RuntimeError("No se pudo obtener estado de archivo.")
-        
-    stat_orig = _check_io_error_context(source.stat)
-    if stat_orig.st_size != original_size or stat_orig.st_ino != pre_stat.st_ino:
-        raise RuntimeError("El archivo cambió durante la validación inicial (TOCTOU).")
+        stat_orig = _check_io_error_context(source.stat)
+        if stat_orig.st_size != original_size:
+            raise RuntimeError("El archivo cambió durante la validación inicial (TOCTOU).")
+    except OSError as e:
+        raise RuntimeError(f"No se pudo obtener estado de archivo: {e}")
     
     IsolationManager.validate_atomicity(source, stat_orig, destination)
     
@@ -895,28 +893,27 @@ def quarantine_file(
     """
     p_source = _validate_input_path(source)
     st_info = _check_io_error_context(p_source.stat)
-    source_path = _validate_source_for_quarantine(p_source)
     
-    if _is_file_in_use_by_system(source_path):
+    if _is_file_in_use_by_system(p_source):
         raise IOError("Archivo origen bloqueado por el sistema: operación abortada.")
         
     dest_dir = quarantine_dir(base)
-    if _is_within_quarantine_sandbox(source_path, dest_dir.resolve()):
+    if _is_within_quarantine_sandbox(p_source.resolve(), dest_dir.resolve()):
         raise UnsafePathError("Archivo ya en el sandbox.")
     
-    _validate_isolation_request(source_path, dest_dir)
-    destination = dest_dir / _generate_safe_stored_name(source_path, uuid.uuid4().hex[:12])
+    _validate_isolation_request(p_source, dest_dir)
+    destination = dest_dir / _generate_safe_stored_name(p_source, uuid.uuid4().hex[:12])
     
-    file_hash, file_inode = _atomic_isolate_file(source_path, destination, st_info.st_size)
+    file_hash, file_inode = _atomic_isolate_file(p_source, destination, st_info.st_size)
     
     if not destination.exists() or destination.stat().st_ino != file_inode or _get_sha256(destination) != file_hash:
         raise RuntimeError("Falla crítica: el destino no es coherente tras la copia.")
             
-    item = _register_quarantine_item(destination, source_path, file_hash, file_inode, reason, st_info.st_size, base)
+    item = _register_quarantine_item(destination, p_source, file_hash, file_inode, reason, st_info.st_size, base)
         
-    if source_path.exists() and not os.path.samefile(source_path, destination):
+    if p_source.exists() and not os.path.samefile(p_source, destination):
         try:
-            _check_io_error_context(source_path.unlink)
+            _check_io_error_context(p_source.unlink)
         except OSError as e:
             raise RuntimeError(f"Aislamiento exitoso, falla al remover original: {e}")
                 

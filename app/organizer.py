@@ -346,7 +346,6 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                 if not _is_safe_for_disk_op(junk_file, dest_res): continue
                 target_path = _can_move_file(junk_file, dest_res)
                 if target_path and target_path != junk_file.path:
-                    # Validar nuevamente antes de mover por si el estado del sistema de archivos cambió
                     if junk_file.path.exists():
                         shutil.move(str(junk_file.path.resolve(strict=True)), str(target_path))
             except (OSError, shutil.Error, PermissionError) as e:
@@ -379,7 +378,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             try:
                 if not item.is_file() or item.is_symlink(): continue
                 item_res = item.resolve(strict=False)
-                # Impedir escape de la carpeta de revisión usando commonpath
                 if os.path.commonpath([str(dest_res), str(item_res)]) != str(dest_res): continue
                 if not is_safe_to_modify(item_res) or is_protected_path(item_res): continue
                 

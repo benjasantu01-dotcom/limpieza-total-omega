@@ -891,3 +891,37 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-19T11:31:25` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `parse_windows_process_csv` añadiendo una validación explícita para evitar errores de tipo si `raw_csv_text` contiene datos inesperados y asegurando que las líneas vacías o mal formadas se omitan limpiamente sin interrumpir el flujo del generador.
 - `2026-10-19T11:31:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-19T11:31:25` Corrida terminada. Total usado hoy: 272.
+- `2026-10-19T11:38:04` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-10-19T11:38:31` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` mediante la validación explícita de tipos, capturando excepciones específicas y verificando el estado del sistema de archivos antes de cada operación, evitando así fallos silenciosos ante entradas malformadas.
+- `2026-10-19T11:39:13` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` y `_atomic_isolate_file` al unificar la validación de estados y capturar errores de forma más granular (TOCTOU, colisiones de inodos y fallos de I/O) para evitar dejar estados inconsistentes en el sistema de archivos, aplicando validaciones preventivas sobre los parámetros de entrada antes de iniciar el movimiento.
+- `2026-10-19T11:39:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-19T11:40:05` Tests FALLARON:
+```
+a'))
+E        +    where <function save at 0x7f253d1b2de0> = settings.save
+E        +    and   {'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...} = settings.DEFAULTS
+
+evolve/tests/test_assistant.py:60: AssertionError
+______________________ test_save_logo_svg_writes_the_file ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionError: assert None is not None
+ +  where None = <function save at 0x7f253d1b2de0>({'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...}, PosixPath('/tmp/pytest-of-runner/pytest-3/test_save_creates_the_folder0/sub/carpeta'))
+ +    where <function save at 0x7f253d1b2de0> = settings.save
+ +    and   {'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...} = settings.DEFAULTS
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+2 failed, 297 passed in 1.05s
+
+```
+- `2026-10-19T11:40:05` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se mejora la robustez de `ensure_safe_to_modify` ante errores de entrada no controlados, garantizando que cualquier error durante la resolución de rutas se convierta formalmente a `UnsafePathError` en lugar de propagar excepciones genéricas, y se añade un chequeo preventivo contra rutas que apuntan a directorios inexistentes sin permisos de escritura en su contenedor, evitando fallos silenciosos en operaciones de creación.
+- `2026-10-19T11:40:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-19T11:40:05` Corrida terminada. Total usado hoy: 276.
