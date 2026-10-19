@@ -181,6 +181,8 @@ class _SettingsManager:
         temp_path: Path = config_path.with_suffix(".tmp")
         try:
             if not _is_dir_safe(config_path.parent): return False
+            # Si el destino existe, debe ser un archivo regular (no symlink/junction)
+            if config_path.exists() and (config_path.is_symlink() or not config_path.is_file()): return False
             with open(temp_path, "w", encoding="utf-8") as f:
                 f.write(serialized)
                 f.flush()

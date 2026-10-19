@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **209** (41.5% de aceptación)
-- Rechazadas por tests: 16
+- Mejoras aceptadas: **210** (41.7% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 28
-- Sin respuesta de la IA (error o límite): 200
+- Sin respuesta de la IA (error o límite): 198
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-18 | 110 | 8 | 29 | 13 | 112 |
-| 2026-10-19 | 99 | 8 | 22 | 15 | 88 |
+| 2026-10-18 | 110 | 8 | 29 | 13 | 108 |
+| 2026-10-19 | 100 | 9 | 22 | 15 | 90 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
-- seguridad defensiva: **43**
+- seguridad defensiva: **44**
 - robustez ante casos límite: **40**
 - manejo de errores y validación de entradas: **39**
 - rendimiento: **37**
@@ -30,8 +30,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
+- `settings.py`: **18**
 - `duplicates.py`: **18**
-- `settings.py`: **17**
 - `diskreport.py`: **17**
 - `safety.py`: **17**
 - `browser.py`: **17**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-19T09:56:54` **settings.py** (seguridad defensiva): Se endurece la seguridad en la escritura de archivos al verificar explícitamente que la ruta final de destino (config.json) sea una ruta de archivo simple, evitando ataques de inyección de enlaces simbólicos o rutas maliciosas después de la creación del directorio.
 - `2026-10-19T09:47:59` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `scanner.py` al reemplazar la resolución de rutas mediante `resolve(strict=False)` por `Path.absolute()` en el contexto de `Scanner`, evitando que la lógica intente seguir enlaces simbólicos o puntos de reanálisis durante la validación inicial, alineándolo estrictamente con las reglas de seguridad de no abandonar el ámbito permitido.
 - `2026-10-19T09:47:46` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `safety.py` al añadir un chequeo de integridad de las credenciales del usuario, asegurando que la validación no solo dependa de atributos del archivo, sino también de que el proceso actual posea privilegios de acceso adecuados mediante `GetNamedSecurityInfoW` para detectar rutas cuyo propietario sea el grupo SYSTEM/LocalService, mitigando riesgos de manipulación accidental de archivos críticos del núcleo antes de la operación.
 - `2026-10-19T09:46:36` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `purge_all` implementando una validación estricta de rutas mediante `is_within_directory` para garantizar que la operación de purgado nunca escape del directorio de cuarentena, protegiendo contra posibles manipulaciones del sistema de archivos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-19T09:06:15` **quarantine.py** (robustez ante casos límite): Se introdujo una validación robusta para prevenir condiciones de "Race Condition" y errores de I/O en `_atomic_isolate_file` al verificar la existencia y el estado del directorio destino antes de iniciar la transferencia de archivos, añadiendo consistencia ante interrupciones.
 - `2026-10-19T08:57:00` **main.py** (robustez ante casos límite): Se introdujo una gestión robusta de estados de ejecución asíncrona mediante un semáforo de bloqueo (`self._worker_lock`) en el pool de hilos, evitando condiciones de carrera al procesar múltiples tareas de análisis pesado que podrían entrar en conflicto o saturar la UI.
 - `2026-10-19T08:55:23` **duplicates.py** (robustez ante casos límite): Se introdujo una gestión robusta de errores en `_collect_candidates` para prevenir que fallos imprevistos al leer atributos de archivos (como estados de "archivo no encontrado" en condiciones de carrera) interrumpan el escaneo de directorios.
-- `2026-10-19T08:46:18` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante rutas inexistentes y permisos denegados en `detect_profiles` añadiendo validaciones granulares antes de iniciar la recursión pesada, previniendo que una sola ruta mal formada o con permisos restringidos afecte la integridad del escaneo de otros navegadores.
