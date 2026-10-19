@@ -327,7 +327,6 @@ def _is_process_executable_safe(pid: int, handle: int, psapi: Any) -> bool:
         if length > 0:
             exe_str = buffer_path.value.strip()
             if not exe_str: return False
-            # Normalización estricta: asegurar ruta absoluta antes de validar seguridad
             executable_path = Path(os.path.abspath(exe_str)).resolve()
             if not executable_path.exists(): return False
             return not is_protected_path(executable_path)
@@ -336,18 +335,20 @@ def _is_process_executable_safe(pid: int, handle: int, psapi: Any) -> bool:
     return False
 
 def _process_from_pid(pid: int, kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[ProcessMemory]:
-    """Intenta obtener y validar las métricas de un proceso individual por su PID."""
+    """Intenta obtener, medir y validar la seguridad de un proceso individual."""
     proc_handle = _is_process_accessible(pid, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
     if not proc_handle:
         return None
     
     try:
         ws = _query_working_set_bytes(pid, proc_handle, psapi, pmc)
-        if ws is not None and _is_process_executable_safe(pid, proc_handle, psapi):
-            return ProcessMemory(f"PID {pid}", pid, ws)
+        # Solo validar seguridad si el consumo de memoria es relevante (evita E/S innecesaria)
+        if ws is not None and ws > (10 * BYTES_IN_MB):
+            if not _is_process_executable_safe(pid, proc_handle, psapi):
+                return None
+        return ProcessMemory(f"PID {pid}", pid, ws) if ws is not None else None
     finally:
         kernel32.CloseHandle(proc_handle)
-    return None
 
 def _iter_process_memory(kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
     """Enumera procesos activos del sistema, aplicando filtros de seguridad."""
