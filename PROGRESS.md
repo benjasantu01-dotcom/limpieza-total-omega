@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 47
 - Sin cambios (nada sustancial que mejorar): 28
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-17 | 9 | 0 | 1 | 2 | 26 |
+| 2026-10-17 | 9 | 0 | 1 | 2 | 22 |
 | 2026-10-18 | 144 | 11 | 37 | 15 | 143 |
-| 2026-10-19 | 47 | 4 | 9 | 11 | 45 |
+| 2026-10-19 | 50 | 4 | 9 | 11 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +26,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - robustez ante casos límite: **42**
 - manejo de errores y validación de entradas: **40**
 - rendimiento: **37**
-- seguridad defensiva: **33**
+- seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,10 +35,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **17**
 - `memory.py`: **16**
 - `safety.py`: **16**
+- `diskreport.py`: **16**
 - `assistant.py`: **15**
-- `diskreport.py`: **15**
-- `browser.py`: **14**
-- `healthscore.py`: **14**
+- `browser.py`: **15**
+- `healthscore.py`: **15**
 - `branding.py`: **13**
 - `scanner.py`: **12**
 - `organizer.py`: **11**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-19T05:02:12` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sanitize_msg` implementando un control estricto que utiliza `_BLOCKED_TERMS` para filtrar palabras clave de rutas sensibles antes de que cualquier mensaje de recomendación sea procesado por la UI, previniendo fugas de información.
+- `2026-10-19T05:01:33` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_excluded_path` al asegurar que los chequeos de `stat` y `resolve` manejen de forma explícita errores comunes de acceso, evitando que la lógica falle al intentar leer metadatos de archivos del sistema que, aunque no estén en la lista protegida, bloquean el acceso a nivel de kernel.
+- `2026-10-19T05:01:06` **browser.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_is_valid_cache_path` y `_should_skip_entry` para validar explícitamente que las rutas procesadas no contengan caracteres de control o secuencias sospechosas antes de realizar operaciones de E/S, evitando posibles vulnerabilidades de inyección de ruta o desbordamiento al interactuar con APIs de sistema.
 - `2026-10-19T04:52:22` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la validación implícita con una verificación explícita mediante `is_safe_to_modify` y se añadió una capa de sanitización en el nombre de archivo para prevenir posibles inyecciones de rutas o caracteres no deseados en la construcción del path.
 - `2026-10-19T04:50:57` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_dir_safe` y `_read_and_parse_json` añadiendo verificaciones explícitas contra `PermissionError` y `OSError` durante la lectura de metadatos, evitando que la app aborte o retorne estados inconsistentes ante denegaciones de acceso al filesystem.
 - `2026-10-19T04:42:06` **safety.py** (robustez ante casos límite): Se ha implementado `_is_unc_path_accessible` mediante `GetDiskFreeSpaceW` para validar que las rutas UNC (bloqueadas actualmente por defecto) sean tratables como volúmenes válidos, y se integró un chequeo preventivo de `OSError` con `errno` en `_is_file_locked_by_other_process` para manejar casos de denegación de acceso por permisos de kernel, mejorando la robustez ante estados del sistema transitorios sin alterar la lógica de seguridad.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-19T04:11:32` **assistant.py** (robustez ante casos límite): Se mejoró la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para manejar correctamente objetos complejos (como diccionarios con claves no string) y se añadió una validación estricta de tipos en el acceso a datos externos para prevenir el procesamiento de estructuras inesperadas que podrían causar errores durante la serialización o el envío.
 - `2026-10-19T04:11:08` **startup.py** (rendimiento): Optimicé el rendimiento de `summarize` reemplazando el cálculo redundante de `sum(1 for _ in entries_list)` (que iteraba dos veces sobre el generador si no era lista) por el uso directo de `len()` cuando `entries_list` es una secuencia, evitando recorridos innecesarios en el reporte.
 - `2026-10-19T04:10:41` **settings.py** (rendimiento): Se optimizó la lectura de `settings.py` implementando una caché basada en el contenido (hash) del archivo en lugar de solo `mtime/size`, evitando recargas innecesarias cuando el archivo se toca pero no cambia, y se redujo el costo de serialización mediante la reutilización de `json.dumps` con cacheo.
-- `2026-10-19T03:51:28` **memory.py** (rendimiento): Optimizé la eficiencia de `_iter_process_memory` y `top_memory_processes` evitando consultas redundantes a la API de Windows mediante la resolución del nombre del proceso solo cuando es estrictamente necesario y centralizando el acceso a las funciones de `psapi`, mejorando la velocidad de escaneo al reducir llamadas al sistema (Syscalls).
-- `2026-10-19T03:51:15` **main.py** (rendimiento): Optimicé el sistema de caché de configuraciones mediante la eliminación de la validación redundante `Path.resolve()` dentro de `get_cached_settings` (que ya se realiza al cargar ajustes), reduciendo el overhead de I/O en cada consulta de configuración.
-- `2026-10-19T03:50:11` **healthscore.py** (rendimiento): Se optimizó el proceso `compute_score` mediante la pre-validación de las métricas utilizando el método `is_finite` antes de entrar al bucle del `PIPELINE` y se eliminó la redundancia de validación dentro del mismo, reduciendo la carga computacional en cada iteración del análisis.

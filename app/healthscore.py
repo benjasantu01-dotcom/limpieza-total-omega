@@ -27,7 +27,7 @@ MetricKey: TypeAlias = str
 
 # Constantes de rendimiento para validación
 _ALLOWED_CHARS: Final[set[str]] = set(string.ascii_letters + string.digits + " .,:()-_%")
-_BLOCKED_TERMS: Final[frozenset[str]] = frozenset(["system32", "windows", "admin", "c:\\", "system", "kernel", "path", "root", "drive"])
+_BLOCKED_TERMS: Final[frozenset[str]] = frozenset(["system32", "windows", "admin", "c:\\", "system", "kernel", "path", "root", "drive", "user", "profile"])
 _MAX_MSG_LEN: Final[int] = 128
 
 class Scorer(Protocol):
@@ -300,13 +300,13 @@ def grade_for_score(score: float | int) -> str:
     return Grade.from_score(score)
 
 def _sanitize_msg(msg: str | Any) -> str:
-    """Limpia cadenas de texto garantizando integridad defensiva."""
+    """Limpia cadenas de texto garantizando integridad defensiva mediante exclusión de términos."""
     if not isinstance(msg, str): return ""
     clean = "".join(c for c in msg if c in _ALLOWED_CHARS)
     lower_msg = clean.lower()
-    for term in _BLOCKED_TERMS:
-        if term in lower_msg:
-            return ""
+    # Bloqueo defensivo: Si contiene términos prohibidos, se invalida el mensaje para evitar fugas
+    if any(term in lower_msg for term in _BLOCKED_TERMS):
+        return ""
     return clean.strip()[:_MAX_MSG_LEN]
 
 def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:

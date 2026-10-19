@@ -160,14 +160,14 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         if entry.is_symlink():
             return True
             
-        entry_path = Path(entry.path)
         try:
-            if root_path not in entry_path.resolve(strict=False).parents and entry_path.resolve(strict=False) != root_path:
+            entry_path = Path(entry.path).resolve(strict=False)
+            if root_path not in entry_path.parents and entry_path != root_path:
                 return True
         except (OSError, RuntimeError):
             return True
             
-        if is_protected_path(entry_path):
+        if is_protected_path(Path(entry.path)):
             return True
 
         name = entry.name

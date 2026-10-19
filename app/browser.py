@@ -184,7 +184,6 @@ def base_directories() -> List[Path]:
     p = Path(local_env)
     try:
         if p.exists() and p.is_dir():
-            # Resolvemos para evitar trampas de symlink en la base
             path_local = p.resolve(strict=True)
             if is_safe_to_modify(path_local) and not is_protected_path(path_local):
                 return [path_local]
@@ -207,7 +206,7 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     """Filtro de seguridad: descarta entradas si violan las políticas de archivos o seguridad."""
     if _is_excluded_file(entry.name): return True
     path_str = entry.path
-    if len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS): return True
+    if len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS) or any(ord(c) < 32 for c in path_str): return True
     
     try:
         if entry.is_symlink() or ctx.is_junction(path_str) or _is_system_hidden(path_str, ctx.kernel32): return True
@@ -264,6 +263,7 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
     
     try:
         real = str(candidate.resolve(strict=True))
+        if any(ord(c) < 32 for c in real): return False
         if not _is_within_sandbox(os.path.normpath(real), base_abs_str): return False
         if not is_safe_to_modify(Path(real)) or is_protected_path(Path(real)): return False
         return not (candidate.is_symlink() or _IS_JUNCTION_FN(real) or _is_excluded_file(candidate.name))
