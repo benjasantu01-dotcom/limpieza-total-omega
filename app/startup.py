@@ -129,8 +129,7 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae la ruta absoluta dentro de comillas desde una línea de comandos.
-        Verifica integridad contra `safety.py` y evita saltos de directorio ('..').
+        Extracts the path inside quotes from a command line.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
@@ -273,7 +272,6 @@ def _process_folder_entry(entry: os.DirEntry) -> Optional[StartupEntry]:
         if not entry.is_file(follow_symlinks=False) or entry.is_symlink():
             return None
         
-        # Validar si el nombre de archivo es accesible
         entry_path = entry.path
         if not isinstance(entry_path, str):
             return None
@@ -320,7 +318,6 @@ def _is_registry_entry_safe(entry_name: str, entry_command: str, seen_commands: 
     if not isinstance(entry_name, str) or not isinstance(entry_command, str):
         return False
     
-    # Validar caracteres de control ocultos (ASCII < 32) en el registro
     if any(ord(c) < 32 for c in entry_command):
         return False
         
@@ -401,7 +398,6 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
             capture_output=True, text=True, timeout=10, check=False
         )
         if process.returncode == 0 and process.stdout:
-            # Filtrar posibles líneas vacías o advertencias de PowerShell en el stdout
             stdout_content = "\n".join([line for line in process.stdout.splitlines() if line.strip()])
             return parse_registry_csv(stdout_content)
     except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError):

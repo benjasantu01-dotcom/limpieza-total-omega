@@ -137,27 +137,27 @@ APP_TAGLINE: Final[str] = "Limpieza y seguridad, en un solo lugar"
 APP_VERSION: Final[str] = "2.1.0"
 
 # Paleta Maestra: Hexadecimales con alta fidelidad para el modo oscuro
-C_BACKGROUND: Final[ColorHex] = "#0a0e17"
-C_SURFACE: Final[ColorHex] = "#141b2d"
-C_SURFACE_ALT: Final[ColorHex] = "#1e2740"
-C_SURFACE_HOVER: Final[ColorHex] = "#28324f"
-C_CARD: Final[ColorHex] = "#182135"
-C_ACCENT: Final[ColorHex] = "#00f0c0"
+C_BACKGROUND: Final[ColorHex] = "#0a0e17"    # Contenedor raíz
+C_SURFACE: Final[ColorHex] = "#141b2d"       # Paneles principales
+C_SURFACE_ALT: Final[ColorHex] = "#1e2740"    # Áreas de énfasis secundario
+C_SURFACE_HOVER: Final[ColorHex] = "#28324f"  # Interacción (hover)
+C_CARD: Final[ColorHex] = "#182135"          # Fondo de elementos unitarios
+C_ACCENT: Final[ColorHex] = "#00f0c0"        # Color principal de marca (verde cian)
 C_ACCENT_HOVER: Final[ColorHex] = "#00d0a4"
 C_ACCENT_DIM: Final[ColorHex] = "#0a6b58"
-C_ACCENT2: Final[ColorHex] = "#7c5cff"
+C_ACCENT2: Final[ColorHex] = "#7c5cff"       # Violeta para secundarios
 C_ACCENT2_HOVER: Final[ColorHex] = "#6a48f0"
-C_ACCENT3: Final[ColorHex] = "#ff2d78"
-C_SUCCESS: Final[ColorHex] = "#22e39a"
-C_INFO: Final[ColorHex] = "#38bdf8"
-C_WARNING: Final[ColorHex] = "#ffb020"
-C_DANGER: Final[ColorHex] = "#ff4757"
+C_ACCENT3: Final[ColorHex] = "#ff2d78"       # Magenta para errores/peligro
+C_SUCCESS: Final[ColorHex] = "#22e39a"       # Estado operativo óptimo
+C_INFO: Final[ColorHex] = "#38bdf8"          # Estado informativo
+C_WARNING: Final[ColorHex] = "#ffb020"       # Estado de advertencia
+C_DANGER: Final[ColorHex] = "#ff4757"        # Estado de peligro crítico
 C_DANGER_HOVER: Final[ColorHex] = "#e02e3d"
-C_TEXT: Final[ColorHex] = "#f0f6fc"
-C_TEXT_MUTED: Final[ColorHex] = "#94a3b8"
-C_TEXT_DIM: Final[ColorHex] = "#5c6b85"
-C_BORDER: Final[ColorHex] = "#2a3654"
-C_GLOW: Final[ColorHex] = "#00f0c0"
+C_TEXT: Final[ColorHex] = "#f0f6fc"          # Texto primario
+C_TEXT_MUTED: Final[ColorHex] = "#94a3b8"    # Texto secundario/deshabilitado
+C_TEXT_DIM: Final[ColorHex] = "#5c6b85"      # Texto decorativo/poca jerarquía
+C_BORDER: Final[ColorHex] = "#2a3654"        # Bordes de separación
+C_GLOW: Final[ColorHex] = "#00f0c0"          # Efectos de luz
 
 PALETTE: Final[PaletteDict] = MappingProxyType({
     "background": C_BACKGROUND, "surface": C_SURFACE, "surface_alt": C_SURFACE_ALT,
@@ -243,7 +243,7 @@ def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588
     except (TypeError, ValueError): return empty * max(1, int(width))
 
 @lru_cache(maxsize=512)
-def _hex_to_rgb(value: str) -> RGBTuple:
+def _hex_to_rgb(value: ColorHex) -> RGBTuple:
     """Convierte un string hexadecimal (e.g., '#FF0000') a tupla RGB (255, 0, 0)."""
     try:
         val = int(value.lstrip('#'), 16)
@@ -256,7 +256,7 @@ def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
     return "#{:02x}{:02x}{:02x}".format(*[max(0, min(255, int(c))) for c in rgb])
 
 @lru_cache(maxsize=256)
-def blend(start: str, end: str, ratio: float) -> ColorHex:
+def blend(start: ColorHex, end: ColorHex, ratio: float) -> ColorHex:
     """Realiza una interpolación lineal (lerp) entre dos colores basado en un ratio [0.0, 1.0]."""
     try:
         r1, g1, b1 = _hex_to_rgb(start)

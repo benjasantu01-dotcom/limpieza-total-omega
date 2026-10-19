@@ -53,15 +53,18 @@ PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|', '"'}
 @dataclass
 class ScanContext:
     """
-    Estado compartido durante una operación de escaneo recursivo.
+    Contenedor de estado compartido durante el recorrido recursivo del árbol de archivos.
     
     Attributes:
-        sandbox_base_norm: Ruta base normalizada (LOCALAPPDATA) para restringir el alcance.
-        kernel32: Instancia de la DLL para llamadas de sistema Win32 (solo en Windows).
-        is_junction: Callback para detectar puntos de reparse (Junctions).
-        visited_files: Set de tuplas (device_id, inode_id) para detectar duplicados (hardlinks).
-        visited_dirs: Set de rutas para evitar bucles de directorios.
-        safety_cache: Memoización de verificaciones de seguridad de `safety.py`.
+        sandbox_base_norm: Ruta normalizada que actúa como raíz del perfil de usuario
+                           para evitar escapes de directorio.
+        kernel32: Handle a la librería de sistema para verificar atributos de archivos
+                  ocultos o del sistema (solo Windows).
+        is_junction: Función inyectada para detectar puntos de reparse (Junctions/Symlinks).
+        visited_files: Set de tuplas (dev, ino) para evitar contar hardlinks duplicados.
+        visited_dirs: Set de rutas absolutas ya procesadas para detectar ciclos.
+        safety_cache: Diccionario para memorizar resultados de `is_safe_to_modify` y reducir
+                      llamadas redundantes al módulo de seguridad.
     """
     sandbox_base_norm: str
     kernel32: Optional[ctypes.WinDLL]
@@ -221,7 +224,10 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     return False
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
-    """Algoritmo de escaneo recursivo optimizado con scandir para reducir syscalls."""
+    """
+    Algoritmo de escaneo recursivo. 
+    Usa os.scandir() para minimizar el número de syscalls al acceder a atributos de archivos.
+    """
     if depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN: 
         return ScanResult(0, True)
     
