@@ -1316,6 +1316,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Realiza el escaneo integral de salud del sistema."""
         self._lazy_init_health_ui()
 
+        # Digest de estado para evitar re-cálculos si no hubo cambios en módulos base
         current_digest = (
             len(self._get_cached("junk") or []),
             len(self._get_cached("suspicions") or []),
@@ -1334,6 +1335,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             metrics, snapshot, _ = self._compile_metrics()
             score_result = healthscore.compute_score(metrics)
 
+            # Memoización de contexto de asistente para evitar procesamiento redundante
             if self._last_compilation_digest != current_digest:
                 self.assistant_context = assistant.build_context(
                     metrics=metrics, 

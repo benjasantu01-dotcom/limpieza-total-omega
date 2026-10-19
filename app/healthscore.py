@@ -378,19 +378,16 @@ def summarize(result: HealthResult | None) -> List[str]:
     if not isinstance(result, HealthResult): 
         return ["Error: Informe de salud no disponible."]
     
-    lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
+    lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for entry in _PIPELINE:
         p = result.breakdown.get(entry.area, 0)
         lines.append(f"  {entry.area.capitalize():<12} {p:>2}/{entry.weight:<2} [{_render_bar(p, entry.weight)}]")
     
-    recs = []
-    for r in result.recommendations:
-        sanitized = _sanitize_msg(str(r))
-        if sanitized:
-            recs.append(sanitized)
+    recs = [_sanitize_msg(str(r)) for r in result.recommendations]
+    recs = [r for r in recs if r]
     
     if not recs:
         recs = ["No hay advertencias activas."]
         
-    lines.extend(("", "Recomendaciones:", *(f"  - {s}" for s in recs)))
+    lines.extend(("", "Recomendaciones:", *[f"  - {s}" for s in recs]))
     return lines

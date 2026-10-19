@@ -157,6 +157,13 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     Filtro de seguridad para determinar si un archivo/carpeta debe omitirse.
     Verifica enlaces simbólicos, protección de sistema y caracteres sospechosos.
     """
+    name = entry.name
+    # Validación rápida pre-I/O: caracteres sospechosos y nulos
+    if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
+        return True
+    if any(char in name for char in ('<', '>', ':', '"', '|', '?', '*')):
+        return True
+
     try:
         if entry.is_symlink():
             return True
@@ -169,12 +176,6 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
             return True
             
         if is_protected_path(Path(entry.path)):
-            return True
-
-        name = entry.name
-        if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
-            return True
-        if any(char in name for char in ('<', '>', ':', '"', '|', '?', '*')):
             return True
         
         if os.name == 'nt':

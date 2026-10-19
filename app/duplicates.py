@@ -50,6 +50,7 @@ ERROR_SHARING_VIOLATION: int = 32
 ERROR_ACCESS_DENIED: int = 5
 
 _partial_cache: Dict[Path, str] = {}
+_full_hash_cache: Dict[Path, str] = {}
 
 def is_junction(path: Path) -> bool:
     """
@@ -149,6 +150,8 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     
     Retorna el hash hexadecimal o None si el archivo es inaccesible o inseguro.
     """
+    if path in _full_hash_cache:
+        return _full_hash_cache[path]
     if chunk_size <= 0 or not isinstance(path, Path) or not path.is_file():
         return None
     if not _safe_path_check(path):
@@ -158,7 +161,9 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
         with open(path, "rb") as f:
             while (chunk := f.read(chunk_size)):
                 hasher.update(chunk)
-        return hasher.hexdigest()
+        digest = hasher.hexdigest()
+        _full_hash_cache[path] = digest
+        return digest
     except (OSError, IOError, PermissionError, ValueError):
         return None
 
@@ -300,6 +305,7 @@ def _decide_hash_strategy_and_process(size_bytes: int, file_paths: List[Path]) -
 def find_duplicates(directories: Iterable[PathLike], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
     """Orquesta la detección de duplicados mediante recolección, filtrado y hashing."""
     _partial_cache.clear()
+    _full_hash_cache.clear()
     size_map = _collect_candidates(directories, min_size, skip_protected)
     groups: List[DuplicateGroup] = []
     for size, paths in size_map.items():
