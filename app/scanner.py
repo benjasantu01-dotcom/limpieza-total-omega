@@ -183,9 +183,8 @@ def _is_target_extension(name: str) -> bool:
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """
     Analiza si el nombre del archivo combina extensiones de documentos con ejecutables.
-    Técnica común para engañar usuarios mostrando iconos de archivo inofensivo.
     """
-    if path is None or not hasattr(path, 'name') or not path.name: return None
+    if path is None or not path.name: return None
     try:
         if DOUBLE_EXTENSION_RE.search(path.name):
             return Suspicion(path, "Doble extensión detectada como técnica de enmascaramiento", "warning")
@@ -196,7 +195,6 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """
     Detecta ejecutables recién descargados en carpetas volátiles (Downloads, Temp, Desktop).
-    El umbral de tiempo se define en SCAN_LIMITS.recent_hours.
     """
     if path is None or path.parent is None: return None
     try:
@@ -213,9 +211,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """
     Identifica binarios que utilizan nombres críticos del sistema pero residen fuera de %System32%.
-    Esta heurística detecta suplantación de procesos privilegiados.
     """
-    if path is None or not hasattr(path, 'name') or not path.name: return None
+    if path is None or not path.name: return None
     try:
         if path.name.lower() in SYSTEM_LOOKALIKES:
             if SYSTEM32_LOWER not in str(path).lower():
@@ -227,7 +224,6 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """
     Verifica si un ejecutable tiene tamaño 0 bytes.
-    Útil para descartar archivos corrompidos o creados por malware como marcadores de infección.
     """
     if path is None: return None
     try:
@@ -260,7 +256,6 @@ class Scanner:
     @lru_cache(maxsize=2048)
     def _is_inside_base_root(self, entry_path: str) -> bool:
         try:
-            # Usar absolute() para evitar seguir symlinks durante la comparación de integridad
             canonical_path: str = str(Path(entry_path).absolute()).lower()
             return canonical_path.startswith(self.base_root_str)
         except (OSError, RuntimeError):
@@ -277,10 +272,9 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
-        Valida que una entrada sea apta para el escaneo, descartando enlaces,
-        rutas fuera de la raíz, directorios protegidos o nombres inválidos.
+        Valida que una entrada sea apta para el escaneo.
         """
-        if entry is None or not hasattr(entry, 'path') or not entry.path:
+        if entry is None or not entry.path:
             return False
         
         path_str: str = entry.path
@@ -308,7 +302,7 @@ class Scanner:
 
     def _handle_directory(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
         """Agrega un directorio a la pila de escaneo si cumple con los criterios de profundidad."""
-        if current_depth >= SCAN_LIMITS.max_depth or entry is None or not hasattr(entry, 'path') or not entry.path:
+        if current_depth >= SCAN_LIMITS.max_depth or entry is None or not entry.path:
             return
         
         path_lower: str = entry.path.lower()
@@ -324,7 +318,7 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
         """Procesa una entrada individual aplicando las heurísticas."""
-        if entry is None or not hasattr(entry, 'path') or not entry.path:
+        if entry is None or not entry.path:
             return
             
         try:
@@ -361,7 +355,7 @@ class Scanner:
                 finding: Optional[Suspicion] = check_fn(path, entry, self.now_ts)
                 if finding is not None:
                     self.results.append(finding)
-            except (OSError, PermissionError, AttributeError, ValueError, TypeError, FileNotFoundError) as e:
+            except (Exception) as e:
                 logger.debug(f"Heurística {check_fn.__name__} falló en {path}: {e}")
 
 def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None) -> ScanResult:
@@ -378,7 +372,7 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
         try:
             res = check_fn(path, entry, now_ts)
             if res is not None: findings.append(res)
-        except (OSError, PermissionError, AttributeError, ValueError, TypeError, FileNotFoundError) as e:
+        except (Exception) as e:
             logger.debug(f"Heurística individual {check_fn.__name__} fallida en {path}: {e}")
     return findings
 

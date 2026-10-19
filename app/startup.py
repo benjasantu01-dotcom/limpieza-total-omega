@@ -358,6 +358,8 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
         
         for row in reader:
             if not isinstance(row, dict): continue
+            
+            # Validar que los campos existan antes de acceder
             raw_val_name = row.get("Name")
             raw_val_cmd = row.get("Value")
             
@@ -369,7 +371,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
                 parsed_entries.append(StartupEntry(name=raw_val_name.strip(), command=raw_val_cmd.strip(), source=source))
             
     except (csv.Error, OSError, ValueError, TypeError):
-        return []
+        return parsed_entries
     return parsed_entries
 
 
@@ -398,9 +400,11 @@ def entries_from_registry(keys: RegistryKeySet = REGISTRY_RUN_KEYS) -> StartupEn
             ["powershell", "-NoProfile", "-NonInteractive", "-Command", ps_script],
             capture_output=True, text=True, timeout=10, check=False
         )
-        if process.returncode == 0 and process.stdout:
-            stdout_content = "\n".join([line for line in process.stdout.splitlines() if line.strip()])
-            return parse_registry_csv(stdout_content)
+        if process.stdout:
+            # Filtramos líneas vacías o de encabezado CSV malformado
+            lines = [line.strip() for line in process.stdout.splitlines() if line.strip()]
+            if len(lines) > 1:
+                return parse_registry_csv("\n".join(lines))
     except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError):
         return []
     return []

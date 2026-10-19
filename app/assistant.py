@@ -135,6 +135,7 @@ def _get_safe_attr(obj: Any, name: str, default: Any = None) -> Any:
 def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
     """
     Decorador protector para manejadores de consulta (query handlers).
+    Valida la existencia de contexto y atrapa excepciones para evitar caídas de la interfaz.
     """
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
