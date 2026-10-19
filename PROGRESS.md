@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 27
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-18 | 110 | 8 | 29 | 13 | 124 |
-| 2026-10-19 | 90 | 8 | 21 | 14 | 87 |
+| 2026-10-18 | 110 | 8 | 29 | 13 | 120 |
+| 2026-10-19 | 93 | 8 | 21 | 14 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,16 +25,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - robustez ante casos límite: **40**
 - manejo de errores y validación de entradas: **39**
 - rendimiento: **37**
-- seguridad defensiva: **34**
+- seguridad defensiva: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **19**
+- `duplicates.py`: **18**
 - `settings.py`: **17**
-- `duplicates.py`: **17**
-- `diskreport.py`: **16**
+- `diskreport.py`: **17**
+- `browser.py`: **17**
 - `safety.py`: **16**
-- `browser.py`: **16**
 - `assistant.py`: **15**
 - `healthscore.py`: **15**
 - `branding.py`: **14**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-19T09:27:00` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_safe_path_check` y `_collect_candidates` para garantizar que la resolución de rutas mediante `resolve()` no escape a directorios fuera del alcance permitido, validando explícitamente que la ruta resuelta mantenga la integridad de las protecciones del sistema, mitigando riesgos de ataques por enlaces simbólicos o rutas maliciosas.
+- `2026-10-19T09:26:51` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad de `walk_files` y `largest_folders` añadiendo una validación explícita mediante `is_protected_path` al inicio de cada iteración de los directorios, garantizando que el escaneo no se desvíe ni siquiera en condiciones de errores del sistema de archivos, siguiendo el enfoque defensivo.
+- `2026-10-19T09:26:26` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `browser.py` al implementar un chequeo de integridad adicional para rutas (`Path.samefile`) al validar la caja de arena (sandbox), evitando que ataques de links simbólicos o de reparse que apunten fuera de `LOCALAPPDATA` logren engañar a la validación de prefijos de cadena (`startswith`).
 - `2026-10-19T09:17:58` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva de `assistant.py` al restringir estrictamente la exposición de datos del sistema mediante la adición de una validación explícita en `_build_payload`, asegurando que `SYSTEM_PROMPT` no sea manipulado y que el contenido del contexto pase por `_ensure_safe_text` antes de cualquier serialización, previniendo inyecciones de datos en el prompt remoto.
 - `2026-10-19T09:07:04` **safety.py** (robustez ante casos límite): Mejoré la robustez ante casos límite de integridad del sistema de archivos añadiendo un chequeo explícito de "bloqueo exclusivo" (file locking) mediante el manejo de manejadores Win32 antes de intentar cualquier operación de metadatos, lo que previene errores de acceso denegado en archivos que están siendo procesados por servicios del sistema (como los de actualización de Windows) sin recurrir a excepciones pesadas.
 - `2026-10-19T09:06:15` **quarantine.py** (robustez ante casos límite): Se introdujo una validación robusta para prevenir condiciones de "Race Condition" y errores de I/O en `_atomic_isolate_file` al verificar la existencia y el estado del directorio destino antes de iniciar la transferencia de archivos, añadiendo consistencia ante interrupciones.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-19T08:16:39` **main.py** (rendimiento): Se implementó un mecanismo de **invalidación selectiva de caché mediante digests de estado** en `on_full_analysis`, evitando el re-cálculo y re-renderizado de la UI de salud si los datos subyacentes no han cambiado, lo que reduce significativamente la carga de procesamiento en cada refresco.
 - `2026-10-19T08:15:41` **healthscore.py** (rendimiento): Se ha optimizado la generación del informe de salud reemplazando la construcción manual de strings dentro de bucles por el uso de `str.join()` y pre-cálculos de formateo, reduciendo la sobrecarga de asignaciones de memoria y mejorando la eficiencia del bucle de resumen.
 - `2026-10-19T08:15:11` **duplicates.py** (rendimiento): Se implementó un mecanismo de caché para el resultado del hash completo (`hash_file`) en `_process_large_file_subset`, evitando recalcular el SHA256 de archivos idénticos dentro del mismo grupo de tamaño y logrando una reducción drástica de lecturas de disco innecesarias durante la fase final.
-- `2026-10-19T08:14:45` **diskreport.py** (rendimiento): Optimicé `_is_excluded_path` moviendo la validación de caracteres prohibidos y el chequeo de `SUSPICIOUS_CHARS` antes de realizar llamadas costosas al sistema de archivos (`Path.resolve`), reduciendo drásticamente las operaciones I/O en cada iteración del escaneo.
-- `2026-10-19T08:05:53` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas costosas a `os.path.normcase` y `os.path.normpath` dentro de cada iteración del bucle, y eliminando la redundancia de `resolve(strict=True)` al procesar rutas, lo cual reduce drásticamente el uso de CPU durante escaneos masivos.
-- `2026-10-19T08:05:35` **branding.py** (rendimiento): Se optimizó el acceso a constantes de color y configuración mediante la eliminación de llamadas innecesarias a `get()` y `strip()` en los métodos de acceso (`color`, `font_size`, `icon`, `tab_label`), aprovechando que las estructuras base son inmutables y pre-validadas, reduciendo la carga de CPU en renderizados recurrentes.

@@ -302,6 +302,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     
     while stack:
         current_dir = stack.pop()
+        if skip_protected and is_protected_path(Path(current_dir)):
+            continue
+            
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
@@ -348,6 +351,8 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
+            if skip_protected and is_protected_path(path):
+                continue
             rel = path.relative_to(root)
             if not rel.parts: continue
             top_path = str(root / rel.parts[0])

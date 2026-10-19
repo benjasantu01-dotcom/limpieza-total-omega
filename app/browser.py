@@ -55,7 +55,7 @@ class ScanContext:
     Contenedor de estado compartido durante el recorrido recursivo del árbol de archivos.
     
     Attributes:
-        sandbox_base_norm: Ruta normalizada que actúa como raíz del perfil de usuario
+        sandbox_base: Path objeto de la raíz del perfil de usuario
                            para evitar escapes de directorio.
         kernel32: Handle a la librería de sistema para verificar atributos de archivos
                   ocultos o del sistema (solo Windows).
@@ -63,7 +63,7 @@ class ScanContext:
         visited_files: Set de tuplas (dev, ino) para evitar contar hardlinks duplicados.
         visited_dirs: Set de rutas absolutas ya procesadas para detectar ciclos.
     """
-    sandbox_base_norm: str
+    sandbox_base: Path
     kernel32: Optional[ctypes.WinDLL]
     is_junction: JunctionChecker
     visited_files: Set[tuple[int, int]]
@@ -171,9 +171,15 @@ def _is_unc_path(path_str: Optional[str]) -> TypeGuard[str]:
     """Valida si la ruta es una ubicación de red (UNC), restringiendo su procesamiento."""
     return isinstance(path_str, str) and (path_str.startswith(r"\\") or path_str.startswith("//"))
 
-def _is_within_sandbox(target_norm: str, base_norm: str) -> bool:
+def _is_within_sandbox(target: Path, base: Path) -> bool:
     """Asegura que una ruta escaneada pertenezca al directorio base del perfil del usuario."""
-    return target_norm.startswith(base_norm)
+    try:
+        # Resolvemos rutas para evitar trucos de symlinks o junctions fuera del scope
+        t_res = target.resolve(strict=False)
+        b_res = base.resolve(strict=True)
+        return str(t_res).startswith(str(b_res))
+    except (OSError, RuntimeError):
+        return False
 
 def base_directories() -> List[Path]:
     """Retorna las rutas base autorizadas (LOCALAPPDATA) para realizar el escaneo."""
@@ -259,19 +265,18 @@ def directory_size(path: Optional[OSPath]) -> int:
     if not is_safe_to_modify(resolved) or is_protected_path(resolved): return 0
     
     res_str = str(resolved)
-    ctx = ScanContext(os.path.normcase(res_str), _get_kernel32(), _IS_JUNCTION_FN, set(), set())
+    ctx = ScanContext(Path(res_str), _get_kernel32(), _IS_JUNCTION_FN, set(), set())
     return _sum_directory_recursive(res_str, ctx, 0).bytes_found
 
 @safe_path_operation(False)
-def _is_valid_cache_path(candidate: Path, base_abs_norm: str) -> bool:
+def _is_valid_cache_path(candidate: Path, base: Path) -> bool:
     """Valida la integridad de un directorio de caché como candidato para escaneo."""
     if not candidate.exists() or not candidate.is_dir() or not os.access(candidate, os.R_OK): return False
     
     try:
         real = candidate.resolve(strict=True)
         if not is_safe_to_modify(real) or is_protected_path(real): return False
-        real_norm = os.path.normcase(str(real))
-        if not _is_within_sandbox(real_norm, base_abs_norm): return False
+        if not _is_within_sandbox(real, base): return False
         return not (candidate.is_symlink() or _IS_JUNCTION_FN(str(real)) or _is_excluded_file(candidate.name))
     except (OSError, RuntimeError): return False
 
@@ -296,11 +301,11 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         if not base.exists(): continue
         try:
             real_base = base.resolve(strict=True)
-            ctx = ScanContext(os.path.normcase(str(real_base)), kernel, _IS_JUNCTION_FN, set(), set())
+            ctx = ScanContext(real_base, kernel, _IS_JUNCTION_FN, set(), set())
             
             for browser_key, relative_path in browser_map.items():
                 candidate = _resolve_browser_path(real_base, relative_path)
-                if candidate != Path() and _is_valid_cache_path(candidate, ctx.sandbox_base_norm):
+                if candidate != Path() and _is_valid_cache_path(candidate, ctx.sandbox_base):
                     scan_res = _sum_directory_recursive(str(candidate), ctx, 0)
                     if scan_res.success and scan_res.bytes_found > 0:
                         found.append(BrowserCache(str(browser_key), candidate, scan_res.bytes_found))
