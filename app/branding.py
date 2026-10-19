@@ -417,12 +417,11 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except Exception: pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[ColorHex, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una barra horizontal con un gradiente interpolado."""
+    """Dibuja una barra horizontal con un gradiente interpolado optimizado por segmentos."""
     try:
         w = max(1, int(width))
         h = max(1, int(height))
-        segments = get_gradient_segments(w)
-        for s in segments:
+        for s in get_gradient_segments(w, stops):
             canvas.create_line(canvas_x + s.start_index, canvas_y, canvas_x + s.end_index, canvas_y, fill=s.hex_color, width=h)
     except Exception: pass
 

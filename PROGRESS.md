@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **201** (39.9% de aceptación)
+- Mejoras aceptadas: **200** (39.7% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 48
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 28
 - Sin respuesta de la IA (error o límite): 209
 
@@ -16,36 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-18 | 83 | 7 | 22 | 10 | 90 |
-| 2026-10-19 | 118 | 11 | 26 | 18 | 119 |
+| 2026-10-18 | 81 | 7 | 22 | 9 | 89 |
+| 2026-10-19 | 119 | 11 | 27 | 19 | 120 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **44**
-- robustez ante casos límite: **37**
-- rendimiento: **29**
+- robustez ante casos límite: **35**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **18**
 - `quarantine.py`: **18**
 - `browser.py`: **18**
 - `settings.py`: **17**
 - `diskreport.py`: **17**
-- `memory.py`: **15**
+- `duplicates.py`: **17**
 - `safety.py`: **15**
 - `healthscore.py`: **15**
 - `main.py`: **14**
+- `memory.py`: **14**
+- `branding.py`: **13**
 - `assistant.py`: **13**
-- `branding.py`: **12**
 - `scanner.py`: **12**
 - `organizer.py`: **10**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-19T12:30:55` **branding.py** (rendimiento): Se optimizó el renderizado de la barra de gradiente `draw_gradient_bar` reemplazando la creación individual de líneas por una segmentación eficiente, lo cual reduce drásticamente el número de objetos en el `Canvas` de `customtkinter` y mejora la performance en redibujados frecuentes.
 - `2026-10-19T12:21:01` **scanner.py** (legibilidad y documentación): He mejorado la documentación técnica agregando descripciones detalladas en los docstrings de los métodos del motor `Scanner` y corrigiendo la claridad de las restricciones de seguridad, facilitando la comprensión del flujo de datos en el análisis estático.
 - `2026-10-19T12:10:00` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la adición de Type Hints detallados, estandarización de docstrings siguiendo convenciones de Google Style, y la refactorización de `_process_directory` para reducir su complejidad ciclomática mediante la extracción de la lógica de evaluación de archivos en `_is_junk_file`.
 - `2026-10-19T12:00:40` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones internas y se han añadido type hints más precisos en los retornos de las funciones de filtrado, clarificando el propósito de cada etapa del proceso de detección.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-19T11:38:31` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` mediante la validación explícita de tipos, capturando excepciones específicas y verificando el estado del sistema de archivos antes de cada operación, evitando así fallos silenciosos ante entradas malformadas.
 - `2026-10-19T11:31:25` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_windows_process_csv` añadiendo una validación explícita para evitar errores de tipo si `raw_csv_text` contiene datos inesperados y asegurando que las líneas vacías o mal formadas se omitan limpiamente sin interrumpir el flujo del generador.
 - `2026-10-19T11:29:06` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `summarize` reemplazando los `try-except` genéricos que silenciaban errores de lógica por validaciones explícitas de estado, asegurando que el pipeline siempre opere con datos consistentes sin ocultar fallos de ejecución.
-- `2026-10-19T11:28:26` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` mediante la validación explícita de tipos y estados, previniendo excepciones ante grupos malformados o rutas inaccesibles que podrían interrumpir el flujo de la aplicación.
