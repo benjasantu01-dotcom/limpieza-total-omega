@@ -1033,6 +1033,10 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             if f.name == MANIFEST_NAME or is_protected_path(f):
                 continue
             
+            # Validación estricta de sandbox para cada ítem candidato
+            if not is_within_directory(f, quarantine_root):
+                continue
+
             if f.name in item_map:
                 if _is_item_purgable(f, item_map[f.name]):
                     purgado_ids.add(item_map[f.name].item_id)

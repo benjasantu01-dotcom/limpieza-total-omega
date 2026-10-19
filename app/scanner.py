@@ -260,8 +260,9 @@ class Scanner:
     @lru_cache(maxsize=2048)
     def _is_inside_base_root(self, entry_path: str) -> bool:
         try:
-            resolved: str = str(Path(entry_path).resolve(strict=False)).lower()
-            return resolved.startswith(self.base_root_str)
+            # Usar absolute() para evitar seguir symlinks durante la comparación de integridad
+            canonical_path: str = str(Path(entry_path).absolute()).lower()
+            return canonical_path.startswith(self.base_root_str)
         except (OSError, RuntimeError):
             return False
 

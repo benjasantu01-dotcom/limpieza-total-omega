@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Mejoras aceptadas: **209** (41.5% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 50
+- Rechazadas por guardia de seguridad: 51
 - Sin cambios (nada sustancial que mejorar): 28
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-18 | 110 | 8 | 29 | 13 | 116 |
-| 2026-10-19 | 96 | 8 | 21 | 15 | 88 |
+| 2026-10-18 | 110 | 8 | 29 | 13 | 112 |
+| 2026-10-19 | 99 | 8 | 22 | 15 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
+- seguridad defensiva: **43**
 - robustez ante casos límite: **40**
-- seguridad defensiva: **40**
 - manejo de errores y validación de entradas: **39**
 - rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
 - `duplicates.py`: **18**
 - `settings.py`: **17**
 - `diskreport.py`: **17**
+- `safety.py`: **17**
 - `browser.py`: **17**
 - `healthscore.py`: **16**
-- `safety.py`: **16**
 - `assistant.py`: **15**
 - `memory.py`: **15**
 - `branding.py`: **14**
 - `main.py`: **14**
+- `scanner.py`: **11**
 - `organizer.py`: **10**
-- `scanner.py`: **10**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-19T09:47:59` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `scanner.py` al reemplazar la resolución de rutas mediante `resolve(strict=False)` por `Path.absolute()` en el contexto de `Scanner`, evitando que la lógica intente seguir enlaces simbólicos o puntos de reanálisis durante la validación inicial, alineándolo estrictamente con las reglas de seguridad de no abandonar el ámbito permitido.
+- `2026-10-19T09:47:46` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `safety.py` al añadir un chequeo de integridad de las credenciales del usuario, asegurando que la validación no solo dependa de atributos del archivo, sino también de que el proceso actual posea privilegios de acceso adecuados mediante `GetNamedSecurityInfoW` para detectar rutas cuyo propietario sea el grupo SYSTEM/LocalService, mitigando riesgos de manipulación accidental de archivos críticos del núcleo antes de la operación.
+- `2026-10-19T09:46:36` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `purge_all` implementando una validación estricta de rutas mediante `is_within_directory` para garantizar que la operación de purgado nunca escape del directorio de cuarentena, protegiendo contra posibles manipulaciones del sistema de archivos.
 - `2026-10-19T09:38:51` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_process_from_pid` eliminando el uso de `abspath` (que resuelve dinámicamente según el directorio de trabajo actual) y reemplazándolo por un chequeo directo de la ruta del ejecutable obtenido del sistema, evitando así posibles redirecciones o ambigüedades en la resolución de rutas relativas.
 - `2026-10-19T09:38:25` **main.py** (seguridad defensiva): Se introdujo una validación explícita de `Path.exists()` y `is_dir()` antes de iniciar operaciones de escaneo en `on_disk_analysis` para prevenir excepciones al intentar acceder a rutas inexistentes o puntos de reparse inestables, reforzando la seguridad defensiva.
 - `2026-10-19T09:36:11` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del motor de salud impidiendo que los mensajes de las reglas de diagnóstico incluyan rutas de archivos (aunque sean parciales) o información técnica potencialmente sensible, aplicando un filtro de "blocklist" más riguroso y validando explícitamente los mensajes tras la ejecución de las factories.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-19T08:57:00` **main.py** (robustez ante casos límite): Se introdujo una gestión robusta de estados de ejecución asíncrona mediante un semáforo de bloqueo (`self._worker_lock`) en el pool de hilos, evitando condiciones de carrera al procesar múltiples tareas de análisis pesado que podrían entrar en conflicto o saturar la UI.
 - `2026-10-19T08:55:23` **duplicates.py** (robustez ante casos límite): Se introdujo una gestión robusta de errores en `_collect_candidates` para prevenir que fallos imprevistos al leer atributos de archivos (como estados de "archivo no encontrado" en condiciones de carrera) interrumpan el escaneo de directorios.
 - `2026-10-19T08:46:18` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante rutas inexistentes y permisos denegados en `detect_profiles` añadiendo validaciones granulares antes de iniciar la recursión pesada, previniendo que una sola ruta mal formada o con permisos restringidos afecte la integridad del escaneo de otros navegadores.
-- `2026-10-19T08:45:54` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y manipulación de rutas, asegurando que si `destination` es una ruta de sistema, un directorio existente, o si la sanitización resulta en una ruta inválida/protegida, la función retorne `None` de forma segura sin intentar operaciones de escritura en disco.
-- `2026-10-19T08:45:24` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados de sistema inesperados mediante la implementación de `_is_nan_or_inf` para validar métricas (evitando errores en los cálculos de `SystemContext`), y se añadió un manejo de errores más estricto en la ingesta para asegurar que cualquier dato corrupto se descarte silenciosamente en lugar de comprometer la integridad del contexto.
-- `2026-10-19T08:24:55` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` evitando el costo innecesario de `is_protected_path` (que implica acceso a disco y resolución de rutas) para procesos cuyo tamaño de memoria ya fue descartado por los filtros básicos, moviendo la validación de seguridad a la última etapa del filtrado.
