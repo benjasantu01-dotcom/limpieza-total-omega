@@ -510,3 +510,62 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-19T08:27:57` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
 - `2026-10-19T08:27:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-19T08:27:57` Corrida terminada. Total usado hoy: 200.
+- `2026-10-19T08:34:36` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-10-19T08:35:22` Tests FALLARON:
+```
+ 72%]
+.................................................F...................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_____________________ test_drive_root_is_always_protected ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_drive_root_is_always_prot0')
+
+    def test_drive_root_is_always_protected(tmp_path):
+        # tmp_path.anchor es "/" en Linux y "C:\\" en Windows: sirve en los dos.
+        assert safety.is_drive_root(tmp_path.anchor)
+>       assert safety.is_protected_path(tmp_path.anchor)
+E       AssertionError: assert False
+E        +  where False = <function is_protected_path at 0x7fc177714400>('/')
+E        +    where <function is_protected_path at 0x7fc177714400> = safety.is_protected_path
+E        +    and   '/' = PosixPath('/tmp/pytest-of-runner/pytest-1/test_drive_root_is_always_prot0').anchor
+
+evolve/tests/test_safety.py:63: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_drive_root_is_always_protected - AssertionError: assert False
+ +  where False = <function is_protected_path at 0x7fc177714400>('/')
+ +    where <function is_protected_path at 0x7fc177714400> = safety.is_protected_path
+ +    and   '/' = PosixPath('/tmp/pytest-of-runner/pytest-1/test_drive_root_is_always_prot0').anchor
+1 failed, 298 passed in 1.57s
+
+```
+- `2026-10-19T08:35:22` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `is_protected_path` reemplazando la creación y conversión a `Path` dentro de un bucle de caché por una comparación directa de cadenas, eliminando el overhead de instanciar objetos `Path` y realizar llamadas a `stat()` en cada consulta.
+- `2026-10-19T08:35:46` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_relevant_extension, Scanner._is_reparse_point
+- `2026-10-19T08:36:10` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult, _Validators._check_path_safety, _Validators._is_safe_path, _Validators._validate_enum_str
+- `2026-10-19T08:36:23` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.59s
+
+```
+- `2026-10-19T08:36:23` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimizé la resolución de rutas en `StartupEntry` introduciendo un caché de tipo `set` para evitar procesos de resolución redundantes en rutas que ya se confirmaron como inexistentes o inválidas durante la sesión.
+- `2026-10-19T08:36:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-19T08:36:23` Corrida terminada. Total usado hoy: 204.
