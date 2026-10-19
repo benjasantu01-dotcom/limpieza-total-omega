@@ -106,15 +106,11 @@ def _is_file_locked(path: Path) -> bool:
     Verifica si un archivo está en uso por otro proceso mediante intento de apertura exclusiva.
     """
     try:
-        # Intentamos abrir en modo solo lectura compartido para verificar accesibilidad
         with open(path, "rb") as f:
-            # Si el archivo está vacío, no hay mucho que verificar
             return False
     except OSError as e:
-        # Se reporta como bloqueado si el SO deniega el acceso específicamente por uso compartido
         if hasattr(e, 'winerror') and e.winerror in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED):
             return True
-        # Ante cualquier otra excepción de IO, asumimos inaccesibilidad prudencial
         return True
     except (IOError, PermissionError, ValueError):
         return True
@@ -128,7 +124,6 @@ def _safe_path_check(path: Path) -> bool:
     """
     try:
         resolved = path.resolve()
-        # Verificamos que la ruta original y la resuelta sean seguras para lectura
         return (is_safe_to_modify(path) and 
                 not is_protected_path(path) and 
                 not is_junction(path) and
@@ -152,9 +147,12 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo usando bloques de 1MB.
     
-    Retorna el hash hexadecima o None si el archivo es inaccesible.
+    Retorna el hash hexadecima o None si el archivo es inaccesible o inseguro.
     """
     if chunk_size <= 0 or not isinstance(path, Path) or not path.is_file():
+        return None
+    # Verificación de seguridad adicional antes de abrir para lectura
+    if not _safe_path_check(path):
         return None
     try:
         digest = hashlib.sha256()
@@ -175,6 +173,9 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
     if not isinstance(path, Path) or path in _partial_cache:
         return _partial_cache.get(path)
     if read_bytes <= 0 or not path.is_file():
+        return None
+    # Verificación de seguridad adicional
+    if not _safe_path_check(path):
         return None
     try:
         with open(path, "rb") as f:

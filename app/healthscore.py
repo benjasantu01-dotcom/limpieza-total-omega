@@ -382,7 +382,13 @@ def summarize(result: HealthResult | None) -> List[str]:
         p = result.breakdown.get(entry.area, 0)
         lines.append(f"  {entry.area.capitalize():<12} {p:>2}/{entry.weight:<2} [{_render_bar(p, entry.weight)}]")
     
-    recs = [sanitized for r in result.recommendations if (sanitized := _sanitize_msg(str(r))) and len(sanitized) > 0]
+    # Sanitización defensiva de las recomendaciones finales
+    recs = []
+    for r in result.recommendations:
+        sanitized = _sanitize_msg(str(r))
+        if sanitized:
+            recs.append(sanitized)
+    
     if not recs:
         recs = ["No hay advertencias activas."]
         

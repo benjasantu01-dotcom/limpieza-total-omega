@@ -176,8 +176,10 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         if os.name == 'nt':
             try:
                 st = entry.stat(follow_symlinks=False)
+                # 0x400: FILE_ATTRIBUTE_REPARSE_POINT, 0x100: FILE_ATTRIBUTE_OFFLINE
+                # 0x4000: FILE_ATTRIBUTE_REPARSE_POINT (alternativa), validamos atributos de reparse
                 if hasattr(st, 'st_file_attributes'):
-                    if bool(st.st_file_attributes & 0x400) or bool(st.st_file_attributes & 0x100):
+                    if st.st_file_attributes & 0x400:
                         return True
             except (OSError, PermissionError):
                 return True

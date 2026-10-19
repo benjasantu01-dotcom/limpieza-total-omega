@@ -277,6 +277,16 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         safety.ensure_safe_to_modify(p)
         return p
 
+    def _check_writable_dir(self, path: Path) -> bool:
+        """Verifica si el directorio permite escritura real."""
+        try:
+            test_file = path / ".test_write"
+            test_file.touch()
+            test_file.unlink()
+            return True
+        except (OSError, PermissionError):
+            return False
+
     def _init_component_registry(self) -> None:
         """Inicializa estructuras de datos, cachés, colas de log y estados de UI."""
         self._initialized_tabs: Dict[str, bool] = {name: False for name in TABS}
@@ -402,7 +412,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _ensure_path_writable_and_clean(self, path: Union[str, Path]) -> None:
         """Verifica la seguridad y limpieza de la ruta para prevenir escrituras malintencionadas."""
-        self._ensure_safe_path_for_action(path)
+        p = self._ensure_safe_path_for_action(path)
+        if not self._check_writable_dir(p):
+            raise safety.UnsafePathError(f"Directorio no escribible: {p}")
 
     def _init_window_properties(self) -> None:
         """Configura los parámetros iniciales de la ventana (título, geometría, branding)."""
