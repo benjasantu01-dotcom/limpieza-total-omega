@@ -324,10 +324,7 @@ def _validate_response_length(text: Any) -> str:
     return text[:_MAX_TEXT_LENGTH]
 
 def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
-    """
-    Valida recursivamente la estructura del JSON remoto.
-    Previene inyecciones de complejidad mediante límites de profundidad y tamaño de colecciones.
-    """
+    """Valida recursivamente la estructura del JSON remoto evitando inyecciones."""
     if depth > _MAX_NESTING_DEPTH: return False
     if val is None or isinstance(val, (int, float, bool, str)): return True
     if isinstance(val, (list, tuple, set)):
@@ -339,10 +336,7 @@ def _is_safe_payload_structure(val: Any, depth: int = 0) -> bool:
     return False
 
 def _is_input_too_deep_or_complex(val: Any, depth: int = 0) -> bool:
-    """
-    Detecta si un objeto de entrada excede la profundidad permitida o límites de colección.
-    Utilizada para sanitizar datos externos antes de ser procesados por la lógica de negocio.
-    """
+    """Detecta si un objeto excede la profundidad o límites de colección permitidos."""
     if depth > _MAX_NESTING_DEPTH: return True
     if val is None or isinstance(val, (int, float, bool, str)): return False
     if isinstance(val, (list, tuple, set)):

@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 import os
 import stat
-import time
+import hashlib
 from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
@@ -160,11 +160,11 @@ def _is_dir_safe(path: Path) -> bool:
 class _SettingsManager:
     """
     Singleton que gestiona el estado de la configuración.
-    - settings_cache: Almacena (mtime, size, dict) para evitar re-lecturas.
+    - settings_cache: Almacena (hash, dict) para evitar re-lecturas innecesarias.
     - path_cache: Mapea bases personalizadas a rutas de archivo resueltas.
     """
     def __init__(self) -> None:
-        self.settings_cache: dict[str, tuple[float, int, AppSettings]] = {}
+        self.settings_cache: dict[str, tuple[str, AppSettings]] = {}
         self.path_cache: dict[Optional[str], Path] = {}
 
     def clear(self) -> None:
@@ -326,60 +326,47 @@ def validate(raw_values: Any) -> AppSettings:
 def _is_file_secure_to_read(st: os.stat_result) -> bool:
     """Comprueba permisos, metadatos y asegura que no es un enlace simbólico o vínculo duro peligroso."""
     try:
-        # Check hard links to prevent substitution attacks
         if st.st_nlink != 1: return False
-        
-        # Check file type and permissions
         if not stat.S_ISREG(st.st_mode): return False
-        
-        # Check for executable or wide-write bits
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
-        
-        # Check ownership
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
-        
-        # Size limits
         if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
-        
         return True
     except (OSError, PermissionError, AttributeError, ValueError): return False
 
-def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
-    """Lectura segura con validación estricta de metadatos de archivo."""
-    if not is_safe_to_modify(str(file_path)): return None
+def _read_and_parse_json(file_path: Path) -> tuple[Optional[str], Optional[SettingsDict]]:
+    """Lectura segura con validación estricta; retorna (hash_contenido, datos_parseados)."""
+    if not is_safe_to_modify(str(file_path)): return None, None
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, "rb") as f:
             st = os.fstat(f.fileno())
-            if not _is_file_secure_to_read(st): return None
-            
-            # Pre-parse validation logic
-            raw_data = f.read(MAX_SETTINGS_SIZE + 1)
-            if not raw_data or len(raw_data) > MAX_SETTINGS_SIZE: return None
-            
-            data = json.loads(raw_data)
-            return data if _is_dict(data) else None
+            if not _is_file_secure_to_read(st): return None, None
+            content = f.read(MAX_SETTINGS_SIZE + 1)
+            if not content or len(content) > MAX_SETTINGS_SIZE: return None, None
+            content_hash = hashlib.sha256(content).hexdigest()
+            data = json.loads(content.decode("utf-8"))
+            return content_hash, data if _is_dict(data) else None
     except (OSError, IOError, PermissionError, json.JSONDecodeError, MemoryError):
-        return None
+        return None, None
 
 def _load_impl(ruta: Path) -> AppSettings:
     """Implementación base para procesar la carga y normalización de ajustes."""
-    if not is_safe_to_modify(str(ruta)): return DEFAULTS.copy()
-    data = _read_and_parse_json(ruta)
+    _, data = _read_and_parse_json(ruta)
     return _coerce_and_verify(validate(data)) if data is not None else DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Carga ajustes utilizando un mecanismo de caché basado en mtime y tamaño para evitar I/O redundante."""
+    """Carga ajustes utilizando un hash de contenido para evitar I/O redundante."""
     primary_path = settings_path(custom_base)
     try:
         if primary_path.exists() and primary_path.is_file() and is_safe_to_modify(str(primary_path)):
-            st = primary_path.stat()
-            mtime, size = st.st_mtime, st.st_size
-            cache_key = str(primary_path)
-            cached = _MANAGER.settings_cache.get(cache_key)
-            if cached and cached[0] == mtime and cached[1] == size: return cached[2].copy()
-            settings = _load_impl(primary_path)
-            _MANAGER.settings_cache[cache_key] = (mtime, size, settings)
-            return settings
+            content_hash, data = _read_and_parse_json(primary_path)
+            if content_hash:
+                cache_key = str(primary_path)
+                cached = _MANAGER.settings_cache.get(cache_key)
+                if cached and cached[0] == content_hash: return cached[1].copy()
+                settings = _coerce_and_verify(validate(data))
+                _MANAGER.settings_cache[cache_key] = (content_hash, settings)
+                return settings
     except (OSError, PermissionError): pass
     return DEFAULTS.copy()
 
@@ -399,7 +386,6 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     cache_key = str(custom_base) if custom_base else None
     if cache_key in _MANAGER.path_cache:
         return _MANAGER.path_cache[cache_key]
-    
     try:
         raw_base = Path(custom_base).resolve() if custom_base else Path(SETTINGS_DIR).resolve()
         if _Validators._is_safe_path(str(raw_base)) and not _Validators._is_reparse_point(str(raw_base)):

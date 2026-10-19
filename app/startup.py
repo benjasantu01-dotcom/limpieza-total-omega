@@ -440,7 +440,7 @@ def estimate_impact(entries: Iterable[StartupEntry]) -> str:
 def summarize(entries: Optional[Iterable[StartupEntry]] = None) -> List[str]:
     """Genera un reporte legible con el inventario de inicio y su impacto estimado."""
     entries_list = entries if entries is not None else list_startup_entries()
-    total_count: int = sum(1 for _ in entries_list)
+    total_count: int = len(entries_list) if isinstance(entries_list, list) else sum(1 for _ in entries_list)
         
     lines: List[str] = [f"Programas que arrancan con el sistema: {total_count}"]
     impact_level: str = estimate_impact(entries_list)

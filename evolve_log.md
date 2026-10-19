@@ -1174,3 +1174,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-19T04:01:27` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
 - `2026-10-19T04:01:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-19T04:01:27` Corrida terminada. Total usado hoy: 96.
+- `2026-10-19T04:09:41` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-10-19T04:10:09` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_relevant_extension
+- `2026-10-19T04:10:41` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó la lectura de `settings.py` implementando una caché basada en el contenido (hash) del archivo en lugar de solo `mtime/size`, evitando recargas innecesarias cuando el archivo se toca pero no cambia, y se redujo el costo de serialización mediante la reutilización de `json.dumps` con cacheo.
+- `2026-10-19T04:11:08` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `summarize` reemplazando el cálculo redundante de `sum(1 for _ in entries_list)` (que iteraba dos veces sobre el generador si no era lista) por el uso directo de `len()` cuando `entries_list` es una secuencia, evitando recorridos innecesarios en el reporte.
+- `2026-10-19T04:11:32` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para manejar correctamente objetos complejos (como diccionarios con claves no string) y se añadió una validación estricta de tipos en el acceso a datos externos para prevenir el procesamiento de estructuras inesperadas que podrían causar errores durante la serialización o el envío.
+- `2026-10-19T04:11:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-19T04:11:32` Corrida terminada. Total usado hoy: 100.
