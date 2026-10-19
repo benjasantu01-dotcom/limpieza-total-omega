@@ -335,6 +335,20 @@ def _is_process_executable_safe(pid: int, handle: int, psapi: Any) -> bool:
         pass
     return False
 
+def _process_from_pid(pid: int, kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[ProcessMemory]:
+    """Intenta obtener y validar las métricas de un proceso individual por su PID."""
+    proc_handle = _is_process_accessible(pid, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
+    if not proc_handle:
+        return None
+    
+    try:
+        ws = _query_working_set_bytes(pid, proc_handle, psapi, pmc)
+        if ws is not None and _is_process_executable_safe(pid, proc_handle, psapi):
+            return ProcessMemory(f"PID {pid}", pid, ws)
+    finally:
+        kernel32.CloseHandle(proc_handle)
+    return None
+
 def _iter_process_memory(kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
     """Enumera procesos activos del sistema, aplicando filtros de seguridad."""
     max_pids = 4096
@@ -346,15 +360,9 @@ def _iter_process_memory(kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS
         for i in range(count):
             pid_val = pids[i]
             if _is_system_process(pid_val) or pid_val <= 0: continue
-            
-            proc_handle = _is_process_accessible(pid_val, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
-            if proc_handle:
-                try:
-                    ws = _query_working_set_bytes(pid_val, proc_handle, psapi, pmc)
-                    if ws is not None and _is_process_executable_safe(pid_val, proc_handle, psapi):
-                        yield ProcessMemory(f"PID {pid_val}", pid_val, ws)
-                finally:
-                    kernel32.CloseHandle(proc_handle)
+            proc = _process_from_pid(pid_val, kernel32, psapi, pmc)
+            if proc:
+                yield proc
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Obtiene los procesos más pesados tras validación de seguridad."""

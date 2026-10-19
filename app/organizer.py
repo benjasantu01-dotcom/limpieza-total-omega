@@ -230,7 +230,14 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
         return False
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
-    """Orquestador de seguridad que valida precondiciones antes de cualquier operación de E/S."""
+    """
+    Orquestador de seguridad para operaciones de disco.
+    
+    Verifica secuencialmente:
+    1. Existencia y resolución de rutas.
+    2. Integridad contra rutas protegidas o bloqueos de sistema.
+    3. Consistencia física (inodo/dispositivo) y disponibilidad de espacio.
+    """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     try:
         if not junk_file.path.exists(): return False

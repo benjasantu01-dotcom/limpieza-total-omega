@@ -130,7 +130,6 @@ def get_cached_settings() -> Dict[str, Any]:
 
     raw = settings_mod.load()
     if isinstance(raw, dict):
-        # La validación de seguridad de rutas se delega al momento de uso para evitar I/O redundante
         _SETTINGS_CACHE["data"] = raw
         _SETTINGS_CACHE["last_load"] = now
         return raw
@@ -206,22 +205,27 @@ def validated_ui_operation(func: Callable) -> Callable:
             return None
     return wrapper
 
+def _is_path_in_system_roots(path_str: str) -> bool:
+    """Valida si la ruta actual es potencialmente peligrosa por estar en directorios del sistema."""
+    system_roots = ["windows", "system32", "program files"]
+    path_lower = path_str.lower()
+    return any(root in path_lower for root in system_roots)
+
 def _check_environment_integrity() -> None:
     """
-    Valida requisitos de seguridad críticos al arrancar el proceso y antes de 
-    instanciar la UI. Previene ejecución en entornos protegidos o inestables.
+    Valida requisitos de seguridad críticos antes de arrancar. 
+    Asegura que el proceso no corra en entornos volátiles, rutas UNC o sistemas protegidos.
     """
     cwd = Path.cwd().resolve(strict=False)
     if not cwd.exists():
         raise RuntimeError("Directorio de trabajo actual no existe.")
-    # Prevenir ejecución desde rutas de red o sistema volátiles
+    
+    # Prevenir ejecución desde rutas UNC (red) por inestabilidad de permisos
     if str(cwd).startswith(r"\\"):
         raise RuntimeError("Ejecución en ruta UNC prohibida.")
     
-    # Normalización estricta de rutas de sistema
-    path_str = str(cwd).lower()
-    system_roots = ["windows", "system32", "program files"]
-    if any(root in path_str for root in system_roots):
+    # Prevenir ejecución desde directorios protegidos por el SO
+    if _is_path_in_system_roots(str(cwd)):
         raise RuntimeError("Ejecución en entorno protegido no permitida.")
         
     safety.ensure_safe_to_modify(Path.home().resolve(strict=False))
