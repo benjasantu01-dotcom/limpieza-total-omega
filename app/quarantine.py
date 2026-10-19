@@ -918,63 +918,38 @@ def quarantine_file(
 ) -> QuarantineItem:
     """
     Aísla un archivo sospechoso en el sandbox de cuarentena.
-    
-    El proceso es:
-    1. Validar el origen (existencia, seguridad, permisos).
-    2. Preparar el directorio destino.
-    3. Realizar una copia atómica al sandbox con verificación de integridad.
-    4. Registrar metadatos (hash, inodo) en el manifiesto JSON.
-    5. Eliminar el original solo si la integridad del copiado se confirma.
     """
-    if not source:
-        raise ValueError("La ruta origen proporcionada es nula o vacía.")
-        
     p_source = _validate_input_path(source)
-    clean_reason = str(reason).strip() if reason else "Marcado como sospechoso"
-    
-    try:
-        st_info = _check_io_error_context(p_source.stat)
-    except OSError as e:
-        raise RuntimeError(f"Falla al verificar estado del archivo origen: {e}")
-        
+    st_info = _check_io_error_context(p_source.stat)
     source_path = _validate_source_for_quarantine(p_source)
     
     if _is_file_in_use_by_system(source_path):
         raise IOError("Archivo origen bloqueado por el sistema: operación abortada.")
         
     dest_dir = quarantine_dir(base)
-    
     if _is_within_quarantine_sandbox(source_path, dest_dir.resolve()):
         raise UnsafePathError("Archivo ya en el sandbox.")
     
     _validate_isolation_request(source_path, dest_dir)
     destination = dest_dir / _generate_safe_stored_name(source_path, uuid.uuid4().hex[:12])
     
-    if destination.exists():
-        raise FileExistsError("Colisión: el nombre de destino ya existe en la cuarentena.")
-
-    try:
-        file_hash, file_inode = _atomic_isolate_file(source_path, destination, st_info.st_size)
-        
-        if not destination.exists() or destination.stat().st_ino != file_inode or _get_sha256(destination) != file_hash:
-            raise RuntimeError("Falla crítica: el destino no es coherente tras la copia.")
+    # Proceso de aislamiento y registro
+    file_hash, file_inode = _atomic_isolate_file(source_path, destination, st_info.st_size)
+    
+    if not destination.exists() or destination.stat().st_ino != file_inode or _get_sha256(destination) != file_hash:
+        raise RuntimeError("Falla crítica: el destino no es coherente tras la copia.")
             
-        item = _register_quarantine_item(destination, source_path, file_hash, file_inode, clean_reason, st_info.st_size, base)
+    item = _register_quarantine_item(destination, source_path, file_hash, file_inode, reason, st_info.st_size, base)
         
-        # Solo procedemos a borrar el original una vez el manifiesto está persistido con éxito
-        if source_path.exists():
-            if not os.path.samefile(source_path, destination):
-                try:
-                    _check_io_error_context(source_path.unlink)
-                except OSError as e:
-                    raise RuntimeError(f"Aislamiento exitoso y registrado, pero falla al remover original: {e}")
+    # Limpieza del origen tras éxito
+    if source_path.exists() and not os.path.samefile(source_path, destination):
+        try:
+            _check_io_error_context(source_path.unlink)
+        except OSError as e:
+            raise RuntimeError(f"Aislamiento exitoso, falla al remover original: {e}")
                 
-        _verify_transaction_integrity(item, destination)
-        return item
-    except (OSError, IOError, RuntimeError) as e:
-        if destination.exists() and not os.path.exists(source_path):
-            _cleanup_orphaned_destination(destination)
-        raise RuntimeError(f"Error durante aislamiento: {e}")
+    _verify_transaction_integrity(item, destination)
+    return item
 
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna una lista ordenada de ítems por fecha de aislamiento."""
