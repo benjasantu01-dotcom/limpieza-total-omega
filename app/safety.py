@@ -997,8 +997,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     """
     Función de entrada principal para validar si un archivo puede ser modificado.
     """
-    if not isinstance(path, (str, Path, os.PathLike)):
-        raise UnsafePathError(f"Tipo de ruta no soportado: {type(path).__name__}", SafetyValidationErrorCode.GENERIC)
+    if path is None:
+        raise UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC)
         
     try:
         path_str = str(path).strip()
@@ -1016,8 +1016,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
 
         base = None
         if base_dir:
-            if not isinstance(base_dir, (str, Path, os.PathLike)):
-                raise UnsafePathError("Tipo de directorio base inválido.", SafetyValidationErrorCode.GENERIC)
             try:
                 base = _normalize_resolved(str(base_dir))
             except (TypeError, ValueError, OSError):
@@ -1051,7 +1049,8 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive, base_dir=base_dir)
         return True
-    except (UnsafePathError, ValueError, TypeError, OSError, PermissionError, MemoryError): return False
+    except (UnsafePathError, ValueError, TypeError, OSError, PermissionError, MemoryError, AttributeError):
+        return False
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> list[Path]:
     """Filtra una colección de rutas, devolviendo solo aquellas que son seguras para operar."""
@@ -1060,7 +1059,7 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
     for p in paths:
         if p is None: continue
         try: results.append(ensure_safe_to_modify(p, allow_sensitive=allow_sensitive, base_dir=base_dir))
-        except (UnsafePathError, ValueError, TypeError, OSError, PermissionError, MemoryError): continue
+        except (UnsafePathError, ValueError, TypeError, OSError, PermissionError, MemoryError, AttributeError): continue
     return results
 
 def describe_protection(path: PathLike) -> str:

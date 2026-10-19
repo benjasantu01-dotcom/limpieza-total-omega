@@ -416,3 +416,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-19T07:05:10` ➖ Sin cambios en organizer.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez en `stage_for_review` y `delete_reviewed` al validar explícitamente los tipos de entrada y capturar excepciones de forma granular, evitando que rutas mal formadas o problemas de permisos silencien fallos críticos de integridad.
 - `2026-10-19T07:05:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-19T07:05:10` Corrida terminada. Total usado hoy: 168.
+- `2026-10-19T07:13:04` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-10-19T07:13:55` ➖ Sin cambios en quarantine.py (enfoque: manejo de errores y validación de entradas). Motivo: Se introdujo una validación explícita para el parámetro `item_id` en las funciones que lo reciben, evitando comportamientos indefinidos o errores inesperados al procesar strings vacíos o mal formados, cumpliendo con el enfoque de validación de entradas.
+- `2026-10-19T07:14:13` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-10-19T07:15:02` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `ensure_safe_to_modify` ante entradas maliciosas o inesperadas, añadiendo una validación explícita para evitar errores de tipo `None` en los argumentos y normalizando el manejo de excepciones para asegurar que cualquier fallo en la validación sea capturado correctamente por `is_safe_to_modify`.
+- `2026-10-19T07:15:11` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: Scanner._handle_directory, Scanner._is_relevant_extension, Scanner._is_reparse_point
+- `2026-10-19T07:15:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-19T07:15:11` Corrida terminada. Total usado hoy: 172.
