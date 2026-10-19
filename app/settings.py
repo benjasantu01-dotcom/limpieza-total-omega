@@ -340,7 +340,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
             if not content or len(content) > MAX_SETTINGS_SIZE: return None
             data = json.loads(content)
             return data if _is_dict(data) else None
-    except (OSError, IOError, PermissionError, json.JSONDecodeError):
+    except (OSError, IOError, PermissionError, json.JSONDecodeError, MemoryError):
         return None
 
 def _load_impl(ruta: Path) -> AppSettings:

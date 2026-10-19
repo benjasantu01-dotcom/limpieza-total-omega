@@ -344,13 +344,19 @@ class Scanner:
             elif entry.is_file(follow_symlinks=False):
                 if self._is_relevant_extension(entry.name):
                     self._run_file_heuristics(Path(entry.path), entry)
-        except (OSError, PermissionError, FileNotFoundError) as e:
-            logger.debug(f"Error de acceso en entrada {entry.path}: {e}")
+        except (OSError, PermissionError, FileNotFoundError):
+            # Omitir errores de acceso durante la enumeración dinámica
+            pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta toda la suite de heurísticas sobre un archivo validado."""
         if path is None: return
         path_str = str(path)
+        
+        # Doble verificación de estado por race conditions
+        if not path.exists():
+            return
+            
         if path_str not in self.path_stat_cache:
             if not _is_readable(path) or _is_locked_by_os(path):
                 self.path_stat_cache[path_str] = False
@@ -370,7 +376,9 @@ class Scanner:
 
 def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Escaneo heurístico puntual para un archivo específico."""
-    if path is None or not isinstance(path, Path) or not _is_valid_file_path(path) or _cached_is_protected(str(path)): 
+    if not isinstance(path, Path) or not _is_valid_path_structure(str(path)):
+        return []
+    if not path.exists() or not _is_valid_file_path(path) or _cached_is_protected(str(path)): 
         return []
     if not _is_readable(path) or _is_locked_by_os(path): 
         return []
@@ -391,7 +399,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         path_str: str = str(directory).strip()
         if not path_str or not _is_valid_path_structure(path_str): return []
         base_path: Path = Path(path_str).resolve(strict=False)
-        if not base_path.is_dir() or base_path.is_symlink() or not os.access(base_path, os.R_OK) or _cached_is_protected(str(base_path)):
+        if not base_path.exists() or not base_path.is_dir() or base_path.is_symlink() or not os.access(base_path, os.R_OK) or _cached_is_protected(str(base_path)):
             return []
         scanner: Scanner = Scanner(base_root=base_path)
     except (OSError, RuntimeError, ValueError, TypeError, AttributeError) as e:
