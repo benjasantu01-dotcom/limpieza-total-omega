@@ -901,6 +901,10 @@ def _validate_input_path(source: PathLike) -> Path:
         except (OSError, RuntimeError) as e:
             raise UnsafePathError(f"Ruta origen no válida: {e}")
             
+    # Prohibir aislar raíces de volumen (ej: C:\)
+    if p_source == p_source.anchor:
+        raise UnsafePathError("No se permite aislar la raíz de una unidad.")
+
     if not p_source.exists():
         raise FileNotFoundError("Archivo origen no encontrado.")
     

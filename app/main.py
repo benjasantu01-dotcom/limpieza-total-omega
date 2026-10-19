@@ -217,8 +217,12 @@ def _check_environment_integrity() -> None:
     # Prevenir ejecución desde rutas de red o sistema volátiles
     if str(cwd).startswith(r"\\"):
         raise RuntimeError("Ejecución en ruta UNC prohibida.")
-    if "system32" in str(cwd).lower() or "windows" in str(cwd).lower():
-        raise RuntimeError("Ejecución en entorno protegido.")
+    
+    # Normalización estricta de rutas de sistema
+    path_str = str(cwd).lower()
+    system_roots = ["windows", "system32", "program files"]
+    if any(root in path_str for root in system_roots):
+        raise RuntimeError("Ejecución en entorno protegido no permitida.")
         
     safety.ensure_safe_to_modify(Path.home().resolve(strict=False))
     safety.ensure_safe_to_modify(cwd)

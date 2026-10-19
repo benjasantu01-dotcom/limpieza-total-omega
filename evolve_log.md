@@ -1241,3 +1241,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-19T05:02:12` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_sanitize_msg` implementando un control estricto que utiliza `_BLOCKED_TERMS` para filtrar palabras clave de rutas sensibles antes de que cualquier mensaje de recomendación sea procesado por la UI, previniendo fugas de información.
 - `2026-10-19T05:02:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-19T05:02:12` Corrida terminada. Total usado hoy: 120.
+- `2026-10-19T05:10:48` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-10-19T05:12:03` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). He mejorado la robustez de la inicialización de la aplicación añadiendo una validación explícita para evitar que `_check_environment_integrity` falle silenciosamente o permita ejecutar la lógica en entornos donde el directorio de trabajo es inexistente o inseguro, protegiendo así la integridad desde el arranque.
+- `2026-10-19T05:12:33` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_process_executable_safe` validando mediante `os.path.abspath` antes de resolver la ruta, asegurando que los chequeos de `is_protected_path` operen sobre rutas normalizadas y absolutas, evitando posibles ataques de recorrido de directorio o rutas ambiguas.
+- `2026-10-19T05:13:00` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-10-19T05:13:27` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se añadió una validación crítica en `quarantine_file` para verificar que el origen no sea un punto de montaje o unidad de disco raíz, evitando que `quarantine` intente procesar volúmenes enteros, mejorando la seguridad defensiva.
+- `2026-10-19T05:13:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-19T05:13:27` Corrida terminada. Total usado hoy: 124.
