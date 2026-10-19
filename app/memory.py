@@ -263,7 +263,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     
     def _gen() -> Iterator[ProcessMemory]:
         for line in lines[1:]:
-            if line:
+            if line and isinstance(line, str):
                 proc = _extract_process_info(line)
                 if proc: yield proc
             

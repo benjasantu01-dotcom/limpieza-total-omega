@@ -326,16 +326,13 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     """Ejecuta reglas de diagnóstico y registra advertencias halladas."""
     ratio = _clamp(normalized_ratio)
     for rule in rules:
-        try:
-            if rule.check(metrics, ratio):
-                clean_msg = _apply_rule_safely(metrics, rule)
-                if clean_msg: findings.append(clean_msg)
-        except Exception:
-            continue
+        if rule.check(metrics, ratio):
+            clean_msg = _apply_rule_safely(metrics, rule)
+            if clean_msg: findings.append(clean_msg)
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Computa el puntaje global mediante el pipeline con validación de suma total."""
-    if metrics is None or not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
+    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema inválidos."])
         
     recommendations: List[str] = []
@@ -343,17 +340,14 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     total_points = 0.0
     
     for entry in _PIPELINE:
-        try:
-            area_ratio = _clamp(entry.scorer(metrics))
-            if entry.rules:
-                _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
-            
-            points = area_ratio * entry.weight
-            val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
-            metric_breakdown[entry.area] = val_int
-            total_points += val_int
-        except Exception:
-            continue
+        area_ratio = _clamp(entry.scorer(metrics))
+        if entry.rules:
+            _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
+        
+        points = area_ratio * entry.weight
+        val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
+        metric_breakdown[entry.area] = val_int
+        total_points += val_int
             
     if metrics.quarantined_count > 0:
         recommendations.append("Existen elementos en cuarentena.")
@@ -369,11 +363,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 @lru_cache(maxsize=128)
 def _render_bar(points: int, max_val: int) -> str:
     """Crea una representación visual de barra para reportes con caché."""
-    try:
-        p = max(0, min(points, max_val))
-        return "#" * p + "." * (max_val - p)
-    except Exception:
-        return "." * max_val
+    if not isinstance(points, int) or not isinstance(max_val, int):
+        return "." * 10
+    p = max(0, min(points, max_val))
+    return "#" * p + "." * (max_val - p)
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera una lista de líneas legible para el informe de salud."""

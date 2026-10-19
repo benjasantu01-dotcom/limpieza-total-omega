@@ -344,7 +344,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
     Sugiere qué archivo conservar basándose en la fecha de modificación (menor mtime).
     """
-    if not isinstance(group, DuplicateGroup) or not group.paths:
+    if group is None or not isinstance(group, DuplicateGroup) or not group.paths:
         return None
     
     candidates: List[Tuple[Tuple[float, int], Path]] = []
@@ -374,11 +374,16 @@ def format_group(group: DuplicateGroup) -> List[str]:
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return ["Error: Grupo inválido o vacío"]
+    
     keeper = suggest_keeper(group)
     mb_total = round(group.size_bytes / 1048576, 2)
     mb_wasted = round(group.wasted_bytes / 1048576, 2)
     lines = [f"{group.count} copias de {mb_total} MB (recuperable: {mb_wasted} MB)"]
+    
     for path_item in group.paths:
         if isinstance(path_item, Path):
             lines.append(f"   {_get_path_label(path_item, keeper)} {path_item}")
+        else:
+            lines.append(f"   [invalido] {path_item}")
+            
     return lines

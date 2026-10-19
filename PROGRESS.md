@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 49
-- Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 214
+- Rechazadas por guardia de seguridad: 47
+- Sin cambios (nada sustancial que mejorar): 27
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-18 | 96 | 7 | 27 | 11 | 95 |
-| 2026-10-19 | 103 | 9 | 22 | 15 | 119 |
+| 2026-10-18 | 95 | 7 | 25 | 11 | 94 |
+| 2026-10-19 | 106 | 9 | 22 | 16 | 119 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **44**
-- legibilidad y documentación: **42**
+- legibilidad y documentación: **41**
 - robustez ante casos límite: **40**
+- manejo de errores y validación de entradas: **39**
 - rendimiento: **37**
-- manejo de errores y validación de entradas: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **18**
+- `duplicates.py`: **18**
 - `quarantine.py`: **18**
-- `safety.py`: **17**
-- `duplicates.py`: **17**
 - `settings.py`: **17**
 - `diskreport.py`: **17**
+- `safety.py`: **16**
+- `memory.py`: **15**
+- `healthscore.py`: **15**
 - `assistant.py`: **14**
-- `memory.py`: **14**
-- `healthscore.py`: **14**
 - `main.py`: **14**
 - `branding.py`: **13**
 - `scanner.py`: **10**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-19T11:31:25` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `parse_windows_process_csv` añadiendo una validación explícita para evitar errores de tipo si `raw_csv_text` contiene datos inesperados y asegurando que las líneas vacías o mal formadas se omitan limpiamente sin interrumpir el flujo del generador.
+- `2026-10-19T11:29:06` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `summarize` reemplazando los `try-except` genéricos que silenciaban errores de lógica por validaciones explícitas de estado, asegurando que el pipeline siempre opere con datos consistentes sin ocultar fallos de ejecución.
+- `2026-10-19T11:28:26` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` mediante la validación explícita de tipos y estados, previniendo excepciones ante grupos malformados o rutas inaccesibles que podrían interrumpir el flujo de la aplicación.
 - `2026-10-19T11:19:37` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` reemplazando los silenciamientos genéricos de excepciones por capturas específicas y mensajes de error informativos, asegurando que los fallos de acceso no enmascaren problemas reales de configuración o privilegios, cumpliendo con el enfoque de validación de entradas.
 - `2026-10-19T11:19:26` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_sum_directory_recursive` mediante la validación explícita de `root_path` y la captura de errores específicos al iterar con `os.scandir`, evitando fallos en caso de rutas nulas o permisos denegados en directorios padre.
 - `2026-10-19T11:18:26` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemContext.ingest` y `_apply_field` implementando validaciones de tipo explícitas y una lógica de retorno segura para prevenir la propagación de datos corruptos al contexto, cumpliendo con el enfoque de validación de entradas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-19T09:36:11` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva del motor de salud impidiendo que los mensajes de las reglas de diagnóstico incluyan rutas de archivos (aunque sean parciales) o información técnica potencialmente sensible, aplicando un filtro de "blocklist" más riguroso y validando explícitamente los mensajes tras la ejecución de las factories.
 - `2026-10-19T09:27:00` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_safe_path_check` y `_collect_candidates` para garantizar que la resolución de rutas mediante `resolve()` no escape a directorios fuera del alcance permitido, validando explícitamente que la ruta resuelta mantenga la integridad de las protecciones del sistema, mitigando riesgos de ataques por enlaces simbólicos o rutas maliciosas.
 - `2026-10-19T09:26:51` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad de `walk_files` y `largest_folders` añadiendo una validación explícita mediante `is_protected_path` al inicio de cada iteración de los directorios, garantizando que el escaneo no se desvíe ni siquiera en condiciones de errores del sistema de archivos, siguiendo el enfoque defensivo.
-- `2026-10-19T09:26:26` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `browser.py` al implementar un chequeo de integridad adicional para rutas (`Path.samefile`) al validar la caja de arena (sandbox), evitando que ataques de links simbólicos o de reparse que apunten fuera de `LOCALAPPDATA` logren engañar a la validación de prefijos de cadena (`startswith`).
-- `2026-10-19T09:17:58` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva de `assistant.py` al restringir estrictamente la exposición de datos del sistema mediante la adición de una validación explícita en `_build_payload`, asegurando que `SYSTEM_PROMPT` no sea manipulado y que el contenido del contexto pase por `_ensure_safe_text` antes de cualquier serialización, previniendo inyecciones de datos en el prompt remoto.
-- `2026-10-19T09:07:04` **safety.py** (robustez ante casos límite): Mejoré la robustez ante casos límite de integridad del sistema de archivos añadiendo un chequeo explícito de "bloqueo exclusivo" (file locking) mediante el manejo de manejadores Win32 antes de intentar cualquier operación de metadatos, lo que previene errores de acceso denegado en archivos que están siendo procesados por servicios del sistema (como los de actualización de Windows) sin recurrir a excepciones pesadas.
