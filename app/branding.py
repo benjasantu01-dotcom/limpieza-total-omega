@@ -207,15 +207,15 @@ def app_title() -> str:
 
 def color(name: Optional[str]) -> ColorHex: 
     """Retorna un color hexadecimal de la paleta. Si el nombre no existe, retorna gris neutro."""
-    return PALETTE.get(name, "#808080") if name else "#808080" # type: ignore
+    return PALETTE.get(name, "#808080") if name else "#808080"
 
 def font_size(name: Optional[str]) -> int: 
     """Retorna el tamaño de fuente configurado para una categoría dada."""
-    return FONT_SIZES.get(name, UI_CONFIG.body_size) if name else UI_CONFIG.body_size # type: ignore
+    return FONT_SIZES.get(name, UI_CONFIG.body_size) if name else UI_CONFIG.body_size
 
 def icon(section: Optional[str]) -> str: 
     """Retorna el carácter Unicode asociado a una sección, o un punto si es desconocido."""
-    return ICONS.get(section.strip(), "\u2022") if section else "\u2022"
+    return ICONS.get(section, "\u2022") if section else "\u2022"
 
 def tab_label(section: Optional[str]) -> str: 
     """Formatea el icono y el texto para las pestañas de la interfaz."""
@@ -245,7 +245,7 @@ def severity_icon(severity: Optional[str]) -> str:
 
 def grade_color(grade: Optional[str]) -> ColorHex: 
     """Retorna el color corporativo asociado a una calificación (A-F)."""
-    return GRADE_COLORS.get(grade.strip().upper()[0], C_TEXT_MUTED) if grade and grade.strip() else C_TEXT_MUTED
+    return GRADE_COLORS.get(grade[0].upper(), C_TEXT_MUTED) if grade else C_TEXT_MUTED
 
 @lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> ColorHex:

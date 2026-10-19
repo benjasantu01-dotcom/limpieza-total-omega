@@ -219,9 +219,6 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
     """
     Algoritmo de escaneo recursivo que suma el tamaño de archivos en una jerarquía.
-    
-    Returns:
-        ScanResult conteniendo los bytes totales y el estado de éxito del escaneo.
     """
     if depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN: 
         return ScanResult(0, True)
@@ -258,23 +255,24 @@ def directory_size(path: Optional[OSPath]) -> int:
     path_obj = Path(path)
     if not path_obj.exists() or not path_obj.is_dir(): return 0
     
-    resolved_path = str(path_obj.resolve(strict=True))
-    if not is_safe_to_modify(Path(resolved_path)): return 0
+    resolved = path_obj.resolve(strict=True)
+    if not is_safe_to_modify(resolved) or is_protected_path(resolved): return 0
     
-    ctx = ScanContext(os.path.normpath(resolved_path), _get_kernel32(), _IS_JUNCTION_FN, set(), set())
-    return _sum_directory_recursive(resolved_path, ctx, 0).bytes_found
+    res_str = str(resolved)
+    ctx = ScanContext(os.path.normcase(res_str), _get_kernel32(), _IS_JUNCTION_FN, set(), set())
+    return _sum_directory_recursive(res_str, ctx, 0).bytes_found
 
 @safe_path_operation(False)
-def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
+def _is_valid_cache_path(candidate: Path, base_abs_norm: str) -> bool:
     """Valida la integridad de un directorio de caché como candidato para escaneo."""
     if not candidate.exists() or not candidate.is_dir() or not os.access(candidate, os.R_OK): return False
     
     try:
-        real = str(candidate.resolve(strict=True))
-        if any(ord(c) < 32 for c in real): return False
-        if not _is_within_sandbox(os.path.normpath(real), base_abs_str): return False
-        if not is_safe_to_modify(Path(real)) or is_protected_path(Path(real)): return False
-        return not (candidate.is_symlink() or _IS_JUNCTION_FN(real) or _is_excluded_file(candidate.name))
+        real = candidate.resolve(strict=True)
+        if not is_safe_to_modify(real) or is_protected_path(real): return False
+        real_norm = os.path.normcase(str(real))
+        if not _is_within_sandbox(real_norm, base_abs_norm): return False
+        return not (candidate.is_symlink() or _IS_JUNCTION_FN(str(real)) or _is_excluded_file(candidate.name))
     except (OSError, RuntimeError): return False
 
 @safe_path_operation(Path())
@@ -295,10 +293,9 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     kernel = _get_kernel32()
     
     for base in raw_bases:
-        if not isinstance(base, Path) or not base.exists(): continue
         try:
             real_base = base.resolve(strict=True)
-            ctx = ScanContext(os.path.normpath(str(real_base)), kernel, _IS_JUNCTION_FN, set(), set())
+            ctx = ScanContext(os.path.normcase(str(real_base)), kernel, _IS_JUNCTION_FN, set(), set())
             
             for browser_key, relative_path in browser_map.items():
                 candidate = _resolve_browser_path(real_base, relative_path)
