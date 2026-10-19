@@ -328,7 +328,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             if rule.check(metrics, normalized_ratio):
                 clean_msg = _apply_rule_safely(metrics, rule)
                 if clean_msg: findings.append(clean_msg)
-        except Exception: continue
+        except (Exception, ValueError, TypeError): continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Computa el puntaje global mediante el pipeline con validación de suma total."""
@@ -349,7 +349,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
             metric_breakdown[entry.area] = val_int
             total_points += val_int
-        except Exception:
+        except (Exception, ValueError, TypeError):
             metric_breakdown[entry.area] = 0
             
     if metrics.quarantined_count > 0:

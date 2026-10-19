@@ -255,7 +255,7 @@ def directory_size(path: Optional[OSPath]) -> int:
     """Cálculo del tamaño en bytes para una ruta dada, aplicando contextos de seguridad."""
     if not isinstance(path, (str, Path)): return 0
     path_obj = Path(path)
-    if not path_obj.exists() or not path_obj.is_dir(): return 0
+    if not str(path_obj) or not path_obj.exists() or not path_obj.is_dir(): return 0
     
     resolved_path = str(path_obj.resolve(strict=True))
     if not is_safe_to_modify(Path(resolved_path)): return 0
