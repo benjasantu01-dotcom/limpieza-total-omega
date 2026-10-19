@@ -292,7 +292,8 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """Recorrido recursivo seguro para prevenir ciclos mediante inodos."""
     root_path = _validate_root(directory)
-    if root_path is None: return
+    if root_path is None or not root_path.exists(): 
+        return
     
     visited_inodes: set[Inode] = set()
     stack: List[str] = [str(root_path)]
@@ -396,8 +397,8 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     
     try:
         data = _collect_summary_data(root, skip_protected, limit=20)
-    except (OSError, PermissionError):
-        return ["Error: El escaneo fue interrumpido por problemas de permisos o acceso al sistema de archivos."]
+    except (OSError, PermissionError, RuntimeError):
+        return ["Error: El escaneo fue interrumpido por problemas de acceso al sistema de archivos."]
         
     if data.total_files == 0: 
         return ["Aviso: No se encontraron archivos accesibles en la ruta seleccionada."]

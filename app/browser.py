@@ -246,9 +246,9 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
 @safe_path_operation(0)
 def directory_size(path: Optional[OSPath]) -> int:
     """Cálculo del tamaño en bytes para una ruta dada, aplicando contextos de seguridad."""
-    if not isinstance(path, (str, Path)): return 0
+    if not path or not isinstance(path, (str, Path)): return 0
     path_obj = Path(path)
-    if not str(path_obj) or not path_obj.exists() or not path_obj.is_dir(): return 0
+    if not path_obj.exists() or not path_obj.is_dir(): return 0
     
     resolved_path = str(path_obj.resolve(strict=True))
     if not is_safe_to_modify(Path(resolved_path)): return 0
@@ -272,7 +272,7 @@ def _is_valid_cache_path(candidate: Path, base_abs_str: str) -> bool:
 @safe_path_operation(Path())
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
     """Concatena de forma segura la base del sistema con la ruta relativa de un navegador."""
-    if not _is_valid_rel_path(rel_str): return Path()
+    if not rel_str or not _is_valid_rel_path(rel_str): return Path()
     target = real_base.joinpath(*rel_str.split("\\"))
     if not target.exists() or not target.is_dir(): return Path()
     return target
