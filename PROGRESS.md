@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-18 | 112 | 8 | 30 | 13 | 133 |
-| 2026-10-19 | 85 | 8 | 19 | 14 | 82 |
+| 2026-10-18 | 110 | 8 | 29 | 13 | 132 |
+| 2026-10-19 | 87 | 8 | 20 | 14 | 83 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **39**
+- robustez ante casos límite: **38**
 - rendimiento: **37**
-- robustez ante casos límite: **36**
-- seguridad defensiva: **35**
+- seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **18**
 - `quarantine.py`: **18**
+- `settings.py`: **17**
+- `duplicates.py`: **17**
 - `diskreport.py`: **16**
-- `duplicates.py`: **16**
 - `browser.py`: **16**
 - `healthscore.py`: **15**
 - `safety.py`: **15**
 - `assistant.py`: **14**
 - `branding.py`: **14**
 - `memory.py`: **14**
-- `main.py`: **12**
-- `scanner.py`: **11**
+- `main.py`: **13**
 - `organizer.py`: **10**
+- `scanner.py`: **10**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-19T08:57:00` **main.py** (robustez ante casos límite): Se introdujo una gestión robusta de estados de ejecución asíncrona mediante un semáforo de bloqueo (`self._worker_lock`) en el pool de hilos, evitando condiciones de carrera al procesar múltiples tareas de análisis pesado que podrían entrar en conflicto o saturar la UI.
+- `2026-10-19T08:55:23` **duplicates.py** (robustez ante casos límite): Se introdujo una gestión robusta de errores en `_collect_candidates` para prevenir que fallos imprevistos al leer atributos de archivos (como estados de "archivo no encontrado" en condiciones de carrera) interrumpan el escaneo de directorios.
 - `2026-10-19T08:46:18` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante rutas inexistentes y permisos denegados en `detect_profiles` añadiendo validaciones granulares antes de iniciar la recursión pesada, previniendo que una sola ruta mal formada o con permisos restringidos afecte la integridad del escaneo de otros navegadores.
 - `2026-10-19T08:45:54` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y manipulación de rutas, asegurando que si `destination` es una ruta de sistema, un directorio existente, o si la sanitización resulta en una ruta inválida/protegida, la función retorne `None` de forma segura sin intentar operaciones de escritura en disco.
 - `2026-10-19T08:45:24` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados de sistema inesperados mediante la implementación de `_is_nan_or_inf` para validar métricas (evitando errores en los cálculos de `SystemContext`), y se añadió un manejo de errores más estricto en la ingesta para asegurar que cualquier dato corrupto se descarte silenciosamente en lugar de comprometer la integridad del contexto.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-19T08:04:29` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de `StartupEntry` para clarificar la lógica de resolución diferida (lazy loading) y los criterios de validación de seguridad, utilizando docstrings más técnicos que explican el "porqué" de las restricciones aplicadas en cada etapa del procesamiento.
 - `2026-10-19T07:55:35` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento del módulo mediante la sustitución de comprobaciones de tipo dispersas por la implementación de una función `_is_valid_type` centralizada, y añadí docstrings detallados en las funciones de validación que explican la lógica de seguridad aplicada.
 - `2026-10-19T07:54:56` **safety.py** (legibilidad y documentación): Se introdujeron type hints explícitos en los predicados de validación y se reemplazaron las lambdas por funciones con nombres descriptivos para mejorar la legibilidad y facilitar el mantenimiento de las reglas de seguridad.
-- `2026-10-19T07:46:20` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `quarantine.py` mediante la normalización de docstrings (haciendo explícito el contrato y excepciones de cada función pública) y la corrección de una inconsistencia en el orden de los argumentos en `_register_quarantine_item` para alinearlo con sus llamadas.
-- `2026-10-19T07:45:50` **organizer.py** (legibilidad y documentación): Se ha añadido un docstring estructurado a la función `_is_safe_for_disk_op` para documentar la lógica de validación en cascada y se han aplicado type hints consistentes en los retornos de las funciones de chequeo, mejorando la legibilidad del flujo crítico de seguridad.

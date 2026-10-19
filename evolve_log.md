@@ -576,3 +576,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-19T08:46:27` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
 - `2026-10-19T08:46:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-19T08:46:27` Corrida terminada. Total usado hoy: 208.
+- `2026-10-19T08:54:56` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-10-19T08:55:23` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se introdujo una gestión robusta de errores en `_collect_candidates` para prevenir que fallos imprevistos al leer atributos de archivos (como estados de "archivo no encontrado" en condiciones de carrera) interrumpan el escaneo de directorios.
+- `2026-10-19T08:55:51` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: SystemMetrics.safe_get
+- `2026-10-19T08:57:00` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se introdujo una gestión robusta de estados de ejecución asíncrona mediante un semáforo de bloqueo (`self._worker_lock`) en el pool de hilos, evitando condiciones de carrera al procesar múltiples tareas de análisis pesado que podrían entrar en conflicto o saturar la UI.
+- `2026-10-19T08:57:11` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-19T08:57:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-19T08:57:11` Corrida terminada. Total usado hoy: 212.

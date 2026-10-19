@@ -257,6 +257,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._tasks_running = 0
         self._executor: Optional[concurrent.futures.ThreadPoolExecutor] = None
         self._executor_lock = threading.Lock()
+        self._worker_lock = threading.Lock() # Bloqueo para evitar colisiones de tareas
         
         self._init_component_registry()
         self._setup_application()
@@ -1214,14 +1215,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _safe_run(self, fn: AsyncCallback, tab: str) -> None:
         """Wrapper de ejecución para tareas que valida la integridad del entorno actual."""
         if self._closing: return
-        try:
-            if Path.cwd().exists():
-                fn()
-            else:
-                raise RuntimeError("Directorio de trabajo actual eliminado o inaccesible.")
-        except Exception as e:
-            if not self._closing:
-                self._validate_and_log_error(e, tab)
+        with self._worker_lock:
+            try:
+                if Path.cwd().exists():
+                    fn()
+                else:
+                    raise RuntimeError("Directorio de trabajo actual eliminado o inaccesible.")
+            except Exception as e:
+                if not self._closing:
+                    self._validate_and_log_error(e, tab)
 
     def _worker_thread_logic(self, fn: AsyncCallback, tab: str) -> None:
         """Función ejecutada por el hilo trabajador para encapsular la lógica de tarea."""

@@ -252,11 +252,14 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                             if _safe_path_check(path_entry):
                                 queue.append((path_entry, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
-                            if not entry.is_file(): continue
                             path_entry = Path(entry.path)
-                            if not path_entry.exists() or not path_entry.is_file(): continue
+                            
+                            # Obtener stats de forma segura, capturando excepciones de estado
+                            try:
+                                file_stat = entry.stat(follow_symlinks=False)
+                            except (OSError, FileNotFoundError):
+                                continue
 
-                            file_stat = entry.stat(follow_symlinks=False)
                             if file_stat.st_size < min_size or (file_stat.st_dev, file_stat.st_ino) in visited_inodes:
                                 continue
                             
