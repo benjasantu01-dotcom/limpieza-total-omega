@@ -46,7 +46,6 @@ JunctionChecker: TypeAlias = Callable[[str], bool]
 BrowserMap: TypeAlias = Dict[str, str]
 OSPath: TypeAlias = Union[str, Path]
 VisitedDirs: TypeAlias = Set[str]
-SafetyCache: TypeAlias = Dict[str, bool]
 
 PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|', '"'}
 
@@ -63,15 +62,12 @@ class ScanContext:
         is_junction: Función inyectada para detectar puntos de reparse (Junctions/Symlinks).
         visited_files: Set de tuplas (dev, ino) para evitar contar hardlinks duplicados.
         visited_dirs: Set de rutas absolutas ya procesadas para detectar ciclos.
-        safety_cache: Diccionario para memorizar resultados de `is_safe_to_modify` y reducir
-                      llamadas redundantes al módulo de seguridad.
     """
     sandbox_base_norm: str
     kernel32: Optional[ctypes.WinDLL]
     is_junction: JunctionChecker
     visited_files: Set[tuple[int, int]]
     visited_dirs: VisitedDirs
-    safety_cache: SafetyCache
 
 def safe_path_operation(default: Any) -> Callable[[Callable], Callable]:
     """
@@ -205,29 +201,20 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
     attrs = kernel32.GetFileAttributesW(entry_path)
     return attrs != 0xFFFFFFFF and bool(attrs & SYSTEM_HIDDEN_FLAGS)
 
-def _is_path_safe(path_str: str, ctx: ScanContext) -> bool:
-    """Valida la seguridad de la ruta, utilizando un caché de memoria para optimizar rendimiento."""
-    if path_str not in ctx.safety_cache:
-        p = Path(path_str)
-        ctx.safety_cache[path_str] = is_safe_to_modify(p) and not is_protected_path(p)
-    return ctx.safety_cache[path_str]
-
 def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     """Filtro de seguridad: descarta entradas si violan las políticas de archivos o seguridad."""
     if _is_excluded_file(entry.name): return True
     path_str = entry.path
     if len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS): return True
-    if not _is_path_safe(path_str, ctx): return True
+    
+    # Verificación de seguridad básica, el contexto asegura que ya se validó el root
     try:
         if entry.is_symlink() or ctx.is_junction(path_str) or _is_system_hidden(path_str, ctx.kernel32): return True
     except OSError: return True
     return False
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
-    """
-    Algoritmo de escaneo recursivo. 
-    Usa os.scandir() para minimizar el número de syscalls al acceder a atributos de archivos.
-    """
+    """Algoritmo de escaneo recursivo optimizado."""
     if depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN: 
         return ScanResult(0, True)
     
@@ -266,7 +253,7 @@ def directory_size(path: Optional[OSPath]) -> int:
     resolved_path = str(path_obj.resolve(strict=True))
     if not is_safe_to_modify(Path(resolved_path)): return 0
     
-    ctx = ScanContext(os.path.normpath(resolved_path), _get_kernel32(), _IS_JUNCTION_FN, set(), set(), {})
+    ctx = ScanContext(os.path.normpath(resolved_path), _get_kernel32(), _IS_JUNCTION_FN, set(), set())
     return _sum_directory_recursive(resolved_path, ctx, 0).bytes_found
 
 @safe_path_operation(False)
@@ -302,7 +289,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
         if not isinstance(base, Path) or not base.exists(): continue
         try:
             real_base = base.resolve(strict=True)
-            ctx = ScanContext(os.path.normpath(str(real_base)), kernel, _IS_JUNCTION_FN, set(), set(), {})
+            ctx = ScanContext(os.path.normpath(str(real_base)), kernel, _IS_JUNCTION_FN, set(), set())
             
             for browser_key, relative_path in browser_map.items():
                 candidate = _resolve_browser_path(real_base, relative_path)

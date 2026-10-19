@@ -380,8 +380,7 @@ class SystemContext:
     @cached_property
     def metrics_snapshot(self) -> dict[str, float]:
         """Snapshot cacheado de las métricas numéricas para acceso eficiente."""
-        s = self.__dict__
-        return {k: float(s[k]) for k in _VALIDATORS if k in s and isinstance(s[k], (int, float)) and math.isfinite(s[k])}
+        return {k: float(v) for k, v in self.__dict__.items() if k in _VALIDATORS and isinstance(v, (int, float))}
 
     @cached_property
     def active_problems(self) -> tuple[str, ...]:
@@ -458,8 +457,9 @@ class SystemContext:
         """Aplica cambios al contexto y limpia cachés internas."""
         self.__dict__.update({k: v for k, v in updates.items() if _is_safe_key(k)})
         self.analyzed = True
-        for attr in ["metrics_snapshot", "active_problems", "_hash_tuple"]:
-            self.__dict__.pop(attr, None)
+        self.__dict__.pop("metrics_snapshot", None)
+        self.__dict__.pop("active_problems", None)
+        self.__dict__.pop("_hash_tuple", None)
 
     def ingest(self, source: Any) -> bool:
         """Normaliza e importa datos externos al contexto de manera transaccional."""
