@@ -271,8 +271,8 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Ejecuta GlobalMemoryStatusEx via ctypes para obtener el estado real de RAM."""
-    kernel32 = getattr(ctypes.windll, "kernel32", None)
-    if not kernel32 or not hasattr(kernel32, "GlobalMemoryStatusEx"): return _EMPTY_SNAPSHOT
+    kernel32 = ctypes.windll.kernel32
+    if not hasattr(kernel32, "GlobalMemoryStatusEx"): return _EMPTY_SNAPSHOT
     mem_status = _create_mem_status_ex()
     try:
         if kernel32.GlobalMemoryStatusEx(ctypes.byref(mem_status)) != 0:
@@ -372,7 +372,8 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     now = time.time()
     
     if (now - _CACHE_TOP_PROC.timestamp) > 60:
-        kernel32, psapi = ctypes.windll.kernel32, ctypes.windll.psapi
+        kernel32 = ctypes.windll.kernel32
+        psapi = ctypes.windll.psapi
         pmc = PROCESS_MEMORY_COUNTERS(cb=ctypes.sizeof(PROCESS_MEMORY_COUNTERS))
         
         candidates = _filter_and_sort_processes(_iter_process_memory(kernel32, psapi, pmc), limit)

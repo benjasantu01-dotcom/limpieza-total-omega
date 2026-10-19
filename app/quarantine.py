@@ -1037,7 +1037,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             if f.name in item_map:
                 if _is_item_purgable(f, item_map[f.name]):
                     purgado_ids.add(item_map[f.name].item_id)
-            elif is_safe_to_modify(f) and _safe_unlink(f):
+            elif _safe_unlink(f):
                 continue
         
         if purgado_ids:
