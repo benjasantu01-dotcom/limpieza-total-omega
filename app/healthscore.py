@@ -320,11 +320,9 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     """Ejecuta reglas de diagnóstico y registra advertencias halladas."""
     if not math.isfinite(normalized_ratio): return
     for rule in rules:
-        try:
-            if rule.check(metrics, normalized_ratio):
-                clean_msg = _apply_rule_safely(metrics, rule)
-                if clean_msg: findings.append(clean_msg)
-        except (Exception, ValueError, TypeError): continue
+        if rule.check(metrics, normalized_ratio):
+            clean_msg = _apply_rule_safely(metrics, rule)
+            if clean_msg: findings.append(clean_msg)
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Computa el puntaje global mediante el pipeline con validación de suma total."""
@@ -336,17 +334,14 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     total_points = 0.0
     
     for entry in _PIPELINE:
-        try:
-            area_ratio = _clamp(entry.scorer(metrics))
-            if entry.rules:
-                _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
-            
-            points = area_ratio * entry.weight
-            val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
-            metric_breakdown[entry.area] = val_int
-            total_points += val_int
-        except (Exception, ValueError, TypeError):
-            metric_breakdown[entry.area] = 0
+        area_ratio = _clamp(entry.scorer(metrics))
+        if entry.rules:
+            _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
+        
+        points = area_ratio * entry.weight
+        val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
+        metric_breakdown[entry.area] = val_int
+        total_points += val_int
             
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")

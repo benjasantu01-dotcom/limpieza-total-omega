@@ -43,6 +43,7 @@ Uso de conjuntos (sets) para gestión de estado de UI y debounces.
 Caché de validación de rutas mediante LRU para reducir llamadas al sistema.
 Caché local de métricas calculadas para evitar overhead de re-escaneo en duplicados.
 Consolidación de logs mediante batching asíncrono para reducir colisiones UI.
+Caché de configuración con TTL y validación de integridad diferida.
 
 Instalar dependencias:
     pip install customtkinter
@@ -127,23 +128,12 @@ def get_cached_settings() -> Dict[str, Any]:
     if _SETTINGS_CACHE["data"] and (now - _SETTINGS_CACHE["last_load"] < 60):
         return _SETTINGS_CACHE["data"]
 
-    try:
-        raw = settings_mod.load()
-        if isinstance(raw, dict):
-            for key in ["carpeta_excluida"]:
-                if key in raw and raw[key]:
-                    try:
-                        p = Path(raw[key])
-                        resolved = p.resolve(strict=False)
-                        if not resolved.exists() or not safety.is_safe_to_modify(resolved):
-                            raw[key] = ""
-                    except Exception:
-                        raw[key] = ""
-            _SETTINGS_CACHE["data"] = raw
-            _SETTINGS_CACHE["last_load"] = now
-            return raw
-    except (IOError, ValueError, Exception) as e:
-        logging.error("Error al cargar settings: %s", e)
+    raw = settings_mod.load()
+    if isinstance(raw, dict):
+        # La validación de seguridad de rutas se delega al momento de uso para evitar I/O redundante
+        _SETTINGS_CACHE["data"] = raw
+        _SETTINGS_CACHE["last_load"] = now
+        return raw
     return settings_mod.reset()
 
 class AppSettings(TypedDict, total=False):

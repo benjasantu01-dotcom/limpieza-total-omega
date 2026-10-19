@@ -317,10 +317,9 @@ def _query_working_set_bytes(pid: int, handle: int, psapi: Any, pmc: PROCESS_MEM
         return None
     return None
 
-def _is_process_executable_safe(pid: int, handle: int) -> bool:
+def _is_process_executable_safe(pid: int, handle: int, psapi: Any) -> bool:
     """Valida la integridad de la ruta del ejecutable mediante GetModuleFileNameExW."""
-    psapi = getattr(ctypes.windll, "psapi", None)
-    if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return False
+    if not hasattr(psapi, "GetModuleFileNameExW"): return False
     
     buffer_path = ctypes.create_unicode_buffer(4096)
     try:
@@ -349,10 +348,9 @@ def _iter_process_memory(kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS
             proc_handle = _is_process_accessible(pid_val, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
             if proc_handle:
                 try:
-                    if _is_process_executable_safe(pid_val, proc_handle):
-                        ws = _query_working_set_bytes(pid_val, proc_handle, psapi, pmc)
-                        if ws is not None:
-                            yield ProcessMemory(f"PID {pid_val}", pid_val, ws)
+                    ws = _query_working_set_bytes(pid_val, proc_handle, psapi, pmc)
+                    if ws is not None and _is_process_executable_safe(pid_val, proc_handle, psapi):
+                        yield ProcessMemory(f"PID {pid_val}", pid_val, ws)
                 finally:
                     kernel32.CloseHandle(proc_handle)
 
@@ -422,7 +420,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Acceso denegado o proceso no encontrado."
 
     try:
-        if not _is_process_executable_safe(target_pid, proc_handle):
+        if not _is_process_executable_safe(target_pid, proc_handle, psapi):
             return False, "Proceso protegido o ubicación insegura."
             
         if psapi.EmptyWorkingSet(proc_handle) == 0:
