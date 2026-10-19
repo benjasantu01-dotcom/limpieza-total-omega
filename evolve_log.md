@@ -479,3 +479,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-19T07:46:20` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `quarantine.py` mediante la normalización de docstrings (haciendo explícito el contrato y excepciones de cada función pública) y la corrección de una inconsistencia en el orden de los argumentos en `_register_quarantine_item` para alinearlo con sus llamadas.
 - `2026-10-19T07:46:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-19T07:46:20` Corrida terminada. Total usado hoy: 184.
+- `2026-10-19T07:53:47` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-10-19T07:54:09` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 114): unterminated string literal (detected at line 114)
+- `2026-10-19T07:54:56` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se introdujeron type hints explícitos en los predicados de validación y se reemplazaron las lambdas por funciones con nombres descriptivos para mejorar la legibilidad y facilitar el mantenimiento de las reglas de seguridad.
+- `2026-10-19T07:55:19` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: Scanner._is_reparse_point
+- `2026-10-19T07:55:35` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y el mantenimiento del módulo mediante la sustitución de comprobaciones de tipo dispersas por la implementación de una función `_is_valid_type` centralizada, y añadí docstrings detallados en las funciones de validación que explican la lógica de seguridad aplicada.
+- `2026-10-19T07:55:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-19T07:55:36` Corrida terminada. Total usado hoy: 188.

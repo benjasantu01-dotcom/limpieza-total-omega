@@ -527,8 +527,7 @@ def _validate_drive_restrictions(target_path: Path) -> None:
 def _check_symlink(p: Path, _: os.stat_result, __: SecurityDescriptor) -> bool: return p.is_symlink()
 def _check_reparse(p: Path, _: os.stat_result, sd: SecurityDescriptor) -> bool: return sd.is_reparse
 def _check_kernel_locked(p: Path, _: os.stat_result, __: SecurityDescriptor) -> bool: return _is_kernel_managed(str(p))
-def _check_read_only(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: 
-    return not bool(st.st_mode & stat.S_IWRITE) or sd.is_readonly
+def _check_read_only(p: Path, st: os.stat_result, sd: SecurityDescriptor) -> bool: return not bool(st.st_mode & stat.S_IWRITE) or sd.is_readonly
 def _check_vol_read_only(p: Path, _: os.stat_result, __: SecurityDescriptor) -> bool: return _is_volume_readonly(str(p))
 def _check_vol_removable(p: Path, _: os.stat_result, __: SecurityDescriptor) -> bool: return _is_volume_removable_media(str(p))
 def _check_vol_restricted(p: Path, _: os.stat_result, __: SecurityDescriptor) -> bool: return _is_volume_compressed_or_encrypted(str(p))

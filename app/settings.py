@@ -86,6 +86,10 @@ def _is_dict(val: Any) -> TypeGuard[SettingsDict]:
     """Verifica si el objeto es un diccionario para ser procesado como settings."""
     return isinstance(val, dict)
 
+def _is_valid_type(val: Any, key: ConfigKey) -> bool:
+    """Valida si el tipo del valor coincide con el esquema definido en DEFAULTS."""
+    return isinstance(val, type(DEFAULTS.get(key.value)))
+
 __all__ = [
     "DEFAULTS", "SETTINGS_DIR", "SETTINGS_FILE", "API_KEY_ENV_VAR",
     "VALID_THEMES", "VALID_ACCENTS", "settings_path", "load", "save",
@@ -247,7 +251,7 @@ class _Validators:
 
     @staticmethod
     def bool(key: ConfigKey, val: Any) -> Optional[bool]:
-        """Convierte valores de entrada a booleanos bajo una lista estricta de aceptados."""
+        """Normaliza valores a booleano mediante diccionario estricto; rechaza tipos incorrectos."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
@@ -259,7 +263,7 @@ class _Validators:
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
         """Convierte a entero y asegura que el valor se mantenga dentro del rango permitido."""
-        if val is None: return None
+        if val is None or not isinstance(val, (int, str)): return None
         parsed_value = int(val)
         limit = _NUMERIC_LIMITS.get(key)
         if limit: return max(limit.min, min(limit.max, parsed_value))
@@ -267,7 +271,7 @@ class _Validators:
 
     @staticmethod
     def path(key: ConfigKey, val: Any) -> Optional[str]:
-        """Valida si un string es una ruta absoluta, segura y no reentrante."""
+        """Valida rutas: debe ser absoluta, segura, no protegida y libre de inyección de caracteres."""
         if val == "": return ""
         if not isinstance(val, str): return None
         path_string = val.strip()
@@ -286,8 +290,8 @@ class _Validators:
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
         """Valida cadenas, rechazando intentos de navegación de directorio o caracteres peligrosos."""
-        if val is None: return None
-        text = str(val).strip()
+        if val is None or not isinstance(val, str): return None
+        text = val.strip()
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
         return _Validators._validate_enum_str(text, key)
 
@@ -378,7 +382,7 @@ def _coerce_and_verify(settings: AppSettings) -> AppSettings:
     if not isinstance(settings, dict): return DEFAULTS.copy()
     final: AppSettings = DEFAULTS.copy()
     for key, val in settings.items():
-        if key in DEFAULTS and val is not None and isinstance(val, type(DEFAULTS[key])):
+        if key in DEFAULTS and val is not None and _is_valid_type(val, ConfigKey(key)):
             final[key] = val
     if final.get("asistente_activado") and not (final.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
         final["asistente_activado"] = False
