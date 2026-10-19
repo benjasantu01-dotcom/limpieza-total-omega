@@ -351,9 +351,11 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         if not clean_name: return None
         target = (raw_path.parent / clean_name).resolve()
         
-        if is_protected_path(target) or not is_safe_to_modify(target):
-            return None
+        # Validar si el target ya existe y no es archivo (bloqueo por seguridad)
         if target.exists() and not target.is_file():
+            return None
+        
+        if is_protected_path(target) or not is_safe_to_modify(target):
             return None
             
         target.parent.mkdir(parents=True, exist_ok=True)
