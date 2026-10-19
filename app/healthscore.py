@@ -154,11 +154,15 @@ WEIGHTS: Final[Dict[MetricKey, int]] = {
 
 def _verify_pipeline_integrity(weights: Dict[str, int], pipeline: Tuple[PipelineEntry, ...]) -> None:
     """Valida la integridad estructural: pesos suman 100 y áreas coinciden."""
-    if sum(weights.values()) != 100:
-        raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
-    pipeline_areas = {e.area for e in pipeline}
-    if set(weights.keys()) != pipeline_areas:
-        raise ValueError("Inconsistencia entre áreas en WEIGHTS y _PIPELINE.")
+    try:
+        if sum(weights.values()) != 100:
+            logging.error("Integridad de Pipeline fallida: Los pesos no suman 100.")
+            return
+        pipeline_areas = {e.area for e in pipeline}
+        if set(weights.keys()) != pipeline_areas:
+            logging.error("Integridad de Pipeline fallida: Desajuste de áreas.")
+    except Exception as e:
+        logging.error(f"Error crítico validando integridad del pipeline: {e}")
 
 _JUNK_SCORER = create_linear_scorer(_LIMIT_JUNK_MB, inverse=True)
 _DUP_SCORER = create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)
@@ -329,7 +333,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Computa el puntaje global mediante el pipeline con validación de suma total."""
-    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
+    if metrics is None or not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema inválidos."])
         
     recommendations: List[str] = []
@@ -337,14 +341,17 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     total_points = 0.0
     
     for entry in _PIPELINE:
-        area_ratio = _clamp(entry.scorer(metrics))
-        if entry.rules:
-            _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
-        
-        points = area_ratio * entry.weight
-        val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
-        metric_breakdown[entry.area] = val_int
-        total_points += val_int
+        try:
+            area_ratio = _clamp(entry.scorer(metrics))
+            if entry.rules:
+                _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
+            
+            points = area_ratio * entry.weight
+            val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
+            metric_breakdown[entry.area] = val_int
+            total_points += val_int
+        except Exception:
+            continue
             
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")

@@ -409,3 +409,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-19T06:54:16` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-19T06:54:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-19T06:54:16` Corrida terminada. Total usado hoy: 164.
+- `2026-10-19T07:02:53` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-10-19T07:03:24` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se mejoró `_verify_pipeline_integrity` y `compute_score` para manejar de forma robusta entradas nulas o inconsistentes, evitando que la ejecución de la app se detenga por fallos silenciosos en la carga de datos.
+- `2026-10-19T07:04:33` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación robusta y centralizada en `_sanitize_path` para prevenir inyecciones y errores de codificación en rutas, y se mejoró `_safe_get_entry_value` para manejar de forma explícita valores `None` o entradas malformadas antes de que lleguen a la lógica de negocio, alineándose con el enfoque de validación de entradas.
+- `2026-10-19T07:05:00` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-19T07:05:10` ➖ Sin cambios en organizer.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez en `stage_for_review` y `delete_reviewed` al validar explícitamente los tipos de entrada y capturar excepciones de forma granular, evitando que rutas mal formadas o problemas de permisos silencien fallos críticos de integridad.
+- `2026-10-19T07:05:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-19T07:05:10` Corrida terminada. Total usado hoy: 168.

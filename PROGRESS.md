@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 45
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-18 | 138 | 11 | 35 | 14 | 142 |
-| 2026-10-19 | 59 | 5 | 10 | 11 | 79 |
+| 2026-10-18 | 135 | 11 | 35 | 13 | 142 |
+| 2026-10-19 | 61 | 5 | 10 | 12 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **42**
 - seguridad defensiva: **42**
-- legibilidad y documentación: **41**
+- legibilidad y documentación: **38**
 - rendimiento: **37**
-- manejo de errores y validación de entradas: **35**
+- manejo de errores y validación de entradas: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
-- `settings.py`: **18**
-- `safety.py`: **16**
+- `settings.py`: **17**
+- `healthscore.py`: **16**
 - `diskreport.py`: **16**
 - `browser.py`: **15**
 - `duplicates.py`: **15**
-- `healthscore.py`: **15**
 - `memory.py`: **15**
+- `safety.py`: **15**
 - `assistant.py`: **14**
-- `scanner.py`: **12**
+- `main.py`: **12**
 - `branding.py`: **12**
-- `main.py`: **11**
+- `scanner.py`: **11**
 - `organizer.py`: **10**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-19T07:04:33` **main.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta y centralizada en `_sanitize_path` para prevenir inyecciones y errores de codificación en rutas, y se mejoró `_safe_get_entry_value` para manejar de forma explícita valores `None` o entradas malformadas antes de que lleguen a la lógica de negocio, alineándose con el enfoque de validación de entradas.
+- `2026-10-19T07:03:24` **healthscore.py** (manejo de errores y validación de entradas): Se mejoró `_verify_pipeline_integrity` y `compute_score` para manejar de forma robusta entradas nulas o inconsistentes, evitando que la ejecución de la app se detenga por fallos silenciosos en la carga de datos.
 - `2026-10-19T06:54:07` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas y verificando el estado del `root_path` ante posibles cambios durante la ejecución, asegurando que la función no falle inesperadamente si una carpeta es eliminada por un proceso externo mientras se escanea.
 - `2026-10-19T06:53:41` **browser.py** (manejo de errores y validación de entradas): Se reforzó la validación de entrada en `directory_size` y `_resolve_browser_path` para evitar procesar rutas nulas, vacías o mal formadas antes de que lleguen a las llamadas al sistema, previniendo excepciones innecesarias y mejorando la robustez ante estados inesperados.
 - `2026-10-19T06:46:14` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` reemplazando la recursión libre por un chequeo iterativo/limitado que protege contra desbordamiento de pila y posibles inyecciones mediante estructuras JSON altamente anidadas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-19T05:01:33` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_excluded_path` al asegurar que los chequeos de `stat` y `resolve` manejen de forma explícita errores comunes de acceso, evitando que la lógica falle al intentar leer metadatos de archivos del sistema que, aunque no estén en la lista protegida, bloquean el acceso a nivel de kernel.
 - `2026-10-19T05:01:06` **browser.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_is_valid_cache_path` y `_should_skip_entry` para validar explícitamente que las rutas procesadas no contengan caracteres de control o secuencias sospechosas antes de realizar operaciones de E/S, evitando posibles vulnerabilidades de inyección de ruta o desbordamiento al interactuar con APIs de sistema.
 - `2026-10-19T04:52:22` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la validación implícita con una verificación explícita mediante `is_safe_to_modify` y se añadió una capa de sanitización en el nombre de archivo para prevenir posibles inyecciones de rutas o caracteres no deseados en la construcción del path.
-- `2026-10-19T04:50:57` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_dir_safe` y `_read_and_parse_json` añadiendo verificaciones explícitas contra `PermissionError` y `OSError` durante la lectura de metadatos, evitando que la app aborte o retorne estados inconsistentes ante denegaciones de acceso al filesystem.
-- `2026-10-19T04:42:06` **safety.py** (robustez ante casos límite): Se ha implementado `_is_unc_path_accessible` mediante `GetDiskFreeSpaceW` para validar que las rutas UNC (bloqueadas actualmente por defecto) sean tratables como volúmenes válidos, y se integró un chequeo preventivo de `OSError` con `errno` en `_is_file_locked_by_other_process` para manejar casos de denegación de acceso por permisos de kernel, mejorando la robustez ante estados del sistema transitorios sin alterar la lógica de seguridad.

@@ -262,12 +262,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return hasattr(widget, 'winfo_exists') and widget.winfo_exists()
 
     def _sanitize_path(self, path: Union[str, Path]) -> str:
-        """Limpia caracteres no imprimibles de rutas para evitar inyecciones de control."""
-        return "".join(c for c in str(path) if c.isprintable())
+        """Limpia caracteres no imprimibles y espacios excesivos para evitar inyecciones."""
+        if path is None: return ""
+        return "".join(c for c in str(path) if c.isprintable()).strip()
 
     def _ensure_safe_path_for_action(self, path: Union[str, Path]) -> Path:
         """Valida que la ruta sea segura antes de cualquier operación destructiva."""
-        p = Path(self._sanitize_path(path)).resolve(strict=False)
+        sanitized = self._sanitize_path(path)
+        if not sanitized: raise ValueError("Ruta vacía o inválida")
+        p = Path(sanitized).resolve(strict=False)
         safety.ensure_safe_to_modify(p)
         return p
 
@@ -387,6 +390,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """
         try:
             clean_p = self._sanitize_path(path)
+            if not clean_p: raise safety.UnsafePathError("Ruta vacía")
             p = Path(clean_p).resolve(strict=False)
             
             if not os.access(p, os.R_OK):
@@ -1050,7 +1054,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not path:
             return False
         try:
-            p = Path(self._sanitize_path(path)).resolve(strict=False)
+            sanitized = self._sanitize_path(path)
+            if not sanitized: return False
+            p = Path(sanitized).resolve(strict=False)
             return p.exists() and p.is_dir()
         except (OSError, RuntimeError):
             return False
