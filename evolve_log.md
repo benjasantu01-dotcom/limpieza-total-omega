@@ -590,3 +590,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-19T09:07:04` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré la robustez ante casos límite de integridad del sistema de archivos añadiendo un chequeo explícito de "bloqueo exclusivo" (file locking) mediante el manejo de manejadores Win32 antes de intentar cualquier operación de metadatos, lo que previene errores de acceso denegado en archivos que están siendo procesados por servicios del sistema (como los de actualización de Windows) sin recurrir a excepciones pesadas.
 - `2026-10-19T09:07:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-19T09:07:04` Corrida terminada. Total usado hoy: 216.
+- `2026-10-19T09:15:19` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-10-19T09:15:59` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-19T09:16:39` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: robustez ante casos límite).
+- `2026-10-19T09:17:25` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-10-19T09:17:58` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva de `assistant.py` al restringir estrictamente la exposición de datos del sistema mediante la adición de una validación explícita en `_build_payload`, asegurando que `SYSTEM_PROMPT` no sea manipulado y que el contenido del contexto pase por `_ensure_safe_text` antes de cualquier serialización, previniendo inyecciones de datos en el prompt remoto.
+- `2026-10-19T09:17:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-19T09:17:58` Corrida terminada. Total usado hoy: 220.

@@ -688,6 +688,8 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     q: str = _sanitize_query(question)
     if not q or not _ensure_safe_text(q): return None
     full_prompt: str = f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"
+    # Doble verificación de seguridad sobre el prompt final antes de serializar
+    if not _ensure_safe_text(full_prompt): return None
     payload_data: dict[str, Any] = {"contents": [{"parts": [{"text": full_prompt}]}]}
     if not _is_safe_payload_structure(payload_data): return None
     if len(full_prompt) > _MAX_PROMPT_LIMIT or _is_input_too_deep_or_complex(full_prompt): 
