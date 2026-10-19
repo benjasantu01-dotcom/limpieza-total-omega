@@ -347,6 +347,13 @@ def _is_unc_path(path_str: str) -> bool:
     if not isinstance(path_str, str): return False
     return path_str.startswith(("\\\\", "//"))
 
+def _is_unc_path_accessible(path_str: str) -> bool:
+    """Valida conectividad básica de un recurso UNC vía API de disco."""
+    if not _is_unc_path(path_str) or os.name != 'nt': return False
+    try:
+        return ctypes.windll.kernel32.GetDiskFreeSpaceW(path_str, None, None, None, None) != 0
+    except Exception: return False
+
 @lru_cache(maxsize=128)
 def _is_reserved_device_name(name: str) -> bool:
     """Detecta nombres reservados por el sistema (ej. CON, LPT1)."""
@@ -392,7 +399,8 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
             
         kernel32.CloseHandle(handle)
         return False
-    except (OSError, ctypes.ArgumentError, AttributeError, MemoryError, PermissionError):
+    except (OSError, ctypes.ArgumentError, AttributeError, MemoryError, PermissionError) as e:
+        if isinstance(e, OSError) and e.errno in (errno.EPERM, errno.EACCES): return True
         return True
 
 def _get_security_descriptor(path: Path) -> SecurityDescriptor:
@@ -819,8 +827,8 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC)
     if path_string.startswith(("\\\\.\\", "//./", LONG_PATH_PREFIX)) and not path_string.startswith(LONG_PATH_PREFIX):
         raise UnsafePathError("Acceso a Namespace de dispositivos prohibido.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
-    if _is_unc_path(path_string):
-        raise UnsafePathError("Rutas UNC/Red bloqueadas.", SafetyValidationErrorCode.UNC_PATH)
+    if _is_unc_path(path_string) and not _is_unc_path_accessible(path_string):
+        raise UnsafePathError("Rutas UNC/Red bloqueadas o inaccesibles.", SafetyValidationErrorCode.UNC_PATH)
     if ".." in path_string.split(os.sep):
         raise UnsafePathError("Path traversal detectado.", SafetyValidationErrorCode.OUT_OF_BOUNDS)
     if _is_path_too_long(path_string):

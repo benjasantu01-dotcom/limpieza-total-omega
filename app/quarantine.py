@@ -95,8 +95,9 @@ def _verify_source_fs_permissions(path: Path) -> None:
     if os.name == 'nt':
         try:
             attrs = ctypes.windll.kernel32.GetFileAttributesW(p_str)
-            if attrs != -1 and (attrs & 0x02 or attrs & 0x04):
-                raise UnsafePathError("Archivo protegido por atributos de sistema.")
+            # 0x02: Oculto, 0x04: Sistema, 0x100: Temporal
+            if attrs != -1 and (attrs & 0x02 or attrs & 0x04 or attrs & 0x100):
+                raise UnsafePathError("Archivo protegido por atributos de sistema o temporal.")
         except (OSError, AttributeError):
             pass
 
@@ -134,7 +135,7 @@ def _win_has_system_attributes(path: Path) -> bool:
     if os.name != 'nt': return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-        return attrs != -1 and bool(attrs & 0x02 or attrs & 0x04)
+        return attrs != -1 and bool(attrs & 0x02 or attrs & 0x04 or attrs & 0x100)
     except (OSError, AttributeError):
         return True
 
