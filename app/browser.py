@@ -278,7 +278,6 @@ def _is_valid_cache_path(candidate: Path, base: Path) -> bool:
     
     try:
         real = candidate.resolve(strict=True)
-        if not is_safe_to_modify(real) or is_protected_path(real): return False
         if not _is_within_sandbox(real, base): return False
         return not (candidate.is_symlink() or _IS_JUNCTION_FN(str(real)) or _is_excluded_file(candidate.name))
     except (OSError, RuntimeError): return False

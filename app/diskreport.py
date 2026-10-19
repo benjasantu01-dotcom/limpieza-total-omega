@@ -158,7 +158,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     Verifica enlaces simbólicos, protección de sistema y caracteres sospechosos.
     """
     name = entry.name
-    # Validación rápida pre-I/O: caracteres sospechosos y nulos
+    # Validación rápida pre-I/O
     if not name or '\0' in name or any(c in name for c in SUSPICIOUS_CHARS):
         return True
     if any(char in name for char in ('<', '>', ':', '"', '|', '?', '*')):
@@ -167,23 +167,13 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     try:
         if entry.is_symlink():
             return True
-            
-        try:
-            entry_path = Path(entry.path).resolve(strict=False)
-            if root_path not in entry_path.parents and entry_path != root_path:
-                return True
-        except (OSError, RuntimeError):
-            return True
-            
+        
         if is_protected_path(Path(entry.path)):
             return True
         
         if os.name == 'nt':
-            try:
-                st = entry.stat(follow_symlinks=False)
-                if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x400):
-                    return True
-            except (OSError, PermissionError):
+            st = entry.stat(follow_symlinks=False)
+            if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x400):
                 return True
         
         return False
@@ -294,17 +284,13 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """Recorrido recursivo seguro para prevenir ciclos mediante inodos."""
     root_path = _validate_root(directory)
-    if root_path is None or not root_path.exists(): 
-        return
+    if root_path is None: return
     
     visited_inodes: set[Inode] = set()
-    stack: List[str] = [str(root_path)]
+    stack: List[Path] = [root_path]
     
     while stack:
         current_dir = stack.pop()
-        if skip_protected and is_protected_path(Path(current_dir)):
-            continue
-            
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
@@ -317,7 +303,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(entry.path)
+                                stack.append(Path(entry.path))
                         elif entry.is_file():
                             yield Path(entry.path), st.st_size
                     except (PermissionError, FileNotFoundError):
@@ -351,8 +337,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     
     for path, size in walk_files(root, skip_protected):
         try:
-            if skip_protected and is_protected_path(path):
-                continue
             rel = path.relative_to(root)
             if not rel.parts: continue
             top_path = str(root / rel.parts[0])
@@ -377,26 +361,18 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     """
     Escaneo consolidado mediante min-heap para mantener eficiencia de memoria
     durante la recolección de los archivos más pesados.
-    
-    Args:
-        directory: Ruta raíz a escanear (debe estar validada).
-        skip_protected: Flag para omitir rutas protegidas.
-        limit: Cantidad de archivos top a mantener en memoria.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []
     
     for path, size in walk_files(directory, skip_protected):
-        try:
-            stats.register_file(size, path.suffix)
-            
-            if limit > 0:
-                if len(top_heap) < limit:
-                    heapq.heappush(top_heap, (size, path))
-                elif size > top_heap[0][0]:
-                    heapq.heapreplace(top_heap, (size, path))
-        except (OSError, PermissionError, AttributeError):
-            continue
+        stats.register_file(size, path.suffix)
+        
+        if limit > 0:
+            if len(top_heap) < limit:
+                heapq.heappush(top_heap, (size, path))
+            elif size > top_heap[0][0]:
+                heapq.heapreplace(top_heap, (size, path))
                 
     return SummaryData(stats.total_bytes, stats.total_files, stats.ext_stats, top_heap)
 
@@ -409,10 +385,8 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     
     try:
         data = _collect_summary_data(root, skip_protected, limit=20)
-    except PermissionError:
-        return ["Error: Acceso denegado a parte del sistema de archivos."]
-    except OSError as e:
-        return [f"Error de sistema al analizar el disco: {e.strerror}"]
+    except Exception:
+        return ["Error de sistema al analizar el disco."]
         
     if data.total_files == 0: 
         return ["Aviso: No se encontraron archivos accesibles en la ruta seleccionada."]

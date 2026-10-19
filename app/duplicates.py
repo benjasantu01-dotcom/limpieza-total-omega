@@ -124,7 +124,6 @@ def _safe_path_check(path: Path) -> bool:
     Devuelve True solo si la ruta es accesible y no representa un riesgo sistémico.
     """
     try:
-        # Validación estricta: la ruta real no debe ser un punto de reanálisis
         resolved_path = path.resolve()
         return (is_safe_to_modify(path) and 
                 not is_protected_path(path) and 
@@ -256,24 +255,21 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Verificaciones rápidas usando la entrada de directorio
                         if entry.is_dir(follow_symlinks=False):
                             path_entry = Path(entry.path)
                             if _safe_path_check(path_entry):
                                 queue.append((path_entry, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
-                            path_entry = Path(entry.path)
-                            
-                            try:
-                                file_stat = entry.stat(follow_symlinks=False)
-                            except (OSError, FileNotFoundError):
-                                continue
-
+                            file_stat = entry.stat(follow_symlinks=False)
                             if file_stat.st_size < min_size or (file_stat.st_dev, file_stat.st_ino) in visited_inodes:
                                 continue
                             
+                            path_entry = Path(entry.path)
                             if skip_protected and is_protected_path(path_entry):
                                 continue
-                                
+                            
+                            # Validar solo los archivos que cumplen el tamaño y no fueron visitados
                             if _is_valid_candidate(path_entry, file_stat.st_size):
                                 visited_inodes.add((file_stat.st_dev, file_stat.st_ino))
                                 size_to_paths_map[file_stat.st_size].append(path_entry)

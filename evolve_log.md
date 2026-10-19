@@ -977,3 +977,10 @@ FAILED evolve/tests/test_modules.py::test_diagnose_on_critical_memory_suggests_c
 - `2026-10-19T12:30:55` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el renderizado de la barra de gradiente `draw_gradient_bar` reemplazando la creación individual de líneas por una segmentación eficiente, lo cual reduce drásticamente el número de objetos en el `Canvas` de `customtkinter` y mejora la performance en redibujados frecuentes.
 - `2026-10-19T12:30:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-19T12:30:55` Corrida terminada. Total usado hoy: 296.
+- `2026-10-19T12:39:08` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-10-19T12:39:49` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé `_sum_directory_recursive` reemplazando la validación redundante `is_safe_to_modify` y `is_protected_path` (que ya se ejecutan en el punto de entrada `directory_size` o al detectar cada base) por un uso directo de `os.scandir` y `stat` para reducir drásticamente las llamadas al sistema y la latencia del escaneo.
+- `2026-10-19T12:40:25` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la eficiencia de `walk_files` y `largest_folders` evitando llamadas redundantes a `is_protected_path` sobre rutas ya validadas y simplificando el acceso a `stat_result` para reducir las operaciones de I/O por archivo.
+- `2026-10-19T12:40:53` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se optimizó el proceso de recolección de candidatos evitando llamadas redundantes a `stat()` y `_safe_path_check` al centralizar la verificación en el `scandir` y utilizando la información ya obtenida del `DirEntry`, lo que reduce drásticamente las operaciones de E/S innecesarias.
+- `2026-10-19T12:41:04` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-10-19T12:41:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-19T12:41:04` Corrida terminada. Total usado hoy: 300.
