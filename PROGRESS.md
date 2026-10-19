@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **198** (39.3% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 27
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-18 | 116 | 8 | 30 | 13 | 133 |
-| 2026-10-19 | 82 | 8 | 19 | 14 | 81 |
+| 2026-10-18 | 112 | 8 | 30 | 13 | 133 |
+| 2026-10-19 | 85 | 8 | 19 | 14 | 82 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
-- seguridad defensiva: **39**
 - manejo de errores y validación de entradas: **39**
 - rendimiento: **37**
-- robustez ante casos límite: **33**
+- robustez ante casos límite: **36**
+- seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
 - `settings.py`: **18**
+- `quarantine.py`: **18**
 - `diskreport.py`: **16**
 - `duplicates.py`: **16**
-- `memory.py`: **15**
+- `browser.py`: **16**
 - `healthscore.py`: **15**
 - `safety.py`: **15**
-- `browser.py`: **15**
-- `main.py`: **13**
-- `assistant.py`: **13**
-- `branding.py`: **13**
-- `organizer.py`: **11**
+- `assistant.py`: **14**
+- `branding.py`: **14**
+- `memory.py`: **14**
+- `main.py`: **12**
 - `scanner.py`: **11**
+- `organizer.py`: **10**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-19T08:46:18` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante rutas inexistentes y permisos denegados en `detect_profiles` añadiendo validaciones granulares antes de iniciar la recursión pesada, previniendo que una sola ruta mal formada o con permisos restringidos afecte la integridad del escaneo de otros navegadores.
+- `2026-10-19T08:45:54` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y manipulación de rutas, asegurando que si `destination` es una ruta de sistema, un directorio existente, o si la sanitización resulta en una ruta inválida/protegida, la función retorne `None` de forma segura sin intentar operaciones de escritura en disco.
+- `2026-10-19T08:45:24` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez ante estados de sistema inesperados mediante la implementación de `_is_nan_or_inf` para validar métricas (evitando errores en los cálculos de `SystemContext`), y se añadió un manejo de errores más estricto en la ingesta para asegurar que cualquier dato corrupto se descarte silenciosamente en lugar de comprometer la integridad del contexto.
 - `2026-10-19T08:24:55` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` evitando el costo innecesario de `is_protected_path` (que implica acceso a disco y resolución de rutas) para procesos cuyo tamaño de memoria ya fue descartado por los filtros básicos, moviendo la validación de seguridad a la última etapa del filtrado.
 - `2026-10-19T08:16:39` **main.py** (rendimiento): Se implementó un mecanismo de **invalidación selectiva de caché mediante digests de estado** en `on_full_analysis`, evitando el re-cálculo y re-renderizado de la UI de salud si los datos subyacentes no han cambiado, lo que reduce significativamente la carga de procesamiento en cada refresco.
 - `2026-10-19T08:15:41` **healthscore.py** (rendimiento): Se ha optimizado la generación del informe de salud reemplazando la construcción manual de strings dentro de bucles por el uso de `str.join()` y pre-cálculos de formateo, reduciendo la sobrecarga de asignaciones de memoria y mejorando la eficiencia del bucle de resumen.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-19T07:54:56` **safety.py** (legibilidad y documentación): Se introdujeron type hints explícitos en los predicados de validación y se reemplazaron las lambdas por funciones con nombres descriptivos para mejorar la legibilidad y facilitar el mantenimiento de las reglas de seguridad.
 - `2026-10-19T07:46:20` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `quarantine.py` mediante la normalización de docstrings (haciendo explícito el contrato y excepciones de cada función pública) y la corrección de una inconsistencia en el orden de los argumentos en `_register_quarantine_item` para alinearlo con sus llamadas.
 - `2026-10-19T07:45:50` **organizer.py** (legibilidad y documentación): Se ha añadido un docstring estructurado a la función `_is_safe_for_disk_op` para documentar la lógica de validación en cascada y se han aplicado type hints consistentes en los retornos de las funciones de chequeo, mejorando la legibilidad del flujo crítico de seguridad.
-- `2026-10-19T07:45:24` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `memory.py` mediante la refactorización de `_iter_process_memory` para extraer la lógica de enumeración, logrando una estructura más clara y facilitando la validación paso a paso de los procesos, sin alterar su funcionalidad.
-- `2026-10-19T07:44:51` **main.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `main.py` mediante la refactorización de `_check_environment_integrity`, extrayendo la lógica de validación de rutas a una función privada más descriptiva y documentando explícitamente el "porqué" de las restricciones de entorno mediante comentarios técnicos alineados con las reglas de seguridad.
-- `2026-10-19T07:35:04` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del módulo `healthscore.py` mediante la adición de Type Hints en las funciones de fábrica y la parametrización explícita de los `RecommendationRule`, permitiendo que el IDE y las herramientas de análisis estático detecten errores en la configuración del pipeline antes de la ejecución.

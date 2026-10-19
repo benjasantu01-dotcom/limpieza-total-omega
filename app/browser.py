@@ -293,6 +293,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     kernel = _get_kernel32()
     
     for base in raw_bases:
+        if not base.exists(): continue
         try:
             real_base = base.resolve(strict=True)
             ctx = ScanContext(os.path.normcase(str(real_base)), kernel, _IS_JUNCTION_FN, set(), set())
@@ -301,7 +302,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
                 candidate = _resolve_browser_path(real_base, relative_path)
                 if candidate != Path() and _is_valid_cache_path(candidate, ctx.sandbox_base_norm):
                     scan_res = _sum_directory_recursive(str(candidate), ctx, 0)
-                    if scan_res.bytes_found > 0:
+                    if scan_res.success and scan_res.bytes_found > 0:
                         found.append(BrowserCache(str(browser_key), candidate, scan_res.bytes_found))
         except (OSError, RuntimeError): continue
     

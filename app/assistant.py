@@ -89,6 +89,11 @@ _CONTEXT_SCHEMA: Final = (
     ("duplicate_mb", " MB", 0), ("startup_count", "", 0)
 )
 
+def _is_nan_or_inf(val: Any) -> bool:
+    """Verifica si un valor es NaN o Infinito, evitando errores de cálculo."""
+    if not isinstance(val, (int, float)): return True
+    return math.isnan(val) or math.isinf(val)
+
 def _is_safe_key(key: str) -> bool:
     """Valida que una clave de diccionario o atributo no sea privada, interna o un método."""
     if not isinstance(key, str): return False
@@ -99,7 +104,7 @@ def _is_safe_key(key: str) -> bool:
 
 def _check_metric_integrity(val: Any) -> bool:
     """Verifica que un valor numérico sea seguro, finito y coherente para el asistente."""
-    return isinstance(val, (int, float)) and not isinstance(val, bool) and math.isfinite(val) and not math.isnan(val)
+    return isinstance(val, (int, float)) and not isinstance(val, bool) and not _is_nan_or_inf(val)
 
 def _is_safe_numeric_context(val: Any) -> bool:
     """Verifica límites de seguridad para evitar desbordamientos en cálculos de contexto."""
@@ -130,9 +135,6 @@ def _get_safe_attr(obj: Any, name: str, default: Any = None) -> Any:
 def _safe_handler_wrapper(func: Callable[[SystemContext, str], Answer]) -> Callable[[SystemContext, str], Answer]:
     """
     Decorador protector para manejadores de consulta (query handlers).
-    
-    Asegura que el `SystemContext` sea válido antes de procesar y captura 
-    cualquier excepción durante la ejecución para evitar fallos en la interfaz.
     """
     @wraps(func)
     def wrapper(ctx: SystemContext, q: str) -> Answer:
@@ -170,8 +172,6 @@ class MetricSpec:
 class ProblemCriterion(NamedTuple):
     """
     Regla declarativa para detectar condiciones de riesgo.
-    Define qué métrica monitorear, el umbral de disparo, la lógica de comparación
-    y el formato del mensaje de advertencia para el usuario.
     """
     metric_key: str
     threshold: float
@@ -363,7 +363,6 @@ def _is_metric_within_bounds(val: float, spec: MetricSpec) -> bool:
 class SystemContext:
     """
     Contenedor de estado consolidado que representa la salud del sistema.
-    Gestiona la ingesta de datos externos, su validación y la exposición de métricas seguras.
     """
     score: Optional[int] = None
     grade: str = ""
@@ -419,7 +418,7 @@ class SystemContext:
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
         """Valida, convierte y verifica límites de un campo individual según su especificación."""
         val: Any = _get_source_value(source, key)
-        if val is None: return None
+        if val is None or _is_nan_or_inf(val): return None
         if isinstance(val, bool): return None
         try:
             valid_val: Optional[float] = _is_valid_numeric_update(val, spec)
@@ -436,7 +435,7 @@ class SystemContext:
         return clean if _ensure_safe_text(clean) else ""
 
     def _validate_and_sanitize_data(self, source: Any) -> Optional[dict[str, Any]]:
-        """Extrae datos válidos de una fuente externa. Retorna dict solo si hay cambios validos."""
+        """Extrae datos válidos de una fuente externa."""
         updates: dict[str, Any] = {}
         for key, spec in _VALIDATORS.items():
             try:
@@ -476,7 +475,7 @@ class SystemContext:
 
 @dataclass
 class Answer:
-    """Encapsula la respuesta final del asistente, incluyendo metadatos de fuente."""
+    """Encapsula la respuesta final del asistente."""
     text: str
     source: str = "local"
     notice: str = ""
@@ -493,7 +492,7 @@ def _is_safe_path_input(text: str) -> bool:
     return bool(_REGEX_STRUCTURE_INJECTION.search(text) or _REGEX_PATH_TRAVERSAL.search(text) or _REGEX_SYSTEM_PATHS.search(text))
 
 def _contains_forbidden_patterns(text: str) -> bool:
-    """Verifica si el texto contiene patrones de seguridad prohibidos definidos en las expresiones regulares."""
+    """Verifica si el texto contiene patrones de seguridad prohibidos."""
     return any(pattern.search(text) for pattern in SECURITY_PATTERNS)
 
 def _ensure_safe_text(text: Any) -> bool:
@@ -515,14 +514,14 @@ def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
         return None
 
 def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> SystemContext:
-    """Crea un objeto SystemContext a partir de múltiples fuentes de datos de análisis."""
+    """Crea un objeto SystemContext a partir de múltiples fuentes de datos."""
     ctx: SystemContext = SystemContext()
     for s in (metrics, health, extra):
         if s is not None: ctx.ingest(s)
     return ctx
 
 def context_as_text(context: SystemContext) -> str:
-    """Serializa el contexto a un formato textual seguro para el prompt del asistente."""
+    """Serializa el contexto a un formato textual seguro para el prompt."""
     if context.is_empty: return ""
     snapshot: dict[str, float] = context.metrics_snapshot
     res: list[str] = []
@@ -721,7 +720,7 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
     return None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
-    """Realiza una petición POST segura a la API de Google verificando integridad de la URL."""
+    """Realiza una petición POST segura a la API de Google."""
     if not isinstance(api_key, str) or not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model) or not context_text:
         return None
     payload: Optional[bytes] = _build_payload(question, context_text)

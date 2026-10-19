@@ -348,11 +348,12 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     if not destination: return None
     try:
         raw_path = Path(destination)
-        # Sanitización básica: evitar caracteres que puedan comprometer la ruta
-        target = raw_path.parent / "".join(c for c in raw_path.name if c.isalnum() or c in "._-")
-        target = target.resolve()
+        # Sanitización: extraer nombre limpio y asegurar que es archivo
+        clean_name = "".join(c for c in raw_path.name if c.isalnum() or c in "._-")
+        if not clean_name: return None
+        target = (raw_path.parent / clean_name).resolve()
         
-        # Validación de seguridad defensiva
+        # Validación de seguridad: no tocar rutas protegidas, no sobrescribir directorios
         if is_protected_path(target) or not is_safe_to_modify(target):
             return None
         if target.exists() and not target.is_file():
