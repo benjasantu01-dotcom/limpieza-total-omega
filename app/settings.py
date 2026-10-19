@@ -159,8 +159,9 @@ def _is_dir_safe(path: Path) -> bool:
 
 class _SettingsManager:
     """
-    Singleton para gestionar la caché de configuración en memoria y
-    garantizar que la escritura en disco sea atómica y segura.
+    Singleton que gestiona el estado de la configuración.
+    - settings_cache: Almacena (mtime, size, dict) para evitar re-lecturas.
+    - path_cache: Mapea bases personalizadas a rutas de archivo resueltas.
     """
     def __init__(self) -> None:
         self.settings_cache: dict[str, tuple[float, int, AppSettings]] = {}
@@ -299,11 +300,15 @@ INT_KEYS: Final[frozenset[ConfigKey]] = frozenset((
     ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB, ConfigKey.TOP_ARCHIVOS, ConfigKey.TOP_PROCESOS
 ))
 
+def _get_validator_for_key(k: ConfigKey) -> _ValidatorEntry:
+    """Selecciona el validador apropiado según el tipo de clave."""
+    if k in BOOL_KEYS: return _ValidatorEntry(_Validators.bool)
+    if k in INT_KEYS: return _ValidatorEntry(_Validators.int)
+    if k == ConfigKey.ULTIMA_CARPETA: return _ValidatorEntry(_Validators.path)
+    return _ValidatorEntry(_Validators.str)
+
 _VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, _ValidatorEntry]] = MappingProxyType({
-    k: _ValidatorEntry(_Validators.bool if k in BOOL_KEYS else 
-                      (_Validators.int if k in INT_KEYS else 
-                      (_Validators.path if k == ConfigKey.ULTIMA_CARPETA else _Validators.str))) 
-    for k in ConfigKey
+    k: _get_validator_for_key(k) for k in ConfigKey
 })
 
 def validate(raw_values: Any) -> AppSettings:

@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **192** (38.1% de aceptación)
-- Rechazadas por tests: 14
+- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 47
-- Sin cambios (nada sustancial que mejorar): 28
-- Sin respuesta de la IA (error o límite): 223
+- Sin cambios (nada sustancial que mejorar): 26
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-17 | 23 | 1 | 4 | 5 | 41 |
+| 2026-10-17 | 22 | 1 | 4 | 3 | 40 |
 | 2026-10-18 | 144 | 11 | 37 | 15 | 143 |
-| 2026-10-19 | 25 | 2 | 6 | 8 | 39 |
+| 2026-10-19 | 28 | 3 | 6 | 8 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **45**
+- legibilidad y documentación: **48**
 - seguridad defensiva: **41**
 - manejo de errores y validación de entradas: **40**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **37**
 - rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **21**
-- `settings.py`: **17**
-- `diskreport.py`: **16**
-- `safety.py`: **16**
+- `settings.py`: **18**
+- `safety.py`: **17**
 - `duplicates.py`: **16**
+- `diskreport.py`: **15**
 - `memory.py`: **15**
 - `assistant.py`: **14**
-- `scanner.py`: **12**
+- `scanner.py`: **13**
 - `organizer.py`: **12**
 - `browser.py`: **12**
 - `healthscore.py`: **12**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-19T03:30:43` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo documentando el propósito de `_SettingsManager` mediante type hints específicos, y reemplacé la lógica de construcción de `_VALIDATOR_MAP` por una estructura más clara y explícita, facilitando la comprensión del flujo de validación.
+- `2026-10-19T03:30:12` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad del módulo mediante la adición de Type Hints faltantes (especialmente en los decoradores y retornos de funciones de chequeo), la clarificación de los docstrings sobre las restricciones de ejecución para evitar efectos secundarios, y la consolidación de la lógica de guardas en `_is_safe_entry` para mejorar la mantenibilidad de la lógica de seguridad.
+- `2026-10-19T03:29:45` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings estructurados (usando el formato de "por qué" y "qué hace") en las funciones críticas de validación que carecían de claridad, facilitando el mantenimiento y la auditoría del código.
 - `2026-10-19T03:20:21` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `quarantine_file` para separar claramente las responsabilidades de validación, transferencia y registro, eliminando la sobrecarga cognitiva del bloque `try-except` anidado y mejorando el flujo lógico.
 - `2026-10-19T03:09:57` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `healthscore.py` mediante la adición de Type Hints detallados en los parámetros de los *factories* de reglas y el uso de `Docstrings` más precisos que aclaran la intención de los componentes del pipeline, facilitando su mantenimiento futuro.
 - `2026-10-19T03:09:26` **duplicates.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos, se mejoró la tipografía de los tipos (type hints) y se añadieron comentarios explicativos en los métodos de orquestación para aclarar el flujo de trabajo, mejorando la mantenibilidad sin cambiar la lógica.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-19T02:40:15` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de las validaciones en `stage_for_review` y `delete_reviewed` al asegurar que las rutas se resuelvan antes de cualquier chequeo de seguridad y capturando explícitamente posibles fallos en la conversión de tipos, evitando que el bucle de procesamiento se detenga inesperadamente.
 - `2026-10-19T02:39:46` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en `trim_working_set` y las funciones de consulta de procesos, sustituyendo el acceso directo a punteros `ctypes` por chequeos explícitos de éxito (`None`/`INVALID_HANDLE_VALUE`) y capturando excepciones de sistema de forma más granular para evitar caídas imprevistas.
 - `2026-10-19T02:29:17` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la robustez del cálculo del score `compute_score` implementando un manejo de excepciones más granular y defensivo, asegurando que un fallo inesperado en una regla individual no contamine el desglose ni comprometa el resultado final.
-- `2026-10-19T02:28:18` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `directory_size` validando explícitamente que el parámetro `path` no sea una ruta vacía o None tras la conversión a `Path`, evitando posibles excepciones de resolución de sistema en entradas inválidas antes de iniciar el escaneo recursivo.
-- `2026-10-19T02:20:29` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_validate_and_sanitize_data` en `assistant.py` mediante la captura explícita de excepciones durante el procesamiento de campos individuales, evitando que un valor mal formado interrumpa la ingesta de todo el conjunto de métricas.
-- `2026-10-19T00:58:08` **settings.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_read_and_parse_json` al implementar una comprobación explícita de `st_nlink` y `st_mode` antes de abrir el archivo, previniendo riesgos de ataques mediante enlaces físicos (hard links) y asegurando que solo se procesen archivos regulares sin permisos de ejecución ni escritura compartida.

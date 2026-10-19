@@ -1122,3 +1122,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-19T03:20:25` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 113): unterminated string literal (detected at line 113)
 - `2026-10-19T03:20:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-19T03:20:25` Corrida terminada. Total usado hoy: 80.
+- `2026-10-19T03:28:55` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-10-19T03:29:45` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings estructurados (usando el formato de "por qué" y "qué hace") en las funciones críticas de validación que carecían de claridad, facilitando el mantenimiento y la auditoría del código.
+- `2026-10-19T03:30:12` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad del módulo mediante la adición de Type Hints faltantes (especialmente en los decoradores y retornos de funciones de chequeo), la clarificación de los docstrings sobre las restricciones de ejecución para evitar efectos secundarios, y la consolidación de la lógica de guardas en `_is_safe_entry` para mejorar la mantenibilidad de la lógica de seguridad.
+- `2026-10-19T03:30:43` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del archivo documentando el propósito de `_SettingsManager` mediante type hints específicos, y reemplacé la lógica de construcción de `_VALIDATOR_MAP` por una estructura más clara y explícita, facilitando la comprensión del flujo de validación.
+- `2026-10-19T03:30:56` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.60s
+
+```
+- `2026-10-19T03:30:56` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `startup.py` añadiendo tipos más precisos (específicamente `Union` y `List`), refinando la documentación con los motivos detrás de la validación, y normalizando los nombres de métodos internos para reflejar mejor su naturaleza de utilidad privada.
+- `2026-10-19T03:30:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-19T03:30:56` Corrida terminada. Total usado hoy: 84.

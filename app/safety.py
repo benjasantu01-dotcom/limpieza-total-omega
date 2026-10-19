@@ -53,7 +53,11 @@ class Win32Attr(IntEnum):
     ENCRYPTED: int = 0x4000
 
 class SecurityDescriptor(NamedTuple):
-    """Contenedor de metadatos de seguridad extraídos vía Win32 API."""
+    """
+    Contenedor de metadatos de seguridad extraídos vía Win32 API.
+    Se utiliza como snapshot inmutable para las reglas de validación, evitando
+    consultas redundantes al kernel durante la evaluación de políticas.
+    """
     attrs: int
     is_protected_system: bool
     is_in_use: bool
@@ -596,6 +600,7 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
 def _get_path_stat_robust(path: Path) -> os.stat_result:
     """
     Obtiene metadatos del archivo usando reintentos ante bloqueos temporales del sistema.
+    Necesario para evitar falsos positivos TOCTOU durante operaciones de escaneo rápido.
     """
     max_retries = 3
     if not isinstance(path, Path):
@@ -684,7 +689,10 @@ def _normalize_resolved(path_str: str) -> Path:
 
 @lru_cache(maxsize=4096)
 def normalize(path: PathLike) -> Path:
-    """Normaliza rutas, resolviendo enlaces y detectando trampas como reparse points."""
+    """
+    Normaliza rutas para el motor de seguridad, resolviendo enlaces y detectando 
+    trampas de path traversal o reparse points maliciosos antes de cualquier operación.
+    """
     if path is None: raise UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC)
     path_str = str(path).strip()
     
@@ -978,7 +986,11 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
     """
     Función de entrada principal para validar si un archivo puede ser modificado.
-    Lanza `UnsafePathError` ante cualquier riesgo detectado tras múltiples capas de inspección.
+    
+    Por qué: Es el punto de control único para toda acción destructiva, centralizando 
+    la lógica de seguridad y evitando la duplicación de chequeos.
+    Qué hace: Normaliza, valida componentes, verifica precondiciones, comprueba integridad
+    (TOCTOU) y finalmente confirma permisos de acceso. Lanza UnsafePathError si falla.
     """
     if not isinstance(path, (str, Path, os.PathLike)):
         raise UnsafePathError(f"Tipo de ruta no soportado: {type(path).__name__}", SafetyValidationErrorCode.GENERIC)
@@ -1026,14 +1038,21 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         raise UnsafePathError(f"Error crítico durante la validación: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> bool:
-    """Versión booleana de `ensure_safe_to_modify` para uso seguro en filtros de bucles."""
+    """
+    Versión booleana de `ensure_safe_to_modify`.
+    Uso: Filtrado preventivo en bucles (ej. al escanear directorios) donde no queremos
+    abortar por completo, sino simplemente ignorar ítems protegidos.
+    """
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive, base_dir=base_dir)
         return True
     except (UnsafePathError, ValueError, TypeError, OSError, PermissionError, MemoryError): return False
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> list[Path]:
-    """Filtra una colección de rutas, devolviendo solo aquellas que son seguras para operar."""
+    """
+    Filtra una colección de rutas, devolviendo solo aquellas que son seguras para operar.
+    Útil para procesar listados generados por el escáner antes de enviarlos a la interfaz.
+    """
     results: list[Path] = []
     if paths is None: return results
     for p in paths:

@@ -184,7 +184,6 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
     """
     Analiza si el nombre del archivo combina extensiones de documentos con ejecutables.
     Técnica común para engañar usuarios mostrando iconos de archivo inofensivo.
-    Requiere un objeto Path válido.
     """
     if path is None or not hasattr(path, 'name') or not path.name: return None
     try:
@@ -198,7 +197,6 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     """
     Detecta ejecutables recién descargados en carpetas volátiles (Downloads, Temp, Desktop).
     El umbral de tiempo se define en SCAN_LIMITS.recent_hours.
-    Requiere un objeto entry válido para consultar mtime de forma eficiente.
     """
     if path is None or path.parent is None: return None
     try:
@@ -256,7 +254,6 @@ class Scanner:
         self.seen: set[str] = set()
         self.safe_cache: set[str] = set()
         self.path_stat_cache: Dict[str, bool] = {}
-        # Resolvemos con strict=False para evitar errores prematuros, pero normalizamos la ruta
         self.base_root_str: str = str(base_root.resolve(strict=False)).lower()
         self.now_ts: float = datetime.now().timestamp()
 
@@ -292,18 +289,14 @@ class Scanner:
         try:
             if self._has_invalid_name(entry.name):
                 return False
-
             if entry.is_symlink():
                 return False
-            # Bloquea puntos de reanálisis incluso si no se marcan como symlinks (Junctions de Windows)
             if self._is_reparse_point(entry):
                 return False
             if _cached_is_protected(path_str):
                 return False
-
             if not _is_valid_path_structure(path_str):
                 return False
-            
             if not self._is_inside_base_root(path_str):
                 return False
                 
@@ -329,7 +322,7 @@ class Scanner:
         return _is_target_extension(name)
 
     def process_entry(self, entry: os.DirEntry, directory_stack: DirectoryStack, current_depth: int) -> None:
-        """Procesa una entrada individual (archivo o directorio) aplicando las heurísticas."""
+        """Procesa una entrada individual aplicando las heurísticas."""
         if entry is None or not hasattr(entry, 'path') or not entry.path:
             return
             
@@ -417,7 +410,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     return scanner.results
 
 def run_windows_defender_quick_scan() -> str:
-    """Interactúa con Windows Defender a través de PowerShell."""
+    """Interactúa con Windows Defender a través de PowerShell. Solo informar."""
     try:
         status = subprocess.run(
             ["powershell", "-Command", "Get-MpComputerStatus | Select-Object -ExpandProperty RealTimeProtectionEnabled"],
