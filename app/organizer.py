@@ -123,7 +123,7 @@ def is_valid_junk_extension(filename: str) -> bool:
     return Path(filename).suffix.lower() in JUNK_EXTENSIONS
 
 def _get_win_attributes(entry: os.DirEntry | Path) -> int:
-    """Extrae atributos de archivo específicos de Windows usando la API de DirEntry o Path."""
+    """Extracte atributos de archivo específicos de Windows usando la API de DirEntry o Path."""
     try:
         if isinstance(entry, os.DirEntry):
             return entry.stat(follow_symlinks=False).st_file_attributes
@@ -287,11 +287,12 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
                         if _should_scan_directory(entry, protected_cache):
                             _process_directory(Path(entry.path), found, depth + 1, protected_cache, visited)
                     elif entry.is_file(follow_symlinks=False):
-                        if entry.path in protected_cache: continue
+                        p = Path(entry.path)
+                        if str(p) in protected_cache: continue
                         if Path(entry.name).suffix.lower() in JUNK_EXTENSIONS:
                             stats = entry.stat(follow_symlinks=False)
                             if _is_candidate_junk(stats, entry, now_ts):
-                                found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
+                                found.append(JunkFile(p, stats.st_size, datetime.fromtimestamp(stats.st_mtime), stats.st_ino, stats.st_dev))
                 except (PermissionError, OSError):
                     continue
     except (PermissionError, OSError, RuntimeError):
@@ -371,6 +372,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             try:
                 if not item.is_file() or item.is_symlink(): continue
                 item_res = item.resolve(strict=False)
+                # Impedir escape de la carpeta de revisión
                 if os.path.commonpath([str(dest_res), str(item_res)]) != str(dest_res): continue
                 if not is_safe_to_modify(item_res) or is_protected_path(item_res): continue
                 

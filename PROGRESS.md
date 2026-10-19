@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 48
-- Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 214
+- Rechazadas por guardia de seguridad: 49
+- Sin cambios (nada sustancial que mejorar): 26
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-17 | 49 | 5 | 10 | 7 | 67 |
+| 2026-10-17 | 49 | 5 | 10 | 7 | 63 |
 | 2026-10-18 | 144 | 11 | 37 | 15 | 143 |
-| 2026-10-19 | 6 | 2 | 1 | 3 | 4 |
+| 2026-10-19 | 8 | 2 | 2 | 4 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **38**
+- seguridad defensiva: **38**
 - rendimiento: **37**
-- seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
+- `quarantine.py`: **21**
 - `diskreport.py`: **18**
 - `safety.py`: **18**
 - `memory.py`: **17**
@@ -41,12 +41,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **13**
 - `healthscore.py`: **12**
 - `scanner.py`: **12**
-- `organizer.py`: **11**
+- `organizer.py`: **12**
 - `branding.py`: **10**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-19T00:48:05` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `quarantine.py` implementando un chequeo estricto de rutas `UNC` y `Puntos de Reparse` directamente en `_validate_input_path` para prevenir ataques de trayectoria o acceso a dispositivos remotos antes de cualquier operación de I/O, siguiendo el principio de "fail-fast".
+- `2026-10-19T00:47:20` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_process_directory` y `delete_reviewed` implementando validaciones de rutas mediante `os.path.commonpath` y `resolve()` para evitar ataques de salto de directorio (directory traversal) y asegurar que solo se operen archivos dentro de los directorios permitidos o de cuarentena, previniendo errores de resolución de rutas relativas.
 - `2026-10-19T00:38:19` **main.py** (seguridad defensiva): Se introdujo un método de validación `_check_writable_dir` que verifica explícitamente el acceso de escritura antes de intentar persistir configuraciones, y se actualizó el decorador `_ensure_path_writable_and_clean` para asegurar que las rutas de configuración no sean solo seguras según `safety.py`, sino que efectivamente permitan operaciones de I/O antes de cualquier tentativa de modificación.
 - `2026-10-19T00:37:21` **healthscore.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `summarize` implementando una sanitización explícita sobre los mensajes de recomendación, asegurando que cualquier entrada proveniente de `HealthResult` pase por `_sanitize_msg` antes de ser presentada al usuario, eliminando el riesgo de inyección o caracteres no permitidos en la interfaz.
 - `2026-10-19T00:36:52` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la validación de integridad antes del cálculo de hash, asegurando que la ruta no haya sido alterada o movida a una zona protegida durante el tiempo transcurrido entre la recolección inicial y el procesamiento real del archivo.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-18T14:37:56` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` y `estimate_impact` evitando la conversión completa a `list` cuando solo se requiere iterar o contar, reemplazando el consumo innecesario de memoria y tiempo de CPU por el uso directo de iteradores.
 - `2026-10-18T14:26:58` **quarantine.py** (rendimiento): Mejoré la eficiencia del acceso al manifiesto en `load_manifest` mediante el uso de un diccionario de caché más robusto, evitando lecturas redundantes de disco y re-parseo de JSON, y optimicé el bucle de purgado en `purge_all` para minimizar las llamadas a `save_manifest`.
 - `2026-10-18T14:15:56` **duplicates.py** (rendimiento): Optimizado el rendimiento de `_collect_candidates` utilizando `os.scandir` para obtener metadatos (`st_dev`, `st_ino`, `st_size`) en una única llamada al sistema (syscall) por entrada, eliminando llamadas redundantes a `entry.is_file()` y `entry.stat()` que degradaban el rendimiento en directorios grandes.
-- `2026-10-18T14:07:10` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo integrando el `visited_dirs` en el `ScanContext` para prevenir visitas repetidas a directorios en estructuras de caché complejas, reduciendo la redundancia de I/O mediante un conjunto de rutas ya procesadas.
-- `2026-10-18T14:06:27` **assistant.py** (rendimiento): Se optimizó `SystemContext.metrics_snapshot` y `active_problems` reemplazando llamadas repetitivas a `self.__dict__` y `_check_metric_integrity` por un acceso directo y eficiente, reduciendo la sobrecarga de procesamiento en cada consulta del asistente.

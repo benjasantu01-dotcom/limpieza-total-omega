@@ -886,6 +886,10 @@ def _validate_input_path(source: PathLike) -> Path:
     p_source = Path(str(source))
     if not str(p_source).strip():
         raise ValueError("Ruta de origen vacía.")
+    
+    # Prevenir acceso a rutas UNC y verificar integridad básica
+    if str(p_source).startswith(r"\\") or str(p_source).startswith("//"):
+        raise UnsafePathError("Rutas UNC no permitidas.")
         
     if len(str(p_source)) > 260:
         raise UnsafePathError("Ruta de entrada excede límites del sistema.")
@@ -898,6 +902,9 @@ def _validate_input_path(source: PathLike) -> Path:
             
     if not p_source.exists():
         raise FileNotFoundError("Archivo origen no encontrado.")
+    
+    _check_path_for_junctions(p_source)
+    
     if not p_source.is_file():
         raise ValueError("El origen debe ser un archivo regular.")
     if not os.access(p_source, os.R_OK):
