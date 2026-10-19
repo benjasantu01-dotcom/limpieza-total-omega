@@ -302,31 +302,23 @@ def read_snapshot() -> MemorySnapshot:
     return _get_cached_snapshot(int(time.time() / 5))
 
 def _is_process_accessible(pid: int, access_mask: int, kernel32: Any) -> Optional[int]:
-    """
-    Intenta obtener un handle Win32 al proceso solicitando el acceso especificado.
-    Retorna el handle si es posible, o None si el acceso es denegado o el proceso es crítico.
-    """
+    """Intenta obtener un handle Win32 al proceso solicitando el acceso especificado."""
     if _is_system_process(pid): return None
-    return kernel32.OpenProcess(access_mask, False, pid)
+    handle = kernel32.OpenProcess(access_mask, False, pid)
+    return handle if handle not in (0, INVALID_HANDLE_VALUE) else None
 
 def _query_working_set_bytes(pid: int, handle: int, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
-    """
-    Consulta mediante PSAPI los contadores de memoria de un proceso (WorkingSetSize).
-    Verifica que el handle sea válido y que el consumo esté dentro de umbrales lógicos.
-    """
+    """Consulta mediante PSAPI los contadores de memoria de un proceso (WorkingSetSize)."""
     try:
         if psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), ctypes.c_uint32(pmc.cb)):
             val = pmc.WorkingSetSize
             return BytesValue(val) if 0 < val < MAX_VALID_PROCESS_MEM else None
-    except (ctypes.WinError, OSError):
+    except (ctypes.WinError, OSError, ValueError):
         return None
     return None
 
 def _is_process_executable_safe(pid: int, handle: int) -> bool:
-    """
-    Valida la integridad de la ruta del ejecutable mediante GetModuleFileNameExW.
-    Retorna True solo si la ruta reside fuera de directorios del sistema protegidos.
-    """
+    """Valida la integridad de la ruta del ejecutable mediante GetModuleFileNameExW."""
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "GetModuleFileNameExW"): return False
     
@@ -343,10 +335,7 @@ def _is_process_executable_safe(pid: int, handle: int) -> bool:
     return False
 
 def _iter_process_memory(kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
-    """
-    Enumera procesos activos del sistema, aplicando filtros de seguridad sobre 
-    la ubicación del ejecutable antes de extraer las métricas de memoria.
-    """
+    """Enumera procesos activos del sistema, aplicando filtros de seguridad."""
     max_pids = 4096
     pids = (ctypes.c_uint32 * max_pids)()
     cb_needed = ctypes.c_uint32(0)
@@ -427,13 +416,12 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Operación no permitida en procesos del sistema."
     
     psapi, kernel32 = ctypes.windll.psapi, ctypes.windll.kernel32
-    proc_handle = kernel32.OpenProcess(TRIM_ACCESS_MASK, False, target_pid)
+    proc_handle = _is_process_accessible(target_pid, TRIM_ACCESS_MASK, kernel32)
     
-    if not proc_handle or proc_handle == INVALID_HANDLE_VALUE:
+    if proc_handle is None:
         return False, "Acceso denegado o proceso no encontrado."
 
     try:
-        # Validación de seguridad del proceso antes de cualquier manipulación de memoria.
         if not _is_process_executable_safe(target_pid, proc_handle):
             return False, "Proceso protegido o ubicación insegura."
             

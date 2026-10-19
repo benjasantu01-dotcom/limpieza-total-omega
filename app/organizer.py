@@ -346,7 +346,7 @@ def stage_for_review(files: Sequence[JunkFile], review_dir: str = "~/LimpiezaTot
                 logger.error(f"Error moviendo {junk_file.path}: {e}")
                 continue
         return dest_res
-    except (OSError, ValueError, RuntimeError):
+    except (OSError, ValueError, RuntimeError, TypeError):
         return None
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
@@ -372,15 +372,15 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             try:
                 if not item.is_file() or item.is_symlink(): continue
                 item_res = item.resolve(strict=False)
-                # Impedir escape de la carpeta de revisión
+                # Impedir escape de la carpeta de revisión usando commonpath
                 if os.path.commonpath([str(dest_res), str(item_res)]) != str(dest_res): continue
                 if not is_safe_to_modify(item_res) or is_protected_path(item_res): continue
                 
                 item_res.unlink()
                 count += 1
-            except (OSError, PermissionError, FileNotFoundError, ValueError) as e:
+            except (OSError, PermissionError, FileNotFoundError, ValueError, TypeError) as e:
                 logger.warning(f"No se pudo eliminar {item}: {e}")
                 continue
         return count
-    except (OSError, PermissionError, RuntimeError):
+    except (OSError, PermissionError, RuntimeError, TypeError):
         return 0
