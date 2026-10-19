@@ -752,6 +752,10 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         raise FileNotFoundError("Archivo origen no existe.")
     
     try:
+        # Validación temprana de integridad del directorio destino para evitar fallos intermedios
+        if not destination.parent.exists():
+            raise OSError("Directorio de cuarentena inaccesible durante la operación.")
+        
         pre_stat = source.stat()
     except OSError:
         raise RuntimeError("No se pudo obtener estado de archivo.")

@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Mejoras aceptadas: **199** (39.5% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 49
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 27
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-18 | 110 | 8 | 29 | 13 | 132 |
-| 2026-10-19 | 87 | 8 | 20 | 14 | 83 |
+| 2026-10-18 | 110 | 8 | 29 | 13 | 128 |
+| 2026-10-19 | 89 | 8 | 21 | 14 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
+- robustez ante casos límite: **40**
 - manejo de errores y validación de entradas: **39**
-- robustez ante casos límite: **38**
 - rendimiento: **37**
 - seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **18**
+- `quarantine.py`: **19**
 - `settings.py`: **17**
 - `duplicates.py`: **17**
 - `diskreport.py`: **16**
+- `safety.py`: **16**
 - `browser.py`: **16**
 - `healthscore.py`: **15**
-- `safety.py`: **15**
 - `assistant.py`: **14**
 - `branding.py`: **14**
 - `memory.py`: **14**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-19T09:07:04` **safety.py** (robustez ante casos límite): Mejoré la robustez ante casos límite de integridad del sistema de archivos añadiendo un chequeo explícito de "bloqueo exclusivo" (file locking) mediante el manejo de manejadores Win32 antes de intentar cualquier operación de metadatos, lo que previene errores de acceso denegado en archivos que están siendo procesados por servicios del sistema (como los de actualización de Windows) sin recurrir a excepciones pesadas.
+- `2026-10-19T09:06:15` **quarantine.py** (robustez ante casos límite): Se introdujo una validación robusta para prevenir condiciones de "Race Condition" y errores de I/O en `_atomic_isolate_file` al verificar la existencia y el estado del directorio destino antes de iniciar la transferencia de archivos, añadiendo consistencia ante interrupciones.
 - `2026-10-19T08:57:00` **main.py** (robustez ante casos límite): Se introdujo una gestión robusta de estados de ejecución asíncrona mediante un semáforo de bloqueo (`self._worker_lock`) en el pool de hilos, evitando condiciones de carrera al procesar múltiples tareas de análisis pesado que podrían entrar en conflicto o saturar la UI.
 - `2026-10-19T08:55:23` **duplicates.py** (robustez ante casos límite): Se introdujo una gestión robusta de errores en `_collect_candidates` para prevenir que fallos imprevistos al leer atributos de archivos (como estados de "archivo no encontrado" en condiciones de carrera) interrumpan el escaneo de directorios.
 - `2026-10-19T08:46:18` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante rutas inexistentes y permisos denegados en `detect_profiles` añadiendo validaciones granulares antes de iniciar la recursión pesada, previniendo que una sola ruta mal formada o con permisos restringidos afecte la integridad del escaneo de otros navegadores.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-19T08:05:53` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas costosas a `os.path.normcase` y `os.path.normpath` dentro de cada iteración del bucle, y eliminando la redundancia de `resolve(strict=True)` al procesar rutas, lo cual reduce drásticamente el uso de CPU durante escaneos masivos.
 - `2026-10-19T08:05:35` **branding.py** (rendimiento): Se optimizó el acceso a constantes de color y configuración mediante la eliminación de llamadas innecesarias a `get()` y `strip()` en los métodos de acceso (`color`, `font_size`, `icon`, `tab_label`), aprovechando que las estructuras base son inmutables y pre-validadas, reduciendo la carga de CPU en renderizados recurrentes.
 - `2026-10-19T08:04:29` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de `StartupEntry` para clarificar la lógica de resolución diferida (lazy loading) y los criterios de validación de seguridad, utilizando docstrings más técnicos que explican el "porqué" de las restricciones aplicadas en cada etapa del procesamiento.
-- `2026-10-19T07:55:35` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento del módulo mediante la sustitución de comprobaciones de tipo dispersas por la implementación de una función `_is_valid_type` centralizada, y añadí docstrings detallados en las funciones de validación que explican la lógica de seguridad aplicada.
-- `2026-10-19T07:54:56` **safety.py** (legibilidad y documentación): Se introdujeron type hints explícitos en los predicados de validación y se reemplazaron las lambdas por funciones con nombres descriptivos para mejorar la legibilidad y facilitar el mantenimiento de las reglas de seguridad.

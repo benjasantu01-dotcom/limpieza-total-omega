@@ -384,23 +384,17 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
     
     try:
         kernel32 = ctypes.windll.kernel32
+        # Intenta abrir con acceso 0 (query) para verificar exclusividad
         handle = kernel32.CreateFileW(
             _to_long_path(path_str), 0, 0, None, 3, 0x00000080, None
         )
         if handle == -1: 
             err = kernel32.GetLastError()
             return err in (ERROR_SHARING_VIOLATION, ERROR_INVALID_NAME)
-        
-        # Validación de integridad de manejador
-        file_info = (ctypes.c_uint64 * 3)()
-        if not kernel32.GetFileInformationByHandle(handle, file_info):
-            kernel32.CloseHandle(handle)
-            return True
             
         kernel32.CloseHandle(handle)
         return False
-    except (OSError, ctypes.ArgumentError, AttributeError, MemoryError, PermissionError) as e:
-        if isinstance(e, OSError) and e.errno in (errno.EPERM, errno.EACCES): return True
+    except (OSError, ctypes.ArgumentError, AttributeError, MemoryError, PermissionError):
         return True
 
 def _get_security_descriptor(path: Path) -> SecurityDescriptor:
