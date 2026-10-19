@@ -155,7 +155,7 @@ def _is_dir_safe(path: Path) -> bool:
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
         if st.st_mode & (stat.S_IWGRP | stat.S_IWOTH): return False
         return True
-    except OSError: return False
+    except (OSError, PermissionError): return False
 
 class _SettingsManager:
     """
@@ -339,7 +339,9 @@ def _read_and_parse_json(file_path: Path) -> tuple[Optional[str], Optional[Setti
     if not is_safe_to_modify(str(file_path)): return None, None
     try:
         with open(file_path, "rb") as f:
-            st = os.fstat(f.fileno())
+            try:
+                st = os.fstat(f.fileno())
+            except (OSError, PermissionError): return None, None
             if not _is_file_secure_to_read(st): return None, None
             content = f.read(MAX_SETTINGS_SIZE + 1)
             if not content or len(content) > MAX_SETTINGS_SIZE: return None, None

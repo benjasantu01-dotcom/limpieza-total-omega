@@ -1203,3 +1203,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-19T04:42:18` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-10-19T04:42:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-19T04:42:18` Corrida terminada. Total usado hoy: 112.
+- `2026-10-19T04:50:24` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-10-19T04:50:57` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_dir_safe` y `_read_and_parse_json` añadiendo verificaciones explícitas contra `PermissionError` y `OSError` durante la lectura de metadatos, evitando que la app aborte o retorne estados inconsistentes ante denegaciones de acceso al filesystem.
+- `2026-10-19T04:51:24` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.64s
+
+```
+- `2026-10-19T04:51:24` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `startup.py` frente a rutas inválidas o inaccesibles añadiendo una validación explícita mediante `path.exists()` antes de invocar `resolve()` en el proceso de resolución de comandos, evitando excepciones `FileNotFoundError` no capturadas al manipular rutas fragmentadas en el registro.
+- `2026-10-19T04:52:04` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: seguridad defensiva).
+- `2026-10-19T04:52:22` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando la validación implícita con una verificación explícita mediante `is_safe_to_modify` y se añadió una capa de sanitización en el nombre de archivo para prevenir posibles inyecciones de rutas o caracteres no deseados en la construcción del path.
+- `2026-10-19T04:52:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-19T04:52:22` Corrida terminada. Total usado hoy: 116.
