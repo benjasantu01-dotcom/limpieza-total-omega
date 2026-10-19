@@ -203,7 +203,10 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
     return attrs != 0xFFFFFFFF and bool(attrs & SYSTEM_HIDDEN_FLAGS)
 
 def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
-    """Filtro de seguridad: descarta entradas si violan las políticas de archivos o seguridad."""
+    """
+    Filtro de seguridad: determina si una entrada debe ser ignorada.
+    Retorna True si la ruta es inválida, protegida, un punto de reparse, o un archivo de sistema.
+    """
     if _is_excluded_file(entry.name): return True
     path_str = entry.path
     if len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS) or any(ord(c) < 32 for c in path_str): return True
@@ -214,7 +217,12 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     return False
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
-    """Algoritmo de escaneo recursivo optimizado."""
+    """
+    Algoritmo de escaneo recursivo que suma el tamaño de archivos en una jerarquía.
+    
+    Returns:
+        ScanResult conteniendo los bytes totales y el estado de éxito del escaneo.
+    """
     if depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN: 
         return ScanResult(0, True)
     

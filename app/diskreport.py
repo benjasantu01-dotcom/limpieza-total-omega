@@ -109,6 +109,7 @@ class FolderMetrics:
 
     @property
     def size_mb(self) -> float:
+        """Retorna el peso acumulado convertido a Megabytes."""
         return _bytes_to_mb(self.size)
 
 

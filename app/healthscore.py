@@ -168,7 +168,7 @@ _JUNK_SCORER = create_linear_scorer(_LIMIT_JUNK_MB, inverse=True)
 _DUP_SCORER = create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)
 _STARTUP_SCORER = create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inverse=True)
 
-# Funciones de factory para reglas del pipeline: generan mensajes basados en SystemMetrics
+# Factories para mensajes de reglas, tipadas para asegurar consistencia
 def _msg_seguridad(m: SystemMetrics) -> str: return f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad."
 def _msg_disco(m: SystemMetrics) -> str: return f"Queda {m.disk_free_percent:.1f}% de disco libre."
 def _msg_memoria(m: SystemMetrics) -> str: return "Memoria disponible baja: cerrá procesos innecesarios."

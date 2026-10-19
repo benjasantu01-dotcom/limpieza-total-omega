@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 47
+- Rechazadas por guardia de seguridad: 46
 - Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 220
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-18 | 131 | 10 | 34 | 13 | 140 |
-| 2026-10-19 | 64 | 6 | 13 | 13 | 80 |
+| 2026-10-18 | 129 | 10 | 33 | 13 | 139 |
+| 2026-10-19 | 68 | 6 | 13 | 13 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **43**
 - robustez ante casos límite: **42**
 - seguridad defensiva: **42**
 - manejo de errores y validación de entradas: **39**
-- legibilidad y documentación: **39**
-- rendimiento: **33**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
+- `quarantine.py`: **19**
 - `settings.py`: **18**
-- `safety.py`: **16**
-- `diskreport.py`: **16**
-- `healthscore.py`: **15**
+- `diskreport.py`: **17**
+- `healthscore.py`: **16**
+- `browser.py`: **15**
+- `safety.py`: **15**
+- `duplicates.py`: **15**
 - `assistant.py`: **14**
-- `browser.py`: **14**
 - `memory.py`: **14**
-- `duplicates.py`: **14**
 - `branding.py`: **13**
 - `main.py`: **12**
 - `scanner.py`: **11**
@@ -46,6 +46,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-19T07:35:04` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del módulo `healthscore.py` mediante la adición de Type Hints en las funciones de fábrica y la parametrización explícita de los `RecommendationRule`, permitiendo que el IDE y las herramientas de análisis estático detecten errores en la configuración del pipeline antes de la ejecución.
+- `2026-10-19T07:34:49` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad y la robustez del código mediante la documentación técnica (docstrings) de las funciones críticas de hashing y el reemplazo de nombres de variables ambiguos por otros más descriptivos, facilitando el mantenimiento y la comprensión de las heurísticas aplicadas.
+- `2026-10-19T07:34:23` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad añadiendo type hints faltantes en los métodos de `GlobalStats` y `FolderMetrics`, y consolidé la documentación docstring para aclarar el propósito de cada clase y su interacción con las funciones de análisis.
+- `2026-10-19T07:33:53` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y tipos de retorno claros en las funciones críticas de escaneo recursivo, facilitando la comprensión del flujo de seguridad y la lógica de filtrado.
 - `2026-10-19T07:25:12` **branding.py** (legibilidad y documentación): Documenté con docstrings claros las funciones de utilidad de branding que carecían de especificaciones técnicas, detallando sus parámetros y comportamientos ante errores, para mejorar la mantenibilidad del código conforme a los estándares de documentación del proyecto.
 - `2026-10-19T07:23:53` **settings.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de archivos JSON mediante la captura específica de excepciones durante la serialización, asegurando que fallos inesperados al convertir tipos complejos o errores de codificación no terminen en una escritura parcial o corrupta del archivo de configuración.
 - `2026-10-19T07:15:02` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` ante entradas maliciosas o inesperadas, añadiendo una validación explícita para evitar errores de tipo `None` en los argumentos y normalizando el manejo de excepciones para asegurar que cualquier fallo en la validación sea capturado correctamente por `is_safe_to_modify`.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-19T05:23:04` **settings.py** (seguridad defensiva): Se endureció la seguridad defensiva en `_is_dir_safe` al implementar un chequeo de permisos que detecta si el directorio es escribible por el grupo o por otros (`others`), alineándolo con las mejores prácticas de seguridad de archivos para evitar configuraciones laxas en el sistema del usuario.
 - `2026-10-19T05:22:46` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `scanner.py` implementando una validación estricta de rutas mediante `pathlib.Path.resolve()` en el punto de entrada `scan_directory` para prevenir el uso de rutas relativas o maliciosas, y asegurando que las comparaciones contra `base_root` sean siempre absolutas y normalizadas.
 - `2026-10-19T05:22:18` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera (TOCTOU) introduciendo un chequeo de existencia inmediato y validación de tipo de archivo antes de procesar metadatos, además de limpiar el manejo de excepciones en `_get_path_stat_robust` para asegurar que errores inesperados sean tratados como `UnsafePathError`.
-- `2026-10-19T05:13:27` **quarantine.py** (seguridad defensiva): Se añadió una validación crítica en `quarantine_file` para verificar que el origen no sea un punto de montaje o unidad de disco raíz, evitando que `quarantine` intente procesar volúmenes enteros, mejorando la seguridad defensiva.
-- `2026-10-19T05:12:33` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_process_executable_safe` validando mediante `os.path.abspath` antes de resolver la ruta, asegurando que los chequeos de `is_protected_path` operen sobre rutas normalizadas y absolutas, evitando posibles ataques de recorrido de directorio o rutas ambiguas.
-- `2026-10-19T05:12:03` **main.py** (seguridad defensiva): He mejorado la robustez de la inicialización de la aplicación añadiendo una validación explícita para evitar que `_check_environment_integrity` falle silenciosamente o permita ejecutar la lógica en entornos donde el directorio de trabajo es inexistente o inseguro, protegiendo así la integridad desde el arranque.
-- `2026-10-19T05:02:12` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sanitize_msg` implementando un control estricto que utiliza `_BLOCKED_TERMS` para filtrar palabras clave de rutas sensibles antes de que cualquier mensaje de recomendación sea procesado por la UI, previniendo fugas de información.

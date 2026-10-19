@@ -123,11 +123,11 @@ def _safe_path_check(path: Path) -> bool:
     Devuelve True solo si la ruta es accesible y no representa un riesgo sistémico.
     """
     try:
-        resolved = path.resolve()
+        resolved_path = path.resolve()
         return (is_safe_to_modify(path) and 
                 not is_protected_path(path) and 
                 not is_junction(path) and
-                is_safe_to_modify(resolved))
+                is_safe_to_modify(resolved_path))
     except (OSError, RuntimeError, PermissionError, AttributeError):
         return False
 
@@ -145,7 +145,7 @@ def _is_valid_candidate(path: Path, st_size: int) -> bool:
 
 def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
-    Calcula el hash SHA256 completo del archivo usando bloques de 1MB.
+    Calcula el hash SHA256 completo del archivo (Paso 3) leyendo en bloques de 1MB.
     
     Retorna el hash hexadecimal o None si el archivo es inaccesible o inseguro.
     """
@@ -154,20 +154,20 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     if not _safe_path_check(path):
         return None
     try:
-        digest = hashlib.sha256()
+        hasher = hashlib.sha256()
         with open(path, "rb") as f:
             while (chunk := f.read(chunk_size)):
-                digest.update(chunk)
-        return digest.hexdigest()
+                hasher.update(chunk)
+        return hasher.hexdigest()
     except (OSError, IOError, PermissionError, ValueError):
         return None
 
 
 def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
-    Calcula el hash SHA256 de los primeros 64KB con almacenamiento en caché.
+    Calcula el hash SHA256 de los primeros 64KB (Paso 2) usando caché de resultados.
     
-    Esta función es el paso 2 del pipeline de detección de duplicados.
+    Es significativamente más rápido que el hash completo para archivos grandes.
     """
     if not isinstance(path, Path) or path in _partial_cache:
         return _partial_cache.get(path)
@@ -177,32 +177,32 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
         return None
     try:
         with open(path, "rb") as f:
-            content = f.read(read_bytes)
-            if not content:
+            header_content = f.read(read_bytes)
+            if not header_content:
                 return None
-            res = hashlib.sha256(content).hexdigest()
-            _partial_cache[path] = res
-            return res
+            digest_val = hashlib.sha256(header_content).hexdigest()
+            _partial_cache[path] = digest_val
+            return digest_val
     except (OSError, IOError, PermissionError, ValueError):
         return None
 
 
 def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
     """Agrupa una lista de rutas por su tamaño en bytes, filtrando candidatos inseguros."""
-    groups: Dict[int, List[Path]] = defaultdict(list)
+    groups_by_size: Dict[int, List[Path]] = defaultdict(list)
     if paths is None:
-        return groups
-    for p in paths:
-        if not p: continue
+        return groups_by_size
+    for path_str in paths:
+        if not path_str: continue
         try:
-            path_obj = Path(p)
+            path_obj = Path(path_str)
             if path_obj.is_file() and _safe_path_check(path_obj):
-                st_size = path_obj.stat().st_size
-                if _is_valid_candidate(path_obj, st_size):
-                    groups[st_size].append(path_obj)
+                file_size = path_obj.stat().st_size
+                if _is_valid_candidate(path_obj, file_size):
+                    groups_by_size[file_size].append(path_obj)
         except (OSError, ValueError, TypeError):
             continue
-    return groups
+    return groups_by_size
 
 
 def _resolve_and_verify_root(directory_path: PathLike) -> Optional[Path]:
@@ -229,8 +229,8 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
     queue: deque[Tuple[Path, int]] = deque()
     visited_inodes: set[Tuple[int, int]] = set()
 
-    for d in directories:
-        if (root := _resolve_and_verify_root(d)):
+    for dir_path in directories:
+        if (root := _resolve_and_verify_root(dir_path)):
             queue.append((root, 0))
     
     while queue:
@@ -243,25 +243,24 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                 for entry in iterator:
                     try:
                         if entry.is_dir(follow_symlinks=False):
-                            p_entry = Path(entry.path)
-                            if _safe_path_check(p_entry):
-                                queue.append((p_entry, depth + 1))
+                            path_entry = Path(entry.path)
+                            if _safe_path_check(path_entry):
+                                queue.append((path_entry, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
-                            # Validar existencia antes de stat ante cambios concurrentes en el sistema
                             if not entry.is_file(): continue
-                            p_entry = Path(entry.path)
-                            if not p_entry.exists() or not p_entry.is_file(): continue
+                            path_entry = Path(entry.path)
+                            if not path_entry.exists() or not path_entry.is_file(): continue
 
-                            st = entry.stat(follow_symlinks=False)
-                            if st.st_size < min_size or (st.st_dev, st.st_ino) in visited_inodes:
+                            file_stat = entry.stat(follow_symlinks=False)
+                            if file_stat.st_size < min_size or (file_stat.st_dev, file_stat.st_ino) in visited_inodes:
                                 continue
                             
-                            if skip_protected and is_protected_path(p_entry):
+                            if skip_protected and is_protected_path(path_entry):
                                 continue
                                 
-                            if _is_valid_candidate(p_entry, st.st_size):
-                                visited_inodes.add((st.st_dev, st.st_ino))
-                                size_to_paths_map[st.st_size].append(p_entry)
+                            if _is_valid_candidate(path_entry, file_stat.st_size):
+                                visited_inodes.add((file_stat.st_dev, file_stat.st_ino))
+                                size_to_paths_map[file_stat.st_size].append(path_entry)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
@@ -274,8 +273,8 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if not isinstance(path, Path): continue
-        if (digest := hash_func(path)):
-            groups_by_digest[digest].append(path)
+        if (digest_val := hash_func(path)):
+            groups_by_digest[digest_val].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
 
@@ -319,13 +318,13 @@ def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     """
     Retorna metadatos para la heurística de elección del archivo original.
     
-    Retorna una tupla (mtime, longitud de ruta).
+    Retorna una tupla (tiempo_modificación, longitud_ruta).
     """
     try:
         if not isinstance(path, Path) or not path.is_file():
             return None
-        stat = path.stat()
-        return float(stat.st_mtime), len(str(path))
+        stat_info = path.stat()
+        return float(stat_info.st_mtime), len(str(path))
     except (OSError, AttributeError, FileNotFoundError):
         return None
 
@@ -338,12 +337,12 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         return None
     
     candidates: List[Tuple[Tuple[float, int], Path]] = []
-    for p in group.paths:
-        if not isinstance(p, Path): 
+    for path_item in group.paths:
+        if not isinstance(path_item, Path): 
             continue
-        score = _calculate_keeper_heuristic(p)
+        score = _calculate_keeper_heuristic(path_item)
         if score is not None:
-            candidates.append((score, p))
+            candidates.append((score, path_item))
             
     if not candidates:
         return None
@@ -365,9 +364,10 @@ def format_group(group: DuplicateGroup) -> List[str]:
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return ["Error: Grupo inválido o vacío"]
     keeper = suggest_keeper(group)
-    mb_t, mb_w = round(group.size_bytes / 1048576, 2), round(group.wasted_bytes / 1048576, 2)
-    lines = [f"{group.count} copias de {mb_t} MB (recuperable: {mb_w} MB)"]
-    for path in group.paths:
-        if isinstance(path, Path):
-            lines.append(f"   {_get_path_label(path, keeper)} {path}")
+    mb_total = round(group.size_bytes / 1048576, 2)
+    mb_wasted = round(group.wasted_bytes / 1048576, 2)
+    lines = [f"{group.count} copias de {mb_total} MB (recuperable: {mb_wasted} MB)"]
+    for path_item in group.paths:
+        if isinstance(path_item, Path):
+            lines.append(f"   {_get_path_label(path_item, keeper)} {path_item}")
     return lines
