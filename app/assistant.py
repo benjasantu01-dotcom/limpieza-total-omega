@@ -418,8 +418,7 @@ class SystemContext:
     def _apply_field(self, source: Any, key: str, spec: MetricSpec) -> Any:
         """Valida, convierte y verifica límites de un campo individual según su especificación."""
         val: Any = _get_source_value(source, key)
-        if val is None or _is_nan_or_inf(val): return None
-        if isinstance(val, bool): return None
+        if val is None or _is_nan_or_inf(val) or isinstance(val, bool): return None
         try:
             valid_val: Optional[float] = _is_valid_numeric_update(val, spec)
             if valid_val is None: return None
@@ -438,11 +437,8 @@ class SystemContext:
         """Extrae datos válidos de una fuente externa."""
         updates: dict[str, Any] = {}
         for key, spec in _VALIDATORS.items():
-            try:
-                val = self._apply_field(source, key, spec)
-                if val is not None: updates[key] = val
-            except (Exception, ValueError, TypeError):
-                continue
+            val = self._apply_field(source, key, spec)
+            if val is not None: updates[key] = val
         
         grade_val = self._clean_grade(_get_source_value(source, "grade"))
         if grade_val: updates["grade"] = grade_val

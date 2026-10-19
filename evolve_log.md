@@ -875,3 +875,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-19T11:11:39` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-10-19T11:11:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-19T11:11:39` Corrida terminada. Total usado hoy: 264.
+- `2026-10-19T11:17:42` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-10-19T11:18:26` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `SystemContext.ingest` y `_apply_field` implementando validaciones de tipo explícitas y una lógica de retorno segura para prevenir la propagación de datos corruptos al contexto, cumpliendo con el enfoque de validación de entradas.
+- `2026-10-19T11:18:59` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-19T11:19:26` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_sum_directory_recursive` mediante la validación explícita de `root_path` y la captura de errores específicos al iterar con `os.scandir`, evitando fallos en caso de rutas nulas o permisos denegados en directorios padre.
+- `2026-10-19T11:19:37` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` reemplazando los silenciamientos genéricos de excepciones por capturas específicas y mensajes de error informativos, asegurando que los fallos de acceso no enmascaren problemas reales de configuración o privilegios, cumpliendo con el enfoque de validación de entradas.
+- `2026-10-19T11:19:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-19T11:19:37` Corrida terminada. Total usado hoy: 268.

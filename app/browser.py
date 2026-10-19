@@ -226,7 +226,7 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
     """
     Algoritmo de escaneo recursivo que suma el tamaño de archivos en una jerarquía.
     """
-    if depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN: 
+    if not root_path or depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN: 
         return ScanResult(0, True)
     
     norm_path = os.path.normcase(root_path)

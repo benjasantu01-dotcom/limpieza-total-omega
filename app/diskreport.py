@@ -320,9 +320,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 stack.append(entry.path)
                         elif entry.is_file():
                             yield Path(entry.path), st.st_size
-                    except (OSError, PermissionError, FileNotFoundError):
+                    except (PermissionError, FileNotFoundError):
                         continue
-        except (PermissionError, OSError, FileNotFoundError): 
+        except (PermissionError, FileNotFoundError): 
             continue
 
 
@@ -404,8 +404,10 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     
     try:
         data = _collect_summary_data(root, skip_protected, limit=20)
-    except (OSError, PermissionError, RuntimeError):
-        return ["Error: El escaneo fue interrumpido por problemas de acceso al sistema de archivos."]
+    except PermissionError:
+        return ["Error: Acceso denegado a parte del sistema de archivos."]
+    except OSError as e:
+        return [f"Error de sistema al analizar el disco: {e.strerror}"]
         
     if data.total_files == 0: 
         return ["Aviso: No se encontraron archivos accesibles en la ruta seleccionada."]
