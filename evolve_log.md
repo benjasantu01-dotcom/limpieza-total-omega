@@ -786,3 +786,28 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-18T23:34:57` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-18T23:45:10` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-10-18T23:55:19` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-10-19T00:05:28` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-10-19T00:06:30` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-19T00:07:43` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez de `main.py` ante errores inesperados durante la carga inicial de los widgets en las pestañas (`lazy loading`) al añadir un bloque `try-except` específico para `TclError` dentro de la fábrica de pestañas, asegurando que un componente corrupto no bloquee el renderizado del resto de la interfaz.
+- `2026-10-19T00:08:15` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-10-19T00:08:42` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-19T00:09:25` Tests FALLARON:
+```
+       TypeError: 'int' object does not support the context manager protocol
+
+app/quarantine.py:959: TypeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - TypeError: 'int' object does not support the context manager protocol
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - TypeError: 'int' object does not support the context manager protocol
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - TypeError: 'int' object does not support the context manager protocol
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - TypeError: 'int' object does not support the context manager protocol
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - TypeError: 'int' object does not support the context manager protocol
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - TypeError: 'int' object does not support the context manager protocol
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - TypeError: 'int' object does not support the context manager protocol
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - TypeError: 'int' object does not support the context manager protocol
+8 failed, 291 passed in 1.69s
+
+```
+- `2026-10-19T00:09:25` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se introdujo una validación de `os.fsync` en el proceso de aislamiento para garantizar que los metadatos y el contenido se hayan volcado físicamente al disco antes de proceder con el borrado del archivo original, mitigando riesgos de pérdida de datos por cierres abruptos o fallas de sistema.
+- `2026-10-19T00:09:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-19T00:09:25` Corrida terminada. Total usado hoy: 4.

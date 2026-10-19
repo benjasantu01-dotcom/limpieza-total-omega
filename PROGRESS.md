@@ -5,19 +5,20 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **502**
-- Mejoras aceptadas: **193** (38.4% de aceptación)
-- Rechazadas por tests: 16
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **193** (38.3% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 47
-- Sin cambios (nada sustancial que mejorar): 22
+- Sin cambios (nada sustancial que mejorar): 23
 - Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-17 | 49 | 5 | 10 | 7 | 81 |
+| 2026-10-17 | 49 | 5 | 10 | 7 | 79 |
 | 2026-10-18 | 144 | 11 | 37 | 15 | 143 |
+| 2026-10-19 | 0 | 1 | 0 | 1 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
