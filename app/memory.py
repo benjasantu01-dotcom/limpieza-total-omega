@@ -328,8 +328,9 @@ def _is_process_executable_safe(pid: int, handle: int, psapi: Any) -> bool:
             exe_str = buffer_path.value.strip()
             if not exe_str: return False
             executable_path = Path(os.path.normpath(exe_str)).resolve()
-            return executable_path.is_file() and not is_protected_path(executable_path)
-    except (ctypes.ArgumentError, OSError, ValueError, RuntimeError):
+            if not executable_path.exists(): return False
+            return not is_protected_path(executable_path)
+    except (ctypes.ArgumentError, OSError, ValueError, RuntimeError, Exception):
         pass
     return False
 

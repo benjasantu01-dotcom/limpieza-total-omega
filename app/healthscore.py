@@ -318,11 +318,14 @@ def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:
 
 def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio, findings: List[str]) -> None:
     """Ejecuta reglas de diagnóstico y registra advertencias halladas."""
-    if not math.isfinite(normalized_ratio): return
+    ratio = _clamp(normalized_ratio)
     for rule in rules:
-        if rule.check(metrics, normalized_ratio):
-            clean_msg = _apply_rule_safely(metrics, rule)
-            if clean_msg: findings.append(clean_msg)
+        try:
+            if rule.check(metrics, ratio):
+                clean_msg = _apply_rule_safely(metrics, rule)
+                if clean_msg: findings.append(clean_msg)
+        except Exception:
+            continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Computa el puntaje global mediante el pipeline con validación de suma total."""
