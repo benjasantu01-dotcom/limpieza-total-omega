@@ -1013,3 +1013,13 @@ FAILED evolve/tests/test_modules.py::test_diagnose_on_critical_memory_suggests_c
 - `2026-10-19T13:24:10` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `on_target_choice_changed` para prevenir la propagación de errores cuando el usuario selecciona una ruta, añadiendo una validación explícita de `is_safe_disk_operation` antes de aceptar cualquier carpeta externa como objetivo de análisis.
 - `2026-10-19T13:24:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-19T13:24:10` Corrida terminada. Total usado hoy: 316.
+- `2026-10-19T13:30:06` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-19T13:30:42` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_process_executable_safe` añadiendo un manejo de excepciones más granular y una validación de ruta absoluta, asegurando que la comprobación de seguridad no falle silenciosamente ante caracteres inválidos en la ruta o permisos restringidos del sistema operativo.
+- `2026-10-19T13:31:07` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-19T13:32:07` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-19T13:33:10` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-19T13:33:49` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-19T13:34:40` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-19T13:35:01` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-19T13:35:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-19T13:35:01` Corrida terminada. Total usado hoy: 320.
