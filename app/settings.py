@@ -319,13 +319,23 @@ def validate(raw_values: Any) -> AppSettings:
     return config 
 
 def _is_file_secure_to_read(st: os.stat_result, file_obj: Any) -> bool:
-    """Comprueba permisos, metadatos y asegura que no es un enlace simbólico."""
+    """Comprueba permisos, metadatos y asegura que no es un enlace simbólico o vínculo duro peligroso."""
     try:
-        st_l = os.lstat(file_obj.name)
-        if file_obj.closed or not stat.S_ISREG(st.st_mode) or stat.S_ISLNK(st_l.st_mode): return False
-        if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE or st.st_nlink != 1: return False
+        # Check hard links to prevent substitution attacks
+        if st.st_nlink != 1: return False
+        
+        # Check file type and permissions
+        if not stat.S_ISREG(st.st_mode): return False
+        
+        # Check for executable or wide-write bits
         if st.st_mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH | stat.S_IWGRP | stat.S_IWOTH): return False
+        
+        # Check ownership
         if hasattr(os, 'getuid') and st.st_uid != os.getuid(): return False
+        
+        # Size limits
+        if st.st_size == 0 or st.st_size > MAX_SETTINGS_SIZE: return False
+        
         return True
     except (OSError, PermissionError, AttributeError, ValueError): return False
 

@@ -256,10 +256,8 @@ class Scanner:
         self.seen: set[str] = set()
         self.safe_cache: set[str] = set()
         self.path_stat_cache: Dict[str, bool] = {}
-        try:
-            self.base_root_str: str = str(base_root.resolve(strict=False)).lower()
-        except (OSError, RuntimeError):
-            self.base_root_str = str(base_root).lower()
+        # Resolvemos con strict=False para evitar errores prematuros, pero normalizamos la ruta
+        self.base_root_str: str = str(base_root.resolve(strict=False)).lower()
         self.now_ts: float = datetime.now().timestamp()
 
     @lru_cache(maxsize=2048)
@@ -292,7 +290,7 @@ class Scanner:
             return True
         
         try:
-            if "\0" in path_str or RTL_CHAR_RE.search(path_str):
+            if self._has_invalid_name(entry.name):
                 return False
 
             if entry.is_symlink():
@@ -303,7 +301,7 @@ class Scanner:
             if _cached_is_protected(path_str):
                 return False
 
-            if not _is_valid_path_structure(path_str) or self._has_invalid_name(entry.name):
+            if not _is_valid_path_structure(path_str):
                 return False
             
             if not self._is_inside_base_root(path_str):
@@ -345,7 +343,6 @@ class Scanner:
                 if self._is_relevant_extension(entry.name):
                     self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError, FileNotFoundError):
-            # Omitir errores de acceso durante la enumeración dinámica
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
@@ -353,7 +350,6 @@ class Scanner:
         if path is None: return
         path_str = str(path)
         
-        # Doble verificación de estado por race conditions
         if not path.exists():
             return
             

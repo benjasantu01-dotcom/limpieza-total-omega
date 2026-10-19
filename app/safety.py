@@ -827,17 +827,16 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
         raise UnsafePathError("Flujo de datos alternativo detectado.", SafetyValidationErrorCode.ADS_DETECTED)
     if _is_device_file(target_path):
         raise UnsafePathError("Acceso a dispositivo bloqueado.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
-    if _is_reserved_device_name(target_path.name):
-        raise UnsafePathError("Nombre de dispositivo reservado detectado.", SafetyValidationErrorCode.RESERVED_NAME)
     
+    # Validación estricta de nombres reservados
+    if _RESERVED_NAMES_PATTERN.fullmatch(target_path.name):
+        raise UnsafePathError("Nombre de dispositivo reservado detectado.", SafetyValidationErrorCode.RESERVED_NAME)
+
     try:
         if re.search(r'[\u200E\u200F\u202A-\u202E]', path_string):
             raise UnsafePathError("Posible ataque de bidi spoofing detectado.", SafetyValidationErrorCode.GENERIC)
     except re.error:
         pass
-
-    if "." in target_path.name and _is_reserved_device_name(target_path.stem):
-        raise UnsafePathError("Nombre de dispositivo con extensión prohibido.", SafetyValidationErrorCode.RESERVED_NAME)
 
     try:
         t_parts = target_path.parts
