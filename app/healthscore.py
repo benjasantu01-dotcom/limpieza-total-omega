@@ -340,7 +340,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     total_points = 0.0
     
     for entry in _PIPELINE:
-        area_ratio = _clamp(entry.scorer(metrics))
+        try:
+            area_ratio = _clamp(entry.scorer(metrics))
+        except Exception:
+            area_ratio = 0.0
+            
         if entry.rules:
             _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
         

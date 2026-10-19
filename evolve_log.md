@@ -1005,3 +1005,11 @@ FAILED evolve/tests/test_modules.py::test_diagnose_on_critical_memory_suggests_c
 - `2026-10-19T13:11:47` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
 - `2026-10-19T13:11:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-19T13:11:47` Corrida terminada. Total usado hoy: 312.
+- `2026-10-19T13:19:57` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-19T13:20:59` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-19T13:22:01` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o bloqueos de acceso durante la iteración, capturando excepciones específicas en `entry.stat()` para evitar que el generador finalice prematuramente al encontrar un archivo en uso por el sistema.
+- `2026-10-19T13:22:31` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_collect_candidates` ante rutas con nombres extremadamente largos o caracteres especiales que pueden causar excepciones al llamar a `os.scandir` o `Path.resolve()`, envolviendo las llamadas críticas en bloques `try-except` más granulares para evitar que un solo archivo inaccesible detenga el escaneo de toda una unidad.
+- `2026-10-19T13:23:18` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `compute_score` frente a errores durante la ejecución de los scorers en el pipeline mediante un bloque `try-except` que asigna un puntaje de seguridad de 0 ante cualquier falla inesperada en la métrica, evitando que una excepción en una regla particular rompa el proceso de diagnóstico global.
+- `2026-10-19T13:24:10` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `on_target_choice_changed` para prevenir la propagación de errores cuando el usuario selecciona una ruta, añadiendo una validación explícita de `is_safe_disk_operation` antes de aceptar cualquier carpeta externa como objetivo de análisis.
+- `2026-10-19T13:24:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-19T13:24:10` Corrida terminada. Total usado hoy: 316.

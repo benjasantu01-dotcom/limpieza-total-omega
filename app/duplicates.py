@@ -255,24 +255,29 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Verificaciones rápidas usando la entrada de directorio
+                        # Verificaciones seguras capturando fallos de acceso o nombres inválidos
                         if entry.is_dir(follow_symlinks=False):
-                            path_entry = Path(entry.path)
-                            if _safe_path_check(path_entry):
-                                queue.append((path_entry, depth + 1))
+                            try:
+                                path_entry = Path(entry.path)
+                                if _safe_path_check(path_entry):
+                                    queue.append((path_entry, depth + 1))
+                            except (OSError, PermissionError):
+                                continue
                         elif entry.is_file(follow_symlinks=False):
-                            file_stat = entry.stat(follow_symlinks=False)
-                            if file_stat.st_size < min_size or (file_stat.st_dev, file_stat.st_ino) in visited_inodes:
+                            try:
+                                file_stat = entry.stat(follow_symlinks=False)
+                                if file_stat.st_size < min_size or (file_stat.st_dev, file_stat.st_ino) in visited_inodes:
+                                    continue
+                                
+                                path_entry = Path(entry.path)
+                                if skip_protected and is_protected_path(path_entry):
+                                    continue
+                                
+                                if _is_valid_candidate(path_entry, file_stat.st_size):
+                                    visited_inodes.add((file_stat.st_dev, file_stat.st_ino))
+                                    size_to_paths_map[file_stat.st_size].append(path_entry)
+                            except (OSError, PermissionError):
                                 continue
-                            
-                            path_entry = Path(entry.path)
-                            if skip_protected and is_protected_path(path_entry):
-                                continue
-                            
-                            # Validar solo los archivos que cumplen el tamaño y no fueron visitados
-                            if _is_valid_candidate(path_entry, file_stat.st_size):
-                                visited_inodes.add((file_stat.st_dev, file_stat.st_ino))
-                                size_to_paths_map[file_stat.st_size].append(path_entry)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

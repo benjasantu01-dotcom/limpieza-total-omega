@@ -306,9 +306,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 stack.append(Path(entry.path))
                         elif entry.is_file():
                             yield Path(entry.path), st.st_size
-                    except (PermissionError, FileNotFoundError):
+                    except (PermissionError, FileNotFoundError, OSError):
                         continue
-        except (PermissionError, FileNotFoundError): 
+        except (PermissionError, FileNotFoundError, OSError): 
             continue
 
 
