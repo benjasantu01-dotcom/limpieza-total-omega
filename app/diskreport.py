@@ -377,6 +377,11 @@ def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0)
     """
     Escaneo consolidado mediante min-heap para mantener eficiencia de memoria
     durante la recolección de los archivos más pesados.
+    
+    Args:
+        directory: Ruta raíz a escanear (debe estar validada).
+        skip_protected: Flag para omitir rutas protegidas.
+        limit: Cantidad de archivos top a mantener en memoria.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []

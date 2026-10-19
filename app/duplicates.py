@@ -135,7 +135,11 @@ def _safe_path_check(path: Path) -> bool:
 
 
 def _is_valid_candidate(path: Path, st_size: int) -> bool:
-    """Valida si un archivo cumple los criterios para ser procesado como duplicado."""
+    """
+    Filtro previo: valida si un archivo debe ser considerado para análisis.
+    
+    Excluye archivos ocultos, de sistema, bloqueados o de tamaño nulo.
+    """
     if st_size <= 0:
         return False
     if is_system_or_hidden(path):
@@ -194,7 +198,11 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
 
 
 def group_by_size(paths: Iterable[PathLike]) -> Dict[int, List[Path]]:
-    """Agrupa una lista de rutas por su tamaño en bytes, filtrando candidatos inseguros."""
+    """
+    Agrupa una lista de rutas por su tamaño en bytes (Paso 1).
+    
+    Solo incluye archivos válidos que pasaron los filtros de seguridad.
+    """
     groups_by_size: Dict[int, List[Path]] = defaultdict(list)
     if paths is None:
         return groups_by_size
@@ -225,9 +233,9 @@ def _resolve_and_verify_root(directory_path: PathLike) -> Optional[Path]:
 
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
-    Escaneo iterativo (BFS) para recolectar archivos candidatos a duplicados.
+    Escaneo iterativo (BFS) para recolectar candidatos potenciales a duplicados.
     
-    Utiliza un set de inodos (dev, ino) para evitar procesar enlaces físicos duplicados 
+    Utiliza un set de inodos para evitar procesar enlaces físicos duplicados 
     y recursión infinita en sistemas de archivos complejos.
     """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
@@ -250,13 +258,11 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                     try:
                         if entry.is_dir(follow_symlinks=False):
                             path_entry = Path(entry.path)
-                            # Verificación de seguridad reforzada antes de añadir a cola
                             if _safe_path_check(path_entry):
                                 queue.append((path_entry, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
                             path_entry = Path(entry.path)
                             
-                            # Obtener stats de forma segura
                             try:
                                 file_stat = entry.stat(follow_symlinks=False)
                             except (OSError, FileNotFoundError):
@@ -327,9 +333,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def _calculate_keeper_heuristic(path: Path) -> Optional[Tuple[float, int]]:
     """
-    Retorna metadatos para la heurística de elección del archivo original.
-    
-    Retorna una tupla (tiempo_modificación, longitud_ruta).
+    Retorna metadatos (tiempo de modificación, longitud ruta) para la elección del keeper.
     """
     try:
         if not isinstance(path, Path) or not path.is_file():
