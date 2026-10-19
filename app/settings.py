@@ -318,7 +318,7 @@ def validate(raw_values: Any) -> AppSettings:
             except (ValueError, TypeError, AttributeError, KeyError): continue
     return config 
 
-def _is_file_secure_to_read(st: os.stat_result, file_obj: Any) -> bool:
+def _is_file_secure_to_read(st: os.stat_result) -> bool:
     """Comprueba permisos, metadatos y asegura que no es un enlace simbólico o vínculo duro peligroso."""
     try:
         # Check hard links to prevent substitution attacks
@@ -345,10 +345,13 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
     try:
         with open(file_path, "r", encoding="utf-8") as f:
             st = os.fstat(f.fileno())
-            if not _is_file_secure_to_read(st, f): return None
-            content = f.read(MAX_SETTINGS_SIZE + 1)
-            if not content or len(content) > MAX_SETTINGS_SIZE: return None
-            data = json.loads(content)
+            if not _is_file_secure_to_read(st): return None
+            
+            # Pre-parse validation logic
+            raw_data = f.read(MAX_SETTINGS_SIZE + 1)
+            if not raw_data or len(raw_data) > MAX_SETTINGS_SIZE: return None
+            
+            data = json.loads(raw_data)
             return data if _is_dict(data) else None
     except (OSError, IOError, PermissionError, json.JSONDecodeError, MemoryError):
         return None
