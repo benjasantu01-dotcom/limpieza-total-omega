@@ -27,7 +27,10 @@ MetricKey: TypeAlias = str
 
 # Constantes de rendimiento para validación
 _ALLOWED_CHARS: Final[set[str]] = set(string.ascii_letters + string.digits + " .,:()-_%")
-_BLOCKED_TERMS: Final[frozenset[str]] = frozenset(["system32", "windows", "admin", "c:\\", "system", "kernel", "path", "root", "drive", "user", "profile"])
+_BLOCKED_TERMS: Final[frozenset[str]] = frozenset([
+    "system32", "windows", "admin", "c:\\", "system", "kernel", "path", 
+    "root", "drive", "user", "profile", "appdata", "programdata", "exe", "dll"
+])
 _MAX_MSG_LEN: Final[int] = 128
 
 class Scorer(Protocol):
@@ -169,12 +172,12 @@ _DUP_SCORER = create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)
 _STARTUP_SCORER = create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inverse=True)
 
 # Factories para mensajes de reglas, tipadas para asegurar consistencia
-def _msg_seguridad(m: SystemMetrics) -> str: return f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad."
-def _msg_disco(m: SystemMetrics) -> str: return f"Queda {m.disk_free_percent:.1f}% de disco libre."
-def _msg_memoria(m: SystemMetrics) -> str: return "Memoria disponible baja: cerrá procesos innecesarios."
-def _msg_basura(m: SystemMetrics) -> str: return f"Hay {m.junk_mb:.0f} MB de archivos temporales."
-def _msg_duplicados(m: SystemMetrics) -> str: return f"Podrías recuperar {m.duplicate_mb:.0f} MB eliminando duplicados."
-def _msg_arranque(m: SystemMetrics) -> str: return f"{m.startup_count} programas arrancan con Windows."
+def _msg_seguridad(m: SystemMetrics) -> str: return f"Se detectaron {m.suspicious_count} riesgos de seguridad."
+def _msg_disco(m: SystemMetrics) -> str: return f"Espacio libre en disco bajo: {m.disk_free_percent:.1f}%."
+def _msg_memoria(m: SystemMetrics) -> str: return "Memoria disponible baja, optimice sus procesos."
+def _msg_basura(m: SystemMetrics) -> str: return f"Acumulación de archivos temporales: {m.junk_mb:.0f} MB."
+def _msg_duplicados(m: SystemMetrics) -> str: return f"Recuperación posible: {m.duplicate_mb:.0f} MB en duplicados."
+def _msg_arranque(m: SystemMetrics) -> str: return f"Exceso de programas en arranque: {m.startup_count} entradas."
 
 # Definición de reglas específicas para facilitar la lectura del pipeline
 _RULES: Final[Dict[str, Tuple[RecommendationRule, ...]]] = {
@@ -308,7 +311,6 @@ def _sanitize_msg(msg: str | Any) -> str:
     if not isinstance(msg, str): return ""
     clean = "".join(c for c in msg if c in _ALLOWED_CHARS)
     lower_msg = clean.lower()
-    # Bloqueo defensivo: Si contiene términos prohibidos, se invalida el mensaje para evitar fugas
     if any(term in lower_msg for term in _BLOCKED_TERMS):
         return ""
     return clean.strip()[:_MAX_MSG_LEN]
@@ -354,7 +356,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             continue
             
     if metrics.quarantined_count > 0:
-        recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
+        recommendations.append("Existen elementos en cuarentena.")
         
     final_score = int(round(_clamp(total_points, 0.0, 100.0)))
     return HealthResult(

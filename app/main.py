@@ -1829,6 +1829,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
         
         try:
+            p = Path(folder).resolve(strict=False)
+            if not p.exists() or not p.is_dir():
+                self.log(f"Error: La ruta {folder} no existe o no es un directorio.", "Disco")
+                return
             self.analysis_folder = str(self._validate_disk_access(folder))
         except Exception:
             return
