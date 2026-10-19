@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **199** (39.5% de aceptación)
+- Mejoras aceptadas: **198** (39.3% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 47
-- Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 216
+- Rechazadas por guardia de seguridad: 46
+- Sin cambios (nada sustancial que mejorar): 25
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-18 | 143 | 11 | 37 | 15 | 142 |
-| 2026-10-19 | 56 | 5 | 10 | 11 | 74 |
+| 2026-10-18 | 141 | 11 | 36 | 14 | 142 |
+| 2026-10-19 | 57 | 5 | 10 | 11 | 77 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **46**
+- legibilidad y documentación: **44**
 - robustez ante casos límite: **42**
 - seguridad defensiva: **42**
 - rendimiento: **37**
-- manejo de errores y validación de entradas: **32**
+- manejo de errores y validación de entradas: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **21**
 - `settings.py`: **18**
-- `diskreport.py`: **16**
-- `duplicates.py`: **16**
 - `memory.py`: **16**
 - `safety.py`: **16**
+- `duplicates.py`: **15**
 - `healthscore.py`: **15**
+- `diskreport.py`: **15**
 - `browser.py`: **14**
-- `assistant.py`: **13**
+- `assistant.py`: **14**
 - `scanner.py`: **12**
 - `branding.py`: **12**
 - `organizer.py`: **11**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-19T06:46:14` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` reemplazando la recursión libre por un chequeo iterativo/limitado que protege contra desbordamiento de pila y posibles inyecciones mediante estructuras JSON altamente anidadas.
 - `2026-10-19T05:23:04` **settings.py** (seguridad defensiva): Se endureció la seguridad defensiva en `_is_dir_safe` al implementar un chequeo de permisos que detecta si el directorio es escribible por el grupo o por otros (`others`), alineándolo con las mejores prácticas de seguridad de archivos para evitar configuraciones laxas en el sistema del usuario.
 - `2026-10-19T05:22:46` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `scanner.py` implementando una validación estricta de rutas mediante `pathlib.Path.resolve()` en el punto de entrada `scan_directory` para prevenir el uso de rutas relativas o maliciosas, y asegurando que las comparaciones contra `base_root` sean siempre absolutas y normalizadas.
 - `2026-10-19T05:22:18` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera (TOCTOU) introduciendo un chequeo de existencia inmediato y validación de tipo de archivo antes de procesar metadatos, además de limpiar el manejo de excepciones en `_get_path_stat_robust` para asegurar que errores inesperados sean tratados como `UnsafePathError`.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-19T04:42:06` **safety.py** (robustez ante casos límite): Se ha implementado `_is_unc_path_accessible` mediante `GetDiskFreeSpaceW` para validar que las rutas UNC (bloqueadas actualmente por defecto) sean tratables como volúmenes válidos, y se integró un chequeo preventivo de `OSError` con `errno` en `_is_file_locked_by_other_process` para manejar casos de denegación de acceso por permisos de kernel, mejorando la robustez ante estados del sistema transitorios sin alterar la lógica de seguridad.
 - `2026-10-19T04:40:59` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` añadiendo una validación explícita para evitar que archivos con atributos de "archivo temporal" (FILE_ATTRIBUTE_TEMPORARY) sean procesados, previniendo posibles errores de I/O en sistemas que manejan buffers de memoria o archivos volátiles.
 - `2026-10-19T04:32:11` **memory.py** (robustez ante casos límite): Se mejoró la robustez de `_is_process_executable_safe` añadiendo un bloque `try-except` más específico y validaciones adicionales para prevenir errores cuando el proceso destino finaliza entre la apertura del handle y la lectura de su ruta, asegurando que la función retorne `False` en lugar de propagar excepciones ante estados transitorios del sistema.
-- `2026-10-19T04:30:30` **healthscore.py** (robustez ante casos límite): Se introdujo una comprobación defensiva en `_evaluate_rules` para prevenir divisiones por cero o cálculos inválidos al procesar reglas, y se aseguró que el pipeline utilice `_clamp` explícitamente para garantizar que los ratios siempre se mantengan dentro del rango [0.0, 1.0] antes de cualquier operación aritmética, protegiendo al motor de estados inconsistentes.
