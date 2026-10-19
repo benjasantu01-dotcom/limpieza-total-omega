@@ -423,3 +423,44 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-19T07:15:11` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: Scanner._handle_directory, Scanner._is_relevant_extension, Scanner._is_reparse_point
 - `2026-10-19T07:15:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-19T07:15:11` Corrida terminada. Total usado hoy: 172.
+- `2026-10-19T07:23:18` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-10-19T07:23:53` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del manejo de archivos JSON mediante la captura específica de excepciones durante la serialización, asegurando que fallos inesperados al convertir tipos complejos o errores de codificación no terminen en una escritura parcial o corrupta del archivo de configuración.
+- `2026-10-19T07:24:21` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.33s
+
+```
+- `2026-10-19T07:24:21` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry.executable` y `_resolve_path_from_command` mediante una validación más estricta del input y manejo preventivo de estados `None` o cadenas vacías, evitando que errores de resolución en el sistema de archivos (excepciones de permisos o rutas malformadas) aborten la lógica de inventariado.
+- `2026-10-19T07:24:52` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: Answer.is_online, AreaExplanation, SystemContext.__hash__, SystemContext._apply_updates, SystemContext._hash_tuple, SystemContext._validate_ingestion_source
+- `2026-10-19T07:25:12` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Documenté con docstrings claros las funciones de utilidad de branding que carecían de especificaciones técnicas, detallando sus parámetros y comportamientos ante errores, para mejorar la mantenibilidad del código conforme a los estándares de documentación del proyecto.
+- `2026-10-19T07:25:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-19T07:25:12` Corrida terminada. Total usado hoy: 176.

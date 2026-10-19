@@ -409,7 +409,11 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     try:
         cleaned_settings = _coerce_and_verify(validate(values))
         if not is_safe_to_modify(str(config_path)): return None
-        serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
+        # Captura errores de serialización JSON específicos
+        try:
+            serialized = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
+        except (TypeError, ValueError):
+            return None
         if len(serialized.encode("utf-8")) > MAX_SETTINGS_SIZE: return None
         return config_path if _MANAGER.perform_atomic_write(config_path, serialized) else None
     except (OSError, PermissionError, AttributeError, TypeError): return None

@@ -201,24 +201,51 @@ SEVERITY_MAP: Final[Mapping[SeverityType, str]] = MappingProxyType({
     SeverityType.WARNING: "\u26a0", SeverityType.DANGER: "\u2716"
 })
 
-def app_title() -> str: return f"{APP_NAME} v{APP_VERSION}"
-def color(name: Optional[str]) -> ColorHex: return PALETTE.get(name, "#808080") if name else "#808080" # type: ignore
-def font_size(name: Optional[str]) -> int: return FONT_SIZES.get(name, UI_CONFIG.body_size) if name else UI_CONFIG.body_size # type: ignore
-def icon(section: Optional[str]) -> str: return ICONS.get(section.strip(), "\u2022") if section else "\u2022"
-def tab_label(section: Optional[str]) -> str: return f"{icon(section)}  {section}" if section else "\u2022  Desconocido"
+def app_title() -> str: 
+    """Retorna el título formal y versión de la aplicación."""
+    return f"{APP_NAME} v{APP_VERSION}"
+
+def color(name: Optional[str]) -> ColorHex: 
+    """Retorna un color hexadecimal de la paleta. Si el nombre no existe, retorna gris neutro."""
+    return PALETTE.get(name, "#808080") if name else "#808080" # type: ignore
+
+def font_size(name: Optional[str]) -> int: 
+    """Retorna el tamaño de fuente configurado para una categoría dada."""
+    return FONT_SIZES.get(name, UI_CONFIG.body_size) if name else UI_CONFIG.body_size # type: ignore
+
+def icon(section: Optional[str]) -> str: 
+    """Retorna el carácter Unicode asociado a una sección, o un punto si es desconocido."""
+    return ICONS.get(section.strip(), "\u2022") if section else "\u2022"
+
+def tab_label(section: Optional[str]) -> str: 
+    """Formatea el icono y el texto para las pestañas de la interfaz."""
+    return f"{icon(section)}  {section}" if section else "\u2022  Desconocido"
 
 def _parse_severity(severity: Optional[str]) -> Optional[SeverityType]:
+    """Convierte una cadena de texto a un enum SeverityType, normalizando espacios y case."""
     if not isinstance(severity, str): return None
     try: return SeverityType(severity.strip().lower())
     except (ValueError, AttributeError): return None
 
 def _get_severity_style(severity_key: Optional[SeverityType]) -> SeverityStyle:
+    """Retorna la tupla (color, label) definida para un tipo de severidad dado."""
     return SEVERITY_STYLES.get(severity_key, (C_TEXT_MUTED, "Desconocido"))
 
-def severity_color(severity: Optional[str]) -> ColorHex: return _get_severity_style(_parse_severity(severity))[0]
-def severity_label(severity: Optional[str]) -> str: return _get_severity_style(_parse_severity(severity))[1]
-def severity_icon(severity: Optional[str]) -> str: return SEVERITY_MAP.get(_parse_severity(severity), "\u2022")
-def grade_color(grade: Optional[str]) -> ColorHex: return GRADE_COLORS.get(grade.strip().upper()[0], C_TEXT_MUTED) if grade and grade.strip() else C_TEXT_MUTED
+def severity_color(severity: Optional[str]) -> ColorHex: 
+    """Retorna el color asignado a una severidad específica."""
+    return _get_severity_style(_parse_severity(severity))[0]
+
+def severity_label(severity: Optional[str]) -> str: 
+    """Retorna el nombre legible de una severidad."""
+    return _get_severity_style(_parse_severity(severity))[1]
+
+def severity_icon(severity: Optional[str]) -> str: 
+    """Retorna el carácter Unicode representativo de un nivel de severidad."""
+    return SEVERITY_MAP.get(_parse_severity(severity), "\u2022")
+
+def grade_color(grade: Optional[str]) -> ColorHex: 
+    """Retorna el color corporativo asociado a una calificación (A-F)."""
+    return GRADE_COLORS.get(grade.strip().upper()[0], C_TEXT_MUTED) if grade and grade.strip() else C_TEXT_MUTED
 
 @lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> ColorHex:
