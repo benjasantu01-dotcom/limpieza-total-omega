@@ -75,7 +75,7 @@ class ExtStats:
         self.count: int = 0
 
     def add(self, size: int) -> None:
-        """Incrementa el total de bytes y el contador de archivos si el tamaño es válido."""
+        """Incrementa el total de bytes y el contador si size es un entero positivo."""
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.count += 1
@@ -91,7 +91,7 @@ class GlobalStats:
         self.ext_stats: Dict[str, ExtStats] = defaultdict(ExtStats)
 
     def register_file(self, size: int, suffix: str) -> None:
-        """Registra un archivo en las estadísticas, normalizando su extensión."""
+        """Registra un archivo en las estadísticas, normalizando la extensión a minúsculas."""
         if isinstance(size, int) and size >= 0:
             self.total_bytes += size
             self.total_files += 1
@@ -152,7 +152,10 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 
 def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
-    """Filtro de seguridad para determinar si un archivo/carpeta debe omitirse."""
+    """
+    Filtro de seguridad para determinar si un archivo/carpeta debe omitirse.
+    Verifica enlaces simbólicos, protección de sistema y caracteres sospechosos.
+    """
     try:
         if entry.is_symlink():
             return True
@@ -176,11 +179,8 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         if os.name == 'nt':
             try:
                 st = entry.stat(follow_symlinks=False)
-                # 0x400: FILE_ATTRIBUTE_REPARSE_POINT, 0x100: FILE_ATTRIBUTE_OFFLINE
-                # 0x4000: FILE_ATTRIBUTE_REPARSE_POINT (alternativa), validamos atributos de reparse
-                if hasattr(st, 'st_file_attributes'):
-                    if st.st_file_attributes & 0x400:
-                        return True
+                if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x400):
+                    return True
             except (OSError, PermissionError):
                 return True
         
@@ -290,8 +290,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
-    """
-    Recorrido recursivo seguro para prevenir ciclos mediante inodos."""
+    """Recorrido recursivo seguro para prevenir ciclos mediante inodos."""
     root_path = _validate_root(directory)
     if root_path is None: return
     
@@ -369,7 +368,8 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool, limit: int = 0) -> SummaryData:
     """
-    Escaneo consolidado mediante min-heap para memoria eficiente.
+    Escaneo consolidado mediante min-heap para mantener eficiencia de memoria
+    durante la recolección de los archivos más pesados.
     """
     stats = GlobalStats()
     top_heap: List[FileRecord] = []

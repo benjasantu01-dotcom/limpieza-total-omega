@@ -74,7 +74,7 @@ class RecommendationRule(NamedTuple):
     Attributes:
         area: Identificador de la métrica analizada (ej: 'disco').
         threshold: Límite inferior de salud para activar la sugerencia.
-        message_factory: Callable que toma SystemMetrics y devuelve un string legible.
+        message_factory: Callable que recibe el estado actual y retorna un mensaje humano.
         check: Predicado (SystemMetrics, NormalizedRatio) -> bool para disparar la regla.
     """
     area: MetricKey
@@ -164,7 +164,7 @@ _JUNK_SCORER = create_linear_scorer(_LIMIT_JUNK_MB, inverse=True)
 _DUP_SCORER = create_linear_scorer(_LIMIT_DUPLICATE_MB, inverse=True)
 _STARTUP_SCORER = create_linear_scorer(float(_LIMIT_STARTUP_COUNT), inverse=True)
 
-# Funciones de factory para reglas del pipeline
+# Funciones de factory para reglas del pipeline: generan mensajes basados en SystemMetrics
 def _msg_seguridad(m: SystemMetrics) -> str: return f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad."
 def _msg_disco(m: SystemMetrics) -> str: return f"Queda {m.disk_free_percent:.1f}% de disco libre."
 def _msg_memoria(m: SystemMetrics) -> str: return "Memoria disponible baja: cerrá procesos innecesarios."
@@ -302,15 +302,11 @@ def grade_for_score(score: float | int) -> str:
 def _sanitize_msg(msg: str | Any) -> str:
     """Limpia cadenas de texto garantizando integridad defensiva."""
     if not isinstance(msg, str): return ""
-    # Filtrar caracteres de control e inaceptables a nivel de byte/string
     clean = "".join(c for c in msg if c in _ALLOWED_CHARS)
-    
-    # Verificación estricta contra términos bloqueados y longitud
     lower_msg = clean.lower()
     for term in _BLOCKED_TERMS:
         if term in lower_msg:
             return ""
-            
     return clean.strip()[:_MAX_MSG_LEN]
 
 def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:
@@ -382,7 +378,6 @@ def summarize(result: HealthResult | None) -> List[str]:
         p = result.breakdown.get(entry.area, 0)
         lines.append(f"  {entry.area.capitalize():<12} {p:>2}/{entry.weight:<2} [{_render_bar(p, entry.weight)}]")
     
-    # Sanitización defensiva de las recomendaciones finales
     recs = []
     for r in result.recommendations:
         sanitized = _sanitize_msg(str(r))
