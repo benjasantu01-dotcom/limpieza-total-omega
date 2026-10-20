@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **190** (37.7% de aceptación)
+- Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 49
+- Rechazadas por guardia de seguridad: 48
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 227
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 98 | 8 | 26 | 11 | 113 |
-| 2026-10-20 | 92 | 8 | 23 | 11 | 114 |
+| 2026-10-19 | 97 | 8 | 24 | 11 | 112 |
+| 2026-10-20 | 95 | 8 | 24 | 11 | 114 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **42**
-- legibilidad y documentación: **38**
+- legibilidad y documentación: **41**
 - robustez ante casos límite: **36**
-- rendimiento: **30**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
+- `duplicates.py`: **18**
 - `diskreport.py`: **18**
-- `duplicates.py`: **17**
+- `healthscore.py`: **17**
 - `browser.py`: **16**
-- `healthscore.py`: **16**
+- `memory.py`: **16**
 - `quarantine.py`: **16**
 - `assistant.py`: **15**
 - `branding.py`: **15**
-- `memory.py`: **15**
-- `settings.py`: **14**
+- `settings.py`: **13**
 - `safety.py`: **12**
 - `scanner.py`: **11**
 - `main.py`: **10**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-20T10:40:58` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento mediante la documentación de los parámetros Win32 y la sustitución de `Any` en las firmas de funciones por tipos específicos, clarificando la interacción con la API de Windows.
+- `2026-10-20T10:40:00` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints más precisos en la firma de `compute_score` y `summarize`, y se ha refactorizado la lógica de validación de métricas en `SystemMetrics` para utilizar un método más robusto de iteración sobre los campos, garantizando que no existan comportamientos ambiguos al inicializar datos del sistema.
+- `2026-10-20T10:37:41` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de `duplicates.py` mediante la adición de Type Hints más precisos, docstrings detallados en las funciones de procesamiento de bajo nivel y la simplificación de la estructura lógica en `_collect_candidates` para aclarar el flujo de exclusión de archivos.
 - `2026-10-20T10:31:49` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de Type Hints en los retornos y argumentos faltantes, la estandarización de docstrings para seguir el formato PEP 257, y la extracción de la lógica de construcción de rutas en `_resolve_browser_path` para mejorar su trazabilidad y legibilidad.
 - `2026-10-20T10:30:12` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `SystemContext.ingest` y `_validate_and_sanitize_data` mediante la estandarización del flujo de validación, clarificando la separación entre la extracción de datos y la aplicación de actualizaciones al estado del sistema.
 - `2026-10-20T09:59:58` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_get_entry_value` y `_collect_settings` agregando validaciones de tipo y estructura para prevenir errores de ejecución al procesar datos del usuario, asegurando que las entradas numéricas y las cadenas sean procesadas de manera segura.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-20T08:17:15` **safety.py** (seguridad defensiva): Se ha añadido un chequeo explícito en `ensure_safe_to_modify` para detectar y bloquear rutas que contengan el carácter `~` en los nombres de los directorios de usuario (spoofing de nombres cortos 8.3 de DOS), evitando posibles bypasses de `is_protected_path`.
 - `2026-10-20T08:15:21` **organizer.py** (seguridad defensiva): Se reforzó `delete_reviewed` añadiendo una verificación crítica mediante `ensure_safe_to_modify` antes de llamar a `unlink()` para garantizar que la política de seguridad no solo se valide mediante booleanos, sino que fuerce una excepción si la ruta es manipulada por un proceso externo antes del borrado.
 - `2026-10-20T08:07:07` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_process_from_pid` y `_iter_process_memory` para asegurar que el manejo de punteros y buffers de procesos de Windows no quede en un estado inconsistente ante errores de acceso o llamadas fallidas a la API.
-- `2026-10-20T08:06:20` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva centralizando la validación de directorios críticos mediante una nueva constante `PROTECTED_ROOTS` y un método de verificación estricta en el inicializador de la app, evitando que el escaneo o la manipulación de archivos ocurran fuera de las áreas permitidas incluso si el usuario intenta seleccionar rutas fuera del scope del Home o del sistema de archivos principal.
-- `2026-10-20T08:05:15` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del pipeline eliminando el uso de una función `hash()` no determinista sobre objetos complejos, reemplazándola por una clave de caché basada en una tupla de valores primitivos, evitando así posibles colisiones o errores inesperados en el estado de la caché durante el análisis.
-- `2026-10-20T07:56:02` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` y `walk_files` implementando un chequeo explícito de recursión mediante `Path.samefile` (o comparación de inodes) antes de acceder, evitando que la aplicación quede atrapada o acceda erróneamente en estructuras con junctions o enlaces simbólicos complejos, reforzando la integridad del escaneo.

@@ -264,10 +264,6 @@ class SystemMetrics:
 
     def __post_init__(self) -> None:
         """Inicializa métricas asegurando tipos correctos tras la creación."""
-        for field_name in self._FIELDS_TO_VALIDATE:
-            val = getattr(self, field_name)
-            sanitized = _validate_numeric(val, 0.0, -1.0, 1e9)
-            setattr(self, field_name, sanitized)
         self.validate()
 
     def safe_get(self, field_name: str, default: Any = 0) -> Any:
@@ -276,14 +272,22 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Asegura rangos aceptables para todas las métricas mediante normalización."""
-        self.junk_mb = _validate_numeric(self.junk_mb, 0.0, 0.0, 1048576.0)
-        self.duplicate_mb = _validate_numeric(self.duplicate_mb, 0.0, 0.0, 1048576.0)
-        self.suspicious_count = int(_validate_numeric(self.suspicious_count, 0, 0, 5000))
-        self.suspicious_warnings = int(_validate_numeric(self.suspicious_warnings, 0, 0, 5000))
-        self.startup_count = int(_validate_numeric(self.startup_count, 0, 0, 1000))
-        self.quarantined_count = int(_validate_numeric(self.quarantined_count, 0, 0, 1000))
-        self.memory_available_percent = _validate_numeric(self.memory_available_percent, 100.0, 0.0, 100.0)
-        self.disk_free_percent = _validate_numeric(self.disk_free_percent, 100.0, 0.0, 100.0)
+        # Mapeo de límites por campo para validación dinámica
+        limits = {
+            "junk_mb": (0.0, 1048576.0),
+            "duplicate_mb": (0.0, 1048576.0),
+            "suspicious_count": (0, 5000),
+            "suspicious_warnings": (0, 5000),
+            "startup_count": (0, 1000),
+            "quarantined_count": (0, 1000),
+            "memory_available_percent": (0.0, 100.0),
+            "disk_free_percent": (0.0, 100.0)
+        }
+        for field_name in self._FIELDS_TO_VALIDATE:
+            val = getattr(self, field_name)
+            min_v, max_v = limits.get(field_name, (0.0, 1e9))
+            sanitized = _validate_numeric(val, 0.0, min_v, max_v)
+            setattr(self, field_name, sanitized)
 
     @property
     def is_finite(self) -> bool:

@@ -32,7 +32,7 @@ import heapq
 from pathlib import Path
 from functools import lru_cache
 from dataclasses import dataclass, field
-from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, Final, Set, NewType, Any, NamedTuple, Iterator
+from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, Final, Set, NewType, NamedTuple, Iterator, Any
 from safety import is_protected_path
 
 if TYPE_CHECKING:
@@ -40,6 +40,8 @@ if TYPE_CHECKING:
 else:
     class wintypes:
         HANDLE = ctypes.c_void_p
+        DWORD = ctypes.c_ulong
+        BOOL = ctypes.c_int
 
 # Tipos semánticos para prevenir errores de lógica al operar con diferentes unidades.
 BytesValue = NewType("BytesValue", int)
@@ -93,8 +95,8 @@ TRIM_WARNING: Final[str] = (
 class MEMORYSTATUSEX(ctypes.Structure):
     """Mapeo de la estructura Win32 GlobalMemoryStatusEx para reporte global de RAM."""
     _fields_: List[Tuple[str, Any]] = [
-        ("dwLength", ctypes.c_ulong),
-        ("dwMemoryLoad", ctypes.c_ulong),
+        ("dwLength", wintypes.DWORD),
+        ("dwMemoryLoad", wintypes.DWORD),
         ("ullTotalPhys", ctypes.c_ulonglong),
         ("ullAvailPhys", ctypes.c_ulonglong),
         ("ullTotalPageFile", ctypes.c_ulonglong),
@@ -108,7 +110,7 @@ class PROCESS_MEMORY_COUNTERS(ctypes.Structure):
     """Mapeo de la estructura Win32 PSAPI para métricas detalladas de consumo por proceso."""
     _fields_: List[Tuple[str, Any]] = [
         ("cb", ctypes.c_size_t),
-        ("PageFaultCount", ctypes.c_ulong),
+        ("PageFaultCount", wintypes.DWORD),
         ("PeakWorkingSetSize", ctypes.c_size_t),
         ("WorkingSetSize", ctypes.c_size_t),
         ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
@@ -301,13 +303,13 @@ def read_snapshot() -> MemorySnapshot:
     """Retorna el estado de memoria actual con una latencia de caché de 5 segundos."""
     return _get_cached_snapshot(int(time.time() / 5))
 
-def _is_process_accessible(pid: int, access_mask: int, kernel32: Any) -> Optional[int]:
+def _is_process_accessible(pid: int, access_mask: int, kernel32: ctypes.CDLL) -> Optional[wintypes.HANDLE]:
     """Intenta abrir un handle de proceso con privilegios específicos."""
     if _is_system_process(pid): return None
     handle = kernel32.OpenProcess(access_mask, False, pid)
     return handle if handle not in (0, INVALID_HANDLE_VALUE) else None
 
-def _query_working_set_bytes(pid: int, handle: int, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
+def _query_working_set_bytes(pid: int, handle: wintypes.HANDLE, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[BytesValue]:
     """Consulta el valor actual de Working Set para un proceso mediante su handle."""
     try:
         if psapi.GetProcessMemoryInfo(handle, ctypes.byref(pmc), ctypes.c_uint32(pmc.cb)):
@@ -317,7 +319,7 @@ def _query_working_set_bytes(pid: int, handle: int, psapi: Any, pmc: PROCESS_MEM
         return None
     return None
 
-def _is_process_executable_safe(pid: int, handle: int, psapi: Any) -> bool:
+def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes.CDLL) -> bool:
     """Valida que el archivo ejecutable asociado no pertenezca a rutas protegidas."""
     if not hasattr(psapi, "GetModuleFileNameExW"): return False
     
@@ -337,7 +339,7 @@ def _is_process_executable_safe(pid: int, handle: int, psapi: Any) -> bool:
     except (OSError, RuntimeError, ValueError, TypeError):
         return False
 
-def _process_from_pid(pid: int, kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[ProcessMemory]:
+def _process_from_pid(pid: int, kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Optional[ProcessMemory]:
     """Obtiene y valida la seguridad de un proceso a partir de su PID."""
     proc_handle = _is_process_accessible(pid, PROCESS_QUERY_LIMITED_INFORMATION, kernel32)
     if proc_handle is None:
@@ -355,12 +357,12 @@ def _process_from_pid(pid: int, kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_C
         if proc_handle is not None and proc_handle != INVALID_HANDLE_VALUE:
             kernel32.CloseHandle(proc_handle)
 
-def _iter_process_memory(kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
+def _iter_process_memory(kernel32: ctypes.CDLL, psapi: ctypes.CDLL, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
     """Enumera procesos activos del sistema aplicando filtros de seguridad."""
     buf_size = 4096
     while buf_size <= 65536:
-        pids = (ctypes.c_uint32 * (buf_size // 4))()
-        cb_needed = ctypes.c_uint32(0)
+        pids = (wintypes.DWORD * (buf_size // 4))()
+        cb_needed = wintypes.DWORD(0)
         if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
             if cb_needed.value < ctypes.sizeof(pids):
                 count = cb_needed.value // 4
