@@ -374,8 +374,9 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     if not destination: return None
     try:
         dest_path = Path(destination).resolve()
-        # Validación estricta: asegurar que la operación es segura
-        ensure_safe_to_modify(dest_path)
+        # Validación preventiva: solo proceder si la ruta es segura
+        if not is_safe_to_modify(dest_path):
+            return None
         
         parent = dest_path.parent
         if not parent.exists():

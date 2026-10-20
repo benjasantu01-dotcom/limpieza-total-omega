@@ -1256,3 +1256,35 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-20T12:13:52` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-10-20T12:13:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-20T12:13:52` Corrida terminada. Total usado hoy: 288.
+- `2026-10-20T12:19:12` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-10-20T12:20:18` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+........................................F............................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+1 failed, 298 passed in 1.35s
+
+```
+- `2026-10-20T12:20:18` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha robustecido el método `StartupEntry._extract_quoted_path` para evitar errores de excepciones no controladas al procesar rutas mal formadas (como aquellas con caracteres Unicode inválidos o rutas truncadas) y se ha mejorado la validación de `path_str` para detectar si la ruta es un archivo real antes de confirmarla.
+- `2026-10-20T12:21:23` ➖ Sin cambios en assistant.py (enfoque: seguridad defensiva). Motivo: Mejoré la seguridad defensiva de `assistant.py` reforzando la sanitización de entradas en `_is_safe_payload_structure` y `_is_input_too_deep_or_complex` para asegurar que el `SystemContext` nunca procese objetos inesperados, y añadí una validación estricta contra `is_protected_path` en `_ensure_safe_text` para prevenir cualquier fuga de rutas del sistema hacia el motor de IA.
+- `2026-10-20T12:22:01` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `save_logo_svg` reemplazando la validación genérica por un chequeo preventivo con `is_safe_to_modify` antes de intentar realizar operaciones de escritura, alineando el código con las directrices de seguridad defensiva para evitar excepciones innecesarias en operaciones de disco.
+- `2026-10-20T12:22:44` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-10-20T12:22:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-20T12:22:44` Corrida terminada. Total usado hoy: 292.
