@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **191** (37.9% de aceptación)
+- Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 49
-- Sin cambios (nada sustancial que mejorar): 28
-- Sin respuesta de la IA (error o límite): 223
+- Sin cambios (nada sustancial que mejorar): 29
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-18 | 14 | 0 | 5 | 3 | 8 |
+| 2026-10-18 | 10 | 0 | 5 | 3 | 8 |
 | 2026-10-19 | 133 | 11 | 32 | 21 | 153 |
-| 2026-10-20 | 44 | 2 | 12 | 4 | 62 |
+| 2026-10-20 | 46 | 2 | 12 | 5 | 63 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **45**
-- legibilidad y documentación: **42**
-- manejo de errores y validación de entradas: **36**
+- legibilidad y documentación: **38**
+- manejo de errores y validación de entradas: **38**
 - rendimiento: **35**
 - robustez ante casos límite: **33**
 
@@ -32,21 +32,23 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `duplicates.py`: **19**
 - `diskreport.py`: **18**
-- `quarantine.py`: **17**
 - `browser.py`: **17**
+- `quarantine.py`: **16**
 - `healthscore.py`: **16**
-- `branding.py`: **14**
+- `branding.py`: **15**
+- `assistant.py`: **14**
 - `settings.py`: **14**
-- `memory.py`: **13**
 - `safety.py`: **13**
-- `assistant.py`: **13**
+- `memory.py`: **12**
 - `scanner.py`: **11**
-- `main.py`: **10**
-- `organizer.py`: **8**
+- `main.py`: **9**
 - `startup.py`: **8**
+- `organizer.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-20T05:23:31` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las funciones de acceso a archivos mediante la validación explícita de rutas y la captura de errores en `save_logo_svg` y `_hex_to_rgb`, asegurando que valores inválidos no propaguen excepciones inesperadas o ejecuten operaciones con rutas malformadas.
+- `2026-10-20T05:22:56` **assistant.py** (manejo de errores y validación de entradas): Mejoré `_extract_text_from_gemini_json` para manejar explícitamente el caso de respuestas JSON malformadas o estructuras inesperadas de la API, reemplazando una captura de excepciones amplia por verificaciones de tipos defensivas y acceso seguro a las claves del diccionario.
 - `2026-10-20T04:00:18` **settings.py** (seguridad defensiva): Se endureció la seguridad de `_read_and_parse_json` y `perform_atomic_write` añadiendo un chequeo explícito `is_safe_to_modify` antes de cualquier operación de I/O, garantizando que incluso si el archivo es accesible, no viole las políticas de seguridad del sistema antes de procesarlo.
 - `2026-10-20T03:52:31` **scanner.py** (seguridad defensiva): Mejoré la robustez de `_is_readable` y `_is_locked_by_os` integrando `os.path.realpath` con `Path.resolve()` para asegurar que las verificaciones de seguridad se realicen sobre la ruta canónica, evitando riesgos de resolución inconsistente ante el sistema de archivos de Windows.
 - `2026-10-20T03:51:39` **safety.py** (seguridad defensiva): Se añadió una validación específica en `_validate_preconditions` para detectar si el proceso actual cuenta con privilegios elevados (Administrador) al intentar operar sobre archivos que requieren permisos del sistema, evitando que la herramienta intente modificar archivos críticos aunque estos no estén explícitamente marcados como "bloqueados" por la lista negra.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-20T03:29:42` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` implementando un chequeo previo contra `NEVER_TOUCH` (vía `is_protected_path`) y asegurando que la resolución de rutas utilice el modo de aislamiento de `safety.py` para prevenir posibles ataques de path traversal o escritura fuera de límites.
 - `2026-10-20T03:21:05` **assistant.py** (seguridad defensiva): Se endureció la seguridad en `_build_payload` y `_call_gemini` mediante la implementación de una validación de longitud de carga más temprana y estricta, evitando que se procesen prompts o payloads que excedan los límites definidos antes de cualquier operación de red o serialización costosa.
 - `2026-10-20T03:12:01` **safety.py** (robustez ante casos límite): Se ha mejorado `_get_file_attrs` para manejar explícitamente el estado donde la API de Windows devuelve `ERROR_INVALID_NAME` (código 123), evitando que una ruta malformada o con caracteres prohibidos por el sistema de archivos sea procesada incorrectamente como una ruta de sistema válida.
-- `2026-10-20T03:10:07` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_filesystem_read_only` implementando una comprobación que no dependa únicamente de `touch()` y `unlink()`, evitando bloqueos innecesarios en sistemas donde el filesystem podría denegar la creación de archivos temporales pero permitir la lectura, además de añadir un manejo explícito para `OSError` en las llamadas a `os.fsync` dentro de `purge_all` y `save_manifest` para evitar fallos catastróficos durante la persistencia.
-- `2026-10-20T03:00:06` **healthscore.py** (robustez ante casos límite): Se ha añadido un método de validación estructural a `SystemMetrics` para garantizar que los valores numéricos no solo se encuentran en rangos, sino que son tipos numéricos válidos antes de cualquier cálculo en el pipeline, previniendo errores de propagación de `NaN` o `None` en las funciones de `scorer` que podrían romper la interfaz de usuario.

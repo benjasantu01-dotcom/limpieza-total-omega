@@ -261,7 +261,8 @@ def severity_icon(severity: Optional[str]) -> str:
 
 def grade_color(grade: Optional[str]) -> ColorHex: 
     """Obtiene el color corporativo asociado a una calificación (A-F)."""
-    return GRADE_COLORS.get(grade[0].upper(), C_TEXT_MUTED) if grade else C_TEXT_MUTED
+    if not grade: return C_TEXT_MUTED
+    return GRADE_COLORS.get(grade[0].upper(), C_TEXT_MUTED)
 
 @lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> ColorHex:
@@ -289,9 +290,11 @@ def bar(percent: Union[float, int, None], width: int = 24, filled: str = "\u2588
 def _hex_to_rgb(value: ColorHex) -> RGBTuple:
     """Deserializa un valor hexadecimal a su tupla RGB representativa."""
     try:
-        val = int(value.lstrip('#'), 16)
+        clean = value.lstrip('#')
+        if len(clean) != 6: raise ValueError
+        val = int(clean, 16)
         return ((val >> 16) & 0xFF, (val >> 8) & 0xFF, val & 0xFF)
-    except (ValueError, TypeError, IndexError): return (0, 0, 0)
+    except (ValueError, TypeError, AttributeError): return (0, 0, 0)
 
 @lru_cache(maxsize=512)
 def _rgb_to_hex(rgb: RGBTuple) -> ColorHex:
@@ -364,20 +367,17 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     """Persiste el logo en formato SVG en el disco, asegurando seguridad de ruta."""
     if not destination: return None
     try:
-        raw_path = Path(destination).resolve()
-        # Evitar caracteres inseguros y proteger rutas de sistema
-        clean_name = "".join(c for c in raw_path.name if c.isalnum() or c in "._-")
-        if not clean_name or is_protected_path(raw_path): return None
+        dest_path = Path(destination)
+        if not dest_path.is_absolute(): return None
         
-        target = (raw_path.parent / clean_name).resolve()
-        
-        if not is_safe_to_modify(target):
+        # Validación estricta mediante el validador del proyecto
+        if is_protected_path(dest_path) or not is_safe_to_modify(dest_path):
             return None
             
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(logo_svg(size), encoding="utf-8")
-        return target
-    except (OSError, PermissionError, ValueError, TypeError): 
+        dest_path.parent.mkdir(parents=True, exist_ok=True)
+        dest_path.write_text(logo_svg(size), encoding="utf-8")
+        return dest_path
+    except (OSError, PermissionError, TypeError): 
         return None
 
 def logo_ascii() -> str: return "\n   ___  __  __ ___ ___   _\n  / _ \\|  \\/  | __/ __| /_\\\n | (_) | |\\/| | _|| (_ // _ \\\n  \\___/|_|  |_|___\\___/_/ \\_\\\n      Limpieza Total Omega\n"
