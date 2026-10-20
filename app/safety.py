@@ -31,8 +31,9 @@ LONG_PATH_PREFIX: Final[str] = "\\\\?\\"
 PathLike: TypeAlias = Union[str, os.PathLike]
 ViolationPredicate: TypeAlias = Callable[[Path, os.stat_result, "SecurityDescriptor"], bool]
 
-# Cache con expiración simple para reducir IO en chequeos repetitivos
-_PROTECTED_PATH_CACHE: Final[dict[str, tuple[bool, float]]] = {}
+# Cache para reducir IO en chequeos repetitivos
+_PROTECTED_PATH_CACHE: Final[dict[str, bool]] = {}
+_PROTECTED_PATH_TS: Final[dict[str, float]] = {}
 PROTECTION_CACHE_TTL: Final[float] = 2.0 
 
 class SafetyAction(Enum):
@@ -748,34 +749,38 @@ def is_protected_path(path: PathLike) -> bool:
     
     now = time.time()
     if path_str in _PROTECTED_PATH_CACHE:
-        res, ts = _PROTECTED_PATH_CACHE[path_str]
-        if now - ts < PROTECTION_CACHE_TTL:
-            return res
+        if now - _PROTECTED_PATH_TS.get(path_str, 0) < PROTECTION_CACHE_TTL:
+            return _PROTECTED_PATH_CACHE[path_str]
             
     try:
         p = Path(path_str)
         p_str_low = path_str.lower()
         
         if any(p_str_low.startswith(root) for root in _SYSTEM_ROOT_STRS):
-            _PROTECTED_PATH_CACHE[path_str] = (True, now)
+            _PROTECTED_PATH_CACHE[path_str] = True
+            _PROTECTED_PATH_TS[path_str] = now
             return True
         
         if _is_kernel_managed(p_str_low):
-            _PROTECTED_PATH_CACHE[path_str] = (True, now)
+            _PROTECTED_PATH_CACHE[path_str] = True
+            _PROTECTED_PATH_TS[path_str] = now
             return True
             
         parts = {part.lower() for part in p.parts}
         if not PROTECTED_DIR_NAMES.isdisjoint(parts):
-            _PROTECTED_PATH_CACHE[path_str] = (True, now)
+            _PROTECTED_PATH_CACHE[path_str] = True
+            _PROTECTED_PATH_TS[path_str] = now
             return True
         
         attrs = _get_file_attrs(str(p))
         if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT)):
-            _PROTECTED_PATH_CACHE[path_str] = (True, now)
+            _PROTECTED_PATH_CACHE[path_str] = True
+            _PROTECTED_PATH_TS[path_str] = now
             return True
         
         res = p == Path(p.anchor)
-        _PROTECTED_PATH_CACHE[path_str] = (res, now)
+        _PROTECTED_PATH_CACHE[path_str] = res
+        _PROTECTED_PATH_TS[path_str] = now
         return res
     except Exception:
         return True

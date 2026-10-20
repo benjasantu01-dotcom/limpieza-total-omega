@@ -1212,3 +1212,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-20T11:21:15` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-10-20T11:21:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-20T11:21:15` Corrida terminada. Total usado hoy: 268.
+- `2026-10-20T11:28:12` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-10-20T11:28:53` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Optimizé la carga del manifiesto eliminando la reconstrucción de objetos `QuarantineItem` mediante `from_dict` si el manifiesto no ha cambiado en disco, aprovechando el cache existente para reducir el uso de CPU y I/O en cada iteración del bucle.
+- `2026-10-20T11:29:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-10-20T11:30:21` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el acceso a `_PROTECTED_PATH_CACHE` eliminando la tupla innecesaria `(bool, float)` y convirtiéndola en un `dict[str, bool]` con expiración externa implícita, además de migrar las validaciones repetitivas de `is_protected_path` hacia un set `_CACHE_KEYS` que permite validar rápidamente la presencia en el caché sin operaciones de desempacado.
+- `2026-10-20T11:30:33` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el proceso de filtrado en el motor de escaneo mediante la migración de `list` a `set` para la verificación de `seen` y la reordenación estratégica de las heurísticas (`ALL_CHECKS`), permitiendo descartar archivos más rápido mediante condiciones de costo computacional ascendente.
+- `2026-10-20T11:30:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-20T11:30:33` Corrida terminada. Total usado hoy: 272.
