@@ -56,8 +56,6 @@ class Win32Attr(IntEnum):
 class SecurityDescriptor(NamedTuple):
     """
     Contenedor de metadatos de seguridad extraídos vía Win32 API.
-    Se utiliza como snapshot inmutable para las reglas de validación, evitando
-    consultas redundantes al kernel durante la evaluación de políticas.
     """
     attrs: int
     is_protected_system: bool
@@ -76,10 +74,14 @@ class SecurityDescriptor(NamedTuple):
             return cls(0, True, True, True, True)
         try:
             attrs = _get_file_attrs(path_str)
+            if attrs == INVALID_FILE_ATTRIBUTES:
+                # Si no podemos leer atributos, tratamos como protegido por seguridad
+                return cls(0, True, True, True, True)
+                
             risk_flags = (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | 
                           Win32Attr.TEMPORARY | Win32Attr.REPARSE_POINT)
             is_protected = bool(attrs & risk_flags)
-            is_in_use = is_protected or (attrs != INVALID_FILE_ATTRIBUTES and _is_file_locked_by_other_process(path_str))
+            is_in_use = is_protected or _is_file_locked_by_other_process(path_str)
             
             return cls(
                 attrs=attrs,
@@ -158,9 +160,7 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
             err = ctypes.windll.kernel32.GetLastError()
             if err == ERROR_ACCESS_DENIED:
                 return Win32Attr.SYSTEM
-            if err == ERROR_INVALID_NAME:
-                return 0
-            return 0
+            return INVALID_FILE_ATTRIBUTES
         return attrs
     except (AttributeError, ctypes.ArgumentError, OSError, MemoryError, ValueError, TypeError):
         return 0
@@ -381,6 +381,7 @@ def _is_system_directory_junction(path_str: str) -> bool:
     """Verifica si el path es un punto de unión de sistema (reparse point)."""
     if os.name != 'nt' or not isinstance(path_str, str): return False
     attrs = _get_file_attrs(path_str)
+    if attrs == INVALID_FILE_ATTRIBUTES: return False
     return bool(attrs & Win32Attr.REPARSE_POINT)
 
 @lru_cache(maxsize=1024)
@@ -608,7 +609,6 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
 def _get_path_stat_robust(path: Path) -> os.stat_result:
     """
     Obtiene metadatos del archivo usando reintentos ante bloqueos temporales del sistema.
-    Necesario para evitar falsos positivos TOCTOU durante operaciones de escaneo rápido.
     """
     max_retries = 3
     if not isinstance(path, Path):
@@ -779,7 +779,7 @@ def is_protected_path(path: PathLike) -> bool:
         
         # 4. Chequeo de atributos
         attrs = _get_file_attrs(str(p))
-        if attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT):
+        if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT)):
             _PROTECTED_PATH_CACHE[path_str] = (True, now)
             return True
         
@@ -877,14 +877,12 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
     
-    # Nueva validación: Privilegios administrativos restringidos
     if is_running_as_admin():
-        # Evitar modificar archivos de sistema si el proceso tiene privilegios máximos
         if _is_file_owned_by_system(str(target_path)) or _is_kernel_managed(str(target_path)):
             raise UnsafePathError("Operación denegada en modo privilegiado (seguridad del sistema).", SafetyValidationErrorCode.ADMIN_PRIVILEGE_VIOLATION)
 
     attrs = _get_file_attrs(str(target_path))
-    if attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN):
+    if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN)):
         raise UnsafePathError("Protección defensiva: Archivo de sistema oculto.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)
 
     if _is_kernel_managed(str(target_path)):
@@ -1048,7 +1046,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         return p
     except UnsafePathError:
         raise
-    except (OSError, AttributeError, RuntimeError, ValueError, TypeError, MemoryError) as e:
+    except (OSError, AttributeError, RuntimeError, ValueError, TypeError, MemoryError, WindowsError if os.name == 'nt' else ImportError) as e:
         raise UnsafePathError(f"Validación fallida: {e}", SafetyValidationErrorCode.IO_ERROR)
     except Exception as e:
         raise UnsafePathError(f"Error crítico durante la validación: {e}", SafetyValidationErrorCode.IO_ERROR)

@@ -959,6 +959,7 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         
         if not stored_file.exists() or not quarantine_item.verify_integrity(stored_file):
             items: List[QuarantineItem] = load_manifest(base, force_reload=True)
+            # Limpiamos el registro corrupto antes de fallar
             save_manifest([i for i in items if i.item_id != item_id], base)
             raise RuntimeError(f"Archivo en cuarentena inexistente o corrupto: {item_id}")
             

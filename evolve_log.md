@@ -609,3 +609,11 @@ ERROR evolve/tests/test_safety.py - TypeError: _check_vol_restricted() missing 1
 - `2026-10-20T05:34:49` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_process_executable_safe` reemplazando el uso de un manejo de excepciones genérico por validaciones explícitas de estado y resultados, asegurando que `GetModuleFileNameExW` no procese buffers vacíos o inválidos antes de invocar `is_protected_path`.
 - `2026-10-20T05:34:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-20T05:34:49` Corrida terminada. Total usado hoy: 132.
+- `2026-10-20T05:41:33` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-10-20T05:42:02` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-10-20T05:42:46` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se mejora el manejo de errores en `restore_item` al evitar que la desincronización entre el manifiesto y el sistema de archivos detenga la ejecución, implementando una limpieza defensiva del ítem corrupto antes de lanzar la excepción.
+- `2026-10-20T05:43:47` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-20T05:44:09` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-10-20T05:44:42` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `ensure_safe_to_modify` capturando excepciones de sistema específicas (como `WindowsError` o errores de acceso de bajo nivel) durante la validación de `SecurityDescriptor`, evitando que una lectura fallida en un archivo inaccesible colapse la validación completa.
+- `2026-10-20T05:44:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-20T05:44:42` Corrida terminada. Total usado hoy: 136.
