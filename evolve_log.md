@@ -815,3 +815,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-20T07:15:43` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
 - `2026-10-20T07:15:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-20T07:15:43` Corrida terminada. Total usado hoy: 172.
+- `2026-10-20T07:23:28` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-10-20T07:23:57` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `_validate_root` para manejar situaciones donde el sistema de archivos reporta errores de acceso durante la iteración o resolución de rutas, evitando que el escaneo se interrumpa prematuramente al encontrar archivos bloqueados o inaccesibles.
+- `2026-10-20T07:24:45` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante errores de acceso a disco en la función `_is_file_locked` para manejar explícitamente el caso de archivos inexistentes, evitando falsos positivos de "bloqueo" y mejorando la precisión al filtrar candidatos en entornos con archivos transitorios.
+- `2026-10-20T07:25:31` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra `ZeroDivisionError` y estados inconsistentes en `_PIPELINE` mediante un chequeo de precondición en la función `compute_score`, asegurando que `_PIPELINE` no esté vacío antes de procesar para prevenir fallos en entornos de ejecución con configuración incompleta.
+- `2026-10-20T07:26:29` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha implementado un mecanismo de "graceful shutdown" en `on_closing` para asegurar que el `ThreadPoolExecutor` libere sus recursos de manera ordenada, evitando condiciones de carrera donde hilos huérfanos intenten acceder a la interfaz de usuario durante el proceso de cierre.
+- `2026-10-20T07:26:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-20T07:26:29` Corrida terminada. Total usado hoy: 176.

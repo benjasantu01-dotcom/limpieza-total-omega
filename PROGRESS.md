@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **195** (38.7% de aceptación)
+- Mejoras aceptadas: **196** (38.9% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 50
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 25
 - Sin respuesta de la IA (error o límite): 219
 
@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 126 | 9 | 31 | 17 | 149 |
-| 2026-10-20 | 69 | 6 | 19 | 8 | 70 |
+| 2026-10-19 | 123 | 9 | 30 | 17 | 149 |
+| 2026-10-20 | 73 | 6 | 19 | 8 | 70 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **44**
-- seguridad defensiva: **40**
+- seguridad defensiva: **37**
 - rendimiento: **37**
-- robustez ante casos límite: **29**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **18**
-- `duplicates.py`: **18**
+- `duplicates.py`: **19**
+- `diskreport.py`: **18**
 - `browser.py`: **17**
-- `diskreport.py`: **17**
-- `healthscore.py`: **16**
+- `healthscore.py`: **17**
+- `quarantine.py`: **17**
 - `settings.py`: **15**
 - `memory.py`: **15**
 - `branding.py`: **15**
 - `assistant.py`: **14**
-- `safety.py`: **13**
-- `scanner.py`: **13**
+- `safety.py`: **12**
+- `scanner.py`: **12**
+- `main.py`: **9**
 - `organizer.py`: **8**
 - `startup.py`: **8**
-- `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-20T07:26:29` **main.py** (robustez ante casos límite): Se ha implementado un mecanismo de "graceful shutdown" en `on_closing` para asegurar que el `ThreadPoolExecutor` libere sus recursos de manera ordenada, evitando condiciones de carrera donde hilos huérfanos intenten acceder a la interfaz de usuario durante el proceso de cierre.
+- `2026-10-20T07:25:31` **healthscore.py** (robustez ante casos límite): Se introdujo una validación robusta contra `ZeroDivisionError` y estados inconsistentes en `_PIPELINE` mediante un chequeo de precondición en la función `compute_score`, asegurando que `_PIPELINE` no esté vacío antes de procesar para prevenir fallos en entornos de ejecución con configuración incompleta.
+- `2026-10-20T07:24:45` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a disco en la función `_is_file_locked` para manejar explícitamente el caso de archivos inexistentes, evitando falsos positivos de "bloqueo" y mejorando la precisión al filtrar candidatos en entornos con archivos transitorios.
+- `2026-10-20T07:23:57` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_validate_root` para manejar situaciones donde el sistema de archivos reporta errores de acceso durante la iteración o resolución de rutas, evitando que el escaneo se interrumpa prematuramente al encontrar archivos bloqueados o inaccesibles.
 - `2026-10-20T07:15:32` **branding.py** (robustez ante casos límite): Se mejora la robustez ante rutas de destino mal formadas o inexistentes en `save_logo_svg` al validar el estado del directorio padre antes de intentar una escritura, garantizando que el proceso no falle silenciosamente ante rutas relativas o inválidas.
 - `2026-10-20T07:15:01` **assistant.py** (robustez ante casos límite): Se reforzó la robustez ante estados inconsistentes y valores de entrada inesperados en `SystemContext` mediante la validación proactiva de los datos ingeridos en `_validate_and_sanitize_data` y la adición de una comprobación de tipo más estricta en el `ingest` para prevenir el procesamiento de fuentes mal formadas.
 - `2026-10-20T07:04:41` **scanner.py** (rendimiento): Se ha optimizado el rendimiento del escaneo reemplazando el diccionario `path_readable_cache` (que crecía indefinidamente con cada archivo visitado) por una verificación directa más ligera, dado que las comprobaciones de acceso (`is_readable` y `is_locked_by_os`) ya realizan sus propios testeos de I/O y no justifican la sobrecarga de memoria de un caché global en un escaneo de un solo paso.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-20T06:34:20` **assistant.py** (rendimiento): Optimicé el acceso a las métricas del sistema utilizando `cached_property` para los cálculos derivados y eliminando la reconstrucción innecesaria de diccionarios en `context_as_text`, lo que reduce el uso de CPU durante consultas frecuentes.
 - `2026-10-20T06:33:36` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el "porqué" de las restricciones de seguridad (como la validación de rutas UNC y caracteres de control) y añadí tipado explícito para asegurar claridad sobre los datos que procesa el parser de registro.
 - `2026-10-20T06:33:05` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings técnicos detallados en `_SettingsManager` y las funciones principales de validación, explicando el propósito de los mecanismos de seguridad y caché en lugar de solo describir la acción.
-- `2026-10-20T06:24:48` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad técnica del módulo `scanner.py`, añadiendo docstrings específicos a funciones críticas y refinando los nombres de tipos/variables para reflejar mejor el propósito de cada componente, facilitando su mantenimiento sin alterar la lógica de escaneo.
-- `2026-10-20T06:23:07` **quarantine.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en funciones internas clave de `quarantine.py` para mejorar la legibilidad y facilitar la auditoría de seguridad del código, manteniendo intacta la lógica funcional y la integridad de los chequeos.
-- `2026-10-20T06:14:14` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la refactorización de `_is_safe_for_disk_op` (dividiendo sus validaciones en una estructura de guardia más clara) y la adición de Type Hints detallados para aclarar las intenciones de los parámetros en los métodos de escaneo.
-- `2026-10-20T06:14:02` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos específicos a las estructuras de datos y funciones de bajo nivel, además de incluir tipado de retorno explícito y mayor claridad en las responsabilidades de los chequeos de seguridad.

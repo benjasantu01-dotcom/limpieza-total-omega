@@ -337,12 +337,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self._executor = None
         
         if executor:
-            executor.shutdown(wait=False)
+            # Shutdown sin esperar para cerrar la UI rápidamente, 
+            # pero descartando las tareas pendientes en la cola.
+            executor.shutdown(wait=False, cancel_futures=True)
         
         try:
             self.quit()
             self.destroy()
-        except:
+        except Exception:
             pass
 
     @safe_ui_operation
@@ -443,7 +445,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.settings = get_cached_settings()
             
         with self._executor_lock:
-            self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=3)
+            # Se especifica thread_name_prefix para mejor depuración
+            self._executor = concurrent.futures.ThreadPoolExecutor(
+                max_workers=3, 
+                thread_name_prefix="OmegaWorker"
+            )
             
     @safe_ui_operation
     def _toggle_ui_availability(self, active: bool) -> None:

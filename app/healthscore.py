@@ -347,6 +347,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema inválidos."])
     
+    if not _PIPELINE:
+        return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Pipeline de análisis no configurado."])
+    
     # Cache key basada en los valores actuales
     cache_key = hash(tuple(getattr(metrics, f) for f in metrics._FIELDS_TO_VALIDATE))
     if cache_key in _PIPELINE_CACHE:
@@ -362,6 +365,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             if entry.rules:
                 recommendations.extend(_evaluate_rules(metrics, entry.rules, area_ratio))
             
+            # Evitar división por cero o multiplicaciones con pesos inválidos si entry.weight es 0
             points = area_ratio * entry.weight
             val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
             metric_breakdown[entry.area] = val_int

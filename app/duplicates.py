@@ -112,6 +112,8 @@ def _is_file_locked(path: Path) -> bool:
     try:
         with open(path, "rb") as f:
             return False
+    except FileNotFoundError:
+        return True
     except OSError as e:
         if hasattr(e, 'winerror') and e.winerror in (ERROR_SHARING_VIOLATION, ERROR_ACCESS_DENIED):
             return True

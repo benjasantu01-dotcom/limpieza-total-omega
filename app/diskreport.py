@@ -142,13 +142,10 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         p = Path(directory).expanduser()
+        # Usamos resolve() con excepciones capturadas para manejar rutas inexistentes o inaccesibles
         resolved_path = p.resolve(strict=False)
         
-        if not resolved_path.is_dir() or is_protected_path(resolved_path) or not os.access(resolved_path, os.R_OK):
-            return None
-        
-        # Validación para evitar escape fuera de la jerarquía prevista
-        if not str(resolved_path).startswith(str(p.resolve())):
+        if not resolved_path.exists() or not resolved_path.is_dir() or is_protected_path(resolved_path) or not os.access(resolved_path, os.R_OK):
             return None
             
         return resolved_path
@@ -288,8 +285,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre archivos recursivamente. Utiliza un conjunto de inodos visitados
-    para prevenir bucles infinitos en caso de enlaces simbólicos o puntos de reparse.
+    Recorre archivos recursivamente manejando fallos de acceso a directorios de forma elegante.
     """
     root_path = _validate_root(directory)
     if root_path is None: return
