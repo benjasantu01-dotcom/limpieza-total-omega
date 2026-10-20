@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **190** (37.7% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 49
-- Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 226
+- Rechazadas por guardia de seguridad: 51
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 93 | 8 | 24 | 11 | 112 |
-| 2026-10-20 | 97 | 8 | 25 | 12 | 114 |
+| 2026-10-19 | 91 | 8 | 24 | 10 | 111 |
+| 2026-10-20 | 99 | 8 | 27 | 12 | 114 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **44**
-- legibilidad y documentación: **43**
+- legibilidad y documentación: **44**
 - manejo de errores y validación de entradas: **42**
-- robustez ante casos límite: **33**
-- rendimiento: **28**
+- robustez ante casos límite: **31**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **18**
 - `diskreport.py`: **18**
-- `healthscore.py`: **17**
+- `duplicates.py`: **17**
 - `memory.py`: **16**
 - `quarantine.py`: **16**
+- `healthscore.py`: **16**
 - `browser.py`: **15**
+- `assistant.py`: **15**
 - `branding.py`: **14**
-- `assistant.py`: **14**
 - `safety.py`: **13**
 - `settings.py`: **13**
 - `scanner.py`: **11**
 - `main.py`: **10**
 - `organizer.py`: **9**
-- `startup.py`: **6**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-20T11:00:16` **assistant.py** (rendimiento): Optimicé el método `context_as_text` para evitar la creación de listas intermedias y el uso repetido de `snapshot.get()` dentro del loop, mejorando el rendimiento mediante una comprensión de generador eficiente que accede a las claves solo una vez.
+- `2026-10-20T10:59:35` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones que carecían de ellas, explicitando los contratos de entrada/salida y las responsabilidades de cada bloque, además de estandarizar la nomenclatura de los tipos de retorno para mayor claridad.
 - `2026-10-20T10:49:53` **safety.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del módulo `safety.py` mediante la refactorización de `ensure_safe_to_modify` para emplear "guard clauses" (cláusulas de guarda) en lugar de una lógica anidada compleja, facilitando la comprensión del flujo de validación.
 - `2026-10-20T10:48:03` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints detallados, la unificación de los criterios de filtrado de archivos mediante la centralización de las reglas de `_is_junk_file` y la documentación exhaustiva del propósito de las validaciones de seguridad complejas en `_is_safe_for_disk_op`.
 - `2026-10-20T10:40:58` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento mediante la documentación de los parámetros Win32 y la sustitución de `Any` en las firmas de funciones por tipos específicos, clarificando la interacción con la API de Windows.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-20T09:48:49` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `detect_profiles` y `base_directories` validando explícitamente los tipos de entrada y el estado de las rutas, asegurando que cualquier valor inesperado (`None`, tipos incorrectos o rutas inexistentes) no provoque excepciones innecesarias ni un comportamiento de escaneo impredecible.
 - `2026-10-20T09:48:32` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save_logo_svg` validando la existencia y el tipo del directorio padre antes de intentar la escritura, y se reforzó `_hex_to_rgb` y `_rgb_to_hex` con manejo explícito de valores fuera de rango para prevenir excepciones silenciosas en el renderizado de gradientes.
 - `2026-10-20T09:48:00` **assistant.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `ingest` y `_apply_updates` mediante la validación explícita de tipos y excepciones, asegurando que el estado del objeto `SystemContext` nunca quede parcialmente corrupto o en un estado inválido ante datos externos malformados.
-- `2026-10-20T08:26:08` **settings.py** (seguridad defensiva): Se endureció la validación en `_is_dir_safe` añadiendo una comprobación de que el directorio no sea un punto de unión (junction) o enlace simbólico, previniendo inyecciones de rutas fuera del espacio de configuración permitido y reforzando la seguridad defensiva contra escalada de privilegios en el sistema de archivos.
-- `2026-10-20T08:17:15` **safety.py** (seguridad defensiva): Se ha añadido un chequeo explícito en `ensure_safe_to_modify` para detectar y bloquear rutas que contengan el carácter `~` en los nombres de los directorios de usuario (spoofing de nombres cortos 8.3 de DOS), evitando posibles bypasses de `is_protected_path`.

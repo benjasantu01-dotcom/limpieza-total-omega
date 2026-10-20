@@ -526,8 +526,8 @@ def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> Syst
 def context_as_text(context: SystemContext) -> str:
     """Serializa el contexto a un formato textual seguro para el prompt."""
     if context.is_empty: return ""
-    snapshot = context.metrics_snapshot
-    res = [f"{k}: {snapshot.get(k, -1.0):.{p}f}{u}" for k, u, p in _CONTEXT_SCHEMA if snapshot.get(k, -1.0) >= 0]
+    snap = context.metrics_snapshot
+    res = (f"{k}: {val:.{p}f}{u}" for k, u, p in _CONTEXT_SCHEMA if (val := snap.get(k, -1.0)) >= 0)
     return "\n".join(filter(_ensure_safe_text, res))
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
