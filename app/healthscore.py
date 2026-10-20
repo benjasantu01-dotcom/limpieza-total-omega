@@ -340,7 +340,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     return findings
 
 # Caché local para evitar recomputaciones idénticas
-_PIPELINE_CACHE: Dict[int, HealthResult] = {}
+_PIPELINE_CACHE: Dict[Tuple[float, ...], HealthResult] = {}
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Computa el puntaje global mediante el pipeline con validación de suma total."""
@@ -350,8 +350,8 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not _PIPELINE:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Pipeline de análisis no configurado."])
     
-    # Cache key basada en los valores actuales
-    cache_key = hash(tuple(getattr(metrics, f) for f in metrics._FIELDS_TO_VALIDATE))
+    # Cache key basada en los valores actuales para evitar colisiones de hash
+    cache_key = tuple(float(getattr(metrics, f)) for f in metrics._FIELDS_TO_VALIDATE)
     if cache_key in _PIPELINE_CACHE:
         return _PIPELINE_CACHE[cache_key]
         

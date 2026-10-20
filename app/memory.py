@@ -349,21 +349,23 @@ def _process_from_pid(pid: int, kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_C
             if not _is_process_executable_safe(pid, proc_handle, psapi):
                 return None
         return ProcessMemory(f"PID {pid}", pid, ws) if ws is not None else None
+    except Exception:
+        return None
     finally:
-        if proc_handle != INVALID_HANDLE_VALUE:
+        if proc_handle is not None and proc_handle != INVALID_HANDLE_VALUE:
             kernel32.CloseHandle(proc_handle)
 
 def _iter_process_memory(kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
     """Enumera procesos activos del sistema aplicando filtros de seguridad."""
     buf_size = 4096
-    while True:
+    while buf_size <= 65536:
         pids = (ctypes.c_uint32 * (buf_size // 4))()
         cb_needed = ctypes.c_uint32(0)
         if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
             if cb_needed.value < ctypes.sizeof(pids):
                 count = cb_needed.value // 4
                 for i in range(count):
-                    pid_val = pids[i]
+                    pid_val = int(pids[i])
                     if _is_system_process(pid_val) or pid_val <= 0: continue
                     proc = _process_from_pid(pid_val, kernel32, psapi, pmc)
                     if proc: yield proc

@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 122 | 9 | 30 | 17 | 138 |
-| 2026-10-20 | 78 | 7 | 20 | 8 | 75 |
+| 2026-10-19 | 122 | 9 | 30 | 17 | 134 |
+| 2026-10-20 | 81 | 7 | 20 | 8 | 76 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **44**
-- seguridad defensiva: **38**
+- seguridad defensiva: **41**
 - rendimiento: **37**
 - robustez ante casos límite: **36**
 
@@ -31,21 +31,24 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `diskreport.py`: **19**
 - `duplicates.py`: **19**
+- `healthscore.py`: **18**
 - `quarantine.py`: **18**
 - `browser.py`: **17**
-- `healthscore.py`: **17**
-- `memory.py`: **16**
+- `memory.py`: **17**
 - `assistant.py`: **15**
 - `settings.py`: **15**
 - `branding.py`: **15**
 - `safety.py`: **12**
 - `scanner.py`: **12**
-- `main.py`: **9**
+- `main.py`: **10**
 - `organizer.py`: **8**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-20T08:07:07` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_process_from_pid` y `_iter_process_memory` para asegurar que el manejo de punteros y buffers de procesos de Windows no quede en un estado inconsistente ante errores de acceso o llamadas fallidas a la API.
+- `2026-10-20T08:06:20` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva centralizando la validación de directorios críticos mediante una nueva constante `PROTECTED_ROOTS` y un método de verificación estricta en el inicializador de la app, evitando que el escaneo o la manipulación de archivos ocurran fuera de las áreas permitidas incluso si el usuario intenta seleccionar rutas fuera del scope del Home o del sistema de archivos principal.
+- `2026-10-20T08:05:15` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del pipeline eliminando el uso de una función `hash()` no determinista sobre objetos complejos, reemplazándola por una clave de caché basada en una tupla de valores primitivos, evitando así posibles colisiones o errores inesperados en el estado de la caché durante el análisis.
 - `2026-10-20T07:56:02` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` y `walk_files` implementando un chequeo explícito de recursión mediante `Path.samefile` (o comparación de inodes) antes de acceder, evitando que la aplicación quede atrapada o acceda erróneamente en estructuras con junctions o enlaces simbólicos complejos, reforzando la integridad del escaneo.
 - `2026-10-20T07:54:54` **assistant.py** (seguridad defensiva): Se endurece la validación del contexto al evitar que objetos externos arbitrarios sean procesados mediante `getattr` en `_get_source_value`, limitando el acceso exclusivamente a los atributos definidos en `_VALIDATORS` para prevenir cualquier tipo de intrusión en el estado interno del asistente.
 - `2026-10-20T07:45:48` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_secure_to_read` para detectar archivos con contenido malformado o desbordamientos antes del parseo JSON, y se añadió una validación explícita de `UTF-8` al leer, evitando bloqueos por archivos binarios o codificaciones inesperadas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-20T07:15:32` **branding.py** (robustez ante casos límite): Se mejora la robustez ante rutas de destino mal formadas o inexistentes en `save_logo_svg` al validar el estado del directorio padre antes de intentar una escritura, garantizando que el proceso no falle silenciosamente ante rutas relativas o inválidas.
 - `2026-10-20T07:15:01` **assistant.py** (robustez ante casos límite): Se reforzó la robustez ante estados inconsistentes y valores de entrada inesperados en `SystemContext` mediante la validación proactiva de los datos ingeridos en `_validate_and_sanitize_data` y la adición de una comprobación de tipo más estricta en el `ingest` para prevenir el procesamiento de fuentes mal formadas.
 - `2026-10-20T07:04:41` **scanner.py** (rendimiento): Se ha optimizado el rendimiento del escaneo reemplazando el diccionario `path_readable_cache` (que crecía indefinidamente con cada archivo visitado) por una verificación directa más ligera, dado que las comprobaciones de acceso (`is_readable` y `is_locked_by_os`) ya realizan sus propios testeos de I/O y no justifican la sobrecarga de memoria de un caché global en un escaneo de un solo paso.
-- `2026-10-20T06:55:23` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` transformando `stored_names` en un conjunto para búsquedas O(1) y evitando la reconstrucción redundante de la lista completa de manifiesto, reduciendo la complejidad del algoritmo de O(N*M) a O(N+M).
-- `2026-10-20T06:54:58` **organizer.py** (rendimiento): Optimizado el rendimiento del escaneo recursivo de archivos mediante la pre-compilación de `JUNK_EXTENSIONS` como `frozenset` y su uso directo en `_is_junk_file` evitando la creación innecesaria de objetos `Path` y llamadas a `suffix` en cada iteración, reduciendo drásticamente la carga de CPU en sistemas con gran cantidad de archivos.
-- `2026-10-20T06:54:31` **memory.py** (rendimiento): Se optimizó `_iter_process_memory` para realizar una única llamada a `EnumProcesses` con un buffer dinámico ajustado, evitando el desperdicio de iterar sobre una lista estática de 4096 elementos cuando hay pocos procesos activos, y se reemplazó la creación repetitiva de estructuras `PROCESS_MEMORY_COUNTERS` dentro del bucle por una única reutilización de la estructura.

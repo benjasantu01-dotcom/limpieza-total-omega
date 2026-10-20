@@ -116,6 +116,9 @@ HEALTH_AREAS: Tuple[HealthMetricConfig, ...] = (
     ("inicio", "Programas de inicio"),
 )
 
+# Raíces prohibidas para evitar escalada de privilegios o daños al SO
+PROTECTED_ROOTS: List[str] = ["windows", "system32", "program files", "programdata", "boot"]
+
 # Caché de settings con TTL de 60 segundos para evitar acceso constante a disco
 _SETTINGS_CACHE: Dict[str, Any] = {"data": None, "last_load": 0}
 
@@ -207,9 +210,8 @@ def validated_ui_operation(func: Callable) -> Callable:
 
 def _is_path_in_system_roots(path_str: str) -> bool:
     """Valida si la ruta actual es potencialmente peligrosa por estar en directorios del sistema."""
-    system_roots = ["windows", "system32", "program files"]
     path_lower = path_str.lower()
-    return any(root in path_lower for root in system_roots)
+    return any(root in path_lower for root in PROTECTED_ROOTS)
 
 def _check_environment_integrity() -> None:
     """
@@ -276,6 +278,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         sanitized = self._sanitize_path(path)
         if not sanitized: raise ValueError("Ruta vacía o inválida")
         p = Path(sanitized).resolve(strict=False)
+        # Validación extra de protección ante directorios críticos
+        if _is_path_in_system_roots(str(p)):
+             raise safety.UnsafePathError("Acceso prohibido: ruta protegida por el SO")
         safety.ensure_safe_to_modify(p)
         return p
 
