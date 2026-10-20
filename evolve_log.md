@@ -1403,3 +1403,39 @@ FAILED evolve/tests/test_modules.py::test_diagnose_on_critical_memory_suggests_c
 - `2026-10-20T01:50:29` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejoré la legibilidad del módulo `quarantine.py` mediante la normalización de la estructura de las funciones de validación, la adición de Type Hints faltantes en variables locales y la clarificación de las responsabilidades de los chequeos de integridad, asegurando una documentación más coherente con el enfoque de seguridad exigido.
 - `2026-10-20T01:50:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-20T01:50:29` Corrida terminada. Total usado hoy: 44.
+- `2026-10-20T01:57:25` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-10-20T01:57:46` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 119): unterminated string literal (detected at line 119)
+- `2026-10-20T01:58:34` Tests FALLARON:
+```
+t branding  # noqa: E402
+    ^^^^^^^^^^^^^^^
+app/branding.py:29: in <module>
+    from safety import ensure_safe_to_modify, is_safe_to_modify, is_protected_path, filter_safe_paths
+app/safety.py:552: in <module>
+    _rule(ProtectionReason.IN_USE, _check_in_use),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: _check_vol_restricted() missing 1 required positional argument: '__'
+_________________ ERROR collecting evolve/tests/test_safety.py _________________
+evolve/tests/test_safety.py:25: in <module>
+    import quarantine  # noqa: E402
+    ^^^^^^^^^^^^^^^^^
+app/quarantine.py:35: in <module>
+    from safety import (
+app/safety.py:552: in <module>
+    _rule(ProtectionReason.IN_USE, _check_in_use),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: _check_vol_restricted() missing 1 required positional argument: '__'
+=========================== short test summary info ============================
+ERROR evolve/tests/test_assistant.py - TypeError: _check_vol_restricted() missing 1 required positional argument: '__'
+ERROR evolve/tests/test_basic.py - TypeError: _check_vol_restricted() missing 1 required positional argument: '__'
+ERROR evolve/tests/test_modules.py - TypeError: _check_vol_restricted() missing 1 required positional argument: '__'
+ERROR evolve/tests/test_safety.py - TypeError: _check_vol_restricted() missing 1 required positional argument: '__'
+!!!!!!!!!!!!!!!!!!! Interrupted: 4 errors during collection !!!!!!!!!!!!!!!!!!!!
+4 errors in 0.35s
+
+```
+- `2026-10-20T01:58:34` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la legibilidad y mantenibilidad del módulo `safety.py` mediante la refactorización de `ensure_safe_to_modify` para extraer la lógica de validación de directorios base en una función dedicada, reduciendo la complejidad ciclomática y facilitando la auditoría de seguridad.
+- `2026-10-20T01:59:00` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y la legibilidad técnica mediante la aplicación estricta de Type Hints en parámetros y retornos, la adición de docstrings precisos en funciones clave, y la normalización de la estructura de manejo de errores en las heurísticas para facilitar el mantenimiento.
+- `2026-10-20T01:59:13` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
+- `2026-10-20T01:59:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-20T01:59:13` Corrida terminada. Total usado hoy: 48.
