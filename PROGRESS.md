@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **188** (37.3% de aceptación)
+- Mejoras aceptadas: **189** (37.5% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 52
+- Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 225
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 77 | 6 | 22 | 10 | 105 |
-| 2026-10-20 | 111 | 8 | 30 | 15 | 120 |
+| 2026-10-19 | 77 | 6 | 22 | 10 | 101 |
+| 2026-10-20 | 112 | 8 | 31 | 15 | 122 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **44**
 - manejo de errores y validación de entradas: **42**
+- robustez ante casos límite: **35**
 - rendimiento: **34**
-- robustez ante casos límite: **34**
 - seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
@@ -37,7 +37,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **15**
 - `branding.py`: **14**
 - `quarantine.py`: **14**
-- `safety.py`: **12**
+- `safety.py`: **13**
 - `settings.py`: **11**
 - `scanner.py`: **11**
 - `main.py`: **9**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-20T12:10:51` **safety.py** (robustez ante casos límite): Se ha añadido una verificación de "permisos de herencia" en `_is_file_owned_by_system` utilizando `GetSecurityInfoW` para detectar archivos cuya propiedad o ACL (Lista de Control de Acceso) impone restricciones de escritura críticas incluso para administradores, mejorando la robustez ante casos límite de seguridad en Windows.
 - `2026-10-20T12:03:43` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_extract_process_info` para manejar casos de nombres de proceso con comas y se añade una verificación de existencia de archivo en `_is_process_executable_safe` antes de llamar a `is_protected_path`, previniendo excepciones innecesarias en procesos efímeros o de sistema donde el handle no resuelve a un archivo accesible.
 - `2026-10-20T11:50:19` **healthscore.py** (robustez ante casos límite): Mejora la robustez del motor al prevenir errores de división por cero y condiciones de "NaN" en las métricas de disco y memoria, garantizando que el sistema siempre devuelva un puntaje válido aunque las lecturas de hardware sean cero o fallidas.
 - `2026-10-20T11:49:57` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `duplicates.py` ante errores de acceso a disco mediante el uso de bloques `try-except` más granulares en `_is_file_locked`, evitando que errores transitorios de permisos (ej. archivos en uso por el sistema o cambios rápidos en el FS) provoquen una caída silenciosa o falsos positivos en el escaneo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-20T11:10:52` **browser.py** (rendimiento): Se optimizó el recorrido recursivo mediante la pre-resolución de `normcase` sobre los nombres de archivo y la consolidación de chequeos de exclusión, reduciendo drásticamente las llamadas redundantes a `os.path` y `is_protected_path` dentro del bucle crítico.
 - `2026-10-20T11:00:16` **assistant.py** (rendimiento): Optimicé el método `context_as_text` para evitar la creación de listas intermedias y el uso repetido de `snapshot.get()` dentro del loop, mejorando el rendimiento mediante una comprensión de generador eficiente que accede a las claves solo una vez.
 - `2026-10-20T10:59:35` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones que carecían de ellas, explicitando los contratos de entrada/salida y las responsabilidades de cada bloque, además de estandarizar la nomenclatura de los tipos de retorno para mayor claridad.
-- `2026-10-20T10:49:53` **safety.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del módulo `safety.py` mediante la refactorización de `ensure_safe_to_modify` para emplear "guard clauses" (cláusulas de guarda) en lugar de una lógica anidada compleja, facilitando la comprensión del flujo de validación.

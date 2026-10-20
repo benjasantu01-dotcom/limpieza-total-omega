@@ -1246,3 +1246,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-20T12:05:40` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-10-20T12:05:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-20T12:05:40` Corrida terminada. Total usado hoy: 284.
+- `2026-10-20T12:08:59` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-10-20T12:09:42` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-10-20T12:10:51` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una verificación de "permisos de herencia" en `_is_file_owned_by_system` utilizando `GetSecurityInfoW` para detectar archivos cuya propiedad o ACL (Lista de Control de Acceso) impone restricciones de escritura críticas incluso para administradores, mejorando la robustez ante casos límite de seguridad en Windows.
+- `2026-10-20T12:11:51` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-20T12:12:51` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-10-20T12:13:33` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-10-20T12:13:39` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-20T12:13:52` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-10-20T12:13:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-20T12:13:52` Corrida terminada. Total usado hoy: 288.
