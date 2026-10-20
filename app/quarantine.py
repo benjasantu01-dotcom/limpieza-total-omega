@@ -112,7 +112,10 @@ def _is_filesystem_read_only(path: Path) -> bool:
         return True
 
 def _check_io_error_context(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
-    """Ejecuta una función de I/O con una estrategia de reintento exponencial."""
+    """
+    Ejecuta una función de I/O con reintento exponencial.
+    Útil para manejar bloqueos transitorios por procesos de fondo (indexadores/antivirus).
+    """
     max_retries: int = 3
     for i in range(max_retries):
         try:
@@ -133,7 +136,10 @@ def _win_has_system_attributes(path: Path) -> bool:
         return True
 
 def _is_file_exclusive(path: Path) -> bool:
-    """Verifica si el archivo permite acceso exclusivo usando flags de sistema o flock."""
+    """
+    Verifica si el archivo puede ser bloqueado exclusivamente.
+    En Windows usa CreateFile con acceso compartido nulo; en POSIX usa fcntl.
+    """
     if os.name == 'nt':
         k32 = ctypes.windll.kernel32
         handle: int = k32.CreateFileW(str(path), 0x80000000, 0, None, 3, 0x00000080, None)
