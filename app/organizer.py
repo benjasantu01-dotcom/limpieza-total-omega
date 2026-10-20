@@ -21,7 +21,7 @@ from ctypes import wintypes
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Final, Callable, Union, TypeAlias, NamedTuple, Dict, Sequence, Literal
+from typing import List, Optional, Final, Callable, Union, TypeAlias, NamedTuple, Dict, Sequence, Literal, Set
 
 from safety import is_safe_to_modify, ensure_safe_to_modify, is_protected_path
 
@@ -234,11 +234,13 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         
+        # Validaciones de identidad y acceso básico
         if src_real.name.lower() in SYSTEM_CRITICAL_NAMES or is_protected_path(src_real): return False
         if src_real.is_symlink() or (os.name == 'nt' and _is_system_hidden(src_real)): return False
         if not (is_safe_to_modify(src_real) and _validate_path_security(src_real, dest_real)): return False
         if src_real.drive != dest_real.drive: return False
 
+        # Validaciones de estado del archivo y destino
         if not _validate_file_identity(junk_file, src_real) or _is_file_locked(src_real): return False
         if _is_recursive_violation(src_real, dest_real) or not _can_write_to_destination(dest_real, junk_file.size_bytes): return False
         
@@ -246,7 +248,7 @@ def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
     except (OSError, AttributeError, ValueError, PermissionError):
         return False
 
-def _should_scan_directory(entry: os.DirEntry, protected_cache: set[str]) -> bool:
+def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> bool:
     """Decide si un directorio es seguro para entrar según políticas de protección."""
     if entry.path in protected_cache or not _is_allowed_directory(entry.name) or _is_junction(entry): return False
     if _is_system_hidden(entry): return False
@@ -266,7 +268,7 @@ def _is_junk_file(entry: os.DirEntry, stats: os.stat_result, now_ts: float) -> b
             not _is_system_hidden(entry) and
             Path(entry.name).suffix.lower() in JUNK_EXTENSIONS)
 
-def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: set[str], visited: set[Path]) -> None:
+def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, protected_cache: Set[str], visited: Set[Path]) -> None:
     """Escaneo recursivo de directorios con límites de profundidad y caché de protección."""
     if depth > LIMITS.MAX_SCAN_DEPTH: return
     try:
@@ -293,8 +295,8 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int, pro
 def scan_for_junk(directories: Optional[Sequence[Union[str, Path]]] = None) -> List[JunkFile]:
     """Inicia el proceso de escaneo recursivo seguro en una lista de directorios."""
     found: List[JunkFile] = []
-    protected_cache: set[str] = set()
-    visited: set[Path] = set()
+    protected_cache: Set[str] = set()
+    visited: Set[Path] = set()
     scan_list = directories if directories is not None else DEFAULT_SCAN_DIRS
     
     if not isinstance(scan_list, (list, tuple)): return []

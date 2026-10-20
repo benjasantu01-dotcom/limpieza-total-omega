@@ -631,3 +631,10 @@ ERROR evolve/tests/test_safety.py - TypeError: _check_vol_restricted() missing 1
 - `2026-10-20T06:04:11` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: legibilidad y documentación).
 - `2026-10-20T06:04:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-20T06:04:11` Corrida terminada. Total usado hoy: 144.
+- `2026-10-20T06:12:07` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-10-20T06:12:34` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: HealthResult.is_healthy, SystemMetrics.safe_get
+- `2026-10-20T06:13:33` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_numeric_setting_from_widget
+- `2026-10-20T06:14:02` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos específicos a las estructuras de datos y funciones de bajo nivel, además de incluir tipado de retorno explícito y mayor claridad en las responsabilidades de los chequeos de seguridad.
+- `2026-10-20T06:14:14` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la refactorización de `_is_safe_for_disk_op` (dividiendo sus validaciones en una estructura de guardia más clara) y la adición de Type Hints detallados para aclarar las intenciones de los parámetros en los métodos de escaneo.
+- `2026-10-20T06:14:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-20T06:14:14` Corrida terminada. Total usado hoy: 148.
