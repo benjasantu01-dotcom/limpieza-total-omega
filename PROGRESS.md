@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
-- Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 48
+- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 220
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 131 | 9 | 31 | 18 | 151 |
-| 2026-10-20 | 66 | 4 | 17 | 8 | 69 |
+| 2026-10-19 | 129 | 9 | 31 | 18 | 149 |
+| 2026-10-20 | 67 | 5 | 19 | 8 | 69 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **45**
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **44**
-- rendimiento: **36**
+- seguridad defensiva: **43**
+- rendimiento: **37**
 - robustez ante casos límite: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **19**
-- `diskreport.py`: **18**
 - `quarantine.py`: **18**
+- `duplicates.py`: **18**
 - `healthscore.py`: **17**
 - `browser.py`: **17**
+- `diskreport.py`: **17**
 - `settings.py`: **15**
 - `memory.py`: **15**
 - `branding.py`: **14**
 - `safety.py`: **13**
+- `scanner.py`: **13**
 - `assistant.py`: **13**
-- `scanner.py`: **12**
 - `main.py`: **9**
 - `organizer.py`: **9**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-20T07:04:41` **scanner.py** (rendimiento): Se ha optimizado el rendimiento del escaneo reemplazando el diccionario `path_readable_cache` (que crecía indefinidamente con cada archivo visitado) por una verificación directa más ligera, dado que las comprobaciones de acceso (`is_readable` y `is_locked_by_os`) ya realizan sus propios testeos de I/O y no justifican la sobrecarga de memoria de un caché global en un escaneo de un solo paso.
 - `2026-10-20T06:55:23` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` transformando `stored_names` en un conjunto para búsquedas O(1) y evitando la reconstrucción redundante de la lista completa de manifiesto, reduciendo la complejidad del algoritmo de O(N*M) a O(N+M).
 - `2026-10-20T06:54:58` **organizer.py** (rendimiento): Optimizado el rendimiento del escaneo recursivo de archivos mediante la pre-compilación de `JUNK_EXTENSIONS` como `frozenset` y su uso directo en `_is_junk_file` evitando la creación innecesaria de objetos `Path` y llamadas a `suffix` en cada iteración, reduciendo drásticamente la carga de CPU en sistemas con gran cantidad de archivos.
 - `2026-10-20T06:54:31` **memory.py** (rendimiento): Se optimizó `_iter_process_memory` para realizar una única llamada a `EnumProcesses` con un buffer dinámico ajustado, evitando el desperdicio de iterar sobre una lista estática de 4096 elementos cuando hay pocos procesos activos, y se reemplazó la creación repetitiva de estructuras `PROCESS_MEMORY_COUNTERS` dentro del bucle por una única reutilización de la estructura.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-20T06:14:02` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos específicos a las estructuras de datos y funciones de bajo nivel, además de incluir tipado de retorno explícito y mayor claridad en las responsabilidades de los chequeos de seguridad.
 - `2026-10-20T06:03:57` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de los módulos de datos (`ExtStats`, `FolderMetrics`, `GlobalStats`) y se refinó el uso de `type hints` y `docstrings` en las funciones de procesamiento para aclarar la lógica de negocio y los límites de las operaciones, facilitando el mantenimiento técnico.
 - `2026-10-20T06:03:31` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `browser.py` añadiendo docstrings detallados en funciones críticas y corrigiendo inconsistencias en la terminología para asegurar que el comportamiento de seguridad (sandbox y exclusiones) sea comprensible para cualquier colaborador senior.
-- `2026-10-20T05:52:47` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de datos al agregar una verificación de tipo explícita en `_SettingsManager.perform_atomic_write` para evitar escrituras de contenido no string (evitando errores en `os.fsync`) y mejoré el manejo de excepciones en `_read_and_parse_json` al capturar `UnicodeDecodeError` ante archivos malformados, garantizando que el sistema siempre retorne un estado válido de fábrica.

@@ -245,7 +245,6 @@ class Scanner:
         self.results: ScanResult = []
         self.seen: set[str] = set()
         self.safe_cache: set[str] = set()
-        self.path_readable_cache: Dict[str, bool] = {}
         self.base_root_str: str = str(base_root.absolute()).lower()
         self.now_ts: float = datetime.now().timestamp()
 
@@ -324,12 +323,8 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """Ejecuta toda la suite de heurísticas sobre el archivo indicado."""
-        path_str = str(path)
-        
-        if path_str not in self.path_readable_cache:
-            self.path_readable_cache[path_str] = _is_readable(path) and not _is_locked_by_os(path)
-        
-        if not self.path_readable_cache[path_str]:
+        # Verificación directa de acceso sin caché para minimizar consumo de memoria
+        if not _is_readable(path) or _is_locked_by_os(path):
             return
 
         for check_fn in ALL_CHECKS:
