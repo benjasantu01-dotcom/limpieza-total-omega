@@ -174,6 +174,7 @@ class _SettingsManager:
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
         """Escribe datos en archivo temporal con reintentos para manejar bloqueos transitorios."""
+        if not isinstance(serialized, str): return False
         temp_path: Path = config_path.with_suffix(".tmp")
         try:
             if not is_safe_to_modify(str(config_path)): return False
@@ -339,7 +340,7 @@ def _read_and_parse_json(file_path: Path) -> Optional[SettingsDict]:
             if not content or len(content) > MAX_SETTINGS_SIZE: return None
             data = json.loads(content.decode("utf-8"))
             return data if _is_dict(data) else None
-    except (OSError, IOError, PermissionError, json.JSONDecodeError, MemoryError):
+    except (OSError, IOError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, MemoryError):
         return None
 
 def _coerce_and_verify(settings: AppSettings) -> AppSettings:

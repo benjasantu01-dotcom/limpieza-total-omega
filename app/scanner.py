@@ -184,34 +184,46 @@ def _is_target_extension(name: str) -> bool:
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """Analiza si el nombre del archivo combina extensiones de documentos con ejecutables."""
     if path is None or not path.name: return None
-    if DOUBLE_EXTENSION_RE.search(path.name):
-        return Suspicion(path, "Doble extensión detectada como técnica de enmascaramiento", "warning")
+    try:
+        if DOUBLE_EXTENSION_RE.search(path.name):
+            return Suspicion(path, "Doble extensión detectada como técnica de enmascaramiento", "warning")
+    except Exception:
+        pass
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """Detecta ejecutables recién descargados en carpetas volátiles (Downloads, Temp, Desktop)."""
     if path is None or path.parent is None: return None
-    if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
-        return None
-    if entry and (stats := _safe_stat(entry)):
-        mtime = getattr(stats, "st_mtime", 0.0)
-        if isinstance(mtime, (int, float)) and mtime > 0 and (now_ts - float(mtime)) < (SCAN_LIMITS.recent_hours * 3600):
-            return Suspicion(path, "Ejecutable reciente detectado en carpeta volátil", "info")
+    try:
+        if path.parent.name.lower() not in TARGETED_DOWNLOAD_FOLDERS:
+            return None
+        if entry and (stats := _safe_stat(entry)):
+            mtime = getattr(stats, "st_mtime", 0.0)
+            if isinstance(mtime, (int, float)) and mtime > 0 and (now_ts - float(mtime)) < (SCAN_LIMITS.recent_hours * 3600):
+                return Suspicion(path, "Ejecutable reciente detectado en carpeta volátil", "info")
+    except Exception:
+        pass
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """Identifica binarios que utilizan nombres críticos del sistema fuera de %System32%."""
     if path is None or not path.name: return None
-    if path.name.lower() in SYSTEM_LOOKALIKES:
-        if SYSTEM32_LOWER not in str(path).lower():
-            return Suspicion(path, "Nombre de proceso de sistema detectado fuera de directorio protegido", "warning")
+    try:
+        if path.name.lower() in SYSTEM_LOOKALIKES:
+            if SYSTEM32_LOWER not in str(path).lower():
+                return Suspicion(path, "Nombre de proceso de sistema detectado fuera de directorio protegido", "warning")
+    except Exception:
+        pass
     return None
 
 def check_empty_file(path: Path, entry: Optional[os.DirEntry] = None, now_ts: Timestamp = 0.0) -> Optional[Suspicion]:
     """Verifica si un ejecutable tiene tamaño 0 bytes."""
     if path is None: return None
-    if _get_file_size(path) == 0:
-        return Suspicion(path, "Ejecutable vacío detectado", "warning")
+    try:
+        if _get_file_size(path) == 0:
+            return Suspicion(path, "Ejecutable vacío detectado", "warning")
+    except Exception:
+        pass
     return None
 
 ALL_CHECKS: Final[Sequence[SuspicionCheck]] = (
@@ -330,17 +342,20 @@ def scan_file(path: Path, now_ts: Timestamp, entry: Optional[os.DirEntry] = None
     """Escaneo heurístico puntual para un archivo específico."""
     if not isinstance(path, Path) or not _is_valid_path_structure(str(path)):
         return []
-    if not path.exists() or _cached_is_protected(str(path)) or not _is_readable(path) or _is_locked_by_os(path):
+    try:
+        if not path.exists() or _cached_is_protected(str(path)) or not _is_readable(path) or _is_locked_by_os(path):
+            return []
+        
+        findings: ScanResult = []
+        for check_fn in ALL_CHECKS:
+            try:
+                if res := check_fn(path, entry, now_ts):
+                    findings.append(res)
+            except Exception as e:
+                logger.debug(f"Heurística puntual {check_fn.__name__} fallida en {path}: {e}")
+        return findings
+    except Exception:
         return []
-    
-    findings: ScanResult = []
-    for check_fn in ALL_CHECKS:
-        try:
-            if res := check_fn(path, entry, now_ts):
-                findings.append(res)
-        except Exception as e:
-            logger.debug(f"Heurística puntual {check_fn.__name__} fallida en {path}: {e}")
-    return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """Inicia el recorrido de escaneo desde un directorio base."""
