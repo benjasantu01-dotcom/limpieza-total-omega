@@ -822,3 +822,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-20T07:26:29` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha implementado un mecanismo de "graceful shutdown" en `on_closing` para asegurar que el `ThreadPoolExecutor` libere sus recursos de manera ordenada, evitando condiciones de carrera donde hilos huérfanos intenten acceder a la interfaz de usuario durante el proceso de cierre.
 - `2026-10-20T07:26:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-20T07:26:29` Corrida terminada. Total usado hoy: 176.
+- `2026-10-20T07:33:38` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-10-20T07:34:50` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_is_process_executable_safe` añadiendo validación explícita de `length` para prevenir desbordamientos o lecturas de buffers vacíos y se asegura que cualquier error durante la resolución de rutas de archivo resulte en un `False` seguro, evitando que procesos inciertos sean ignorados por el filtro.
+- `2026-10-20T07:35:35` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-10-20T07:36:24` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `purge_all` ante archivos bloqueados o inaccesibles, añadiendo una verificación explícita para evitar intentar el borrado de archivos que el sistema está utilizando, previniendo errores de I/O en entornos con alta actividad de fondo.
+- `2026-10-20T07:36:52` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-10-20T07:36:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-20T07:36:52` Corrida terminada. Total usado hoy: 180.

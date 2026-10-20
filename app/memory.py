@@ -324,7 +324,7 @@ def _is_process_executable_safe(pid: int, handle: int, psapi: Any) -> bool:
     buffer_path = ctypes.create_unicode_buffer(4096)
     length = psapi.GetModuleFileNameExW(handle, None, buffer_path, 4095)
     
-    if length <= 0:
+    if length <= 0 or length > 4095:
         return False
         
     exe_str = buffer_path.value.strip()
@@ -333,8 +333,6 @@ def _is_process_executable_safe(pid: int, handle: int, psapi: Any) -> bool:
         
     try:
         executable_path = Path(exe_str).absolute().resolve(strict=False)
-        if not executable_path.exists(): 
-            return False
         return not is_protected_path(executable_path)
     except (OSError, RuntimeError, ValueError, TypeError):
         return False

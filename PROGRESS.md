@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **196** (38.9% de aceptación)
+- Mejoras aceptadas: **197** (39.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 49
+- Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 123 | 9 | 30 | 17 | 149 |
-| 2026-10-20 | 73 | 6 | 19 | 8 | 70 |
+| 2026-10-19 | 122 | 9 | 30 | 17 | 146 |
+| 2026-10-20 | 75 | 6 | 20 | 8 | 71 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **44**
-- seguridad defensiva: **37**
 - rendimiento: **37**
-- robustez ante casos límite: **33**
+- seguridad defensiva: **36**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **19**
+- `quarantine.py`: **18**
 - `diskreport.py`: **18**
 - `browser.py`: **17**
 - `healthscore.py`: **17**
-- `quarantine.py`: **17**
-- `settings.py`: **15**
-- `memory.py`: **15**
+- `memory.py`: **16**
 - `branding.py`: **15**
 - `assistant.py`: **14**
+- `settings.py`: **14**
 - `safety.py`: **12**
 - `scanner.py`: **12**
 - `main.py`: **9**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-20T07:36:24` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `purge_all` ante archivos bloqueados o inaccesibles, añadiendo una verificación explícita para evitar intentar el borrado de archivos que el sistema está utilizando, previniendo errores de I/O en entornos con alta actividad de fondo.
+- `2026-10-20T07:34:50` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_is_process_executable_safe` añadiendo validación explícita de `length` para prevenir desbordamientos o lecturas de buffers vacíos y se asegura que cualquier error durante la resolución de rutas de archivo resulte en un `False` seguro, evitando que procesos inciertos sean ignorados por el filtro.
 - `2026-10-20T07:26:29` **main.py** (robustez ante casos límite): Se ha implementado un mecanismo de "graceful shutdown" en `on_closing` para asegurar que el `ThreadPoolExecutor` libere sus recursos de manera ordenada, evitando condiciones de carrera donde hilos huérfanos intenten acceder a la interfaz de usuario durante el proceso de cierre.
 - `2026-10-20T07:25:31` **healthscore.py** (robustez ante casos límite): Se introdujo una validación robusta contra `ZeroDivisionError` y estados inconsistentes en `_PIPELINE` mediante un chequeo de precondición en la función `compute_score`, asegurando que `_PIPELINE` no esté vacío antes de procesar para prevenir fallos en entornos de ejecución con configuración incompleta.
 - `2026-10-20T07:24:45` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a disco en la función `_is_file_locked` para manejar explícitamente el caso de archivos inexistentes, evitando falsos positivos de "bloqueo" y mejorando la precisión al filtrar candidatos en entornos con archivos transitorios.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-20T06:44:24` **healthscore.py** (rendimiento): Se optimizó el pipeline de cómputo introduciendo una caché local (`_PIPELINE_CACHE`) dentro de `compute_score` para evitar llamadas redundantes a las funciones `scorer` y reglas asociadas cuando se procesan métricas idénticas, además de pre-calcular el límite del rango de `total_points` para evitar operaciones en cada iteración.
 - `2026-10-20T06:44:07` **duplicates.py** (rendimiento): Optimicé el proceso de recolección de archivos utilizando `os.scandir` junto a `entry.stat()` para evitar llamadas redundantes a `Path.stat()` y `path.is_file()`, reduciendo drásticamente las llamadas al sistema operativo durante el escaneo de directorios.
 - `2026-10-20T06:34:20` **assistant.py** (rendimiento): Optimicé el acceso a las métricas del sistema utilizando `cached_property` para los cálculos derivados y eliminando la reconstrucción innecesaria de diccionarios en `context_as_text`, lo que reduce el uso de CPU durante consultas frecuentes.
-- `2026-10-20T06:33:36` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el "porqué" de las restricciones de seguridad (como la validación de rutas UNC y caracteres de control) y añadí tipado explícito para asegurar claridad sobre los datos que procesa el parser de registro.
-- `2026-10-20T06:33:05` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings técnicos detallados en `_SettingsManager` y las funciones principales de validación, explicando el propósito de los mecanismos de seguridad y caché en lugar de solo describir la acción.

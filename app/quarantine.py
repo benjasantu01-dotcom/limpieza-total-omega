@@ -1032,11 +1032,12 @@ def purge_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> bool:
 
 
 def _is_item_purgable(file_path: Path, item: QuarantineItem) -> bool:
-    """Verifica condiciones de purgado según integridad."""
+    """Verifica condiciones de purgado según integridad y uso del sistema."""
+    if not (file_path.exists() and file_path.is_file() and not file_path.is_symlink()):
+        return False
+    if _is_file_in_use_by_system(file_path):
+        return False
     return (
-        file_path.exists() and 
-        file_path.is_file() and 
-        not file_path.is_symlink() and
         item.verify_integrity(file_path) and
         _safe_unlink(file_path, expected_hash=item.sha256, expected_inode=item.file_inode)
     )
