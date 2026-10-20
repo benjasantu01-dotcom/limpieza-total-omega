@@ -16,17 +16,17 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-18 | 46 | 3 | 11 | 7 | 47 |
+| 2026-10-18 | 44 | 2 | 10 | 7 | 47 |
 | 2026-10-19 | 133 | 11 | 32 | 21 | 153 |
-| 2026-10-20 | 15 | 0 | 3 | 2 | 20 |
+| 2026-10-20 | 17 | 1 | 4 | 2 | 20 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **46**
-- legibilidad y documentación: **43**
+- legibilidad y documentación: **45**
 - seguridad defensiva: **40**
-- robustez ante casos límite: **36**
-- rendimiento: **29**
+- robustez ante casos límite: **35**
+- rendimiento: **28**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,19 +34,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **19**
 - `diskreport.py`: **18**
 - `healthscore.py`: **17**
-- `settings.py`: **16**
+- `quarantine.py`: **16**
 - `memory.py`: **15**
-- `quarantine.py`: **15**
+- `settings.py`: **15**
 - `branding.py`: **14**
-- `assistant.py`: **12**
 - `safety.py`: **12**
 - `scanner.py`: **11**
+- `assistant.py`: **11**
 - `main.py`: **10**
-- `organizer.py`: **8**
+- `organizer.py`: **9**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-20T01:50:29` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad del módulo `quarantine.py` mediante la normalización de la estructura de las funciones de validación, la adición de Type Hints faltantes en variables locales y la clarificación de las responsabilidades de los chequeos de integridad, asegurando una documentación más coherente con el enfoque de seguridad exigido.
+- `2026-10-20T01:49:49` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento del módulo documentando exhaustivamente las funciones internas con docstrings de estilo Google que explican el propósito, los parámetros y las restricciones de seguridad, además de normalizar el uso de type hints para mayor claridad en los tipos complejos.
 - `2026-10-20T01:39:48` **healthscore.py** (legibilidad y documentación): Se introdujeron anotaciones de tipo más precisas y se documentaron mediante docstrings los métodos críticos de `SystemMetrics` para mejorar la mantenibilidad y claridad del modelo de datos.
 - `2026-10-20T01:38:32` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica y legibilidad añadiendo type hints faltantes en funciones internas, docstrings descriptivos para las constantes de flags de Windows y unificando el estilo de los comentarios de seguridad para mayor claridad.
 - `2026-10-20T01:38:04` **diskreport.py** (legibilidad y documentación): He mejorado la legibilidad técnica y la robustez del código mediante la adición de docstrings estructurados, la corrección de un posible bug de tipado en `total_size` (que devolvía `SizeReport` en lugar de una tupla de ints) y la clarificación de tipos en las funciones de escaneo, siguiendo las mejores prácticas de mantenibilidad para una demo técnica.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-20T00:58:11` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` mediante la validación explícita de tipos y la captura de errores en el manejo de rutas, evitando que un elemento corrupto en la lista `paths` detenga el procesamiento de todo el reporte.
 - `2026-10-20T00:57:47` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas y validando estados intermedios para evitar fallos silenciosos durante iteraciones extensas en el sistema de archivos.
 - `2026-10-20T00:57:08` **browser.py** (manejo de errores y validación de entradas): Se reforzó la validación de los parámetros de entrada en `detect_profiles` y `summarize` para evitar fallos de ejecución ante tipos de datos inesperados, asegurando la integridad del bucle de análisis mediante comprobaciones explícitas de tipo y contenido antes de operar.
-- `2026-10-20T00:56:41` **branding.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save_logo_svg` validando la existencia y el tipo del directorio padre antes de intentar escribir, y se añadieron chequeos de límites en `_get_scaled_poly` para evitar cálculos con coordenadas inválidas o desbordamientos durante el renderizado.
-- `2026-10-20T00:49:41` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_key` y `_get_source_value` para prevenir posibles ataques por introspección (acceso a métodos sensibles o atributos privados) durante la ingesta de datos, centralizando la validación mediante un filtro de nombres permitidos en lugar de intentar bloquear nombres prohibidos.
