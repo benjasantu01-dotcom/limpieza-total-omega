@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **197** (39.1% de aceptación)
+- Mejoras aceptadas: **198** (39.3% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 50
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 122 | 9 | 30 | 17 | 146 |
-| 2026-10-20 | 75 | 6 | 20 | 8 | 71 |
+| 2026-10-19 | 122 | 9 | 30 | 17 | 142 |
+| 2026-10-20 | 76 | 6 | 20 | 8 | 74 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **44**
 - rendimiento: **37**
+- robustez ante casos límite: **36**
 - seguridad defensiva: **36**
-- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,9 +35,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **17**
 - `healthscore.py`: **17**
 - `memory.py`: **16**
+- `settings.py`: **15**
 - `branding.py`: **15**
 - `assistant.py`: **14**
-- `settings.py`: **14**
 - `safety.py`: **12**
 - `scanner.py`: **12**
 - `main.py`: **9**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-20T07:45:48` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_secure_to_read` para detectar archivos con contenido malformado o desbordamientos antes del parseo JSON, y se añadió una validación explícita de `UTF-8` al leer, evitando bloqueos por archivos binarios o codificaciones inesperadas.
 - `2026-10-20T07:36:24` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `purge_all` ante archivos bloqueados o inaccesibles, añadiendo una verificación explícita para evitar intentar el borrado de archivos que el sistema está utilizando, previniendo errores de I/O en entornos con alta actividad de fondo.
 - `2026-10-20T07:34:50` **memory.py** (robustez ante casos límite): Se mejora la robustez de `_is_process_executable_safe` añadiendo validación explícita de `length` para prevenir desbordamientos o lecturas de buffers vacíos y se asegura que cualquier error durante la resolución de rutas de archivo resulte en un `False` seguro, evitando que procesos inciertos sean ignorados por el filtro.
 - `2026-10-20T07:26:29` **main.py** (robustez ante casos límite): Se ha implementado un mecanismo de "graceful shutdown" en `on_closing` para asegurar que el `ThreadPoolExecutor` libere sus recursos de manera ordenada, evitando condiciones de carrera donde hilos huérfanos intenten acceder a la interfaz de usuario durante el proceso de cierre.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-20T06:54:31` **memory.py** (rendimiento): Se optimizó `_iter_process_memory` para realizar una única llamada a `EnumProcesses` con un buffer dinámico ajustado, evitando el desperdicio de iterar sobre una lista estática de 4096 elementos cuando hay pocos procesos activos, y se reemplazó la creación repetitiva de estructuras `PROCESS_MEMORY_COUNTERS` dentro del bucle por una única reutilización de la estructura.
 - `2026-10-20T06:44:24` **healthscore.py** (rendimiento): Se optimizó el pipeline de cómputo introduciendo una caché local (`_PIPELINE_CACHE`) dentro de `compute_score` para evitar llamadas redundantes a las funciones `scorer` y reglas asociadas cuando se procesan métricas idénticas, además de pre-calcular el límite del rango de `total_points` para evitar operaciones en cada iteración.
 - `2026-10-20T06:44:07` **duplicates.py** (rendimiento): Optimicé el proceso de recolección de archivos utilizando `os.scandir` junto a `entry.stat()` para evitar llamadas redundantes a `Path.stat()` y `path.is_file()`, reduciendo drásticamente las llamadas al sistema operativo durante el escaneo de directorios.
-- `2026-10-20T06:34:20` **assistant.py** (rendimiento): Optimicé el acceso a las métricas del sistema utilizando `cached_property` para los cálculos derivados y eliminando la reconstrucción innecesaria de diccionarios en `context_as_text`, lo que reduce el uso de CPU durante consultas frecuentes.

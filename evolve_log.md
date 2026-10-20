@@ -829,3 +829,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-10-20T07:36:52` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-10-20T07:36:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-20T07:36:52` Corrida terminada. Total usado hoy: 180.
+- `2026-10-20T07:43:51` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-10-20T07:44:39` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-10-20T07:45:20` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-20T07:45:48` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_is_file_secure_to_read` para detectar archivos con contenido malformado o desbordamientos antes del parseo JSON, y se añadió una validación explícita de `UTF-8` al leer, evitando bloqueos por archivos binarios o codificaciones inesperadas.
+- `2026-10-20T07:46:02` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-10-20T07:46:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-20T07:46:02` Corrida terminada. Total usado hoy: 184.
