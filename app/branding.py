@@ -364,16 +364,14 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     """Persiste el logo en formato SVG en el disco, asegurando seguridad de ruta."""
     if not destination: return None
     try:
-        raw_path = Path(destination)
+        raw_path = Path(destination).resolve()
+        # Evitar caracteres inseguros y proteger rutas de sistema
         clean_name = "".join(c for c in raw_path.name if c.isalnum() or c in "._-")
-        if not clean_name: return None
+        if not clean_name or is_protected_path(raw_path): return None
+        
         target = (raw_path.parent / clean_name).resolve()
         
-        # Validar si el directorio padre es accesible o existe como archivo
-        if target.parent.exists() and not target.parent.is_dir():
-            return None
-        
-        if is_protected_path(target) or not is_safe_to_modify(target):
+        if not is_safe_to_modify(target):
             return None
             
         target.parent.mkdir(parents=True, exist_ok=True)

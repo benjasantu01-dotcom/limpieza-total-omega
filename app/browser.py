@@ -216,10 +216,15 @@ def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -
     """
     Recorrido recursivo depth-first: calcula tamaño sumando archivos únicos (dev/inode)
     evitando la doble contabilización y la recursión infinita mediante un set de visited_dirs.
+    Incluye validación de sandbox en cada nivel para prevenir escapes mediante symlinks/junctions.
     """
     if not root_path or depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN: 
         return ScanResult(0, True)
     
+    # Validar que la rama actual siga dentro de los límites de seguridad
+    if not _is_within_sandbox(Path(root_path), ctx.sandbox_base):
+        return ScanResult(0, True)
+
     norm_path = os.path.normcase(root_path)
     if norm_path in ctx.visited_dirs: return ScanResult(0, True)
     ctx.visited_dirs.add(norm_path)

@@ -140,12 +140,16 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         return None
     try:
         p = Path(directory).expanduser()
-        if not p.exists():
-            return None
-        
         resolved_path = p.resolve(strict=False)
+        
         if not resolved_path.is_dir() or is_protected_path(resolved_path) or not os.access(resolved_path, os.R_OK):
             return None
+        
+        # Seguridad: verificar que no haya navegación fuera de la ruta intentada
+        # mediante comparativa de subconjuntos de path.
+        if not str(resolved_path).startswith(str(p.resolve())):
+            return None
+            
         return resolved_path
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
         return None

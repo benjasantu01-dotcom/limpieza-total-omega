@@ -238,9 +238,6 @@ def _resolve_and_verify_root(directory_path: PathLike) -> Optional[Path]:
 def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_protected: bool) -> Dict[int, List[Path]]:
     """
     Escaneo iterativo (BFS) para recolectar candidatos potenciales a duplicados.
-    
-    Utiliza un set de inodos para evitar procesar enlaces físicos duplicados 
-    y recursión infinita en sistemas de archivos complejos.
     """
     size_to_paths_map: Dict[int, List[Path]] = defaultdict(list)
     if directories is None: return size_to_paths_map
@@ -259,14 +256,14 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    try:
-                        path_entry = Path(entry.path)
-                        # Verificación de seguridad proactiva antes de acceder a metadatos
-                        if not _safe_path_check(path_entry):
-                            continue
+                    path_entry = Path(entry.path)
+                    if not is_safe_to_modify(path_entry):
+                        continue
 
+                    try:
                         if entry.is_dir(follow_symlinks=False):
-                            queue.append((path_entry, depth + 1))
+                            if not is_junction(path_entry):
+                                queue.append((path_entry, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
                             file_stat = entry.stat(follow_symlinks=False)
                             if file_stat.st_size < min_size or (file_stat.st_dev, file_stat.st_ino) in visited_inodes:
