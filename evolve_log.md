@@ -1457,3 +1457,10 @@ ERROR evolve/tests/test_safety.py - TypeError: _check_vol_restricted() missing 1
 - `2026-10-20T02:21:06` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_numeric_setting_from_widget, LimpiezaTotalOmegaApp._update_cards, LimpiezaTotalOmegaApp._validate_process_state
 - `2026-10-20T02:21:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-20T02:21:06` Corrida terminada. Total usado hoy: 56.
+- `2026-10-20T02:27:54` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-10-20T02:28:40` ➖ Sin cambios en memory.py (enfoque: rendimiento). Motivo: Optimizé la eficiencia de `top_memory_processes` introduciendo un filtro previo basado en el uso de memoria (`ws > 10MB`) antes de realizar la operación costosa de resolución de rutas y validación de seguridad (`_is_process_executable_safe`), reduciendo drásticamente las llamadas a disco y al sistema operativo durante el escaneo de procesos.
+- `2026-10-20T02:29:23` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-10-20T02:30:04` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se ha optimizado `load_manifest` y `purge_all` para evitar el acceso al disco innecesario y el uso de iteradores costosos, reemplazando consultas repetitivas sobre el sistema de archivos por una estructura de datos `set` para búsquedas en tiempo constante.
+- `2026-10-20T02:30:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-10-20T02:30:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-20T02:30:07` Corrida terminada. Total usado hoy: 60.
