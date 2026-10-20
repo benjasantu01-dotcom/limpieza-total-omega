@@ -201,6 +201,7 @@ class SafetyValidationErrorCode(IntEnum):
     SYSTEM_OWNER_PROTECTION = 32
     VIRTUAL_DRIVE_DETECTED = 33
     CIRCULAR_REFERENCE = 35
+    ADMIN_PRIVILEGE_VIOLATION = 36
 
 class UnsafePathError(Exception):
     """Excepción específica para cualquier violación de las políticas de seguridad."""
@@ -237,6 +238,7 @@ class ProtectionReason(Enum):
     SYSTEM_OWNER = auto()
     VIRTUAL_DRIVE = auto()
     CIRCULAR_REF = auto()
+    ADMIN_PRIVILEGE = auto()
 
 class ValidationContext(Enum):
     """Contexto operativo en el que se ejecuta la validación."""
@@ -875,6 +877,12 @@ def _validate_preconditions(target_path: Path, base_dir: Optional[PathLike]) -> 
     if not is_absolute_path_allowed(target_path):
         raise UnsafePathError("Solo se permiten rutas absolutas.", SafetyValidationErrorCode.RELATIVE_PATH_NOT_ALLOWED)
     
+    # Nueva validación: Privilegios administrativos restringidos
+    if is_running_as_admin():
+        # Evitar modificar archivos de sistema si el proceso tiene privilegios máximos
+        if _is_file_owned_by_system(str(target_path)) or _is_kernel_managed(str(target_path)):
+            raise UnsafePathError("Operación denegada en modo privilegiado (seguridad del sistema).", SafetyValidationErrorCode.ADMIN_PRIVILEGE_VIOLATION)
+
     attrs = _get_file_attrs(str(target_path))
     if attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN):
         raise UnsafePathError("Protección defensiva: Archivo de sistema oculto.", SafetyValidationErrorCode.PROTECTED_SYSTEM_PATH)

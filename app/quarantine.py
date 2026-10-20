@@ -804,6 +804,9 @@ def _register_quarantine_item(
 ) -> QuarantineItem:
     """Registra metadatos en el manifiesto JSON tras validar el archivo en sandbox."""
     try:
+        if not destination.exists():
+            raise RuntimeError("Falla: intento de registrar archivo inexistente en manifiesto.")
+
         items_list: List[QuarantineItem] = load_manifest(base)
         quarantine_item: QuarantineItem = QuarantineItem(
             item_id=uuid.uuid4().hex[:12],
@@ -916,6 +919,7 @@ def quarantine_file(
     
     file_hash, file_inode = _atomic_isolate_file(p_source, destination, st_info.st_size)
     
+    # Doble validación crítica post-transferencia antes de registrar
     if not destination.exists() or destination.stat().st_ino != file_inode or _get_sha256(destination) != file_hash:
         raise RuntimeError("Falla crítica: el destino no es coherente tras la copia.")
             
