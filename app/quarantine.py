@@ -1056,22 +1056,24 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             return 0
             
         items: List[QuarantineItem] = load_manifest(base)
+        # Mapeamos nombre de archivo a ítem para acceso O(1)
         item_map: Dict[str, QuarantineItem] = {i.stored_name: i for i in items}
         purgado_ids: Set[str] = set()
         
+        # Iteramos el directorio para limpiar archivos
         for f in quarantine_root.iterdir():
             try:
                 if f.name == MANIFEST_NAME or is_protected_path(f):
                     continue
                 
-                if not is_within_directory(f, quarantine_root):
-                    continue
-
+                # Si está en el manifiesto, validamos integridad antes de borrar
                 if f.name in item_map:
                     if _is_item_purgable(f, item_map[f.name]):
                         purgado_ids.add(item_map[f.name].item_id)
                 else:
-                    _safe_unlink(f)
+                    # Si no está en el manifiesto, es un archivo huérfano, lo eliminamos con seguridad
+                    if _safe_unlink(f):
+                        continue
             except (OSError, PermissionError):
                 continue
         
@@ -1079,13 +1081,13 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             new_items: List[QuarantineItem] = [i for i in items if i.item_id not in purgado_ids]
             save_manifest(new_items, base)
             
-            if quarantine_root.exists():
-                try:
-                    dir_fd: int = os.open(str(quarantine_root), os.O_RDONLY)
-                    try: os.fsync(dir_fd)
-                    finally: os.close(dir_fd)
-                except OSError:
-                    pass
+            # Sincronizar directorio raíz
+            try:
+                dir_fd: int = os.open(str(quarantine_root), os.O_RDONLY)
+                try: os.fsync(dir_fd)
+                finally: os.close(dir_fd)
+            except OSError:
+                pass
             
         return len(purgado_ids)
     except (OSError, PermissionError, UnsafePathError):

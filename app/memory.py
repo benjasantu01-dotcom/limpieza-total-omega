@@ -235,22 +235,18 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     if len(parts) < 3: 
         return None
     
-    # Manejo de nombres con comas mediante reconstrucción parcial si es necesario
-    name = parts[0]
-    pid_str = parts[-2]
-    ws_str = parts[-1]
-    
     try:
-        pid = int(pid_str)
-        ws = _safe_int_conversion(ws_str)
+        name = parts[0]
+        pid = int(parts[-2])
+        ws = _safe_int_conversion(parts[-1])
         
         if _is_system_process(pid) or pid <= 0:
             return None
         if not (0 < ws < MAX_VALID_PROCESS_MEM):
             return None
             
-        return ProcessMemory(name, pid, BytesValue(ws))
-    except (ValueError, TypeError):
+        return ProcessMemory(name, pid, ws)
+    except (ValueError, TypeError, IndexError):
         return None
 
 def _filter_and_sort_processes(processes: Iterator[ProcessMemory], limit: int) -> List[ProcessMemory]:
@@ -269,9 +265,9 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     
     def _gen() -> Iterator[ProcessMemory]:
         for line in lines[1:]:
-            if line and isinstance(line, str):
-                proc = _extract_process_info(line)
-                if proc: yield proc
+            proc = _extract_process_info(line)
+            if proc: 
+                yield proc
             
     return _filter_and_sort_processes(_gen(), limit)
 
