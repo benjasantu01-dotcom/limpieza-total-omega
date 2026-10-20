@@ -292,6 +292,7 @@ def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
 
 def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optional[BrowserMap] = None) -> List[BrowserCache]:
     """Identifica y clasifica los directorios de caché de navegadores mediante un escaneo controlado."""
+    if bases is not None and not isinstance(bases, (list, tuple)): return []
     raw_bases = list(bases) if bases is not None else base_directories()
     if not raw_bases: return []
     
@@ -300,7 +301,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
     kernel = _get_kernel32()
     
     for base in raw_bases:
-        if not base.exists(): continue
+        if not isinstance(base, Path) or not base.exists(): continue
         try:
             real_base = base.resolve(strict=True)
             ctx = ScanContext(real_base, kernel, _IS_JUNCTION_FN, set(), set())
@@ -318,7 +319,7 @@ def detect_profiles(bases: Optional[Sequence[Path]] = None, cache_paths: Optiona
 
 def total_cache_bytes(caches: Optional[Iterable[BrowserCache]] = None) -> int:
     """Suma total de bytes ocupados por el conjunto de cachés detectadas."""
-    return sum(c.size_bytes for c in caches) if caches else 0
+    return sum(c.size_bytes for c in caches) if isinstance(caches, (list, tuple, set)) else 0
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
     """Genera una representación textual de los resultados para la interfaz de usuario."""

@@ -154,9 +154,10 @@ def hash_file(path: Path, chunk_size: int = 1024 * 1024) -> Optional[str]:
     
     Retorna el hash hexadecimal o None si el archivo es inaccesible o inseguro.
     """
+    if not isinstance(path, Path): return None
     if path in _full_hash_cache:
         return _full_hash_cache[path]
-    if chunk_size <= 0 or not isinstance(path, Path) or not path.is_file():
+    if chunk_size <= 0 or not path.is_file():
         return None
     if not _safe_path_check(path):
         return None
@@ -178,7 +179,8 @@ def partial_hash(path: Path, read_bytes: int = PARTIAL_READ_BYTES) -> Optional[s
     
     Es significativamente más rápido que el hash completo para archivos grandes.
     """
-    if not isinstance(path, Path) or path in _partial_cache:
+    if not isinstance(path, Path): return None
+    if path in _partial_cache:
         return _partial_cache.get(path)
     if read_bytes <= 0 or not path.is_file():
         return None
@@ -384,6 +386,6 @@ def format_group(group: DuplicateGroup) -> List[str]:
         if isinstance(path_item, Path):
             lines.append(f"   {_get_path_label(path_item, keeper)} {path_item}")
         else:
-            lines.append(f"   [invalido] {path_item}")
+            lines.append(f"   [error: ruta inválida]")
             
     return lines

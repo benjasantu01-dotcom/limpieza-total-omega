@@ -314,7 +314,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             yield Path(entry.path), st.st_size
                     except (PermissionError, FileNotFoundError, OSError):
                         continue
-        except (PermissionError, FileNotFoundError, OSError): 
+        except (PermissionError, FileNotFoundError, OSError, NotADirectoryError): 
             continue
 
 
@@ -391,8 +391,8 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     
     try:
         data = _collect_summary_data(root, skip_protected, limit=20)
-    except Exception:
-        return ["Error de sistema al analizar el disco."]
+    except (OSError, PermissionError, RuntimeError):
+        return ["Error de sistema al acceder a la estructura de archivos."]
         
     if data.total_files == 0: 
         return ["Aviso: No se encontraron archivos accesibles en la ruta seleccionada."]

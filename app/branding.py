@@ -334,6 +334,7 @@ SHIELD_BASE_COORDS: Final[CoordinateSequence] = (64, 18, 100, 31, 100, 67, 90, 9
 @lru_cache(maxsize=128)
 def _get_scaled_poly(scale: float, x: float, y: float) -> CoordinateSequence:
     """Escala las coordenadas del polígono del escudo basado en un factor de escala."""
+    if not math.isfinite(scale): return ()
     return tuple(x + (c * scale) if i % 2 == 0 else y + (c * scale) for i, c in enumerate(SHIELD_BASE_COORDS))
 
 @lru_cache(maxsize=8)
@@ -351,8 +352,8 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
         if not clean_name: return None
         target = (raw_path.parent / clean_name).resolve()
         
-        # Validar si el target ya existe y no es archivo (bloqueo por seguridad)
-        if target.exists() and not target.is_file():
+        # Validar si el directorio padre es accesible o existe como archivo
+        if target.parent.exists() and not target.parent.is_dir():
             return None
         
         if is_protected_path(target) or not is_safe_to_modify(target):
@@ -412,8 +413,10 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
         val_size = float(size)
         if not math.isfinite(val_size): return
         s = max(0.1, min(10.0, val_size / 128.0))
+        poly = _get_scaled_poly(s, canvas_x, canvas_y)
+        if not poly: return
         canvas.create_oval(canvas_x+(64-75)*s, canvas_y+(58-75)*s, canvas_x+(64+75)*s, canvas_y+(58+75)*s, fill=blend(C_SURFACE, C_GLOW, 0.15), outline="")
-        canvas.create_polygon(*_get_scaled_poly(s, canvas_x, canvas_y), fill=GRADIENT_STOPS[1], outline="")
+        canvas.create_polygon(*poly, fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, canvas_x, canvas_y, s)
         _draw_shield_icon_decorations(canvas, canvas_x, canvas_y, s)
     except Exception: pass
