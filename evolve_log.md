@@ -439,3 +439,44 @@ FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size 
 - `2026-10-20T14:35:16` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `purge_all` al reemplazar una comparación por nombre de archivo (vulnerable a colisiones o archivos externos al manifiesto) por una validación estricta contra el `item_id` y el estado del manifiesto, asegurando que solo se eliminen archivos correctamente registrados y validados.
 - `2026-10-20T14:35:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-20T14:35:16` Corrida terminada. Total usado hoy: 344.
+- `2026-10-20T14:42:06` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-20T14:43:05` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-10-20T14:43:06` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-20T14:44:09` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-20T14:44:16` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-10-20T14:45:34` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se introdujo una captura selectiva de excepciones en `_is_file_owned_by_system` y `_get_file_attrs` para evitar la propagación de fallos cuando las llamadas a la Win32 API devuelven errores inesperados de sistema, mejorando la robustez ante entornos con restricciones de acceso granulares.
+- `2026-10-20T14:45:43` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-20T14:46:21` Tests FALLARON:
+```
+========================
+_____________ test_scanner_flags_system_lookalike_outside_system32 _____________
+
+    def test_scanner_flags_system_lookalike_outside_system32():
+        # Se usa PureWindowsPath a propósito: los tests corren en Linux (GitHub
+        # Actions) y ahí un Path normal no reconoce las barras invertidas, así
+        # que `.name` devolvería la ruta entera y el test fallaría siempre.
+        result = scanner.check_system_lookalike(PureWindowsPath(r"C:\Users\test\Downloads\svchost.exe"))
+>       assert result is not None
+E       assert None is not None
+
+evolve/tests/test_basic.py:201: AssertionError
+________________ test_scanner_lookalike_logic_is_os_independent ________________
+
+    def test_scanner_lookalike_logic_is_os_independent():
+        # La misma heurística tiene que valer con rutas estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+        flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+>       assert flagged is not None and flagged.severity == "warning"
+E       assert (None is not None)
+
+evolve/tests/test_basic.py:213: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - assert None is not None
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - assert (None is not None)
+2 failed, 297 passed in 1.12s
+
+```
+- `2026-10-20T14:46:21` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez del módulo `scanner.py` implementando validaciones de tipo y de estado (`None`/vacío) defensivas en todas las funciones de ayuda y heurísticas, asegurando que las excepciones imprevistas no se propaguen y que los parámetros sean tratados de forma consistente ante datos de entrada corruptos o inesperados.
+- `2026-10-20T14:46:42` ➖ Sin cambios en settings.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `_read_and_parse_json` al implementar una validación estricta contra archivos inusualmente grandes o con formato incorrecto antes de procesarlos, asegurando que cualquier entrada maliciosa o corrupta sea descartada mediante una comprobación de tipo explícita (`isinstance`) antes de intentar cualquier deserialización.
+- `2026-10-20T14:46:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-20T14:46:42` Corrida terminada. Total usado hoy: 348.

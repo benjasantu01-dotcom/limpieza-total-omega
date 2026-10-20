@@ -162,7 +162,7 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
                 return Win32Attr.SYSTEM
             return INVALID_FILE_ATTRIBUTES
         return attrs
-    except (AttributeError, ctypes.ArgumentError, OSError, MemoryError, ValueError, TypeError):
+    except (AttributeError, ctypes.ArgumentError, OSError, MemoryError, ValueError, TypeError, SystemError):
         return 0
 
 class SafetyValidationErrorCode(IntEnum):
@@ -337,7 +337,7 @@ def _is_file_owned_by_system(path_str: str) -> bool:
                     return sid_val.startswith("S-1-5-18") or sid_val.startswith("S-1-5-80-956008885")
             finally:
                 kernel32.LocalFree(sid_ptr)
-    except (AttributeError, OSError, ctypes.ArgumentError, PermissionError, MemoryError):
+    except (AttributeError, OSError, ctypes.ArgumentError, PermissionError, MemoryError, SystemError):
         pass
     return False
 
