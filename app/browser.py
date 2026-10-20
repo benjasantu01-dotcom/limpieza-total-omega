@@ -204,7 +204,7 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
     """Recorrido recursivo depth-first: suma el peso de archivos únicos evitando ciclos."""
-    if depth > MAX_SCAN_DEPTH: return ScanResult(0, True)
+    if depth > MAX_SCAN_DEPTH or not root_path: return ScanResult(0, True)
     
     norm_path = os.path.normcase(root_path)
     if norm_path in ctx.visited_dirs: return ScanResult(0, True)

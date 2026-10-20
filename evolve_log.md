@@ -419,3 +419,11 @@ FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size 
 - `2026-10-20T14:14:59` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-10-20T14:14:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-20T14:14:59` Corrida terminada. Total usado hoy: 336.
+- `2026-10-20T14:21:39` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-10-20T14:22:44` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_sum_directory_recursive` mediante la validación explícita de `root_path` y la captura preventiva de errores en `os.scandir` para evitar excepciones no controladas durante el acceso a directorios con restricciones de acceso.
+- `2026-10-20T14:23:39` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` implementando capturas de excepciones más granulares y validaciones tempranas de tipos y accesibilidad, evitando que errores de sistema al iterar el FS interrumpan el análisis completo.
+- `2026-10-20T14:23:40` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-20T14:24:16` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las funciones de hash (`hash_file` y `partial_hash`) validando explícitamente que el archivo exista antes de intentar abrirlo, evitando excepciones innecesarias en entornos de disco volátiles y mejorando la gestión de errores al evitar el procesamiento de rutas inválidas o inaccesibles.
+- `2026-10-20T14:24:36` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` y la validación de `SystemMetrics` mediante la captura explícita de errores durante la ejecución del pipeline y la adición de una verificación de estado de las métricas que previene la propagación de valores inválidos (NaN/Inf) que podrían causar errores silenciosos en los cálculos de los scores.
+- `2026-10-20T14:24:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-20T14:24:36` Corrida terminada. Total usado hoy: 340.

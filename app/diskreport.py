@@ -144,7 +144,6 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         p = Path(directory).expanduser()
         resolved_path = p.resolve(strict=False)
         
-        # Validar puntos de reparse/junctions básicos antes de proceder
         if not resolved_path.exists() or not resolved_path.is_dir() or is_protected_path(resolved_path) or not os.access(resolved_path, os.R_OK):
             return None
             
@@ -166,7 +165,6 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     if any(char in name for char in ('<', '>', ':', '"', '|', '?', '*')):
         return True
 
-    # Verificación de seguridad inmediata basada en la ruta normalizada
     if is_protected_path(Path(entry.path)):
         return True
 
@@ -174,7 +172,6 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
         if entry.is_symlink():
             return True
         
-        # Windows reparse points (junctions)
         if os.name == 'nt':
             st = entry.stat(follow_symlinks=False)
             if hasattr(st, 'st_file_attributes') and (st.st_file_attributes & 0x400):
@@ -305,11 +302,14 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
-                            st = entry.stat(follow_symlinks=False)
-                            inode = (st.st_dev, st.st_ino)
-                            if inode not in visited_inodes:
-                                visited_inodes.add(inode)
-                                stack.append(entry.path)
+                            try:
+                                st = entry.stat(follow_symlinks=False)
+                                inode = (st.st_dev, st.st_ino)
+                                if inode not in visited_inodes:
+                                    visited_inodes.add(inode)
+                                    stack.append(entry.path)
+                            except (OSError, PermissionError):
+                                continue
                         elif entry.is_file(follow_symlinks=False):
                             try:
                                 yield Path(entry.path), entry.stat().st_size
@@ -394,8 +394,8 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     
     try:
         data = _collect_summary_data(root, skip_protected, limit=20)
-    except (OSError, PermissionError, RuntimeError):
-        return ["Error de sistema al acceder a la estructura de archivos."]
+    except Exception:
+        return ["Error: Fallo inesperado al realizar el escaneo de disco."]
         
     if data.total_files == 0: 
         return ["Aviso: No se encontraron archivos accesibles en la ruta seleccionada."]

@@ -373,6 +373,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             
             w = max(0, entry.weight)
             points = area_ratio * w
+            if not math.isfinite(points): points = 0.0
             val_int = int(round(_clamp(points, 0.0, float(w))))
             metric_breakdown[entry.area] = val_int
             total_points += val_int
