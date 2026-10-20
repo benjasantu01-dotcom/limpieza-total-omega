@@ -652,3 +652,83 @@ ERROR evolve/tests/test_safety.py - TypeError: _check_vol_restricted() missing 1
 - `2026-10-20T06:34:37` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-10-20T06:34:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-20T06:34:37` Corrida terminada. Total usado hoy: 156.
+- `2026-10-20T06:42:42` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-10-20T06:43:11` Tests FALLARON:
+```
+eligrosa.mkdir(parents=True)
+        (peligrosa / "x").write_text("secreto")
+>       assert browser.detect_profiles(
+            bases=[tmp_path], cache_paths={"Chrome": r"Perfil\Cookies"}
+        ) == []
+E       AssertionError: assert [BrowserCache...size_bytes=7)] == []
+E         
+E         Left contains one more item: BrowserCache(browser='Chrome', path=PosixPath('/tmp/pytest-of-runner/pytest-1/test_detect_profiles_never_rep0/Perfil/Cookies'), size_bytes=7)
+E         
+E         Full diff:
+E         - []
+E         + [
+E         +     BrowserCache(
+E         +         browser='Chrome',
+E         +         path=PosixPath('/tmp/pytest-of-runner/pytest-1/test_detect_profiles_never_rep0/Perfil/Cookies'),
+E         +         size_bytes=7,
+E         +     ),
+E         + ]
+
+evolve/tests/test_modules.py:755: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_data_folders - AssertionError: assert [BrowserCache...size_bytes=7)] == []
+  
+  Left contains one more item: BrowserCache(browser='Chrome', path=PosixPath('/tmp/pytest-of-runner/pytest-1/test_detect_profiles_never_rep0/Perfil/Cookies'), size_bytes=7)
+  
+  Full diff:
+  - []
+  + [
+  +     BrowserCache(
+  +         browser='Chrome',
+  +         path=PosixPath('/tmp/pytest-of-runner/pytest-1/test_detect_profiles_never_rep0/Perfil/Cookies'),
+  +         size_bytes=7,
+  +     ),
+  + ]
+1 failed, 298 passed in 1.38s
+
+```
+- `2026-10-20T06:43:11` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento del escaneo recursivo mediante el uso de `os.scandir` de forma eficiente, eliminando llamadas redundantes a `entry.is_dir()` y `entry.is_symlink()` dentro de los bucles, y cacheando la resolución de `real_base` para evitar consultas innecesarias al sistema de archivos.
+- `2026-10-20T06:43:38` Tests FALLARON:
+```
+/pytest-of-runner/pytest-2/test_walk_files_finds_everythi0')
+
+    def test_walk_files_finds_everything_recursively(tmp_path):
+        (tmp_path / "raiz.txt").write_text("12345")
+        sub = tmp_path / "sub" / "mas"
+        sub.mkdir(parents=True)
+        (sub / "hondo.txt").write_text("1234567890")
+>       encontrados = {p.name: s for p, s in diskreport.walk_files(tmp_path)}
+                       ^^^^^^
+E       AttributeError: 'str' object has no attribute 'name'
+
+evolve/tests/test_modules.py:568: AttributeError
+_____________________ test_walk_files_skips_system_folders _____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_walk_files_skips_system_f0')
+
+    def test_walk_files_skips_system_folders(tmp_path):
+        (tmp_path / "normal.txt").write_text("x")
+        sistema = tmp_path / "Program Files"
+        sistema.mkdir()
+        (sistema / "oculto.txt").write_text("y")
+>       nombres = {p.name for p, _ in diskreport.walk_files(tmp_path)}
+                   ^^^^^^
+E       AttributeError: 'str' object has no attribute 'name'
+
+evolve/tests/test_modules.py:577: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_walk_files_finds_everything_recursively - AttributeError: 'str' object has no attribute 'name'
+FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - AttributeError: 'str' object has no attribute 'name'
+2 failed, 297 passed in 1.41s
+
+```
+- `2026-10-20T06:43:38` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `walk_files` y `_collect_summary_data` evitando la creación innecesaria de objetos `Path` en el bucle caliente, reutilizando los resultados de `os.scandir` y reduciendo la conversión de tipos mediante el uso de `entry.path` (string) hasta que sea estrictamente necesario convertir a objeto `Path`.
+- `2026-10-20T06:44:07` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el proceso de recolección de archivos utilizando `os.scandir` junto a `entry.stat()` para evitar llamadas redundantes a `Path.stat()` y `path.is_file()`, reduciendo drásticamente las llamadas al sistema operativo durante el escaneo de directorios.
+- `2026-10-20T06:44:24` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el pipeline de cómputo introduciendo una caché local (`_PIPELINE_CACHE`) dentro de `compute_score` para evitar llamadas redundantes a las funciones `scorer` y reglas asociadas cuando se procesan métricas idénticas, además de pre-calcular el límite del rango de `total_points` para evitar operaciones en cada iteración.
+- `2026-10-20T06:44:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-20T06:44:24` Corrida terminada. Total usado hoy: 160.

@@ -339,10 +339,18 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
             continue
     return findings
 
+# Caché local para evitar recomputaciones idénticas
+_PIPELINE_CACHE: Dict[int, HealthResult] = {}
+
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Computa el puntaje global mediante el pipeline con validación de suma total."""
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite:
         return HealthResult(score=0, grade="F", breakdown={}, recommendations=["Error: Datos de sistema inválidos."])
+    
+    # Cache key basada en los valores actuales
+    cache_key = hash(tuple(getattr(metrics, f) for f in metrics._FIELDS_TO_VALIDATE))
+    if cache_key in _PIPELINE_CACHE:
+        return _PIPELINE_CACHE[cache_key]
         
     recommendations: List[str] = []
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -366,12 +374,15 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         recommendations.append("Existen elementos en cuarentena.")
         
     final_score = int(round(_clamp(total_points, 0.0, 100.0)))
-    return HealthResult(
+    result = HealthResult(
         score=final_score,
         grade=grade_for_score(final_score),
         breakdown=metric_breakdown,
         recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
     )
+    
+    _PIPELINE_CACHE[cache_key] = result
+    return result
 
 @lru_cache(maxsize=128)
 def _render_bar(points: int, max_val: int) -> str:

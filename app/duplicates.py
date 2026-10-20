@@ -248,12 +248,9 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    path_entry = Path(entry.path)
-                    if not is_safe_to_modify(path_entry):
-                        continue
-
                     try:
                         if entry.is_dir(follow_symlinks=False):
+                            path_entry = Path(entry.path)
                             if not is_junction(path_entry):
                                 queue.append((path_entry, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
@@ -261,6 +258,9 @@ def _collect_candidates(directories: Iterable[PathLike], min_size: int, skip_pro
                             if file_stat.st_size < min_size or (file_stat.st_dev, file_stat.st_ino) in visited_inodes:
                                 continue
                             
+                            path_entry = Path(entry.path)
+                            if not is_safe_to_modify(path_entry):
+                                continue
                             if skip_protected and is_protected_path(path_entry):
                                 continue
                             
