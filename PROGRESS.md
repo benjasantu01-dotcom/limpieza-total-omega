@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **186** (36.9% de aceptación)
+- Mejoras aceptadas: **183** (36.3% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 52
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 227
+- Sin respuesta de la IA (error o límite): 230
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 67 | 5 | 19 | 8 | 73 |
-| 2026-10-20 | 119 | 10 | 33 | 16 | 154 |
+| 2026-10-19 | 63 | 5 | 19 | 8 | 73 |
+| 2026-10-20 | 120 | 10 | 33 | 16 | 157 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **41**
 - seguridad defensiva: **41**
+- legibilidad y documentación: **37**
+- manejo de errores y validación de entradas: **36**
 - robustez ante casos límite: **35**
-- manejo de errores y validación de entradas: **35**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **18**
 - `diskreport.py`: **18**
-- `memory.py`: **16**
-- `healthscore.py`: **15**
+- `duplicates.py`: **17**
+- `assistant.py`: **16**
 - `quarantine.py`: **15**
-- `assistant.py`: **15**
+- `memory.py`: **15**
 - `branding.py`: **14**
 - `browser.py`: **14**
+- `healthscore.py`: **14**
 - `safety.py`: **13**
 - `settings.py`: **11**
 - `scanner.py`: **11**
-- `main.py`: **9**
 - `organizer.py`: **9**
 - `startup.py`: **8**
+- `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-20T14:14:37` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez en la ingesta de datos del `SystemContext` mediante la inclusión de comprobaciones de tipo y rangos más estrictas, y protege al módulo de posibles errores de ejecución durante la serialización y el acceso a métricas volátiles.
 - `2026-10-20T12:54:52` **settings.py** (seguridad defensiva): He refactorizado la validación del directorio de configuración en `settings_path` para emplear `is_safe_to_modify` en lugar de una lógica de chequeo manual, asegurando consistencia con las reglas de seguridad del proyecto y previniendo la creación de rutas en zonas protegidas o puntos de reanálisis.
 - `2026-10-20T12:53:59` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `safety.py` al implementar un bloqueo estricto contra el acceso a archivos de sistema mediante la validación de la propiedad del SID (Security Identifier) en archivos críticos, asegurando que cualquier intento de modificación sobre archivos cuyo propietario sea el grupo `SYSTEM` o `TrustedInstaller` sea bloqueado preventivamente, fortaleciendo la defensa frente a privilegios elevados.
 - `2026-10-20T12:41:19` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `quarantine.py` reforzando la validación en `_atomic_isolate_file` para evitar condiciones de carrera TOCTOU (Time-of-Check to Time-of-Use) mediante una verificación explícita de `st_ino` (inodo) y tamaño justo antes de la operación de escritura, cerrando una brecha de integridad.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-20T11:49:32` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o cuyo acceso cambia dinámicamente mediante el uso de bloques `try-except` más granulares al leer el tamaño (`stat`), evitando que una excepción en un archivo puntual detenga el análisis completo.
 - `2026-10-20T11:49:06` **browser.py** (robustez ante casos límite): Se ha robustecido el manejo de rutas en `_is_within_sandbox` mediante la normalización de casos (`os.path.normcase`), evitando falsos negativos por diferencias de capitalización en sistemas Windows y asegurando que las comparaciones de rutas sean consistentes con el comportamiento del sistema de archivos.
 - `2026-10-20T11:40:31` **branding.py** (robustez ante casos límite): Se añade una validación de seguridad en `save_logo_svg` utilizando `ensure_safe_to_modify` antes de cualquier operación de escritura, siguiendo las directrices de seguridad para prevenir la escritura en rutas protegidas mediante un mecanismo de excepción controlado.
-- `2026-10-20T11:40:15` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_is_input_too_deep_or_complex` y `_is_safe_payload_structure` reemplazando la recursión implícita en la gestión de pilas por una validación de profundidad explícita, evitando posibles desbordamientos de pila (`RecursionError`) ante estructuras de datos anidadas maliciosamente, y añadiendo chequeos de integridad para evitar errores de tipo al iterar.

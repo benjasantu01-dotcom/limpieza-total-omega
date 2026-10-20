@@ -419,6 +419,7 @@ class SystemContext:
         try:
             valid_val: Optional[float] = _is_valid_numeric_update(val, spec)
             if valid_val is None: return None
+            # Asegurar conversión segura a tipo
             return spec.type_hint(valid_val)
         except (ValueError, TypeError, Exception):
             return None
@@ -449,7 +450,10 @@ class SystemContext:
     def _validate_ingestion_source(self, source: Any) -> bool:
         """Realiza comprobaciones de seguridad sobre el objeto fuente."""
         if source is None: return False
-        return not _is_input_too_deep_or_complex(source) if isinstance(source, dict) else True
+        try:
+            return not _is_input_too_deep_or_complex(source) if isinstance(source, (dict, list)) else True
+        except Exception:
+            return False
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
         """Aplica cambios validados al contexto y limpia cachés internas."""
