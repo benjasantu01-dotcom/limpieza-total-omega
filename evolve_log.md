@@ -1494,3 +1494,10 @@ ERROR evolve/tests/test_safety.py - TypeError: _check_vol_restricted() missing 1
 - `2026-10-20T03:12:01` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado `_get_file_attrs` para manejar explícitamente el estado donde la API de Windows devuelve `ERROR_INVALID_NAME` (código 123), evitando que una ruta malformada o con caracteres prohibidos por el sistema de archivos sea procesada incorrectamente como una ruta de sistema válida.
 - `2026-10-20T03:12:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-20T03:12:01` Corrida terminada. Total usado hoy: 76.
+- `2026-10-20T03:18:50` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-10-20T03:19:35` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-10-20T03:20:13` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Se mejoró la robustez de `_is_file_secure_to_read` ante archivos bloqueados o en uso (frecuentes en Windows) mediante un manejo de excepciones explícito en `fstat`, asegurando que cualquier error de acceso retorne `False` en lugar de propagar una excepción que interrumpa la carga de la configuración.
+- `2026-10-20T03:20:41` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-10-20T03:21:05` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la seguridad en `_build_payload` y `_call_gemini` mediante la implementación de una validación de longitud de carga más temprana y estricta, evitando que se procesen prompts o payloads que excedan los límites definidos antes de cualquier operación de red o serialización costosa.
+- `2026-10-20T03:21:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-20T03:21:05` Corrida terminada. Total usado hoy: 80.

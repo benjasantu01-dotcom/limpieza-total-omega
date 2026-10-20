@@ -686,13 +686,14 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     if not q or not _ensure_safe_text(q): return None
     full_prompt: str = f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"
     # Doble verificación de seguridad sobre el prompt final antes de serializar
-    if not _ensure_safe_text(full_prompt): return None
+    if len(full_prompt) > _MAX_PROMPT_LIMIT or not _ensure_safe_text(full_prompt): return None
     payload_data: dict[str, Any] = {"contents": [{"parts": [{"text": full_prompt}]}]}
     if not _is_safe_payload_structure(payload_data): return None
-    if len(full_prompt) > _MAX_PROMPT_LIMIT or _is_input_too_deep_or_complex(full_prompt): 
-        return None
+    if _is_input_too_deep_or_complex(payload_data): return None
     try:
-        return json.dumps(payload_data).encode("utf-8")
+        encoded = json.dumps(payload_data).encode("utf-8")
+        if len(encoded) > _MAX_RESPONSE_BYTES: return None
+        return encoded
     except (TypeError, ValueError):
         return None
 
@@ -723,7 +724,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     if not isinstance(api_key, str) or not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model) or not context_text:
         return None
     payload: Optional[bytes] = _build_payload(question, context_text)
-    if not payload or len(payload) > (_MAX_RESPONSE_BYTES // 2): return None
+    if not payload: return None
     
     target_url: str = _ENDPOINT_BASE.format(model=model)
     if not target_url.startswith(_API_HOST_ROOT) or is_protected_path(target_url) or any(c in target_url for c in "<>\"' \t\n\r"):
