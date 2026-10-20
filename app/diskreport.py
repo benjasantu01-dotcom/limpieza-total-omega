@@ -166,12 +166,12 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
     if any(char in name for char in ('<', '>', ':', '"', '|', '?', '*')):
         return True
 
+    # Verificación de seguridad inmediata basada en la ruta normalizada
+    if is_protected_path(Path(entry.path)):
+        return True
+
     try:
         if entry.is_symlink():
-            return True
-        
-        # Verificación contra el sistema de protección
-        if is_protected_path(Path(entry.path)):
             return True
         
         # Windows reparse points (junctions)

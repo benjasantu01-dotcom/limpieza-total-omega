@@ -285,6 +285,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         safety.ensure_safe_to_modify(p)
         return p
 
+    def _validate_path_for_read(self, path: Union[str, Path]) -> Path:
+        """Valida seguridad para operaciones de solo lectura."""
+        p = Path(self._sanitize_path(path)).resolve(strict=False)
+        if _is_path_in_system_roots(str(p)):
+            raise safety.UnsafePathError("Acceso denegado: ruta protegida.")
+        if not p.exists():
+            raise FileNotFoundError("Ruta no encontrada.")
+        return p
+
     def _check_writable_dir(self, path: Path) -> bool:
         """Verifica si el directorio permite escritura real."""
         try:
@@ -1046,7 +1055,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _is_safe_file_access(self, path: Union[str, Path]) -> bool:
         """Valida permisos de lectura segura a nivel de archivo."""
-        return self._is_safe_disk_operation(path)
+        try:
+            self._validate_path_for_read(path)
+            return True
+        except (safety.UnsafePathError, FileNotFoundError):
+            return False
 
     def _is_safe_path(self, path: Union[str, Path]) -> bool:
         """Validación genérica de seguridad para una ruta en el flujo de trabajo."""
@@ -1839,12 +1852,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
         
         try:
-            p = Path(folder).resolve(strict=False)
-            if not p.exists() or not p.is_dir():
-                self.log(f"Error: La ruta {folder} no existe o no es un directorio.", "Disco")
-                return
-            self.analysis_folder = str(self._validate_disk_access(folder))
+            p = self._validate_path_for_read(folder)
+            self.analysis_folder = str(p)
         except Exception:
+            self.log(f"Acceso denegado: {folder}", "Disco")
             return
 
         def task() -> None:
@@ -1863,12 +1874,18 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not folder:
             return
 
+        try:
+            p = self._validate_path_for_read(folder)
+        except Exception:
+            self.log(f"Acceso denegado: {folder}", "Duplicados")
+            return
+
         def task() -> None:
             self.set_status(f"Buscando duplicados en {folder}...")
             self.clear("Duplicados")
             self.log(f"Buscando duplicados en {folder} (solo lectura, puede tardar)...",
                      "Duplicados")
-            dups = duplicates_mod.find_duplicates([folder])
+            dups = duplicates_mod.find_duplicates([str(p)])
             
             self._invalidate_cache("dups")
             self._cache["dups"] = dups
@@ -1888,7 +1905,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 lineas.append("")
             self.log_lines(lineas, "Duplicados")
 
-        self.run_async(task, target=folder)
+        self.run_async(task, target=str(p))
 
     @validated_ui_operation
     @ensure_safety

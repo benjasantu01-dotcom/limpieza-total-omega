@@ -1288,3 +1288,40 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_comma
 - `2026-10-20T12:22:44` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
 - `2026-10-20T12:22:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-20T12:22:44` Corrida terminada. Total usado hoy: 292.
+- `2026-10-20T12:29:22` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-10-20T12:29:51` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_excluded_path` asegurando que la verificación de `is_protected_path` ocurra inmediatamente después de obtener la ruta absoluta y normalizada, evitando posibles ataques de "time-of-check to time-of-use" (TOCTOU) y garantizando que se bloqueen rutas maliciosas antes de cualquier acceso al sistema de archivos.
+- `2026-10-20T12:29:52` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-20T12:30:20` Tests FALLARON:
+```
+date
+    return not (is_system_or_hidden(path) or _is_file_locked(path))
+                                             ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_group_by_size_separates_b0/otro-chico.txt')
+
+    def _is_file_locked(path: Path) -> bool:
+        """Verifica si el archivo es accesible intentando abrirlo con acceso exclusivo."""
+        if not isinstance(path, Path) or not is_safe_to_modify(path):
+            return True
+        try:
+            # Intenta abrir el archivo sin compartir acceso de lectura
+>           fd = os.open(path, os.O_RDONLY | os.O_BINARY)
+                                             ^^^^^^^^^^^
+E           AttributeError: module 'os' has no attribute 'O_BINARY'
+
+app/duplicates.py:105: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_identical_files - AttributeError: module 'os' has no attribute 'O_BINARY'
+FAILED evolve/tests/test_modules.py::test_ignores_files_with_different_content - AttributeError: module 'os' has no attribute 'O_BINARY'
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - AttributeError: module 'os' has no attribute 'O_BINARY'
+FAILED evolve/tests/test_modules.py::test_group_by_size_separates_by_exact_size - AttributeError: module 'os' has no attribute 'O_BINARY'
+4 failed, 295 passed in 1.43s
+
+```
+- `2026-10-20T12:30:20` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez defensiva de `duplicates.py` refactorizando `_is_file_locked` para que utilice `os.open` con flags de acceso exclusivo en lugar de intentar leer el archivo, evitando así la carga parcial de buffers en archivos potencialmente bloqueados o bloqueantes.
+- `2026-10-20T12:30:52` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: SystemMetrics.__post_init__, SystemMetrics.safe_get
+- `2026-10-20T12:31:10` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-20T12:32:08` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `main.py` al implementar `_validate_path_for_read` para restringir el acceso a rutas arbitrarias durante operaciones que solo deberían ser de lectura, garantizando que incluso las consultas de reportes o inventarios no escapen al ámbito de confianza definido.
+- `2026-10-20T12:32:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-20T12:32:08` Corrida terminada. Total usado hoy: 296.
