@@ -91,7 +91,11 @@ class StartupEntry:
 
     @property
     def is_valid(self) -> bool:
-        """Verifica la integridad de la cadena de comando antes de intentar cualquier resolución."""
+        """
+        Verifica integridad básica.
+        Se rechazan comandos vacíos, dispositivos reservados del sistema que 
+        podrían colgar el acceso a disco, y caracteres de inyección.
+        """
         if not self.command or self._is_path_suspicious(self.command):
             return False
         if self._is_reserved_device_name(self.command):
@@ -110,13 +114,17 @@ class StartupEntry:
             return True
 
     def _is_path_suspicious(self, path_string: str) -> bool:
-        """Filtra rutas que contienen caracteres de control de shell o rutas UNC no gestionadas."""
+        """
+        Filtra rutas peligrosas.
+        Se bloquean rutas UNC (\\) por riesgo de latencia de red/ataques y 
+        caracteres especiales utilizados para escapar contextos de shell.
+        """
         if not isinstance(path_string, str):
             return True
         return any(c in path_string for c in SUSPICIOUS_CHARS) or path_string.startswith(r"\\")
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Valida que la extensión sea ejecutable y no se trate de una vulnerabilidad de enlace simbólico."""
+        """Valida extensión y asegura que no sea un enlace simbólico para evitar redirecciones no deseadas."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
@@ -130,8 +138,8 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae y valida rutas absolutas contenidas entre comillas, asegurando que no excedan
-        límites de sistema ni contengan caracteres prohibidos o recorridos de directorio (traversal).
+        Extrae rutas protegidas por comillas.
+        Previene Path Traversal ('..') y valida contra la lista de rutas protegidas del sistema.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
@@ -156,7 +164,10 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """Cumple con la política de seguridad: verifica que el archivo exista y no esté en la lista negra."""
+        """
+        Política de acceso: Verifica que el archivo no esté en la lista negra (system/protected)
+        y que sea efectivamente un archivo regular (no directorio ni symlink).
+        """
         try:
             if is_protected_path(p) or p.is_symlink() or not is_safe_to_modify(p):
                 return False
@@ -165,7 +176,11 @@ class StartupEntry:
             return False
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
-        """Normaliza la ruta y verifica su existencia real en disco utilizando caché de estado."""
+        """
+        Normaliza rutas y verifica existencia real.
+        El uso de `resolve(strict=False)` permite mapear rutas cortas o con inconsistencias
+        de mayúsculas sin fallar si el archivo no es alcanzable.
+        """
         if not path_string or not isinstance(path_string, str) or not self.is_valid:
             return ""
         
@@ -198,7 +213,10 @@ class StartupEntry:
             return ""
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Aisla el ejecutable de argumentos opcionales para una resolución precisa del binario."""
+        """
+        Aísla el binario principal del comando de inicio eliminando los argumentos.
+        Esto permite validar específicamente el ejecutable y no toda la línea de comandos.
+        """
         if not command_line or not isinstance(command_line, str):
             return ""
         
@@ -222,7 +240,7 @@ class StartupEntry:
         
     @property
     def executable(self) -> str:
-        """Getter de la ruta absoluta. La resolución ocurre solo bajo demanda."""
+        """Getter de la ruta absoluta. La resolución ocurre solo bajo demanda (Lazy Loading)."""
         if self._checked_exists:
             return self._exec_cache or ""
             
@@ -437,7 +455,6 @@ def list_startup_entries() -> StartupEntries:
 
 def estimate_impact(entries: Iterable[StartupEntry]) -> str:
     """Estima el impacto en el rendimiento basándose en la cantidad de entradas."""
-    # Si es lista cacheada, usamos len() directamente para evitar iterar
     count = len(entries) if isinstance(entries, list) else sum(1 for _ in entries)
     if count <= 5: return "ok"
     if count <= 10: return "info"

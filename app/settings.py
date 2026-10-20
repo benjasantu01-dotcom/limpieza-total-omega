@@ -163,7 +163,10 @@ def _is_dir_safe(path: Path) -> bool:
     except (OSError, PermissionError): return False
 
 class _SettingsManager:
-    """Singleton que gestiona el estado de la configuración."""
+    """
+    Singleton que gestiona el estado de la configuración, minimizando el acceso
+    a disco mediante el uso de cachés sincronizadas por metadatos (mtime/size).
+    """
     def __init__(self) -> None:
         self.settings_cache: dict[str, tuple[float, int, AppSettings]] = {}
         self.path_cache: dict[Optional[str], Path] = {}
@@ -173,7 +176,10 @@ class _SettingsManager:
         self.settings_cache.clear()
 
     def perform_atomic_write(self, config_path: Path, serialized: str) -> bool:
-        """Escribe datos en archivo temporal con reintentos para manejar bloqueos transitorios."""
+        """
+        Escribe datos utilizando un archivo temporal y fsync para garantizar que
+        la operación de escritura sea atómica, evitando la corrupción ante fallos.
+        """
         if not isinstance(serialized, str): return False
         temp_path: Path = config_path.with_suffix(".tmp")
         try:
@@ -306,7 +312,10 @@ _VALIDATOR_MAP: Final[MappingProxyType[ConfigKey, _ValidatorEntry]] = MappingPro
 })
 
 def validate(raw_values: Any) -> AppSettings:
-    """Valida iterativamente el diccionario bruto; los valores inválidos son omitidos."""
+    """
+    Valida iterativamente el diccionario bruto recibido contra el esquema definido.
+    Omitirá cualquier campo que no cumpla con las restricciones de tipo o rango.
+    """
     if not _is_dict(raw_values): return dict(DEFAULTS)
     config = dict(DEFAULTS)
     for key_str, raw_val in raw_values.items():

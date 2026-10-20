@@ -453,7 +453,7 @@ class SystemContext:
                 if _is_safe_key(k):
                     setattr(self, k, v)
             self.analyzed = True
-            # Limpieza forzada de cachés mediante borrado de los atributos de cached_property
+            # Limpieza de cachés invalidando atributos de cached_property
             for attr in ("metrics_snapshot", "active_problems", "_hash_tuple"):
                 self.__dict__.pop(attr, None)
         except Exception:
@@ -520,15 +520,9 @@ def build_context(metrics: Any = None, health: Any = None, **extra: Any) -> Syst
 def context_as_text(context: SystemContext) -> str:
     """Serializa el contexto a un formato textual seguro para el prompt."""
     if context.is_empty: return ""
-    snapshot: dict[str, float] = context.metrics_snapshot
-    res: list[str] = []
-    for key, unit, precision in _CONTEXT_SCHEMA:
-        val: float = snapshot.get(key, -1.0)
-        if val >= 0:
-            line: str = f"{key}: {val:.{precision}f}{unit}"
-            if _ensure_safe_text(line):
-                res.append(line)
-    return "\n".join(res)
+    snapshot = context.metrics_snapshot
+    res = [f"{k}: {snapshot.get(k, -1.0):.{p}f}{u}" for k, u, p in _CONTEXT_SCHEMA if snapshot.get(k, -1.0) >= 0]
+    return "\n".join(filter(_ensure_safe_text, res))
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     """Formatea métricas numéricas convirtiéndolas a strings legibles."""
@@ -553,7 +547,7 @@ def _format_problem_message(problems: tuple[str, ...], score: int | str) -> str:
 @_safe_handler_wrapper
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre memoria RAM usando contexto validado."""
-    snap: dict[str, float] = ctx.metrics_snapshot
+    snap = ctx.metrics_snapshot
     mem_pct: float = snap.get("memory_available_percent", DEFAULT_RAM_PCT)
     total_gb: float = snap.get("memory_total_gb", 0.0)
     msg: str = f"Tenés {mem_pct:.0f}% de RAM disponible{f' de {total_gb:.0f} GB' if total_gb > 0 else ''}."
@@ -570,7 +564,7 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
 @_safe_handler_wrapper
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre almacenamiento y limpieza."""
-    snap: dict[str, float] = ctx.metrics_snapshot
+    snap = ctx.metrics_snapshot
     junk: float = snap.get("junk_mb", 0.0)
     dup: float = snap.get("duplicate_mb", 0.0)
     cache: float = snap.get("browser_cache_mb", 0.0)
@@ -586,7 +580,7 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
 @_safe_handler_wrapper
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     """Gestiona consultas sobre archivos sospechosos y seguridad."""
-    snap: dict[str, float] = ctx.metrics_snapshot
+    snap = ctx.metrics_snapshot
     count: int = int(snap.get("suspicious_count", 0.0))
     warn: int = int(snap.get("suspicious_warnings", 0.0))
     if count == 0:
