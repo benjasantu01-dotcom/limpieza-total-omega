@@ -100,6 +100,9 @@ def _verify_source_fs_permissions(path: Path) -> None:
 def _is_filesystem_read_only(path: Path) -> bool:
     """Determina si un directorio es de solo lectura mediante una operación de prueba."""
     if not path.exists(): return True
+    # Verificamos permisos a nivel de OS antes de intentar escritura
+    if not os.access(path, os.W_OK):
+        return True
     try:
         test_file: Path = path / f".test_{uuid.uuid4().hex}"
         test_file.touch()
@@ -313,9 +316,12 @@ def _safe_unlink(path: Path, expected_hash: Optional[str] = None, expected_inode
         _check_io_error_context(path.unlink)
         
         if parent.exists():
-            dir_fd: int = os.open(str(parent), os.O_RDONLY)
-            try: os.fsync(dir_fd)
-            finally: os.close(dir_fd)
+            try:
+                dir_fd: int = os.open(str(parent), os.O_RDONLY)
+                try: os.fsync(dir_fd)
+                finally: os.close(dir_fd)
+            except OSError:
+                pass
         return True
     except (OSError, PermissionError):
         return False
@@ -578,11 +584,14 @@ def save_manifest(items: List[QuarantineItem], base: PathLike = DEFAULT_QUARANTI
             os.fsync(tf.fileno())
             
         os.replace(temp_name, target_path)
-        dir_fd: int = os.open(str(base_path), os.O_RDONLY)
         try:
-            os.fsync(dir_fd)
-        finally:
-            os.close(dir_fd)
+            dir_fd: int = os.open(str(base_path), os.O_RDONLY)
+            try:
+                os.fsync(dir_fd)
+            finally:
+                os.close(dir_fd)
+        except OSError:
+            pass
         
         _MANIFEST_CACHE[base_path] = (items, target_path.stat().st_mtime)
         return target_path
@@ -697,9 +706,12 @@ def _write_temp_to_final(source: Path, destination: Path) -> Tuple[str, Inode]:
         _perform_secure_copy(source, temp_dest, source_hash)
         os.replace(temp_dest, destination)
         
-        dir_fd: int = os.open(str(destination.parent), os.O_RDONLY)
-        try: os.fsync(dir_fd)
-        finally: os.close(dir_fd)
+        try:
+            dir_fd: int = os.open(str(destination.parent), os.O_RDONLY)
+            try: os.fsync(dir_fd)
+            finally: os.close(dir_fd)
+        except OSError:
+            pass
         
         if destination.stat().st_nlink > 1:
              raise UnsafePathError("Integridad comprometida: el archivo destino tiene enlaces múltiples.")
@@ -967,9 +979,12 @@ def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
         
         for p in [parent, base_path]:
             if p.exists():
-                dir_fd: int = os.open(str(p), os.O_RDONLY)
-                try: os.fsync(dir_fd)
-                finally: os.close(dir_fd)
+                try:
+                    dir_fd: int = os.open(str(p), os.O_RDONLY)
+                    try: os.fsync(dir_fd)
+                    finally: os.close(dir_fd)
+                except OSError:
+                    pass
             
         items = load_manifest(base, force_reload=True)
         save_manifest([i for i in items if i.item_id != item_id], base)
@@ -1049,9 +1064,12 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             save_manifest(new_items, base)
             
             if quarantine_root.exists():
-                dir_fd: int = os.open(str(quarantine_root), os.O_RDONLY)
-                try: os.fsync(dir_fd)
-                finally: os.close(dir_fd)
+                try:
+                    dir_fd: int = os.open(str(quarantine_root), os.O_RDONLY)
+                    try: os.fsync(dir_fd)
+                    finally: os.close(dir_fd)
+                except OSError:
+                    pass
             
         return len(purgado_ids)
     except (OSError, PermissionError, UnsafePathError):

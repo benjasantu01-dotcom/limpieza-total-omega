@@ -158,6 +158,8 @@ def _get_file_attrs(path_str: Optional[str]) -> int:
             err = ctypes.windll.kernel32.GetLastError()
             if err == ERROR_ACCESS_DENIED:
                 return Win32Attr.SYSTEM
+            if err == ERROR_INVALID_NAME:
+                return 0
             return 0
         return attrs
     except (AttributeError, ctypes.ArgumentError, OSError, MemoryError, ValueError, TypeError):
