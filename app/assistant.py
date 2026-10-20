@@ -95,12 +95,9 @@ def _is_nan_or_inf(val: Any) -> bool:
     return math.isnan(val) or math.isinf(val)
 
 def _is_safe_key(key: str) -> bool:
-    """Valida que una clave de diccionario o atributo no sea privada, interna o un método."""
+    """Valida que la clave pertenezca a la lista blanca de atributos métricos permitidos."""
     if not isinstance(key, str): return False
-    if key.startswith("_"): return False
-    # Bloqueo total de introspección para evitar acceso a métodos sensibles
-    forbidden: Final[set[str]] = {"__dict__", "__class__", "__init__", "__setattr__", "__getattribute__", "__delattr__", "__new__", "ingest", "get_metric", "_apply_updates", "_apply_field"}
-    return key not in forbidden
+    return key in _VALIDATORS or key in ("grade", "analyzed")
 
 def _check_metric_integrity(val: Any) -> bool:
     """Verifica que un valor numérico sea seguro, finito y coherente para el asistente."""
@@ -122,11 +119,9 @@ def _is_valid_numeric_update(val: Any, spec: MetricSpec) -> Optional[float]:
     return None
 
 def _get_safe_attr(obj: Any, name: str, default: Any = None) -> Any:
-    """Acceso defensivo a atributos validando tipo y seguridad contra intrusión de métodos."""
+    """Acceso defensivo a atributos validando tipo y seguridad mediante lista blanca."""
     if not _is_safe_key(name): return default
     try:
-        # Forzamos a solo acceder si está definido en los validadores conocidos o es el grado
-        if name not in _VALIDATORS and name != "grade" and name != "analyzed": return default
         val = getattr(obj, name, default)
         return val if not callable(val) else default
     except Exception:
@@ -501,7 +496,7 @@ def _ensure_safe_text(text: Any) -> bool:
     return not _is_safe_path_input(text)
 
 def _get_source_value(source: Any, key: str, depth: int = 0) -> Any:
-    """Acceso seguro a atributos evitando recursión, inyecciones de clase y acceso a métodos."""
+    """Acceso seguro a atributos validando contra lista blanca para evitar ataques de introspección."""
     if depth > _MAX_NESTING_DEPTH or not _is_safe_key(key): return None
     try:
         if isinstance(source, dict): return source.get(key)
