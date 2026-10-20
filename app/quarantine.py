@@ -1050,7 +1050,6 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
             return 0
             
         items: List[QuarantineItem] = load_manifest(base)
-        stored_names: Set[str] = {i.stored_name for i in items}
         item_map: Dict[str, QuarantineItem] = {i.stored_name: i for i in items}
         purgado_ids: Set[str] = set()
         
@@ -1065,7 +1064,7 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
                 if f.name in item_map:
                     if _is_item_purgable(f, item_map[f.name]):
                         purgado_ids.add(item_map[f.name].item_id)
-                elif f.name not in stored_names:
+                else:
                     _safe_unlink(f)
             except (OSError, PermissionError):
                 continue

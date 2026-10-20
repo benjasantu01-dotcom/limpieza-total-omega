@@ -347,7 +347,6 @@ def _process_from_pid(pid: int, kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_C
     
     try:
         ws = _query_working_set_bytes(pid, proc_handle, psapi, pmc)
-        # Solo validar seguridad si el consumo es relevante para evitar E/S innecesaria
         if ws is not None and ws > (10 * BYTES_IN_MB):
             if not _is_process_executable_safe(pid, proc_handle, psapi):
                 return None
@@ -358,18 +357,22 @@ def _process_from_pid(pid: int, kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_C
 
 def _iter_process_memory(kernel32: Any, psapi: Any, pmc: PROCESS_MEMORY_COUNTERS) -> Iterator[ProcessMemory]:
     """Enumera procesos activos del sistema aplicando filtros de seguridad."""
-    max_pids = 4096
-    pids = (ctypes.c_uint32 * max_pids)()
-    cb_needed = ctypes.c_uint32(0)
-    
-    if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
-        count = cb_needed.value // 4
-        for i in range(count):
-            pid_val = pids[i]
-            if _is_system_process(pid_val) or pid_val <= 0: continue
-            proc = _process_from_pid(pid_val, kernel32, psapi, pmc)
-            if proc:
-                yield proc
+    buf_size = 4096
+    while True:
+        pids = (ctypes.c_uint32 * (buf_size // 4))()
+        cb_needed = ctypes.c_uint32(0)
+        if psapi.EnumProcesses(ctypes.byref(pids), ctypes.sizeof(pids), ctypes.byref(cb_needed)):
+            if cb_needed.value < ctypes.sizeof(pids):
+                count = cb_needed.value // 4
+                for i in range(count):
+                    pid_val = pids[i]
+                    if _is_system_process(pid_val) or pid_val <= 0: continue
+                    proc = _process_from_pid(pid_val, kernel32, psapi, pmc)
+                    if proc: yield proc
+                break
+            buf_size *= 2
+        else:
+            break
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Retorna la lista de procesos con mayor consumo de memoria, aplicando validación."""
