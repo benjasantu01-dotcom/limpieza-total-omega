@@ -322,9 +322,10 @@ def _apply_rule_safely(metrics: SystemMetrics, rule: RecommendationRule) -> str:
         return _sanitize_msg(raw_res)
     except Exception: return ""
 
-def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio, findings: List[str]) -> None:
-    """Ejecuta reglas de diagnóstico y registra advertencias halladas."""
+def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...], normalized_ratio: NormalizedRatio) -> List[str]:
+    """Evalúa reglas y retorna lista filtrada de mensajes válidos."""
     ratio = _clamp(normalized_ratio)
+    findings = []
     for rule in rules:
         try:
             if rule.check(metrics, ratio):
@@ -332,6 +333,7 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
                 if clean_msg: findings.append(clean_msg)
         except Exception:
             continue
+    return findings
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Computa el puntaje global mediante el pipeline con validación de suma total."""
@@ -346,7 +348,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         try:
             area_ratio = _clamp(entry.scorer(metrics))
             if entry.rules:
-                _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
+                recommendations.extend(_evaluate_rules(metrics, entry.rules, area_ratio))
             
             points = area_ratio * entry.weight
             val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
@@ -385,8 +387,7 @@ def summarize(result: HealthResult | None) -> List[str]:
         p = result.breakdown.get(entry.area, 0)
         lines.append(f"  {entry.area.capitalize():<12} {p:>2}/{entry.weight:<2} [{_render_bar(p, entry.weight)}]")
     
-    recs = [_sanitize_msg(str(r)) for r in result.recommendations]
-    recs = [r for r in recs if r]
+    recs = [r for r in result.recommendations if r]
     
     if not recs:
         recs = ["No hay advertencias activas."]

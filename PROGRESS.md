@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **194** (38.5% de aceptación)
+- Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 48
+- Rechazadas por guardia de seguridad: 49
 - Sin cambios (nada sustancial que mejorar): 29
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-18 | 41 | 2 | 10 | 6 | 43 |
+| 2026-10-18 | 38 | 2 | 9 | 6 | 43 |
 | 2026-10-19 | 133 | 11 | 32 | 21 | 153 |
-| 2026-10-20 | 20 | 2 | 6 | 2 | 22 |
+| 2026-10-20 | 21 | 2 | 8 | 2 | 23 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **46**
 - seguridad defensiva: **40**
-- robustez ante casos límite: **32**
-- rendimiento: **29**
+- rendimiento: **30**
+- robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **19**
 - `duplicates.py`: **19**
 - `diskreport.py`: **18**
-- `quarantine.py`: **16**
-- `healthscore.py`: **16**
+- `healthscore.py`: **17**
 - `settings.py`: **15**
 - `branding.py`: **15**
+- `quarantine.py`: **15**
 - `memory.py`: **14**
-- `safety.py`: **12**
-- `scanner.py`: **12**
+- `scanner.py`: **11**
+- `safety.py`: **11**
 - `assistant.py`: **11**
 - `main.py`: **10**
 - `organizer.py`: **9**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-20T02:19:58` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje global en `compute_score` reemplazando la lógica de filtrado de reglas por una evaluación eficiente mediante `set` y evitando el crecimiento innecesario de la lista de recomendaciones dentro del loop principal, mejorando la complejidad de tiempo y uso de memoria.
 - `2026-10-20T02:09:58` **branding.py** (rendimiento): Se introdujo `lru_cache` en las funciones de acceso frecuente `color`, `font_size`, `icon` y `tab_label` para evitar el procesamiento repetitivo de strings y búsquedas en diccionarios durante el renderizado de la interfaz.
 - `2026-10-20T02:08:47` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings técnicos detallados en las funciones de procesamiento de datos y validación, además de clarificar la lógica de filtrado en `parse_registry_csv` y `startup_folders` para facilitar futuras auditorías del código.
 - `2026-10-20T01:59:00` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad técnica mediante la aplicación estricta de Type Hints en parámetros y retornos, la adición de docstrings precisos en funciones clave, y la normalización de la estructura de manejo de errores en las heurísticas para facilitar el mantenimiento.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-20T01:27:14` **settings.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `_coerce_and_verify` agregando una validación explícita de tipos basada en el esquema `DEFAULTS` para prevenir la inyección de tipos inesperados desde un JSON malintencionado o corrupto, asegurando que solo valores del tipo correcto (int, bool, str) pasen al estado de la aplicación.
 - `2026-10-20T01:18:44` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas centralizando la validación de archivos en `_run_file_heuristics`, asegurando que `_is_readable` y `_is_locked_by_os` se evalúen antes de cualquier acceso y capturando excepciones de forma específica para evitar interrupciones en el bucle de escaneo.
 - `2026-10-20T01:17:14` **quarantine.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `purge_all` y `list_items` para evitar fallos silenciosos ante rutas inaccesibles o datos corruptos, y se refina `quarantine_file` para asegurar que el uso de `load_manifest` sea robusto ante excepciones, cumpliendo con la regla de capturar excepciones específicas.
-- `2026-10-20T01:06:53` **healthscore.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `compute_score` y `summarize` para prevenir excepciones por estados inconsistentes del sistema o entrada de datos malformada, centralizando la validación antes de iterar el pipeline.
