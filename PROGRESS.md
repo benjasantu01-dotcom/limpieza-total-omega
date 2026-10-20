@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **187** (37.1% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 52
+- Rechazadas por guardia de seguridad: 53
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 225
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 84 | 7 | 23 | 10 | 108 |
-| 2026-10-20 | 103 | 8 | 29 | 15 | 117 |
+| 2026-10-19 | 81 | 7 | 23 | 10 | 107 |
+| 2026-10-20 | 106 | 8 | 30 | 15 | 117 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **44**
 - manejo de errores y validación de entradas: **42**
-- seguridad defensiva: **41**
-- rendimiento: **33**
-- robustez ante casos límite: **27**
+- seguridad defensiva: **38**
+- rendimiento: **34**
+- robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **18**
 - `duplicates.py`: **17**
-- `healthscore.py`: **16**
-- `memory.py`: **15**
+- `assistant.py`: **16**
 - `quarantine.py`: **15**
-- `assistant.py`: **15**
 - `browser.py`: **15**
+- `healthscore.py`: **15**
+- `branding.py`: **14**
+- `memory.py`: **14**
 - `safety.py`: **13**
-- `branding.py`: **13**
 - `scanner.py`: **12**
 - `settings.py`: **12**
-- `main.py`: **10**
+- `main.py`: **9**
 - `organizer.py`: **9**
-- `startup.py`: **7**
+- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-20T11:40:31` **branding.py** (robustez ante casos límite): Se añade una validación de seguridad en `save_logo_svg` utilizando `ensure_safe_to_modify` antes de cualquier operación de escritura, siguiendo las directrices de seguridad para prevenir la escritura en rutas protegidas mediante un mecanismo de excepción controlado.
+- `2026-10-20T11:40:15` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_is_input_too_deep_or_complex` y `_is_safe_payload_structure` reemplazando la recursión implícita en la gestión de pilas por una validación de profundidad explícita, evitando posibles desbordamientos de pila (`RecursionError`) ante estructuras de datos anidadas maliciosamente, y añadiendo chequeos de integridad para evitar errores de tipo al iterar.
+- `2026-10-20T11:39:24` **startup.py** (rendimiento): Optimizé `entries_from_registry` para evitar el parseo de un CSV gigante mediante `io.StringIO` y `csv.DictReader` en cada llamada, reemplazándolo por un procesamiento de líneas más directo y eficiente tras la ejecución del comando PowerShell.
 - `2026-10-20T11:30:33` **scanner.py** (rendimiento): Se optimizó el proceso de filtrado en el motor de escaneo mediante la migración de `list` a `set` para la verificación de `seen` y la reordenación estratégica de las heurísticas (`ALL_CHECKS`), permitiendo descartar archivos más rápido mediante condiciones de costo computacional ascendente.
 - `2026-10-20T11:30:21` **safety.py** (rendimiento): Se optimizó el acceso a `_PROTECTED_PATH_CACHE` eliminando la tupla innecesaria `(bool, float)` y convirtiéndola en un `dict[str, bool]` con expiración externa implícita, además de migrar las validaciones repetitivas de `is_protected_path` hacia un set `_CACHE_KEYS` que permite validar rápidamente la presencia en el caché sin operaciones de desempacado.
 - `2026-10-20T11:11:28` **diskreport.py** (rendimiento): Optimicé el método `walk_files` para reducir la presión sobre el recolector de basura y mejorar el rendimiento de memoria al evitar la creación de múltiples objetos `Path` intermedios, utilizando directamente los atributos de `os.DirEntry` y optimizando la lógica de construcción de rutas durante el recorrido.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-20T10:40:00` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints más precisos en la firma de `compute_score` y `summarize`, y se ha refactorizado la lógica de validación de métricas en `SystemMetrics` para utilizar un método más robusto de iteración sobre los campos, garantizando que no existan comportamientos ambiguos al inicializar datos del sistema.
 - `2026-10-20T10:37:41` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de `duplicates.py` mediante la adición de Type Hints más precisos, docstrings detallados en las funciones de procesamiento de bajo nivel y la simplificación de la estructura lógica en `_collect_candidates` para aclarar el flujo de exclusión de archivos.
 - `2026-10-20T10:31:49` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de Type Hints en los retornos y argumentos faltantes, la estandarización de docstrings para seguir el formato PEP 257, y la extracción de la lógica de construcción de rutas en `_resolve_browser_path` para mejorar su trazabilidad y legibilidad.
-- `2026-10-20T10:30:12` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `SystemContext.ingest` y `_validate_and_sanitize_data` mediante la estandarización del flujo de validación, clarificando la separación entre la extracción de datos y la aplicación de actualizaciones al estado del sistema.
-- `2026-10-20T09:59:58` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_get_entry_value` y `_collect_settings` agregando validaciones de tipo y estructura para prevenir errores de ejecución al procesar datos del usuario, asegurando que las entradas numéricas y las cadenas sean procesadas de manera segura.
-- `2026-10-20T09:58:04` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` implementando una validación explícita de la suma de puntos calculados tras iterar el pipeline, asegurando que si los pesos no suman 100 o ocurre un error de cómputo, el resultado refleje la inconsistencia en lugar de devolver un valor potencialmente engañoso, además de proteger el acceso a los pesos durante la iteración.

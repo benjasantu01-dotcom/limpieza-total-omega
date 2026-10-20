@@ -322,7 +322,7 @@ def _validate_response_length(text: Any) -> str:
 
 def _is_safe_payload_structure(val: Any) -> bool:
     """Valida la estructura del JSON remoto evitando inyecciones y profundidad excesiva."""
-    stack = [(val, 0)]
+    stack: list[tuple[Any, int]] = [(val, 0)]
     while stack:
         current, depth = stack.pop()
         if depth > _MAX_NESTING_DEPTH: return False
@@ -331,14 +331,14 @@ def _is_safe_payload_structure(val: Any) -> bool:
             stack.extend((item, depth + 1) for item in current)
         elif isinstance(current, dict):
             if len(current) > _MAX_COLLECTION_SIZE: return False
-            stack.extend((v, depth + 1) for k, v in current.items() if isinstance(k, str))
+            stack.extend((v, depth + 1) for v in current.values())
         elif not isinstance(current, (int, float, bool, str, type(None))):
             return False
     return True
 
 def _is_input_too_deep_or_complex(val: Any) -> bool:
-    """Detecta si un objeto excede la profundidad o límites de colección permitidos sin recursión."""
-    stack = [(val, 0)]
+    """Detecta si un objeto excede la profundidad o límites de colección permitidos."""
+    stack: list[tuple[Any, int]] = [(val, 0)]
     while stack:
         current, depth = stack.pop()
         if depth > _MAX_NESTING_DEPTH: return True
@@ -347,7 +347,7 @@ def _is_input_too_deep_or_complex(val: Any) -> bool:
             stack.extend((item, depth + 1) for item in current)
         elif isinstance(current, dict):
             if len(current) > _MAX_COLLECTION_SIZE: return True
-            stack.extend((v, depth + 1) for k, v in current.items())
+            stack.extend((v, depth + 1) for v in current.values())
         elif not isinstance(current, (int, float, bool, str, type(None))):
             return True
     return False
