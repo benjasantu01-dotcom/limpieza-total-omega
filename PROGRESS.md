@@ -8,45 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 46
-- Sin cambios (nada sustancial que mejorar): 29
-- Sin respuesta de la IA (error o límite): 223
+- Rechazadas por guardia de seguridad: 47
+- Sin cambios (nada sustancial que mejorar): 30
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-18 | 53 | 3 | 13 | 7 | 50 |
+| 2026-10-18 | 51 | 3 | 13 | 7 | 48 |
 | 2026-10-19 | 133 | 11 | 32 | 21 | 153 |
-| 2026-10-20 | 6 | 0 | 1 | 1 | 20 |
+| 2026-10-20 | 8 | 0 | 2 | 2 | 20 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **42**
+- manejo de errores y validación de entradas: **44**
 - seguridad defensiva: **40**
 - legibilidad y documentación: **38**
-- rendimiento: **36**
 - robustez ante casos límite: **36**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **19**
-- `diskreport.py`: **18**
 - `browser.py`: **18**
+- `diskreport.py`: **17**
 - `memory.py`: **16**
+- `quarantine.py`: **16**
 - `healthscore.py`: **16**
-- `quarantine.py`: **15**
 - `settings.py`: **15**
-- `assistant.py`: **13**
 - `safety.py`: **13**
 - `branding.py`: **13**
+- `assistant.py`: **12**
 - `main.py`: **11**
-- `scanner.py`: **10**
+- `scanner.py`: **11**
 - `organizer.py`: **9**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-20T01:18:44` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas centralizando la validación de archivos en `_run_file_heuristics`, asegurando que `_is_readable` y `_is_locked_by_os` se evalúen antes de cualquier acceso y capturando excepciones de forma específica para evitar interrupciones en el bucle de escaneo.
+- `2026-10-20T01:17:14` **quarantine.py** (manejo de errores y validación de entradas): Se mejora el manejo de errores en `purge_all` y `list_items` para evitar fallos silenciosos ante rutas inaccesibles o datos corruptos, y se refina `quarantine_file` para asegurar que el uso de `load_manifest` sea robusto ante excepciones, cumpliendo con la regla de capturar excepciones específicas.
 - `2026-10-20T01:06:53` **healthscore.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `compute_score` y `summarize` para prevenir excepciones por estados inconsistentes del sistema o entrada de datos malformada, centralizando la validación antes de iterar el pipeline.
 - `2026-10-20T00:58:11` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` mediante la validación explícita de tipos y la captura de errores en el manejo de rutas, evitando que un elemento corrupto en la lista `paths` detenga el procesamiento de todo el reporte.
 - `2026-10-20T00:57:47` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando excepciones específicas y validando estados intermedios para evitar fallos silenciosos durante iteraciones extensas en el sistema de archivos.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-19T13:23:18` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `compute_score` frente a errores durante la ejecución de los scorers en el pipeline mediante un bloque `try-except` que asigna un puntaje de seguridad de 0 ante cualquier falla inesperada en la métrica, evitando que una excepción en una regla particular rompa el proceso de diagnóstico global.
 - `2026-10-19T13:22:31` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_collect_candidates` ante rutas con nombres extremadamente largos o caracteres especiales que pueden causar excepciones al llamar a `os.scandir` o `Path.resolve()`, envolviendo las llamadas críticas en bloques `try-except` más granulares para evitar que un solo archivo inaccesible detenga el escaneo de toda una unidad.
 - `2026-10-19T13:22:01` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_collect_summary_data` ante archivos bloqueados o bloqueos de acceso durante la iteración, capturando excepciones específicas en `entry.stat()` para evitar que el generador finalice prematuramente al encontrar un archivo en uso por el sistema.
-- `2026-10-19T13:11:39` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` validando la existencia de la ruta padre antes de intentar crear directorios y añadiendo un chequeo explícito de si la ruta destino es un directorio existente antes de intentar escribir, evitando errores de permisos o excepciones de sistema al encontrar conflictos en el sistema de archivos.
-- `2026-10-19T13:00:41` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` centralizando la lógica de caché y reduciendo las llamadas redundantes al sistema de archivos al priorizar la validación de prefijos en memoria, evitando así múltiples `stat` innecesarios por cada llamada.

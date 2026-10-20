@@ -255,8 +255,8 @@ def _get_sha256(path: Path) -> str:
         flags |= os.O_NOFOLLOW
         
     sha256_hash = hashlib.sha256()
-    fd = os.open(str(path), flags)
     try:
+        fd = os.open(str(path), flags)
         with os.fdopen(fd, "rb") as handle:
             while True:
                 chunk = handle.read(CHUNK_SIZE)
@@ -648,8 +648,8 @@ def _perform_secure_copy(source: Path, temp_dest: Path, source_hash: str) -> Non
     if hasattr(os, 'O_NOFOLLOW'):
         flags |= os.O_NOFOLLOW
         
-    source_fd = os.open(str(source), flags)
     try:
+        source_fd = os.open(str(source), flags)
         with os.fdopen(source_fd, "rb") as source_handle:
             stat_src = os.fstat(source_handle.fileno())
             if not (stat_src.st_mode & 0o100000):
@@ -922,7 +922,10 @@ def quarantine_file(
 
 def list_items(base: PathLike = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna una lista de ítems en cuarentena, ordenados descendentemente por fecha."""
-    return sorted(load_manifest(base), key=lambda x: x.quarantined_at, reverse=True)
+    try:
+        return sorted(load_manifest(base), key=lambda x: x.quarantined_at, reverse=True)
+    except (TypeError, AttributeError):
+        return []
 
 
 def restore_item(item_id: str, base: PathLike = DEFAULT_QUARANTINE_DIR) -> Path:
@@ -1027,17 +1030,19 @@ def purge_all(base: PathLike = DEFAULT_QUARANTINE_DIR) -> int:
         purgado_ids: Set[str] = set()
         
         for f in quarantine_root.iterdir():
-            if f.name == MANIFEST_NAME or is_protected_path(f):
-                continue
-            
-            # Validación estricta de sandbox para cada ítem candidato
-            if not is_within_directory(f, quarantine_root):
-                continue
+            try:
+                if f.name == MANIFEST_NAME or is_protected_path(f):
+                    continue
+                
+                if not is_within_directory(f, quarantine_root):
+                    continue
 
-            if f.name in item_map:
-                if _is_item_purgable(f, item_map[f.name]):
-                    purgado_ids.add(item_map[f.name].item_id)
-            elif _safe_unlink(f):
+                if f.name in item_map:
+                    if _is_item_purgable(f, item_map[f.name]):
+                        purgado_ids.add(item_map[f.name].item_id)
+                elif _safe_unlink(f):
+                    continue
+            except (OSError, PermissionError):
                 continue
         
         if purgado_ids:
