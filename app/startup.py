@@ -130,7 +130,8 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extracts the absolute path within quotes, validating against Path Traversal and MAX_PATH limits.
+        Extrae y valida rutas absolutas contenidas entre comillas, asegurando que no excedan
+        límites de sistema ni contengan caracteres prohibidos o recorridos de directorio (traversal).
         """
         if not isinstance(raw_command, str) or len(raw_command) < 3:
             return ""
@@ -238,7 +239,7 @@ class StartupEntry:
 def startup_folders() -> List[Path]:
     """
     Identifica las rutas estándar de inicio en Windows.
-    Retorna una lista de objetos Path validados que no están protegidos.
+    Filtra directorios protegidos o symlinks maliciosos antes de procesar.
     """
     if os.name != "nt":
         return []
@@ -315,10 +316,11 @@ def entries_from_folders(folders: Optional[Iterable[Path]] = None) -> StartupEnt
 
 
 def _is_registry_entry_safe(entry_name: str, entry_command: str, seen_commands: Set[str]) -> bool:
-    """Valida que una entrada extraída del registro sea única, no nula y no apunte a rutas sospechosas."""
+    """Valida que una entrada del registro sea única, no nula y no apunte a rutas sospechosas o protegidas."""
     if not isinstance(entry_name, str) or not isinstance(entry_command, str):
         return False
     
+    # Prevenir caracteres de control en el nombre/comando para evitar inyección en el parser
     if any(ord(c) < 32 for c in entry_command):
         return False
         
@@ -330,6 +332,7 @@ def _is_registry_entry_safe(entry_name: str, entry_command: str, seen_commands: 
     
     try:
         target_path = Path(clean_cmd.strip('"'))
+        # Validación de estructura básica: debe contener separadores de ruta
         if not target_path or ("\\" not in str(target_path) and "/" not in str(target_path)):
             return False
         if any(c in str(target_path) for c in SUSPICIOUS_CHARS):
@@ -343,8 +346,8 @@ def _is_registry_entry_safe(entry_name: str, entry_command: str, seen_commands: 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntries:
     """
-    Parsea una cadena CSV generada por PowerShell y la convierte en objetos StartupEntry.
-    El formato de entrada esperado es una salida de `Select-Object Name, Value`.
+    Parsea salida CSV cruda de PowerShell para extraer programas de inicio.
+    Realiza saneamiento y filtrado de seguridad antes de instanciar cada StartupEntry.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
@@ -362,7 +365,6 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> StartupEntrie
             raw_val_name = row.get("Name")
             raw_val_cmd = row.get("Value")
             
-            # Validación estricta: asegurar que ambos campos contengan texto no vacío
             if not (isinstance(raw_val_name, str) and raw_val_name.strip()) or \
                not (isinstance(raw_val_cmd, str) and raw_val_cmd.strip()):
                 continue

@@ -217,18 +217,22 @@ def app_title() -> str:
     """Retorna el título formal y versión de la aplicación."""
     return f"{APP_NAME} v{APP_VERSION}"
 
+@lru_cache(maxsize=32)
 def color(name: Optional[str]) -> ColorHex: 
     """Obtiene un color hexadecimal de la paleta. Retorna gris por defecto si no existe."""
     return PALETTE.get(name, "#808080") if name else "#808080"
 
+@lru_cache(maxsize=32)
 def font_size(name: Optional[str]) -> int: 
     """Retorna el tamaño de fuente configurado para una categoría dada."""
     return FONT_SIZES.get(name, UI_CONFIG.body_size) if name else UI_CONFIG.body_size
 
+@lru_cache(maxsize=32)
 def icon(section: Optional[str]) -> str: 
     """Retorna el carácter Unicode asociado a una sección, o un punto si es desconocido."""
     return ICONS.get(section, "\u2022") if section else "\u2022"
 
+@lru_cache(maxsize=32)
 def tab_label(section: Optional[str]) -> str: 
     """Combina el icono y el texto para generar la etiqueta de una pestaña."""
     return f"{icon(section)}  {section}" if section else "\u2022  Desconocido"

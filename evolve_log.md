@@ -1439,3 +1439,12 @@ ERROR evolve/tests/test_safety.py - TypeError: _check_vol_restricted() missing 1
 - `2026-10-20T01:59:13` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _ValidationResult
 - `2026-10-20T01:59:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-20T01:59:13` Corrida terminada. Total usado hoy: 48.
+- `2026-10-20T02:07:29` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-10-20T02:08:47` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la adición de docstrings técnicos detallados en las funciones de procesamiento de datos y validación, además de clarificar la lógica de filtrado en `parse_registry_csv` y `startup_folders` para facilitar futuras auditorías del código.
+- `2026-10-20T02:09:22` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: rendimiento).
+- `2026-10-20T02:09:58` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se introdujo `lru_cache` en las funciones de acceso frecuente `color`, `font_size`, `icon` y `tab_label` para evitar el procesamiento repetitivo de strings y búsquedas en diccionarios durante el renderizado de la interfaz.
+- `2026-10-20T02:10:25` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-10-20T02:11:28` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-10-20T02:11:42` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-10-20T02:11:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-20T02:11:42` Corrida terminada. Total usado hoy: 52.
