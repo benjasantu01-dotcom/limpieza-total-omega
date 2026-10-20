@@ -164,7 +164,7 @@ def _is_within_sandbox(target: Path, base: Path) -> bool:
     try:
         t_res = target.resolve(strict=False)
         b_res = base.resolve(strict=True)
-        return str(t_res).startswith(str(b_res))
+        return os.path.normcase(str(t_res)).startswith(os.path.normcase(str(b_res)))
     except (OSError, RuntimeError):
         return False
 

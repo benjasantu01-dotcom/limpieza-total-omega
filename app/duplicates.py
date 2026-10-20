@@ -103,7 +103,9 @@ def _is_file_locked(path: Path) -> bool:
     if not isinstance(path, Path) or not is_safe_to_modify(path):
         return True
     try:
+        # Intentar abrir el archivo solo para lectura
         with open(path, "rb") as f:
+            f.peek(1)
             return False
     except (OSError, IOError, PermissionError, ValueError):
         return True
