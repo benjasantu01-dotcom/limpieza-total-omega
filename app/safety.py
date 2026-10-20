@@ -75,7 +75,6 @@ class SecurityDescriptor(NamedTuple):
         try:
             attrs = _get_file_attrs(path_str)
             if attrs == INVALID_FILE_ATTRIBUTES:
-                # Si no podemos leer atributos, tratamos como protegido por seguridad
                 return cls(0, True, True, True, True)
                 
             risk_flags = (Win32Attr.HIDDEN | Win32Attr.SYSTEM | Win32Attr.OFFLINE | 
@@ -324,7 +323,6 @@ def _is_file_owned_by_system(path_str: str) -> bool:
         advapi32 = ctypes.windll.advapi32
         kernel32 = ctypes.windll.kernel32
         sid_ptr = ctypes.c_void_p()
-        # SE_FILE_OBJECT = 1, OWNER_SECURITY_INFORMATION = 1
         res = advapi32.GetNamedSecurityInfoW(
             path_str, 1, 1, ctypes.byref(sid_ptr), None, None, None, None
         )
@@ -333,7 +331,6 @@ def _is_file_owned_by_system(path_str: str) -> bool:
                 sid_str = ctypes.create_unicode_buffer(128)
                 if advapi32.ConvertSidToStringSidW(sid_ptr, ctypes.byref(sid_str)):
                     sid_val = sid_str.value
-                    # S-1-5-18 = LocalSystem, S-1-5-80 = NT Service
                     return sid_val.startswith("S-1-5-18") or sid_val.startswith("S-1-5-80")
             finally:
                 kernel32.LocalFree(sid_ptr)
@@ -393,7 +390,6 @@ def _is_file_locked_by_other_process(path_str: str) -> bool:
     
     try:
         kernel32 = ctypes.windll.kernel32
-        # Intenta abrir con acceso 0 (query) para verificar exclusividad
         handle = kernel32.CreateFileW(
             _to_long_path(path_str), 0, 0, None, 3, 0x00000080, None
         )
@@ -608,9 +604,7 @@ def _evaluate_security_rules(path: Path, current_stat: os.stat_result) -> None:
         raise UnsafePathError(f"Error evaluando reglas: {e}", SafetyValidationErrorCode.IO_ERROR)
 
 def _get_path_stat_robust(path: Path) -> os.stat_result:
-    """
-    Obtiene metadatos del archivo usando reintentos ante bloqueos temporales del sistema.
-    """
+    """Obtiene metadatos del archivo usando reintentos ante bloqueos temporales."""
     max_retries = 3
     if not isinstance(path, Path):
         raise UnsafePathError("Tipo de objeto de ruta inválido", SafetyValidationErrorCode.GENERIC)
@@ -748,11 +742,10 @@ def is_drive_root(path: PathLike) -> bool:
     except (UnsafePathError, TypeError, OSError): return True
 
 def is_protected_path(path: PathLike) -> bool:
-    """Determina si la ruta forma parte de una zona protegida del sistema (optimizado con caché)."""
+    """Determina si la ruta forma parte de una zona protegida del sistema."""
     if not isinstance(path, (str, Path)) or not path: return True
     path_str = str(path).strip()
     
-    # 1. Chequeo de caché persistente (TTL simple)
     now = time.time()
     if path_str in _PROTECTED_PATH_CACHE:
         res, ts = _PROTECTED_PATH_CACHE[path_str]
@@ -763,12 +756,10 @@ def is_protected_path(path: PathLike) -> bool:
         p = Path(path_str)
         p_str_low = path_str.lower()
         
-        # 2. Validación de prefijo rápido
         if any(p_str_low.startswith(root) for root in _SYSTEM_ROOT_STRS):
             _PROTECTED_PATH_CACHE[path_str] = (True, now)
             return True
         
-        # 3. Validación de componentes
         if _is_kernel_managed(p_str_low):
             _PROTECTED_PATH_CACHE[path_str] = (True, now)
             return True
@@ -778,7 +769,6 @@ def is_protected_path(path: PathLike) -> bool:
             _PROTECTED_PATH_CACHE[path_str] = (True, now)
             return True
         
-        # 4. Chequeo de atributos
         attrs = _get_file_attrs(str(p))
         if attrs != INVALID_FILE_ATTRIBUTES and (attrs & (Win32Attr.SYSTEM | Win32Attr.HIDDEN | Win32Attr.REPARSE_POINT)):
             _PROTECTED_PATH_CACHE[path_str] = (True, now)
@@ -792,7 +782,7 @@ def is_protected_path(path: PathLike) -> bool:
 
 @lru_cache(maxsize=4096)
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
-    """Verifica si una ruta es subdirectorio de otra, evitando escapes mediante reparse points."""
+    """Verifica si una ruta es subdirectorio de otra, evitando escapes."""
     if child is None or parent is None: return False
     try:
         c_path = normalize(child)
@@ -820,7 +810,7 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
 
 @lru_cache(maxsize=2048)
 def is_sensitive_file(path: PathLike) -> bool:
-    """Determina si el archivo es sensible por su extensión (ej. .sys, .dll)."""
+    """Determina si el archivo es sensible por su extensión."""
     if not path: return True
     try: 
         p_str = str(path)
@@ -828,7 +818,7 @@ def is_sensitive_file(path: PathLike) -> bool:
     except (TypeError, ValueError, OSError): return True 
 
 def _validate_structural_safety(target_path: Path, path_string: str) -> None:
-    """Validación sintáctica profunda de la integridad de la ruta para prevenir inyecciones."""
+    """Validación sintáctica profunda para prevenir inyecciones."""
     if not isinstance(path_string, str):
         raise UnsafePathError("Ruta no es texto.", SafetyValidationErrorCode.GENERIC)
     if path_string.startswith(("\\\\.\\", "//./", LONG_PATH_PREFIX)) and not path_string.startswith(LONG_PATH_PREFIX):
@@ -850,7 +840,6 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     if _is_device_file(target_path):
         raise UnsafePathError("Acceso a dispositivo bloqueado.", SafetyValidationErrorCode.DEVICE_FILE_DETECTED)
     
-    # Validación estricta de nombres reservados
     if _RESERVED_NAMES_PATTERN.fullmatch(target_path.name):
         raise UnsafePathError("Nombre de dispositivo reservado detectado.", SafetyValidationErrorCode.RESERVED_NAME)
 
@@ -971,7 +960,6 @@ def _validate_path_components(path: Path) -> None:
     visited: set[Path] = set()
     for i in range(len(parts)):
         current_check = anchor.joinpath(*parts[:i+1])
-        # Detección de spoofing de nombres cortos (8.3)
         if "~" in current_check.name:
             raise UnsafePathError("Ruta con spoofing de nombres cortos detectada.", SafetyValidationErrorCode.SHORT_NAME_SPOOFING)
         if current_check.exists():
@@ -1005,55 +993,49 @@ def _validate_file_operations_security(p: Path, allow_sensitive: bool, base: Opt
     _check_file_integrity(p, initial_stat)
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> Path:
-    """
-    Función de entrada principal para validar si un archivo puede ser modificado.
-    """
+    """Función de entrada principal para validar si un archivo puede ser modificado."""
     if path is None:
         raise UnsafePathError("Ruta nula recibida.", SafetyValidationErrorCode.GENERIC)
         
-    try:
-        path_str = str(path).strip()
-        if not path_str:
-            raise UnsafePathError("Ruta vacía o inválida.", SafetyValidationErrorCode.GENERIC)
+    path_str = str(path).strip()
+    if not path_str:
+        raise UnsafePathError("Ruta vacía o inválida.", SafetyValidationErrorCode.GENERIC)
             
-        p = normalize(path_str)
-        
-        # Validar tipo de objeto al inicio
-        if p.exists() and not (p.is_file() or p.is_dir()):
-            raise UnsafePathError(f"Tipo de archivo no soportado: {p.name}", SafetyValidationErrorCode.INVALID_TYPE)
+    p = normalize(path_str)
+    
+    # 1. Guard Clauses: Validación de tipo e integridad estructural
+    if p.exists() and not (p.is_file() or p.is_dir()):
+        raise UnsafePathError(f"Tipo de archivo no soportado: {p.name}", SafetyValidationErrorCode.INVALID_TYPE)
 
-        if p.name.lower() in _KERNEL_BLOCKED_FILES:
-            raise UnsafePathError(f"Modificación bloqueada de archivo crítico: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
+    if p.name.lower() in _KERNEL_BLOCKED_FILES:
+        raise UnsafePathError(f"Modificación bloqueada de archivo crítico: {p.name}", SafetyValidationErrorCode.KERNEL_LOCKED_FILE)
 
-        base = None
-        if base_dir:
-            try:
-                base = _normalize_resolved(str(base_dir))
-            except (TypeError, ValueError, OSError):
-                raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.IO_ERROR)
-        
-        _validate_path_components(p)
-        _validate_preconditions(p, base_dir)
-        
-        if not allow_sensitive and is_sensitive_file(p):
-            raise UnsafePathError(f"Extensión bloqueada '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION)
+    base = None
+    if base_dir:
+        try:
+            base = _normalize_resolved(str(base_dir))
+        except (TypeError, ValueError, OSError):
+            raise UnsafePathError("Directorio base inválido.", SafetyValidationErrorCode.IO_ERROR)
+    
+    # 2. Validación de componentes, precondiciones y límites
+    _validate_path_components(p)
+    _validate_preconditions(p, base_dir)
+    
+    if not allow_sensitive and is_sensitive_file(p):
+        raise UnsafePathError(f"Extensión bloqueada '{p.suffix}'.", SafetyValidationErrorCode.SENSITIVE_EXTENSION)
             
-        _validate_structural_safety(p, str(p))
-        _validate_boundary_conditions(p, base_dir)
-        
-        if p.exists():
-            _validate_file_operations_security(p, allow_sensitive, base)
-        else:
-            parent = p.parent
-            if parent.exists() and not os.access(parent, os.W_OK):
-                raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
-        return p
-    except UnsafePathError:
-        raise
-    except (OSError, AttributeError, RuntimeError, ValueError, TypeError, MemoryError, WindowsError if os.name == 'nt' else ImportError) as e:
-        raise UnsafePathError(f"Validación fallida: {e}", SafetyValidationErrorCode.IO_ERROR)
-    except Exception as e:
-        raise UnsafePathError(f"Error crítico durante la validación: {e}", SafetyValidationErrorCode.IO_ERROR)
+    _validate_structural_safety(p, str(p))
+    _validate_boundary_conditions(p, base_dir)
+    
+    # 3. Verificación de existencia y operaciones de escritura
+    if p.exists():
+        _validate_file_operations_security(p, allow_sensitive, base)
+    else:
+        parent = p.parent
+        if parent.exists() and not os.access(parent, os.W_OK):
+            raise UnsafePathError("Directorio contenedor sin permisos de escritura.", SafetyValidationErrorCode.WRITE_ACCESS_DENIED)
+    
+    return p
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: Optional[PathLike] = None) -> bool:
     """Versión booleana de `ensure_safe_to_modify`."""

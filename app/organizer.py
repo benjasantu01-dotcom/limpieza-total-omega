@@ -227,20 +227,23 @@ def _can_write_to_destination(dest_real: Path, size: int) -> bool:
         return False
 
 def _is_safe_for_disk_op(junk_file: JunkFile, dest: Path) -> bool:
-    """Orquestador maestro de validaciones antes de cualquier operación de movimiento."""
+    """
+    Orquestador maestro de validaciones antes de cualquier operación de movimiento.
+    Verifica identidad del archivo, integridad de la ruta y riesgos de seguridad.
+    """
     if not junk_file or not isinstance(junk_file.path, Path): return False
     try:
         if not junk_file.path.exists(): return False
         src_real = junk_file.path.resolve(strict=True)
         dest_real = dest.resolve(strict=False)
         
-        # Validaciones de identidad y acceso básico
+        # Validaciones de integridad y protección
         if src_real.name.lower() in SYSTEM_CRITICAL_NAMES or is_protected_path(src_real): return False
         if src_real.is_symlink() or (os.name == 'nt' and _is_system_hidden(src_real)): return False
         if not (is_safe_to_modify(src_real) and _validate_path_security(src_real, dest_real)): return False
         if src_real.drive != dest_real.drive: return False
 
-        # Validaciones de estado del archivo y destino
+        # Validaciones de bloqueo, acceso y escritura
         if not _validate_file_identity(junk_file, src_real) or _is_file_locked(src_real): return False
         if _is_recursive_violation(src_real, dest_real) or not _can_write_to_destination(dest_real, junk_file.size_bytes): return False
         
@@ -262,8 +265,12 @@ def _should_scan_directory(entry: os.DirEntry, protected_cache: Set[str]) -> boo
     return True
 
 def _is_junk_file(entry: os.DirEntry, stats: os.stat_result, now_ts: float) -> bool:
-    """Evalúa si el archivo cumple con criterios de tamaño, fecha y extensión para ser considerado basura."""
-    # Uso de os.path.splitext para rendimiento: evita crear objeto Path por cada archivo
+    """
+    Evalúa si el archivo cumple con los criterios de elegibilidad:
+    - Tamaño dentro de límites de seguridad.
+    - No marcado como oculto o de sistema.
+    - Extensión coincide con la lista permitida.
+    """
     _, ext = os.path.splitext(entry.name)
     return (0 <= stats.st_size < LIMITS.MAX_FILE_SIZE_BYTES and 
             stats.st_mtime <= now_ts + 3600 and
