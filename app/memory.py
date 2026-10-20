@@ -235,7 +235,11 @@ def _extract_process_info(line: str) -> Optional[ProcessMemory]:
     if len(parts) < 3: 
         return None
     
-    name, pid_str, ws_str = parts[0], parts[1], parts[2]
+    # Manejo de nombres con comas mediante reconstrucción parcial si es necesario
+    name = parts[0]
+    pid_str = parts[-2]
+    ws_str = parts[-1]
+    
     try:
         pid = int(pid_str)
         ws = _safe_int_conversion(ws_str)
@@ -334,8 +338,10 @@ def _is_process_executable_safe(pid: int, handle: wintypes.HANDLE, psapi: ctypes
         return False
         
     try:
-        executable_path = Path(exe_str).absolute().resolve(strict=False)
-        return not is_protected_path(executable_path)
+        executable_path = Path(exe_str).absolute()
+        if not executable_path.exists():
+            return False
+        return not is_protected_path(executable_path.resolve(strict=False))
     except (OSError, RuntimeError, ValueError, TypeError):
         return False
 
