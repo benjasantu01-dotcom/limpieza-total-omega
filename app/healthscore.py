@@ -326,9 +326,12 @@ def _evaluate_rules(metrics: SystemMetrics, rules: Tuple[RecommendationRule, ...
     """Ejecuta reglas de diagnóstico y registra advertencias halladas."""
     ratio = _clamp(normalized_ratio)
     for rule in rules:
-        if rule.check(metrics, ratio):
-            clean_msg = _apply_rule_safely(metrics, rule)
-            if clean_msg: findings.append(clean_msg)
+        try:
+            if rule.check(metrics, ratio):
+                clean_msg = _apply_rule_safely(metrics, rule)
+                if clean_msg: findings.append(clean_msg)
+        except Exception:
+            continue
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Computa el puntaje global mediante el pipeline con validación de suma total."""
@@ -342,16 +345,16 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     for entry in _PIPELINE:
         try:
             area_ratio = _clamp(entry.scorer(metrics))
-        except Exception:
-            area_ratio = 0.0
+            if entry.rules:
+                _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
             
-        if entry.rules:
-            _evaluate_rules(metrics, entry.rules, area_ratio, recommendations)
-        
-        points = area_ratio * entry.weight
-        val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
-        metric_breakdown[entry.area] = val_int
-        total_points += val_int
+            points = area_ratio * entry.weight
+            val_int = int(round(_clamp(points, 0.0, float(entry.weight))))
+            metric_breakdown[entry.area] = val_int
+            total_points += val_int
+        except Exception:
+            metric_breakdown[entry.area] = 0
+            continue
             
     if metrics.quarantined_count > 0:
         recommendations.append("Existen elementos en cuarentena.")
@@ -367,7 +370,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 @lru_cache(maxsize=128)
 def _render_bar(points: int, max_val: int) -> str:
     """Crea una representación visual de barra para reportes con caché."""
-    if not isinstance(points, int) or not isinstance(max_val, int):
+    if not isinstance(points, int) or not isinstance(max_val, int) or max_val <= 0:
         return "." * 10
     p = max(0, min(points, max_val))
     return "#" * p + "." * (max_val - p)
