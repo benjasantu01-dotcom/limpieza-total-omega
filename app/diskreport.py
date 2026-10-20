@@ -177,7 +177,7 @@ def _is_excluded_path(entry: os.DirEntry, root_path: Path) -> bool:
                 return True
         
         return False
-    except (OSError, PermissionError, AttributeError, TypeError, RuntimeError):
+    except (OSError, PermissionError, AttributeError, TypeError, RuntimeError, FileNotFoundError):
         return True
             
 def _get_local_windows_drives() -> List[str]:

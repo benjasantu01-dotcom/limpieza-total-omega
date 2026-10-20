@@ -448,11 +448,16 @@ class SystemContext:
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
         """Aplica cambios al contexto y limpia cachés internas."""
-        self.__dict__.update({k: v for k, v in updates.items() if _is_safe_key(k)})
-        self.analyzed = True
-        self.__dict__.pop("metrics_snapshot", None)
-        self.__dict__.pop("active_problems", None)
-        self.__dict__.pop("_hash_tuple", None)
+        try:
+            for k, v in updates.items():
+                if _is_safe_key(k):
+                    setattr(self, k, v)
+            self.analyzed = True
+            # Limpieza forzada de cachés mediante borrado de los atributos de cached_property
+            for attr in ("metrics_snapshot", "active_problems", "_hash_tuple"):
+                self.__dict__.pop(attr, None)
+        except Exception:
+            pass
 
     def ingest(self, source: Any) -> bool:
         """Normaliza e importa datos externos al contexto de manera transaccional."""

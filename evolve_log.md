@@ -1471,3 +1471,10 @@ ERROR evolve/tests/test_safety.py - TypeError: _check_vol_restricted() missing 1
 - `2026-10-20T02:40:12` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `list_startup_entries` y `summarize` reemplazando iteraciones redundantes y conteos lineales `sum(1 for ...)` por acceso directo a la lista cacheada `_FULL_SCAN_CACHE`, evitando recorrer el generador varias veces innecesariamente.
 - `2026-10-20T02:40:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-20T02:40:12` Corrida terminada. Total usado hoy: 64.
+- `2026-10-20T02:48:17` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-10-20T02:48:57` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejora la robustez del sistema ante datos de entrada corruptos o inesperados en `ingest` y `_apply_updates`, garantizando que el `SystemContext` mantenga su integridad incluso si los datos fuente contienen tipos inconsistentes o estructuras anidadas que evadan las comprobaciones previas.
+- `2026-10-20T02:49:29` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-10-20T02:49:57` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-10-20T02:50:17` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_is_excluded_path` añadiendo un chequeo explícito para evitar el procesamiento de archivos que han sido eliminados durante el recorrido (`FileNotFoundError`), evitando que el escaneo se interrumpa prematuramente ante cambios concurrentes en el sistema de archivos.
+- `2026-10-20T02:50:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-20T02:50:17` Corrida terminada. Total usado hoy: 68.

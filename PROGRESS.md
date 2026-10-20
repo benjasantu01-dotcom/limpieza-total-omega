@@ -9,44 +9,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **192** (38.1% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 50
-- Sin cambios (nada sustancial que mejorar): 30
-- Sin respuesta de la IA (error o límite): 217
+- Sin cambios (nada sustancial que mejorar): 28
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-18 | 33 | 2 | 9 | 6 | 40 |
+| 2026-10-18 | 31 | 2 | 9 | 4 | 40 |
 | 2026-10-19 | 133 | 11 | 32 | 21 | 153 |
-| 2026-10-20 | 26 | 2 | 9 | 3 | 24 |
+| 2026-10-20 | 28 | 2 | 9 | 3 | 26 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **47**
 - manejo de errores y validación de entradas: **46**
-- seguridad defensiva: **37**
+- seguridad defensiva: **35**
 - rendimiento: **35**
-- robustez ante casos límite: **27**
+- robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **19**
 - `browser.py`: **18**
-- `diskreport.py`: **17**
+- `diskreport.py`: **18**
 - `quarantine.py`: **16**
 - `healthscore.py`: **16**
 - `settings.py`: **15**
 - `branding.py`: **15**
-- `memory.py`: **14**
+- `memory.py`: **13**
 - `scanner.py`: **12**
 - `safety.py`: **12**
-- `assistant.py`: **11**
+- `assistant.py`: **12**
 - `main.py`: **10**
-- `organizer.py`: **9**
+- `organizer.py`: **8**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-20T02:50:17` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `_is_excluded_path` añadiendo un chequeo explícito para evitar el procesamiento de archivos que han sido eliminados durante el recorrido (`FileNotFoundError`), evitando que el escaneo se interrumpa prematuramente ante cambios concurrentes en el sistema de archivos.
+- `2026-10-20T02:48:57` **assistant.py** (robustez ante casos límite): Mejora la robustez del sistema ante datos de entrada corruptos o inesperados en `ingest` y `_apply_updates`, garantizando que el `SystemContext` mantenga su integridad incluso si los datos fuente contienen tipos inconsistentes o estructuras anidadas que evadan las comprobaciones previas.
 - `2026-10-20T02:40:12` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` y `summarize` reemplazando iteraciones redundantes y conteos lineales `sum(1 for ...)` por acceso directo a la lista cacheada `_FULL_SCAN_CACHE`, evitando recorrer el generador varias veces innecesariamente.
 - `2026-10-20T02:39:59` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuración implementando un caché de lectura basado en `os.stat` para evitar el parseo innecesario de JSON cuando el archivo no ha cambiado en disco.
 - `2026-10-20T02:39:29` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner reemplazando la verificación repetitiva de bloqueos y permisos por un enfoque de caché de estado local dentro del `Scanner`, evitando llamadas innecesarias al sistema operativo (`_is_locked_by_os` y `os.access`) para archivos ya visitados en la misma iteración.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-20T01:49:49` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento del módulo documentando exhaustivamente las funciones internas con docstrings de estilo Google que explican el propósito, los parámetros y las restricciones de seguridad, además de normalizar el uso de type hints para mayor claridad en los tipos complejos.
 - `2026-10-20T01:39:48` **healthscore.py** (legibilidad y documentación): Se introdujeron anotaciones de tipo más precisas y se documentaron mediante docstrings los métodos críticos de `SystemMetrics` para mejorar la mantenibilidad y claridad del modelo de datos.
 - `2026-10-20T01:38:32` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica y legibilidad añadiendo type hints faltantes en funciones internas, docstrings descriptivos para las constantes de flags de Windows y unificando el estilo de los comentarios de seguridad para mayor claridad.
-- `2026-10-20T01:38:04` **diskreport.py** (legibilidad y documentación): He mejorado la legibilidad técnica y la robustez del código mediante la adición de docstrings estructurados, la corrección de un posible bug de tipado en `total_size` (que devolvía `SizeReport` en lugar de una tupla de ints) y la clarificación de tipos en las funciones de escaneo, siguiendo las mejores prácticas de mantenibilidad para una demo técnica.
-- `2026-10-20T01:37:24` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo integrando docstrings descriptivos en las funciones de escaneo recursivo y refinando las definiciones de los `NamedTuple` para explicar mejor el flujo de datos entre las capas de seguridad y el sistema de archivos.
