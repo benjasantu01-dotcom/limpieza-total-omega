@@ -81,6 +81,7 @@ _MAX_MSG_CHUNK: Final[int] = 200
 _MAX_PROMPT_LIMIT: Final[int] = 4000
 _MAX_NESTING_DEPTH: Final[int] = 2
 _MAX_COLLECTION_SIZE: Final[int] = 20
+_MAX_GRADE_LEN: Final[int] = 10
 
 # Estructura fija para resumen de contexto: (clave_métrica, unidad_legible, precisión_decimal)
 _CONTEXT_SCHEMA: Final = (
@@ -425,20 +426,23 @@ class SystemContext:
     def _clean_grade(self, val: Any) -> str:
         """Limpia el string de calificación eliminando caracteres de control no seguros."""
         if not isinstance(val, str): return ""
-        clean: str = _REGEX_CONTROL_CHARS.sub(" ", val)[:10].strip()
+        clean: str = _REGEX_CONTROL_CHARS.sub(" ", val)[:_MAX_GRADE_LEN].strip()
         if not clean or is_protected_path(clean): return ""
         return clean if _ensure_safe_text(clean) else ""
 
     def _validate_and_sanitize_data(self, source: Any) -> Optional[dict[str, Any]]:
-        """Extrae datos válidos de una fuente externa."""
+        """Extrae y valida métricas numéricas y texto de calificación de una fuente."""
         if not isinstance(source, (dict, object)): return None
+        
         updates: dict[str, Any] = {}
         for key, spec in _VALIDATORS.items():
             val = self._apply_field(source, key, spec)
-            if val is not None: updates[key] = val
+            if val is not None: 
+                updates[key] = val
         
         grade_val = self._clean_grade(_get_source_value(source, "grade"))
-        if grade_val: updates["grade"] = grade_val
+        if grade_val: 
+            updates["grade"] = grade_val
         
         return updates if updates else None
 
@@ -448,27 +452,29 @@ class SystemContext:
         return not _is_input_too_deep_or_complex(source) if isinstance(source, dict) else True
 
     def _apply_updates(self, updates: dict[str, Any]) -> None:
-        """Aplica cambios al contexto y limpia cachés internas de forma segura."""
-        try:
-            for k, v in updates.items():
-                if _is_safe_key(k):
-                    setattr(self, k, v)
-            self.analyzed = True
-            for attr in ("metrics_snapshot", "active_problems", "_hash_tuple"):
-                if attr in self.__dict__:
-                    del self.__dict__[attr]
-        except (AttributeError, TypeError, KeyError) as e:
-            logging.error(f"Falla crítica aplicando actualizaciones: {e}")
+        """Aplica cambios validados al contexto y limpia cachés internas."""
+        for k, v in updates.items():
+            setattr(self, k, v)
+        self.analyzed = True
+        
+        # Limpieza de cachés para reflejar el nuevo estado
+        for attr in ("metrics_snapshot", "active_problems", "_hash_tuple"):
+            if attr in self.__dict__:
+                del self.__dict__[attr]
 
     def ingest(self, source: Any) -> bool:
         """Normaliza e importa datos externos al contexto de manera transaccional."""
-        if not self._validate_ingestion_source(source): return False
+        if not self._validate_ingestion_source(source): 
+            return False
+        
         updates = self._validate_and_sanitize_data(source)
-        if not updates: return False
+        if not updates: 
+            return False
+            
         try:
             self._apply_updates(updates)
             return True
-        except Exception:
+        except (AttributeError, TypeError, KeyError):
             return False
 
 @dataclass

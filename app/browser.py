@@ -53,14 +53,6 @@ PATH_FORBIDDEN_CHARS: Set[str] = {'*', '?', '<', '>', '|', '"'}
 class ScanContext:
     """
     Estado de control durante el recorrido recursivo para garantizar integridad.
-    
-    Attributes:
-        sandbox_base: Ruta base autorizada; cualquier intento de acceso fuera de 
-                      este árbol será bloqueado durante el escaneo.
-        kernel32: Instancia de la API Win32 para chequeos de atributos de sistema.
-        is_junction: Predicado para detectar puntos de reparse (evita recursión infinita).
-        visited_files: Historial (device, inode) para ignorar hardlinks duplicados.
-        visited_dirs: Historial de rutas normalizadas para prevenir ciclos de directorios.
     """
     sandbox_base: Path
     kernel32: Optional[ctypes.WinDLL]
@@ -84,7 +76,7 @@ def safe_path_operation(default: Any) -> Callable[[Callable], Callable]:
     return decorator
 
 class ScanResult(NamedTuple):
-    """Métrica de salida: bytes acumulados y flag de éxito en la integridad del recorrido."""
+    """Métrica de salida: bytes acumulados y flag de éxito en el escaneo."""
     bytes_found: int
     success: bool
 
@@ -163,7 +155,7 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
     return dll if hasattr(dll, 'GetFileAttributesW') else None
 
 def _is_unc_path(path_str: Optional[str]) -> TypeGuard[str]:
-    """Valida si una cadena de ruta corresponde a una ruta UNC (red), desaconsejada por latencia."""
+    """Valida si una cadena de ruta corresponde a una ruta UNC (red)."""
     return isinstance(path_str, str) and (path_str.startswith(r"\\") or path_str.startswith("//"))
 
 def _is_within_sandbox(target: Path, base: Path) -> bool:
@@ -203,7 +195,7 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
     return attrs != 0xFFFFFFFF and bool(attrs & SYSTEM_HIDDEN_FLAGS)
 
 def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
-    """Determina si un objeto del sistema debe ser excluido del escaneo basado en políticas de seguridad."""
+    """Determina si un objeto del sistema debe ser excluido del escaneo."""
     if _is_excluded_file(entry.name): return True
     path_str = entry.path
     if len(path_str) >= MAX_PATH_LEN or any(c in path_str for c in PATH_FORBIDDEN_CHARS) or any(ord(c) < 32 for c in path_str): return True
@@ -214,10 +206,7 @@ def _should_skip_entry(entry: os.DirEntry, ctx: ScanContext) -> bool:
     return False
 
 def _sum_directory_recursive(root_path: str, ctx: ScanContext, depth: int = 0) -> ScanResult:
-    """
-    Recorrido recursivo depth-first: suma el peso de archivos únicos (dev/inode)
-    evitando la doble contabilización y respetando el sandbox y límites de seguridad.
-    """
+    """Recorrido recursivo depth-first: suma el peso de archivos únicos evitando ciclos."""
     if not root_path or depth > MAX_SCAN_DEPTH or len(root_path) >= MAX_PATH_LEN: 
         return ScanResult(0, True)
     
@@ -276,8 +265,9 @@ def _is_valid_cache_path(candidate: Path, base: Path) -> bool:
 
 @safe_path_operation(Path())
 def _resolve_browser_path(real_base: Path, rel_str: str) -> Path:
-    """Construye de forma segura la ruta completa del caché a partir de una base normalizada."""
+    """Resuelve la ruta completa del caché a partir de una base normalizada usando partes de ruta."""
     if not rel_str or not _is_valid_rel_path(rel_str): return Path()
+    # Construcción segura mediante unpacking de las partes separadas por backslash
     target = real_base.joinpath(*rel_str.split("\\"))
     if not target.exists() or not target.is_dir(): return Path()
     return target

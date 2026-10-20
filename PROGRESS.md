@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **190** (37.7% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 48
-- Sin cambios (nada sustancial que mejorar): 23
+- Rechazadas por guardia de seguridad: 49
+- Sin cambios (nada sustancial que mejorar): 22
 - Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 100 | 8 | 26 | 12 | 114 |
-| 2026-10-20 | 90 | 8 | 22 | 11 | 113 |
+| 2026-10-19 | 98 | 8 | 26 | 11 | 113 |
+| 2026-10-20 | 92 | 8 | 23 | 11 | 114 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **42**
+- legibilidad y documentación: **38**
 - robustez ante casos límite: **36**
-- legibilidad y documentación: **36**
-- rendimiento: **32**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **18**
 - `duplicates.py`: **17**
-- `memory.py`: **16**
+- `browser.py`: **16**
 - `healthscore.py`: **16**
 - `quarantine.py`: **16**
+- `assistant.py`: **15**
 - `branding.py`: **15**
-- `browser.py`: **15**
+- `memory.py`: **15**
 - `settings.py`: **14**
-- `assistant.py`: **14**
 - `safety.py`: **12**
-- `main.py`: **11**
 - `scanner.py`: **11**
+- `main.py`: **10**
 - `organizer.py`: **8**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-20T10:31:49` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de Type Hints en los retornos y argumentos faltantes, la estandarización de docstrings para seguir el formato PEP 257, y la extracción de la lógica de construcción de rutas en `_resolve_browser_path` para mejorar su trazabilidad y legibilidad.
+- `2026-10-20T10:30:12` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `SystemContext.ingest` y `_validate_and_sanitize_data` mediante la estandarización del flujo de validación, clarificando la separación entre la extracción de datos y la aplicación de actualizaciones al estado del sistema.
 - `2026-10-20T09:59:58` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_get_entry_value` y `_collect_settings` agregando validaciones de tipo y estructura para prevenir errores de ejecución al procesar datos del usuario, asegurando que las entradas numéricas y las cadenas sean procesadas de manera segura.
 - `2026-10-20T09:58:04` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` implementando una validación explícita de la suma de puntos calculados tras iterar el pipeline, asegurando que si los pesos no suman 100 o ocurre un error de cómputo, el resultado refleje la inconsistencia en lugar de devolver un valor potencialmente engañoso, además de proteger el acceso a los pesos durante la iteración.
 - `2026-10-20T09:57:01` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo validación explícita para evitar errores en rutas que contienen símbolos `NUL` o estructuras de nombres inválidas, y asegurando que las excepciones de sistema al acceder a atributos de archivos (como `st_size`) se capturen sin detener el escaneo completo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-20T08:06:20` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva centralizando la validación de directorios críticos mediante una nueva constante `PROTECTED_ROOTS` y un método de verificación estricta en el inicializador de la app, evitando que el escaneo o la manipulación de archivos ocurran fuera de las áreas permitidas incluso si el usuario intenta seleccionar rutas fuera del scope del Home o del sistema de archivos principal.
 - `2026-10-20T08:05:15` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del pipeline eliminando el uso de una función `hash()` no determinista sobre objetos complejos, reemplazándola por una clave de caché basada en una tupla de valores primitivos, evitando así posibles colisiones o errores inesperados en el estado de la caché durante el análisis.
 - `2026-10-20T07:56:02` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_root` y `walk_files` implementando un chequeo explícito de recursión mediante `Path.samefile` (o comparación de inodes) antes de acceder, evitando que la aplicación quede atrapada o acceda erróneamente en estructuras con junctions o enlaces simbólicos complejos, reforzando la integridad del escaneo.
-- `2026-10-20T07:54:54` **assistant.py** (seguridad defensiva): Se endurece la validación del contexto al evitar que objetos externos arbitrarios sean procesados mediante `getattr` en `_get_source_value`, limitando el acceso exclusivamente a los atributos definidos en `_VALIDATORS` para prevenir cualquier tipo de intrusión en el estado interno del asistente.
-- `2026-10-20T07:45:48` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_secure_to_read` para detectar archivos con contenido malformado o desbordamientos antes del parseo JSON, y se añadió una validación explícita de `UTF-8` al leer, evitando bloqueos por archivos binarios o codificaciones inesperadas.
