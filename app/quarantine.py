@@ -789,6 +789,11 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
 
     _validate_integrity_before_move(source, original_size, stat_orig.st_ino)
 
+    # Validacion final de integridad TOCTOU antes de escribir el archivo
+    final_check: os.stat_result = source.stat()
+    if final_check.st_ino != stat_orig.st_ino or final_check.st_size != original_size:
+        raise RuntimeError("Integridad comprometida: el archivo fue modificado (TOCTOU).")
+
     try:
         if destination.exists():
             raise FileExistsError("Colisión de ruta: archivo destino ya presente.")
