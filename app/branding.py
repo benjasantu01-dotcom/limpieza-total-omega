@@ -367,14 +367,15 @@ def save_logo_svg(destination: Union[str, Path, None], size: int = 128) -> Optio
     """Persiste el logo en formato SVG en el disco, asegurando seguridad de ruta."""
     if not destination: return None
     try:
-        dest_path = Path(destination)
-        if not dest_path.is_absolute(): return None
-        
+        dest_path = Path(destination).resolve()
         # Validación estricta mediante el validador del proyecto
         if is_protected_path(dest_path) or not is_safe_to_modify(dest_path):
             return None
+        
+        parent = dest_path.parent
+        if not parent.exists():
+            parent.mkdir(parents=True, exist_ok=True)
             
-        dest_path.parent.mkdir(parents=True, exist_ok=True)
         dest_path.write_text(logo_svg(size), encoding="utf-8")
         return dest_path
     except (OSError, PermissionError, TypeError): 

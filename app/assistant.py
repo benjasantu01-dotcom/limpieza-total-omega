@@ -431,6 +431,7 @@ class SystemContext:
 
     def _validate_and_sanitize_data(self, source: Any) -> Optional[dict[str, Any]]:
         """Extrae datos válidos de una fuente externa."""
+        if not isinstance(source, (dict, object)): return None
         updates: dict[str, Any] = {}
         for key, spec in _VALIDATORS.items():
             val = self._apply_field(source, key, spec)

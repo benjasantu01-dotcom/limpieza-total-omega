@@ -774,3 +774,44 @@ FAILED evolve/tests/test_safety.py::test_drive_root_is_always_protected - Assert
 - `2026-10-20T07:04:52` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _ValidationResult, _Validators.path
 - `2026-10-20T07:04:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-10-20T07:04:52` Corrida terminada. Total usado hoy: 168.
+- `2026-10-20T07:13:18` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-10-20T07:14:24` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.01s
+
+```
+- `2026-10-20T07:14:24` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó el proceso de recolección de entradas evitando redundancias en la resolución de rutas al consolidar la caché durante la etapa de filtrado, reduciendo llamadas innecesarias al sistema de archivos mediante el uso de `os.path.normpath` en lugar de `Path.resolve()` para validaciones previas.
+- `2026-10-20T07:15:01` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante estados inconsistentes y valores de entrada inesperados en `SystemContext` mediante la validación proactiva de los datos ingeridos en `_validate_and_sanitize_data` y la adición de una comprobación de tipo más estricta en el `ingest` para prevenir el procesamiento de fuentes mal formadas.
+- `2026-10-20T07:15:32` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se mejora la robustez ante rutas de destino mal formadas o inexistentes en `save_logo_svg` al validar el estado del directorio padre antes de intentar una escritura, garantizando que el proceso no falle silenciosamente ante rutas relativas o inválidas.
+- `2026-10-20T07:15:43` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-10-20T07:15:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-10-20T07:15:43` Corrida terminada. Total usado hoy: 172.
