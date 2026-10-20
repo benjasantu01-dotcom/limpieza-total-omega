@@ -202,6 +202,7 @@ class SafetyValidationErrorCode(IntEnum):
     VIRTUAL_DRIVE_DETECTED = 33
     CIRCULAR_REFERENCE = 35
     ADMIN_PRIVILEGE_VIOLATION = 36
+    SHORT_NAME_SPOOFING = 37
 
 class UnsafePathError(Exception):
     """Excepción específica para cualquier violación de las políticas de seguridad."""
@@ -970,6 +971,9 @@ def _validate_path_components(path: Path) -> None:
     visited: set[Path] = set()
     for i in range(len(parts)):
         current_check = anchor.joinpath(*parts[:i+1])
+        # Detección de spoofing de nombres cortos (8.3)
+        if "~" in current_check.name:
+            raise UnsafePathError("Ruta con spoofing de nombres cortos detectada.", SafetyValidationErrorCode.SHORT_NAME_SPOOFING)
         if current_check.exists():
             resolved = _normalize_resolved(str(current_check))
             if resolved in visited:

@@ -365,7 +365,8 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                 item_res = item.resolve(strict=False)
                 # Verifica que el archivo a borrar esté contenido estrictamente en la carpeta de cuarentena
                 if not item_res.is_relative_to(dest_res): continue
-                if not is_safe_to_modify(item_res) or is_protected_path(item_res): continue
+                # Aplicamos política estricta de borrado (lanza excepción si hay riesgo)
+                ensure_safe_to_modify(item_res)
                 item_res.unlink()
                 count += 1
             except (OSError, PermissionError, FileNotFoundError, ValueError, TypeError) as e:

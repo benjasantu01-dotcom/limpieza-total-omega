@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
+- Mejoras aceptadas: **205** (40.7% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 50
-- Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 210
+- Rechazadas por guardia de seguridad: 51
+- Sin cambios (nada sustancial que mejorar): 26
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-10-19 | 122 | 9 | 30 | 17 | 134 |
-| 2026-10-20 | 81 | 7 | 20 | 8 | 76 |
+| 2026-10-19 | 122 | 9 | 30 | 17 | 130 |
+| 2026-10-20 | 83 | 7 | 21 | 9 | 76 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
 - manejo de errores y validación de entradas: **44**
-- seguridad defensiva: **41**
+- seguridad defensiva: **43**
 - rendimiento: **37**
 - robustez ante casos límite: **36**
 
@@ -38,14 +38,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **15**
 - `settings.py`: **15**
 - `branding.py`: **15**
-- `safety.py`: **12**
+- `safety.py`: **13**
 - `scanner.py`: **12**
 - `main.py`: **10**
-- `organizer.py`: **8**
+- `organizer.py`: **9**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-10-20T08:17:15` **safety.py** (seguridad defensiva): Se ha añadido un chequeo explícito en `ensure_safe_to_modify` para detectar y bloquear rutas que contengan el carácter `~` en los nombres de los directorios de usuario (spoofing de nombres cortos 8.3 de DOS), evitando posibles bypasses de `is_protected_path`.
+- `2026-10-20T08:15:21` **organizer.py** (seguridad defensiva): Se reforzó `delete_reviewed` añadiendo una verificación crítica mediante `ensure_safe_to_modify` antes de llamar a `unlink()` para garantizar que la política de seguridad no solo se valide mediante booleanos, sino que fuerce una excepción si la ruta es manipulada por un proceso externo antes del borrado.
 - `2026-10-20T08:07:07` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_process_from_pid` y `_iter_process_memory` para asegurar que el manejo de punteros y buffers de procesos de Windows no quede en un estado inconsistente ante errores de acceso o llamadas fallidas a la API.
 - `2026-10-20T08:06:20` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva centralizando la validación de directorios críticos mediante una nueva constante `PROTECTED_ROOTS` y un método de verificación estricta en el inicializador de la app, evitando que el escaneo o la manipulación de archivos ocurran fuera de las áreas permitidas incluso si el usuario intenta seleccionar rutas fuera del scope del Home o del sistema de archivos principal.
 - `2026-10-20T08:05:15` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del pipeline eliminando el uso de una función `hash()` no determinista sobre objetos complejos, reemplazándola por una clave de caché basada en una tupla de valores primitivos, evitando así posibles colisiones o errores inesperados en el estado de la caché durante el análisis.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-10-20T07:24:45` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a disco en la función `_is_file_locked` para manejar explícitamente el caso de archivos inexistentes, evitando falsos positivos de "bloqueo" y mejorando la precisión al filtrar candidatos en entornos con archivos transitorios.
 - `2026-10-20T07:23:57` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `_validate_root` para manejar situaciones donde el sistema de archivos reporta errores de acceso durante la iteración o resolución de rutas, evitando que el escaneo se interrumpa prematuramente al encontrar archivos bloqueados o inaccesibles.
 - `2026-10-20T07:15:32` **branding.py** (robustez ante casos límite): Se mejora la robustez ante rutas de destino mal formadas o inexistentes en `save_logo_svg` al validar el estado del directorio padre antes de intentar una escritura, garantizando que el proceso no falle silenciosamente ante rutas relativas o inválidas.
-- `2026-10-20T07:15:01` **assistant.py** (robustez ante casos límite): Se reforzó la robustez ante estados inconsistentes y valores de entrada inesperados en `SystemContext` mediante la validación proactiva de los datos ingeridos en `_validate_and_sanitize_data` y la adición de una comprobación de tipo más estricta en el `ingest` para prevenir el procesamiento de fuentes mal formadas.
-- `2026-10-20T07:04:41` **scanner.py** (rendimiento): Se ha optimizado el rendimiento del escaneo reemplazando el diccionario `path_readable_cache` (que crecía indefinidamente con cada archivo visitado) por una verificación directa más ligera, dado que las comprobaciones de acceso (`is_readable` y `is_locked_by_os`) ya realizan sus propios testeos de I/O y no justifican la sobrecarga de memoria de un caché global en un escaneo de un solo paso.
